@@ -151,14 +151,14 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
                         <th className="px-2 py-1.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700">Nhân viên</th>
                         {orderedMonths.map(m => (
                             <th key={m.yyyymm} onClick={() => handleSort(m.yyyymm)} className={`${thBase} text-sky-700 dark:text-sky-400`}>
-                                T{m.label.split('/')[0]} {sortField === m.yyyymm ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                                T{m.label.split('/')[0]}
                             </th>
                         ))}
                         <th onClick={() => handleSort('average')} className={`${thBase} text-emerald-700 dark:text-emerald-400`}>
-                            T.Bình {sortField === 'average' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                            T.Bình
                         </th>
                         <th onClick={() => handleSort('total')} className={`${thBase} text-sky-700 dark:text-sky-400 border-r-0`}>
-                            Tổng {sortField === 'total' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                            Tổng
                         </th>
                     </tr>
                 </thead>

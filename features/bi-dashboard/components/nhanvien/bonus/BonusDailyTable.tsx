@@ -78,7 +78,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         }}
                         className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-sky-600 dark:bg-slate-800 dark:text-sky-400 bg-slate-100 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                     >
-                        Tổng {sortField === 'tong' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                        Tổng
                     </th>
                     <th
                         rowSpan={2}
@@ -89,7 +89,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         title="Số tuần có thưởng < Trung bình tuần"
                     >
-                        Tuần &lt;TB {sortField === 'weekBelowAvg' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                        Tuần &lt;TB
                     </th>
                     <th
                         rowSpan={2}
@@ -100,7 +100,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         className="px-2 py-2 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         title="Số ngày có thu nhập dưới trung bình"
                     >
-                        Ngày &lt;TB {sortField === 'belowAvgDays' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                        Ngày &lt;TB
                     </th>
                     {weeks.map(week => {
                         const isExpanded = expandedWeeks[week.id];
@@ -169,7 +169,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                 >
                                     <div className="flex flex-col items-center leading-none">
                                         <span className="text-[11px] opacity-70 font-semibold">{getWeekdayAbbr(dateStr)}</span>
-                                        <span className="font-extrabold text-[11px] mt-0.5">{d}/{m} {isSortingThisDate ? (sortDir === 'asc' ? '↑' : '↓') : ''}</span>
+                                        <span className="font-extrabold text-[11px] mt-0.5">{d}/{m}</span>
                                     </div>
                                 </th>
                             );

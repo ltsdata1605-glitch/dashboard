@@ -88,9 +88,20 @@ export default function LineBotView() {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800/80 p-5 rounded-3xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm">
                     <div className="flex items-center gap-3.5">
-                        <div className="p-2.5 bg-emerald-500 text-white rounded-2xl shadow-md shadow-emerald-500/20">
-                            <Bot size={26} />
-                        </div>
+                        {botConfigHook.botInfo?.pictureUrl ? (
+                            <img
+                                src={botConfigHook.botInfo.pictureUrl}
+                                alt="Bot avatar"
+                                className="w-[44px] h-[44px] rounded-2xl shadow-md object-cover"
+                                onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                }}
+                            />
+                        ) : (
+                            <div className="p-2.5 bg-emerald-500 text-white rounded-2xl shadow-md shadow-emerald-500/20">
+                                <Bot size={26} />
+                            </div>
+                        )}
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">

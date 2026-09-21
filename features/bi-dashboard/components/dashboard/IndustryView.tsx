@@ -677,7 +677,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             {headerGroups.map((g, idx) => {
                                                 if (g.isSingle) {
                                                     const isSorted = sortConfig.column === g.singleHeader;
-                                                    const sortIndicator = isSorted ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼') : '';
                                                     return (
                                                         <th
                                                             key={`group-${idx}`}
@@ -695,7 +694,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
                                                         >
                                                             <span>{renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}</span>
-                                                            {sortIndicator && <span className="text-sky-500 dark:text-sky-400 ml-0.5">{sortIndicator}</span>}
                                                         </th>
                                                     );
                                                 }
@@ -725,7 +723,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 if (isSingleGroup) return null;
                                                 const g = COLUMN_GROUPS[h] || { text: GROUP_TONE_TEXT, bg: GROUP_TONE_BG };
                                                 const isSorted = sortConfig.column === h;
-                                                const sortIndicator = isSorted ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼') : '';
                                                 return (
                                                     <th
                                                         key={h}
@@ -744,7 +741,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
                                                     >
                                                         <span>{renderHeaderText(headerMapping[h] || h)}</span>
-                                                        {sortIndicator && <span className="text-sky-500 dark:text-sky-400 ml-0.5">{sortIndicator}</span>}
                                                     </th>
                                                 );
                                             })}

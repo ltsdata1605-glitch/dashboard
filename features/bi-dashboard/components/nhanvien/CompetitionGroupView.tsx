@@ -55,10 +55,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         });
     };
 
-    const getSortIcon = (key: SortKey) => {
-        if (sortConfig?.key !== key) return <ChevronDownIcon className="h-3 w-3 ml-0.5 text-transparent group-hover:text-slate-400" />;
-        return sortConfig.direction === 'asc' ? <ChevronUpIcon className="h-3 w-3 ml-0.5" /> : <ChevronDownIcon className="h-3 w-3 ml-0.5" />;
-    };
+    const getSortIcon = (_key: SortKey) => null;
     
     const { showExportOptions } = useExportOptionsContext();
 

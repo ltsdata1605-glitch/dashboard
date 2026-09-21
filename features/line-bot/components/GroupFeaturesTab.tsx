@@ -144,36 +144,36 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
 
                     <div className="grid gap-2">
                         {FEATURE_LIST.map(feature => (
-                            <button
+                            <div
                                 key={feature.key}
-                                onClick={() => handleToggleFeature(feature.key)}
-                                className="p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl text-left transition-all hover:border-slate-300 dark:hover:border-slate-600"
+                                className="p-3.5 bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl flex items-start justify-between gap-3"
                             >
-                                <div className="flex items-start justify-between gap-3">
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-semibold text-slate-900 dark:text-white text-sm">
-                                                {feature.label}
-                                            </span>
-                                            {currentConfig.features[feature.key] ? (
-                                                <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                            ) : (
-                                                <XCircle size={16} className="text-slate-400 dark:text-slate-500 shrink-0" />
-                                            )}
-                                        </div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                            {feature.description}
-                                        </p>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-slate-900 dark:text-white text-sm">
+                                            {feature.label}
+                                        </span>
+                                        {currentConfig.features[feature.key] ? (
+                                            <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                        ) : (
+                                            <XCircle size={16} className="text-slate-400 dark:text-slate-500 shrink-0" />
+                                        )}
                                     </div>
-                                    <div className={`px-2.5 py-1 rounded-lg text-xs font-bold whitespace-nowrap ${
-                                        currentConfig.features[feature.key]
-                                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300'
-                                            : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400'
-                                    }`}>
-                                        {currentConfig.features[feature.key] ? 'BẬT' : 'TẮT'}
-                                    </div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        {feature.description}
+                                    </p>
                                 </div>
-                            </button>
+                                <button
+                                    onClick={() => handleToggleFeature(feature.key)}
+                                    className={`px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap cursor-pointer transition-all shrink-0 hover:shadow-sm ${
+                                        currentConfig.features[feature.key]
+                                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60'
+                                            : 'bg-slate-100 dark:bg-slate-900/60 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800/60'
+                                    }`}
+                                >
+                                    {currentConfig.features[feature.key] ? 'BẬT' : 'TẮT'}
+                                </button>
+                            </div>
                         ))}
                     </div>
 
