@@ -29,6 +29,10 @@ export const COUNT_ITEMS: Record<ItemGroup, CatalogItem[]> = {
         { key: 'noiCom', label: 'Nồi cơm', short: 'N.Cơm', icon: 'chef-hat' },
         { key: 'noiChien', label: 'Nồi chiên', short: 'N.Chiên', icon: 'flame' },
         { key: 'locKk', label: 'Máy lọc KK', short: 'LKK', icon: 'sparkles' },
+        // Bổ sung 2026-09-21 theo yêu cầu chủ dự án. DCNB = dụng cụ nhà bếp.
+        { key: 'bepDien', label: 'Bếp điện', short: 'B.Điện', icon: 'plug-zap' },
+        { key: 'bepGas', label: 'Bếp gas', short: 'B.Gas', icon: 'flame' },
+        { key: 'dcnb', label: 'DCNB', short: 'DCNB', icon: 'coffee' },
     ],
     services: [
         { key: 'vieon', label: 'Vieon', short: 'Vieon', icon: 'play-square' },

@@ -18,7 +18,7 @@ const draftFull = () => {
     d.counts.products = { tivi: 1, tuLanh: 2 };
     d.counts.services = { sim: 1, kaspersky: 1 };
     d.counts.accessories = { camera: 1, taiNghe: 2 };
-    d.counts.household = { mln: 1, noiChien: 1 };
+    d.counts.household = { mln: 1, noiChien: 1, bepGas: 1, dcnb: 3 };
     d.amounts = { vi: '0.3', bhDmx: '1.2', bhKhac: '0.5' };
     d.others.products = { name: 'Máy sấy', count: 1 };
     d.notes = 'Khách hẹn giao chiều';
@@ -38,7 +38,7 @@ describe('buildReportText — đúng mẫu app gốc', () => {
                 '🛠 D.Vụ: Ví: 0.3 | SIM: 1 | Kaspersky: 1',
                 '🛡 B.Hiểm: Khác: 0.5 | ĐMX: 1.2',
                 '🎧 P.Kiện: Cam: 1 | T.Nghe: 2',
-                '🏠 G.Dụng: MLN: 1 | N.Chiên: 1',
+                '🏠 G.Dụng: MLN: 1 | N.Chiên: 1 | B.Gas: 1 | DCNB: 3',
                 '⚔️ Chiến giá: ✓',
                 '',
                 '📝 Khách hẹn giao chiều',

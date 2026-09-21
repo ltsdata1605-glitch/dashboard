@@ -57,6 +57,7 @@ test.describe('Báo cáo khai thác', () => {
         await page.getByLabel('Bảo hiểm ĐMX (Tr)').fill('1.2');
         await page.getByRole('button', { name: 'Tăng Tai nghe' }).click();
         await page.getByRole('button', { name: 'Tăng Máy lọc nước' }).click();
+        await page.getByRole('button', { name: 'Tăng Bếp điện' }).click();
         await page.getByLabel('Ghi chú').fill('Khách hẹn giao chiều');
 
         const preview = page.getByTestId('preview');
@@ -66,7 +67,7 @@ test.describe('Báo cáo khai thác', () => {
         await expect(preview).toContainText('🛠 D.Vụ: Ví: 0.3 | SIM: 1 | Kaspersky: 1');
         await expect(preview).toContainText('🛡 B.Hiểm: ĐMX: 1.2');
         await expect(preview).toContainText('🎧 P.Kiện: T.Nghe: 1');
-        await expect(preview).toContainText('🏠 G.Dụng: MLN: 1');
+        await expect(preview).toContainText('🏠 G.Dụng: MLN: 1 | B.Điện: 1');
         await expect(preview).toContainText('📝 Khách hẹn giao chiều');
         await expect(page.getByTestId('revenue-block')).toContainText('Trả chậm 4%');
         await page.screenshot({ path: `${SHOT_DIR}/01-entry-desktop.png`, fullPage: true });
@@ -88,7 +89,7 @@ test.describe('Báo cáo khai thác', () => {
         await expect(rows.first()).toContainText('21707 - Sơn');
         await expect(rows.first()).toContainText('8.5');
         await rows.first().click();
-        await expect(page.getByTestId('history-text')).toContainText('🏠 G.Dụng: MLN: 1');
+        await expect(page.getByTestId('history-text')).toContainText('🏠 G.Dụng: MLN: 1 | B.Điện: 1');
         await page.screenshot({ path: `${SHOT_DIR}/02-history.png`, fullPage: true });
 
         // Biểu đồ: KPI hôm nay.
