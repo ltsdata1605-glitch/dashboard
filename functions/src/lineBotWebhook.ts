@@ -211,11 +211,16 @@ function createCouponFlexBubble(params: {
     liffId?: string;
     cardIndex?: number;
     totalCards?: number;
+    /** Thẻ đến từ đâu (chủ dự án chốt 2026-09-21): 'filter' = lọc danh sách PMH dán vào nhóm → tiêu đề
+     *  "LỌC PMH {loại}"; 'stock' = cấp mã từ kho theo form xin PMH → tiêu đề "MÃ COUPON {loại}". */
+    source?: 'filter' | 'stock';
 }) {
     const cleanCode = String(params.code || '').trim();
     const isEvent = params.categoryLabel.toLowerCase().includes('event');
     const headerColor = isEvent ? '#06C755' : '#0284C7';
-    const headerTitle = `🎁 LỌC PMH ${params.categoryLabel.toUpperCase()}`;
+    const headerTitle = params.source === 'stock'
+        ? `🎁 MÃ COUPON ${params.categoryLabel.toUpperCase()}`
+        : `🎁 LỌC PMH ${params.categoryLabel.toUpperCase()}`;
     const cleanName = (params.displayName || 'Quản lý').replace(/^[@👤\s]+/, '').trim();
     const cardIndexNum = params.cardIndex || 1;
 
@@ -400,10 +405,11 @@ function createCouponFlexMessage(params: {
     totalCards?: number;
 }) {
     const cleanCode = String(params.code || '').trim();
-    const bubble = createCouponFlexBubble(params);
+    // Chỉ các luồng CẤP MÃ TỪ KHO (duyệt form xin PMH / lệnh DUYỆT / tự cấp) gọi hàm này.
+    const bubble = createCouponFlexBubble({ ...params, source: 'stock' });
     return {
         type: 'flex',
-        altText: `🎁 Mã PMH ${params.categoryLabel}: ${cleanCode} - ${params.productName}`,
+        altText: `🎁 MÃ COUPON ${params.categoryLabel.toUpperCase()}: ${cleanCode} - ${params.productName}`,
         contents: bubble
     };
 }
@@ -430,7 +436,8 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
         warningSuffix: item.warningSuffix,
         liffId,
         cardIndex: idx + 1,
-        totalCards: matchedItems.length
+        totalCards: matchedItems.length,
+        source: 'filter'
     }));
 
     const messages: any[] = [];
@@ -440,7 +447,7 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
         if (chunk.length === 1 && bubbles.length === 1) {
             messages.push({
                 type: 'flex',
-                altText: `🎁 Mã PMH ${matchedItems[0].categoryLabel}: ${matchedItems[0].code} (${matchedItems[0].recipient})`,
+                altText: `🎁 LỌC PMH ${matchedItems[0].categoryLabel.toUpperCase()}: ${matchedItems[0].code} (${matchedItems[0].recipient})`,
                 contents: chunk[0]
             });
         } else {
