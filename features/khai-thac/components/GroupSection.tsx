@@ -34,13 +34,14 @@ export const BandHeader: React.FC<{ icon?: string; title: React.ReactNode; right
 );
 
 /**
- * Ô nhập tiền (Tr) — luôn một dòng như CounterRow: nhãn trái, ô nhập phải. Trên điện thoại nhãn
- * "Bảo hiểm Khác (Tr)" không lọt nửa cột nên ô tiền chiếm TRỌN 2 cột (`col-span-2`), từ `sm` mới về 1 cột.
+ * Ô nhập tiền (Tr) — luôn một dòng như CounterRow: nhãn trái, ô nhập phải. 2 ô tiền của nhóm
+ * Ưu tiên nằm cạnh nhau 1 dòng (col-span-1). Tên dài "Bảo hiểm Khác (Tr)" cắt bớt, kèm `title`.
+ * Input `text-base` (16px) để tránh browser zoom trên mobile khi người dùng thao tác.
  */
 const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange: (v: string) => void; onDelete?: () => void }> = ({ icon, label, value, onChange, onDelete }) => {
     const active = parseFloat(value) > 0;
     return (
-        <div className={`col-span-2 sm:col-span-1 max-sm:border-r-0! flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
+        <div className={`flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
             <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                 <span className={`hidden sm:inline-flex shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><Icon name={icon} size={4} /></span>
                 <span className={`min-w-0 truncate text-[13px] ${active ? 'font-semibold text-slate-900' : 'text-slate-700'}`} title={label}>{label}</span>
@@ -54,7 +55,7 @@ const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange
                 )}
                 <Input type="number" inputMode="decimal" min="0" step="0.1" placeholder="0" fullWidth={false} aria-label={label}
                     value={value} onChange={e => onChange(e.target.value)} onKeyDown={blockNonNumericKeys}
-                    className="h-8 lg:h-6 w-[88px] lg:w-20 rounded px-2 text-[13px] tabular-nums text-right" />
+                    className="h-8 lg:h-6 w-16 sm:w-[88px] lg:w-20 rounded px-2 text-base sm:text-[13px] tabular-nums text-right" />
             </div>
         </div>
     );
