@@ -81,7 +81,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                 <section className="border border-slate-200 bg-white" data-testid="revenue-block">
                     <BandHeader icon="banknote" title="Doanh thu đơn hàng (Tr)" />
                     <div className="p-2 space-y-1">
-                        <label htmlFor="kt-revenue" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Tổng doanh thu</label>
+                        <label htmlFor="kt-revenue" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500">Tổng doanh thu thực</label>
                         <div className="flex items-center gap-2">
                             <Input id="kt-revenue" type="text" inputMode="decimal" placeholder="VD: 8.5 hoặc 5+3+4" autoComplete="off"
                                 value={draft.revenueTotal}

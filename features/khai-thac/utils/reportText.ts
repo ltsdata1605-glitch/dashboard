@@ -44,9 +44,16 @@ export function buildReportText(draft: ReportDraft, fields: CustomField[]): stri
     const lines: string[] = ['📊 BÁO CÁO KHAI THÁC', ''];
 
     // Từ 2026-09-21 không còn ô số trả chậm (T.Mặt/T.Chậm) — chỉ còn 2 cờ Trả góp / Mở Ví.
+    // Cờ vẫn phải vào báo cáo dù chưa nhập doanh thu (chủ dự án bắt được thiếu 2026-09-21): có
+    // doanh thu thì ghi thành dòng con dưới 💰 (đủ ✓/✗ như app gốc); không có doanh thu mà bật cờ
+    // thì ghi dòng riêng 💳.
+    const traGop = resolveTraGop(draft);
+    const flags = `Trả góp: ${traGop ? '✓' : '✗'} | Mở Ví: ${draft.moVi ? '✓' : '✗'}`;
     if (total > 0) {
         lines.push(`💰 Doanh thu: ${fmtTr(total)}tr`);
-        lines.push(`   - Trả góp: ${resolveTraGop(draft) ? '✓' : '✗'} | Mở Ví: ${draft.moVi ? '✓' : '✗'}`);
+        lines.push(`   - ${flags}`);
+    } else if (traGop || draft.moVi) {
+        lines.push(`💳 ${flags}`);
     }
 
     for (const group of TEXT_GROUP_ORDER) {

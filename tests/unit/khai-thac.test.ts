@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { buildReportText, fmtTr } from '../../features/khai-thac/utils/reportText';
 import { evaluateExpression, sanitizeExpressionInput } from '../../features/khai-thac/utils/expression';
 import { summarize, streakWarnings, isInRange, localDateKey, startOfWeek } from '../../features/khai-thac/utils/aggregate';
-import { createEmptyDraft, isValidStaffName, migrateAmounts, parseTr, resolveTraGop } from '../../features/khai-thac/catalog';
+import { createEmptyDraft, isValidStaffName, migrateAmounts, parseTr, resolveTraGop, COUNT_ITEMS, AMOUNT_ITEMS, GROUP_META } from '../../features/khai-thac/catalog';
+import { ITEM_GROUPS } from '../../features/khai-thac/types';
 import type { SavedReport, CustomField } from '../../features/khai-thac/types';
 
 /**
@@ -88,6 +89,50 @@ describe('buildReportText — đúng mẫu app gốc', () => {
         (d as unknown as { traGop?: boolean }).traGop = undefined;
         expect(resolveTraGop(d)).toBe(true);
         expect(buildReportText(d, [])).toContain('💰 Doanh thu: 12tr\n   - Trả góp: ✓ | Mở Ví: ✗');
+    });
+
+    it('Trả góp / Mở Ví vẫn vào báo cáo khi CHƯA nhập doanh thu (lỗi chủ dự án bắt được 2026-09-21)', () => {
+        const d = createEmptyDraft('1 - A');
+        d.traGop = true; d.moVi = true; d.priceWar = true;
+        expect(buildReportText(d, [])).toBe('📊 BÁO CÁO KHAI THÁC\n\n💳 Trả góp: ✓ | Mở Ví: ✓\n⚔️ Chiến giá: ✓');
+        d.moVi = false;
+        expect(buildReportText(d, [])).toContain('💳 Trả góp: ✓ | Mở Ví: ✗');
+        d.traGop = false;
+        expect(buildReportText(d, [])).not.toContain('Trả góp'); // cả 2 tắt, không doanh thu → không có dòng cờ
+    });
+
+    it('QUÉT TOÀN BỘ danh mục: mọi mục đếm, ô tiền và cờ đều xuất hiện trong văn bản', () => {
+        const d = createEmptyDraft('1 - A');
+        d.revenueTotal = '1'; d.traGop = true; d.moVi = true; d.priceWar = true;
+        let n = 0;
+        for (const g of ITEM_GROUPS) {
+            for (const item of COUNT_ITEMS[g]) { n++; d.counts[g][item.key] = n; }
+            for (const item of AMOUNT_ITEMS[g]) { n++; d.amounts[item.key] = String(n); }
+        }
+        const text = buildReportText(d, []);
+        for (const g of ITEM_GROUPS) {
+            const line = text.split('\n').find(l => l.startsWith(`${GROUP_META[g].emoji} ${GROUP_META[g].short}:`));
+            const expected = [...COUNT_ITEMS[g], ...AMOUNT_ITEMS[g]];
+            if (expected.length === 0) continue;
+            expect(line, `thiếu dòng nhóm ${g}`).toBeDefined();
+            for (const item of expected) expect(line, `thiếu "${item.label}" (${item.short}) ở nhóm ${g}`).toContain(`${item.short}: `);
+        }
+        expect(text).toContain('Trả góp: ✓ | Mở Ví: ✓');
+        expect(text).toContain('⚔️ Chiến giá: ✓');
+        expect(n).toBe(28); // 6 SP + 9 GD + 4 Vas + (2 đếm + 2 tiền) ƯT + 5 PK — đổi danh mục thì cập nhật số này
+    });
+
+    it('QUÉT TOÀN BỘ danh mục: biểu đồ (summarize) cộng đủ mọi mục đếm và ô tiền', () => {
+        const d = { ...createEmptyDraft('1 - A'), id: 'x', date: '2026-09-21', savedAt: '2026-09-21T10:00:00.000Z' } as SavedReport;
+        for (const g of ITEM_GROUPS) {
+            for (const item of COUNT_ITEMS[g]) d.counts[g][item.key] = 2;
+            for (const item of AMOUNT_ITEMS[g]) d.amounts[item.key] = '1.5';
+        }
+        const s = summarize([d], []);
+        for (const g of ITEM_GROUPS) {
+            for (const item of COUNT_ITEMS[g]) expect(s.ranking[g].find(r => r.key === item.key)?.count, `biểu đồ thiếu ${item.label}`).toBe(2);
+            for (const item of AMOUNT_ITEMS[g]) expect(s.amounts[item.key], `biểu đồ thiếu ${item.label}`).toBe(1.5);
+        }
     });
 
     it('fmtTr', () => {

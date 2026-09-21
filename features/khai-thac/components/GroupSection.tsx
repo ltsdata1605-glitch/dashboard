@@ -34,21 +34,26 @@ export const BandHeader: React.FC<{ icon?: string; title: React.ReactNode; right
 );
 
 /** Ô nhập tiền (Tr) — một dòng: nhãn trái, ô nhập phải, cùng chiều cao dòng đếm. */
+/** Ô nhập tiền (Tr) — cùng bố cục 2 tầng trên điện thoại / 1 tầng từ `sm` như CounterRow. */
 const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange: (v: string) => void; onDelete?: () => void }> = ({ icon, label, value, onChange, onDelete }) => {
     const active = parseFloat(value) > 0;
     return (
-        <div className={`flex items-center gap-2 px-2 h-11 lg:h-[34px] border-b border-slate-100 last:border-b-0 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
-            <span className={`shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><Icon name={icon} size={4} /></span>
-            <span className={`flex-1 min-w-0 truncate text-[13px] ${active ? 'font-semibold text-slate-900' : 'text-slate-700'}`}>{label}</span>
-            {onDelete && (
-                <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
-                    className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600">
-                    <Trash2 size={12} />
-                </Button>
-            )}
-            <Input type="number" inputMode="decimal" min="0" step="0.1" placeholder="0" fullWidth={false} aria-label={label}
-                value={value} onChange={e => onChange(e.target.value)} onKeyDown={blockNonNumericKeys}
-                className="h-8 lg:h-6 w-20 rounded px-2 text-[13px] tabular-nums text-right" />
+        <div className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 px-2 py-1.5 sm:py-0 sm:h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 sm:flex-1">
+                <span className={`shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><Icon name={icon} size={4} /></span>
+                <span className={`min-w-0 truncate text-[13px] ${active ? 'font-semibold text-slate-900' : 'text-slate-700'}`} title={label}>{label}</span>
+            </div>
+            <div className="flex items-center justify-end gap-1 shrink-0">
+                {onDelete && (
+                    <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
+                        className="h-6 w-6 mr-auto sm:mr-0 flex items-center justify-center text-slate-300 hover:text-rose-600">
+                        <Trash2 size={12} />
+                    </Button>
+                )}
+                <Input type="number" inputMode="decimal" min="0" step="0.1" placeholder="0" fullWidth={false} aria-label={label}
+                    value={value} onChange={e => onChange(e.target.value)} onKeyDown={blockNonNumericKeys}
+                    className="h-8 lg:h-6 w-[88px] lg:w-20 rounded px-2 text-[13px] tabular-nums text-right" />
+            </div>
         </div>
     );
 };
@@ -72,7 +77,8 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                     </Button>
                 }
             />
-            <div className="grid grid-cols-1 md:grid-cols-2 md:[&>*:nth-child(odd)]:border-r md:[&>*:nth-child(odd)]:border-r-slate-100">
+            {/* Lưới 2 cột ở MỌI cỡ màn; ô lẻ kẻ viền phải để tách 2 cột. */}
+            <div className="grid grid-cols-2 [&>*:nth-child(odd)]:border-r [&>*:nth-child(odd)]:border-r-slate-100">
                 {COUNT_ITEMS[group].map(item => (
                     <CounterRow key={item.key} icon={item.icon} label={item.label} value={Number(counts[item.key]) || 0}
                         onChange={v => onCount(group, item.key, v)} />
