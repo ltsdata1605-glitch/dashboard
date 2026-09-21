@@ -247,7 +247,7 @@ function createCouponFlexBubble(params: {
                     action: {
                         type: 'uri',
                         label: 'Copy & Dùng Mã',
-                        uri: `https://liff.line.me/${params.liffId || '2011679071-BclvutpD'}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}&index=${cardIndexNum}`
+                        uri: `https://liff.line.me/${params.liffId || '2011679071-BclvutpD'}?code=${encodeURIComponent(cleanCode)}&type=${encodeURIComponent(params.categoryLabel)}&index=${cardIndexNum}&reqBy=${encodeURIComponent(cleanName)}&prod=${encodeURIComponent(params.productName || '')}`
                     },
                     contents: [
                         {
