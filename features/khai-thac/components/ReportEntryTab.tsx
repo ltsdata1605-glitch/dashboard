@@ -48,10 +48,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
     const rate = installmentRate(total, inst);
     const cash = Math.max(0, total - inst);
 
-    const toggleMoVi = () => {
-        const next = !draft.moVi;
-        onPatch({ moVi: next, amounts: { ...draft.amounts, vi: next ? (draft.amounts.vi || '0.3') : '' } });
-    };
+    const toggleMoVi = () => onPatch({ moVi: !draft.moVi });
 
     // Nút hành động vẽ 2 lần (cột phải desktop / cuối trang mobile) — test id khác nhau để test bấm đúng nút đang hiện.
     const renderActions = (where: 'desktop' | 'mobile') => (

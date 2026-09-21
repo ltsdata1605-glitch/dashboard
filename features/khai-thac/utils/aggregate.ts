@@ -41,7 +41,6 @@ export interface DashboardSummary {
     installmentRate: number;
     moViCount: number;
     priceWarCount: number;
-    viTr: number;
     /** Tổng mọi ô bảo hiểm (Khác + ĐMX + BHMR cũ đã di trú). */
     insuranceTr: number;
     /** Tổng tiền (Tr) từng ô tiền cố định, theo khoá (vi, bhKhac, bhDmx…). */
@@ -100,7 +99,6 @@ export function summarize(reports: SavedReport[], fields: CustomField[]): Dashbo
         installmentRate: revenueTotal > 0 ? Math.round((installment / revenueTotal) * 100) : 0,
         moViCount,
         priceWarCount,
-        viTr: amounts.vi ?? 0,
         insuranceTr: AMOUNT_ITEMS.insurance.reduce((s, item) => s + (amounts[item.key] ?? 0), 0),
         amounts,
         ranking,

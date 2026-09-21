@@ -98,7 +98,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                             <KpiCard icon="percent" iconColor="emerald" title="Tỉ lệ trả chậm" trendLabel="Số đơn" trendValue={<span className="tabular-nums">{s.orders}</span>} progressPercent={s.installmentRate}>
                                 <span className="text-[25px] leading-none font-semibold tabular-nums text-emerald-700">{s.installmentRate}<span className="text-[13px] text-slate-400 ml-1">%</span></span>
                             </KpiCard>
-                            <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tiền ví" trendValue={<span className="tabular-nums">{fmtTr(s.viTr)} Tr</span>}>
+                            <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tỉ lệ đơn có mở ví" trendValue={<span className="tabular-nums">{s.orders > 0 ? Math.round((s.moViCount / s.orders) * 100) : 0}%</span>}>
                                 <span className="text-[25px] leading-none font-semibold tabular-nums text-sky-700">{s.moViCount}<span className="text-[13px] text-slate-400 ml-1">đơn</span></span>
                             </KpiCard>
                             <KpiCard icon="swords" iconColor="rose" title="Chiến giá" trendLabel="Bảo hiểm" trendValue={<span className="tabular-nums">{fmtTr(s.insuranceTr)} Tr</span>}>
@@ -113,7 +113,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                                 <BandHeader icon={GROUP_META.services.icon} title="Dịch vụ bổ sung" />
                                 <table className="w-full text-[13px] tabular-nums">
                                     <tbody className="divide-y divide-slate-100">
-                                        <tr className="h-[26px]"><td className="px-2 text-slate-600">Ví</td><td className="px-2 text-right font-semibold">{fmtTr(s.viTr)} Tr <span className="text-slate-400 font-normal">({s.moViCount} đơn)</span></td></tr>
+                                        <tr className={`h-[26px] ${s.moViCount > 0 ? '' : 'text-slate-400'}`}><td className="px-2">Mở Ví</td><td className="px-2 text-right font-semibold">{s.moViCount} <span className="text-slate-400 font-normal">đơn</span></td></tr>
                                         {s.ranking.services.map(i => (
                                             <tr key={i.key} className={`h-[26px] ${i.count > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{i.label}</td><td className="px-2 text-right font-semibold">{i.count}</td></tr>
                                         ))}

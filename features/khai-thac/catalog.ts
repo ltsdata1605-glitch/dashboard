@@ -35,8 +35,9 @@ export const COUNT_ITEMS: Record<ItemGroup, CatalogItem[]> = {
         { key: 'dcnb', label: 'DCNB', short: 'DCNB', icon: 'coffee' },
     ],
     services: [
-        { key: 'vieon', label: 'Vieon', short: 'Vieon', icon: 'play-square' },
+        // SIM đứng đầu theo yêu cầu chủ dự án 2026-09-21.
         { key: 'sim', label: 'SIM', short: 'SIM', icon: 'cpu' },
+        { key: 'vieon', label: 'Vieon', short: 'Vieon', icon: 'play-square' },
         { key: 'dongHo', label: 'Đồng hồ', short: 'ĐH', icon: 'watch' },
         // Bổ sung 2026-09-21 theo yêu cầu chủ dự án.
         { key: 'mango', label: 'Mango', short: 'Mango', icon: 'play-square' },
@@ -55,13 +56,14 @@ export const COUNT_ITEMS: Record<ItemGroup, CatalogItem[]> = {
 };
 
 /**
- * Ô tiền (Tr) cố định theo nhóm — hiện TRƯỚC các mục đếm trong khối. `Bảo hiểm BHMR` cũ (khoá
- * `insurance`, nằm trong Dịch vụ) đã bỏ 2026-09-21, thay bằng nhóm Bảo hiểm riêng với 2 ô.
+ * Ô tiền (Tr) cố định theo nhóm — hiện TRƯỚC các mục đếm trong khối. Đã bỏ 2026-09-21: `Bảo hiểm
+ * BHMR` (khoá `insurance`, thay bằng nhóm Bảo hiểm riêng) và `Ví (Tr)` (khoá `vi` — Mở Ví giờ chỉ
+ * là nút bật/tắt ở khối Doanh thu; số tiền ví cũ trong bản ghi cũ không hiện nữa).
  */
 export const AMOUNT_ITEMS: Record<ItemGroup, CatalogItem[]> = {
     products: [],
     household: [],
-    services: [{ key: 'vi', label: 'Ví (Tr)', short: 'Ví', icon: 'wallet' }],
+    services: [],
     insurance: [
         { key: 'bhKhac', label: 'Bảo hiểm Khác (Tr)', short: 'Khác', icon: 'shield-check' },
         { key: 'bhDmx', label: 'Bảo hiểm ĐMX (Tr)', short: 'ĐMX', icon: 'shield-check' },

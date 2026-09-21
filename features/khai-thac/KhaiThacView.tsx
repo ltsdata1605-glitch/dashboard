@@ -114,12 +114,7 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
     const onCount = useCallback((group: ItemGroup, key: string, value: number) =>
         updateDraft(p => ({ ...p, counts: { ...p.counts, [group]: { ...p.counts[group], [key]: Math.max(0, value) } } })), [updateDraft]);
     const onAmount = useCallback((key: string, value: string) =>
-        updateDraft(p => ({
-            ...p,
-            amounts: { ...p.amounts, [key]: value },
-            // Gõ tiền Ví > 0 thì coi như có Mở Ví — đúng hành vi app gốc.
-            moVi: key === 'vi' ? parseFloat(value) > 0 : p.moVi,
-        }), false), [updateDraft]);
+        updateDraft(p => ({ ...p, amounts: { ...p.amounts, [key]: value } }), false), [updateDraft]);
     const onOther = useCallback((group: ItemGroup, patch: Partial<{ name: string; count: number }>) =>
         updateDraft(p => ({ ...p, others: { ...p.others, [group]: { ...p.others[group], ...patch } } }), patch.name === undefined), [updateDraft]);
 

@@ -45,7 +45,7 @@ test.describe('Báo cáo khai thác', () => {
         await nameInput.press('Enter');
         await expect(page.getByTestId('staff-name')).toContainText('21707 - Sơn');
 
-        // Doanh thu + trả chậm + Mở Ví (tự điền Ví 0.3) + đếm mặt hàng.
+        // Doanh thu + trả chậm + Mở Ví (chỉ là cờ, không còn ô tiền Ví) + đếm mặt hàng.
         await page.locator('#kt-revenue').fill('8.5');
         await page.locator('#kt-installment').fill('0.3');
         await page.getByRole('button', { name: 'Mở Ví' }).click();
@@ -64,7 +64,8 @@ test.describe('Báo cáo khai thác', () => {
         await expect(preview).toContainText('💰 Doanh thu: 8.5tr');
         await expect(preview).toContainText('- T.Chậm: 0.3Tr ~ 4% | Mở Ví: ✓');
         await expect(preview).toContainText('📦 S.Phẩm: Tivi: 1 | TL: 2');
-        await expect(preview).toContainText('🛠 D.Vụ: Ví: 0.3 | SIM: 1 | Kaspersky: 1');
+        await expect(preview).toContainText('🛠 D.Vụ: SIM: 1 | Kaspersky: 1');
+        await expect(preview).not.toContainText('Ví: 0.3');
         await expect(preview).toContainText('🛡 B.Hiểm: ĐMX: 1.2');
         await expect(preview).toContainText('🎧 P.Kiện: T.Nghe: 1');
         await expect(preview).toContainText('🏠 G.Dụng: MLN: 1 | B.Điện: 1');

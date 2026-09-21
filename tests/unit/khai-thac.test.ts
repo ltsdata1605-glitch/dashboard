@@ -19,7 +19,7 @@ const draftFull = () => {
     d.counts.services = { sim: 1, kaspersky: 1 };
     d.counts.accessories = { camera: 1, taiNghe: 2 };
     d.counts.household = { mln: 1, noiChien: 1, bepGas: 1, dcnb: 3 };
-    d.amounts = { vi: '0.3', bhDmx: '1.2', bhKhac: '0.5' };
+    d.amounts = { bhDmx: '1.2', bhKhac: '0.5' };
     d.others.products = { name: 'Máy sấy', count: 1 };
     d.notes = 'Khách hẹn giao chiều';
     return d;
@@ -35,7 +35,7 @@ describe('buildReportText — đúng mẫu app gốc', () => {
                 '   - T.Mặt: 8.2tr',
                 '   - T.Chậm: 0.3Tr ~ 4% | Mở Ví: ✓',
                 '📦 S.Phẩm: Tivi: 1 | TL: 2 | Máy sấy: 1',
-                '🛠 D.Vụ: Ví: 0.3 | SIM: 1 | Kaspersky: 1',
+                '🛠 D.Vụ: SIM: 1 | Kaspersky: 1',
                 '🛡 B.Hiểm: Khác: 0.5 | ĐMX: 1.2',
                 '🎧 P.Kiện: Cam: 1 | T.Nghe: 2',
                 '🏠 G.Dụng: MLN: 1 | N.Chiên: 1 | B.Gas: 1 | DCNB: 3',
@@ -63,6 +63,14 @@ describe('buildReportText — đúng mẫu app gốc', () => {
         expect(buildReportText(d, fields)).toBe('📊 BÁO CÁO KHAI THÁC\n\n🎧 P.Kiện: Tai nghe: 3');
         d.amounts = { cf_mothe: '2.5' };
         expect(buildReportText(d, fields)).toContain('🛠 D.Vụ: Mở thẻ: 2.5');
+    });
+
+    it('bản ghi cũ có Ví (Tr) → không hiện nữa, Mở Ví vẫn theo cờ moVi', () => {
+        const d = createEmptyDraft('1 - A');
+        d.revenueTotal = '5'; d.moVi = true; d.amounts = { vi: '0.3' };
+        const t = buildReportText(d, []);
+        expect(t).toContain('| Mở Ví: ✓');
+        expect(t).not.toContain('Ví: 0.3');
     });
 
     it('bản ghi cũ có BHMR (`amounts.insurance`) → hiện ở nhóm Bảo hiểm như ĐMX', () => {
@@ -112,7 +120,6 @@ describe('summarize', () => {
         expect(s.installmentRate).toBe(12);
         expect(s.moViCount).toBe(1);
         expect(s.priceWarCount).toBe(1);
-        expect(s.viTr).toBe(0.3);
         expect(s.insuranceTr).toBe(2);          // 1 (BHMR cũ → ĐMX) + 0.4 + 0.6
         expect(s.amounts.bhDmx).toBe(1.6);
         expect(s.amounts.bhKhac).toBe(0.4);
