@@ -62,7 +62,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                             <Input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} aria-label="Lọc theo ngày" fullWidth={false}
                                 className="h-6 rounded px-1.5 text-[12px] w-[130px]" />
                             <Input placeholder="Tìm NV, doanh thu, ghi chú…" value={search} onChange={e => setSearch(e.target.value)} aria-label="Tìm trong nhật ký" fullWidth={false}
-                                className="h-6 rounded px-2 text-[12px] w-40 hidden sm:block" />
+                                className="h-6 rounded px-2 text-[12px] w-56 hidden sm:block" />
                             {(dateFilter || search) && (
                                 <Button variant="secondary" size="sm" className="h-6 px-2 rounded text-[11px]" onClick={() => { setDateFilter(''); setSearch(''); }}>Xoá lọc</Button>
                             )}

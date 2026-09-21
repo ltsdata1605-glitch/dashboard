@@ -5,7 +5,7 @@ import importPlugin from 'eslint-plugin-import';
 // Cấu hình tối thiểu theo RULES.md §2.0 / §2.5 (Shared Core Contract).
 // Mục tiêu: enforce đúng 4 điều máy kiểm được, không bật full "recommended"
 // ruleset (sẽ tạo hàng nghìn lỗi mới trên code vibecode cũ, không phải mục tiêu ở đây).
-const FEATURES = ['bi-dashboard', 'phan-ca', 'sticker-event'];
+const FEATURES = ['bi-dashboard', 'phan-ca', 'sticker-event', 'khai-thac'];
 
 const featureBoundaryRules = FEATURES.map((feature) => {
   const others = FEATURES.filter((f) => f !== feature);

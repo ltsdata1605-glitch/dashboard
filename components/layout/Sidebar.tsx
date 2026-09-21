@@ -214,7 +214,7 @@ export default function Sidebar() {
         { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
         { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
 
-        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://ltsdata1605-glitch.github.io/Bao-Cao-Khai-Thac/' },
+        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
         ...(isDemoMode || userRole === 'admin' || userRole === 'manager' ? [
             { id: 'tools-line-bot', label: 'Bot LINE', icon: Bot, path: '/line-bot' }
         ] : []),

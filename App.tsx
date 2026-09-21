@@ -20,7 +20,8 @@ import {
     Wrench,
     ChevronLeft,
     ArrowUpDown,
-    Bot
+    Bot,
+    FileText
 } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -33,6 +34,7 @@ const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPr
 const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
 const PriceComparisonView = lazy(() => import('./components/views/PriceComparisonView'));
 const LineBotView = lazy(() => import('./features/line-bot/LineBotView'));
+const KhaiThacView = lazy(() => import('./features/khai-thac/KhaiThacView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
@@ -80,6 +82,7 @@ const TabContent = React.memo(() => {
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
         { id: 'tools-price-compare', className: 'w-full h-full', component: <PriceComparisonView /> },
         { id: 'tools-line-bot', className: 'w-full h-full bg-slate-50 dark:bg-slate-900', component: <LineBotView /> },
+        { id: 'reports', className: 'w-full bg-slate-50', component: <KhaiThacView /> },
     ], []);
 
     return (
@@ -130,6 +133,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-price-compare': { main: 'So sánh', highlight: 'Giá' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
     'tools-line-bot': { main: 'Bot LINE', highlight: 'PMH' },
+    'reports': { main: 'Báo cáo', highlight: 'Khai thác' },
 
     'settings': { main: 'Phân Quyền &', highlight: 'Duyệt Yêu Cầu' },
     'help': { main: 'Giới', highlight: 'Thiệu' },
@@ -186,6 +190,7 @@ function AppContent() {
             case 'tools-print-sticker': return <Printer size={18} color="white" strokeWidth={2.5} />;
             case 'tools-phanca': return <Calendar size={18} color="white" strokeWidth={2.5} />;
             case 'tools-line-bot': return <Bot size={18} color="white" strokeWidth={2.5} />;
+            case 'reports': return <FileText size={18} color="white" strokeWidth={2.5} />;
             case 'tools-coupon': return <Ticket size={18} color="white" strokeWidth={2.5} />;
             case 'tools-tax': return <Calculator size={18} color="white" strokeWidth={2.5} />;
             case 'tools-price-compare': return <ArrowUpDown size={18} color="white" strokeWidth={2.5} />;

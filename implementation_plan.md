@@ -5074,3 +5074,20 @@ thành tính năng nội bộ, **phong cách thiết kế Report BI** (chuẩn "
   `eslint.config.js`
 - Test: `tests/unit/khai-thac.test.ts` (reportText + aggregate thuần), `tests/e2e/khai-thac.spec.ts`
   (demo mode → tab Báo cáo → nhập → Báo cáo → clipboard + lịch sử + biểu đồ).
+
+## Kết quả (2026-09-21) — ĐÃ XONG, đã tự test
+- `tests/unit/khai-thac.test.ts`: 10/10 — văn bản báo cáo khớp từng dòng mẫu app gốc; summarize;
+  tuần T2→CN; `localDateKey` không lệch ngày buổi tối (app gốc dùng `toISOString` → lệch sau 17h);
+  cảnh báo 3 ngày gộp theo ngày.
+- `tests/e2e/khai-thac.spec.ts`: 4/4 trên Chromium (demo mode, không cần đăng nhập): luồng chính
+  (tên NV → nhập → Báo cáo → clipboard đúng văn bản → form sạch → Nhật ký 1 dòng → Biểu đồ KPI →
+  Sửa lại → reload còn dữ liệu), khách hàng (vạch màu theo trạng thái, ConfirmDialog xoá), mục tuỳ
+  chỉnh, mobile 390px không cuộn ngang. Đã soi ảnh chụp desktop + mobile 4 tab.
+- `npm run check`: typecheck ✓, eslint 0 lỗi (feature mới 0 warning), 623 unit ✓, build ✓;
+  lint-ratchet ĐỎ nhưng chỉ do 9 file `features/line-bot/*` có sẵn từ commit khác (màu ngoài
+  palette) — không thuộc thay đổi này, không chạm.
+- Sidebar desktop thu gọn mặc định → test phải hover `aside` rồi rời chuột, vì sidebar mở rộng
+  (z-160) đè lên thanh tab con của view.
+
+**Chưa làm / cần chủ dự án quyết:** (1) lưu Firestore để xem chéo máy & quản lý xem đội — hiện chỉ
+IndexedDB như app cũ; (2) đồng bộ Google Sheet của app cũ đã bỏ (code chết trong app cũ, không port).

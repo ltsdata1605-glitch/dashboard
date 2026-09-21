@@ -52,12 +52,13 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
         onPatch({ moVi: next, amounts: { ...draft.amounts, vi: next ? (draft.amounts.vi || '0.3') : '' } });
     };
 
-    const actions = (
+    // Nút hành động vẽ 2 lần (cột phải desktop / cuối trang mobile) — test id khác nhau để test bấm đúng nút đang hiện.
+    const renderActions = (where: 'desktop' | 'mobile') => (
         <div className="grid grid-cols-2 gap-2">
             <Button variant="secondary" onClick={onReset} leftIcon={<RotateCcw size={14} />} className="rounded h-11 lg:h-9 text-rose-700 border-rose-200 hover:bg-rose-50">
                 Làm mới
             </Button>
-            <Button variant="primary" onClick={onSubmit} isLoading={isSaving} leftIcon={<Copy size={14} />} className="rounded h-11 lg:h-9" data-testid="btn-submit-report">
+            <Button variant="primary" onClick={onSubmit} isLoading={isSaving} leftIcon={<Copy size={14} />} className="rounded h-11 lg:h-9" data-testid={`btn-submit-report-${where}`}>
                 Báo cáo
             </Button>
         </div>
@@ -131,7 +132,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                         <BandHeader icon="file-text" title="Xem trước báo cáo" />
                         <pre className="px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap font-sans text-slate-800" data-testid="preview-mobile">{previewText}</pre>
                     </section>
-                    {actions}
+                    {renderActions('mobile')}
                 </div>
             </div>
 
@@ -141,7 +142,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                         <BandHeader icon="file-text" title="Xem trước báo cáo" right={<span className="text-[11px] text-slate-400 tabular-nums">{previewText.length} ký tự</span>} />
                         <pre className="px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap font-sans text-slate-800 min-h-[120px]" data-testid="preview">{previewText}</pre>
                     </section>
-                    {actions}
+                    {renderActions('desktop')}
                     <p className="text-[11.5px] text-slate-500 leading-snug">
                         Bấm <b>Báo cáo</b>: copy văn bản vào clipboard để dán lên nhóm Zalo/Line, ghi vào Nhật ký, rồi làm sạch form cho đơn kế tiếp.
                     </p>
