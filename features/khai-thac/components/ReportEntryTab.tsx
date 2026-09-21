@@ -3,7 +3,8 @@ import { Check, Copy, RotateCcw, AlertTriangle, Swords, Wallet } from 'lucide-re
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import type { ItemGroup, ReportDraft, CustomField } from '../types';
-import { ITEM_GROUPS, parseTr } from '../catalog';
+import { ITEM_GROUPS } from '../types';
+import { parseTr } from '../catalog';
 import { installmentRate, fmtTr } from '../utils/reportText';
 import { GroupSection, BandHeader } from './GroupSection';
 

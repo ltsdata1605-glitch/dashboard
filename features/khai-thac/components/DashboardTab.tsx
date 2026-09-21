@@ -4,7 +4,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { KpiCard } from '../../../components/shared/ui/KpiCard';
 import type { SavedReport, CustomField, DashboardRange, ItemGroup } from '../types';
-import { GROUP_META, customRevenueFields } from '../catalog';
+import { GROUP_META, AMOUNT_ITEMS, customRevenueFields } from '../catalog';
 import { summarize, isInRange, type RankedItem } from '../utils/aggregate';
 import { fmtTr } from '../utils/reportText';
 import { BandHeader } from './GroupSection';
@@ -64,6 +64,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
     const s = useMemo(() => summarize(filtered, fields), [filtered, fields]);
     const svcRevenueFields = customRevenueFields(fields, 'services');
     const accRevenueFields = customRevenueFields(fields, 'accessories');
+    const insRevenueFields = customRevenueFields(fields, 'insurance');
 
     return (
         <div className="space-y-3">
@@ -100,7 +101,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                             <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tiền ví" trendValue={<span className="tabular-nums">{fmtTr(s.viTr)} Tr</span>}>
                                 <span className="text-[25px] leading-none font-semibold tabular-nums text-sky-700">{s.moViCount}<span className="text-[13px] text-slate-400 ml-1">đơn</span></span>
                             </KpiCard>
-                            <KpiCard icon="swords" iconColor="rose" title="Chiến giá" trendLabel="Bảo hiểm BHMR" trendValue={<span className="tabular-nums">{fmtTr(s.insuranceTr)} Tr</span>}>
+                            <KpiCard icon="swords" iconColor="rose" title="Chiến giá" trendLabel="Bảo hiểm" trendValue={<span className="tabular-nums">{fmtTr(s.insuranceTr)} Tr</span>}>
                                 <span className="text-[25px] leading-none font-semibold tabular-nums text-rose-700">{s.priceWarCount}<span className="text-[13px] text-slate-400 ml-1">đơn</span></span>
                             </KpiCard>
                         </div>
@@ -116,11 +117,23 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                                         {s.ranking.services.map(i => (
                                             <tr key={i.key} className={`h-[26px] ${i.count > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{i.label}</td><td className="px-2 text-right font-semibold">{i.count}</td></tr>
                                         ))}
-                                        <tr className="h-[26px]"><td className="px-2 text-slate-600">Bảo hiểm BHMR</td><td className="px-2 text-right font-semibold">{fmtTr(s.insuranceTr)} Tr</td></tr>
                                         {svcRevenueFields.map(f => (
                                             <tr key={f.id} className="h-[26px]"><td className="px-2 text-slate-600">{f.name}</td><td className="px-2 text-right font-semibold">{fmtTr(s.customRevenue[f.id] ?? 0)} Tr</td></tr>
                                         ))}
                                         {s.otherCounts.services > 0 && <tr className="h-[26px]"><td className="px-2">Khác</td><td className="px-2 text-right font-semibold">{s.otherCounts.services}</td></tr>}
+                                    </tbody>
+                                </table>
+                            </section>
+                            <section className="border border-slate-200 bg-white">
+                                <BandHeader icon={GROUP_META.insurance.icon} title="Bảo hiểm" right={<span className="text-[11px] text-slate-500 tabular-nums">Tổng <b className="text-slate-800">{fmtTr(s.insuranceTr)} Tr</b></span>} />
+                                <table className="w-full text-[13px] tabular-nums">
+                                    <tbody className="divide-y divide-slate-100">
+                                        {AMOUNT_ITEMS.insurance.map(item => (
+                                            <tr key={item.key} className={`h-[26px] ${(s.amounts[item.key] ?? 0) > 0 ? '' : 'text-slate-400'}`}><td className="px-2">{item.label.replace(' (Tr)', '')}</td><td className="px-2 text-right font-semibold">{fmtTr(s.amounts[item.key] ?? 0)} Tr</td></tr>
+                                        ))}
+                                        {insRevenueFields.map(f => (
+                                            <tr key={f.id} className="h-[26px]"><td className="px-2 text-slate-600">{f.name}</td><td className="px-2 text-right font-semibold">{fmtTr(s.customRevenue[f.id] ?? 0)} Tr</td></tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </section>

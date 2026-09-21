@@ -1,5 +1,6 @@
 import type { SavedReport, ReportDraft, CustomField, ItemGroup, DashboardRange } from '../types';
-import { COUNT_ITEMS, parseTr, customCountFields, customRevenueFields } from '../catalog';
+import { ITEM_GROUPS } from '../types';
+import { COUNT_ITEMS, AMOUNT_ITEMS, parseTr, customCountFields, customRevenueFields, migrateAmounts } from '../catalog';
 
 /** YYYY-MM-DD theo giờ máy (KHÔNG dùng toISOString — lệch ngày sau 17h ở múi giờ +7). */
 export function localDateKey(d: Date = new Date()): string {
@@ -41,7 +42,10 @@ export interface DashboardSummary {
     moViCount: number;
     priceWarCount: number;
     viTr: number;
+    /** Tổng mọi ô bảo hiểm (Khác + ĐMX + BHMR cũ đã di trú). */
     insuranceTr: number;
+    /** Tổng tiền (Tr) từng ô tiền cố định, theo khoá (vi, bhKhac, bhDmx…). */
+    amounts: Record<string, number>;
     /** Tổng số lượng từng mục theo nhóm (kể cả mục tuỳ chỉnh dạng đếm), đã sắp giảm dần. */
     ranking: Record<ItemGroup, RankedItem[]>;
     /** Tổng tiền (Tr) của mục tuỳ chỉnh dạng tiền, theo id. */
@@ -49,11 +53,14 @@ export interface DashboardSummary {
     otherCounts: Record<ItemGroup, number>;
 }
 
+const emptyByGroup = <T,>(make: () => T): Record<ItemGroup, T> =>
+    Object.fromEntries(ITEM_GROUPS.map(g => [g, make()])) as Record<ItemGroup, T>;
+
 export function summarize(reports: SavedReport[], fields: CustomField[]): DashboardSummary {
-    let revenueTotal = 0, installment = 0, moViCount = 0, priceWarCount = 0, viTr = 0, insuranceTr = 0;
-    const groups: ItemGroup[] = ['products', 'household', 'services', 'accessories'];
-    const sums: Record<ItemGroup, Record<string, number>> = { products: {}, household: {}, services: {}, accessories: {} };
-    const otherCounts: Record<ItemGroup, number> = { products: 0, household: 0, services: 0, accessories: 0 };
+    let revenueTotal = 0, installment = 0, moViCount = 0, priceWarCount = 0;
+    const sums = emptyByGroup<Record<string, number>>(() => ({}));
+    const otherCounts = emptyByGroup<number>(() => 0);
+    const amounts: Record<string, number> = {};
     const customRevenue: Record<string, number> = {};
 
     for (const r of reports) {
@@ -63,20 +70,20 @@ export function summarize(reports: SavedReport[], fields: CustomField[]): Dashbo
         installment += inst;
         if (r.moVi) moViCount++;
         if (r.priceWar) priceWarCount++;
-        viTr += parseTr(r.amounts?.vi);
-        insuranceTr += parseTr(r.amounts?.insurance);
-        for (const g of groups) {
+        const rAmounts = migrateAmounts(r.amounts);
+        for (const g of ITEM_GROUPS) {
+            for (const item of AMOUNT_ITEMS[g]) amounts[item.key] = (amounts[item.key] ?? 0) + parseTr(rAmounts[item.key]);
             const counts = r.counts?.[g] ?? {};
             for (const [k, v] of Object.entries(counts)) sums[g][k] = (sums[g][k] ?? 0) + (Number(v) || 0);
             otherCounts[g] += Number(r.others?.[g]?.count) || 0;
         }
         for (const f of fields) {
-            if (f.type === 'revenue') customRevenue[f.id] = (customRevenue[f.id] ?? 0) + parseTr(r.amounts?.[f.id]);
+            if (f.type === 'revenue') customRevenue[f.id] = (customRevenue[f.id] ?? 0) + parseTr(rAmounts[f.id]);
         }
     }
 
     const ranking = {} as Record<ItemGroup, RankedItem[]>;
-    for (const g of groups) {
+    for (const g of ITEM_GROUPS) {
         const items: RankedItem[] = [
             ...COUNT_ITEMS[g].map(i => ({ key: i.key, label: i.label, count: sums[g][i.key] ?? 0 })),
             ...customCountFields(fields, g).map(f => ({ key: f.id, label: f.name, count: sums[g][f.id] ?? 0 })),
@@ -93,8 +100,9 @@ export function summarize(reports: SavedReport[], fields: CustomField[]): Dashbo
         installmentRate: revenueTotal > 0 ? Math.round((installment / revenueTotal) * 100) : 0,
         moViCount,
         priceWarCount,
-        viTr,
-        insuranceTr,
+        viTr: amounts.vi ?? 0,
+        insuranceTr: AMOUNT_ITEMS.insurance.reduce((s, item) => s + (amounts[item.key] ?? 0), 0),
+        amounts,
         ranking,
         customRevenue,
         otherCounts,
@@ -118,8 +126,7 @@ export function streakWarnings(draft: ReportDraft, reports: SavedReport[], field
     const pastDays = Array.from(new Set(reports.map(r => r.date).filter(d => d < today))).sort().slice(-2);
     if (pastDays.length < 2) return [];
 
-    const groups: ItemGroup[] = ['products', 'household', 'services', 'accessories'];
-    const items = groups.flatMap(g => [
+    const items = ITEM_GROUPS.flatMap(g => [
         ...COUNT_ITEMS[g].map(i => ({ g, key: i.key, label: i.label })),
         ...customCountFields(fields, g).map(f => ({ g, key: f.id, label: f.name })),
     ]);

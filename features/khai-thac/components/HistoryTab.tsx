@@ -5,7 +5,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import type { SavedReport, CustomField } from '../types';
-import { parseTr } from '../catalog';
+import { parseTr, AMOUNT_ITEMS, migrateAmounts } from '../catalog';
 import { buildReportText, fmtTr, installmentRate } from '../utils/reportText';
 import { groupTotal } from '../utils/aggregate';
 import { copyText } from '../utils/exportImage';
@@ -23,6 +23,12 @@ const fmtTime = (iso: string, fallback: string) => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return fallback;
     return `${d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} ${d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}`;
+};
+
+/** Tổng các ô bảo hiểm (Tr) của một đơn, kể cả BHMR cũ đã di trú. */
+const insuranceOf = (r: SavedReport) => {
+    const a = migrateAmounts(r.amounts);
+    return AMOUNT_ITEMS.insurance.reduce((s, item) => s + parseTr(a[item.key]), 0);
 };
 
 const TH: React.FC<{ children?: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
@@ -86,6 +92,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                     <TH className="text-right">GD</TH>
                                     <TH className="text-right">DV</TH>
                                     <TH className="text-right">PK</TH>
+                                    <TH className="text-right">BH (Tr)</TH>
                                     <TH className="text-center">Ví / Chiến</TH>
                                     <TH className="text-right">Thao tác</TH>
                                 </tr>
@@ -109,6 +116,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                                 <td className="px-2 text-right">{groupTotal(r, 'household') || '—'}</td>
                                                 <td className="px-2 text-right">{groupTotal(r, 'services') || '—'}</td>
                                                 <td className="px-2 text-right">{groupTotal(r, 'accessories') || '—'}</td>
+                                                <td className="px-2 text-right">{insuranceOf(r) > 0 ? fmtTr(insuranceOf(r)) : '—'}</td>
                                                 <td className="px-2 text-center text-[12px]">
                                                     <span className={r.moVi ? 'text-sky-700 font-semibold' : 'text-slate-300'}>Ví</span>
                                                     <span className="text-slate-300"> · </span>
@@ -122,7 +130,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                             </tr>
                                             {open && (
                                                 <tr className="bg-slate-50/60">
-                                                    <td colSpan={12} className="px-3 py-2">
+                                                    <td colSpan={13} className="px-3 py-2">
                                                         <pre className="text-[13px] leading-relaxed whitespace-pre-wrap font-sans text-slate-800" data-testid="history-text">{buildReportText(r, fields)}</pre>
                                                     </td>
                                                 </tr>
@@ -136,7 +144,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                     <td colSpan={3} className="px-2 text-[11px] uppercase tracking-wider">Tổng ({rows.length} đơn)</td>
                                     <td className="px-2 text-right">{fmtTr(totalTr)}</td>
                                     <td className="px-2 text-right text-sky-700">{fmtTr(rows.reduce((s, r) => s + parseTr(r.installment), 0))}</td>
-                                    <td colSpan={7} />
+                                    <td colSpan={8} />
                                 </tr>
                             </tfoot>
                         </table>

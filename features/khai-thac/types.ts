@@ -5,9 +5,10 @@
  * HÀNG (một ngày có nhiều đơn), dữ liệu lưu cục bộ trong IndexedDB của trình duyệt.
  */
 
-export type ItemGroup = 'products' | 'household' | 'services' | 'accessories';
+export type ItemGroup = 'products' | 'household' | 'services' | 'insurance' | 'accessories';
 
-export const ITEM_GROUPS: ItemGroup[] = ['products', 'household', 'services', 'accessories'];
+/** Thứ tự hiển thị trên form. Nhóm "Bảo hiểm" (thêm 2026-09-21) nằm ngay dưới Dịch vụ bổ sung. */
+export const ITEM_GROUPS: ItemGroup[] = ['products', 'household', 'services', 'insurance', 'accessories'];
 
 /** Mục tuỳ chỉnh do người dùng thêm vào một nhóm — đếm số lượng hoặc nhập tiền (Tr). */
 export interface CustomField {
@@ -33,7 +34,8 @@ export interface ReportDraft {
     priceWar: boolean;
     /** Số lượng theo nhóm → theo khoá mục (mục chuẩn trong catalog hoặc id mục tuỳ chỉnh dạng đếm). */
     counts: Record<ItemGroup, Record<string, number>>;
-    /** Các ô tiền (Tr): `vi`, `insurance` và id mục tuỳ chỉnh dạng tiền. */
+    /** Các ô tiền (Tr): `vi`, `bhDmx`, `bhKhac` (xem AMOUNT_ITEMS) và id mục tuỳ chỉnh dạng tiền.
+     *  Khoá `insurance` (BHMR cũ, trước 2026-09-21) được di trú sang `bhDmx` khi nạp — xem migrateAmounts(). */
     amounts: Record<string, string>;
     others: Record<ItemGroup, OtherItem>;
     notes: string;

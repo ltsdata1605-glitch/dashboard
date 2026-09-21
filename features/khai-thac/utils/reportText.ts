@@ -1,5 +1,5 @@
 import type { ReportDraft, CustomField, ItemGroup } from '../types';
-import { COUNT_ITEMS, AMOUNT_ITEMS, GROUP_META, TEXT_GROUP_ORDER, parseTr, customCountFields, customRevenueFields } from '../catalog';
+import { COUNT_ITEMS, AMOUNT_ITEMS, ALL_AMOUNT_ITEMS, GROUP_META, TEXT_GROUP_ORDER, parseTr, customCountFields, customRevenueFields, migrateAmounts } from '../catalog';
 
 /** Số Tr gọn: 8 → "8", 8.5 → "8.5", 0.30000001 → "0.3". */
 export function fmtTr(n: number): string {
@@ -14,30 +14,27 @@ export function installmentRate(revenueTotal: number, installment: number): numb
 
 function groupLine(draft: ReportDraft, group: ItemGroup, fields: CustomField[]): string | null {
     const parts: string[] = [];
-    const counts = draft.counts[group] ?? {};
+    const counts = draft.counts?.[group] ?? {};
+    const amounts = migrateAmounts(draft.amounts);
 
-    // Nhóm Dịch vụ: các ô tiền cố định đứng TRƯỚC (Ví) và SAU (BH) các mục đếm — đúng thứ tự app gốc.
-    if (group === 'services') {
-        const vi = parseTr(draft.amounts.vi);
-        if (vi > 0) parts.push(`Ví: ${fmtTr(vi)}`);
+    // Ô tiền cố định của nhóm đứng TRƯỚC các mục đếm (Ví trong D.Vụ — đúng thứ tự app gốc).
+    for (const item of AMOUNT_ITEMS[group]) {
+        const v = parseTr(amounts[item.key]);
+        if (v > 0) parts.push(`${item.short}: ${fmtTr(v)}`);
     }
     for (const item of COUNT_ITEMS[group]) {
         const v = Number(counts[item.key]) || 0;
         if (v > 0) parts.push(`${item.short}: ${v}`);
-    }
-    if (group === 'services') {
-        const bh = parseTr(draft.amounts.insurance);
-        if (bh > 0) parts.push(`BH: ${fmtTr(bh)}`);
     }
     for (const f of customCountFields(fields, group)) {
         const v = Number(counts[f.id]) || 0;
         if (v > 0) parts.push(`${f.name}: ${v}`);
     }
     for (const f of customRevenueFields(fields, group)) {
-        const v = parseTr(draft.amounts[f.id]);
+        const v = parseTr(amounts[f.id]);
         if (v > 0) parts.push(`${f.name}: ${fmtTr(v)}`);
     }
-    const other = draft.others[group];
+    const other = draft.others?.[group];
     if (other && other.name.trim() && other.count > 0) parts.push(`${other.name.trim()}: ${other.count}`);
 
     if (parts.length === 0) return null;
@@ -77,5 +74,5 @@ export function buildReportText(draft: ReportDraft, fields: CustomField[]): stri
 
 /** Nhãn hiển thị cho khoá ô tiền cố định. */
 export function amountLabel(key: string): string {
-    return AMOUNT_ITEMS.find(a => a.key === key)?.label ?? key;
+    return ALL_AMOUNT_ITEMS.find(a => a.key === key)?.label ?? key;
 }

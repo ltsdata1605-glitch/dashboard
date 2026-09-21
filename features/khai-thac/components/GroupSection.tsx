@@ -73,16 +73,13 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                 }
             />
             <div className="grid grid-cols-1 md:grid-cols-2 md:[&>*:nth-child(odd)]:border-r md:[&>*:nth-child(odd)]:border-r-slate-100">
-                {group === 'services' && (
-                    <AmountRow icon={AMOUNT_ITEMS[0].icon} label={AMOUNT_ITEMS[0].label} value={draft.amounts.vi ?? ''} onChange={v => onAmount('vi', v)} />
-                )}
+                {AMOUNT_ITEMS[group].map(item => (
+                    <AmountRow key={item.key} icon={item.icon} label={item.label} value={draft.amounts[item.key] ?? ''} onChange={v => onAmount(item.key, v)} />
+                ))}
                 {COUNT_ITEMS[group].map(item => (
                     <CounterRow key={item.key} icon={item.icon} label={item.label} value={Number(counts[item.key]) || 0}
                         onChange={v => onCount(group, item.key, v)} />
                 ))}
-                {group === 'services' && (
-                    <AmountRow icon={AMOUNT_ITEMS[1].icon} label={AMOUNT_ITEMS[1].label} value={draft.amounts.insurance ?? ''} onChange={v => onAmount('insurance', v)} />
-                )}
                 {countFields.map(f => (
                     <CounterRow key={f.id} icon={meta.icon} label={f.name} value={Number(counts[f.id]) || 0}
                         onChange={v => onCount(group, f.id, v)} onDelete={() => onDeleteField(f)} />
@@ -92,7 +89,8 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                         onChange={v => onAmount(f.id, v)} onDelete={() => onDeleteField(f)} />
                 ))}
             </div>
-            {/* Dòng "khác": tên tự do + đếm */}
+            {/* Dòng "khác": tên tự do + đếm (nhóm Bảo hiểm không có — xem GROUP_META) */}
+            {meta.otherPlaceholder && (
             <div className="flex items-center gap-2 px-2 h-11 lg:h-[34px] border-t border-slate-200 bg-slate-50/60">
                 <Input type="text" placeholder={meta.otherPlaceholder} value={other.name} aria-label={meta.otherPlaceholder}
                     onChange={e => onOther(group, { name: e.target.value })}
@@ -105,6 +103,7 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                         className="h-8 w-8 lg:h-6 lg:w-6 rounded"><Plus size={12} /></Button>
                 </div>
             </div>
+            )}
         </section>
     );
 };

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildReportText, installmentRate, fmtTr } from '../../features/khai-thac/utils/reportText';
 import { summarize, streakWarnings, isInRange, localDateKey, startOfWeek } from '../../features/khai-thac/utils/aggregate';
-import { createEmptyDraft, isValidStaffName } from '../../features/khai-thac/catalog';
+import { createEmptyDraft, isValidStaffName, migrateAmounts } from '../../features/khai-thac/catalog';
 import type { SavedReport, CustomField } from '../../features/khai-thac/types';
 
 /**
@@ -16,17 +16,17 @@ const draftFull = () => {
     d.moVi = true;
     d.priceWar = true;
     d.counts.products = { tivi: 1, tuLanh: 2 };
-    d.counts.services = { sim: 1 };
-    d.counts.accessories = { camera: 1 };
+    d.counts.services = { sim: 1, kaspersky: 1 };
+    d.counts.accessories = { camera: 1, taiNghe: 2 };
     d.counts.household = { mln: 1, noiChien: 1 };
-    d.amounts = { vi: '0.3', insurance: '1.2' };
+    d.amounts = { vi: '0.3', bhDmx: '1.2', bhKhac: '0.5' };
     d.others.products = { name: 'Máy sấy', count: 1 };
     d.notes = 'Khách hẹn giao chiều';
     return d;
 };
 
 describe('buildReportText — đúng mẫu app gốc', () => {
-    it('đủ 4 nhóm, đúng thứ tự S.Phẩm → D.Vụ → P.Kiện → G.Dụng, nhãn tắt, ghi chú cách 1 dòng trống', () => {
+    it('đủ 5 nhóm, đúng thứ tự S.Phẩm → D.Vụ → B.Hiểm → P.Kiện → G.Dụng, nhãn tắt, ghi chú cách 1 dòng trống', () => {
         expect(buildReportText(draftFull(), [])).toBe(
             [
                 '📊 BÁO CÁO KHAI THÁC',
@@ -35,8 +35,9 @@ describe('buildReportText — đúng mẫu app gốc', () => {
                 '   - T.Mặt: 8.2tr',
                 '   - T.Chậm: 0.3Tr ~ 4% | Mở Ví: ✓',
                 '📦 S.Phẩm: Tivi: 1 | TL: 2 | Máy sấy: 1',
-                '🛠 D.Vụ: Ví: 0.3 | SIM: 1 | BH: 1.2',
-                '🎧 P.Kiện: Cam: 1',
+                '🛠 D.Vụ: Ví: 0.3 | SIM: 1 | Kaspersky: 1',
+                '🛡 B.Hiểm: Khác: 0.5 | ĐMX: 1.2',
+                '🎧 P.Kiện: Cam: 1 | T.Nghe: 2',
                 '🏠 G.Dụng: MLN: 1 | N.Chiên: 1',
                 '⚔️ Chiến giá: ✓',
                 '',
@@ -62,6 +63,13 @@ describe('buildReportText — đúng mẫu app gốc', () => {
         expect(buildReportText(d, fields)).toBe('📊 BÁO CÁO KHAI THÁC\n\n🎧 P.Kiện: Tai nghe: 3');
         d.amounts = { cf_mothe: '2.5' };
         expect(buildReportText(d, fields)).toContain('🛠 D.Vụ: Mở thẻ: 2.5');
+    });
+
+    it('bản ghi cũ có BHMR (`amounts.insurance`) → hiện ở nhóm Bảo hiểm như ĐMX', () => {
+        const d = createEmptyDraft('1 - A');
+        d.amounts = { insurance: '1.2' };
+        expect(buildReportText(d, [])).toBe('📊 BÁO CÁO KHAI THÁC\n\n🛡 B.Hiểm: ĐMX: 1.2');
+        expect(migrateAmounts({ insurance: '1.2', bhDmx: '0.7' })).toEqual({ bhDmx: '0.7' }); // đã có ĐMX thì không ghi đè
     });
 
     it('installmentRate/fmtTr', () => {
@@ -95,16 +103,19 @@ describe('summarize', () => {
         const s = summarize([
             report('2026-09-21', { revenueTotal: '10', installment: '2', moVi: true, counts: { ...createEmptyDraft().counts, products: { tivi: 1, mayLanh: 3 }, accessories: { cf_x: 2 } } }),
             report('2026-09-21', { revenueTotal: '5', installment: '0', priceWar: true, counts: { ...createEmptyDraft().counts, products: { mayLanh: 1 } }, amounts: { vi: '0.3', insurance: '1' } }),
+            report('2026-09-21', { revenueTotal: '2', amounts: { bhKhac: '0.4', bhDmx: '0.6' } }),
         ], fields);
-        expect(s.orders).toBe(2);
-        expect(s.revenueTotal).toBe(15);
+        expect(s.orders).toBe(3);
+        expect(s.revenueTotal).toBe(17);
         expect(s.installment).toBe(2);
-        expect(s.cash).toBe(13);
-        expect(s.installmentRate).toBe(13);
+        expect(s.cash).toBe(15);
+        expect(s.installmentRate).toBe(12);
         expect(s.moViCount).toBe(1);
         expect(s.priceWarCount).toBe(1);
         expect(s.viTr).toBe(0.3);
-        expect(s.insuranceTr).toBe(1);
+        expect(s.insuranceTr).toBe(2);          // 1 (BHMR cũ → ĐMX) + 0.4 + 0.6
+        expect(s.amounts.bhDmx).toBe(1.6);
+        expect(s.amounts.bhKhac).toBe(0.4);
         expect(s.ranking.products[0]).toEqual({ key: 'mayLanh', label: 'Máy lạnh', count: 4 });
         expect(s.ranking.products[1]).toEqual({ key: 'tivi', label: 'Tivi', count: 1 });
         expect(s.ranking.accessories.find(r => r.key === 'cf_x')?.count).toBe(2);

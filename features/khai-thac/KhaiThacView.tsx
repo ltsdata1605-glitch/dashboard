@@ -6,7 +6,7 @@ import { Tabs } from '../../components/shared/ui/Tabs';
 import { Button } from '../../components/shared/ui/Button';
 import { Input } from '../../components/shared/ui/Input';
 import type { ReportDraft, SavedReport, Lead, CustomField, ItemGroup, DashboardRange } from './types';
-import { createEmptyDraft, emptyCounts, emptyOthers, isValidStaffName } from './catalog';
+import { createEmptyDraft, emptyCounts, emptyOthers, isValidStaffName, migrateAmounts } from './catalog';
 import { khaiThacDb, newId } from './services/khaiThacDb';
 import { buildReportText } from './utils/reportText';
 import { streakWarnings, localDateKey } from './utils/aggregate';
@@ -29,8 +29,13 @@ function normalizeDraft(raw: Partial<ReportDraft> | null, fallbackName: string):
         staffName: raw.staffName || fallbackName,
         counts: { ...emptyCounts(), ...(raw.counts ?? {}) },
         others: { ...emptyOthers(), ...(raw.others ?? {}) },
-        amounts: { ...(raw.amounts ?? {}) },
+        amounts: migrateAmounts(raw.amounts),
     };
+}
+
+/** Báo cáo đã lưu trước 2026-09-21 thiếu nhóm `insurance` và còn khoá BHMR cũ — vá khi nạp. */
+function normalizeReport(r: SavedReport): SavedReport {
+    return { ...r, counts: { ...emptyCounts(), ...(r.counts ?? {}) }, others: { ...emptyOthers(), ...(r.others ?? {}) }, amounts: migrateAmounts(r.amounts) };
 }
 
 /**
@@ -61,7 +66,7 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
                 if (cancelled) return;
                 const normalized = normalizeDraft(d, employeeName ?? '');
                 setDraft(normalized);
-                setReports(r);
+                setReports(r.map(normalizeReport));
                 setLeads(l);
                 setFields(f);
                 setEditingName(!isValidStaffName(normalized.staffName));

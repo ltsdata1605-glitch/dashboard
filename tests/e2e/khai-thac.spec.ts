@@ -53,6 +53,9 @@ test.describe('Báo cáo khai thác', () => {
         await page.getByRole('button', { name: 'Tăng Tủ lạnh' }).click();
         await page.getByRole('button', { name: 'Tăng Tủ lạnh' }).click();
         await page.getByRole('button', { name: 'Tăng SIM' }).click();
+        await page.getByRole('button', { name: 'Tăng Kaspersky' }).click();
+        await page.getByLabel('Bảo hiểm ĐMX (Tr)').fill('1.2');
+        await page.getByRole('button', { name: 'Tăng Tai nghe' }).click();
         await page.getByRole('button', { name: 'Tăng Máy lọc nước' }).click();
         await page.getByLabel('Ghi chú').fill('Khách hẹn giao chiều');
 
@@ -60,7 +63,9 @@ test.describe('Báo cáo khai thác', () => {
         await expect(preview).toContainText('💰 Doanh thu: 8.5tr');
         await expect(preview).toContainText('- T.Chậm: 0.3Tr ~ 4% | Mở Ví: ✓');
         await expect(preview).toContainText('📦 S.Phẩm: Tivi: 1 | TL: 2');
-        await expect(preview).toContainText('🛠 D.Vụ: Ví: 0.3 | SIM: 1');
+        await expect(preview).toContainText('🛠 D.Vụ: Ví: 0.3 | SIM: 1 | Kaspersky: 1');
+        await expect(preview).toContainText('🛡 B.Hiểm: ĐMX: 1.2');
+        await expect(preview).toContainText('🎧 P.Kiện: T.Nghe: 1');
         await expect(preview).toContainText('🏠 G.Dụng: MLN: 1');
         await expect(preview).toContainText('📝 Khách hẹn giao chiều');
         await expect(page.getByTestId('revenue-block')).toContainText('Trả chậm 4%');
@@ -140,10 +145,10 @@ test.describe('Báo cáo khai thác', () => {
         await page.getByTestId('staff-name-input').press('Enter');
 
         await page.getByTestId('group-accessories').getByRole('button', { name: 'Thêm mục' }).click();
-        await page.getByPlaceholder(/Tai nghe/).fill('Tai nghe');
+        await page.getByPlaceholder(/Ốp lưng/).fill('Ốp lưng');
         await page.getByRole('button', { name: 'Lưu', exact: true }).click();
-        await page.getByRole('button', { name: 'Tăng Tai nghe' }).click();
-        await expect(page.getByTestId('preview')).toContainText('🎧 P.Kiện: Tai nghe: 1');
+        await page.getByRole('button', { name: 'Tăng Ốp lưng' }).click();
+        await expect(page.getByTestId('preview')).toContainText('🎧 P.Kiện: Ốp lưng: 1');
     });
 
     test('mobile: 1 cột, xem trước + nút Báo cáo ở cuối', async ({ page }) => {

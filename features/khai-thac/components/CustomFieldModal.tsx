@@ -44,7 +44,7 @@ export const CustomFieldModal: React.FC<CustomFieldModalProps> = ({ group, onClo
             <div className="space-y-3">
                 <div>
                     <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Tên mục / sản phẩm</label>
-                    <Input autoFocus placeholder="VD: Tai nghe, Mở thẻ…" value={name} onChange={e => setName(e.target.value)}
+                    <Input autoFocus placeholder="VD: Ốp lưng, Mở thẻ…" value={name} onChange={e => setName(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') submit(); }} className="rounded" />
                 </div>
                 <div>
