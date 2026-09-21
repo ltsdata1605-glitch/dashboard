@@ -10,7 +10,9 @@ import {
     isHelpCommand,
     formatHelpGuideMessage,
     parseCancelCouponCommand,
-    matchesProductSearch
+    matchesProductSearch,
+    checkCategoryExpiryStatus,
+    parseUsedConfirmationMessage
 } from '../../features/line-bot/services/couponParser';
 
 describe('couponParser', () => {
@@ -959,6 +961,75 @@ MĐH Áp Dụng: 00910SO26090335446`;
             expect(carousel.contents.length).toBe(2); // 15 sản phẩm chia 2 slide (10 và 5)
             expect(carousel.contents[0].header.contents[0].contents[0].text).toContain('(1/2)');
             expect(carousel.contents[1].header.contents[0].contents[0].text).toContain('(2/2)');
+        });
+    });
+
+    describe('checkCategoryExpiryStatus', () => {
+        it('phát hiện nhóm hết hạn khi tất cả coupon có hạn dùng nhỏ hơn ngày hiện tại', () => {
+            const today = '2026-09-21';
+            const sampleCoupons = [
+                { productName: 'Máy lọc nước', type: 'Giờ Vàng Giá Sốc', status: 'USED', expiryDate: '2026-09-20' },
+                { productName: 'Tivi LED Sony', type: 'Giờ Vàng Giá Sốc', status: 'USED', expiryDate: '2026-09-20' },
+                { productName: 'Tủ lạnh Panasonic', type: 'Giờ Vàng Giá Sốc', status: 'USED', expiryDate: '2026-09-20' }
+            ];
+
+            const res = checkCategoryExpiryStatus(sampleCoupons, 'GVGS', today);
+            expect(res.isExpired).toBe(true);
+            expect(res.latestExpiryDate).toBe('2026-09-20');
+            expect(res.formattedExpiryDate).toBe('20/09/2026');
+            expect(res.totalUnused).toBe(0);
+        });
+
+        it('báo chưa hết hạn nếu còn mã UNUSED có hạn dùng hôm nay hoặc tương lai', () => {
+            const today = '2026-09-21';
+            const sampleCoupons = [
+                { productName: 'Quạt đứng', type: 'PMH Event', status: 'UNUSED', expiryDate: '2026-09-25' },
+                { productName: 'Nồi cơm điện', type: 'PMH Event', status: 'UNUSED', expiryDate: '2026-09-22' }
+            ];
+
+            const res = checkCategoryExpiryStatus(sampleCoupons, 'EVENT', today);
+            expect(res.isExpired).toBe(false);
+            expect(res.totalUnused).toBe(2);
+        });
+
+        it('báo không hết hạn nếu hết mã khả dụng nhưng hạn dùng vẫn còn trong tương lai', () => {
+            const today = '2026-09-21';
+            const sampleCoupons = [
+                { productName: 'Bếp từ đơn', type: 'Giờ Vàng', status: 'USED', expiryDate: '2026-09-25' }
+            ];
+
+            const res = checkCategoryExpiryStatus(sampleCoupons, 'GVGS', today);
+            expect(res.isExpired).toBe(false);
+            expect(res.totalUnused).toBe(0);
+        });
+    });
+
+    describe('parseUsedConfirmationMessage', () => {
+        it('bóc tách chính xác tin nhắn xác nhận định dạng mới (không trích dẫn, có dòng ↳ User)', () => {
+            const text = `👉 PMH 1 đã được sử dụng lúc 11:44!
+↳ User: ĐMST_ĐĂNG_28679_AIO`;
+
+            const res = parseUsedConfirmationMessage(text);
+            expect(res.isUsedConfirm).toBe(true);
+            expect(res.cardIndex).toBe(1);
+            expect(res.userName).toBe('ĐMST_ĐĂNG_28679_AIO');
+            expect(res.time).toBe('11:44');
+        });
+
+        it('tương thích ngược với tin nhắn xác nhận định dạng cũ', () => {
+            const text = `👉 PMH 2 đã được ĐMST_ĐĂNG_28679_AIO sử dụng lúc 11:44!
+↳ Trích dẫn: Cấp cho @Str_Tuấn_22094-TC (PMH MM200)`;
+
+            const res = parseUsedConfirmationMessage(text);
+            expect(res.isUsedConfirm).toBe(true);
+            expect(res.cardIndex).toBe(2);
+            expect(res.userName).toBe('ĐMST_ĐĂNG_28679_AIO');
+            expect(res.time).toBe('11:44');
+        });
+
+        it('bỏ qua các tin nhắn thông thường không phải xác nhận sử dụng', () => {
+            expect(parseUsedConfirmationMessage('Chào cả nhà!').isUsedConfirm).toBe(false);
+            expect(parseUsedConfirmationMessage('e1 12345678').isUsedConfirm).toBe(false);
         });
     });
 });

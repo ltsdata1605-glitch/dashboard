@@ -1196,6 +1196,66 @@ export function filterCouponsByCategory(coupons: CouponSummaryItem[], category?:
     return coupons;
 }
 
+export interface CategoryExpiryStatus {
+    isExpired: boolean;
+    latestExpiryDate?: string;
+    formattedExpiryDate?: string;
+    totalAll: number;
+    totalUnused: number;
+    hasCoupons: boolean;
+}
+
+/**
+ * Kiểm tra trạng thái hết hạn của toàn bộ nhóm coupon (EVENT hoặc GVGS)
+ * - isExpired: true nếu không còn mã UNUSED nào hợp lệ và ngày hết hạn mới nhất < todayVN
+ */
+export function checkCategoryExpiryStatus(
+    coupons: Array<{ productName?: string; syntax?: string; type?: string; status?: string; expiryDate?: string }>,
+    category: 'EVENT' | 'GVGS',
+    todayVN: string
+): CategoryExpiryStatus {
+    const isCat = category === 'EVENT' ? isEventCategory : isGvgsCategory;
+    const catCoupons = (coupons || []).filter(c => isCat(c.type));
+
+    if (catCoupons.length === 0) {
+        return {
+            isExpired: false,
+            totalAll: 0,
+            totalUnused: 0,
+            hasCoupons: false
+        };
+    }
+
+    let totalAll = catCoupons.length;
+    let validUnused = 0;
+    let latestExpiryDate: string | undefined;
+
+    for (const c of catCoupons) {
+        const isUnused = c.status === 'UNUSED' || !c.status;
+        if (c.expiryDate) {
+            if (!latestExpiryDate || c.expiryDate > latestExpiryDate) {
+                latestExpiryDate = c.expiryDate;
+            }
+            if (isUnused && c.expiryDate >= todayVN) {
+                validUnused++;
+            }
+        } else if (isUnused) {
+            validUnused++;
+        }
+    }
+
+    const isExpired = validUnused === 0 && Boolean(latestExpiryDate && latestExpiryDate < todayVN);
+
+    return {
+        isExpired,
+        latestExpiryDate,
+        formattedExpiryDate: latestExpiryDate ? formatDisplayDate(latestExpiryDate) : undefined,
+        totalAll,
+        totalUnused: validUnused,
+        hasCoupons: true
+    };
+}
+
 export interface ProductInventoryItem {
     index: number;
     productName: string;
@@ -1751,5 +1811,51 @@ export function matchesProductSearch(
 
     return false;
 }
+
+export interface ParsedUsedConfirmation {
+    isUsedConfirm: boolean;
+    cardIndex?: number;
+    userName?: string;
+    time?: string;
+}
+
+/**
+ * Bóc tách thông tin từ tin nhắn xác nhận sử dụng thẻ PMH
+ * Hỗ trợ cả định dạng mới ("👉 PMH 1 đã được sử dụng lúc 11:44!\n↳ User: Đăng")
+ * và định dạng cũ ("👉 PMH 1 đã được Đăng sử dụng lúc 11:44!")
+ */
+export function parseUsedConfirmationMessage(text: string): ParsedUsedConfirmation {
+    if (!text || typeof text !== 'string') return { isUsedConfirm: false };
+    const clean = text.trim();
+    if (!clean.includes('đã được') || !clean.includes('sử dụng lúc')) {
+        return { isUsedConfirm: false };
+    }
+
+    const cardMatch = clean.match(/👉\s*(?:PMH\s*(\d+)|mã\s*này)?/i);
+    const cardIndex = (cardMatch && cardMatch[1]) ? Number(cardMatch[1]) : undefined;
+
+    const timeMatch = clean.match(/sử\s*dụng\s*lúc\s*(\d{1,2}:\d{2})/i);
+    const time = timeMatch ? timeMatch[1] : undefined;
+
+    // Định dạng mới: "↳ User: [Tên]"
+    const userMatch = clean.match(/↳\s*(?:User|Người dùng):\s*(.+)/i);
+    let userName = userMatch ? userMatch[1].trim() : '';
+
+    if (!userName) {
+        // Tương thích định dạng cũ: "đã được [Tên] sử dụng lúc"
+        const oldMatch = clean.match(/đã\s*được\s*(.+?)\s*sử\s*dụng\s*lúc/i);
+        if (oldMatch) {
+            userName = oldMatch[1].trim();
+        }
+    }
+
+    return {
+        isUsedConfirm: true,
+        cardIndex,
+        userName: userName || undefined,
+        time
+    };
+}
+
 
 

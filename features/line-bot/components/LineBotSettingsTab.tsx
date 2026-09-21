@@ -241,7 +241,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
-                        💡 Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 PMH 1 đã được [Tên] sử dụng lúc HH:mm!"</em>
+                        💡 Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 PMH 1 đã được sử dụng lúc HH:mm!\n↳ User: [Tên]"</em>
                     </p>
                 </div>
             </div>

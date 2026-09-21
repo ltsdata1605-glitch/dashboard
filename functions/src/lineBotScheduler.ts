@@ -318,7 +318,7 @@ export const dailyMorningInventoryReport = onSchedule(
                 const repGvgs = formatInventoryReportMessage(coupons, 'GVGS');
                 const flexMsgs: any[] = [];
 
-                if (repEvent.products.length > 0) {
+                if (repEvent.products.length > 0 && repEvent.totalUnused > 0) {
                     flexMsgs.push(createInventoryReportFlexMessage({
                         category: 'EVENT',
                         totalAll: repEvent.totalAll,
@@ -328,7 +328,7 @@ export const dailyMorningInventoryReport = onSchedule(
                     }));
                 }
 
-                if (repGvgs.products.length > 0) {
+                if (repGvgs.products.length > 0 && repGvgs.totalUnused > 0) {
                     flexMsgs.push(createInventoryReportFlexMessage({
                         category: 'GVGS',
                         totalAll: repGvgs.totalAll,

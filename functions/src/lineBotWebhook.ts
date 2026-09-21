@@ -702,6 +702,101 @@ function filterCouponsByCategory(
 }
 
 /**
+ * Kiểm tra trạng thái hết hạn và số lượng khả dụng của toàn bộ nhóm coupon (EVENT hoặc GVGS)
+ */
+async function getCategoryExpiryInfo(
+    uid: string,
+    coupons: Array<{ productName?: string; syntax?: string; type?: string; status?: string; expiryDate?: string }>,
+    category: 'EVENT' | 'GVGS'
+): Promise<{
+    isExpired: boolean;
+    latestExpiryDate?: string;
+    totalAll: number;
+    totalUnused: number;
+    hasCoupons: boolean;
+}> {
+    const todayVN = getVietnamTodayString();
+    const isCat = category === 'EVENT' ? isEventCategory : isGvgsCategory;
+    const catCoupons = (coupons || []).filter(c => isCat(c.type));
+
+    let totalAll = catCoupons.length;
+    let validUnused = 0;
+    let latestExpiryDate: string | undefined;
+
+    for (const c of catCoupons) {
+        const isUnused = c.status === 'UNUSED' || !c.status;
+        if (c.expiryDate) {
+            if (!latestExpiryDate || c.expiryDate > latestExpiryDate) {
+                latestExpiryDate = c.expiryDate;
+            }
+            if (isUnused && c.expiryDate >= todayVN) {
+                validUnused++;
+            }
+        } else if (isUnused) {
+            validUnused++;
+        }
+    }
+
+    if (validUnused > 0) {
+        return {
+            isExpired: false,
+            latestExpiryDate,
+            totalAll,
+            totalUnused: validUnused,
+            hasCoupons: true
+        };
+    }
+
+    // Nếu không còn mã UNUSED nào hợp lệ và ngày hết hạn mới nhất đã qua -> Nhóm đã hết hạn
+    if (latestExpiryDate && latestExpiryDate < todayVN) {
+        return {
+            isExpired: true,
+            latestExpiryDate,
+            totalAll,
+            totalUnused: 0,
+            hasCoupons: catCoupons.length > 0
+        };
+    }
+
+    // Nếu trong coupons không còn mã hoặc các mã còn lại không ghi nhận date, kiểm tra subcollection 'expired_products'
+    try {
+        const expSnap = await db.collection('line_bots').doc(uid).collection('expired_products').get();
+        if (!expSnap.empty) {
+            let expCatLatestDate: string | undefined;
+            let countInExp = 0;
+            for (const d of expSnap.docs) {
+                const data = d.data();
+                if (isCat(data.type) || (category === 'GVGS' && (data.productName?.toLowerCase().includes('giờ vàng') || data.type?.toLowerCase().includes('gv')))) {
+                    countInExp++;
+                    if (data.expiryDate && (!expCatLatestDate || data.expiryDate > expCatLatestDate)) {
+                        expCatLatestDate = data.expiryDate;
+                    }
+                }
+            }
+            if (countInExp > 0 && expCatLatestDate && expCatLatestDate < todayVN) {
+                return {
+                    isExpired: true,
+                    latestExpiryDate: expCatLatestDate,
+                    totalAll: totalAll + countInExp,
+                    totalUnused: 0,
+                    hasCoupons: true
+                };
+            }
+        }
+    } catch (e) {
+        console.warn('[getCategoryExpiryInfo error checking expired_products]', e);
+    }
+
+    return {
+        isExpired: false,
+        latestExpiryDate,
+        totalAll,
+        totalUnused: 0,
+        hasCoupons: catCoupons.length > 0
+    };
+}
+
+/**
  * Trích xuất danh sách tồn kho theo từng sản phẩm có đánh số thứ tự (1, 2, 3...)
  * Hỗ trợ lọc theo loại Event hoặc Giờ Vàng Giá Sốc
  */
@@ -2142,10 +2237,23 @@ export const lineBotWebhook = onRequest(
                 }
 
                 // 1.8. Kiểm tra tin nhắn xác nhận sử dụng thẻ PMH từ LIFF
-                const usedMatch = cleanText.match(/👉\s*(?:PMH\s*(\d+)|mã\s*này)?\s*đã\s*được\s*(.+?)\s*sử\s*dụng\s*lúc\s*(\d{1,2}:\d{2})/i);
-                if (usedMatch) {
-                    const matchedCardIndex = usedMatch[1] ? Number(usedMatch[1]) : undefined;
-                    const matchedUser = (usedMatch[2] || '').trim();
+                const isUsedConfirm = cleanText.includes('đã được') && cleanText.includes('sử dụng lúc');
+                if (isUsedConfirm) {
+                    const cardMatch = cleanText.match(/👉\s*(?:PMH\s*(\d+)|mã\s*này)?/i);
+                    const matchedCardIndex = (cardMatch && cardMatch[1]) ? Number(cardMatch[1]) : undefined;
+
+                    // Định dạng mới: "↳ User: [Tên]"
+                    const userMatch = cleanText.match(/↳\s*(?:User|Người dùng):\s*(.+)/i);
+                    let matchedUser = userMatch ? userMatch[1].trim() : '';
+
+                    if (!matchedUser) {
+                        // Tương thích ngược: "đã được [Tên] sử dụng lúc"
+                        const oldMatch = cleanText.match(/đã\s*được\s*(.+?)\s*sử\s*dụng\s*lúc/i);
+                        if (oldMatch) {
+                            matchedUser = oldMatch[1].trim();
+                        }
+                    }
+
                     const now = new Date().toISOString();
 
                     try {
@@ -2175,13 +2283,31 @@ export const lineBotWebhook = onRequest(
                 const isTkAll = /^(?:[./!]?tk|thống kê|thong ke|tonkho|ton kho|tồn kho|kiem tra ton|kiểm tra tồn)$/i.test(cleanText) || lower.startsWith('tk ');
 
                 if (isTkEvent || isTkGvgs || isTkAll) {
+                    // Dọn dẹp các coupon UNUSED đã quá hạn trước khi thống kê tồn kho
+                    await cleanupExpiredCoupons(uid);
+
                     const snap = await db.collection('line_bots').doc(uid).collection('coupons').get();
                     const coupons = snap.docs.map(d => d.data());
 
                     if (isTkEvent) {
+                        const expInfo = await getCategoryExpiryInfo(uid, coupons, 'EVENT');
+                        if (expInfo.isExpired) {
+                            const dateStr = expInfo.latestExpiryDate ? ` (hạn dùng đến hết ngày ${formatDisplayDate(expInfo.latestExpiryDate)})` : '';
+                            await replyLineMessage(token, replyToken, [{
+                                type: 'text',
+                                text: `⏰ NHÓM PMH EVENT ĐÃ HẾT HẠN SỬ DỤNG${dateStr}!\n━━━━━━━━━━━━━━━━━━━━━\n💡 Hiện tại kho không còn mã Event khả dụng. Quản lý vui lòng nạp mã đợt mới vào Dashboard YCX.`
+                            }]);
+                            continue;
+                        }
+
                         const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, 'EVENT');
-                        if (products.length === 0) {
-                            await replyLineMessage(token, replyToken, [{ type: 'text', text: replyText }]);
+                        if (products.length === 0 || totalUnused === 0) {
+                            await replyLineMessage(token, replyToken, [{
+                                type: 'text',
+                                text: products.length === 0
+                                    ? replyText
+                                    : `⚠️ BÁO CÁO TỒN KHO PMH EVENT\n━━━━━━━━━━━━━━━━━━━━━\nHiện tại nhóm PMH Event đã phát hết mã khả dụng (0/${totalAll} mã)!\nQuản lý vui lòng nạp thêm mã vào Dashboard YCX.`
+                            }]);
                             continue;
                         }
                         const flexMsg = createInventoryReportFlexMessage({
@@ -2196,9 +2322,24 @@ export const lineBotWebhook = onRequest(
                     }
 
                     if (isTkGvgs) {
+                        const expInfo = await getCategoryExpiryInfo(uid, coupons, 'GVGS');
+                        if (expInfo.isExpired) {
+                            const dateStr = expInfo.latestExpiryDate ? ` (hạn dùng đến hết ngày ${formatDisplayDate(expInfo.latestExpiryDate)})` : '';
+                            await replyLineMessage(token, replyToken, [{
+                                type: 'text',
+                                text: `⏰ NHÓM PMH GIỜ VÀNG ĐÃ HẾT HẠN SỬ DỤNG${dateStr}!\n━━━━━━━━━━━━━━━━━━━━━\n💡 Hiện tại kho không còn mã Giờ Vàng khả dụng. Quản lý vui lòng nạp mã đợt mới vào Dashboard YCX.`
+                            }]);
+                            continue;
+                        }
+
                         const { replyText, products, totalAll, totalUnused } = formatInventoryReportMessage(coupons, 'GVGS');
-                        if (products.length === 0) {
-                            await replyLineMessage(token, replyToken, [{ type: 'text', text: replyText }]);
+                        if (products.length === 0 || totalUnused === 0) {
+                            await replyLineMessage(token, replyToken, [{
+                                type: 'text',
+                                text: products.length === 0
+                                    ? replyText
+                                    : `⚠️ BÁO CÁO TỒN KHO PMH GIỜ VÀNG\n━━━━━━━━━━━━━━━━━━━━━\nHiện tại nhóm PMH Giờ Vàng đã phát hết mã khả dụng (0/${totalAll} mã)!\nQuản lý vui lòng nạp thêm mã vào Dashboard YCX.`
+                            }]);
                             continue;
                         }
                         const flexMsg = createInventoryReportFlexMessage({
@@ -2213,11 +2354,16 @@ export const lineBotWebhook = onRequest(
                     }
 
                     // isTkAll: Gửi ALL tồn kho (cả PMH Event và PMH Giờ Vàng)
+                    const expEvent = await getCategoryExpiryInfo(uid, coupons, 'EVENT');
+                    const expGvgs = await getCategoryExpiryInfo(uid, coupons, 'GVGS');
+
                     const repEvent = formatInventoryReportMessage(coupons, 'EVENT');
                     const repGvgs = formatInventoryReportMessage(coupons, 'GVGS');
                     const flexMsgs: any[] = [];
+                    const noticeLines: string[] = [];
 
-                    if (repEvent.products.length > 0) {
+                    // Xử lý nhóm Event: CHỈ hiển thị thẻ nếu CHƯA hết hạn VÀ CÒN mã khả dụng (>0)
+                    if (!expEvent.isExpired && repEvent.totalUnused > 0 && repEvent.products.length > 0) {
                         flexMsgs.push(createInventoryReportFlexMessage({
                             category: 'EVENT',
                             totalAll: repEvent.totalAll,
@@ -2225,9 +2371,15 @@ export const lineBotWebhook = onRequest(
                             products: repEvent.products,
                             altText: `📊 Báo cáo tồn kho PMH Event: ${repEvent.totalUnused}/${repEvent.totalAll} mã khả dụng`
                         }));
+                    } else if (expEvent.isExpired) {
+                        const dStr = expEvent.latestExpiryDate ? ` (hạn đến hết ${formatDisplayDate(expEvent.latestExpiryDate)})` : '';
+                        noticeLines.push(`• Nhóm PMH Event: ĐÃ HẾT HẠN DÙNG${dStr}!`);
+                    } else if (expEvent.hasCoupons && repEvent.totalUnused === 0) {
+                        noticeLines.push(`• Nhóm PMH Event: Đã phát hết mã khả dụng (0/${repEvent.totalAll} mã).`);
                     }
 
-                    if (repGvgs.products.length > 0) {
+                    // Xử lý nhóm Giờ Vàng: CHỈ hiển thị thẻ nếu CHƯA hết hạn VÀ CÒN mã khả dụng (>0)
+                    if (!expGvgs.isExpired && repGvgs.totalUnused > 0 && repGvgs.products.length > 0) {
                         flexMsgs.push(createInventoryReportFlexMessage({
                             category: 'GVGS',
                             totalAll: repGvgs.totalAll,
@@ -2235,16 +2387,28 @@ export const lineBotWebhook = onRequest(
                             products: repGvgs.products,
                             altText: `📊 Báo cáo tồn kho PMH Giờ Vàng: ${repGvgs.totalUnused}/${repGvgs.totalAll} mã khả dụng`
                         }));
+                    } else if (expGvgs.isExpired) {
+                        const dStr = expGvgs.latestExpiryDate ? ` (hạn đến hết ${formatDisplayDate(expGvgs.latestExpiryDate)})` : '';
+                        noticeLines.push(`• Nhóm PMH Giờ Vàng: ĐÃ HẾT HẠN DÙNG${dStr}!`);
+                    } else if (expGvgs.hasCoupons && repGvgs.totalUnused === 0) {
+                        noticeLines.push(`• Nhóm PMH Giờ Vàng: Đã phát hết mã khả dụng (0/${repGvgs.totalAll} mã).`);
                     }
 
-                    if (flexMsgs.length === 0) {
+                    const replyMsgs: any[] = [...flexMsgs];
+
+                    if (noticeLines.length > 0) {
+                        const noticeText = `📢 THÔNG BÁO TỒN KHO:\n${noticeLines.join('\n')}\n\n💡 Quản lý vui lòng cập nhật thêm mã mới vào Dashboard YCX nếu cần cấp thêm.`;
+                        replyMsgs.push({ type: 'text', text: noticeText });
+                    }
+
+                    if (replyMsgs.length === 0) {
                         await replyLineMessage(token, replyToken, [
                             { type: 'text', text: '📊 BÁO CÁO TỒN KHO PMH\n━━━━━━━━━━━━━━━━━━━━━\nKho hiện tại chưa có mã nào khả dụng!\nQuản lý vui lòng nạp mã vào Dashboard YCX.' }
                         ]);
                         continue;
                     }
 
-                    await replyLineMessage(token, replyToken, flexMsgs);
+                    await replyLineMessage(token, replyToken, replyMsgs);
                     continue;
                 }
 

@@ -461,7 +461,8 @@ ${secondName}
                                 {usedCouponInfo && (
                                     <div className="flex justify-end animate-in fade-in slide-in-from-bottom-2 duration-200 mt-2">
                                         <div className="bg-[#06C755] text-white py-2 px-3 rounded-2xl rounded-tr-xs shadow-xs max-w-[85%] font-sans text-[11px] leading-relaxed border border-emerald-400/30">
-                                            <div>👉 PMH {usedCouponInfo.cardIndex} đã được <span className="font-bold">{firstName}</span> sử dụng lúc <span className="font-bold">{usedCouponInfo.time}</span>!</div>
+                                            <div>👉 PMH {usedCouponInfo.cardIndex} đã được sử dụng lúc <span className="font-bold">{usedCouponInfo.time}</span>!</div>
+                                            <div className="text-white/90">↳ User: <span className="font-bold">{firstName}</span></div>
                                         </div>
                                     </div>
                                 )}
