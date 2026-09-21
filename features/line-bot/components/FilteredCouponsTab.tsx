@@ -48,11 +48,30 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
         loadData();
     }, [userId]);
 
-    const handleCopy = (code: string) => {
-        navigator.clipboard.writeText(code);
-        setCopiedCode(code);
-        toast.success(`Đã sao chép mã: ${code}`);
-        setTimeout(() => setCopiedCode(null), 2000);
+    const handleCopy = async (code: string) => {
+        try {
+            // Thử dùng Clipboard API (modern)
+            if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(code);
+            } else {
+                // Fallback cho browser cũ hoặc context không hỗ trợ Clipboard API
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                const success = document.execCommand('copy');
+                document.body.removeChild(textarea);
+                if (!success) throw new Error('execCommand copy failed');
+            }
+            setCopiedCode(code);
+            toast.success(`Đã sao chép mã: ${code}`);
+            setTimeout(() => setCopiedCode(null), 2000);
+        } catch (error) {
+            console.error('Lỗi copy:', error);
+            toast.error(`Không thể copy mã. Vui lòng copy thủ công: ${code}`);
+        }
     };
 
     const handleClearAll = async () => {
@@ -230,13 +249,13 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         <table className="w-full text-left text-xs">
                             <thead className="bg-slate-50 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-700">
                                 <tr>
-                                    <th className="p-3.5 pl-4">Thẻ</th>
-                                    <th className="p-3.5">Mã Coupon</th>
-                                    <th className="p-3.5">Loại PMH / Sản phẩm</th>
-                                    <th className="p-3.5">Người được cấp</th>
-                                    <th className="p-3.5">Trạng thái</th>
-                                    <th className="p-3.5">Người sử dụng</th>
-                                    <th className="p-3.5">Thời gian dùng</th>
+                                    <th className="p-3.5 pl-4 whitespace-nowrap">Thẻ</th>
+                                    <th className="p-3.5 whitespace-nowrap">Mã Coupon</th>
+                                    <th className="p-3.5 whitespace-nowrap">Loại PMH</th>
+                                    <th className="p-3.5 whitespace-nowrap">Người được cấp</th>
+                                    <th className="p-3.5 whitespace-nowrap">Trạng thái</th>
+                                    <th className="p-3.5 whitespace-nowrap">Người sử dụng</th>
+                                    <th className="p-3.5 whitespace-nowrap">Sử dụng</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -258,22 +277,34 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
 
                                     return (
                                         <tr key={item.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-750 transition-colors">
-                                            <td className="p-3.5 pl-4">
-                                                <span className="px-2 py-0.5 rounded-md font-bold text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono">
+                                            <td className="p-3.5 pl-4 whitespace-nowrap">
+                                                <span className="inline-block whitespace-nowrap px-2 py-0.5 rounded-md font-bold text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono">
                                                     PMH {item.cardIndex || 1}
                                                 </span>
                                             </td>
-                                            <td className="p-3.5 font-mono font-bold text-slate-900 dark:text-white">
-                                                <div className="flex items-center gap-1.5">
-                                                    <span>{item.code}</span>
-                                                    <button
-                                                        onClick={() => handleCopy(item.code)}
-                                                        className="p-1 text-slate-400 hover:text-emerald-500 rounded transition-colors"
-                                                        title="Sao chép mã"
-                                                    >
-                                                        {copiedCode === item.code ? <Check size={12} className="text-emerald-500 stroke-[3]" /> : <Copy size={12} />}
-                                                    </button>
-                                                </div>
+                                            <td className="p-3.5 whitespace-nowrap">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleCopy(item.code)}
+                                                    title={`Bấm để copy mã: ${item.code}`}
+                                                    className={`inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer shadow-2xs ${
+                                                        copiedCode === item.code
+                                                            ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-500/20'
+                                                            : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-300 dark:hover:bg-slate-700'
+                                                    }`}
+                                                >
+                                                    {copiedCode === item.code ? (
+                                                        <>
+                                                            <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
+                                                            <span>Đã copy</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Copy size={12} className="text-slate-400" />
+                                                            <span>Copy</span>
+                                                        </>
+                                                    )}
+                                                </button>
                                             </td>
                                             <td className="p-3.5">
                                                 <span className="font-semibold text-slate-800 dark:text-slate-200 block">
@@ -283,10 +314,10 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                     <span className="text-[10px] text-slate-400 font-mono">MĐH: {item.orderId}</span>
                                                 )}
                                             </td>
-                                            <td className="p-3.5 font-medium text-sky-600 dark:text-sky-400">
-                                                @{item.recipient}
+                                            <td className="p-3.5 font-medium text-sky-600 dark:text-sky-400 whitespace-nowrap">
+                                                {item.recipient ? item.recipient.replace(/^@+/, '') : '-'}
                                             </td>
-                                            <td className="p-3.5">
+                                            <td className="p-3.5 whitespace-nowrap">
                                                 {isUsed ? (
                                                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
                                                         <CheckCircle2 size={11} /> ĐÃ SỬ DỤNG
@@ -297,7 +328,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="p-3.5">
+                                            <td className="p-3.5 whitespace-nowrap">
                                                 {isUsed && item.usedBy ? (
                                                     <span className="font-bold text-slate-800 dark:text-slate-200">
                                                         👤 {item.usedBy}
@@ -306,7 +337,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                     <span className="text-slate-400 italic">Chưa có</span>
                                                 )}
                                             </td>
-                                            <td className="p-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px]">
+                                            <td className="p-3.5 text-slate-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
                                                 {timeStr}
                                             </td>
                                         </tr>
