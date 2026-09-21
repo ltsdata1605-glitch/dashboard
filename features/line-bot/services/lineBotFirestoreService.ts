@@ -26,7 +26,8 @@ import {
     AuditLog,
     InteractedUser,
     ExpiredProductRecord,
-    FilteredCouponRecord
+    FilteredCouponRecord,
+    GroupFeatureConfig
 } from '../types/lineBot.types';
 import { getVietnamTodayString } from './couponParser';
 
@@ -203,7 +204,9 @@ export const lineBotFirestoreService = {
             const expiredDocs: Array<{ doc: any; data: Coupon }> = [];
             for (const d of snap.docs) {
                 const data = d.data() as Coupon;
-                if ((data.status === 'UNUSED' || !data.status) && data.expiryDate && data.expiryDate < todayVN) {
+                // Thu gom toàn bộ các mã hết hạn trong kho (bao gồm chưa dùng UNUSED hoặc đã thu hồi REVOKED)
+                const isStockCoupon = data.status !== 'SENT';
+                if (isStockCoupon && data.expiryDate && data.expiryDate < todayVN) {
                     expiredDocs.push({ doc: d, data });
                 }
             }
@@ -311,6 +314,23 @@ export const lineBotFirestoreService = {
             updatedAt: now
         });
         await this.logAudit(userId, 'REVOKE_COUPON', `Thu hồi mã coupon ID ${couponId}: ${reason}`, 'Quản lý');
+    },
+
+    /**
+     * Ghi nhận thời gian người dùng bấm copy mã coupon
+     */
+    async recordCouponCopied(userId: string, couponId: string, timestamp?: string): Promise<string> {
+        if (!userId || !couponId) return '';
+        const now = timestamp || new Date().toISOString();
+        try {
+            const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', couponId);
+            await updateDoc(docRef, {
+                copiedAt: now
+            });
+        } catch (err) {
+            console.error('Lỗi cập nhật thời gian copy mã coupon:', err);
+        }
+        return now;
     },
 
     /**
@@ -767,6 +787,37 @@ export const lineBotFirestoreService = {
             await batch.commit();
         } catch (error) {
             console.error('[lineBotFirestoreService] Lỗi deleteFilteredCoupons:', error);
+        }
+    },
+
+    /**
+     * Lấy danh sách cấu hình tính năng cho các nhóm của Quản lý
+     */
+    async getGroupFeatureConfigs(userId: string): Promise<GroupFeatureConfig[]> {
+        if (!userId) return [];
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'group_features');
+            const snap = await getDocs(colRef);
+            return snap.docs.map(d => d.data() as GroupFeatureConfig);
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi getGroupFeatureConfigs:', error);
+            return [];
+        }
+    },
+
+    /**
+     * Lưu hoặc cập nhật cấu hình tính năng cho một nhóm
+     */
+    async saveGroupFeatureConfig(config: GroupFeatureConfig): Promise<void> {
+        try {
+            const docRef = doc(db, ROOT_COLLECTION, config.userId, 'group_features', config.groupId);
+            await setDoc(docRef, {
+                ...config,
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi saveGroupFeatureConfig:', error);
+            throw error;
         }
     }
 };

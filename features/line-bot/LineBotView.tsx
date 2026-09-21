@@ -30,9 +30,10 @@ import { ScheduleManagerTab } from './components/ScheduleManagerTab';
 import { KeywordLibraryTab } from './components/KeywordLibraryTab';
 import { AdminDeclarationTab } from './components/AdminDeclarationTab';
 import { AuditLogTab } from './components/AuditLogTab';
+import { GroupFeaturesTab } from './components/GroupFeaturesTab';
 import { LineBotOnboardingModal } from './components/LineBotOnboardingModal';
 
-type LineBotTab = 'coupons' | 'filtered' | 'syntax' | 'schedules' | 'keywords' | 'admins' | 'settings' | 'audit';
+type LineBotTab = 'coupons' | 'filtered' | 'syntax' | 'schedules' | 'keywords' | 'admins' | 'settings' | 'group-features' | 'audit';
 
 export default function LineBotView() {
     const { userRole, isDemoMode } = useAuth();
@@ -76,6 +77,7 @@ export default function LineBotView() {
         { id: 'schedules', label: 'Hẹn Giờ Báo', icon: Clock },
         { id: 'keywords', label: 'Từ Khoá', icon: Sparkles },
         { id: 'admins', label: 'Khai Báo Admin', icon: ShieldCheck },
+        { id: 'group-features', label: 'Giới Hạn Tính Năng', icon: Settings },
         { id: 'settings', label: 'Cấu Hình Bot', icon: Settings },
         { id: 'audit', label: 'Nhật Ký', icon: History }
     ];
@@ -169,6 +171,7 @@ export default function LineBotView() {
                             onDeleteAllCoupons={couponHook.deleteAllCoupons}
                             onExportExcel={couponHook.exportToExcel}
                             onRefresh={couponHook.loadCoupons}
+                            onCopyCoupon={couponHook.recordCouponCopied}
                         />
                     )}
 
@@ -231,6 +234,13 @@ export default function LineBotView() {
                         isInteractedLoading={adminHook.isInteractedLoading}
                         onRefreshInteracted={adminHook.loadInteractedUsers}
                         onAddAdminFromInteracted={adminHook.addAdminFromInteracted}
+                    />
+                )}
+
+                {activeSubTab === 'group-features' && (
+                    <GroupFeaturesTab
+                        userId={botConfigHook.config?.userId || ''}
+                        groups={scheduleHook.groups}
                     />
                 )}
 

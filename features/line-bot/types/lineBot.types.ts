@@ -22,6 +22,7 @@ export interface Coupon {
     revokeReason?: string;
     expiryDate?: string; // Định dạng "YYYY-MM-DD" (hết hạn khi bước sang 00:00 ngày hôm sau)
     importBatchId?: string; // Mã định danh đợt nạp
+    copiedAt?: string; // Thời gian người dùng bấm copy mã
 }
 
 export interface CouponImportBatch {
@@ -205,6 +206,26 @@ export interface ParsedCouponForm {
     managerName?: string;
     rawText: string;
     errorMessage?: string;
+}
+
+/**
+ * Cấu hình tính năng cho mỗi Nhóm LINE (admin có thể tắt/bật tính năng riêng theo nhóm)
+ */
+export interface GroupFeatureConfig {
+    id: string;
+    userId: string; // UID quản lý sở hữu
+    groupId: string; // LINE Group ID (dạng "C...")
+    groupName?: string; // Tên nhóm (cached từ LineGroup)
+    features: {
+        filterCoupon: boolean; // Tắt/bật tính năng lọc PMH (paste danh sách auto lọc)
+        syntax_tk: boolean; // Tắt/bật cú pháp "tk" / "tk event" / "tk gvgs" (thống kê tồn kho)
+        syntax_cancel: boolean; // Tắt/bật cú pháp "huy [mã]" (huỷ/thu hồi mã)
+        syntax_search: boolean; // Tắt/bật cú pháp "tìm [mã]" (tìm kiếm mã)
+        keywordReply: boolean; // Tắt/bật tự động trả lời theo keyword
+        autoReply: boolean; // Tắt/bật các tin nhắn tự động khác
+    };
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface StockSummaryItem {

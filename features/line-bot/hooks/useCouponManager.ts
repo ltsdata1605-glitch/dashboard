@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
+import { isDateExpired, getVietnamTodayString } from '../services/couponParser';
 
 function removeVietnameseTones(str: string): string {
     if (!str) return '';
@@ -46,7 +47,16 @@ export function useCouponManager() {
             }
 
             const data = await lineBotFirestoreService.getCoupons(userId);
-            setCoupons(data);
+            const todayVN = getVietnamTodayString();
+            // Lọc bỏ toàn bộ các mã hết hạn khỏi kho (không hiển thị trên giao diện)
+            const activeData = data.filter(c => {
+                const isStockCoupon = c.status !== 'SENT';
+                if (isStockCoupon && c.expiryDate && isDateExpired(c.expiryDate, todayVN)) {
+                    return false;
+                }
+                return true;
+            });
+            setCoupons(activeData);
         } catch (error) {
             console.error('Lỗi tải danh sách coupon:', error);
             toast.error('Không thể tải danh sách mã coupon');
@@ -111,7 +121,15 @@ export function useCouponManager() {
         const queryNoTone = removeVietnameseTones(rawQuery);
         const queryWords = queryNoTone.split(/\s+/).filter(Boolean);
 
+        const todayVN = getVietnamTodayString();
+
         return coupons.filter(c => {
+            // Đảm bảo không hiển thị mã hết hạn trong kho
+            const isStockCoupon = c.status !== 'SENT';
+            if (isStockCoupon && c.expiryDate && isDateExpired(c.expiryDate, todayVN)) {
+                return false;
+            }
+
             if (statusFilter !== 'ALL' && c.status !== statusFilter) return false;
             if (typeFilter !== 'ALL' && c.type?.trim() !== typeFilter) return false;
 
@@ -121,8 +139,10 @@ export function useCouponManager() {
                     c.orderId || '',
                     c.warehouse || '',
                     c.recipient || '',
+                    c.recipientId || '',
                     c.productName || '',
-                    c.syntax || ''
+                    c.syntax || '',
+                    c.revokeReason || ''
                 ];
 
                 // 1. So khớp trực tiếp (có dấu / chính xác chuỗi con)
@@ -180,6 +200,21 @@ export function useCouponManager() {
         return res.deleted;
     }, [userId, loadCoupons]);
 
+    // Ghi nhận thời gian copy mã coupon
+    const recordCouponCopied = useCallback(async (couponId: string) => {
+        if (!couponId) return;
+        const now = new Date().toISOString();
+        // Optimistic update state để hiển thị thời gian ngay lập tức
+        setCoupons(prev => prev.map(c => (c.id === couponId ? { ...c, copiedAt: now } : c)));
+        if (userId) {
+            try {
+                await lineBotFirestoreService.recordCouponCopied(userId, couponId, now);
+            } catch (err) {
+                console.error('Lỗi lưu thời gian copy mã:', err);
+            }
+        }
+    }, [userId]);
+
     // Xuất kho ra file Excel
     const exportToExcel = useCallback(() => {
         if (coupons.length === 0) {
@@ -187,7 +222,8 @@ export function useCouponManager() {
             return;
         }
 
-        const data = coupons.map((c, idx) => ({
+        const listToExport = filteredCoupons.length > 0 ? filteredCoupons : coupons;
+        const data = listToExport.map((c, idx) => ({
             'STT': idx + 1,
             'Mã Coupon': c.code,
             'Tên Sản Phẩm': c.productName || '',
@@ -198,6 +234,8 @@ export function useCouponManager() {
             'Mã Kho': c.warehouse || '',
             'Người Nhận': c.recipient || '',
             'LINE ID': c.recipientId || '',
+            'Lý Do Thu Hồi': c.revokeReason || '',
+            'Thời Gian Copy': c.copiedAt ? new Date(c.copiedAt).toLocaleString('vi-VN') : '',
             'Thời Gian Cập Nhật': c.updatedAt ? new Date(c.updatedAt).toLocaleString('vi-VN') : ''
         }));
 
@@ -205,8 +243,8 @@ export function useCouponManager() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Kho Coupon PMH');
         XLSX.writeFile(wb, `Kho_Coupon_PMH_${new Date().toISOString().slice(0, 10)}.xlsx`);
-        toast.success('Đã tải xuống file Excel kho coupon!');
-    }, [coupons]);
+        toast.success(`Đã xuất ${data.length} mã coupon ra file Excel!`);
+    }, [coupons, filteredCoupons]);
 
     return {
         coupons,
@@ -226,6 +264,7 @@ export function useCouponManager() {
         deleteCoupon,
         deleteCouponsBatch,
         deleteAllCoupons,
-        exportToExcel
+        exportToExcel,
+        recordCouponCopied
     };
 }
