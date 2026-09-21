@@ -1883,76 +1883,71 @@ export const lineBotWebhook = onRequest(
             }
 
             try {
+                // Tốc độ là ưu tiên (LIFF đang chờ xoay): 1 truy vấn lấy bot → quét SONG SONG cả 2 collection
+                // của mọi bot → cập nhật USED và push xác nhận SONG SONG → trả lời. Trước đây tuần tự từng bước.
                 const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
                 const uids = botsSnap.empty
                     ? (await db.collection('line_bots').limit(5).get()).docs.map(d => d.id)
                     : botsSnap.docs.map(d => d.id);
+                const tokenByUid = new Map<string, string>();
+                botsSnap.docs.forEach(d => tokenByUid.set(d.id, String(d.data()?.channelAccessToken || '')));
 
-                let updatedCount = 0;
+                const scans = await Promise.all(uids.flatMap(bUid => [
+                    db.collection('line_bots').doc(bUid).collection('filtered_coupons').where('code', '==', code).get()
+                        .then(snap => ({ bUid, kind: 'filtered' as const, docs: snap.docs })),
+                    db.collection('line_bots').doc(bUid).collection('coupons').where('code', '==', code).get()
+                        .then(snap => ({ bUid, kind: 'stock' as const, docs: snap.docs }))
+                ]));
+
                 let wasAlreadyUsed = false;
                 let previousUser = '';
-                // Thẻ đầu tiên vừa đánh dấu USED có đủ quoteToken + chatId → bot gửi xác nhận trích dẫn thẻ đó
+                const toUpdate: FirebaseFirestore.DocumentReference[] = [];
+                // Thẻ lọc đầu tiên vừa chuyển USED có đủ quoteToken + chatId → bot gửi xác nhận trích dẫn thẻ đó
                 let quoteTarget: { bUid: string; chatId: string; quoteToken: string; cardIndex: number } | null = null;
-
-                for (const bUid of uids) {
-                    const fSnap = await db.collection('line_bots').doc(bUid).collection('filtered_coupons')
-                        .where('code', '==', code).get();
-                    for (const docItem of fSnap.docs) {
+                for (const scan of scans) {
+                    for (const docItem of scan.docs) {
                         const d = docItem.data();
                         if (d.status === 'USED') {
                             wasAlreadyUsed = true;
                             if (d.usedBy && !previousUser) previousUser = d.usedBy;
-                        } else {
-                            await docItem.ref.update({
-                                status: 'USED',
-                                usedBy,
-                                usedAt: now
-                            });
-                            updatedCount++;
-                            if (!quoteTarget && d.quoteToken && d.chatId) {
-                                quoteTarget = { bUid, chatId: d.chatId, quoteToken: d.quoteToken, cardIndex: Number(d.cardIndex) || Number(req.body?.index) || 1 };
-                            }
+                            continue;
                         }
-                    }
-
-                    const cSnap = await db.collection('line_bots').doc(bUid).collection('coupons')
-                        .where('code', '==', code).get();
-                    for (const docItem of cSnap.docs) {
-                        const d = docItem.data();
-                        if (d.status === 'USED') {
-                            wasAlreadyUsed = true;
-                            if (d.usedBy && !previousUser) previousUser = d.usedBy;
-                        } else {
-                            await docItem.ref.update({
-                                status: 'USED',
-                                usedBy,
-                                usedAt: now
-                            });
-                            updatedCount++;
+                        toUpdate.push(docItem.ref);
+                        if (scan.kind === 'filtered' && !quoteTarget && d.quoteToken && d.chatId) {
+                            quoteTarget = { bUid: scan.bUid, chatId: d.chatId, quoteToken: d.quoteToken, cardIndex: Number(d.cardIndex) || Number(req.body?.index || req.query.index) || 1 };
                         }
                     }
                 }
-
+                const updatedCount = toUpdate.length;
                 const isDuplicate = wasAlreadyUsed && updatedCount === 0;
 
                 // Bot gửi tin xác nhận TRÍCH DẪN thẻ coupon (LIFF sendMessages không hỗ trợ quoteToken —
                 // developers.line.biz/en/reference/liff/#send-messages). Thất bại (hết hạn mức push…) →
                 // quotedSent=false, LIFF tự gửi tin thường thay người dùng như trước.
-                let quotedSent = false;
-                let quoteError: string | undefined;
-                if (!isDuplicate && quoteTarget) {
-                    try {
-                        const botSnap = await db.collection('line_bots').doc(quoteTarget.bUid).get();
-                        const botToken = String(botSnap.data()?.channelAccessToken || '');
+                const pushPromise: Promise<{ ok: boolean; status: number; error?: string } | null> = (!isDuplicate && quoteTarget)
+                    ? (async () => {
+                        let botToken = tokenByUid.get(quoteTarget!.bUid) || '';
+                        if (!botToken) {
+                            const botSnap = await db.collection('line_bots').doc(quoteTarget!.bUid).get();
+                            botToken = String(botSnap.data()?.channelAccessToken || '');
+                        }
                         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
-                        const text = `👉 PMH ${quoteTarget.cardIndex} đã được sử dụng lúc ${timeStr}!\n↳ User: ${usedBy}`;
-                        const pushed = await pushLineMessage(botToken, quoteTarget.chatId, [{ type: 'text', text, quoteToken: quoteTarget.quoteToken }]);
-                        quotedSent = pushed.ok;
-                        quoteError = pushed.ok ? undefined : (pushed.status === 429 ? 'quota' : pushed.error);
-                    } catch (e: any) {
-                        quoteError = e?.message || 'push-failed';
-                    }
-                }
+                        const text = `👉 PMH ${quoteTarget!.cardIndex} đã được sử dụng lúc ${timeStr}!\n↳ User: ${usedBy}`;
+                        return pushLineMessage(botToken, quoteTarget!.chatId, [{ type: 'text', text, quoteToken: quoteTarget!.quoteToken }]);
+                    })().catch((e: any) => ({ ok: false, status: 0, error: e?.message || 'push-failed' }))
+                    : Promise.resolve(null);
+
+                const updatePromise = updatedCount > 0
+                    ? (async () => {
+                        const batch = db.batch();
+                        toUpdate.forEach(ref => batch.update(ref, { status: 'USED', usedBy, usedAt: now }));
+                        await batch.commit();
+                    })()
+                    : Promise.resolve();
+
+                const [pushed] = await Promise.all([pushPromise, updatePromise]);
+                const quotedSent = Boolean(pushed?.ok);
+                const quoteError = pushed && !pushed.ok ? (pushed.status === 429 ? 'quota' : pushed.error) : undefined;
 
                 res.status(200).json({
                     success: true,

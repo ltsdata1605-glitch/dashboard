@@ -11,8 +11,10 @@
     <link rel="preconnect" href="https://static.line-scdn.net" crossorigin>
     <link rel="preconnect" href="https://api.line.me" crossorigin>
     <link rel="dns-prefetch" href="https://static.line-scdn.net">
-    <!-- LINE LIFF SDK v2 -->
-    <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <!-- LINE LIFF SDK v2 — tải ASYNC để script trong body (copy + gọi server) chạy NGAY, không chờ 130KB SDK.
+         liff.closeWindow() gọi được trước cả liff.init() (SDK ≥ 2.4) nên đường nhanh không cần chờ init. -->
+    <script>window.__sdkLoaded = new Promise(function (r) { window.__sdkReady = r; });</script>
+    <script async charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js" onload="window.__sdkReady()"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body {
@@ -80,7 +82,7 @@
 </head>
 <body>
     <script>
-        // BƯỚC 0: Tối ưu hoá cực hạn - Trích xuất params & Copy Clipboard NGAY TỨC THÌ trong 1ms
+        // BƯỚC 0 (chạy ngay khi parse, trước cả SDK): đọc params → copy → gọi server luôn nếu đã biết tên.
         const urlParams = new URLSearchParams(window.location.search);
         const couponCode = (urlParams.get('code') || '').trim();
         const couponType = (urlParams.get('type') || 'PMH').trim();
@@ -88,10 +90,17 @@
         const requestedBy = (urlParams.get('reqBy') || '').trim().replace(/^[@👤\s]+/, '');
         const productName = (urlParams.get('prod') || '').trim();
         const targetLiffId = (urlParams.get('liffId') || '2011679071-BclvutpD').trim();
+        const MARK_USED_BASE = 'https://linebotwebhook-zrczpxylcq-as.a.run.app';
+        const localSentKey = couponCode ? ('coupon_sent_' + couponCode) : '';
+        let cachedName = '';
+        let alreadySentLocally = false;
+        try {
+            cachedName = localStorage.getItem('line_user_display_name') || '';
+            alreadySentLocally = Boolean(localSentKey && localStorage.getItem(localSentKey));
+        } catch (_) {}
 
-        // Copy tức thì vào bộ nhớ tạm không chờ LIFF — nhưng PHẢI ĐO kết quả thật: WebView LINE trên
-        // điện thoại chặn ghi clipboard khi không có cử chỉ chạm (execCommand trả false / writeText reject).
-        // Hỏng thì fastProcess() sẽ hiện nút "Chạm để copy" thay vì tự đóng (lỗi thật 2026-09-21).
+        // Copy tức thì — nhưng PHẢI ĐO kết quả thật: WebView LINE trên điện thoại chặn ghi clipboard khi
+        // không có cử chỉ chạm (execCommand trả false / writeText reject). Hỏng thì hiện nút "Chạm để copy".
         function copyToClipboard(text) {
             let ok = false;
             try {
@@ -114,6 +123,19 @@
             return Promise.resolve(ok);
         }
         const autoCopyPromise = couponCode ? copyToClipboard(couponCode) : Promise.resolve(false);
+
+        // Gọi server đánh dấu USED + bot gửi xác nhận trích dẫn. Tham số qua query + POST không body →
+        // "simple request" không tốn preflight OPTIONS; keepalive → đóng LIFF sớm request vẫn đi tới nơi.
+        function markUsed(usedBy) {
+            const url = MARK_USED_BASE + '?action=mark-used&code=' + encodeURIComponent(couponCode)
+                + '&usedBy=' + encodeURIComponent(usedBy) + '&index=' + encodeURIComponent(cardIndex);
+            return fetch(url, { method: 'POST', keepalive: true }).then(r => r.json());
+        }
+        // ĐƯỜNG NHANH: đã có tên (cache từ lần trước) + copy tự động được → bắn request ngay, không chờ SDK/init.
+        let earlyMarkPromise = null;
+        if (couponCode && cachedName && !alreadySentLocally) {
+            autoCopyPromise.then(ok => { if (ok) earlyMarkPromise = markUsed(cachedName); });
+        }
     </script>
 
     <div class="card">
@@ -132,132 +154,128 @@
         const spinner = document.getElementById('spinner');
         const btnManualCopy = document.getElementById('btnManualCopy');
 
-        const MARK_USED_URL = 'https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used';
-        const localSentKey = couponCode ? ('coupon_sent_' + couponCode) : '';
+        const timeout = (ms, value) => new Promise(resolve => setTimeout(() => resolve(value), ms));
 
-        function closeWindowSoon(ms) {
-            setTimeout(() => {
-                if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
-            }, ms);
+        // Đóng LIFF — không cần chờ liff.init (SDK ≥ 2.4), chỉ cần SDK đã tải.
+        async function closeNow(delayMs) {
+            if (delayMs) await timeout(delayMs);
+            try { await window.__sdkLoaded; liff.closeWindow(); } catch (_) {}
+        }
+        // BẢO HIỂM: tự đóng nếu treo (mạng/LIFF lỗi). Bị huỷ khi cần người dùng chạm nút / trình duyệt ngoài.
+        let safetyCloseTimer = setTimeout(() => closeNow(0), 9000);
+
+        // init chạy nền song song từ đầu; chỉ những nhánh cần (lấy tên lần đầu, gửi tin dự phòng) mới chờ nó.
+        const initPromise = (async () => {
+            await window.__sdkLoaded;
+            await liff.init({ liffId: targetLiffId, withLoginOnExternalBrowser: false });
+        })();
+        initPromise.then(() => {
+            if (!liff.isInClient()) showExternalBrowserUI();
+        }).catch(err => console.warn('[LIFF] Init error:', err));
+
+        function showExternalBrowserUI() {
+            clearTimeout(safetyCloseTimer);
+            spinner.style.display = 'none';
+            statusTitle.textContent = '📋 Chạm để copy mã';
+            statusDesc.textContent = 'Bạn đang mở trên trình duyệt ngoài.';
+            statusDetail.textContent = '💡 Bạn có thể dán mã vào nơi cần dùng.';
+            btnManualCopy.textContent = '📋 Sao chép mã';
+            btnManualCopy.style.display = 'block';
+            btnManualCopy.onclick = async () => {
+                const ok = await copyToClipboard(couponCode);
+                btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Hãy chọn & copy mã ở trên';
+                if (ok) btnManualCopy.style.background = '#059669';
+            };
         }
 
-        // BẢO HIỂM: tự đóng nếu treo (mạng/LIFF lỗi). Bị huỷ khi cần người dùng chạm nút.
-        let safetyCloseTimer = setTimeout(() => {
-            if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
-        }, 9000);
+        // Tên người bấm: cache (0ms) → ID token sau init (không tốn mạng, scope openid+profile) → getProfile
+        async function resolveDisplayName() {
+            if (cachedName) return cachedName;
+            let displayName = '';
+            try {
+                await initPromise;
+                const idToken = liff.getDecodedIDToken();
+                if (idToken && idToken.name) displayName = idToken.name;
+                if (!displayName) {
+                    const profile = await Promise.race([liff.getProfile(), timeout(2500, null)]);
+                    if (profile && profile.displayName) displayName = profile.displayName;
+                }
+            } catch (e) {
+                console.warn('[LIFF] resolve name error:', e);
+            }
+            if (displayName) { try { localStorage.setItem('line_user_display_name', displayName); } catch (_) {} }
+            return displayName || 'Bạn';
+        }
 
         function getVietnamTime() {
             return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
         }
 
-        // 1. LẤY TÊN NGƯỜI DÙNG THỰC TẾ (STR_BOSS SƠN, ...) — cache localStorage → ID token → getProfile
-        async function resolveDisplayName() {
-            let displayName = '';
-            try { displayName = localStorage.getItem('line_user_display_name') || ''; } catch (_) {}
-            if (!displayName) {
-                try {
-                    const idToken = liff.getDecodedIDToken();
-                    if (idToken && idToken.name) displayName = idToken.name;
-                } catch (_) {}
+        // Dự phòng: bot không gửi được (hết hạn mức push / lỗi mạng) → gửi tin thường thay người dùng (không trích dẫn được)
+        async function sendFallbackMessage(displayName) {
+            const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
+            const messageText = `👉 ${prefix} đã được sử dụng lúc ${getVietnamTime()}!\n↳ User: ${displayName}`;
+            try {
+                await initPromise;
+                await Promise.race([liff.sendMessages([{ type: 'text', text: messageText }]), timeout(1500)]);
+            } catch (sendErr) {
+                console.warn('[LIFF] sendMessages error:', sendErr);
             }
-            if (!displayName) {
-                try {
-                    const profile = await Promise.race([
-                        liff.getProfile(),
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
-                    ]);
-                    if (profile && profile.displayName) {
-                        displayName = profile.displayName;
-                        try { localStorage.setItem('line_user_display_name', displayName); } catch (_) {}
-                    }
-                } catch (errProfile) {
-                    console.warn('[LIFF] getProfile timeout or error:', errProfile);
-                }
-            } else {
-                liff.getProfile().then(p => {
-                    if (p && p.displayName && p.displayName !== displayName) {
-                        try { localStorage.setItem('line_user_display_name', p.displayName); } catch (_) {}
-                    }
-                }).catch(() => {});
-            }
-            return displayName || 'Bạn';
         }
 
-        // 2. XÁC NHẬN SỬ DỤNG — gọi server đánh dấu USED. Server để BOT gửi tin xác nhận TRÍCH DẪN đúng thẻ
-        // (LIFF sendMessages không hỗ trợ quoteToken). Chỉ khi bot gửi không được (hết hạn mức push, lỗi mạng)
-        // mới tự gửi tin thường thay người dùng như trước để không mất xác nhận.
-        async function confirmUsage(displayName) {
-            const alreadySentLocally = Boolean(localSentKey && localStorage.getItem(localSentKey));
+        // XÁC NHẬN SỬ DỤNG. Server để BOT gửi tin xác nhận TRÍCH DẪN đúng thẻ (LIFF sendMessages không có quoteToken).
+        async function confirmUsage(displayName, existingPromise) {
             if (alreadySentLocally) {
                 spinner.style.display = 'none';
                 statusTitle.textContent = '✅ Đã sao chép mã coupon!';
                 statusDesc.textContent = '💡 Bạn đã xác nhận sử dụng mã này rồi.';
                 statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
-                closeWindowSoon(1000);
+                closeNow(900);
                 return;
             }
-
             statusTitle.textContent = '⚡ Đang gửi xác nhận...';
             statusDesc.textContent = 'Bot sẽ trả lời trích dẫn đúng thẻ coupon.';
             statusDetail.textContent = '';
+            if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
 
-            let markRes = null;
-            if (couponCode) {
-                try {
-                    markRes = await Promise.race([
-                        fetch(MARK_USED_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ code: couponCode, usedBy: displayName, index: cardIndex })
-                        }).then(r => r.json()),
-                        // Server phải push xong mới trả lời (~0.5-1s, cold start có thể 3-4s)
-                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000))
-                    ]);
-                } catch (e) {
-                    console.warn('[LIFF] mark-used fetch error:', e);
-                }
+            const request = (existingPromise || markUsed(displayName)).then(r => ({ res: r })).catch(e => ({ err: e }));
+            const outcome = await Promise.race([request, timeout(4000, { timedOut: true })]);
+
+            if (outcome.timedOut) {
+                // Server chậm (cold start): request keepalive vẫn tới nơi, bot sẽ tự đăng xác nhận → đóng luôn,
+                // KHÔNG gửi dự phòng để không bị 2 tin.
+                spinner.style.display = 'none';
+                statusTitle.textContent = '✅ Đã copy mã!';
+                statusDesc.textContent = 'Xác nhận sẽ được bot đăng trong giây lát.';
+                closeNow(0);
+                return;
             }
-
+            const markRes = outcome.res || null;
             if (markRes && markRes.alreadyUsed) {
-                if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
                 spinner.style.display = 'none';
                 statusTitle.textContent = '⚠️ Mã này đã được sử dụng!';
                 statusDesc.textContent = markRes.previousUser
                     ? `Đã được ${markRes.previousUser} bấm sử dụng trước đó.`
                     : 'Mã này đã có người xác nhận sử dụng.';
                 statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
-                closeWindowSoon(1400);
+                closeNow(1400);
                 return;
             }
-
-            if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
-
             if (markRes && markRes.quotedSent) {
                 spinner.style.display = 'none';
                 statusTitle.textContent = '✅ Đã copy & xác nhận!';
-                statusDesc.textContent = 'Bot đã trả lời trích dẫn thẻ coupon trong nhóm.';
-                closeWindowSoon(600);
+                statusDesc.textContent = 'Bot đã trả lời trích dẫn thẻ coupon.';
+                closeNow(0);
                 return;
             }
-
-            // Dự phòng: bot không gửi được → gửi tin thường thay người dùng (không trích dẫn được)
-            const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
-            const messageText = `👉 ${prefix} đã được sử dụng lúc ${getVietnamTime()}!\n↳ User: ${displayName}`;
-            try {
-                await Promise.race([
-                    liff.sendMessages([{ type: 'text', text: messageText }]),
-                    new Promise(resolve => setTimeout(resolve, 1500))
-                ]);
-            } catch (sendErr) {
-                console.warn('[LIFF] sendMessages error:', sendErr);
-            }
+            await sendFallbackMessage(displayName);
             spinner.style.display = 'none';
             statusTitle.textContent = '✅ Đã copy & xác nhận!';
-            closeWindowSoon(300);
+            closeNow(0);
         }
 
-        // 3. Copy thất bại lúc tải trang → chờ người dùng CHẠM (cử chỉ thật thì clipboard luôn cho phép)
-        function waitForManualCopy(displayNamePromise) {
+        // Copy thất bại lúc tải trang → chờ người dùng CHẠM (cử chỉ thật thì clipboard luôn cho phép)
+        function waitForManualCopy() {
             clearTimeout(safetyCloseTimer);
             spinner.style.display = 'none';
             statusTitle.textContent = '📋 Chạm để copy mã';
@@ -272,44 +290,23 @@
                 btnManualCopy.style.background = ok ? '#059669' : '#B45309';
                 if (!ok) { btnManualCopy.disabled = false; return; }
                 spinner.style.display = 'block';
-                await confirmUsage(await displayNamePromise);
+                await confirmUsage(await resolveDisplayName(), null);
             };
         }
 
         async function fastProcess() {
             try {
-                await liff.init({ liffId: targetLiffId, withLoginOnExternalBrowser: false });
                 const autoCopied = await autoCopyPromise;
-
-                if (!liff.isInClient()) {
-                    clearTimeout(safetyCloseTimer);
-                    spinner.style.display = 'none';
-                    statusTitle.textContent = autoCopied ? '✅ Đã sao chép mã coupon!' : '📋 Chạm để copy mã';
-                    statusDesc.textContent = 'Bạn đang mở trên trình duyệt ngoài.';
-                    btnManualCopy.style.display = 'block';
-                    btnManualCopy.onclick = async () => {
-                        const ok = await copyToClipboard(couponCode);
-                        btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Hãy chọn & copy mã ở trên';
-                        if (ok) btnManualCopy.style.background = '#059669';
-                    };
-                    statusDetail.textContent = '💡 Bạn có thể dán mã vào nơi cần dùng.';
-                    return;
-                }
-
-                const displayNamePromise = resolveDisplayName();
-                if (!autoCopied) {
-                    waitForManualCopy(displayNamePromise);
-                    return;
-                }
-                await confirmUsage(await displayNamePromise);
+                if (!autoCopied) { waitForManualCopy(); return; }
+                const displayName = await resolveDisplayName();
+                await confirmUsage(displayName, earlyMarkPromise);
                 clearTimeout(safetyCloseTimer);
             } catch (err) {
-                console.warn('[LIFF] Init error:', err);
+                console.warn('[LIFF] Flow error:', err);
                 clearTimeout(safetyCloseTimer);
-                if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
+                closeNow(0);
             }
         }
-
         fastProcess();
     </script>
 </body>
