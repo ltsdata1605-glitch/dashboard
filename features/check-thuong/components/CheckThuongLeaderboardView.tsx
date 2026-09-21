@@ -193,7 +193,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
             className="w-full h-full overflow-y-auto bg-slate-50/50 dark:bg-slate-950/50"
             style={{ fontFamily: `'${activeFont}', 'UTM Avo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` }}
         >
-            <div className="max-w-[960px] mx-auto w-full px-3 sm:px-4 py-3 sm:py-4">
+            <div className="max-w-[960px] mx-auto w-full px-3 sm:px-4 lg:px-8 pt-2 pb-4 lg:pb-8">
                 {/* TIÊU ĐỀ TRANG */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 mb-3.5">
                     <div className="flex items-center gap-2.5">

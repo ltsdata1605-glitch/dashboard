@@ -36,6 +36,10 @@
         .hidden { display: none !important; }
         @keyframes initial-spin { to { transform: rotate(360deg); } }
         .app-shell { max-width: 960px; margin: 0 auto; padding: 0; }
+        /* Khung chung 960px với Report BI (BiWrapper: max-w-[960px] + lg:px-8) và Báo cáo khai thác:
+           đệm ngang 16px dưới 1024px, 32px từ 1024px — đổi khung thì đổi cả 2 nơi kia cho khớp. */
+        #mainContent { padding: 0 16px; }
+        @media (min-width: 1024px) { #mainContent { padding: 0 32px; } }
         /* Landing hero */
         .landing-hero { background: linear-gradient(180deg, #eef2ff 0%, #f0f9ff 40%, #f8fafc 100%); padding: 0 0 30px 0; text-align: center; }
         .nav-bar { max-width: 960px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
@@ -394,7 +398,7 @@
         <div id="message" class="hidden" style="text-align:center;color:#e11d48;background:#fff1f2;padding:14px;margin-bottom:14px;border-radius:12px;border:1px solid #fecdd3;font-size:13px;font-weight:500"></div>
 
         <!-- Main Content Area (hidden until file is loaded) -->
-        <div id="mainContent" class="hidden" style="padding:0 16px">
+        <div id="mainContent" class="hidden">
             <div style="display:flex;flex-direction:column;gap:14px">
                 <div id="summaryReportArea">
                     <div id="summaryCard" class="summary-banner" style="margin-bottom:14px">

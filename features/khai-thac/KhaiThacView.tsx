@@ -239,8 +239,9 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
         { id: 'history', label: 'Nhật ký', badge: reports.length || undefined },
     ];
 
+    // Khung chung 960px với Report BI (BiWrapper main) và Check thưởng: rộng tối đa 960, đệm ngang 32px desktop, không đệm trên.
     return (
-        <div className="w-full max-w-[1400px] mx-auto px-2 lg:px-4 py-2 lg:py-3 space-y-3" data-testid="khai-thac-view">
+        <div className="w-full max-w-[960px] mx-auto px-2 sm:px-4 lg:px-8 pt-2 pb-4 lg:pb-8 space-y-3" data-testid="khai-thac-view">
             {/* Thanh điều hướng con + tên nhân viên */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Tabs items={tabItems} activeId={tab} onChange={id => setTab(id as SubTab)} variant="underline" size="sm" />

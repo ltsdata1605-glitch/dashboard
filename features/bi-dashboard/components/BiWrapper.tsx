@@ -238,7 +238,11 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
 
             {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
-            <main className="p-0 sm:p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
+            {/* KHUNG CHUNG 960px — Report BI / Check thưởng / Báo cáo khai thác dùng cùng khung: rộng tối đa
+                960px căn giữa, đệm ngang 32px ở desktop, KHÔNG đệm trên (bản cũ `lg:p-8` để 32px trống
+                giữa thanh tiêu đề app và tiêu đề "SIÊU THỊ" — chủ dự án yêu cầu bỏ 2026-09-21). Từng view
+                con đã có `pt-2` ở hàng tiêu đề riêng. Đổi khung này thì đổi cả 2 nơi kia cho khớp. */}
+            <main className="p-0 sm:px-4 sm:pb-4 lg:px-8 lg:pb-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
                 <Suspense fallback={<TabSpinner />}>
                     {/* Dashboard view */}
                     {mountedViews.has('dashboard') && (
