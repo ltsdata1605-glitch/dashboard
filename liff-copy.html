@@ -64,14 +64,17 @@
             background: #06C755;
             color: #FFFFFF;
             border: none;
-            padding: 10px 20px;
+            min-height: 48px;
+            padding: 12px 20px;
+            margin-top: 12px;
             border-radius: 10px;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 700;
             cursor: pointer;
             display: none;
             width: 100%;
         }
+        .btn-copy:disabled { opacity: 0.85; }
         .status-msg { font-size: 11px; color: #64748B; margin-top: 10px; }
     </style>
 </head>
@@ -86,24 +89,31 @@
         const productName = (urlParams.get('prod') || '').trim();
         const targetLiffId = (urlParams.get('liffId') || '2011679071-BclvutpD').trim();
 
-        // Copy tức thì vào bộ nhớ tạm không chờ LIFF
-        if (couponCode) {
+        // Copy tức thì vào bộ nhớ tạm không chờ LIFF — nhưng PHẢI ĐO kết quả thật: WebView LINE trên
+        // điện thoại chặn ghi clipboard khi không có cử chỉ chạm (execCommand trả false / writeText reject).
+        // Hỏng thì fastProcess() sẽ hiện nút "Chạm để copy" thay vì tự đóng (lỗi thật 2026-09-21).
+        function copyToClipboard(text) {
+            let ok = false;
             try {
                 const ta = document.createElement('textarea');
-                ta.value = couponCode;
+                ta.value = text;
+                ta.setAttribute('readonly', '');
                 ta.style.position = 'fixed';
                 ta.style.left = '-9999px';
                 ta.style.opacity = '0';
                 document.body.appendChild(ta);
                 ta.focus();
                 ta.select();
-                document.execCommand('copy');
+                ta.setSelectionRange(0, text.length);
+                ok = document.execCommand('copy') === true;
                 document.body.removeChild(ta);
             } catch (_) {}
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(couponCode).catch(() => {});
+                return navigator.clipboard.writeText(text).then(() => true).catch(() => ok);
             }
+            return Promise.resolve(ok);
         }
+        const autoCopyPromise = couponCode ? copyToClipboard(couponCode) : Promise.resolve(false);
     </script>
 
     <div class="card">
@@ -111,7 +121,7 @@
         <div id="statusTitle" class="title">⚡ Đang xử lý...</div>
         <div id="statusDesc" class="desc">Tự động sao chép & gửi xác nhận</div>
         <div id="codeDisplay" class="code-box"><script>document.write(couponCode || '---');</script></div>
-        <button id="btnManualCopy" class="btn-copy" onclick="manualCopy()">📋 Sao chép thủ công</button>
+        <button id="btnManualCopy" class="btn-copy" type="button">📋 Sao chép thủ công</button>
         <div id="statusDetail" class="status-msg">Tự động đóng trong tích tắc...</div>
     </div>
 
@@ -122,197 +132,184 @@
         const spinner = document.getElementById('spinner');
         const btnManualCopy = document.getElementById('btnManualCopy');
 
-        // Hàm sao chép thủ công phòng khi người dùng cần
-        function manualCopy() {
-            if (!couponCode) return;
-            navigator.clipboard.writeText(couponCode).then(() => {
-                btnManualCopy.textContent = '✅ Đã sao chép!';
-                btnManualCopy.style.background = '#059669';
-            }).catch(() => {
-                const ta = document.createElement('textarea');
-                ta.value = couponCode;
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                btnManualCopy.textContent = '✅ Đã sao chép!';
-            });
+        const MARK_USED_URL = 'https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used';
+        const localSentKey = couponCode ? ('coupon_sent_' + couponCode) : '';
+
+        function closeWindowSoon(ms) {
+            setTimeout(() => {
+                if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
+            }, ms);
         }
 
-        // BẢO HIỂM: Tối đa 3.5 giây tự động đóng cửa sổ nếu gặp sự cố mạng
-        const safetyCloseTimer = setTimeout(() => {
-            if (typeof liff !== 'undefined' && liff.closeWindow) {
-                liff.closeWindow();
+        // BẢO HIỂM: tự đóng nếu treo (mạng/LIFF lỗi). Bị huỷ khi cần người dùng chạm nút.
+        let safetyCloseTimer = setTimeout(() => {
+            if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
+        }, 9000);
+
+        function getVietnamTime() {
+            return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
+        }
+
+        // 1. LẤY TÊN NGƯỜI DÙNG THỰC TẾ (STR_BOSS SƠN, ...) — cache localStorage → ID token → getProfile
+        async function resolveDisplayName() {
+            let displayName = '';
+            try { displayName = localStorage.getItem('line_user_display_name') || ''; } catch (_) {}
+            if (!displayName) {
+                try {
+                    const idToken = liff.getDecodedIDToken();
+                    if (idToken && idToken.name) displayName = idToken.name;
+                } catch (_) {}
             }
-        }, 3500);
+            if (!displayName) {
+                try {
+                    const profile = await Promise.race([
+                        liff.getProfile(),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
+                    ]);
+                    if (profile && profile.displayName) {
+                        displayName = profile.displayName;
+                        try { localStorage.setItem('line_user_display_name', displayName); } catch (_) {}
+                    }
+                } catch (errProfile) {
+                    console.warn('[LIFF] getProfile timeout or error:', errProfile);
+                }
+            } else {
+                liff.getProfile().then(p => {
+                    if (p && p.displayName && p.displayName !== displayName) {
+                        try { localStorage.setItem('line_user_display_name', p.displayName); } catch (_) {}
+                    }
+                }).catch(() => {});
+            }
+            return displayName || 'Bạn';
+        }
+
+        // 2. XÁC NHẬN SỬ DỤNG — gọi server đánh dấu USED. Server để BOT gửi tin xác nhận TRÍCH DẪN đúng thẻ
+        // (LIFF sendMessages không hỗ trợ quoteToken). Chỉ khi bot gửi không được (hết hạn mức push, lỗi mạng)
+        // mới tự gửi tin thường thay người dùng như trước để không mất xác nhận.
+        async function confirmUsage(displayName) {
+            const alreadySentLocally = Boolean(localSentKey && localStorage.getItem(localSentKey));
+            if (alreadySentLocally) {
+                spinner.style.display = 'none';
+                statusTitle.textContent = '✅ Đã sao chép mã coupon!';
+                statusDesc.textContent = '💡 Bạn đã xác nhận sử dụng mã này rồi.';
+                statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
+                closeWindowSoon(1000);
+                return;
+            }
+
+            statusTitle.textContent = '⚡ Đang gửi xác nhận...';
+            statusDesc.textContent = 'Bot sẽ trả lời trích dẫn đúng thẻ coupon.';
+            statusDetail.textContent = '';
+
+            let markRes = null;
+            if (couponCode) {
+                try {
+                    markRes = await Promise.race([
+                        fetch(MARK_USED_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code: couponCode, usedBy: displayName, index: cardIndex })
+                        }).then(r => r.json()),
+                        // Server phải push xong mới trả lời (~0.5-1s, cold start có thể 3-4s)
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000))
+                    ]);
+                } catch (e) {
+                    console.warn('[LIFF] mark-used fetch error:', e);
+                }
+            }
+
+            if (markRes && markRes.alreadyUsed) {
+                if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
+                spinner.style.display = 'none';
+                statusTitle.textContent = '⚠️ Mã này đã được sử dụng!';
+                statusDesc.textContent = markRes.previousUser
+                    ? `Đã được ${markRes.previousUser} bấm sử dụng trước đó.`
+                    : 'Mã này đã có người xác nhận sử dụng.';
+                statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
+                closeWindowSoon(1400);
+                return;
+            }
+
+            if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
+
+            if (markRes && markRes.quotedSent) {
+                spinner.style.display = 'none';
+                statusTitle.textContent = '✅ Đã copy & xác nhận!';
+                statusDesc.textContent = 'Bot đã trả lời trích dẫn thẻ coupon trong nhóm.';
+                closeWindowSoon(600);
+                return;
+            }
+
+            // Dự phòng: bot không gửi được → gửi tin thường thay người dùng (không trích dẫn được)
+            const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
+            const messageText = `👉 ${prefix} đã được sử dụng lúc ${getVietnamTime()}!\n↳ User: ${displayName}`;
+            try {
+                await Promise.race([
+                    liff.sendMessages([{ type: 'text', text: messageText }]),
+                    new Promise(resolve => setTimeout(resolve, 1500))
+                ]);
+            } catch (sendErr) {
+                console.warn('[LIFF] sendMessages error:', sendErr);
+            }
+            spinner.style.display = 'none';
+            statusTitle.textContent = '✅ Đã copy & xác nhận!';
+            closeWindowSoon(300);
+        }
+
+        // 3. Copy thất bại lúc tải trang → chờ người dùng CHẠM (cử chỉ thật thì clipboard luôn cho phép)
+        function waitForManualCopy(displayNamePromise) {
+            clearTimeout(safetyCloseTimer);
+            spinner.style.display = 'none';
+            statusTitle.textContent = '📋 Chạm để copy mã';
+            statusDesc.textContent = 'Điện thoại không cho tự sao chép — chạm nút bên dưới.';
+            statusDetail.textContent = '';
+            btnManualCopy.textContent = '📋 Chạm để copy & xác nhận';
+            btnManualCopy.style.display = 'block';
+            btnManualCopy.onclick = async () => {
+                btnManualCopy.disabled = true;
+                const ok = await copyToClipboard(couponCode);
+                btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Hãy chọn & copy mã ở trên';
+                btnManualCopy.style.background = ok ? '#059669' : '#B45309';
+                if (!ok) { btnManualCopy.disabled = false; return; }
+                spinner.style.display = 'block';
+                await confirmUsage(await displayNamePromise);
+            };
+        }
 
         async function fastProcess() {
             try {
-                // Khởi tạo LIFF siêu tốc
                 await liff.init({ liffId: targetLiffId, withLoginOnExternalBrowser: false });
+                const autoCopied = await autoCopyPromise;
 
                 if (!liff.isInClient()) {
                     clearTimeout(safetyCloseTimer);
                     spinner.style.display = 'none';
-                    statusTitle.textContent = '✅ Đã sao chép mã coupon!';
+                    statusTitle.textContent = autoCopied ? '✅ Đã sao chép mã coupon!' : '📋 Chạm để copy mã';
                     statusDesc.textContent = 'Bạn đang mở trên trình duyệt ngoài.';
                     btnManualCopy.style.display = 'block';
+                    btnManualCopy.onclick = async () => {
+                        const ok = await copyToClipboard(couponCode);
+                        btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Hãy chọn & copy mã ở trên';
+                        if (ok) btnManualCopy.style.background = '#059669';
+                    };
                     statusDetail.textContent = '💡 Bạn có thể dán mã vào nơi cần dùng.';
                     return;
                 }
 
-                // 1. LẤY TÊN NGƯỜI DÙNG THỰC TẾ (STR_BOSS SƠN, ...)
-                // Ưu tiên 1: Lấy từ Cache LocalStorage (tức thì 0ms cho các lần sau)
-                let displayName = '';
-                try {
-                    displayName = localStorage.getItem('line_user_display_name') || '';
-                } catch (_) {}
-
-                // Ưu tiên 2: Nếu chưa có cache, lấy từ ID Token nếu có
-                if (!displayName) {
-                    try {
-                        const idToken = liff.getDecodedIDToken();
-                        if (idToken && idToken.name) {
-                            displayName = idToken.name;
-                        }
-                    } catch (_) {}
-                }
-
-                // Ưu tiên 3: Gọi liff.getProfile() với timeout đủ lớn (2500ms) để không bị ngắt quãng
-                if (!displayName) {
-                    try {
-                        const profile = await Promise.race([
-                            liff.getProfile(),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2500))
-                        ]);
-                        if (profile && profile.displayName) {
-                            displayName = profile.displayName;
-                            try { localStorage.setItem('line_user_display_name', displayName); } catch (_) {}
-                        }
-                    } catch (errProfile) {
-                        console.warn('[LIFF] getProfile timeout or error:', errProfile);
-                    }
-                } else {
-                    // Nếu đã có từ cache, ngầm cập nhật lại cache profile nếu có thay đổi
-                    liff.getProfile().then(p => {
-                        if (p && p.displayName && p.displayName !== displayName) {
-                            try { localStorage.setItem('line_user_display_name', p.displayName); } catch (_) {}
-                        }
-                    }).catch(() => {});
-                }
-
-                // Nếu vẫn không lấy được (trường hợp cực kỳ hiếm) thì mới fallback
-                if (!displayName) {
-                    displayName = 'Bạn';
-                }
-
-                // 2. Tính thời gian thực tế theo định dạng Giờ:Phút (HH:mm) múi giờ Việt Nam
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('vi-VN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
-                    timeZone: 'Asia/Ho_Chi_Minh'
-                });
-
-                // 3. SOẠN TIN NHẮN XÁC NHẬN SỬ DỤNG (Không trả lời trích dẫn)
-                const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
-                const messageText = `👉 ${prefix} đã được sử dụng lúc ${timeString}!\n↳ User: ${displayName}`;
-
-                // 4. CHỐNG SPAM: Kiểm tra & Cập nhật trạng thái USED vào server
-                const localSentKey = couponCode ? ('coupon_sent_' + couponCode) : '';
-                const alreadySentLocally = Boolean(localSentKey && localStorage.getItem(localSentKey));
-
-                if (alreadySentLocally) {
-                    clearTimeout(safetyCloseTimer);
-                    spinner.style.display = 'none';
-                    statusTitle.textContent = '✅ Đã sao chép mã coupon!';
-                    statusDesc.textContent = '💡 Bạn đã xác nhận sử dụng mã này rồi.';
-                    statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
-                    setTimeout(() => {
-                        if (typeof liff !== 'undefined' && liff.closeWindow) {
-                            liff.closeWindow();
-                        }
-                    }, 1000);
+                const displayNamePromise = resolveDisplayName();
+                if (!autoCopied) {
+                    waitForManualCopy(displayNamePromise);
                     return;
                 }
-
-                let alreadyUsedOnServer = false;
-                let previousUserName = '';
-
-                if (couponCode) {
-                    try {
-                        const markRes = await Promise.race([
-                            fetch('https://linebotwebhook-zrczpxylcq-as.a.run.app?action=mark-used', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    code: couponCode,
-                                    usedBy: displayName,
-                                    index: cardIndex
-                                })
-                            }).then(r => r.json()),
-                            new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 1500))
-                        ]);
-
-                        if (markRes && markRes.alreadyUsed) {
-                            alreadyUsedOnServer = true;
-                            previousUserName = markRes.previousUser || '';
-                        }
-                    } catch (e) {
-                        console.warn('[LIFF] mark-used fetch error:', e);
-                    }
-                }
-
-                // Nếu mã này đã được sử dụng trước đó (tránh spam tin nhắn vào nhóm)
-                if (alreadyUsedOnServer) {
-                    if (localSentKey) {
-                        try { localStorage.setItem(localSentKey, 'true'); } catch (_) {}
-                    }
-                    clearTimeout(safetyCloseTimer);
-                    spinner.style.display = 'none';
-                    statusTitle.textContent = '⚠️ Mã này đã được sử dụng!';
-                    statusDesc.textContent = previousUserName
-                        ? `Đã được ${previousUserName} bấm sử dụng trước đó.`
-                        : 'Mã này đã có người xác nhận sử dụng.';
-                    statusDetail.textContent = 'Không gửi lại tin nhắn để tránh spam nhóm.';
-                    setTimeout(() => {
-                        if (typeof liff !== 'undefined' && liff.closeWindow) {
-                            liff.closeWindow();
-                        }
-                    }, 1400);
-                    return;
-                }
-
-                // 5. Đánh dấu đã gửi thành công trên máy này ngay lập tức để không bao giờ gửi lần 2
-                if (localSentKey) {
-                    try { localStorage.setItem(localSentKey, 'true'); } catch (_) {}
-                }
-
-                // 6. Gửi tin nhắn xác nhận duy nhất 1 lần thay cho người dùng
-                try {
-                    await Promise.race([
-                        liff.sendMessages([{ type: 'text', text: messageText }]),
-                        new Promise(resolve => setTimeout(resolve, 1500))
-                    ]);
-                } catch (sendErr) {
-                    console.warn('[LIFF] sendMessages error:', sendErr);
-                }
-
-                // ĐÓNG NGAY LẬP TỨC
+                await confirmUsage(await displayNamePromise);
                 clearTimeout(safetyCloseTimer);
-                liff.closeWindow();
-
             } catch (err) {
                 console.warn('[LIFF] Init error:', err);
                 clearTimeout(safetyCloseTimer);
-                if (typeof liff !== 'undefined' && liff.closeWindow) {
-                    liff.closeWindow();
-                }
+                if (typeof liff !== 'undefined' && liff.closeWindow) liff.closeWindow();
             }
         }
 
-        // Kích hoạt xử lý siêu tốc ngay lập tức
         fastProcess();
     </script>
 </body>
