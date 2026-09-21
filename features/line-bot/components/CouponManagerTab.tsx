@@ -135,80 +135,251 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
     const isLowStock = stockSummary.unused < 30 && stockSummary.total > 0;
 
+    // ---- Mảnh hiển thị dùng CHUNG cho bảng (≥ md) và thẻ mobile — tránh 2 bản chép (mobile 2026-09-21) ----
+    const renderCopyButton = (c: Coupon, compact = false) => (
+        <>
+        <button
+            type="button"
+            onClick={() => handleCopyCode(c.id, c.code)}
+            title={`Bấm để copy mã: ${c.code}`}
+            className={`inline-flex items-center justify-center gap-1.5 ${compact ? 'h-9 px-3 font-mono tracking-wide' : 'px-3 py-1'} rounded-lg text-xs font-semibold border transition-all cursor-pointer shadow-2xs ${
+                copiedCode === c.code
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-500/20'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-300 dark:hover:bg-slate-700'
+            }`}
+        >
+            {copiedCode === c.code ? (
+                <>
+                    <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
+                    <span>Đã copy</span>
+                </>
+            ) : (
+                <>
+                    <Copy size={12} className="text-slate-400" />
+                    <span>{compact ? c.code : 'Copy'}</span>
+                </>
+            )}
+        </button>
+        </>
+    );
+    const renderProduct = (c: Coupon) => (
+        <>
+        {c.productName ? (
+            <div className="max-w-[220px] leading-tight">
+                <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate text-xs" title={c.productName}>
+                    {c.productName}
+                </span>
+                {c.syntax && (
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate mt-0.5" title={c.syntax}>
+                        {c.syntax}
+                    </span>
+                )}
+            </div>
+        ) : c.syntax ? (
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate max-w-[220px]" title={c.syntax}>
+                {c.syntax}
+            </span>
+        ) : (
+            <span className="text-slate-300 dark:text-slate-600">—</span>
+        )}
+        </>
+    );
+    const renderType = (c: Coupon) => (
+        <>
+        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
+            {c.type}
+        </span>
+        </>
+    );
+    const renderExpiry = (c: Coupon) => (
+        <>
+        {c.expiryDate ? (
+            <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono ${
+                    c.expiryDate === todayVN
+                        ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700'
+                        : c.expiryDate < todayVN
+                        ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400'
+                        : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                }`}
+                title={
+                    c.expiryDate === todayVN
+                        ? 'Hôm nay hết hạn (tự xoá khi sang ngày mới)'
+                        : `Hạn dùng đến hết ngày ${formatDisplayDate(c.expiryDate)}`
+                }
+            >
+                <Calendar size={11} className={c.expiryDate === todayVN ? 'text-amber-600' : 'text-slate-400'} />
+                <span>{formatDisplayDate(c.expiryDate)}</span>
+            </span>
+        ) : (
+            <span className="text-slate-400 dark:text-slate-500 text-[10px]">Vô thời hạn</span>
+        )}
+        </>
+    );
+    const renderStatus = (c: Coupon) => (
+        <>
+        {c.status === 'UNUSED' || !c.status ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+                <CheckCircle2 size={10} />
+                Chưa dùng
+            </span>
+        ) : c.status === 'SENT' ? (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400">
+                <Clock size={10} />
+                Đã phát
+            </span>
+        ) : (
+            <div className="leading-tight">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400" title={c.revokeReason || 'Đã thu hồi về kho'}>
+                    <RotateCcw size={10} />
+                    Đã thu hồi
+                </span>
+                {c.revokeReason && (
+                    <span className="text-[9px] text-amber-600 dark:text-amber-400/80 block mt-0.5 truncate max-w-[110px]" title={c.revokeReason}>
+                        {c.revokeReason}
+                    </span>
+                )}
+            </div>
+        )}
+        </>
+    );
+    const renderRecipient = (c: Coupon) => (
+        <>
+        {c.recipient ? (
+            <div className="leading-tight">
+                <span className="font-semibold text-slate-800 dark:text-white text-xs">{c.recipient}</span>
+                {c.recipientId && <span className="text-slate-400 block font-mono text-[9px] truncate max-w-[90px]" title={c.recipientId}>ID: {c.recipientId}</span>}
+            </div>
+        ) : (
+            <span className="text-slate-300 dark:text-slate-600">—</span>
+        )}
+        </>
+    );
+    const renderCopiedAt = (c: Coupon) => (
+        <>
+        {c.copiedAt ? (
+            <span
+                className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60"
+                title={`Đã copy mã lúc: ${formatDateTime(c.copiedAt)}`}
+            >
+                <Clock size={10} className="text-emerald-500" />
+                {formatDateTime(c.copiedAt)}
+            </span>
+        ) : (
+            <span className="text-slate-300 dark:text-slate-600">—</span>
+        )}
+        </>
+    );
+    const renderActions = (c: Coupon, compact = false) => (
+        <>
+        <div className="flex items-center justify-end gap-1">
+            {c.status === 'SENT' && (
+                <Button
+                    variant="ghost"
+                        size={compact ? 'icon' : 'md'}
+                    onClick={() => onRevokeCoupon(c.id)}
+                    className={`${compact ? '' : 'p-1'} text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded transition-colors`}
+                    title="Thu hồi về kho"
+                >
+                    <RotateCcw size={compact ? 16 : 13} />
+                </Button>
+            )}
+            <Button
+                variant="ghost"
+                        size={compact ? 'icon' : 'md'}
+                onClick={() => handleCopyCode(c.id, c.code)}
+                className={`${compact ? '' : 'p-1'} text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors`}
+                title={`Copy mã: ${c.code}`}
+            >
+                {copiedCode === c.code ? <Check size={compact ? 16 : 13} className="text-emerald-600" /> : <Copy size={compact ? 16 : 13} />}
+            </Button>
+            <Button
+                variant="ghost"
+                        size={compact ? 'icon' : 'md'}
+                onClick={() => onDeleteCoupon(c.id)}
+                className={`${compact ? '' : 'p-1'} text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors`}
+                title="Xoá mã này"
+            >
+                <Trash2 size={compact ? 16 : 13} />
+            </Button>
+        </div>
+        </>
+    );
+
     return (
         <div className="space-y-5">
             {/* KPI Cards - Bấm trực tiếp để chuyển bộ lọc trạng thái */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
                 <button
                     type="button"
                     onClick={() => setStatusFilter('ALL')}
-                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    className={`p-3 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                         statusFilter === 'ALL'
                             ? 'bg-slate-50 dark:bg-slate-800/90 border-slate-400 dark:border-slate-500 ring-2 ring-slate-400/40 shadow-sm'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 shadow-xs'
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Tổng Mã Trong Kho</span>
-                        <div className="p-2 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-xl">
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400">Tổng Mã Trong Kho</span>
+                        <div className="p-1.5 sm:p-2 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-xl shrink-0">
                             <Ticket size={16} />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white mt-2">{stockSummary.total}</p>
+                    <p className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mt-1 sm:mt-2 tabular-nums">{stockSummary.total}</p>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setStatusFilter('UNUSED')}
-                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    className={`p-3 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                         statusFilter === 'UNUSED'
                             ? 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-500 ring-2 ring-emerald-500/40 shadow-sm'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-xs'
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Chưa Dùng (Khả dụng)</span>
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400">Chưa Dùng (Khả dụng)</span>
+                        <div className="p-1.5 sm:p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl shrink-0">
                             <CheckCircle2 size={16} />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-2">{stockSummary.unused}</p>
+                    <p className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 sm:mt-2 tabular-nums">{stockSummary.unused}</p>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setStatusFilter('SENT')}
-                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    className={`p-3 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                         statusFilter === 'SENT'
                             ? 'bg-sky-50/50 dark:bg-sky-950/30 border-sky-500 ring-2 ring-sky-500/40 shadow-sm'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-sky-300 dark:hover:border-sky-700 shadow-xs'
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-sky-600 dark:text-sky-400">Đã Phát Thành Công</span>
-                        <div className="p-2 bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-xl">
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400">Đã Phát Thành Công</span>
+                        <div className="p-1.5 sm:p-2 bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-xl shrink-0">
                             <Clock size={16} />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-sky-600 dark:text-sky-400 mt-2">{stockSummary.sent}</p>
+                    <p className="text-xl sm:text-2xl font-black text-sky-600 dark:text-sky-400 mt-1 sm:mt-2 tabular-nums">{stockSummary.sent}</p>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setStatusFilter('REVOKED')}
-                    className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                    className={`p-3 sm:p-4 rounded-2xl border text-left transition-all cursor-pointer ${
                         statusFilter === 'REVOKED'
                             ? 'bg-amber-50/50 dark:bg-amber-950/30 border-amber-500 ring-2 ring-amber-500/40 shadow-sm'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-700 shadow-xs'
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">Đã Thu Hồi Về Kho</span>
-                        <div className="p-2 bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-xl">
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400">Đã Thu Hồi Về Kho</span>
+                        <div className="p-1.5 sm:p-2 bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-xl shrink-0">
                             <RotateCcw size={16} />
                         </div>
                     </div>
-                    <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-2">{stockSummary.revoked}</p>
+                    <p className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 mt-1 sm:mt-2 tabular-nums">{stockSummary.revoked}</p>
                 </button>
             </div>
 
@@ -380,7 +551,45 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
             {/* Unified Coupons Table - Bảng Quản Lý Mã & Lịch Sử Hợp Nhất */}
             <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+                {/* MOBILE (< md): danh sách thẻ — bảng 9 cột tràn ngang không dùng được trên điện thoại */}
+                <div className="md:hidden">
+                    {filteredCoupons.length === 0 ? (
+                        <div className="py-10 px-4 text-center text-slate-400 text-xs">
+                            <p className="font-semibold text-slate-600 dark:text-slate-400">
+                                {isLoading ? 'Đang tải dữ liệu...' : 'Không tìm thấy mã coupon nào phù hợp với bộ lọc.'}
+                            </p>
+                            <p className="text-[11px] text-slate-400 mt-1">
+                                {searchQuery ? 'Hãy thử tìm kiếm bằng từ khoá khác hoặc đặt lại bộ lọc.' : 'Hãy nạp mã coupon mới để sử dụng.'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800/70" data-testid="coupon-cards">
+                            {displayedCoupons.map((c, idx) => (
+                                <div key={c.id} className={`px-3 py-2.5 space-y-1.5 ${c.status === 'REVOKED' ? 'bg-amber-50/30 dark:bg-amber-950/10' : ''}`}>
+                                    <div className="flex items-center gap-2">
+                                        <span className="w-5 shrink-0 text-center text-[11px] font-mono text-slate-400">{startIndex + idx + 1}</span>
+                                        {renderCopyButton(c, true)}
+                                        <div className="ml-auto flex items-center gap-0.5 shrink-0">{renderActions(c, true)}</div>
+                                    </div>
+                                    <div className="pl-7 [&>div]:max-w-none [&_span]:text-[13px] [&_.font-mono]:text-[11px] [&_.truncate]:whitespace-normal [&_.truncate]:line-clamp-2">{renderProduct(c)}</div>
+                                    <div className="pl-7 flex flex-wrap items-center gap-1.5">
+                                        {renderType(c)}
+                                        {renderStatus(c)}
+                                        {renderExpiry(c)}
+                                    </div>
+                                    {(c.recipient || c.copiedAt) && (
+                                        <div className="pl-7 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+                                            {c.recipient && <span className="text-slate-600 dark:text-slate-300">👤 <b className="text-slate-800 dark:text-white">{c.recipient}</b></span>}
+                                            {c.copiedAt && <span>{renderCopiedAt(c)}</span>}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                         <thead>
                             <tr className="bg-slate-50/80 dark:bg-slate-900/40 border-b border-slate-200/80 dark:border-slate-700/80 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
@@ -421,154 +630,28 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                             {startIndex + idx + 1}
                                         </td>
                                         <td className="py-2 px-2.5 text-center whitespace-nowrap">
-                                            <button
-                                                type="button"
-                                                onClick={() => handleCopyCode(c.id, c.code)}
-                                                title={`Bấm để copy mã: ${c.code}`}
-                                                className={`inline-flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold border transition-all cursor-pointer shadow-2xs ${
-                                                    copiedCode === c.code
-                                                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-500/20'
-                                                        : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-300 dark:hover:bg-slate-700'
-                                                }`}
-                                            >
-                                                {copiedCode === c.code ? (
-                                                    <>
-                                                        <Check size={12} className="text-emerald-600 dark:text-emerald-400" />
-                                                        <span>Đã copy</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Copy size={12} className="text-slate-400" />
-                                                        <span>Copy</span>
-                                                    </>
-                                                )}
-                                            </button>
+                                            {renderCopyButton(c)}
                                         </td>
                                         <td className="py-2 px-2.5">
-                                            {c.productName ? (
-                                                <div className="max-w-[220px] leading-tight">
-                                                    <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate text-xs" title={c.productName}>
-                                                        {c.productName}
-                                                    </span>
-                                                    {c.syntax && (
-                                                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate mt-0.5" title={c.syntax}>
-                                                            {c.syntax}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            ) : c.syntax ? (
-                                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate max-w-[220px]" title={c.syntax}>
-                                                    {c.syntax}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-300 dark:text-slate-600">—</span>
-                                            )}
+                                            {renderProduct(c)}
                                         </td>
                                         <td className="py-2 px-2.5 whitespace-nowrap">
-                                            <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
-                                                {c.type}
-                                            </span>
+                                            {renderType(c)}
                                         </td>
                                         <td className="py-2 px-2.5 whitespace-nowrap">
-                                            {c.expiryDate ? (
-                                                <span
-                                                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono ${
-                                                        c.expiryDate === todayVN
-                                                            ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700'
-                                                            : c.expiryDate < todayVN
-                                                            ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400'
-                                                            : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
-                                                    }`}
-                                                    title={
-                                                        c.expiryDate === todayVN
-                                                            ? 'Hôm nay hết hạn (tự xoá khi sang ngày mới)'
-                                                            : `Hạn dùng đến hết ngày ${formatDisplayDate(c.expiryDate)}`
-                                                    }
-                                                >
-                                                    <Calendar size={11} className={c.expiryDate === todayVN ? 'text-amber-600' : 'text-slate-400'} />
-                                                    <span>{formatDisplayDate(c.expiryDate)}</span>
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400 dark:text-slate-500 text-[10px]">Vô thời hạn</span>
-                                            )}
+                                            {renderExpiry(c)}
                                         </td>
                                         <td className="py-2 px-2.5 whitespace-nowrap">
-                                            {c.status === 'UNUSED' || !c.status ? (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
-                                                    <CheckCircle2 size={10} />
-                                                    Chưa dùng
-                                                </span>
-                                            ) : c.status === 'SENT' ? (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400">
-                                                    <Clock size={10} />
-                                                    Đã phát
-                                                </span>
-                                            ) : (
-                                                <div className="leading-tight">
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400" title={c.revokeReason || 'Đã thu hồi về kho'}>
-                                                        <RotateCcw size={10} />
-                                                        Đã thu hồi
-                                                    </span>
-                                                    {c.revokeReason && (
-                                                        <span className="text-[9px] text-amber-600 dark:text-amber-400/80 block mt-0.5 truncate max-w-[110px]" title={c.revokeReason}>
-                                                            {c.revokeReason}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            )}
+                                            {renderStatus(c)}
                                         </td>
                                         <td className="py-2 px-2.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                                            {c.recipient ? (
-                                                <div className="leading-tight">
-                                                    <span className="font-semibold text-slate-800 dark:text-white text-xs">{c.recipient}</span>
-                                                    {c.recipientId && <span className="text-slate-400 block font-mono text-[9px] truncate max-w-[90px]" title={c.recipientId}>ID: {c.recipientId}</span>}
-                                                </div>
-                                            ) : (
-                                                <span className="text-slate-300 dark:text-slate-600">—</span>
-                                            )}
+                                            {renderRecipient(c)}
                                         </td>
                                         <td className="py-2 px-2.5 text-[10px] font-mono whitespace-nowrap">
-                                            {c.copiedAt ? (
-                                                <span
-                                                    className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60"
-                                                    title={`Đã copy mã lúc: ${formatDateTime(c.copiedAt)}`}
-                                                >
-                                                    <Clock size={10} className="text-emerald-500" />
-                                                    {formatDateTime(c.copiedAt)}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-300 dark:text-slate-600">—</span>
-                                            )}
+                                            {renderCopiedAt(c)}
                                         </td>
                                         <td className="py-2 pr-3.5 pl-2 text-right whitespace-nowrap">
-                                            <div className="flex items-center justify-end gap-1">
-                                                {c.status === 'SENT' && (
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => onRevokeCoupon(c.id)}
-                                                        className="p-1 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded transition-colors"
-                                                        title="Thu hồi về kho"
-                                                    >
-                                                        <RotateCcw size={13} />
-                                                    </Button>
-                                                )}
-                                                <Button
-                                                    variant="ghost"
-                                                    onClick={() => handleCopyCode(c.id, c.code)}
-                                                    className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors"
-                                                    title={`Copy mã: ${c.code}`}
-                                                >
-                                                    {copiedCode === c.code ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    onClick={() => onDeleteCoupon(c.id)}
-                                                    className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded transition-colors"
-                                                    title="Xoá mã này"
-                                                >
-                                                    <Trash2 size={13} />
-                                                </Button>
-                                            </div>
+                                            {renderActions(c)}
                                         </td>
                                     </tr>
                                 ))
