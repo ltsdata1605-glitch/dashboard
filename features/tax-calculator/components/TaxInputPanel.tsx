@@ -308,7 +308,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               Nhập Lương & Thưởng
             </h3>
             <p className="text-[11px] text-slate-400">
-              Tải ảnh 2 đợt hoặc dùng dữ liệu mẫu
+              Tải ảnh 2 đợt lương & thưởng từ HRM
             </p>
           </div>
         </div>
@@ -325,7 +325,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       </div>
 
       <div className="space-y-3">
-        {/* BANNER TRẠNG THÁI NGẮN GỌN */}
+        {/* BANNER TRẠNG THÁI (KHI ĐÃ TẢI ÍT NHẤT 1 ĐỢT) */}
         {hasBothSlips ? (
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-xs">
             <div className="flex items-center gap-1.5 font-semibold">
@@ -336,38 +336,14 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               {formatVnd(input.totalIncome)}
             </span>
           </div>
-        ) : input.hasDay5Slip || input.hasDay20Slip ? (
+        ) : (input.hasDay5Slip || input.hasDay20Slip) ? (
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs">
             <div className="flex items-center gap-1.5 font-semibold">
               <Info className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>{input.hasDay5Slip ? 'Đã có Ngày 5 • Tải tiếp Ngày 20' : 'Đã có Ngày 20 • Tải tiếp Ngày 5'}</span>
+              <span>{input.hasDay5Slip ? 'Đã có Ngày 5 • Vui lòng tải tiếp Ngày 20' : 'Đã có Ngày 20 • Vui lòng tải tiếp Ngày 5'}</span>
             </div>
-            {allBonusItems.length === 0 && (
-              <button
-                type="button"
-                onClick={handleLoadSampleData}
-                className="text-[11px] font-bold text-amber-800 dark:text-amber-300 underline cursor-pointer"
-              >
-                Mẫu MWG
-              </button>
-            )}
           </div>
-        ) : (
-          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/60 text-xs">
-            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-              <UploadCloud className="w-3.5 h-3.5 text-sky-500 shrink-0" />
-              Tải 2 ảnh hoặc dùng mẫu thử nghiệm:
-            </span>
-            <button
-              type="button"
-              onClick={handleLoadSampleData}
-              className="px-2 py-1 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/80 hover:bg-sky-200 dark:bg-sky-950/60 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
-            >
-              <Sparkles className="w-3 h-3 text-sky-500" />
-              <span>Mẫu MWG</span>
-            </button>
-          </div>
-        )}
+        ) : null}
 
         {/* 2 THANH TẢI ẢNH GỌN GÀNG (HORIZONTAL SLOTS) */}
         <div className="space-y-2">
@@ -734,15 +710,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               })}
             </div>
           ) : (
-            <div className="text-center py-4 px-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-dashed border-rose-200 dark:border-rose-900/40 space-y-2">
-              <button
-                type="button"
-                onClick={handleLoadSampleData}
-                className="px-3 py-1.5 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100 hover:bg-rose-200/80 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-rose-600" />
-                <span>Tải 7 khoản thưởng nóng mẫu MWG</span>
-              </button>
+            <div className="text-center py-3 px-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-dashed border-rose-200 dark:border-rose-900/40">
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Chưa có danh sách thưởng nóng. Tải ảnh Ngày 20 ở trên để tự động bóc tách.
+              </p>
             </div>
           )}
 

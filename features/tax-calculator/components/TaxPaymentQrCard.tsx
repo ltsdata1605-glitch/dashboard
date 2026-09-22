@@ -57,17 +57,17 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
     });
 
     return (
-        <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 shadow-2xs space-y-3.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-2.5">
+        <div className="p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 shadow-2xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-2">
                 <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                        <QrCode size={16} />
+                        <QrCode size={15} />
                     </div>
                     <div>
                         <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white">
                             Mã QR Chuyển Khoản Nhanh
                         </h4>
-                        <p className="text-[10px] sm:text-[11px] text-slate-400">Quét mã bằng app ngân hàng để chuyển đúng số tiền</p>
+                        <p className="text-[10px] text-slate-400">Quét bằng app ngân hàng</p>
                     </div>
                 </div>
 
@@ -77,10 +77,10 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                         <button
                             type="button"
                             onClick={() => setTransferMode('net_refund')}
-                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
                                 transferMode === 'net_refund'
-                                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-xs'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-2xs'
+                                    : 'text-slate-500 hover:text-slate-800'
                             }`}
                         >
                             Thực chuyển đồng nghiệp
@@ -88,10 +88,10 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                         <button
                             type="button"
                             onClick={() => setTransferMode('tax_difference')}
-                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                            className={`px-2 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
                                 transferMode === 'tax_difference'
-                                    ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                                    ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-2xs'
+                                    : 'text-slate-500 hover:text-slate-800'
                             }`}
                         >
                             Đồng nghiệp trả thuế
