@@ -519,6 +519,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         let nhomThiDuaColIdx = -1;
         const progressBarColIndices = new Set<number>();
         const ths = table.querySelectorAll('thead th');
+        // Cột đầu chỉ là cột STT khi tiêu đề của nó rỗng / "#" / "STT". Trước đây mọi cột đầu
+        // (idx === 0) đều bị ép 36px như STT — bảng "Chi tiết theo kho" (dọc) có cột đầu là NHÃN
+        // "NHÓM / CHỈ SỐ" (LỌC/H.BỤI, M/ICALL…) nên chữ tràn đè lên cột M.TIÊU khi xuất ảnh
+        // (chủ dự án báo 2026-09-22). Cột đầu mang nhãn chữ → xử lý như cột "NHÓM THI ĐUA":
+        // không xuống dòng, rộng theo nội dung.
+        const isSttHeaderText = (t: string) => t === '' || t === '#' || t === 'STT' || t === 'TT';
+        const firstThText = ths[0]?.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
+        const firstColIsStt = isSttHeaderText(firstThText);
+        if (!firstColIsStt && ths[0] && (ths[0] as HTMLTableCellElement).colSpan <= 1) nhomThiDuaColIdx = 0;
         ths.forEach((th, idx) => {
             const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
             if (text.includes('NHÓM THI ĐUA') || text === 'NHÓM') {
@@ -533,7 +542,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         table.querySelectorAll('thead th').forEach((th, idx) => {
             if (!(th instanceof HTMLElement)) return;
             const text = th.textContent?.trim() || '';
-            const isSttCol = idx === 0 || text === '#' || text === 'STT';
+            const isSttCol = (idx === 0 && firstColIsStt) || text === '#' || text === 'STT';
             const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
             const isProgressBarCol = progressBarColIndices.has(idx);
 
@@ -590,7 +599,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
             tr.querySelectorAll('td').forEach((td, idx) => {
                 if (!(td instanceof HTMLElement)) return;
-                const isSttCol = idx === 0;
+                const isSttCol = idx === 0 && firstColIsStt;
                 const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
                 const isProgressBarCol = progressBarColIndices.has(idx) || !!td.querySelector('.w-10') || !!td.querySelector('[class*="progress"]');
 
