@@ -5,6 +5,7 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import * as crypto from 'crypto';
 import { db } from './firebaseAdmin';
+import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from './relistUnused';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -516,7 +517,8 @@ function formatHelpGuideMessage(): string {
         '• Soạn: "huy [Mã coupon]"',
         '',
         '🎯 4. LỌC MÃ RIÊNG (CHAT 1-1):',
-        '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.'
+        '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.',
+        '• "loc csd": Hiện lại mọi thẻ đã lọc nhưng CHƯA sử dụng trong tháng.'
     ].join('\n');
 }
 
@@ -2335,6 +2337,78 @@ export const lineBotWebhook = onRequest(
                     } catch (e) {
                         console.warn('[Webhook] Cập nhật USED từ tin nhắn thất bại:', e);
                     }
+                    continue;
+                }
+
+                // 1.9. Lệnh "loc csd" — hiện lại TẤT CẢ thẻ PMH đã lọc nhưng CHƯA SỬ DỤNG trong tháng này
+                // (thẻ cũ trôi mất trong nhóm, người dùng cần bấm "Chạm để copy" lại). Chỉ lọc theo
+                // status ở Firestore (1 field, không cần composite index — project hiện KHÔNG có index
+                // nào), còn "trong tháng" lọc bằng tay theo filteredAt (ISO UTC) so với đầu tháng giờ VN.
+                if (isRelistUnusedCommand(cleanText)) {
+                    const { label: monthLabel } = getVnMonthStartIso();
+                    const MAX_CARDS = 40; // 4 carousel × 10 thẻ, chừa 1 tin văn bản báo phần còn lại (reply tối đa 5 tin)
+
+                    let unusedDocs: Array<{ ref: FirebaseFirestore.DocumentReference; data: FirebaseFirestore.DocumentData }> = [];
+                    try {
+                        const fSnap = await db.collection('line_bots').doc(uid).collection('filtered_coupons').where('status', '==', 'UNUSED').get();
+                        unusedDocs = selectUnusedThisMonth(
+                            fSnap.docs.map(d => ({ ref: d.ref, data: d.data(), code: d.data().code, status: d.data().status, filteredAt: d.data().filteredAt })),
+                        );
+                    } catch (err) {
+                        console.warn('[loc csd] Lỗi đọc filtered_coupons:', err);
+                        await replyLineMessage(token, replyToken, [{ type: 'text', text: '⚠️ Không đọc được danh sách thẻ đã lọc, vui lòng thử lại sau.', quoteToken: event.message?.quoteToken }]);
+                        continue;
+                    }
+
+                    if (unusedDocs.length === 0) {
+                        await replyLineMessage(token, replyToken, [{
+                            type: 'text',
+                            text: `✅ Không còn thẻ PMH nào chưa sử dụng trong tháng ${monthLabel}.`,
+                            quoteToken: event.message?.quoteToken
+                        }]);
+                        continue;
+                    }
+
+                    const shown = unusedDocs.slice(0, MAX_CARDS);
+                    const items = shown.map(d => ({
+                        recipient: String(d.data.recipient || ''),
+                        productName: String(d.data.productName || d.data.categoryLabel || 'PMH'),
+                        categoryLabel: String(d.data.categoryLabel || d.data.productName || 'PMH'),
+                        code: String(d.data.code),
+                        orderId: d.data.orderId ? String(d.data.orderId) : undefined,
+                    }));
+                    const flexMessages = createFilteredPmhFlexMessages(items, (config as any).liffId);
+                    const messages: any[] = [...flexMessages];
+                    if (unusedDocs.length > MAX_CARDS) {
+                        messages.push({
+                            type: 'text',
+                            text: `📋 Tháng ${monthLabel} còn ${unusedDocs.length} thẻ chưa sử dụng — đang hiện ${MAX_CARDS} thẻ cũ nhất. Dùng xong gõ "loc csd" lần nữa để xem tiếp.`
+                        });
+                    }
+
+                    const sent = await replyLineMessageDetailed(token, replyToken, messages);
+                    // Thẻ vừa gửi lại có quoteToken/cardIndex MỚI — cập nhật để LIFF "Chạm để copy" và xác
+                    // nhận trích dẫn trỏ đúng thẻ mới nhất (cùng quy ước với luồng lọc ở mục 3.8).
+                    if (sent.ok && sent.sentMessages.length > 0) {
+                        try {
+                            const qBatch = db.batch();
+                            const chatId = groupId || event.source?.roomId || senderUserId;
+                            shown.forEach((d, idx) => {
+                                const quoteToken = sent.sentMessages[Math.floor(idx / 10)]?.quoteToken;
+                                const patch: Record<string, string | number> = { cardIndex: idx + 1, relistedAt: new Date().toISOString() };
+                                if (quoteToken && chatId) {
+                                    patch.quoteToken = quoteToken;
+                                    patch.chatId = chatId;
+                                    patch.chatType = groupId ? 'group' : (event.source?.roomId ? 'room' : 'user');
+                                }
+                                qBatch.update(d.ref, patch);
+                            });
+                            await qBatch.commit();
+                        } catch (err) {
+                            console.warn('[loc csd] Lỗi cập nhật quoteToken/cardIndex:', err);
+                        }
+                    }
+                    console.info(`[loc csd] Hiện lại ${shown.length}/${unusedDocs.length} thẻ chưa sử dụng tháng ${monthLabel}`);
                     continue;
                 }
 
