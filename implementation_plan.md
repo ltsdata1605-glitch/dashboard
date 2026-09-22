@@ -5146,3 +5146,21 @@ IndexedDB như app cũ; (2) đồng bộ Google Sheet của app cũ đã bỏ (c
 - Chạy so sánh = 2 job × N nhân viên (~2× thời gian "Hiện tại"); popup ghi rõ số lượt.
 - Không thể tự test luồng userscript MWG thật — test: unit (hàm ngày), Playwright (menu +
   bảng so sánh với dữ liệu giả ghi thẳng IndexedDB).
+
+## Kết quả (2026-09-22) — ĐÃ XONG, đã tự test
+- Commit `22137a9d` (+ phần lớn code bị `64059742` của phiên khác gom trước qua `smart_commit.sh`
+  `git add -A` — script đó còn tự build + `gh-pages` + deploy functions, nên bản DỞ DANG đã lên
+  live lúc 09:12 với trigger `<Button asChild>` — chạy được nhưng React cảnh báo prop lạ;
+  bản hoàn chỉnh ở HEAD chưa push).
+- Test: `bonusDateRange.test.ts` 7/7; Playwright `tests/e2e/bi-bonus-compare.spec.ts` 3/3
+  (menu 4 chế độ + mục đang chọn tô sky; bảng so sánh với kho giả: Tâm +2.944/+17%, Hương
+  −4.792/−24%, Nhân thiếu kỳ trước hiện "—" và xếp cuối, chân bảng Δ −1.848 chỉ tính 2 NV đủ
+  2 kỳ; popup Tự động tab "So sánh cùng kỳ" hiện 01/09→21/09 và 01/08→21/08, nút "Chạy 2 kỳ").
+  `npm run check`: typecheck/eslint/unit 643/build xanh; lint-ratchet đỏ chỉ do
+  `features/line-bot/*` của phiên khác (không có file nào của đợt này).
+- CHƯA test được: luồng userscript MWG thật (2 job tuần tự) — cần chủ dự án bấm ⚡ Tự động →
+  So sánh cùng kỳ → Chạy 2 kỳ trên máy có userscript; kỳ vọng: tiến độ "Kỳ 1/2 (Kỳ này
+  01→21/9)…", toast "✅ Xong 2/2 kỳ", tự nhảy sang bảng so sánh, tiêu đề "SO SÁNH 01→21/8 VS
+  01→21/9".
+- Ý tưởng để sau (chưa làm): kỳ trước có thể suy từ kho `bonus-monthly-*` (cộng dailyData
+  ngày 1→N) để khỏi chạy job thứ 2 — nhưng chỉ ra được Tổng, không có ERP/T.Nóng.
