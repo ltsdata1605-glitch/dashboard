@@ -162,3 +162,103 @@ test.describe('Bookmarklet Auto Click+ — cùng logic tự bật', () => {
         await expect(page.locator('#__copy_wait_toast__')).not.toContainText('Đã tự bật');
     });
 });
+
+/**
+ * Biến thể DOM (bản 4.5): trang BI đổi giao diện — "Trả góp" thành <label> bọc checkbox và đổi
+ * nhãn thành "Trả chậm"; "DT quy đổi" thành <div role="button"> dùng aria-pressed. Bản 4.4 chỉ
+ * tìm <button> + nhãn khớp tuyệt đối nên bỏ qua im lặng (chủ dự án báo "chưa hoạt động").
+ */
+function buildFixtureVariant(opts: { traChamOn: boolean; dtQuyDoiOn: boolean }): string {
+    return `<!doctype html><html><head><meta charset="utf-8"><title>Doanh thu hợp nhất</title></head><body>
+<div id="filters">
+  <div id="segment">
+    <div role="button" id="dt-thuc" aria-pressed="${!opts.dtQuyDoiOn}" class="px-2.5 py-1 text-xs cursor-pointer">DT thực</div>
+    <div role="button" id="dt-quy-doi" aria-pressed="${opts.dtQuyDoiOn}" class="px-2.5 py-1 text-xs cursor-pointer">DT quy đổi</div>
+  </div>
+  <div id="checks">
+    <label id="tra-cham" class="flex items-center gap-1.5 text-xs"><input type="checkbox" ${opts.traChamOn ? 'checked' : ''}/>Trả chậm</label>
+  </div>
+</div>
+<table class="ant-table"><tbody>
+  <tr><td><button type="button" class="ant-table-row-expand-icon ant-table-row-expand-icon-collapsed" aria-label="Mở rộng dòng" aria-expanded="false"></button></td><td>21 - Miền Nam</td><td>12,435</td></tr>
+</tbody></table>
+<script>
+  window.__clicks = [];
+  // Đếm ở sự kiện change của input: click lên <label> được trình duyệt chuyển tiếp xuống input
+  // (nếu tự đảo checked trong listener click của label sẽ bị tính 2 lần — không giống trang thật).
+  document.querySelector('#tra-cham input').addEventListener('change', function () {
+    window.__clicks.push('tra-cham');
+  });
+  ['dt-thuc','dt-quy-doi'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', function () {
+      window.__clicks.push(id);
+      document.getElementById('dt-thuc').setAttribute('aria-pressed', String(id === 'dt-thuc'));
+      document.getElementById('dt-quy-doi').setAttribute('aria-pressed', String(id === 'dt-quy-doi'));
+    });
+  });
+  document.querySelector('.ant-table-row-expand-icon').addEventListener('click', function () {
+    window.__clicks.push('expand'); this.setAttribute('aria-expanded', 'true');
+    this.classList.remove('ant-table-row-expand-icon-collapsed'); this.classList.add('ant-table-row-expand-icon-expanded');
+  });
+</script>
+</body></html>`;
+}
+
+async function openHtml(page: Page, html: string) {
+    await page.route('https://baocao.dienmayxanh.com/**', (route) =>
+        route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: html }),
+    );
+    await page.addInitScript(() => {
+        const w = window as unknown as Record<string, unknown>;
+        const store = new Map<string, unknown>();
+        w.__clip = '';
+        w.GM_setClipboard = (t: string) => { w.__clip = t; };
+        w.GM_getValue = (k: string, d: unknown) => (store.has(k) ? store.get(k) : d);
+        w.GM_setValue = (k: string, v: unknown) => { store.set(k, v); };
+        w.GM_addValueChangeListener = () => 0;
+        Object.defineProperty(navigator, 'clipboard', {
+            configurable: true,
+            value: { writeText: async (t: string) => { w.__clip = t; } },
+        });
+    });
+    await page.goto(BI_URL);
+}
+
+test.describe('Bản 4.5 — DOM khác kiểu: label/checkbox "Trả chậm" + div[role=button] "DT quy đổi"', () => {
+    test('cả 2 đang tắt → vẫn nhận ra và bật (userscript)', async ({ page }) => {
+        await openHtml(page, buildFixtureVariant({ traChamOn: false, dtQuyDoiOn: false }));
+        await loadUserscript(page);
+        await page.locator('#acp-float-btn').click();
+        await expect(page.locator('#acp-status-box')).toContainText('Đã tự bật: Trả góp, DT quy đổi');
+        expect(await clicks(page)).toEqual(['tra-cham', 'dt-quy-doi', 'expand']);
+        await expect(page.locator('#tra-cham input')).toBeChecked();
+    });
+
+    test('cả 2 đang bật sẵn → không click lại (userscript)', async ({ page }) => {
+        await openHtml(page, buildFixtureVariant({ traChamOn: true, dtQuyDoiOn: true }));
+        await loadUserscript(page);
+        await page.locator('#acp-float-btn').click();
+        await expect(page.locator('#acp-status-box')).toContainText('Đã mở 1 mục');
+        expect(await clicks(page)).toEqual(['expand']);
+    });
+
+    test('bookmarklet cũng nhận ra DOM kiểu mới', async ({ page }) => {
+        await openHtml(page, buildFixtureVariant({ traChamOn: false, dtQuyDoiOn: false }));
+        await page.evaluate(AUTO_CLICK_BOOKMARKLET_CODE.replace(/^javascript:/, ''));
+        await expect(page.locator('#__copy_wait_toast__')).toContainText('Đã tự bật: Trả góp, DT quy đổi');
+        expect(await clicks(page)).toEqual(['tra-cham', 'dt-quy-doi', 'expand']);
+    });
+
+    test('trang KHÔNG có 2 nút → báo rõ "Không thấy nút", không im lặng', async ({ page }) => {
+        const html = `<!doctype html><html><head><meta charset="utf-8"></head><body>
+<table class="ant-table"><tbody><tr><td><button type="button" class="ant-table-row-expand-icon ant-table-row-expand-icon-collapsed" aria-label="Mở rộng dòng" aria-expanded="false"></button></td><td>21 - Miền Nam</td></tr></tbody></table>
+<script>window.__clicks=[];document.querySelector('.ant-table-row-expand-icon').addEventListener('click',function(){window.__clicks.push('expand');this.setAttribute('aria-expanded','true');});</script>
+</body></html>`;
+        await openHtml(page, html);
+        await page.evaluate(AUTO_CLICK_BOOKMARKLET_CODE.replace(/^javascript:/, ''));
+        const toast = page.locator('#__copy_wait_toast__');
+        await expect(toast).toContainText('Không thấy nút');
+        await expect(toast).toContainText('Trả góp');
+        await expect(toast).toContainText('DT quy đổi');
+    });
+});

@@ -1367,14 +1367,28 @@
     return (direct.trim() || (btn.textContent || '').trim()).replace(/\s+/g, ' ');
   }
 
-  function acpFindToggleButton(label) {
-    const wanted = label.toLowerCase();
-    const buttons = Array.from(document.querySelectorAll('button'));
-    return buttons.find((btn) => {
-      if (btn.id === 'acp-float-btn' || btn.closest('#acp-status-box')) return false;
-      if (!acpIsVisible(btn)) return false;
-      return acpButtonLabel(btn).toLowerCase() === wanted;
-    }) || null;
+  // BẢN 4.5: trang BI đổi giao diện liên tục — nút có thể là <button>, <label> bọc checkbox, hay
+  // <div role="button">; nhãn có thể là "Trả góp" hoặc "Trả chậm". Trước đây chỉ tìm đúng
+  // <button> + nhãn khớp TUYỆT ĐỐI nên hễ trang đổi là im lặng bỏ qua, người dùng không biết vì
+  // sao không tự bật (chủ dự án báo 2026-09-22).
+  const ACP_TOGGLE_SELECTOR = 'button, [role="button"], label, a[role="button"], div[class*="cursor-pointer"], span[class*="cursor-pointer"]';
+
+  function acpFindToggleButton(labelOrAliases) {
+    const aliases = (Array.isArray(labelOrAliases) ? labelOrAliases : [labelOrAliases])
+      .map((x) => String(x).toLowerCase().replace(/\s+/g, ' ').trim());
+    const nodes = Array.from(document.querySelectorAll(ACP_TOGGLE_SELECTOR)).filter((el) => {
+      if (el.id === 'acp-float-btn' || el.closest('#acp-status-box')) return false;
+      return acpIsVisible(el);
+    });
+    const labelOf = (el) => acpButtonLabel(el).toLowerCase().replace(/\s+/g, ' ').trim();
+    // Ưu tiên khớp tuyệt đối; chỉ khi không có mới chấp nhận nhãn CHỨA alias và không quá dài
+    // (tránh trúng cả thanh công cụ bọc ngoài).
+    return nodes.find((el) => aliases.includes(labelOf(el)))
+      || nodes.find((el) => {
+        const t = labelOf(el);
+        return aliases.some((a) => t.includes(a)) && t.length <= 24;
+      })
+      || null;
   }
 
   function acpHasAriaOn(btn) {
@@ -1385,34 +1399,58 @@
       || btn.getAttribute('data-state') === 'checked';
   }
 
-  // Ô check dạng nút ("Trả góp"): TẮT = span đầu rỗng (không ✓, không svg) + viền xám.
-  function acpIsCheckToggleOff(btn) {
-    if (acpHasAriaOn(btn)) return false;
-    const mark = btn.querySelector(':scope > span');
-    if (!mark) return false;
-    const markEmpty = mark.textContent.trim() === '' && !mark.querySelector('svg, i, img');
-    return markEmpty && btn.classList.contains('border-slate-200');
-  }
+  /**
+   * Trạng thái nút: 'on' | 'off' | 'unknown'. Đọc theo nhiều dấu hiệu, từ chắc chắn đến suy đoán:
+   * checkbox thật → aria/data-state → dấu ✓ trong ô vuông → màu nền (active thường là nền xanh
+   * đặc + chữ trắng; tắt là nền trắng/trong suốt). KHÔNG đoán bừa: 'unknown' thì tuyệt đối không
+   * click, vì click nhầm nút đang bật sẽ TẮT nó đi — tệ hơn là không tự bật.
+   */
+  function acpToggleState(el) {
+    const input = el.querySelector('input[type="checkbox"], input[type="radio"]')
+      || (el.tagName === 'INPUT' ? el : null);
+    if (input) return input.checked ? 'on' : 'off';
 
-  // Nút segment ("DT quy đổi" trong cặp "DT thực | DT quy đổi"): TẮT = nền trắng.
-  function acpIsSegmentOff(btn) {
-    if (acpHasAriaOn(btn)) return false;
-    return btn.classList.contains('bg-white');
+    if (acpHasAriaOn(el)) return 'on';
+    const ariaAttrs = ['aria-pressed', 'aria-checked', 'aria-selected'];
+    if (ariaAttrs.some((a) => el.getAttribute(a) === 'false')) return 'off';
+    if (el.getAttribute('data-state') === 'off' || el.getAttribute('data-state') === 'unchecked') return 'off';
+
+    const cls = el.className && el.className.baseVal !== undefined ? el.className.baseVal : String(el.className || '');
+    const mark = el.querySelector(':scope > span');
+    if (mark && /rounded|border/.test(String(mark.className || ''))) {
+      const ticked = mark.textContent.trim() !== '' || !!mark.querySelector('svg, i, img');
+      if (ticked) return 'on';
+      if (/border-slate-200|border-gray-200|border-neutral-200|bg-white/.test(cls)) return 'off';
+    }
+
+    const ACTIVE = /(bg-(blue|sky|primary|indigo|emerald|green)-[45678]00)|text-white|bg-blue-50|text-blue-700/;
+    const INACTIVE = /bg-white|bg-transparent|bg-gray-50|bg-slate-50/;
+    if (ACTIVE.test(cls)) return 'on';
+    if (INACTIVE.test(cls)) return 'off';
+    return 'unknown';
   }
 
   const ACP_AUTO_TOGGLES = [
-    { label: 'Trả góp', isOff: acpIsCheckToggleOff },
-    { label: 'DT quy đổi', isOff: acpIsSegmentOff },
+    { label: 'Trả góp', aliases: ['trả góp', 'tra gop', 'trả chậm', 'tra cham'] },
+    { label: 'DT quy đổi', aliases: ['dt quy đổi', 'dt quy doi', 'doanh thu quy đổi', 'dtqđ', 'dt qđ'] },
   ];
 
-  // Trả về { turnedOn: [nhãn đã bật], failed: [nhãn click rồi mà vẫn tắt] }. Không tìm thấy nút
-  // (trang BI cũ bi.thegioididong.com không có) hoặc đã bật sẵn → bỏ qua im lặng.
+  /**
+   * Trả về { turnedOn, failed, notFound, unknown } — báo ĐỦ để người dùng biết vì sao không tự
+   * bật được (trước đây không thấy nút thì im lặng, nhìn như tính năng hỏng).
+   */
   async function acpEnsureTogglesOn(onProgress) {
     const turnedOn = [];
     const failed = [];
+    const notFound = [];
+    const unknown = [];
     for (const toggle of ACP_AUTO_TOGGLES) {
-      const btn = acpFindToggleButton(toggle.label);
-      if (!btn || !toggle.isOff(btn)) continue;
+      const aliases = toggle.aliases || [toggle.label];
+      const btn = acpFindToggleButton(aliases);
+      if (!btn) { notFound.push(toggle.label); continue; }
+      const state = acpToggleState(btn);
+      if (state === 'on') continue;
+      if (state === 'unknown') { unknown.push(toggle.label); continue; }
       if (onProgress) onProgress(toggle.label);
       btn.click();
       await acpWaitForSpinnersToClear(ACP_SPINNER_MAX_WAIT_MS, ACP_SPINNER_POLL_MS, ACP_TOGGLE_SETTLE_MS);
@@ -1420,14 +1458,14 @@
       const start = Date.now();
       let confirmed = false;
       while (Date.now() - start < ACP_TOGGLE_CONFIRM_MAX_MS) {
-        const fresh = acpFindToggleButton(toggle.label);
-        if (!fresh || !toggle.isOff(fresh)) { confirmed = true; break; }
+        const fresh = acpFindToggleButton(aliases);
+        if (!fresh || acpToggleState(fresh) !== 'off') { confirmed = true; break; }
         await sleep(50);
       }
       (confirmed ? turnedOn : failed).push(toggle.label);
       if (!confirmed) console.warn('[Click+] Đã click nhưng nút vẫn ở trạng thái tắt:', toggle.label);
     }
-    return { turnedOn, failed };
+    return { turnedOn, failed, notFound, unknown };
   }
 
   function acpUpdateStatusToggling(box, label) {
@@ -1489,8 +1527,12 @@
     box.style.background = `linear-gradient(135deg, ${COLOR_SUCCESS}, #16a34a)`;
     const turnedOn = (toggles && toggles.turnedOn) || [];
     const failed = (toggles && toggles.failed) || [];
+    const notFound = (toggles && toggles.notFound) || [];
+    const unknownState = (toggles && toggles.unknown) || [];
     const toggleNote = (turnedOn.length ? `<div style="margin-top:4px;">🔘 Đã tự bật: ${turnedOn.join(', ')}</div>` : '')
-      + (failed.length ? `<div style="margin-top:4px;">⚠️ Không bật được: ${failed.join(', ')} — bật tay rồi bấm Click+ lại.</div>` : '');
+      + (failed.length ? `<div style="margin-top:4px;">⚠️ Không bật được: ${failed.join(', ')} — bật tay rồi bấm Click+ lại.</div>` : '')
+      + (notFound.length ? `<div style="margin-top:4px;">⚠️ Không thấy nút: ${notFound.join(', ')} trên trang này — bật tay nếu cần.</div>` : '')
+      + (unknownState.length ? `<div style="margin-top:4px;">⚠️ Không rõ trạng thái: ${unknownState.join(', ')} — không dám click, bật tay nếu đang tắt.</div>` : '');
     const remainNote = stillPending > 0
       ? `<div style="margin-top:4px;">Còn ${stillPending} nút (cấp con) — bấm Click+ thêm lần nữa để mở tiếp.</div>`
       : '<div style="margin-top:4px;">Đã mở hết cấp hiện tại.</div>';
@@ -1535,7 +1577,7 @@
     let stopRequested = false;
     const requestStop = () => { stopRequested = true; };
 
-    let toggles = { turnedOn: [], failed: [] };
+    let toggles = { turnedOn: [], failed: [], notFound: [], unknown: [] };
     try {
       // Bật "Trả góp" + "DT quy đổi" TRƯỚC, rồi mới quét dấu cộng — bảng có thể render lại sau khi
       // đổi toggle, quét trước sẽ cầm phần tử đã bị gỡ khỏi DOM.
