@@ -34,11 +34,11 @@ describe('buildCouponStatusReply', () => {
             { status: 'UNUSED' },
             { status: 'USED', usedBy: 'ĐMST- Thu-51115-AIO', usedAt: '2026-09-22T08:08:00.000Z', cardIndex: 1 },
         ], now);
-        expect(r).toBe('👉 PMH 1 đã được sử dụng lúc 15:08!\n↳ User: 51115 - Thu');
+        expect(r).toBe('👉 PMH 0001 đã được sử dụng lúc 15:08!\n↳ User: 51115 - Thu');
     });
     it('chưa dùng -> báo chưa sử dụng kèm sản phẩm/người nhận', () => {
         const r = buildCouponStatusReply([{ status: 'UNUSED', cardIndex: 2, categoryLabel: 'MM200', recipient: 'STR_ Trường_21453-TC' }], now);
-        expect(r).toBe('✅ PMH 2 CHƯA được sử dụng.\n🛍️ MM200\n👤 Cấp cho: STR_ Trường_21453-TC');
+        expect(r).toBe('✅ PMH 0002 CHƯA được sử dụng.\n🛍️ MM200\n👤 Cấp cho: STR_ Trường_21453-TC');
     });
     it('coupon kho (không cardIndex) -> "Mã này"', () => {
         expect(buildCouponStatusReply([{ status: 'SENT', type: 'EVENT' }], now)).toBe('✅ Mã này CHƯA được sử dụng.\n🛍️ EVENT');

@@ -5,11 +5,13 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import * as crypto from 'crypto';
 import { db } from './firebaseAdmin';
+import { FieldPath } from 'firebase-admin/firestore';
 import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from './relistUnused';
 import { formatShortUserName } from './userName';
 import { isStrictPmhRequestForm } from './pmhForm';
 import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
 import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './groupFeatureHelper';
+import { allocatePmhSequence, formatPmhLabel } from './pmhSequence';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -361,7 +363,7 @@ function createCouponFlexBubble(params: {
                     contents: [
                         {
                             type: 'text',
-                            text: `PMH ${cardIndexNum}`,
+                            text: `PMH ${formatPmhLabel(cardIndexNum)}`,
                             color: headerColor,
                             weight: 'bold',
                             size: 'xxs'
@@ -410,6 +412,8 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
     code: string;
     orderId?: string;
     warningSuffix?: string;
+    /** Số thứ tự chạy theo tháng (pmhSequence). Thiếu -> rơi về vị trí trong lô như trước. */
+    cardIndex?: number;
 }>, liffId?: string): any[] {
     if (!matchedItems || matchedItems.length === 0) return [];
 
@@ -421,7 +425,7 @@ function createFilteredPmhFlexMessages(matchedItems: Array<{
         orderId: item.orderId,
         warningSuffix: item.warningSuffix,
         liffId,
-        cardIndex: idx + 1,
+        cardIndex: item.cardIndex || idx + 1,
         totalCards: matchedItems.length,
         source: 'filter'
     }));
@@ -1940,7 +1944,7 @@ export const lineBotWebhook = onRequest(
                         }
                         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
                         // Tin xác nhận ghi tên gọn "Mã NV - Tên" (DMST-Nhân-107617SALE -> 107617 - Nhân); Firestore vẫn lưu usedBy đầy đủ.
-                        const text = `👉 PMH ${quoteTarget!.cardIndex} đã được sử dụng lúc ${timeStr}!\n↳ User: ${formatShortUserName(usedBy)}`;
+                        const text = `👉 PMH ${formatPmhLabel(quoteTarget!.cardIndex)} đã được sử dụng lúc ${timeStr}!\n↳ User: ${formatShortUserName(usedBy)}`;
                         return pushLineMessage(botToken, quoteTarget!.chatId, [{ type: 'text', text, quoteToken: quoteTarget!.quoteToken }]);
                     })().catch((e: any) => ({ ok: false, status: 0, error: e?.message || 'push-failed' }))
                     : Promise.resolve(null);
@@ -2388,12 +2392,15 @@ export const lineBotWebhook = onRequest(
                     }
 
                     const shown = unusedDocs.slice(0, MAX_CARDS);
+                    // Giữ NGUYÊN số thứ tự đã cấp lúc lọc (số chạy theo tháng, xem pmhSequence) —
+                    // thẻ hiện lại phải mang đúng tên gọi cũ để xác nhận "PMH 0007 đã dùng" khớp nhau.
                     const items = shown.map(d => ({
                         recipient: String(d.data.recipient || ''),
                         productName: String(d.data.productName || d.data.categoryLabel || 'PMH'),
                         categoryLabel: String(d.data.categoryLabel || d.data.productName || 'PMH'),
                         code: String(d.data.code),
                         orderId: d.data.orderId ? String(d.data.orderId) : undefined,
+                        cardIndex: Number(d.data.cardIndex) || undefined,
                     }));
                     const flexMessages = createFilteredPmhFlexMessages(items, (config as any).liffId);
                     const messages: any[] = [...flexMessages];
@@ -2413,7 +2420,7 @@ export const lineBotWebhook = onRequest(
                             const chatId = groupId || event.source?.roomId || senderUserId;
                             shown.forEach((d, idx) => {
                                 const quoteToken = sent.sentMessages[Math.floor(idx / 10)]?.quoteToken;
-                                const patch: Record<string, string | number> = { cardIndex: idx + 1, relistedAt: new Date().toISOString() };
+                                const patch: Record<string, string | number> = { relistedAt: new Date().toISOString() };
                                 if (quoteToken && chatId) {
                                     patch.quoteToken = quoteToken;
                                     patch.chatId = chatId;
@@ -3032,13 +3039,72 @@ export const lineBotWebhook = onRequest(
 
                     const filterResult = filterPmhByUsers(rawText, candidates, (config as any).liffId);
 
+                    const makeFilteredDocId = (item: { code: string; recipient: string }) =>
+                        `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+                    // BỎ THẺ ĐÃ LỌC TRƯỚC ĐÓ (chủ dự án chốt 2026-09-22): người dùng dán lại y hệt
+                    // danh sách cũ thì bot IM LẶNG, chỉ gửi những mã CHƯA từng lọc. Doc id đã là
+                    // `${mã}_${người nhận}` nên chỉ cần hỏi Firestore các id đó có tồn tại không
+                    // (query theo documentId, tối đa 30 id/lượt — chỉ tính phí đọc cho id KHỚP).
+                    let newItems = filterResult.matchedItems || [];
+                    let duplicateCount = 0;
+                    if (newItems.length > 0) {
+                        try {
+                            const fCol = db.collection('line_bots').doc(uid).collection('filtered_coupons');
+                            const ids = Array.from(new Set(newItems.map(makeFilteredDocId)));
+                            const existing = new Set<string>();
+                            for (let i = 0; i < ids.length; i += 30) {
+                                const chunk = ids.slice(i, i + 30);
+                                const snap = await fCol.where(FieldPath.documentId(), 'in', chunk).get();
+                                snap.docs.forEach(d => existing.add(d.id));
+                            }
+                            if (existing.size > 0) {
+                                const before = newItems.length;
+                                newItems = newItems.filter(item => !existing.has(makeFilteredDocId(item)));
+                                duplicateCount = before - newItems.length;
+                            }
+                        } catch (err) {
+                            console.warn('[Filter PMH] Không kiểm tra được thẻ trùng, cứ gửi như cũ:', err);
+                        }
+                    }
+
+                    if (duplicateCount > 0 && newItems.length === 0) {
+                        console.info(`[Filter PMH] Toàn bộ ${duplicateCount} mã đã được lọc trước đó — không gửi lại thẻ.`);
+                        // Trong NHÓM: im lặng tuyệt đối (đúng yêu cầu chủ dự án — dán lại danh sách cũ
+                        // không được spam thẻ). Chat 1-1 hoặc khi gõ rõ lệnh lọc: nói 1 câu để người
+                        // dùng biết bot có nhận, không tưởng bot chết.
+                        if (!isGroupOrRoom || isExplicitFilter) {
+                            await replyLineMessage(token, replyToken, [{
+                                type: 'text',
+                                text: `ℹ️ ${duplicateCount} mã trong tin này đã được lọc trước đó rồi.\n👉 Gõ "loc csd" để xem lại các thẻ chưa sử dụng trong tháng.`,
+                                quoteToken: event.message?.quoteToken
+                            }]);
+                        }
+                        continue;
+                    }
+
+                    // Số thứ tự thẻ CHẠY THEO THÁNG (0001, 0002…, reset đầu tháng) — cấp cả dải
+                    // trong 1 transaction, xem functions/src/pmhSequence.ts.
+                    let seqStart = 0;
+                    if (newItems.length > 0) {
+                        seqStart = await allocatePmhSequence(uid, newItems.length);
+                        if (seqStart > 0) {
+                            newItems = newItems.map((item, idx) => ({ ...item, cardIndex: seqStart + idx }));
+                        }
+                    }
+
+                    // Danh sách rút gọn (bỏ thẻ trùng) -> phải dựng lại thẻ Flex theo đúng số thứ tự mới
+                    const flexMessages = newItems.length > 0
+                        ? createFilteredPmhFlexMessages(newItems, (config as any).liffId)
+                        : [];
+
                     // Tự động lưu các coupon lọc được vào Firestore để Admin theo dõi
-                    if (filterResult.matchedItems && filterResult.matchedItems.length > 0) {
+                    if (newItems.length > 0) {
                         try {
                             const fBatch = db.batch();
                             const fNow = new Date().toISOString();
-                            filterResult.matchedItems.forEach((item, fIdx) => {
-                                const docId = `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+                            newItems.forEach((item, fIdx) => {
+                                const docId = makeFilteredDocId(item);
                                 const docRef = db.collection('line_bots').doc(uid).collection('filtered_coupons').doc(docId);
                                 fBatch.set(docRef, {
                                     id: docId,
@@ -3047,7 +3113,7 @@ export const lineBotWebhook = onRequest(
                                     categoryLabel: item.categoryLabel,
                                     recipient: item.recipient,
                                     orderId: item.orderId || null,
-                                    cardIndex: fIdx + 1,
+                                    cardIndex: (item as { cardIndex?: number }).cardIndex || fIdx + 1,
                                     status: 'UNUSED',
                                     filteredAt: fNow
                                 }, { merge: true });
@@ -3069,18 +3135,18 @@ export const lineBotWebhook = onRequest(
                         }
                     }
 
-                    if (filterResult.flexMessages && filterResult.flexMessages.length > 0) {
-                        const sent = await replyLineMessageDetailed(token, replyToken, filterResult.flexMessages);
+                    if (flexMessages.length > 0) {
+                        const sent = await replyLineMessageDetailed(token, replyToken, flexMessages);
                         // Lưu quoteToken của thẻ + chat đích để mark-used (LIFF) cho bot gửi xác nhận TRÍCH DẪN đúng thẻ.
                         // Thẻ thứ fIdx nằm trong tin nhắn thứ floor(fIdx/10) (carousel gom 10 thẻ/tin, xem createFilteredPmhFlexMessages).
-                        if (sent.ok && sent.sentMessages.length > 0 && filterResult.matchedItems && filterResult.matchedItems.length > 0) {
+                        if (sent.ok && sent.sentMessages.length > 0 && newItems.length > 0) {
                             try {
                                 const qBatch = db.batch();
                                 const chatId = groupId || event.source?.roomId || senderUserId;
-                                filterResult.matchedItems.forEach((item, fIdx) => {
+                                newItems.forEach((item, fIdx) => {
                                     const quoteToken = sent.sentMessages[Math.floor(fIdx / 10)]?.quoteToken;
                                     if (!quoteToken || !chatId) return;
-                                    const docId = `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+                                    const docId = makeFilteredDocId(item);
                                     qBatch.update(db.collection('line_bots').doc(uid).collection('filtered_coupons').doc(docId), {
                                         quoteToken,
                                         chatId,

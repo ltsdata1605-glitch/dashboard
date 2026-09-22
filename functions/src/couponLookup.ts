@@ -3,6 +3,7 @@
  * lineBotWebhook.ts để test đơn vị.
  */
 import { formatShortUserName } from './userName';
+import { formatPmhLabel } from './pmhSequence';
 
 /** Tin nhắn chỉ gồm đúng 1 mã coupon (8-12 ký tự chữ/số, VD JVNAUU4ES2, YVFOLYOVAF) — không khoảng trắng. */
 export function extractBareCouponCode(text: string): string | null {
@@ -48,14 +49,14 @@ export function buildCouponStatusReply(docs: CouponLookupDoc[], now: Date = new 
     const used = docs.find(d => d.status === 'USED');
     if (used) {
         const idx = Number(used.cardIndex);
-        const label = idx > 0 ? `PMH ${idx}` : 'Mã này';
+        const label = idx > 0 ? `PMH ${formatPmhLabel(idx)}` : 'Mã này';
         const at = formatUsedAtVn(used.usedAt, now);
         const who = formatShortUserName(String(used.usedBy || 'Người dùng LINE'));
         return `👉 ${label} đã được sử dụng${at ? ` lúc ${at}` : ''}!\n↳ User: ${who}`;
     }
     const any = docs[0];
     const idx = Number(any.cardIndex);
-    const label = idx > 0 ? `PMH ${idx}` : 'Mã này';
+    const label = idx > 0 ? `PMH ${formatPmhLabel(idx)}` : 'Mã này';
     const product = String(any.productName || any.categoryLabel || any.type || '').trim();
     const recipient = String(any.recipient || '').trim();
     const extra = [product ? `🛍️ ${product}` : '', recipient ? `👤 Cấp cho: ${recipient}` : ''].filter(Boolean).join('\n');

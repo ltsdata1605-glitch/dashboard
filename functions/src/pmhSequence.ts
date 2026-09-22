@@ -1,0 +1,44 @@
+/**
+ * Số thứ tự thẻ PMH lọc được — CHẠY THEO THÁNG (giờ VN): 0001, 0002, … và tự về 0001 khi sang
+ * tháng mới (chủ dự án chốt 2026-09-22). Trước đây số trên thẻ chỉ là vị trí trong 1 lần lọc
+ * (1..N) nên trùng nhau liên tục giữa các lần, không dùng để gọi tên 1 thẻ cụ thể được.
+ *
+ * Bộ đếm: line_bots/{uid}/counters/pmh-{YYYY-MM} { value }. Mỗi lượt lọc cấp cả DẢI liên tiếp
+ * trong 1 transaction (1 lượt đọc + 1 ghi cho cả lô, không phải mỗi thẻ 1 lượt).
+ */
+import { db } from './firebaseAdmin';
+
+/** "2026-09" theo giờ VN (UTC+7) — mốc reset là 00:00 ngày 01 giờ VN. */
+export function pmhCounterPeriod(now: Date = new Date()): string {
+    const vn = new Date(now.getTime() + 7 * 3600 * 1000);
+    return `${vn.getUTCFullYear()}-${String(vn.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+/** 1 -> "0001"; giữ nguyên bề rộng khi vượt 4 chữ số (10000). */
+export function formatPmhLabel(n: number | string | undefined | null): string {
+    const num = Number(n);
+    if (!Number.isFinite(num) || num <= 0) return String(n ?? '');
+    return String(Math.floor(num)).padStart(4, '0');
+}
+
+/**
+ * Cấp `count` số liên tiếp cho tháng hiện tại, trả về số ĐẦU TIÊN của dải.
+ * Lỗi Firestore -> trả 0 để caller tự quyết (không chặn việc gửi thẻ).
+ */
+export async function allocatePmhSequence(uid: string, count: number, now: Date = new Date()): Promise<number> {
+    if (!uid || count <= 0) return 0;
+    const period = pmhCounterPeriod(now);
+    const ref = db.collection('line_bots').doc(uid).collection('counters').doc(`pmh-${period}`);
+    try {
+        return await db.runTransaction(async tx => {
+            const snap = await tx.get(ref);
+            const current = snap.exists ? Number(snap.data()?.value) || 0 : 0;
+            const start = current + 1;
+            tx.set(ref, { value: current + count, period, updatedAt: new Date().toISOString() }, { merge: true });
+            return start;
+        });
+    } catch (err) {
+        console.warn('[pmhSequence] Không cấp được số thứ tự:', err);
+        return 0;
+    }
+}
