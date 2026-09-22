@@ -164,6 +164,23 @@ export const setMany = async (items: { key: BIKey; value: unknown }[], source?: 
   });
 };
 
+/**
+ * Đọc 1 khoá của APP GỐC (không có tiền tố `bi_`) trong cùng store `settings` — hiện chỉ dùng cho
+ * `checkthuong_data` (dữ liệu Check Thưởng, ghi bởi components/views/CheckThuongView.tsx) để
+ * bảng Thi đua siêu thị hiện cột THƯỞNG. Đây là đọc dữ liệu chung một database, KHÔNG import
+ * code của khu vực gốc (giữ đúng quy tắc cách ly ở CLAUDE.md mục 1). Chỉ đọc, không ghi.
+ */
+export const getRootSetting = async <T = unknown>(key: string): Promise<T | undefined> => {
+  const db = await getDb();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([SETTINGS_STORE], 'readonly');
+    const request = transaction.objectStore(SETTINGS_STORE).get(key);
+    request.onsuccess = () => resolve(request.result === null || request.result === '' ? undefined : (request.result as T));
+    request.onerror = () => reject(request.error);
+    transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
+  });
+};
+
 export const get = async <T = unknown>(key: BIKey): Promise<T | undefined> => {
   const db = await getDb();
   const prefixed = prefixKey(key);

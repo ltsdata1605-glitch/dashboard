@@ -14,6 +14,7 @@ import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
+import { useCheckThuongBonus } from '../../hooks/useCheckThuongBonus';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 
 import { 
@@ -44,6 +45,10 @@ interface CompetitionViewProps {
 
 const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((props, ref) => {
     const { data, isRealtime, activeSupermarket } = props;
+
+    // Cột THƯỞNG (chỉ ở Luỹ kế): tiền thưởng thi đua từ dữ liệu Check Thưởng, khớp theo tên gốc
+    // chương trình. Không có dữ liệu Check Thưởng / không tìm thấy siêu thị -> cột không hiện.
+    const { bonusByGroup: checkThuongBonus, source: checkThuongSource } = useCheckThuongBonus(activeSupermarket, !isRealtime);
 
     const modeKey = isRealtime ? 'realtime' : 'luyke';
     // Cột bật MẶC ĐỊNH theo đúng chế độ:
@@ -456,6 +461,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                 visibleColumns={visibleColumns}
                                 isRealtime={isRealtime}
                                 handleSort={handleSort}
+                                bonusByGroup={isRealtime ? null : checkThuongBonus}
+                                bonusSource={isRealtime ? null : checkThuongSource}
                             />
                         ) : (
                             <EmptyState

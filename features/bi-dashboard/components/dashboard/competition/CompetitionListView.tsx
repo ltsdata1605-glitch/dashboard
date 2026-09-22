@@ -5,6 +5,7 @@ import { ProgressBar } from '../DashboardWidgets';
 import { renderHeaderText } from '../SafeHeaderText';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { calculateGroupAchievementStats } from '../../../services/competitionSortAndCalc';
+import { getBonusForProgram, formatBonusShort, type BonusCell } from '../../../services/checkThuongBonus';
 import type { ProcessedProgram } from '../CompetitionView';
 
 interface CompetitionListViewProps {
@@ -16,6 +17,9 @@ interface CompetitionListViewProps {
     isRealtime: boolean;
     handleSort: (col: number | 'conLai' | 'htdkVT' | -1) => void;
     groupingMode?: 'default' | 'configured';
+    /** Cột THƯỞNG (Check Thưởng) — null/undefined: không hiện cột. Xem services/checkThuongBonus.ts. */
+    bonusByGroup?: Map<string, BonusCell> | null;
+    bonusSource?: { fileName: string; uploadTime: string | null } | null;
 }
 
 export interface GroupTheme {
@@ -118,9 +122,21 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
     visibleColumns, 
     isRealtime, 
     handleSort,
-    groupingMode = 'default'
+    groupingMode = 'default',
+    bonusByGroup = null,
+    bonusSource = null,
 }) => {
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
+    const showBonusCol = !!bonusByGroup && bonusByGroup.size > 0;
+
+    // Ô THƯỞNG: thật = xanh, dự kiến = cam kèm "~" (đúng cách Check Thưởng đang hiện), không quỹ = 0 xám, không khớp tên = "-".
+    const renderBonusCell = (programName: string) => {
+        const b = getBonusForProgram(bonusByGroup, programName);
+        if (!b) return <span className="text-slate-400 dark:text-slate-500 font-bold" title="Không tìm thấy ngành hàng này trong file Check Thưởng">-</span>;
+        if (b.kind === 'actual') return <span className="font-black text-emerald-700 dark:text-emerald-400">{formatBonusShort(b.amount)}</span>;
+        if (b.kind === 'projected') return <span className="font-black text-amber-700 dark:text-amber-400" title={`Thưởng dự kiến nếu đạt giải: ${formatBonusShort(b.amount)}`}>~{formatBonusShort(b.amount)}</span>;
+        return <span className="text-slate-300 dark:text-slate-600 font-bold">0</span>;
+    };
 
     const getFormattedHeader = (header: string) => {
         const mapping: Record<string, string> = {
@@ -182,6 +198,14 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                             </th>
                                         );
                                     })}
+                                    {showBonusCol && (
+                                        <th
+                                            className={`px-2 py-[5px] text-center whitespace-nowrap border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass('Thưởng')}`}
+                                            title={bonusSource ? `Nguồn: Check Thưởng — ${bonusSource.fileName}` : 'Nguồn: Check Thưởng'}
+                                        >
+                                            THƯỞNG
+                                        </th>
+                                    )}
                                 </tr>
                             </thead>
                             {(() => {
@@ -322,6 +346,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                             </td>
                                                         );
                                                     })}
+                                                    {showBonusCol && (
+                                                        <td className="px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums" data-testid="bonus-cell">
+                                                            {renderBonusCell(program.name)}
+                                                        </td>
+                                                    )}
 
                                                 </tr>
                                             );
@@ -332,6 +361,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                         })()}
                     </table>
                 </div>
+                {showBonusCol && (
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">
+                        * THƯỞNG lấy từ Check Thưởng{bonusSource ? ` (${bonusSource.fileName})` : ''}: xanh = thưởng đã có, cam &quot;~&quot; = dự kiến nếu đạt giải, 0 = nhóm không có quỹ, &quot;-&quot; = không khớp tên ngành hàng.
+                    </p>
+                )}
         </div>
     );
 };
