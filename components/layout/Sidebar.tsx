@@ -349,8 +349,9 @@ export default function Sidebar() {
                     )}
                 </div>
 
-                {/* Bottom Section */}
-                <div className="p-4 flex flex-col gap-3">
+                {/* Bottom Section: thẻ tài khoản (bấm -> Phân Quyền) + nút Đăng xuất bên phải
+                    (chỉ hiện khi sidebar mở — thu gọn thì thẻ chỉ còn avatar, hover ra là thấy nút) */}
+                <div className="p-4 flex items-center gap-1">
                     <Button
                         variant="unstyled"
                         size="none"
@@ -358,7 +359,7 @@ export default function Sidebar() {
                             setActiveTab('settings');
                             if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
                         }}
-                        className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
+                        className={`flex-1 min-w-0 flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
                         title="Phân Quyền & Duyệt Yêu Cầu"
                     >
                         <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
@@ -382,6 +383,18 @@ export default function Sidebar() {
                             <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{user?.email || "Chế độ Offline"}</span>
                         </motion.div>
                     </Button>
+                    {!effectiveCollapsed && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={logout}
+                            title="Đăng xuất"
+                            aria-label="Đăng xuất"
+                            className="mt-1 shrink-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
+                        >
+                            <LogOut size={18} />
+                        </Button>
+                    )}
                 </div>
             </motion.aside>
         </>
