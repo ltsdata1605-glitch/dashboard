@@ -1,20 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from '../../functions/src/relistUnused';
 
-describe('loc csd — nhận diện lệnh', () => {
-    it('nhận các biến thể', () => {
+describe('csd — nhận diện lệnh', () => {
+    it('cú pháp chính "csd" và các biến thể', () => {
+        for (const t of ['csd', 'CSD', ' csd ', '.csd', 'chưa sử dụng', 'chua su dung', 'chưa dùng']) {
+            expect(isRelistUnusedCommand(t), t).toBe(true);
+        }
+    });
+    it('vẫn nhận cú pháp cũ "loc csd" (không phá thói quen người dùng)', () => {
         for (const t of ['loc csd', 'Loc CSD', 'lọc csd', '.loc csd', 'loc chưa sử dụng', 'lọc chưa dùng', '  loc csd  ']) {
             expect(isRelistUnusedCommand(t), t).toBe(true);
         }
     });
     it('không nhận nhầm lệnh lọc thường / tk / huy', () => {
-        for (const t of ['loc', 'lọc', 'loc csd abc', 'tk', 'huy ABC123', 'csd', 'loc PMH MM200']) {
+        for (const t of ['loc', 'lọc', 'csd abc', 'loc csd abc', 'tk', 'huy ABC123', 'loc PMH MM200', 'csdx']) {
             expect(isRelistUnusedCommand(t), t).toBe(false);
         }
     });
 });
 
-describe('loc csd — đầu tháng theo giờ VN', () => {
+describe('csd — đầu tháng theo giờ VN', () => {
     it('22/09 10:00 VN -> đầu tháng 01/09 00:00 VN = 31/08 17:00 UTC', () => {
         const r = getVnMonthStartIso(new Date('2026-09-22T03:00:00Z'));
         expect(r.iso).toBe('2026-08-31T17:00:00.000Z');
@@ -27,7 +32,7 @@ describe('loc csd — đầu tháng theo giờ VN', () => {
     });
 });
 
-describe('loc csd — chọn thẻ chưa dùng trong tháng', () => {
+describe('csd — chọn thẻ chưa dùng trong tháng', () => {
     const now = new Date('2026-09-22T03:00:00Z');
     const docs = [
         { id: 'a', code: 'AAA', status: 'UNUSED', filteredAt: '2026-09-10T02:00:00.000Z' },

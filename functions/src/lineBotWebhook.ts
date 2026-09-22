@@ -526,7 +526,7 @@ function formatHelpGuideMessage(): string {
         '',
         '🎯 4. LỌC MÃ RIÊNG (CHAT 1-1):',
         '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.',
-        '• "loc csd": Hiện lại mọi thẻ đã lọc nhưng CHƯA sử dụng trong tháng.',
+        '• "csd": Hiện lại mọi thẻ đã lọc nhưng CHƯA sử dụng trong tháng.',
         '• Dán 1 mã coupon vào chat: BOT báo mã đã được ai dùng lúc nào / chưa dùng.'
     ].join('\n');
 }
@@ -2361,12 +2361,12 @@ export const lineBotWebhook = onRequest(
                     continue;
                 }
 
-                // 1.9. Lệnh "loc csd" — hiện lại TẤT CẢ thẻ PMH đã lọc nhưng CHƯA SỬ DỤNG trong tháng này
+                // 1.9. Lệnh "csd" — hiện lại TẤT CẢ thẻ PMH đã lọc nhưng CHƯA SỬ DỤNG trong tháng này
                 // (thẻ cũ trôi mất trong nhóm, người dùng cần bấm "Chạm để copy" lại). Chỉ lọc theo
                 // status ở Firestore (1 field, không cần composite index — project hiện KHÔNG có index
                 // nào), còn "trong tháng" lọc bằng tay theo filteredAt (ISO UTC) so với đầu tháng giờ VN.
                 if (isRelistUnusedCommand(cleanText)) {
-                    if (!allow('filterCoupon')) { denyLog('filterCoupon', 'lệnh "loc csd"'); continue; }
+                    if (!allow('filterCoupon')) { denyLog('filterCoupon', 'lệnh "csd"'); continue; }
                     const { label: monthLabel } = getVnMonthStartIso();
                     const MAX_CARDS = 40; // 4 carousel × 10 thẻ, chừa 1 tin văn bản báo phần còn lại (reply tối đa 5 tin)
 
@@ -2377,7 +2377,7 @@ export const lineBotWebhook = onRequest(
                             fSnap.docs.map(d => ({ ref: d.ref, data: d.data(), code: d.data().code, status: d.data().status, filteredAt: d.data().filteredAt })),
                         );
                     } catch (err) {
-                        console.warn('[loc csd] Lỗi đọc filtered_coupons:', err);
+                        console.warn('[csd] Lỗi đọc filtered_coupons:', err);
                         await replyLineMessage(token, replyToken, [{ type: 'text', text: '⚠️ Không đọc được danh sách thẻ đã lọc, vui lòng thử lại sau.', quoteToken: event.message?.quoteToken }]);
                         continue;
                     }
@@ -2407,7 +2407,7 @@ export const lineBotWebhook = onRequest(
                     if (unusedDocs.length > MAX_CARDS) {
                         messages.push({
                             type: 'text',
-                            text: `📋 Tháng ${monthLabel} còn ${unusedDocs.length} thẻ chưa sử dụng — đang hiện ${MAX_CARDS} thẻ cũ nhất. Dùng xong gõ "loc csd" lần nữa để xem tiếp.`
+                            text: `📋 Tháng ${monthLabel} còn ${unusedDocs.length} thẻ chưa sử dụng — đang hiện ${MAX_CARDS} thẻ cũ nhất. Dùng xong gõ "csd" lần nữa để xem tiếp.`
                         });
                     }
 
@@ -2430,10 +2430,10 @@ export const lineBotWebhook = onRequest(
                             });
                             await qBatch.commit();
                         } catch (err) {
-                            console.warn('[loc csd] Lỗi cập nhật quoteToken/cardIndex:', err);
+                            console.warn('[csd] Lỗi cập nhật quoteToken/cardIndex:', err);
                         }
                     }
-                    console.info(`[loc csd] Hiện lại ${shown.length}/${unusedDocs.length} thẻ chưa sử dụng tháng ${monthLabel}`);
+                    console.info(`[csd] Hiện lại ${shown.length}/${unusedDocs.length} thẻ chưa sử dụng tháng ${monthLabel}`);
                     continue;
                 }
 
@@ -3076,7 +3076,7 @@ export const lineBotWebhook = onRequest(
                         if (!isGroupOrRoom || isExplicitFilter) {
                             await replyLineMessage(token, replyToken, [{
                                 type: 'text',
-                                text: `ℹ️ ${duplicateCount} mã trong tin này đã được lọc trước đó rồi.\n👉 Gõ "loc csd" để xem lại các thẻ chưa sử dụng trong tháng.`,
+                                text: `ℹ️ ${duplicateCount} mã trong tin này đã được lọc trước đó rồi.\n👉 Gõ "csd" để xem lại các thẻ chưa sử dụng trong tháng.`,
                                 quoteToken: event.message?.quoteToken
                             }]);
                         }

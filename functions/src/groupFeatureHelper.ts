@@ -11,7 +11,7 @@
 import { db } from './firebaseAdmin';
 
 export interface GroupFeatures {
-    /** Lọc PMH khi chuyển tiếp danh sách + lệnh "loc csd". */
+    /** Lọc PMH khi chuyển tiếp danh sách + lệnh "csd". */
     filterCoupon: boolean;
     /** Cấp mã PMH: form xin PMH, lệnh e{n}/gv{n}, số trần. */
     issueCoupon: boolean;

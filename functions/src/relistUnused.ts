@@ -1,11 +1,11 @@
 /**
- * Phần THUẦN của lệnh "loc csd" (hiện lại thẻ PMH đã lọc nhưng chưa sử dụng trong tháng) —
+ * Phần THUẦN của lệnh "csd" (hiện lại thẻ PMH đã lọc nhưng chưa sử dụng trong tháng) —
  * tách khỏi lineBotWebhook.ts để test đơn vị không cần firebase-admin/LINE API.
  */
 
-/** "loc csd", "lọc chưa sử dụng", ".loc csd"… — không phân biệt hoa/thường. */
+/** "csd" (cú pháp chính, chủ dự án chốt 2026-09-22); vẫn nhận dạng cũ "loc csd"/"lọc chưa sử dụng". */
 export function isRelistUnusedCommand(text: string): boolean {
-    return /^[./!]?(?:loc|lọc)\s*(?:csd|chưa\s*sử\s*dụng|chua\s*su\s*dung|chưa\s*dùng|chua\s*dung)$/i.test(text.trim());
+    return /^[./!]?(?:(?:loc|lọc)\s*)?(?:csd|chưa\s*sử\s*dụng|chua\s*su\s*dung|chưa\s*dùng|chua\s*dung)$/i.test(text.trim());
 }
 
 /** Đầu tháng theo giờ Việt Nam (UTC+7), trả ISO UTC để so với `filteredAt` (new Date().toISOString()). */
