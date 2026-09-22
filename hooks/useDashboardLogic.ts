@@ -12,6 +12,7 @@ import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
 import { useStableCallback } from './useStableCallback';
 import * as dbService from '../services/dbService';
+import { saveAnalysisEmployees, getAnalysisEmployees } from '../features/bi-dashboard/services/analysisEmployeeSyncService';
 import { toLocalISOString, getRowValue } from '../utils/dataUtils';
 import { COL } from '../constants';
 
@@ -193,10 +194,53 @@ export const useDashboardLogic = () => {
         await dbService.saveKpiTargets(targets);
     });
 
+    /**
+     * DepartmentMap ("mã NV" -> "Bộ phận;;Tên") -> danh sách nhân viên cho Report BI.
+     * Tên ghép lại dạng "mã - Tên" đúng khuôn mà normalizeAnalysisEmployees mong đợi.
+     */
+    const departmentMapToEmployeeList = (map: DepartmentMap) =>
+        Object.entries(map || {}).map(([id, raw]) => {
+            const [dept, name] = String(raw || '').split(';;');
+            const cleanName = (name || '').trim();
+            return { name: cleanName ? `${id} - ${cleanName}` : id, department: (dept || '').trim() };
+        });
+
     const updateDepartmentMap = useStableCallback(async (map: DepartmentMap) => {
         setDepartmentMap(map);
         await dbService.saveDepartmentMap(map);
+        // Đồng bộ sang Report BI NGAY cả khi chưa tải file YCX: trước đây danh sách nhân viên chỉ
+        // được đẩy sang BI sau khi xử lý file YCX (hooks/useDataManagement), nên người dùng cập
+        // nhật danh sách ở modal "Quản lý danh sách nhân viên" mà Report BI vẫn trống
+        // (chủ dự án báo 2026-09-22).
+        try {
+            const currentSm = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
+            await saveAnalysisEmployees(departmentMapToEmployeeList(map), currentSm);
+        } catch (err) {
+            console.warn('[useDashboardLogic] Không đồng bộ được danh sách nhân viên sang Report BI:', err);
+        }
     });
+
+    // Người dùng đã có sẵn danh sách nhân viên từ trước bản sửa này (departmentMap có dữ liệu)
+    // nhưng chưa từng tải file YCX -> Report BI vẫn trống cho tới khi họ sửa gì đó. Đẩy 1 lần
+    // lúc khởi động, và CHỈ khi phía BI thực sự chưa có danh sách (không ghi đè dữ liệu tốt hơn).
+    useEffect(() => {
+        if (!departmentMap || Object.keys(departmentMap).length === 0) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const existing = await getAnalysisEmployees();
+                if (cancelled || (existing && existing.employees.length > 0)) return;
+                const list = departmentMapToEmployeeList(departmentMap);
+                if (list.length === 0) return;
+                await saveAnalysisEmployees(list);
+                console.info('[useDashboardLogic] Đã đẩy danh sách nhân viên có sẵn sang Report BI (lần đầu).');
+            } catch (err) {
+                console.warn('[useDashboardLogic] Bỏ qua đồng bộ nhân viên lần đầu:', err);
+            }
+        })();
+        return () => { cancelled = true; };
+         
+    }, [departmentMap]);
 
     // Dùng chung sau khi xoá file hoặc xem lại báo cáo — 2 handler trước đây copy-paste giống hệt
     // khối này, chỉ khác action gọi trước đó (handleDeleteFileRaw vs handleViewReportRaw).
