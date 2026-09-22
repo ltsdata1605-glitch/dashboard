@@ -6,7 +6,12 @@ import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4",
-    authDomain: "dashboa-7e20b.firebaseapp.com",
+    // authDomain tuỳ chỉnh (2026-09-22): auth.dashboard.pro.vn trỏ về Firebase Hosting site dashboa-7e20b,
+    // nơi Firebase tự phục vụ /__/auth/handler — để popup Google ghi "Tiếp tục tới auth.dashboard.pro.vn"
+    // thay vì dashboa-7e20b.firebaseapp.com. Đã thêm domain vào Authorized domains (Firebase Auth) và
+    // redirect URI https://auth.dashboard.pro.vn/__/auth/handler vào OAuth Web client (GCP). Đổi lại
+    // giá trị cũ nếu domain này ngừng hoạt động — không cần sửa gì khác.
+    authDomain: "auth.dashboard.pro.vn",
     projectId: "dashboa-7e20b",
     storageBucket: "dashboa-7e20b.firebasestorage.app",
     messagingSenderId: "388853115750",
