@@ -1,12 +1,15 @@
 import React, { useMemo } from 'react';
 import type { ProcessedProgram } from '../CompetitionView';
 import { calculateOverallCompetitionKpiStats } from '../../../services/competitionSortAndCalc';
+import { getBonusForProgram, formatBonusShort, type BonusCell } from '../../../services/checkThuongBonus';
 
 interface CompetitionKpiCardsProps {
     programs: ProcessedProgram[];
     headers: string[];
     visibleColumns: string[];
     isRealtime: boolean;
+    /** Có dữ liệu Check Thưởng -> thêm thẻ thứ 5 "Tổng thưởng" (5 thẻ cùng 1 hàng). */
+    bonusByGroup?: Map<string, BonusCell> | null;
 }
 
 /**
@@ -52,21 +55,46 @@ const UNITS = [
         barBg: 'bg-slate-100 dark:bg-slate-800',
         dot: 'bg-slate-400',
     },
+    {
+        key: 'bonus',
+        label: 'Tổng thưởng',
+        tone: 'text-sky-700 dark:text-sky-400',
+        bar: 'bg-sky-500',
+        barBg: 'bg-sky-100 dark:bg-sky-950/40',
+        dot: 'bg-sky-500',
+    },
 ] as const;
 
 export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
     programs,
     headers,
     visibleColumns,
-    isRealtime
+    isRealtime,
+    bonusByGroup = null,
 }) => {
     const stats = useMemo(
         () => calculateOverallCompetitionKpiStats(programs, headers, visibleColumns, isRealtime),
         [programs, headers, visibleColumns, isRealtime]
     );
 
+    // Thẻ Tổng thưởng: cộng thưởng THẬT của các nhóm đang hiện trong bảng (khớp Check Thưởng);
+    // dòng phụ = số nhóm đã có thưởng + tổng dự kiến (nhóm chưa đạt nhưng có quỹ).
+    const bonusStats = useMemo(() => {
+        if (!bonusByGroup || bonusByGroup.size === 0) return null;
+        let actual = 0, projected = 0, countActual = 0, countMatched = 0;
+        programs.forEach(p => {
+            const b = getBonusForProgram(bonusByGroup, p.name);
+            if (!b) return;
+            countMatched++;
+            if (b.kind === 'actual') { actual += b.amount; countActual++; }
+            else if (b.kind === 'projected') projected += b.amount;
+        });
+        return { actual, projected, countActual, countMatched };
+    }, [bonusByGroup, programs]);
+
     if (stats.total === 0) return null;
 
+    const units = bonusStats ? UNITS : UNITS.filter(u => u.key !== 'bonus');
     const modeLabel = stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản';
 
     /** Số lớn, dòng phụ, và % dùng để vẽ vạch tiến độ của từng ô. */
@@ -78,6 +106,14 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                 return { big: `${Math.round(stats.pctUnder100)}%`, sub: `Chưa đạt ${stats.countUnder100}/${stats.total} nhóm`, pct: stats.pctUnder100 };
             case 'near':
                 return { big: `${stats.countNear100}`, sub: `${Math.round(stats.pctNear100)}% tổng nhóm`, pct: stats.pctNear100 };
+            case 'bonus': {
+                const b = bonusStats!;
+                const pct = b.countMatched > 0 ? (b.countActual / b.countMatched) * 100 : 0;
+                const sub = b.projected > 0
+                    ? `${b.countActual}/${b.countMatched} nhóm · D.kiến +${formatBonusShort(b.projected)}`
+                    : `${b.countActual}/${b.countMatched} nhóm có thưởng`;
+                return { big: formatBonusShort(b.actual), sub, pct };
+            }
             default:
                 return { big: `${stats.countZero}`, sub: `${Math.round(stats.pctZero)}% tổng nhóm`, pct: stats.pctZero };
         }
@@ -85,15 +121,15 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
 
     return (
         <div
-            className="competition-kpi-container w-full grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 lg:gap-3 mb-2.5 sm:mb-3"
+            className={`competition-kpi-container w-full grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2.5 sm:mb-3 ${units.length === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}
             title={`Tính theo ${modeLabel}`}
         >
-            {UNITS.map((u) => {
+            {units.map((u) => {
                 const v = valueOf(u.key);
                 return (
                     <div
                         key={u.key}
-                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 p-2.5 sm:p-3 transition-all shadow-2xs hover:shadow-xs"
+                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-2.5 py-2 transition-all shadow-2xs hover:shadow-xs"
                     >
                         {/* Vạch nhận diện 3px trên đỉnh mỗi thẻ riêng biệt */}
                         <div className={`absolute top-0 left-0 right-0 h-[3px] ${u.bar}`} />
@@ -105,16 +141,16 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                             <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
                         </div>
 
-                        <div className={`text-xl sm:text-2xl font-black tabular-nums leading-tight tracking-tight ${u.tone}`}>
+                        <div className={`text-lg sm:text-xl font-black tabular-nums leading-tight tracking-tight ${u.tone}`}>
                             {v.big}
                         </div>
 
-                        <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                            <span className="truncate">{v.sub}</span>
+                        <div className="mt-0.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                            <span className="truncate" title={v.sub}>{v.sub}</span>
                         </div>
 
                         {/* Vạch tiến độ */}
-                        <div className={`mt-2 h-[3px] w-full ${u.barBg} overflow-hidden`}>
+                        <div className={`mt-1.5 h-[3px] w-full ${u.barBg} overflow-hidden`}>
                             <div
                                 className={`h-full ${u.bar} transition-all duration-300`}
                                 style={{ width: `${Math.min(100, Math.max(0, v.pct))}%` }}

@@ -445,6 +445,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         headers={processedSupermarketData.headers}
                         visibleColumns={visibleColumns}
                         isRealtime={isRealtime}
+                        bonusByGroup={isRealtime ? null : checkThuongBonus}
                     />
                 </div>
             )}
