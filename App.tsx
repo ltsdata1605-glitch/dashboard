@@ -35,6 +35,7 @@ const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
 const PriceComparisonView = lazy(() => import('./components/views/PriceComparisonView'));
 const LineBotView = lazy(() => import('./features/line-bot/LineBotView'));
 const KhaiThacView = lazy(() => import('./features/khai-thac/KhaiThacView'));
+const TaxCalculatorView = lazy(() => import('./features/tax-calculator/TaxCalculatorView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
@@ -106,7 +107,7 @@ const TabContent = React.memo(() => {
 
             {activeTab === 'tools-tax' && (
                 <div className="flex-1 relative w-full flex flex-col">
-                    <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
+                    <TaxCalculatorView />
                 </div>
             )}
 
@@ -129,7 +130,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools': { main: 'Công', highlight: 'Cụ' },
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
-    'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
+    'tools-tax': { main: 'Tính', highlight: 'Thuế' },
     'tools-price-compare': { main: 'So sánh', highlight: 'Giá' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
     'tools-line-bot': { main: 'Bot LINE', highlight: 'PMH' },

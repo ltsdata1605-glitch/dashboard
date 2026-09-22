@@ -7,7 +7,6 @@ import {
     Sparkles,
     ShieldCheck,
     Settings,
-    History,
     HelpCircle,
     ShieldAlert,
     CheckCircle2,
@@ -29,11 +28,10 @@ import { SyntaxConfigTab } from './components/SyntaxConfigTab';
 import { ScheduleManagerTab } from './components/ScheduleManagerTab';
 import { KeywordLibraryTab } from './components/KeywordLibraryTab';
 import { AdminDeclarationTab } from './components/AdminDeclarationTab';
-import { AuditLogTab } from './components/AuditLogTab';
 import { GroupFeaturesTab } from './components/GroupFeaturesTab';
 import { LineBotOnboardingModal } from './components/LineBotOnboardingModal';
 
-type LineBotTab = 'coupons' | 'filtered' | 'syntax' | 'schedules' | 'keywords' | 'admins' | 'settings' | 'group-features' | 'audit';
+type LineBotTab = 'coupons' | 'filtered' | 'schedules' | 'keywords' | 'admins' | 'group-features' | 'syntax' | 'settings';
 
 export default function LineBotView() {
     const { userRole, isDemoMode } = useAuth();
@@ -78,15 +76,14 @@ export default function LineBotView() {
     }
 
     const tabs: Array<{ id: LineBotTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
-        { id: 'coupons', label: 'Kho PMH', icon: Ticket },
-        { id: 'filtered', label: 'Coupon Đã Lọc', icon: ListFilter },
+        { id: 'coupons', label: 'Coupon Event', icon: Ticket },
+        { id: 'filtered', label: 'Coupon Lọc', icon: ListFilter },
+        { id: 'schedules', label: 'Gửi Notify', icon: Clock },
+        { id: 'keywords', label: 'Chat BOT', icon: Sparkles },
+        { id: 'admins', label: 'Admin', icon: ShieldCheck },
+        { id: 'group-features', label: 'Cấu hình Nhóm', icon: Settings },
         { id: 'syntax', label: 'Cú pháp & Lọc', icon: MessageSquare },
-        { id: 'schedules', label: 'Hẹn Giờ Báo', icon: Clock },
-        { id: 'keywords', label: 'Từ Khoá', icon: Sparkles },
-        { id: 'admins', label: 'Khai Báo Admin', icon: ShieldCheck },
-        { id: 'group-features', label: 'Giới Hạn Tính Năng', icon: Settings },
-        { id: 'settings', label: 'Cấu Hình Bot', icon: Settings },
-        { id: 'audit', label: 'Nhật Ký', icon: History }
+        { id: 'settings', label: 'Cấu Hình Bot', icon: Settings }
     ];
 
     return (
@@ -240,17 +237,6 @@ export default function LineBotView() {
                     />
                 )}
 
-                {activeSubTab === 'syntax' && (
-                    <SyntaxConfigTab
-                        config={botConfigHook.config}
-                        isSaving={botConfigHook.isSaving}
-                        onSaveConfig={botConfigHook.saveConfig}
-                        interactedUsers={adminHook.interactedUsers}
-                        isInteractedLoading={adminHook.isInteractedLoading}
-                        onRefreshInteracted={adminHook.loadInteractedUsers}
-                    />
-                )}
-
                 {activeSubTab === 'schedules' && (
                     <ScheduleManagerTab
                         schedules={scheduleHook.schedules}
@@ -303,6 +289,17 @@ export default function LineBotView() {
                     />
                 )}
 
+                {activeSubTab === 'syntax' && (
+                    <SyntaxConfigTab
+                        config={botConfigHook.config}
+                        isSaving={botConfigHook.isSaving}
+                        onSaveConfig={botConfigHook.saveConfig}
+                        interactedUsers={adminHook.interactedUsers}
+                        isInteractedLoading={adminHook.isInteractedLoading}
+                        onRefreshInteracted={adminHook.loadInteractedUsers}
+                    />
+                )}
+
                 {activeSubTab === 'settings' && (
                     <LineBotSettingsTab
                         config={botConfigHook.config}
@@ -315,10 +312,6 @@ export default function LineBotView() {
                         onSaveConfig={botConfigHook.saveConfig}
                         onOpenGuide={() => setIsOnboardingOpen(true)}
                     />
-                )}
-
-                {activeSubTab === 'audit' && (
-                    <AuditLogTab />
                 )}
             </div>
 

@@ -189,15 +189,6 @@ export interface PmhFilterResult {
     flexMessages?: any[];
 }
 
-export interface AuditLog {
-    id: string;
-    action: string;
-    description: string;
-    performedBy: string;
-    details?: Record<string, unknown>;
-    timestamp: string;
-}
-
 export interface ParsedCouponForm {
     isValid: boolean;
     warehouse?: string;

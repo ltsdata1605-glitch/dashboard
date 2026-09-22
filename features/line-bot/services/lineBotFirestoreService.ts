@@ -23,7 +23,6 @@ import {
     KeywordReply,
     LineAdmin,
     LineGroup,
-    AuditLog,
     InteractedUser,
     ExpiredProductRecord,
     FilteredCouponRecord,
@@ -678,21 +677,6 @@ export const lineBotFirestoreService = {
             });
         } catch (e) {
             // Không ngắt luồng nếu log lỗi
-        }
-    },
-
-    /**
-     * Lấy danh sách nhật ký kiểm toán gần nhất
-     */
-    async getAuditLogs(userId: string, maxItems = 100): Promise<AuditLog[]> {
-        if (!userId) return [];
-        try {
-            const colRef = collection(db, ROOT_COLLECTION, userId, 'audit_logs');
-            const q = query(colRef, orderBy('timestamp', 'desc'), limit(maxItems));
-            const snap = await getDocs(q);
-            return snap.docs.map(d => ({ id: d.id, ...d.data() } as AuditLog));
-        } catch (error) {
-            return [];
         }
     },
 
