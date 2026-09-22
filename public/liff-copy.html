@@ -211,10 +211,30 @@
             return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
         }
 
+        // Rút gọn tên LINE về "Mã NV - Tên" — BẢN CHÉP của functions/src/userName.ts (trang tĩnh không
+        // bundler): "DMST-Nhân-107617SALE" -> "107617 - Nhân". Sửa bên kia thì sửa cả đây.
+        function formatShortUserName(raw) {
+            const name = String(raw || '').trim();
+            if (!name) return name;
+            const parts = name.split(/[\s_\-–—]+/).filter(Boolean);
+            let idIdx = -1, id = '';
+            for (let i = 0; i < parts.length; i++) {
+                const m = parts[i].match(/^(\d{4,7})[^\d]*$/);
+                if (m) { idIdx = i; id = m[1]; break; }
+            }
+            if (idIdx === -1) return name;
+            const isCode = (s) => /^[A-ZĐ0-9]{1,6}$/.test(s);
+            let nameParts = parts.slice(0, idIdx);
+            if (nameParts.length > 0 && isCode(nameParts[0])) nameParts = nameParts.slice(1);
+            if (nameParts.length === 0) nameParts = parts.slice(idIdx + 1).filter(p => !isCode(p)).slice(0, 2);
+            const shortName = nameParts.join(' ').trim();
+            return shortName ? `${id} - ${shortName}` : name;
+        }
+
         // Dự phòng: bot không gửi được (hết hạn mức push / lỗi mạng) → gửi tin thường thay người dùng (không trích dẫn được)
         async function sendFallbackMessage(displayName) {
             const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
-            const messageText = `👉 ${prefix} đã được sử dụng lúc ${getVietnamTime()}!\n↳ User: ${displayName}`;
+            const messageText = `👉 ${prefix} đã được sử dụng lúc ${getVietnamTime()}!\n↳ User: ${formatShortUserName(displayName)}`;
             try {
                 await initPromise;
                 await Promise.race([liff.sendMessages([{ type: 'text', text: messageText }]), timeout(1500)]);

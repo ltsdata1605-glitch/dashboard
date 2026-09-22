@@ -6,6 +6,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import * as crypto from 'crypto';
 import { db } from './firebaseAdmin';
 import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from './relistUnused';
+import { formatShortUserName } from './userName';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -1934,7 +1935,8 @@ export const lineBotWebhook = onRequest(
                             botToken = String(botSnap.data()?.channelAccessToken || '');
                         }
                         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
-                        const text = `👉 PMH ${quoteTarget!.cardIndex} đã được sử dụng lúc ${timeStr}!\n↳ User: ${usedBy}`;
+                        // Tin xác nhận ghi tên gọn "Mã NV - Tên" (DMST-Nhân-107617SALE -> 107617 - Nhân); Firestore vẫn lưu usedBy đầy đủ.
+                        const text = `👉 PMH ${quoteTarget!.cardIndex} đã được sử dụng lúc ${timeStr}!\n↳ User: ${formatShortUserName(usedBy)}`;
                         return pushLineMessage(botToken, quoteTarget!.chatId, [{ type: 'text', text, quoteToken: quoteTarget!.quoteToken }]);
                     })().catch((e: any) => ({ ok: false, status: 0, error: e?.message || 'push-failed' }))
                     : Promise.resolve(null);
