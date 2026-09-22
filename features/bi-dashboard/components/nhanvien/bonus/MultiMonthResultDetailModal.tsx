@@ -14,24 +14,27 @@ export const MultiMonthResultDetailModal: React.FC<{
     if (!isOpen || !summary) return null;
 
     const errorMonths = summary.monthResults.filter(m => !!m.error).length;
+    const isCompare = summary.kind === 'compare';
+    const unit = isCompare ? 'kỳ' : 'tháng';
+    const runName = isCompare ? 'So sánh cùng kỳ' : 'chạy Năm';
 
     return (
         <Modal
             isOpen
             onClose={onClose}
-            title={summary.stoppedEarly ? 'Kết quả chạy Năm (đã dừng giữa chừng)' : 'Kết quả chạy Năm'}
+            title={summary.stoppedEarly ? `Kết quả ${runName} (đã dừng giữa chừng)` : `Kết quả ${runName}`}
             maxWidth="lg"
             footer={<Button variant="unstyled" size="none" onClick={onClose} className="w-full py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">Đóng</Button>}
         >
             <div className="flex items-center gap-2 mb-4 flex-wrap">
-                <Badge variant="success">{summary.monthsDone - errorMonths}/{summary.monthsTotal} tháng thành công</Badge>
-                {errorMonths > 0 && <Badge variant="danger">{errorMonths} tháng lỗi</Badge>}
-                {summary.stoppedEarly && <Badge variant="warning">Đã dừng sớm — {summary.monthsDone}/{summary.monthsTotal} tháng đã xử lý</Badge>}
+                <Badge variant="success">{summary.monthsDone - errorMonths}/{summary.monthsTotal} {unit} thành công</Badge>
+                {errorMonths > 0 && <Badge variant="danger">{errorMonths} {unit} lỗi</Badge>}
+                {summary.stoppedEarly && <Badge variant="warning">Đã dừng sớm — {summary.monthsDone}/{summary.monthsTotal} {unit} đã xử lý</Badge>}
                 {summary.skippedNames.length > 0 && <Badge variant="warning">{summary.skippedNames.length} nhân viên bị bỏ qua</Badge>}
             </div>
             {summary.skippedNames.length > 0 && (
                 <div className="mb-4 p-3 rounded-none border border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/20 text-xs text-amber-800 dark:text-amber-300">
-                    <p className="font-bold mb-1">Tên không đúng khuôn "Tên - Mã NV", đã bỏ qua ở mọi tháng:</p>
+                    <p className="font-bold mb-1">Tên không đúng khuôn "Tên - Mã NV", đã bỏ qua ở mọi {unit}:</p>
                     <p className="leading-relaxed">{summary.skippedNames.join(', ')}</p>
                 </div>
             )}
@@ -39,7 +42,7 @@ export const MultiMonthResultDetailModal: React.FC<{
                 <table className="w-full text-xs">
                     <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0">
                         <tr>
-                            <th className="text-left px-3 py-2 font-bold text-slate-500 dark:text-slate-400">Tháng</th>
+                            <th className="text-left px-3 py-2 font-bold text-slate-500 dark:text-slate-400">{isCompare ? 'Kỳ' : 'Tháng'}</th>
                             <th className="text-right px-3 py-2 font-bold text-slate-500 dark:text-slate-400">Kết quả</th>
                         </tr>
                     </thead>

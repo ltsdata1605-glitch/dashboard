@@ -1,14 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { UseBonusAutoBridgeResult } from '../../../hooks/useBonusAutoBridge';
-import { UseMultiMonthBonusRunResult } from '../../../hooks/useMultiMonthBonusRun';
+import { UseMultiMonthBonusRunResult, ComparePeriodsInput } from '../../../hooks/useMultiMonthBonusRun';
 import { AutoBonusInstallGuideModal } from './AutoBonusInstallGuideModal';
 import { AutoBonusErrorDetailModal } from './AutoBonusErrorDetailModal';
 import { MultiMonthResultDetailModal } from './MultiMonthResultDetailModal';
 import { AutoBonusRangePickerModal } from './AutoBonusRangePickerModal';
 import { showAutoBonusResultToast, showAutoBonusErrorToast, showMultiMonthResultToast } from './AutoBonusToasts';
 
-type PendingRetry = { type: 'single'; label: string } | { type: 'year'; year: number; label: string } | null;
+type PendingRetry =
+    | { type: 'single'; label: string }
+    | { type: 'year'; year: number; label: string }
+    | { type: 'compare'; periods: ComparePeriodsInput; label: string }
+    | null;
 
 /**
  * Nút "Tự động" + trạng thái ngắn gọn cạnh nút "Cập nhật thưởng" (Thủ công). Sở hữu
@@ -16,6 +20,8 @@ type PendingRetry = { type: 'single'; label: string } | { type: 'year'; year: nu
  * gian), modal hướng dẫn cài đặt lần đầu (dùng chung cho cả job đơn lẫn chạy Năm), toast
  * kết quả của từng luồng, và modal chi tiết tương ứng. Khi chạy xong có ít nhất 1 kết quả
  * thành công, báo `onPeriodLabelChange` để BonusTab đổi tiêu đề báo cáo đúng theo kỳ vừa chọn.
+ * Lượt "So sánh cùng kỳ" xong đủ 2 kỳ -> gọi thêm `onCompareDone` để BonusTab tự chuyển sang
+ * chế độ xem So sánh.
  */
 export const AutoBonusPanel: React.FC<{
     autoBridge: UseBonusAutoBridgeResult;
@@ -23,10 +29,11 @@ export const AutoBonusPanel: React.FC<{
     employeeCount: number;
     onUseManual: () => void;
     onPeriodLabelChange: (label: string) => void;
-}> = ({ autoBridge, multiMonthRun, employeeCount, onUseManual, onPeriodLabelChange }) => {
+    onCompareDone?: () => void;
+}> = ({ autoBridge, multiMonthRun, employeeCount, onUseManual, onPeriodLabelChange, onCompareDone }) => {
     const { status, progress, stalled, startAuto, summary, errorMessage, dismiss } = autoBridge;
     const {
-        status: monthStatus, progress: monthProgress, stalled: monthStalled, startYear,
+        status: monthStatus, progress: monthProgress, stalled: monthStalled, startYear, startCompare,
         summary: monthSummary, errorMessage: monthErrorMessage, dismiss: monthDismiss, stop: stopYear,
     } = multiMonthRun;
 
@@ -76,6 +83,15 @@ export const AutoBonusPanel: React.FC<{
                 if (currentMonthResult && currentMonthResult.successCount > 0 && pendingRetryRef.current?.type === 'year') {
                     onPeriodLabelChange(pendingRetryRef.current.label);
                 }
+                // So sánh cùng kỳ: chỉ đổi tiêu đề + chuyển chế độ xem khi CẢ 2 kỳ đều có dữ liệu —
+                // thiếu 1 kỳ thì bảng so sánh không có gì để so, giữ nguyên chế độ đang xem.
+                if (monthSummary.kind === 'compare' && pendingRetryRef.current?.type === 'compare') {
+                    const bothOk = monthSummary.monthResults.length === 2 && monthSummary.monthResults.every(m => m.successCount > 0);
+                    if (bothOk) {
+                        onPeriodLabelChange(pendingRetryRef.current.label);
+                        onCompareDone?.();
+                    }
+                }
                 showMultiMonthResultToast(monthSummary, {
                     onViewDetail: () => setShowMonthDetail(true),
                     onDismissed: () => monthDismiss(),
@@ -87,7 +103,7 @@ export const AutoBonusPanel: React.FC<{
         } else if (monthStatus !== 'done' && monthStatus !== 'error') {
             monthFiredRef.current = null;
         }
-    }, [monthStatus, monthSummary, monthErrorMessage, monthDismiss, onPeriodLabelChange]);
+    }, [monthStatus, monthSummary, monthErrorMessage, monthDismiss, onPeriodLabelChange, onCompareDone]);
 
     const handleRunSingle = (range: { fromDate: string; toDate: string; label: string }) => {
         pendingRetryRef.current = { type: 'single', label: range.label };
@@ -97,9 +113,14 @@ export const AutoBonusPanel: React.FC<{
         pendingRetryRef.current = { type: 'year', year, label };
         startYear(year);
     };
+    const handleRunCompare = (periods: ComparePeriodsInput, label: string) => {
+        pendingRetryRef.current = { type: 'compare', periods, label };
+        startCompare(periods);
+    };
     const handleRetry = () => {
         const pending = pendingRetryRef.current;
         if (pending?.type === 'year') startYear(pending.year);
+        else if (pending?.type === 'compare') startCompare(pending.periods);
         else startAuto();
     };
 
@@ -129,7 +150,7 @@ export const AutoBonusPanel: React.FC<{
             {monthStatus === 'running' && monthProgress && (
                 <span className="text-[11px] text-sky-600 dark:text-sky-400 font-bold tabular-nums flex items-center gap-2">
                     <span>
-                        Tháng {monthProgress.monthIndex + 1}/{monthProgress.monthTotal} ({monthProgress.monthLabel}) — nhân viên {monthProgress.employeeDone}/{monthProgress.employeeTotal}
+                        {monthProgress.kind === 'compare' ? 'Kỳ' : 'Tháng'} {monthProgress.monthIndex + 1}/{monthProgress.monthTotal} ({monthProgress.monthLabel}) — nhân viên {monthProgress.employeeDone}/{monthProgress.employeeTotal}
                         {monthStalled ? ' — chưa có cập nhật mới, kiểm tra tab MWG đã đăng nhập/còn mở chưa' : ''}
                     </span>
                     <Button variant="unstyled" size="none" onClick={stopYear} className="text-rose-600 dark:text-rose-400 hover:underline font-bold">Dừng lại</Button>
@@ -142,6 +163,7 @@ export const AutoBonusPanel: React.FC<{
                 employeeCount={employeeCount}
                 onRunSingle={handleRunSingle}
                 onRunYear={handleRunYear}
+                onRunCompare={handleRunCompare}
             />
             <AutoBonusInstallGuideModal
                 isNotInstalled={isNotInstalled}

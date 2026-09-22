@@ -4,6 +4,7 @@ import { Button } from '../../../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../../../components/shared/ui/ConfirmDialog';
 import {
     getCurrentRangeDefault,
+    getComparePeriodDefault,
     getMonthRange,
     listRecentMonths,
     getYearMonthPlan,
@@ -13,7 +14,7 @@ import {
     toYYYYMM,
 } from '../../../utils/bonusDateRange';
 
-type PickerTab = 'current' | 'month' | 'year' | 'range';
+type PickerTab = 'current' | 'month' | 'year' | 'range' | 'compare';
 
 export interface AutoBonusRangePickerModalProps {
     isOpen: boolean;
@@ -24,6 +25,8 @@ export interface AutoBonusRangePickerModalProps {
     onRunSingle: (range: { fromDate: string; toDate: string; label: string }) => void;
     /** Chạy trọn 1 năm — lặp tuần tự nhiều job (tab Năm). */
     onRunYear: (year: number, label: string) => void;
+    /** So sánh cùng kỳ tháng — 2 job tuần tự [kỳ này, kỳ trước] (tab So sánh cùng kỳ). */
+    onRunCompare: (periods: { current: { fromDate: string; toDate: string }; previous: { fromDate: string; toDate: string } }, label: string) => void;
 }
 
 /** "06/07/2026" -> "6/7" — khớp định dạng getYesterdayDateString() đang dùng làm tiêu đề mặc định. */
@@ -37,6 +40,7 @@ const TABS: { id: PickerTab; label: string }[] = [
     { id: 'month', label: 'Tháng' },
     { id: 'year', label: 'Năm' },
     { id: 'range', label: 'Khoảng thời gian' },
+    { id: 'compare', label: 'So sánh cùng kỳ' },
 ];
 
 function toApiInputValue(ddmmyyyy: string): string {
@@ -58,7 +62,7 @@ const tabButtonClass = (active: boolean) => `px-3 py-1.5 text-xs font-bold round
 }`;
 
 export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps> = ({
-    isOpen, onClose, employeeCount, onRunSingle, onRunYear,
+    isOpen, onClose, employeeCount, onRunSingle, onRunYear, onRunCompare,
 }) => {
     const [activeTab, setActiveTab] = useState<PickerTab>('current');
     const recentMonths = useMemo(() => listRecentMonths(12), []);
@@ -80,6 +84,11 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
     }, [isOpen, recentMonths]);
 
     const currentRange = useMemo(() => getCurrentRangeDefault(), []);
+    const comparePeriods = useMemo(() => getComparePeriodDefault(), []);
+    // Nhãn tiêu đề sau khi so sánh xong = đúng nhãn "Hiện tại": dữ liệu kỳ này cũng được mirror
+    // sang bonus-data-* nên bảng Tổng hợp hiển thị đúng "ĐẾN NGÀY hôm qua"; riêng chế độ xem
+    // So sánh tự đặt tiêu đề "SO SÁNH ... VS ..." từ kho compare (xem BonusTab).
+    const compareLabel = `ĐẾN NGÀY ${toShortDDMM(comparePeriods.current.toDate)}`;
     const monthRange = useMemo(() => selectedMonth ? getMonthRange(selectedMonth) : null, [selectedMonth]);
     const yearPlan = useMemo(() => selectedYear ? getYearMonthPlan(selectedYear) : null, [selectedYear]);
     const yearEstimate = useMemo(
@@ -122,6 +131,9 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
             onClose();
         } else if (activeTab === 'year' && selectedYear) {
             setShowYearConfirm(true);
+        } else if (activeTab === 'compare') {
+            onRunCompare({ current: comparePeriods.current, previous: comparePeriods.previous }, compareLabel);
+            onClose();
         }
     };
 
@@ -136,7 +148,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
 
     const primaryLabel = activeTab === 'year'
         ? (yearPlan ? `Chạy ${yearPlan.length} tháng` : 'Chạy ngay')
-        : 'Chạy ngay';
+        : activeTab === 'compare' ? 'Chạy 2 kỳ' : 'Chạy ngay';
     const primaryDisabled = (activeTab === 'range' && !rangeValidation.valid)
         || (activeTab === 'year' && !selectedYear);
 
@@ -247,6 +259,25 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                 </>
                             );
                         })()}
+                    </div>
+                )}
+
+                {activeTab === 'compare' && (
+                    <div className="space-y-2">
+                        {comparePeriods.isFullPreviousMonth && (
+                            <p className="text-xs font-bold text-amber-600 dark:text-amber-400">
+                                Hôm nay là ngày 01 — so TRỌN THÁNG TRƯỚC với trọn tháng trước nữa
+                            </p>
+                        )}
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            Kỳ này: <span className="tabular-nums">{comparePeriods.current.fromDate} → {comparePeriods.current.toDate}</span>
+                        </p>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            Kỳ trước: <span className="tabular-nums">{comparePeriods.previous.fromDate} → {comparePeriods.previous.toDate}</span>
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
+                            Chạy 2 lượt × {employeeCount} nhân viên = {employeeCount * 2} lượt lấy dữ liệu. Xong sẽ tự chuyển sang chế độ xem &quot;So sánh cùng kỳ&quot;.
+                        </p>
                     </div>
                 )}
 

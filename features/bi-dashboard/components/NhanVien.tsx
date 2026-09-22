@@ -95,6 +95,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         handleSaveBonus,
         handleSaveBonusBatch,
         handleSaveBonusMonthly,
+        handleSaveBonusCompare,
         resolveEmployeeSupermarket,
         setBonusPeriodLabel,
         dataVersion,
@@ -125,7 +126,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     }, [allEmployees]);
 
     const bonusAutoBridge = useBonusAutoBridge(allEmployees, handleSaveBonusBatch);
-    const bonusMultiMonthRun = useMultiMonthBonusRun(allEmployees, handleSaveBonusMonthly);
+    const bonusMultiMonthRun = useMultiMonthBonusRun(allEmployees, handleSaveBonusMonthly, handleSaveBonusCompare);
 
     const { runWorkerTask } = useWorker();
     const [competitionData, setCompetitionData] = useState<Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>>({} as Record<Criterion, { headers: CompetitionHeader[], employees: CompetitionEmployeeRow[] }>);

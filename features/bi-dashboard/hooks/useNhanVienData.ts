@@ -3,7 +3,7 @@ import { shortenSupermarketName, extractSupermarketList, extractAllSupermarketLi
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
-import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow } from '../types/nhanVienTypes';
+import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow, BonusComparePart, BonusCompareStore } from '../types/nhanVienTypes';
 import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
@@ -840,6 +840,46 @@ export function useNhanVienData(isActive?: boolean) {
         }
     }, [resolveEmployeeSupermarket, handleSaveBonusBatch]);
 
+    // Ghi kho "So sánh cùng kỳ tháng" — 1 key/siêu thị chứa CẢ 2 kỳ: { runId, current, previous }.
+    // Mỗi bước (kỳ này / kỳ trước) ghi phần của mình; runId khác với bản đang lưu -> bỏ phần
+    // của bước kia (tránh ghép "kỳ này" mới với "kỳ trước" của lượt cũ khi 1 bước lỗi giữa chừng).
+    // Bước "kỳ này" đồng thời mirror sang bonus-data-* để tab Tổng hợp/Theo ngày khớp số.
+    const handleSaveBonusCompare = useCallback(async (
+        entries: { originalName: string; metrics: BonusMetrics }[],
+        part: BonusComparePart,
+        range: { fromDate: string; toDate: string },
+        runId: string,
+    ) => {
+        if (entries.length === 0) return;
+
+        const groups = new Map<string, { originalName: string; metrics: BonusMetrics }[]>();
+        entries.forEach(entry => {
+            const safeName = shortenSupermarketName(resolveEmployeeSupermarket(entry.originalName));
+            if (!groups.has(safeName)) groups.set(safeName, []);
+            groups.get(safeName)!.push(entry);
+        });
+
+        await Promise.all(Array.from(groups.entries()).map(async ([safeName, groupEntries]) => {
+            const key = `bonus-compare-${safeName}` as const;
+            const existing = await db.get<BonusCompareStore>(key);
+            const base: BonusCompareStore = existing && existing.runId === runId
+                ? existing
+                : { runId, updatedAt: '' };
+            const data: Record<string, BonusMetrics> = {};
+            groupEntries.forEach(({ originalName, metrics }) => { data[originalName] = metrics; });
+            const next: BonusCompareStore = {
+                ...base,
+                [part]: { fromDate: range.fromDate, toDate: range.toDate, data },
+                updatedAt: new Date().toLocaleString('vi-VN'),
+            };
+            await db.set(key, next);
+        }));
+
+        if (part === 'current') {
+            await handleSaveBonusBatch(entries);
+        }
+    }, [resolveEmployeeSupermarket, handleSaveBonusBatch]);
+
     // Nhãn kỳ hiện tại của bonusData (VD "THÁNG 6/2026", "NĂM 2026 (LUỸ KẾ)") — do
     // AutoBonusPanel gọi sau khi 1 lượt Tự động chạy xong, để BonusTab đổi tiêu đề báo cáo
     // đúng theo lựa chọn Hiện tại/Tháng/Năm/Khoảng thời gian thay vì luôn cố định "hôm qua".
@@ -893,6 +933,7 @@ export function useNhanVienData(isActive?: boolean) {
         handleSaveBonus,
         handleSaveBonusBatch,
         handleSaveBonusMonthly,
+        handleSaveBonusCompare,
         resolveEmployeeSupermarket,
         setBonusPeriodLabel,
         setAggregatedData,

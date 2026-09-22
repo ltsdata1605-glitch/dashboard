@@ -136,25 +136,26 @@ export function showAutoBonusErrorToast(message: string, onDismissed: () => void
     setTimeout(onDismissed, 6000);
 }
 
-/** Toast kết quả cho lượt "Chạy N tháng" (lựa chọn Năm) — cùng UX 2 biến thể như trên,
- * chỉ khác đơn vị đếm là THÁNG thay vì nhân viên. */
+/** Toast kết quả cho lượt "Chạy N tháng" (lựa chọn Năm) hoặc "So sánh cùng kỳ" (2 kỳ) —
+ * cùng UX 2 biến thể như trên, chỉ khác đơn vị đếm là THÁNG/KỲ thay vì nhân viên. */
 export function showMultiMonthResultToast(
     summary: MultiMonthSummary,
     handlers: { onViewDetail: () => void; onDismissed: () => void },
 ): void {
+    const unit = summary.kind === 'compare' ? 'kỳ' : 'tháng';
     const errorMonths = summary.monthResults.filter(m => !!m.error).length;
     const allOk = !summary.stoppedEarly && errorMonths === 0 && summary.monthsDone === summary.monthsTotal && summary.monthsTotal > 0;
 
     if (allOk) {
-        const headline = `✅ Xong ${summary.monthsTotal}/${summary.monthsTotal} tháng`;
+        const headline = `✅ Xong ${summary.monthsTotal}/${summary.monthsTotal} ${unit}`;
         toast.custom(
             (t) => <SuccessToastBody id={t.id} headline={headline} onExpire={handlers.onDismissed} />,
             { id: MULTI_MONTH_TOAST_ID, duration: LONG_DURATION_MS },
         );
     } else {
         const headline = summary.stoppedEarly
-            ? `⏹ Đã dừng: xong ${summary.monthsDone}/${summary.monthsTotal} tháng${errorMonths > 0 ? ` · ${errorMonths} tháng lỗi` : ''}`
-            : `⚠️ Xong ${summary.monthsDone}/${summary.monthsTotal} tháng · ${errorMonths} tháng lỗi`;
+            ? `⏹ Đã dừng: xong ${summary.monthsDone}/${summary.monthsTotal} ${unit}${errorMonths > 0 ? ` · ${errorMonths} ${unit} lỗi` : ''}`
+            : `⚠️ Xong ${summary.monthsDone}/${summary.monthsTotal} ${unit} · ${errorMonths} ${unit} lỗi`;
         toast.custom(
             (t) => <IssueToastBody id={t.id} headline={headline} onViewDetail={handlers.onViewDetail} onDismiss={handlers.onDismissed} />,
             { id: MULTI_MONTH_TOAST_ID, duration: LONG_DURATION_MS },

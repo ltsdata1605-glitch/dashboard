@@ -13,6 +13,8 @@ export interface DropdownItem {
   danger?: boolean;
   disabled?: boolean;
   divider?: boolean;
+  /** Mục đang được chọn (menu kiểu "chọn 1 trong N chế độ") — tô nền sky nhạt + chữ đậm. */
+  active?: boolean;
 }
 
 export interface DropdownProps {
@@ -96,11 +98,14 @@ export const Dropdown: React.FC<DropdownProps> = ({
                   key={item.id}
                   onClick={() => handleSelect(item)}
                   disabled={item.disabled}
+                  aria-current={item.active ? 'true' : undefined}
                   className={cn(
                     'justify-start w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
                     item.danger
                       ? 'text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50',
+                      : item.active
+                        ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300 font-semibold'
+                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50',
                     item.disabled && 'opacity-40 cursor-not-allowed'
                   )}
                 >

@@ -1,10 +1,11 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { UploadIcon, ViewListIcon, ViewGridIcon, CalendarIcon } from '../Icons';
-import { CalendarRange } from 'lucide-react';
+import { UploadIcon, ViewListIcon, ViewGridIcon } from '../Icons';
+import { CalendarDays, CalendarRange, Table2, ArrowLeftRight } from 'lucide-react';
+import { Dropdown, DropdownItem } from '../../../../components/shared/ui/Dropdown';
 import { MonthlyBonusTable } from './bonus/MonthlyBonusTable';
 import { Employee, BonusMetrics, RevenueRow } from '../../types/nhanVienTypes';
 import { getYesterdayDateString } from '../../utils/nhanVienHelpers';
@@ -16,12 +17,23 @@ import { AutoBonusPanel } from './bonus/AutoBonusPanel';
 import { UseBonusAutoBridgeResult } from '../../hooks/useBonusAutoBridge';
 import { UseMultiMonthBonusRunResult } from '../../hooks/useMultiMonthBonusRun';
 import { setHrmWindowRef } from './bonus/hrmWindow';
-import { useBonusViewData } from './bonus/useBonusViewData';
+import { useBonusViewData, BonusPeriodMode } from './bonus/useBonusViewData';
 import { BonusDailyTable } from './bonus/BonusDailyTable';
 import { BonusGroupListTable } from './bonus/BonusGroupListTable';
+import { BonusCompareTable } from './bonus/BonusCompareTable';
+import { formatShortRange } from '../../utils/bonusDateRange';
 
 export { BonusDataModal } from './bonus/BonusDataModal';
 export type { BonusDisplayRow } from './bonus/BonusDisplayRow';
+
+// Menu chế độ xem theo thời gian — thay cho nút xoay vòng cũ (phải bấm 3 lần mới về chế độ
+// muốn xem, tooltip lại mô tả chế độ KẾ TIẾP nên dễ nhầm). Thứ tự = từ chi tiết đến tổng quát.
+const PERIOD_MODES: { id: BonusPeriodMode; label: string; description: string; Icon: React.FC<{ className?: string }> }[] = [
+    { id: 'summary', label: 'Tổng hợp kỳ', description: 'ERP · T.Nóng · Tổng · Dự kiến', Icon: Table2 },
+    { id: 'daily', label: 'Xem theo ngày', description: 'Từng ngày, gom theo tuần', Icon: CalendarDays },
+    { id: 'monthly', label: 'Luỹ kế tháng', description: '6 tháng gần nhất, cột mỗi tháng', Icon: CalendarRange },
+    { id: 'compare', label: 'So sánh cùng kỳ', description: 'Kỳ này vs cùng kỳ tháng trước', Icon: ArrowLeftRight },
+];
 
 export const BonusView: React.FC<{
     employees: Employee[];
@@ -48,10 +60,10 @@ export const BonusView: React.FC<{
     const {
         sortField, setSortField, sortDir, setSortDir,
         viewMode, setViewMode,
-        isDaily, setIsDaily,
-        isMonthly, setIsMonthly,
+        periodMode, setPeriodMode,
+        isDaily, isMonthly, isCompare,
         expandedWeeks, toggleWeek,
-        monthlyArchive, monthlyEmployees,
+        monthlyArchive, monthlyEmployees, compareData,
         allDates, weeks, weekAverages, weekStats, colStats,
         avgTong, avgWeeksBelowAvg, avgBelowAvgDays,
         revenueMap, displayList,
@@ -78,7 +90,23 @@ export const BonusView: React.FC<{
 
     // Nhãn kỳ hiện tại — thay đổi theo lựa chọn Hiện tại/Tháng/Năm/Khoảng thời gian của
     // chế độ Tự động; chưa từng chạy Tự động (hoặc chỉ dùng Thủ công) -> fallback mặc định.
-    const reportTitleSuffix = bonusPeriodLabel || `ĐẾN NGÀY ${getYesterdayDateString()}`;
+    // Chế độ So sánh: tiêu đề lấy thẳng từ 2 kỳ trong kho compare (VD "SO SÁNH 01→21/8 VS 01→21/9").
+    const compareTitle = isCompare && compareData.current && compareData.previous
+        ? `SO SÁNH ${formatShortRange(compareData.previous)} VS ${formatShortRange(compareData.current)}`
+        : null;
+    const reportTitleSuffix = compareTitle || bonusPeriodLabel || `ĐẾN NGÀY ${getYesterdayDateString()}`;
+
+    const activePeriodMode = PERIOD_MODES.find(m => m.id === periodMode) || PERIOD_MODES[0];
+    const periodModeItems: DropdownItem[] = PERIOD_MODES.map(m => ({
+        id: m.id,
+        label: m.label,
+        description: m.description,
+        icon: <m.Icon className="h-4 w-4" />,
+        active: m.id === periodMode,
+    }));
+    const handleSelectPeriodMode = useCallback((id: string) => setPeriodMode(id as BonusPeriodMode), [setPeriodMode]);
+    // Lượt "So sánh cùng kỳ" chạy xong đủ 2 kỳ -> tự chuyển sang bảng so sánh để người dùng thấy ngay.
+    const handleCompareDone = useCallback(() => setPeriodMode('compare'), [setPeriodMode]);
     const cardTitle = <span className="js-report-title">Hiệu suất làm việc {reportTitleSuffix}</span>;
     const cardSubtitle = <span className="js-report-title">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>;
 
@@ -99,7 +127,7 @@ export const BonusView: React.FC<{
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Thủ công</span>
                     </Button>
-                    <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} />
+                    <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} onCompareDone={handleCompareDone} />
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <Button
@@ -112,19 +140,25 @@ export const BonusView: React.FC<{
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                            if (isDaily) { setIsDaily(false); setIsMonthly(true); }
-                            else if (isMonthly) { setIsMonthly(false); }
-                            else { setIsDaily(true); }
-                        }}
-                        title={isDaily ? 'Luỹ kế tháng (Click để xem chế độ khác)' : isMonthly ? 'Danh sách (Click để xem chế độ khác)' : 'Xem theo ngày (Click để xem chế độ khác)'}
-                        className={isDaily || isMonthly ? 'text-sky-700' : 'text-slate-400'}
-                    >
-                        {isMonthly ? <CalendarRange className="h-4 w-4"/> : <CalendarIcon className="h-4 w-4"/>}
-                    </Button>
+                    <Dropdown
+                        align="right"
+                        width="240px"
+                        items={periodModeItems}
+                        onSelect={handleSelectPeriodMode}
+                        trigger={
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                asChild
+                                title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
+                                aria-label="Chọn chế độ xem"
+                                data-testid="bonus-period-mode-trigger"
+                                className={periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}
+                            >
+                                <span><activePeriodMode.Icon className="h-4 w-4" /></span>
+                            </Button>
+                        }
+                    />
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
@@ -136,7 +170,18 @@ export const BonusView: React.FC<{
                     </div>
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
-                        {isMonthly ? (
+                        {isCompare ? (
+                            <BonusCompareTable
+                                employees={monthlyEmployees}
+                                current={compareData.current}
+                                previous={compareData.previous}
+                                loading={compareData.loading}
+                                supermarketName={supermarketName}
+                                highlightedEmployees={highlightedEmployees}
+                                onEmployeeClick={onEmployeeClick}
+                                f={f}
+                            />
+                        ) : isMonthly ? (
                             <MonthlyBonusTable
                                 employees={monthlyEmployees}
                                 months={monthlyArchive.months}

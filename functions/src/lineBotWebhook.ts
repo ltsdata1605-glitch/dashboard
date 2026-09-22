@@ -2167,18 +2167,12 @@ export const lineBotWebhook = onRequest(
                 }
             }
 
-            // Xử lý khi được thêm vào nhóm (join event)
+            // Xử lý khi được thêm vào nhóm (join event) - Không gửi thông báo chào mừng để tránh làm phiền nhóm
             if (event.type === 'join') {
-                if (replyToken) {
-                    await replyLineMessage(token, replyToken, [
-                        {
-                            type: 'text',
-                            text: `👋 Chào cả nhà! Em là BOT Quản Lý PMH.\n━━━━━━━━━━━━━━━━━━━━━\n📊 Gõ "tk event" để xem tồn kho PMH Event (Cú pháp nhận: e1, e2...)\n⚡ Gõ "tk gvgs" để xem tồn kho PMH Giờ Vàng (Cú pháp nhận: gv1, gv2...)\n🆔 Gõ "id" để xem ID nhóm này.`
-                        }
-                    ]);
-                }
+                console.info(`[lineBotWebhook] Bot joined group ${groupId || 'unknown'} (${currentGroupName}) - silent join.`);
                 continue;
             }
+
 
             // Xử lý tin nhắn văn bản
             if (event.type === 'message' && event.message?.type === 'text' && replyToken) {

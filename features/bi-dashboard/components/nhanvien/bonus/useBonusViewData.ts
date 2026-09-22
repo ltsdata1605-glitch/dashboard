@@ -1,10 +1,15 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { useMonthlyBonusArchive } from '../../../hooks/useMonthlyBonusArchive';
+import { useBonusCompareData } from '../../../hooks/useBonusCompareData';
 import { Employee, BonusMetrics, RevenueRow } from '../../../types/nhanVienTypes';
 import { BonusDisplayRow } from './BonusDisplayRow';
 import { getRevenueForEmployee } from './bonusTableHelpers';
 import { extractEmployeeId, standardizeEmployeeName, formatEmployeeName } from '../../../utils/nhanVienHelpers';
+
+/** Chế độ xem theo thời gian của tab Thưởng — 1 giá trị thay cho 2 boolean isDaily/isMonthly cũ
+ * (key IndexedDB cũ `bonus-view-mode-daily-v2`/`-monthly-v2` bỏ hoang, không cần dọn). */
+export type BonusPeriodMode = 'summary' | 'daily' | 'monthly' | 'compare';
 
 interface UseBonusViewDataParams {
     employees: Employee[];
@@ -29,11 +34,14 @@ export function useBonusViewData({
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('bonus-view-mode-multi-v2', 'group');
-    const [isDaily, setIsDaily] = useIndexedDBState<boolean>('bonus-view-mode-daily-v2', false);
-    const [isMonthly, setIsMonthly] = useIndexedDBState<boolean>('bonus-view-mode-monthly-v2', false);
+    const [periodMode, setPeriodMode] = useIndexedDBState<BonusPeriodMode>('bonus-view-period-mode-v3', 'summary');
+    const isDaily = periodMode === 'daily';
+    const isMonthly = periodMode === 'monthly';
+    const isCompare = periodMode === 'compare';
     const [expandedWeeks, setExpandedWeeks] = useState<Record<string, boolean>>({});
 
     const monthlyArchive = useMonthlyBonusArchive(activeSupermarkets, isMonthly);
+    const compareData = useBonusCompareData(activeSupermarkets, isCompare);
     const monthlyEmployees = useMemo(
         () => employees.filter(e => activeDepartments.includes(e.department)),
         [employees, activeDepartments],
@@ -477,10 +485,10 @@ export function useBonusViewData({
     return {
         sortField, setSortField, sortDir, setSortDir,
         viewMode, setViewMode,
-        isDaily, setIsDaily,
-        isMonthly, setIsMonthly,
+        periodMode, setPeriodMode,
+        isDaily, isMonthly, isCompare,
         expandedWeeks, toggleWeek,
-        monthlyArchive, monthlyEmployees,
+        monthlyArchive, monthlyEmployees, compareData,
         allDates, weeks, weekAverages, weekStats, colStats,
         avgTong, avgWeeksBelowAvg, avgBelowAvgDays,
         revenueMap, displayList,

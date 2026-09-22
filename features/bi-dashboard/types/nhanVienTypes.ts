@@ -18,6 +18,23 @@ export interface BonusMetrics {
     dailyData?: Record<string, number>;
 }
 
+export type BonusComparePart = 'current' | 'previous';
+
+export interface BonusComparePeriod {
+    fromDate: string;
+    toDate: string;
+    data: Record<string, BonusMetrics>;
+}
+
+/** Kho "So sánh cùng kỳ tháng" — key `bonus-compare-${safeName}`, 1 bản ghi/siêu thị chứa
+ * cả 2 kỳ của cùng 1 lượt chạy (runId). Thiếu 1 trong 2 kỳ = lượt chạy chưa trọn vẹn. */
+export interface BonusCompareStore {
+    runId: string;
+    current?: BonusComparePeriod;
+    previous?: BonusComparePeriod;
+    updatedAt: string;
+}
+
 export interface PrevCompData {
     dtlk: number;
     dtqd: number;

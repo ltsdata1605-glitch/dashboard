@@ -8,10 +8,17 @@ node archive/backup.cjs
 This script will handle both pushing the changes to Github and creating a zipped backup under the `archive` directory with sequential numbering.
 
 
-## Push Commands
+## Push & Live Deployment Commands
 Mỗi khi người dùng yêu cầu push (ví dụ: "push", "hãy push", "push code", "commit và push", v.v.):
-- Agent BẮT BUỘC tự động thực thi quy trình git commit và push trực tiếp (chạy script `bash .agents/skills/git-pushing/scripts/smart_commit.sh` hoặc git add/commit/push) lên kho lưu trữ từ xa mà không cần hỏi lại.
-- Sau khi hoàn thành, báo cáo rõ ràng trạng thái: "✅ Đã đẩy code thành công lên GitHub!".
+- Agent BẮT BUỘC tự động thực thi quy trình đồng bộ và deploy toàn diện:
+  1. Commit và push code lên kho lưu trữ GitHub (`main`).
+  2. Build và deploy web lên GitHub Pages để cập nhật LIVE trực tiếp trên domain **https://dashboard.pro.vn/** (`npx gh-pages -d dist`).
+  3. Tự động chạy `npm run deploy:functions` để deploy ngay Firebase Functions live sau mỗi thay đổi.
+- Sau khi hoàn thành, báo cáo rõ ràng các trạng thái:
+  - "✅ Đã đẩy code thành công lên GitHub!"
+  - "🌐 Đã cập nhật LIVE web tại https://dashboard.pro.vn/!"
+  - "⚡ Đã deploy LIVE Firebase Functions thành công!"
+
 
 
 ## Auto-Review & Error Tracking

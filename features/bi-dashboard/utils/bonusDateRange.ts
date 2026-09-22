@@ -60,6 +60,51 @@ export function getMonthRange(yyyymm: string, now: Date = new Date()): { fromDat
     return { fromDate: toDDMMYYYY(from), toDate: toDDMMYYYY(to) };
 }
 
+export interface DateRangeDDMMYYYY {
+    fromDate: string;
+    toDate: string;
+}
+
+/**
+ * "Cùng kỳ tháng trước" của 1 khoảng ngày nằm trọn trong 1 tháng: giữ nguyên số ngày đầu/cuối,
+ * lùi đúng 1 tháng, KẸP ngày cuối theo độ dài tháng trước (01→30/03 -> 01→28/02; 01→31/05 ->
+ * 01→30/04). Ngày đầu cũng kẹp cho trường hợp hiếm (31/05 -> 30/04).
+ */
+export function getSamePeriodPreviousMonth(range: DateRangeDDMMYYYY): DateRangeDDMMYYYY {
+    const from = parseDDMMYYYY(range.fromDate);
+    const to = parseDDMMYYYY(range.toDate);
+    if (!from || !to) return range;
+    const prevYear = from.getMonth() === 0 ? from.getFullYear() - 1 : from.getFullYear();
+    const prevMonth0 = from.getMonth() === 0 ? 11 : from.getMonth() - 1;
+    const daysInPrev = new Date(prevYear, prevMonth0 + 1, 0).getDate();
+    const prevFrom = new Date(prevYear, prevMonth0, Math.min(from.getDate(), daysInPrev));
+    const prevTo = new Date(prevYear, prevMonth0, Math.min(to.getDate(), daysInPrev));
+    return { fromDate: toDDMMYYYY(prevFrom), toDate: toDDMMYYYY(prevTo) };
+}
+
+/**
+ * Kỳ mặc định của lựa chọn "So sánh cùng kỳ tháng": kỳ này = đúng kỳ "Hiện tại"
+ * (01 tháng này -> hôm qua; ngày 01 -> trọn tháng trước), kỳ trước = cùng kỳ của tháng liền
+ * trước. VD hôm nay 22/09 -> so 01→21/08 với 01→21/09.
+ */
+export function getComparePeriodDefault(now: Date = new Date()): {
+    current: DateRangeDDMMYYYY;
+    previous: DateRangeDDMMYYYY;
+    isFullPreviousMonth: boolean;
+} {
+    const { fromDate, toDate, isFullPreviousMonth } = getCurrentRangeDefault(now);
+    const current = { fromDate, toDate };
+    return { current, previous: getSamePeriodPreviousMonth(current), isFullPreviousMonth };
+}
+
+/** "01/08/2026" → "21/08/2026" thành "01→21/8" — nhãn ngắn cho tiêu đề/menu so sánh. */
+export function formatShortRange(range: DateRangeDDMMYYYY): string {
+    const from = parseDDMMYYYY(range.fromDate);
+    const to = parseDDMMYYYY(range.toDate);
+    if (!from || !to) return `${range.fromDate} → ${range.toDate}`;
+    return `${pad2(from.getDate())}→${pad2(to.getDate())}/${to.getMonth() + 1}`;
+}
+
 /** Danh sách N tháng gần nhất (mới nhất trước), dùng cho dropdown tab "Tháng". */
 export function listRecentMonths(n = 12, now: Date = new Date()): { yyyymm: string; label: string }[] {
     const out: { yyyymm: string; label: string }[] = [];
