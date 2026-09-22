@@ -21,6 +21,7 @@ import {
   CheckSquare2,
   Square,
   Info,
+  ExternalLink,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TaxCalculationInput, BonusItem, SalarySlipDay5Data, SalarySlipDay20Data } from '../types/tax.types';
@@ -31,6 +32,7 @@ import {
   DEPENDENT_DEDUCTION_2026,
 } from '../services/taxCalculatorService';
 import { extractSalarySlip, SAMPLE_MWG_DAY20_BONUS_ITEMS } from '../services/salarySlipOcrService';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface TaxInputPanelProps {
   input: TaxCalculationInput;
@@ -38,7 +40,13 @@ interface TaxInputPanelProps {
   onReset: () => void;
   onSave: () => void;
   isSaved?: boolean;
+  /** Mở hộp thoại nhập Gemini API Key riêng — hiện khi AI đọc phiếu lương hỏng vì khoá/hạn mức. */
+  onOpenApiKeyConfig?: () => void;
 }
+
+/** Lỗi do khoá chung hết hạn mức / bị vô hiệu -> người dùng tự cứu được bằng API Key riêng. */
+const isApiKeyRelatedError = (message: string): boolean =>
+  /hạn mức|quota|api key|khoá gemini|khóa gemini/i.test(message || '');
 
 export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
   input,
@@ -46,6 +54,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
   onReset,
   onSave,
   isSaved = false,
+  onOpenApiKeyConfig,
 }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [uploadingSlot, setUploadingSlot] = useState<'day5' | 'day20' | null>(null);
@@ -287,19 +296,19 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
   const selectedCount = (input.selectedProxyItemIds || []).length;
 
   return (
-    <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-4 sm:p-5 shadow-sm transition-all duration-200">
+    <div className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs transition-all duration-200">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100 dark:border-slate-700/50">
+      <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100 dark:border-slate-700/50">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
+          <div className="w-7 h-7 rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold">
             <Calculator className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm sm:text-base text-slate-800 dark:text-slate-100">
-              Dữ Liệu Lương & Thưởng 2 Đợt
+            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">
+              Nhập Lương & Thưởng
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Tải ảnh bảng lương hoặc chọn khoản nhận thay
+            <p className="text-[11px] text-slate-400">
+              Tải ảnh 2 đợt hoặc dùng dữ liệu mẫu
             </p>
           </div>
         </div>
@@ -307,372 +316,370 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
         <button
           type="button"
           onClick={onReset}
-          title="Xoá và đặt lại dữ liệu"
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-400 bg-slate-100 hover:bg-rose-50 dark:bg-slate-700/60 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
+          title="Đặt lại dữ liệu"
+          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-600 hover:text-rose-600 dark:text-slate-300 dark:hover:text-rose-400 bg-slate-100 hover:bg-rose-50 dark:bg-slate-700/60 dark:hover:bg-rose-950/30 rounded-lg transition-colors cursor-pointer"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3 h-3" />
           <span>Đặt lại</span>
         </button>
       </div>
 
-      <div className="space-y-4">
-        {/* BANNER TIẾN ĐỘ & HƯỚNG DẪN */}
-        <div
-          className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 transition-all ${
-            hasBothSlips
-              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300'
-              : input.hasDay5Slip || input.hasDay20Slip
-              ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300'
-              : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-700/60 text-slate-600 dark:text-slate-300'
-          }`}
-        >
-          {hasBothSlips ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-          ) : input.hasDay5Slip || input.hasDay20Slip ? (
-            <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-          ) : (
-            <Sparkles className="w-4 h-4 text-sky-500 shrink-0 mt-0.5" />
-          )}
-
-          <div className="flex-1">
-            <div className="font-semibold mb-0.5 flex items-center justify-between">
-              <span>
-                {hasBothSlips
-                  ? '✅ Đã tải đủ dữ liệu 2 đợt lương & thưởng'
-                  : input.hasDay5Slip
-                  ? '⏳ Đã có Bảng lương ngày 5. Vui lòng tải tiếp Bảng thưởng ngày 20'
-                  : input.hasDay20Slip
-                  ? '⏳ Đã có Bảng thưởng ngày 20. Vui lòng tải tiếp Bảng lương ngày 5'
-                  : '📸 Hướng dẫn tải 2 ảnh bảng lương để tính thuế'}
-              </span>
-
-              {allBonusItems.length === 0 && (
-                <button
-                  type="button"
-                  onClick={handleLoadSampleData}
-                  className="text-[10px] text-sky-600 dark:text-sky-400 font-bold hover:underline cursor-pointer"
-                >
-                  Tải dữ liệu mẫu MWG
-                </button>
-              )}
+      <div className="space-y-3">
+        {/* BANNER TRẠNG THÁI NGẮN GỌN */}
+        {hasBothSlips ? (
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-xs">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Đã nạp đủ 2 đợt lương & thưởng</span>
             </div>
-            <p className="text-[11px] opacity-90 leading-relaxed">
-              {hasBothSlips
-                ? 'Hệ thống đã tự động gộp thu nhập 2 đợt. Bạn chỉ cần tích chọn khoản nhận thay ở danh sách bên dưới.'
-                : 'Theo quy định MWG, thu nhập tính thuế được tổng hợp cả 2 đợt (Ngày 5 và Ngày 20). Đủ 2 bảng sẽ tính chính xác 100% số thuế giữ lại.'}
-            </p>
+            <span className="text-[11px] font-mono font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+              {formatVnd(input.totalIncome)}
+            </span>
           </div>
-        </div>
+        ) : input.hasDay5Slip || input.hasDay20Slip ? (
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs">
+            <div className="flex items-center gap-1.5 font-semibold">
+              <Info className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>{input.hasDay5Slip ? 'Đã có Ngày 5 • Tải tiếp Ngày 20' : 'Đã có Ngày 20 • Tải tiếp Ngày 5'}</span>
+            </div>
+            {allBonusItems.length === 0 && (
+              <button
+                type="button"
+                onClick={handleLoadSampleData}
+                className="text-[11px] font-bold text-amber-800 dark:text-amber-300 underline cursor-pointer"
+              >
+                Mẫu MWG
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/60 text-xs">
+            <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <UploadCloud className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+              Tải 2 ảnh hoặc dùng mẫu thử nghiệm:
+            </span>
+            <button
+              type="button"
+              onClick={handleLoadSampleData}
+              className="px-2 py-1 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-100/80 hover:bg-sky-200 dark:bg-sky-950/60 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+            >
+              <Sparkles className="w-3 h-3 text-sky-500" />
+              <span>Mẫu MWG</span>
+            </button>
+          </div>
+        )}
 
-        {/* 2 Ô UPLOAD ẢNH: Ô 1 (NGÀY 5) & Ô 2 (NGÀY 20) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Ô 1: BẢNG LƯƠNG NGÀY 5 */}
+        {/* 2 THANH TẢI ẢNH GỌN GÀNG (HORIZONTAL SLOTS) */}
+        <div className="space-y-2">
+          {/* ĐỢT 1: LƯƠNG NGÀY 5 */}
           <div
-            className={`p-3.5 rounded-xl border transition-all ${
+            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all ${
               errorDay5
-                ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
+                ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay5Slip
                 ? 'bg-sky-50/40 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800'
-                : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-sky-400'
+                : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-sky-300'
             }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                <Calendar className="w-3.5 h-3.5 text-sky-500" />
-                <span>1. Bảng lương ngày 5</span>
-              </span>
-              <span
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                  errorDay5
-                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'
-                    : input.hasDay5Slip
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
-                }`}
-              >
-                {uploadingSlot === 'day5'
-                  ? 'Đang đọc...'
-                  : errorDay5
-                  ? 'Sai cú pháp'
-                  : input.hasDay5Slip
-                  ? 'Đã tải'
-                  : 'Chờ tải ảnh'}
-              </span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                input.hasDay5Slip ? 'bg-sky-500 text-white' : 'bg-sky-100 dark:bg-sky-950/50 text-sky-600'
+              }`}>
+                <Calendar className="w-4 h-4" />
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                    1. Lương ngày 5
+                  </span>
+                  <a
+                    href="https://newinsite.thegioididong.com/hrm/chi-tiet-luong-dmx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Mở HRM Chi tiết lương"
+                    className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-sky-600 dark:text-sky-400 hover:underline"
+                  >
+                    <span>Vào HRM</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  {input.hasDay5Slip && (
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded">
+                      Đã nạp
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {input.hasDay5Slip ? (
+                    <span>Lương: <strong className="text-slate-800 dark:text-slate-200 font-mono">{formatVnd(input.incomeDay5)}</strong> • BH: <strong className="font-mono">{formatVnd(input.insurance)}</strong></span>
+                  ) : (
+                    <span>Chi tiết lương & BHXH</span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">
-              Trang <strong>"Chi tiết lương"</strong> (Chấm công, Lương BHXH, Giảm trừ 15.5tr)
-            </p>
-
-            {errorDay5 && (
-              <div className="mb-2.5 p-2 bg-rose-100/70 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700 rounded-lg flex items-start gap-1.5 text-[11px] text-rose-800 dark:text-rose-300">
-                <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
-                <span className="leading-snug">{errorDay5}</span>
-              </div>
-            )}
-
-            {input.hasDay5Slip && !errorDay5 ? (
-              <div className="space-y-1 mb-2.5 text-[11px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-sky-200/60 dark:border-sky-800/40">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Lương đợt 1:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    {formatVnd(input.incomeDay5)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">BHXH bắt buộc:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    {formatVnd(input.insurance)}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-
-            <label
-              htmlFor="upload-slot-day5"
-              className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 border border-dashed rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                uploadingSlot === 'day5'
-                  ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 cursor-not-allowed text-slate-400'
-                  : 'bg-white dark:bg-slate-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300'
-              }`}
-            >
-              {uploadingSlot === 'day5' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600" />
-              ) : (
-                <UploadCloud className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-              )}
-              <span>
-                {uploadingSlot === 'day5'
-                  ? 'Đang phân tích...'
-                  : input.hasDay5Slip
-                  ? 'Tải lại ảnh Ngày 5'
-                  : 'Tải Bảng lương ngày 5'}
-              </span>
-            </label>
-            <input
-              id="upload-slot-day5"
-              type="file"
-              accept="image/*"
-              disabled={uploadingSlot === 'day5'}
-              onChange={handleUploadDay5}
-              className="sr-only"
-            />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <a
+                href="https://newinsite.thegioididong.com/hrm/chi-tiet-luong-dmx"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Mở link HRM Chi tiết lương (Đợt 1)"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors inline-flex items-center justify-center"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <label
+                htmlFor="upload-slot-day5"
+                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                  uploadingSlot === 'day5'
+                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                    : input.hasDay5Slip
+                    ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                    : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
+                }`}
+              >
+                {uploadingSlot === 'day5' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <UploadCloud className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {uploadingSlot === 'day5'
+                    ? 'Đang đọc...'
+                    : input.hasDay5Slip
+                    ? 'Đổi ảnh'
+                    : 'Tải ảnh'}
+                </span>
+              </label>
+              <input
+                id="upload-slot-day5"
+                type="file"
+                accept="image/*"
+                disabled={uploadingSlot === 'day5'}
+                onChange={handleUploadDay5}
+                className="sr-only"
+              />
+            </div>
           </div>
+          {errorDay5 && (
+            <div className="px-1 space-y-1">
+              <p className="text-[11px] text-rose-600 dark:text-rose-400">{errorDay5}</p>
+              {isApiKeyRelatedError(errorDay5) && onOpenApiKeyConfig && (
+                <Button variant="outline" size="sm" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
+                  🔑 Dùng API Key riêng của bạn (miễn phí)
+                </Button>
+              )}
+            </div>
+          )}
 
-          {/* Ô 2: BẢNG THƯỞNG NGÀY 20 */}
+          {/* ĐỢT 2: THƯỞNG NGÀY 20 */}
           <div
-            className={`p-3.5 rounded-xl border transition-all ${
+            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all ${
               errorDay20
-                ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
+                ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay20Slip
                 ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-800'
-                : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-indigo-400'
+                : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-indigo-300'
             }`}
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                <Gift className="w-3.5 h-3.5 text-indigo-500" />
-                <span>2. Bảng thưởng ngày 20</span>
-              </span>
-              <span
-                className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                  errorDay20
-                    ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'
-                    : input.hasDay20Slip
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
-                }`}
-              >
-                {uploadingSlot === 'day20'
-                  ? 'Đang đọc...'
-                  : errorDay20
-                  ? 'Sai cú pháp'
-                  : input.hasDay20Slip
-                  ? 'Đã tải'
-                  : 'Chờ tải ảnh'}
-              </span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                input.hasDay20Slip ? 'bg-indigo-600 text-white' : 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600'
+              }`}>
+                <Gift className="w-4 h-4" />
+              </div>
+
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                    2. Thưởng ngày 20
+                  </span>
+                  <a
+                    href="https://newinsite.thegioididong.com/hrm/xem-chi-tiet-thuong"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Mở HRM Xem chi tiết thưởng"
+                    className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    <span>Vào HRM</span>
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </a>
+                  {input.hasDay20Slip && (
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded">
+                      Đã nạp
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {input.hasDay20Slip ? (
+                    <span>Thưởng: <strong className="text-slate-800 dark:text-slate-200 font-mono">{formatVnd(input.incomeDay20)}</strong> • Thuế: <strong className="text-rose-600 font-mono">{formatVnd(input.actualTaxDay20)}</strong></span>
+                  ) : (
+                    <span>Thưởng nóng & thuế khấu trừ</span>
+                  )}
+                </div>
+              </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2.5">
-              Trang <strong>"Xem chi tiết thưởng"</strong> (Thưởng nóng, Trừ thuế TNCN)
-            </p>
-
-            {errorDay20 && (
-              <div className="mb-2.5 p-2 bg-rose-100/70 dark:bg-rose-900/30 border border-rose-300 dark:border-rose-700 rounded-lg flex items-start gap-1.5 text-[11px] text-rose-800 dark:text-rose-300">
-                <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0 mt-0.5" />
-                <span className="leading-snug">{errorDay20}</span>
-              </div>
-            )}
-
-            {input.hasDay20Slip && !errorDay20 ? (
-              <div className="space-y-1 mb-2.5 text-[11px] bg-white dark:bg-slate-800/80 p-2 rounded-lg border border-indigo-200/60 dark:border-indigo-800/40">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Thưởng nóng:</span>
-                  <span className="font-semibold text-slate-800 dark:text-slate-200">
-                    {formatVnd(input.bonusHot || input.incomeDay20)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Trừ thuế TNCN:</span>
-                  <span className="font-semibold text-rose-600 dark:text-rose-400">
-                    {formatVnd(input.actualTaxDay20)}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-
-            <label
-              htmlFor="upload-slot-day20"
-              className={`w-full flex items-center justify-center gap-1.5 py-2 px-3 border border-dashed rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                uploadingSlot === 'day20'
-                  ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 cursor-not-allowed text-slate-400'
-                  : 'bg-white dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
-              }`}
-            >
-              {uploadingSlot === 'day20' ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-600" />
-              ) : (
-                <UploadCloud className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-              )}
-              <span>
-                {uploadingSlot === 'day20'
-                  ? 'Đang phân tích...'
-                  : input.hasDay20Slip
-                  ? 'Tải lại ảnh Ngày 20'
-                  : 'Tải Bảng thưởng ngày 20'}
-              </span>
-            </label>
-            <input
-              id="upload-slot-day20"
-              type="file"
-              accept="image/*"
-              disabled={uploadingSlot === 'day20'}
-              onChange={handleUploadDay20}
-              className="sr-only"
-            />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <a
+                href="https://newinsite.thegioididong.com/hrm/xem-chi-tiet-thuong"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Mở link HRM Xem chi tiết thưởng (Đợt 2)"
+                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors inline-flex items-center justify-center"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <label
+                htmlFor="upload-slot-day20"
+                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                  uploadingSlot === 'day20'
+                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                    : input.hasDay20Slip
+                    ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
+                }`}
+              >
+                {uploadingSlot === 'day20' ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <UploadCloud className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {uploadingSlot === 'day20'
+                    ? 'Đang đọc...'
+                    : input.hasDay20Slip
+                    ? 'Đổi ảnh'
+                    : 'Tải ảnh'}
+                </span>
+              </label>
+              <input
+                id="upload-slot-day20"
+                type="file"
+                accept="image/*"
+                disabled={uploadingSlot === 'day20'}
+                onChange={handleUploadDay20}
+                className="sr-only"
+              />
+            </div>
           </div>
+          {errorDay20 && (
+            <div className="px-1 space-y-1">
+              <p className="text-[11px] text-rose-600 dark:text-rose-400">{errorDay20}</p>
+              {isApiKeyRelatedError(errorDay20) && onOpenApiKeyConfig && (
+                <Button variant="outline" size="sm" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
+                  🔑 Dùng API Key riêng của bạn (miễn phí)
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* ========================================================================= */}
-        {/* KHUNG BÓC TÁCH DANH SÁCH THƯỞNG NÓNG (CHECKBOX CHỌN KHOẢN NHẬN THAY)       */}
+        {/* KHUNG BÓC TÁCH DANH SÁCH THƯỞNG NÓNG (CHECKBOX NHẬN THAY)                   */}
         {/* ========================================================================= */}
-        <div className="p-3.5 sm:p-4 rounded-xl border border-rose-300/80 dark:border-rose-900/60 bg-gradient-to-br from-rose-50/40 via-amber-50/30 to-transparent dark:from-rose-950/20 dark:via-amber-950/10 space-y-3">
-          {/* Header khớp với dòng "-- Thưởng nóng 08/2026" trên HRM */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-200/60 dark:border-rose-900/40 pb-2.5">
-            <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 text-xs font-extrabold text-rose-700 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/50 border border-rose-300 dark:border-rose-800 rounded-md inline-flex items-center gap-1">
+        <div className="p-3 sm:p-3.5 rounded-xl border border-rose-300/80 dark:border-rose-900/60 bg-gradient-to-br from-rose-50/40 via-amber-50/20 to-transparent dark:from-rose-950/20 space-y-2.5">
+          {/* Header gọn gàng: Tiêu đề + 3 nút thao tác siêu ngắn */}
+          <div className="flex items-center justify-between gap-2 border-b border-rose-200/60 dark:border-rose-900/40 pb-2">
+            <div className="flex items-center gap-1.5">
+              <span className="px-2 py-0.5 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100/90 dark:bg-rose-900/50 border border-rose-200 dark:border-rose-800 rounded-md inline-flex items-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-rose-600" />
-                <span>-- Thưởng nóng {input.monthYear || '08/2026'}</span>
-              </span>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                (Tích chọn khoản nhận thay)
+                <span>Thưởng nóng {input.monthYear || '08/2026'}</span>
               </span>
             </div>
 
-            {/* Quick Action buttons */}
-            <div className="flex items-center gap-2 self-end sm:self-auto text-xs">
+            {/* Quick Action buttons ngắn gọn, không rớt dòng */}
+            <div className="flex items-center gap-1.5 text-xs shrink-0">
               <button
                 type="button"
                 onClick={handleSelectAllVisibleItems}
-                className="text-[11px] font-semibold text-rose-700 dark:text-rose-300 hover:underline flex items-center gap-0.5 cursor-pointer"
+                className="px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800 rounded-md hover:bg-rose-50 cursor-pointer whitespace-nowrap"
               >
-                <CheckSquare2 className="w-3 h-3" />
-                <span>Chọn tất cả</span>
+                ✓ Hết
               </button>
-              <span className="text-slate-300 dark:text-slate-600">•</span>
               <button
                 type="button"
                 onClick={handleDeselectVisibleItems}
-                className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+                className="px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:text-rose-600 cursor-pointer whitespace-nowrap"
               >
-                <Square className="w-3 h-3" />
-                <span>Bỏ chọn (Chọn lại)</span>
+                ✕ Bỏ
               </button>
-              <span className="text-slate-300 dark:text-slate-600">•</span>
               <button
                 type="button"
                 onClick={() => setShowAddCustomBonus(!showAddCustomBonus)}
-                className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+                className="px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-md hover:bg-indigo-50 cursor-pointer whitespace-nowrap"
               >
-                <Plus className="w-3 h-3" />
-                <span>Thêm khoản khác</span>
+                + Thêm
               </button>
             </div>
           </div>
 
-          {/* Form thêm khoản thưởng thủ công nếu cần */}
+          {/* Form thêm khoản nhận thay thủ công nếu cần */}
           {showAddCustomBonus && (
             <form
               onSubmit={handleAddCustomBonusItem}
-              className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-rose-200 dark:border-rose-900/60 space-y-2 animate-fadeIn"
+              className="p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-rose-200 dark:border-rose-900/60 space-y-2 animate-fadeIn"
             >
-              <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                <Plus className="w-3.5 h-3.5 text-rose-500" />
-                <span>Thêm một khoản nhận thay mới</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-1.5">
                 <input
                   type="text"
                   value={customItemName}
                   onChange={(e) => setCustomItemName(e.target.value)}
-                  placeholder="Tên khoản thưởng (VD: Khoán công việc bổ sung...)"
-                  className="sm:col-span-7 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-rose-500"
+                  placeholder="Tên khoản nhận thay (VD: Khoán bổ sung...)"
+                  className="sm:col-span-6 px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-rose-500"
                 />
                 <input
                   type="text"
                   inputMode="numeric"
                   value={customItemAmount}
                   onChange={(e) => setCustomItemAmount(e.target.value)}
-                  placeholder="Số tiền VNĐ (VD: 2.000.000)"
-                  className="sm:col-span-3 px-3 py-1.5 text-xs font-mono font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-rose-500"
+                  placeholder="Số tiền VNĐ"
+                  className="sm:col-span-3 px-2.5 py-1.5 text-xs font-mono font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-rose-500"
                 />
                 <button
                   type="submit"
-                  className="sm:col-span-2 px-3 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer"
+                  className="sm:col-span-3 px-2.5 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                 >
-                  Thêm & Chọn
+                  Thêm mục
                 </button>
               </div>
             </form>
           )}
 
-          {/* Tab Filter: Thưởng nóng vs Thưởng chính */}
+          {/* Tab Filter ngắn gọn: Thưởng nóng vs Thưởng chính */}
           {allBonusItems.length > 0 && (
-            <div className="flex items-center gap-1.5 text-xs border-b border-rose-100 dark:border-rose-900/30 pb-2">
-              <span className="text-[11px] text-slate-400 font-medium flex items-center gap-1 mr-1">
-                <ListFilter className="w-3 h-3" />
-                <span>Phân loại:</span>
-              </span>
+            <div className="flex items-center gap-1 text-xs">
               <button
                 type="button"
                 onClick={() => setBonusFilter('hot')}
-                className={`px-2.5 py-0.5 rounded-full font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   bonusFilter === 'hot'
-                    ? 'bg-rose-600 text-white shadow-xs'
+                    ? 'bg-rose-600 text-white shadow-2xs'
                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50'
                 }`}
               >
-                🔥 Thưởng nóng ({hotBonusItems.length})
+                🔥 Nóng ({hotBonusItems.length})
               </button>
               {mainBonusItems.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setBonusFilter('main')}
-                  className={`px-2.5 py-0.5 rounded-full font-semibold transition-all cursor-pointer ${
+                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                     bonusFilter === 'main'
-                      ? 'bg-indigo-600 text-white shadow-xs'
+                      ? 'bg-indigo-600 text-white shadow-2xs'
                       : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-indigo-50'
                   }`}
                 >
-                  💼 Thưởng chính ({mainBonusItems.length})
+                  💼 Chính ({mainBonusItems.length})
                 </button>
               )}
               <button
                 type="button"
                 onClick={() => setBonusFilter('all')}
-                className={`px-2.5 py-0.5 rounded-full font-semibold transition-all cursor-pointer ${
+                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   bonusFilter === 'all'
-                    ? 'bg-slate-700 text-white shadow-xs'
+                    ? 'bg-slate-700 text-white shadow-2xs'
                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
                 }`}
               >
@@ -683,20 +690,20 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
           {/* DANH SÁCH CHECKBOX CÁC KHOẢN THƯỞNG */}
           {visibleBonusItems.length > 0 ? (
-            <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
+            <div className="space-y-1 max-h-64 overflow-y-auto pr-0.5">
               {visibleBonusItems.map((item) => {
                 const isChecked = (input.selectedProxyItemIds || []).includes(item.id);
                 return (
                   <div
                     key={item.id}
                     onClick={() => handleToggleProxyItem(item.id)}
-                    className={`flex items-center justify-between gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none ${
+                    className={`flex items-center justify-between gap-2 p-2 rounded-lg border transition-all cursor-pointer select-none ${
                       isChecked
-                        ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-100 shadow-xs'
+                        ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-800 text-rose-900 dark:text-rose-100 shadow-2xs'
                         : 'bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 truncate min-w-0">
+                    <div className="flex items-center gap-2 truncate min-w-0">
                       <div
                         className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ${
                           isChecked
@@ -707,20 +714,18 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                         {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                       </div>
 
-                      <div className="truncate">
-                        <span className={`text-xs block truncate ${isChecked ? 'font-bold text-rose-950 dark:text-rose-100' : 'font-medium'}`}>
-                          {item.name}
-                        </span>
-                      </div>
+                      <span className={`text-xs truncate ${isChecked ? 'font-bold text-rose-950 dark:text-rose-100' : 'font-medium'}`}>
+                        {item.name}
+                      </span>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0">
                       {isChecked && (
-                        <span className="hidden xs:inline-block px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-rose-200/80 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300">
+                        <span className="hidden xs:inline-block px-1 py-0.2 text-[9px] font-bold rounded bg-rose-200/80 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300">
                           Nhận thay
                         </span>
                       )}
-                      <span className={`text-xs font-mono font-bold ${isChecked ? 'text-rose-700 dark:text-rose-300 text-sm' : 'text-slate-800 dark:text-slate-200'}`}>
+                      <span className={`text-xs font-mono font-bold ${isChecked ? 'text-rose-600 dark:text-rose-400' : 'text-slate-700 dark:text-slate-300'}`}>
                         {formatVnd(item.amount)}
                       </span>
                     </div>
@@ -729,59 +734,53 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               })}
             </div>
           ) : (
-            <div className="text-center py-6 px-4 bg-white/60 dark:bg-slate-800/60 rounded-xl border border-dashed border-rose-200 dark:border-rose-900/40 space-y-2">
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                Chưa có danh sách Thưởng nóng. Bạn có thể tải ảnh Bảng thưởng ngày 20 ở trên hoặc:
-              </p>
+            <div className="text-center py-4 px-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-dashed border-rose-200 dark:border-rose-900/40 space-y-2">
               <button
                 type="button"
                 onClick={handleLoadSampleData}
-                className="px-3 py-1.5 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-950/60 border border-rose-300 dark:border-rose-800 rounded-lg hover:bg-rose-200 transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-3 py-1.5 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100 hover:bg-rose-200/80 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 rounded-lg transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Tải dữ liệu Thưởng nóng mẫu từ HRM</span>
+                <Sparkles className="w-3.5 h-3.5 text-rose-600" />
+                <span>Tải 7 khoản thưởng nóng mẫu MWG</span>
               </button>
             </div>
           )}
 
-          {/* FOOTER TỰ ĐỘNG TÍNH TỔNG KHOẢN NHẬN THAY */}
-          <div className="pt-2.5 border-t border-rose-200 dark:border-rose-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs">
-            <div className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
-              <span>Đã tích chọn:</span>
-              <strong className="text-rose-600 dark:text-rose-400">{selectedCount}</strong>
-              <span>khoản nhận thay</span>
-              <span className="text-[11px] text-slate-400 hidden sm:inline">(Tự tính tổng tức thì)</span>
+          {/* FOOTER TỰ ĐỘNG TÍNH TỔNG KHOẢN NHẬN THAY: Gọn gàng 1 dòng */}
+          <div className="pt-2 border-t border-rose-200/60 dark:border-rose-900/50 flex items-center justify-between gap-2 text-xs">
+            <div className="text-slate-600 dark:text-slate-400 text-xs">
+              Đã chọn: <strong className="text-rose-600 dark:text-rose-400">{selectedCount}</strong> mục
             </div>
 
-            <div className="flex items-center gap-2 self-end sm:self-auto">
-              <span className="text-slate-500 font-medium">Tổng tiền nhận thay:</span>
-              <span className="font-mono font-extrabold text-base text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-rose-200 dark:border-rose-800/60 shadow-xs">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[11px] text-slate-500">Tổng nhận thay:</span>
+              <span className="font-mono font-bold text-sm text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-800/60 shadow-2xs whitespace-nowrap">
                 {formatVnd(selectedProxyItemsTotal)}
               </span>
             </div>
           </div>
         </div>
 
-        {/* THÔNG TIN CHI TIẾT KÊ KHAI (CÓ THỂ XEM / CHỈNH SỬA BỔ SUNG) */}
+        {/* THÔNG TIN KÊ KHAI BỔ SUNG (ACCORDION GỌN) */}
         <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/30">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full px-3.5 py-2.5 flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+            className="w-full px-3 py-2 flex items-center justify-between text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
           >
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-sky-500" />
-              <span>Xem chi tiết thông tin cá nhân & Các mức giảm trừ</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
+              <span>Kê khai thêm & Giảm trừ gia cảnh</span>
             </div>
-            {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
           {showAdvanced && (
-            <div className="p-3.5 pt-1 space-y-3 border-t border-slate-200 dark:border-slate-700/60">
+            <div className="p-3 pt-1 space-y-2.5 border-t border-slate-200 dark:border-slate-700/60">
               {/* Họ tên */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Họ và tên người nhận thay / kê khai
+                <label className="block text-[11px] font-medium text-slate-500 mb-0.5">
+                  Họ tên người kê khai
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
@@ -792,16 +791,16 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     value={input.name}
                     onChange={(e) => onChange({ name: e.target.value })}
                     placeholder="VD: TRƯƠNG HOÀNG PHÚC"
-                    className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
                   />
                 </div>
               </div>
 
               {/* Tổng thu nhập tháng */}
               <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                    Tổng thu nhập trong tháng (Đợt 1 + Đợt 2)
+                <div className="flex justify-between items-center mb-0.5">
+                  <label className="text-[11px] font-medium text-slate-500">
+                    Tổng thu nhập (Đợt 1 + 2)
                   </label>
                   <span className="text-[10px] text-slate-400">VNĐ</span>
                 </div>
@@ -811,18 +810,18 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   value={input.totalIncome === 0 ? '' : formatNumber(input.totalIncome)}
                   onChange={(e) => handleCurrencyChange('totalIncome', e.target.value)}
                   placeholder="0"
-                  className="w-full px-3 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  className="w-full px-2.5 py-1.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
                 />
               </div>
 
               {/* Số người phụ thuộc */}
               <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400">
-                    Số người phụ thuộc ({formatNumber(dependentUnit)} đ / người)
+                <div className="flex justify-between items-center mb-0.5">
+                  <label className="text-[11px] font-medium text-slate-500">
+                    Người phụ thuộc ({formatNumber(dependentUnit)} đ/người)
                   </label>
                   <span className="text-[10px] text-sky-600 font-semibold">
-                    Giảm trừ: {formatNumber(input.dependents * dependentUnit)} đ
+                    Giảm: {formatNumber(input.dependents * dependentUnit)} đ
                   </span>
                 </div>
                 <input
@@ -835,14 +834,14 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     onChange({ dependents: isNaN(val) ? 0 : val });
                   }}
                   placeholder="0"
-                  className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
                 />
               </div>
 
               {/* Giảm trừ bảo hiểm */}
               <div>
-                <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
-                  Bảo hiểm bắt buộc (BHXH, BHYT, BHTN 10.5%)
+                <label className="block text-[11px] font-medium text-slate-500 mb-0.5">
+                  Bảo hiểm bắt buộc (BHXH 10.5%)
                 </label>
                 <input
                   type="text"
@@ -850,7 +849,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   value={input.insurance === 0 ? '' : formatNumber(input.insurance)}
                   onChange={(e) => handleCurrencyChange('insurance', e.target.value)}
                   placeholder="0"
-                  className="w-full px-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  className="w-full px-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
                 />
               </div>
             </div>
@@ -858,18 +857,18 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
         </div>
 
         {/* NÚT LƯU KẾT QUẢ VÀO LỊCH SỬ */}
-        <div className="pt-2">
+        <div className="pt-1">
           <button
             type="button"
             onClick={onSave}
-            className={`w-full py-2.5 px-4 rounded-xl font-medium text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer ${
+            className={`w-full py-2 px-3 rounded-xl font-medium text-xs flex items-center justify-center gap-1.5 shadow-2xs transition-all cursor-pointer ${
               isSaved
                 ? 'bg-emerald-600 text-white hover:bg-emerald-700'
                 : 'bg-sky-600 hover:bg-sky-700 text-white active:scale-[0.99]'
             }`}
           >
-            <Save className="w-4 h-4" />
-            <span>{isSaved ? 'Đã lưu vào lịch sử (Local & Cloud)' : 'Lưu kết quả tính thuế này'}</span>
+            <Save className="w-3.5 h-3.5" />
+            <span>{isSaved ? 'Đã lưu kết quả' : 'Lưu kết quả tính thuế'}</span>
           </button>
         </div>
       </div>
