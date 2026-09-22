@@ -133,6 +133,36 @@ export default function LineBotView() {
                         </div>
                     </div>
 
+                    {/* Executive Stock Health Glance — Dành riêng cho màn hình Laptop (Report BI standard) */}
+                    <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 bg-slate-50/80 dark:bg-slate-900/50 rounded-xl border border-slate-200/60 dark:border-slate-700/60 text-xs">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Tồn khả dụng:</span>
+                            <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                                {couponHook.stockSummary.unused}
+                            </span>
+                            <span className="text-slate-400 font-mono text-[10px]">/{couponHook.stockSummary.total} mã</span>
+                        </div>
+                        <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div
+                                className={`h-full rounded-full transition-all duration-300 ${
+                                    couponHook.stockSummary.total === 0
+                                        ? 'bg-slate-300'
+                                        : (couponHook.stockSummary.unused / (couponHook.stockSummary.total || 1)) < 0.2
+                                        ? 'bg-amber-500'
+                                        : 'bg-emerald-500'
+                                }`}
+                                style={{
+                                    width: `${couponHook.stockSummary.total ? Math.min(100, Math.round((couponHook.stockSummary.unused / couponHook.stockSummary.total) * 100)) : 0}%`
+                                }}
+                            />
+                        </div>
+                        <span className="font-mono text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                            {couponHook.stockSummary.total
+                                ? `${Math.round((couponHook.stockSummary.unused / couponHook.stockSummary.total) * 100)}%`
+                                : '0%'}
+                        </span>
+                    </div>
+
                     <div className="flex items-center gap-1.5 shrink-0">
                         <Button
                             variant="ghost"

@@ -142,7 +142,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             type="button"
             onClick={() => handleCopyCode(c.id, c.code)}
             title={`Bấm để copy mã: ${c.code}`}
-            className={`inline-flex items-center justify-center gap-1 ${compact ? 'h-6.5 px-2 font-mono text-[11px] font-bold tracking-wide' : 'px-2.5 py-1 font-mono text-xs font-semibold'} rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+            className={`inline-flex items-center justify-center gap-1.5 ${compact ? 'h-6 px-2 font-mono text-[11px]' : 'h-6.5 px-2.5 font-mono text-xs'} font-semibold rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
                 copiedCode === c.code
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 ring-1 ring-emerald-500/30'
                     : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300 dark:hover:bg-slate-700'
@@ -155,8 +155,8 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 </>
             ) : (
                 <>
-                    <Copy size={11} className="text-slate-400" />
-                    <span>{compact ? c.code : 'Copy'}</span>
+                    <Copy size={11} className="text-slate-400 shrink-0" />
+                    <span className="tracking-wide">{c.code}</span>
                 </>
             )}
         </button>
@@ -165,7 +165,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     const renderProduct = (c: Coupon) => (
         <>
         {c.productName ? (
-            <div className="max-w-[220px] leading-tight">
+            <div className="max-w-[220px] lg:max-w-[360px] leading-tight">
                 <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate text-xs" title={c.productName}>
                     {c.productName}
                 </span>
@@ -176,7 +176,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 )}
             </div>
         ) : c.syntax ? (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate max-w-[220px]" title={c.syntax}>
+            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate max-w-[220px] lg:max-w-[360px]" title={c.syntax}>
                 {c.syntax}
             </span>
         ) : (
@@ -313,7 +313,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 <button
                     type="button"
                     onClick={() => setStatusFilter('ALL')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-slate-400 dark:border-t-slate-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'ALL'
                             ? 'bg-slate-100/90 dark:bg-slate-800 border-sky-500/80 ring-1 ring-sky-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600 shadow-2xs'
@@ -325,13 +325,16 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             <Ticket size={13} className="sm:size-3.5" />
                         </div>
                     </div>
-                    <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white mt-0.5 sm:mt-1 tabular-nums tracking-tight">{stockSummary.total}</p>
+                    <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
+                        <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stockSummary.total}</p>
+                        <span className="hidden lg:inline-block text-[10px] text-slate-400 font-semibold truncate">Kho toàn bộ PMH</span>
+                    </div>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setStatusFilter('UNUSED')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-emerald-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'UNUSED'
                             ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-500 ring-1 ring-emerald-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-emerald-300 dark:hover:border-emerald-700 shadow-2xs'
@@ -343,13 +346,18 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             <CheckCircle2 size={13} className="sm:size-3.5" />
                         </div>
                     </div>
-                    <p className="text-base sm:text-xl lg:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5 sm:mt-1 tabular-nums tracking-tight">{stockSummary.unused}</p>
+                    <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
+                        <p className="text-base sm:text-xl lg:text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">{stockSummary.unused}</p>
+                        <span className="hidden lg:inline-block text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">
+                            {stockSummary.total ? `${Math.round((stockSummary.unused / stockSummary.total) * 100)}% tổng kho` : '0%'}
+                        </span>
+                    </div>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setStatusFilter('SENT')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-sky-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'SENT'
                             ? 'bg-sky-50/70 dark:bg-sky-950/40 border-sky-500 ring-1 ring-sky-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-sky-300 dark:hover:border-sky-700 shadow-2xs'
@@ -361,13 +369,18 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             <Clock size={13} className="sm:size-3.5" />
                         </div>
                     </div>
-                    <p className="text-base sm:text-xl lg:text-2xl font-black text-sky-600 dark:text-sky-400 mt-0.5 sm:mt-1 tabular-nums tracking-tight">{stockSummary.sent}</p>
+                    <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
+                        <p className="text-base sm:text-xl lg:text-2xl font-black text-sky-600 dark:text-sky-400 tabular-nums tracking-tight">{stockSummary.sent}</p>
+                        <span className="hidden lg:inline-block text-[10px] text-sky-600/80 dark:text-sky-400/80 font-bold">
+                            {stockSummary.total ? `${Math.round((stockSummary.sent / stockSummary.total) * 100)}% đã cấp` : '0%'}
+                        </span>
+                    </div>
                 </button>
 
                 <button
                     type="button"
                     onClick={() => setStatusFilter('REVOKED')}
-                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border text-left transition-all cursor-pointer active:scale-[0.98] ${
+                    className={`p-2 sm:p-2.5 lg:p-3 rounded-xl sm:rounded-2xl border border-t-[3px] border-t-amber-500 text-left transition-all cursor-pointer active:scale-[0.98] ${
                         statusFilter === 'REVOKED'
                             ? 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-500 ring-1 ring-amber-500/30 shadow-2xs'
                             : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-700 shadow-2xs'
@@ -379,7 +392,12 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                             <RotateCcw size={13} className="sm:size-3.5" />
                         </div>
                     </div>
-                    <p className="text-base sm:text-xl lg:text-2xl font-black text-amber-600 dark:text-amber-400 mt-0.5 sm:mt-1 tabular-nums tracking-tight">{stockSummary.revoked}</p>
+                    <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
+                        <p className="text-base sm:text-xl lg:text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{stockSummary.revoked}</p>
+                        <span className="hidden lg:inline-block text-[10px] text-amber-600/80 dark:text-amber-400/80 font-bold">
+                            {stockSummary.total ? `${Math.round((stockSummary.revoked / stockSummary.total) * 100)}% hoàn kho` : '0%'}
+                        </span>
+                    </div>
                 </button>
             </div>
 
@@ -412,13 +430,13 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
                 {/* Nhóm bộ lọc & tìm kiếm bên trái */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full lg:w-auto">
-                    <div className="relative w-full sm:w-[180px] lg:w-[210px] shrink-0">
+                    <div className="relative w-full sm:w-[180px] lg:w-[260px] xl:w-[300px] shrink-0">
                         <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            placeholder="Tìm mã, MĐH, người nhận..."
+                            placeholder="Tìm mã, MĐH, người nhận, SP..."
                             className="w-full h-8 pl-7.5 pr-6 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg text-sm sm:text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
                         />
                         {searchQuery && (
@@ -583,26 +601,26 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     )}
                 </div>
 
-                {/* DESKTOP TABLE (≥ md): Bảng chuẩn Report BI sắc nét */}
-                <div className="hidden md:block overflow-x-auto">
+                {/* DESKTOP TABLE (≥ md): Bảng chuẩn Report BI sắc nét cho Laptop */}
+                <div className="hidden md:block overflow-x-auto max-h-[calc(100vh-270px)] min-h-[300px] [scrollbar-width:thin]">
                     <table className="w-full text-left text-xs border-collapse">
-                        <thead>
-                            <tr className="bg-slate-50/90 dark:bg-slate-900/60 border-b border-slate-200/80 dark:border-slate-700/80 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                                <th className="py-2 pl-3 pr-2 w-7 text-center">#</th>
-                                <th className="py-2 px-2 text-center whitespace-nowrap w-24">Mã Coupon</th>
-                                <th className="py-2 px-2.5 min-w-[180px]">Sản Phẩm</th>
-                                <th className="py-2 px-2 whitespace-nowrap">Loại PMH</th>
-                                <th className="py-2 px-2 whitespace-nowrap">Hạn Dùng</th>
-                                <th className="py-2 px-2 whitespace-nowrap">Trạng Thái</th>
-                                <th className="py-2 px-2 whitespace-nowrap">Người Nhận</th>
-                                <th className="py-2 px-2 whitespace-nowrap">Thời Gian Copy</th>
-                                <th className="py-2 pr-3 pl-2 text-right whitespace-nowrap">Thao Tác</th>
+                        <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs border-b border-slate-200/90 dark:border-slate-700/90 shadow-2xs">
+                            <tr className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                                <th className="py-2 pl-3 pr-2 w-10 text-center border-r border-slate-200/70 dark:border-slate-700/70">#</th>
+                                <th className="py-2 px-2 text-center whitespace-nowrap w-32 border-r border-slate-200/70 dark:border-slate-700/70">Mã Coupon</th>
+                                <th className="py-2 px-2.5 min-w-[200px] border-r border-slate-200/70 dark:border-slate-700/70">Sản Phẩm</th>
+                                <th className="py-2 px-2 text-center whitespace-nowrap w-24 border-r border-slate-200/70 dark:border-slate-700/70">Loại PMH</th>
+                                <th className="py-2 px-2 text-center whitespace-nowrap w-28 border-r border-slate-200/70 dark:border-slate-700/70">Hạn Dùng</th>
+                                <th className="py-2 px-2 text-center whitespace-nowrap w-28 border-r border-slate-200/70 dark:border-slate-700/70">Trạng Thái</th>
+                                <th className="py-2 px-2 text-left whitespace-nowrap w-36 border-r border-slate-200/70 dark:border-slate-700/70">Người Nhận</th>
+                                <th className="py-2 px-2 text-center whitespace-nowrap w-36 border-r border-slate-200/70 dark:border-slate-700/70">Thời Gian Copy</th>
+                                <th className="py-2 pr-3 pl-2 text-right whitespace-nowrap w-24">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 font-medium">
                             {filteredCoupons.length === 0 ? (
                                 <tr>
-                                    <td colSpan={9} className="py-8 text-center text-slate-400 text-xs">
+                                    <td colSpan={9} className="py-12 text-center text-slate-400 text-xs">
                                         <p className="font-semibold text-slate-600 dark:text-slate-400">
                                             {isLoading ? 'Đang tải dữ liệu...' : 'Không tìm thấy mã coupon nào phù hợp với bộ lọc.'}
                                         </p>
@@ -615,34 +633,34 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                 displayedCoupons.map((c, idx) => (
                                     <tr
                                         key={c.id}
-                                        className={`transition-colors ${
+                                        className={`transition-colors border-b border-slate-100 dark:border-slate-800/70 ${
                                             c.status === 'REVOKED'
-                                                ? 'bg-amber-50/20 dark:bg-amber-950/10 hover:bg-amber-50/40 dark:hover:bg-amber-950/20'
-                                                : 'hover:bg-sky-50/40 dark:hover:bg-slate-800/50'
+                                                ? 'bg-amber-50/25 dark:bg-amber-950/15 hover:bg-amber-50/50 dark:hover:bg-amber-950/30'
+                                                : 'odd:bg-white even:bg-slate-50/40 dark:odd:bg-slate-800/90 dark:even:bg-slate-800/50 hover:bg-sky-50/70 dark:hover:bg-sky-950/30'
                                         }`}
                                     >
-                                        <td className="py-1.5 pl-3 pr-2 text-center text-slate-400 font-mono text-[10px] w-7">
+                                        <td className="py-1.5 pl-3 pr-2 text-center text-slate-400 font-mono text-[10px] w-10 font-bold bg-slate-50/30 dark:bg-slate-800/30 border-r border-slate-100 dark:border-slate-800/60">
                                             {startIndex + idx + 1}
                                         </td>
-                                        <td className="py-1.5 px-2 text-center whitespace-nowrap">
+                                        <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderCopyButton(c)}
                                         </td>
-                                        <td className="py-1.5 px-2.5">
+                                        <td className="py-1.5 px-2.5 border-r border-slate-100 dark:border-slate-800/60">
                                             {renderProduct(c)}
                                         </td>
-                                        <td className="py-1.5 px-2 whitespace-nowrap">
+                                        <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderType(c)}
                                         </td>
-                                        <td className="py-1.5 px-2 whitespace-nowrap">
+                                        <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderExpiry(c)}
                                         </td>
-                                        <td className="py-1.5 px-2 whitespace-nowrap">
+                                        <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderStatus(c)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                        <td className="py-1.5 px-2 text-left text-slate-600 dark:text-slate-300 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderRecipient(c)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-[10px] font-mono whitespace-nowrap">
+                                        <td className="py-1.5 px-2 text-center text-[10px] font-mono whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderCopiedAt(c)}
                                         </td>
                                         <td className="py-1.5 pr-3 pl-2 text-right whitespace-nowrap">
@@ -655,7 +673,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     </table>
                 </div>
 
-                {/* Thanh phân trang Pagination Bar - Tinh gọn, vừa vặn 1 dòng trên iPhone */}
+                {/* Thanh phân trang Pagination Bar - Tinh gọn, chuẩn Report BI */}
                 {filteredCoupons.length > 0 && (
                     <div className="px-3 py-1.5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between gap-2 text-xs">
                         <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-[11px]">
@@ -677,6 +695,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                     <option value={10}>10 dòng</option>
                                     <option value={20}>20 dòng</option>
                                     <option value={50}>50 dòng</option>
+                                    <option value={100}>100 dòng</option>
                                 </select>
                             </div>
                         </div>

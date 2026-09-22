@@ -330,18 +330,18 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             })}
                         </div>
 
-                        {/* DESKTOP VIEW (≥ md): Bảng chuẩn Report BI */}
-                        <div className="hidden md:block overflow-x-auto">
+                        {/* DESKTOP VIEW (≥ md): Bảng chuẩn Report BI cho Laptop */}
+                        <div className="hidden md:block overflow-x-auto max-h-[calc(100vh-270px)] min-h-[300px] [scrollbar-width:thin]">
                             <table className="w-full text-left text-xs border-collapse">
-                                <thead className="bg-slate-50/90 dark:bg-slate-900/60 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200/80 dark:border-slate-700/80 uppercase tracking-wider text-[10px]">
+                                <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200/90 dark:border-slate-700/90 uppercase tracking-wider text-[10px] shadow-2xs">
                                     <tr>
-                                        <th className="py-2 pl-3 pr-2 whitespace-nowrap">Thẻ</th>
-                                        <th className="py-2 px-2 whitespace-nowrap">Mã Coupon</th>
-                                        <th className="py-2 px-2 min-w-[160px]">Loại PMH</th>
-                                        <th className="py-2 px-2 whitespace-nowrap">Người được cấp</th>
-                                        <th className="py-2 px-2 whitespace-nowrap">Trạng thái</th>
-                                        <th className="py-2 px-2 whitespace-nowrap">Người sử dụng</th>
-                                        <th className="py-2 pr-3 pl-2 whitespace-nowrap">Thời gian dùng</th>
+                                        <th className="py-2 pl-3 pr-2 w-16 text-center border-r border-slate-200/70 dark:border-slate-700/70">Thẻ</th>
+                                        <th className="py-2 px-2 w-32 text-center whitespace-nowrap border-r border-slate-200/70 dark:border-slate-700/70">Mã Coupon</th>
+                                        <th className="py-2 px-2.5 min-w-[180px] border-r border-slate-200/70 dark:border-slate-700/70">Loại PMH</th>
+                                        <th className="py-2 px-2 w-32 whitespace-nowrap border-r border-slate-200/70 dark:border-slate-700/70">Người được cấp</th>
+                                        <th className="py-2 px-2 w-28 text-center whitespace-nowrap border-r border-slate-200/70 dark:border-slate-700/70">Trạng thái</th>
+                                        <th className="py-2 px-2 w-32 whitespace-nowrap border-r border-slate-200/70 dark:border-slate-700/70">Người sử dụng</th>
+                                        <th className="py-2 pr-3 pl-2 w-36 text-center whitespace-nowrap">Thời gian dùng</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 font-medium">
@@ -362,18 +362,18 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                         })() : '-';
 
                                         return (
-                                            <tr key={item.id} className="hover:bg-sky-50/40 dark:hover:bg-slate-800/50 transition-colors">
-                                                <td className="py-1.5 pl-3 pr-2 whitespace-nowrap">
+                                            <tr key={item.id} className="odd:bg-white even:bg-slate-50/40 dark:odd:bg-slate-800/90 dark:even:bg-slate-800/50 hover:bg-sky-50/70 dark:hover:bg-sky-950/30 transition-colors border-b border-slate-100 dark:border-slate-800/70">
+                                                <td className="py-1.5 pl-3 pr-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     <span className="inline-block whitespace-nowrap px-1.5 py-0.5 rounded font-bold text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono">
                                                         PMH {item.cardIndex || idx + 1}
                                                     </span>
                                                 </td>
-                                                <td className="py-1.5 px-2 whitespace-nowrap">
+                                                <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     <button
                                                         type="button"
                                                         onClick={() => handleCopy(item.code)}
                                                         title={`Bấm để copy mã: ${item.code}`}
-                                                        className={`inline-flex items-center justify-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold font-mono border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+                                                        className={`inline-flex items-center justify-center gap-1.5 h-6.5 px-2.5 rounded-md text-xs font-semibold font-mono border transition-all cursor-pointer shadow-2xs active:scale-95 ${
                                                             copiedCode === item.code
                                                                 ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 ring-1 ring-emerald-500/30'
                                                                 : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-600'
@@ -386,24 +386,24 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Copy size={11} className="text-slate-400" />
-                                                                <span>Copy</span>
+                                                                <Copy size={11} className="text-slate-400 shrink-0" />
+                                                                <span className="tracking-wide">{item.code}</span>
                                                             </>
                                                         )}
                                                     </button>
                                                 </td>
-                                                <td className="py-1.5 px-2">
-                                                    <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate max-w-[220px]">
+                                                <td className="py-1.5 px-2.5 border-r border-slate-100 dark:border-slate-800/60">
+                                                    <span className="font-semibold text-slate-800 dark:text-slate-200 block truncate max-w-[240px] lg:max-w-[340px]">
                                                         {item.productName || item.categoryLabel || 'PMH'}
                                                     </span>
                                                     {item.orderId && (
                                                         <span className="text-[10px] text-slate-400 font-mono">MĐH: {item.orderId}</span>
                                                     )}
                                                 </td>
-                                                <td className="py-1.5 px-2 font-medium text-sky-600 dark:text-sky-400 whitespace-nowrap">
+                                                <td className="py-1.5 px-2 font-medium text-sky-600 dark:text-sky-400 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     {item.recipient ? item.recipient.replace(/^@+/, '') : '-'}
                                                 </td>
-                                                <td className="py-1.5 px-2 whitespace-nowrap">
+                                                <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     {isUsed ? (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
                                                             <CheckCircle2 size={10} /> ĐÃ SỬ DỤNG
@@ -414,7 +414,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                         </span>
                                                     )}
                                                 </td>
-                                                <td className="py-1.5 px-2 whitespace-nowrap">
+                                                <td className="py-1.5 px-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     {isUsed && item.usedBy ? (
                                                         <span className="font-bold text-slate-800 dark:text-slate-200">
                                                             👤 {item.usedBy}
@@ -423,7 +423,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                         <span className="text-slate-400 italic text-[11px]">Chưa có</span>
                                                     )}
                                                 </td>
-                                                <td className="py-1.5 pr-3 pl-2 text-slate-500 dark:text-slate-400 font-mono text-[10px] whitespace-nowrap">
+                                                <td className="py-1.5 pr-3 pl-2 text-center text-slate-500 dark:text-slate-400 font-mono text-[10px] whitespace-nowrap">
                                                     {timeStr}
                                                 </td>
                                             </tr>
