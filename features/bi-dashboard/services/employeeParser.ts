@@ -2,7 +2,7 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee ở types/nhanVienTypes.ts có thêm department (nhân viên đã gắn phòng ban) — khác với
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
-import { parseRevenueData, standardizeEmployeeName, formatEmployeeName } from '../utils/nhanVienHelpers';
+import { parseRevenueData, standardizeEmployeeName, formatEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { parseCompetitionDataBySupermarket, parseSummaryData, findMatchingSupermarketKey } from '../utils/dashboardHelpers';
 import { isSystemOrIgnoredEmployee, type AnalysisEmployeeItem } from './analysisEmployeeSyncService';
 import { isIgnoredDept } from '../utils/nhanVienHelpers';
@@ -335,6 +335,28 @@ export const getDepartmentsFromAnalysis = (
     }));
 };
 
+/**
+ * Các biến thể tên của cùng 1 nhân viên để làm KHOÁ tra target: tên gốc, dạng chuẩn hoá
+ * "Tên - Mã" (standardizeEmployeeName) và dạng "Mã - Tên". Lý do: danh sách nhân viên từ Phân
+ * Tích lưu originalName dạng "106637 - Nguyễn Vũ Minh", nhưng parseCompetitionData gán cho dòng
+ * thi đua originalName = KHOÁ khớp được trong employeeDepartmentMap — thường là dạng chuẩn hoá
+ * "Nguyễn Vũ Minh - 106637" — nên `targets.get(row.originalName)` trượt → M.TIÊU = 0 cho mọi
+ * người (chủ dự án gặp thật 2026-09-22; danh sách dán tay dạng "Tên - Mã" thì 2 bên trùng nên
+ * không lộ). Ghi cùng 1 giá trị dưới mọi biến thể; không nơi nào cộng `.values()` của map này
+ * (đã rà 8 chỗ dùng), nên không đếm trùng.
+ */
+export const employeeTargetKeys = (originalName: string): string[] => {
+    const keys = new Set<string>([originalName]);
+    const canonical = standardizeEmployeeName(originalName);
+    if (canonical) keys.add(canonical);
+    const id = extractEmployeeId(originalName);
+    if (id && canonical.includes(' - ')) {
+        const parts = canonical.split(' - ').map(p => p.trim());
+        if (parts[parts.length - 1] === id) keys.add(`${id} - ${parts.slice(0, -1).join(' - ')}`);
+    }
+    return Array.from(keys);
+};
+
 export const parseEmployeeCompetitionTargets = (
     lines: string[],
     activeSupermarkets: string[],
@@ -410,7 +432,8 @@ export const parseEmployeeCompetitionTargets = (
             const compT = targets.get(compName)!;
             allEmployees.forEach(emp => {
                 const existing = compT.get(emp.originalName) || 0;
-                compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW)));
+                const next = existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW));
+                employeeTargetKeys(emp.originalName).forEach(k => compT.set(k, next));
             });
         }
     }
