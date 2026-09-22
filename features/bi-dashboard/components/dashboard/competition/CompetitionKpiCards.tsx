@@ -15,6 +15,9 @@ interface CompetitionKpiCardsProps {
 /**
  * Dải chỉ số Thi đua — chuẩn "Bảng điều khiển ca trực" (2026-09-10).
  *
+ * (2026-09-22: bỏ ô "80% < nhóm < 100%" theo yêu cầu chủ dự án — thông tin này đã đọc được ở
+ * nhãn "chưa đạt" của từng dải nhóm trong bảng; thêm ô "Tổng thưởng" đứng đầu.)
+ *
  * Bản cũ là 4 THẺ bo góc, mỗi thẻ có dải gradient trên đỉnh, biểu tượng trong ô vuông bo góc, viền
  * riêng và đổ bóng. Bốn khối trang trí cạnh nhau, mỗi khối chỉ để nói MỘT con số.
  *
@@ -46,14 +49,6 @@ const UNITS = [
         bar: 'bg-rose-500',
         barBg: 'bg-rose-100 dark:bg-rose-950/40',
         dot: 'bg-rose-500',
-    },
-    {
-        key: 'near',
-        label: '80% < nhóm < 100%',
-        tone: 'text-amber-700 dark:text-amber-400',
-        bar: 'bg-amber-500',
-        barBg: 'bg-amber-100 dark:bg-amber-950/40',
-        dot: 'bg-amber-500',
     },
     {
         key: 'zero',
@@ -104,8 +99,6 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                 return { big: `${Math.round(stats.pctOver100)}%`, sub: `Đạt ${stats.countOver100}/${stats.total} nhóm`, pct: stats.pctOver100 };
             case 'under':
                 return { big: `${Math.round(stats.pctUnder100)}%`, sub: `Chưa đạt ${stats.countUnder100}/${stats.total} nhóm`, pct: stats.pctUnder100 };
-            case 'near':
-                return { big: `${stats.countNear100}`, sub: `${Math.round(stats.pctNear100)}% tổng nhóm`, pct: stats.pctNear100 };
             case 'bonus': {
                 const b = bonusStats!;
                 const pct = b.countMatched > 0 ? (b.countActual / b.countMatched) * 100 : 0;
@@ -121,7 +114,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
 
     return (
         <div
-            className={`competition-kpi-container w-full grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-2 sm:mb-2.5 ${units.length === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}
+            className={`competition-kpi-container w-full grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-2 sm:mb-2.5 ${units.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}
             title={`Tính theo ${modeLabel}`}
         >
             {units.map((u) => {

@@ -52,7 +52,8 @@ test('bảng Thi đua Luỹ kế có cột THƯỞNG khớp theo tên nhóm vớ
 
     // Thẻ KPI thứ 5 "Tổng thưởng" = tổng thưởng THẬT của các nhóm đang hiện (3,002 + 2,174 = 5,176tr), 5 thẻ 1 hàng
     const kpi = page.locator('.competition-kpi-container');
-    await expect(kpi.locator(':scope > div')).toHaveCount(5);
+    await expect(kpi.locator(':scope > div')).toHaveCount(4); // Tổng thưởng · đạt · chưa đạt · kết quả 0%
+    await expect(kpi).not.toContainText('80% < NHÓM');
     // Thẻ Tổng thưởng phải nằm ĐẦU TIÊN
     const bonusCard = kpi.locator(':scope > div').first();
     await expect(bonusCard).toContainText(/Tổng thưởng/i);
