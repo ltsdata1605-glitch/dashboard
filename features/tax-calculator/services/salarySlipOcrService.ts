@@ -136,6 +136,8 @@ export const extractSalarySlip = async (
     targetSlip: 'day5' | 'day20'
 ): Promise<SalarySlipDay5Data | SalarySlipDay20Data> => {
     const { base64Data, mimeType } = await processAndResizeImage(file);
+    /** Lý do lỗi phía Cloud Function (nếu có) — dùng để soạn thông báo cuối cùng cho đúng. */
+    let serverReason = '';
 
     // 1. Thử gọi qua Firebase Cloud Function trước
     try {
@@ -202,6 +204,9 @@ export const extractSalarySlip = async (
         if (cloudErr.message && cloudErr.message.includes('Ảnh tải lên')) {
             throw cloudErr;
         }
+        // Giữ lý do THẬT của phía server để báo đúng việc người dùng cần làm (xem cuối hàm):
+        // khoá bị Google vô hiệu / hết hạn mức khác hẳn "thử lại sau".
+        serverReason = String(cloudErr?.message || cloudErr?.details || '');
         console.warn('[SalarySlipOcr] Cloud Function không khả dụng hoặc lỗi, thử fallback sang Client API Key:', cloudErr);
     }
 
@@ -344,6 +349,15 @@ Nếu là day20_bonus: bonusMain, bonusHot, incomeDay20, actualTaxDay20 (dòng "
         }
     }
 
+    // Thông báo phải nói ĐÚNG việc cần làm: khoá bị Google vô hiệu (thường do bị lộ ra repo công
+    // khai) thì "thử lại" bao nhiêu lần cũng vô ích — phải cấp khoá mới.
+    const reason = serverReason.toLowerCase();
+    if (reason.includes('leak') || reason.includes('permission_denied') || reason.includes('api key not valid') || reason.includes('403')) {
+        throw new Error('Khoá Gemini API của hệ thống đã bị Google vô hiệu (bị lộ hoặc sai). Quản trị cần cấp khoá mới, hoặc bạn tự dán API Key riêng ở nút "API Key".');
+    }
+    if (reason.includes('quota') || reason.includes('429') || reason.includes('resource_exhausted')) {
+        throw new Error('Hạn mức Gemini API hôm nay đã hết. Thử lại sau, hoặc dán API Key riêng của bạn ở nút "API Key".');
+    }
     throw new Error('Không thể phân tích phiếu lương bằng AI. Vui lòng thử lại hoặc cài đặt API Key dự phòng.');
 };
 
