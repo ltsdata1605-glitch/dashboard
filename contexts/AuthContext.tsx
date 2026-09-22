@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
@@ -36,6 +36,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
     const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
     const [hasCachedSession, setHasCachedSession] = useState(false);
+    // Ultra-Fast Boot đã mở dashboard bằng cache hợp lệ? Đọc trong callback onAuthStateChanged
+    // (closure cũ, deps []) nên phải là ref chứ không phải state.
+    const bootedFromCacheRef = useRef(false);
 
     useEffect(() => {
         cleanupGarbageKeys().catch(console.error);
@@ -72,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // nhập rồi mới vào trang" dù máy đã đăng nhập sẵn. hasCachedSession báo App.tsx bỏ qua
             // màn Login trong lúc chờ, vào thẳng dashboard bằng dữ liệu cache.
             if (s === 'approved' && (r === 'admin' || (d && d.trim() !== ''))) {
+                bootedFromCacheRef.current = true;
                 setIsLoading(false);
                 setHasCachedSession(true);
             }
@@ -120,6 +124,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearTimeout(fallbackTimer);
             setUser(currentUser);
             if (currentUser) {
+                // Đăng nhập MỚI ngay trong phiên trang (vừa đăng xuất rồi đăng nhập lại, hoặc mở
+                // app không có cache): isLoading lúc này đã là false (nhánh else bên dưới tắt từ
+                // trước) trong khi role/status/departmentId còn rỗng → App.tsx render NGAY
+                // PendingApprovalView "Cập Nhật Mã Kho" suốt 1-3s chờ resolveSession(), kể cả
+                // với admin (chủ dự án gặp thật 2026-09-22). Bật lại spinner cho tới khi có
+                // profile thật (finally bên dưới tắt). Chỉ bỏ qua khi Ultra-Fast Boot đã xác nhận
+                // cache hợp lệ — lúc đó dashboard đang hiện sẵn, không được che đi bằng spinner.
+                if (!bootedFromCacheRef.current) setIsLoading(true);
                 try {
                     // Toàn bộ logic phân quyền (role/status/departmentId/expiresAt, cấp Super
                     // Admin, tự demote khi hết hạn) giờ chạy ở server — functions/src/session.ts.
@@ -192,6 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Firebase đã xác nhận THẬT SỰ không có phiên đăng nhập — tắt cờ "tin cache" để
                 // App.tsx quay lại hiện đúng màn Login (không còn lý do bỏ qua nữa).
                 setHasCachedSession(false);
+                bootedFromCacheRef.current = false;
                 saveSetting('cached_user_role', null).catch(() => {});
                 saveSetting('cached_user_status', null).catch(() => {});
                 saveSetting('cached_dept_id', null).catch(() => {});
