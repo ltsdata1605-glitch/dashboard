@@ -115,7 +115,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     const [isHeaderExporting, setIsHeaderExporting] = useState(false);
 
     // --- Export Logic Tối Ưu Tuyệt Đối Cho Bảng Báo Cáo ---
-    const handleExportPNG = async (targetRef: React.RefObject<HTMLDivElement | null>, filenamePart: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+    const handleExportPNG = async (
+        targetRef: React.RefObject<HTMLDivElement | null>,
+        filenamePart: string,
+        autoAction?: 'download' | 'share' | 'cancel' | null,
+        /** Tuỳ chọn thêm cho exportElementAsImage — vd bảng Thi đua dùng fitAllColumns + fitWidthToTable. */
+        extraOptions?: Record<string, unknown>,
+    ): Promise<'download' | 'share' | 'cancel' | null> => {
         const original = targetRef.current;
         if (!original) return null;
 
@@ -124,7 +130,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
             const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0, 10)}.png`;
 
             const blob = await exportElementAsImage(original, filename, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar', '.hide-on-export']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar', '.hide-on-export'],
+                ...(extraOptions || {})
             });
 
             if (blob) {
@@ -282,7 +289,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                                 onBatchExport={() => runBatchExport('competition')}
                                 isBatchExporting={isBatchExportingCompetition}
                                 updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
-                                onExport={async () => { await handleExportPNG(printableRef, `Thi Đua ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`); }}
+                                onExport={async () => { await handleExportPNG(printableRef, `Thi Đua ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`, null, { fitAllColumns: true, fitWidthToTable: true }); }}
                                 onNavigateToUpdater={onNavigateToUpdater}
                             />
                         )}

@@ -144,7 +144,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}): Promise<Blob | null> {
     const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, fitWidthToTable = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
 
@@ -1064,6 +1064,36 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // Strip border-radius from the clone root itself
     clone.style.borderRadius = '0';
     clone.style.padding = '0';
+
+    // FIT WIDTH TO TABLE — ảnh xuất ra cân xứng: cột co vừa nội dung (fitAllColumns) rồi ĐO bề rộng
+    // THẬT của bảng và ép cả khối (tiêu đề, quỹ thời gian, dải thẻ KPI `w-full`) về đúng bề rộng đó,
+    // thay vì để mỗi thứ tự giãn theo nội dung dài nhất (trước đây thẻ KPI/tiêu đề rộng hơn bảng).
+    // Phải chạy SAU khi clone đã nằm trong DOM thì đo mới ra số thật.
+    if (fitWidthToTable) {
+        const tableEl = clone.querySelector('table');
+        if (tableEl instanceof HTMLElement) {
+            const tableWidth = tableEl.getBoundingClientRect().width;
+            if (tableWidth > 0) {
+                // Cộng thêm phần đệm/viền của mọi khối bọc giữa bảng và gốc clone, nếu không bảng
+                // sẽ rộng hơn khung và bị cắt mép phải.
+                let extra = 0;
+                let node: HTMLElement | null = tableEl.parentElement;
+                while (node && node !== clone) {
+                    const cs = window.getComputedStyle(node);
+                    extra += parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0')
+                        + parseFloat(cs.borderLeftWidth || '0') + parseFloat(cs.borderRightWidth || '0');
+                    node = node.parentElement;
+                }
+                const csClone = window.getComputedStyle(clone);
+                extra += parseFloat(csClone.paddingLeft || '0') + parseFloat(csClone.paddingRight || '0');
+                const finalW = Math.ceil(tableWidth + extra);
+                clone.style.setProperty('width', `${finalW}px`, 'important');
+                clone.style.setProperty('max-width', `${finalW}px`, 'important');
+                clone.style.setProperty('min-width', `${finalW}px`, 'important');
+                captureContainer.style.width = `${finalW}px`;
+            }
+        }
+    }
 
     try {
         await document.fonts.ready;
