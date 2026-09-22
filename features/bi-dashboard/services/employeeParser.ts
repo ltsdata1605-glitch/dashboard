@@ -387,9 +387,16 @@ export const parseEmployeeCompetitionTargets = (
 
         if (targetIdx === -1) continue;
 
-        // Duyệt từng chương trình thi đua, lấy target value, phân bổ cho NV
+        // Duyệt từng chương trình thi đua, lấy target value, phân bổ cho NV.
+        // `lines` = Luỹ kế + Realtime nối nhau (NhanVien.tsx) nên MỖI chương trình xuất hiện 2 lần:
+        // bản Luỹ kế (TARGET tháng) rồi bản Realtime (TARGET ngày ≈ tháng/30). Trước đây cộng dồn
+        // cả 2 → M.TIÊU bị đội ~3% (đo trên dữ liệu thật 2026-09-22: 4.267 + 142 = 4.409).
+        // Chỉ lấy lần xuất hiện ĐẦU TIÊN của mỗi tên (Luỹ kế đứng trước; thiếu Luỹ kế thì mới tới Realtime).
+        const seenPrograms = new Set<string>();
         for (const program of smParsedData.programs) {
             const compName = program.name;
+            if (seenPrograms.has(compName)) continue;
+            seenPrograms.add(compName);
             const targetValRaw = program.data[targetIdx];
             if (targetValRaw === undefined || targetValRaw === null) continue;
 
