@@ -207,13 +207,15 @@ export interface GroupFeatureConfig {
     userId: string; // UID quản lý sở hữu
     groupId: string; // LINE Group ID (dạng "C...")
     groupName?: string; // Tên nhóm (cached từ LineGroup)
+    // Phải khớp GroupFeatures ở functions/src/groupFeatureHelper.ts (webhook đọc đúng các khoá này).
     features: {
-        filterCoupon: boolean; // Tắt/bật tính năng lọc PMH (paste danh sách auto lọc)
-        syntax_tk: boolean; // Tắt/bật cú pháp "tk" / "tk event" / "tk gvgs" (thống kê tồn kho)
-        syntax_cancel: boolean; // Tắt/bật cú pháp "huy [mã]" (huỷ/thu hồi mã)
-        syntax_search: boolean; // Tắt/bật cú pháp "tìm [mã]" (tìm kiếm mã)
-        keywordReply: boolean; // Tắt/bật tự động trả lời theo keyword
-        autoReply: boolean; // Tắt/bật các tin nhắn tự động khác
+        filterCoupon: boolean; // Lọc PMH khi chuyển tiếp danh sách + lệnh "loc csd"
+        issueCoupon: boolean;  // Cấp mã PMH: form xin PMH, lệnh e{n}/gv{n}, số trần
+        syntax_tk: boolean;    // Lệnh "tk" / "tk event" / "tk gvgs" (thống kê tồn kho)
+        syntax_cancel: boolean; // Lệnh "huy [mã]" (huỷ/thu hồi mã)
+        syntax_search: boolean; // Tra cứu mã: dán 1 mã coupon vào chat
+        keywordReply: boolean; // Tự động trả lời theo keyword
+        autoReply: boolean;    // Tin nhắn tự động khác (hướng dẫn "hd"…)
     };
     createdAt: string;
     updatedAt: string;

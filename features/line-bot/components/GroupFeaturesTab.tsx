@@ -13,10 +13,11 @@ interface GroupFeaturesTabProps {
 type FeatureKey = keyof GroupFeatureConfig['features'];
 
 const FEATURE_LIST: Array<{ key: FeatureKey; label: string; description: string }> = [
-    { key: 'filterCoupon', label: 'Lọc PMH', description: 'Tự động lọc mã coupon khi paste danh sách' },
+    { key: 'filterCoupon', label: 'Lọc PMH', description: 'Tự động lọc mã coupon khi paste danh sách + lệnh "loc csd"' },
+    { key: 'issueCoupon', label: 'Cấp mã PMH', description: 'Form xin PMH và lệnh lấy mã nhanh (e1, gv2, số trần)' },
     { key: 'syntax_tk', label: 'Cú pháp "tk"', description: 'Lệnh thống kê tồn kho (tk, tk event, tk gvgs)' },
     { key: 'syntax_cancel', label: 'Cú pháp "huy"', description: 'Lệnh huỷ/thu hồi mã coupon' },
-    { key: 'syntax_search', label: 'Cú pháp "tìm"', description: 'Lệnh tìm kiếm mã coupon' },
+    { key: 'syntax_search', label: 'Tra cứu mã', description: 'Dán 1 mã coupon vào chat để xem đã dùng hay chưa' },
     { key: 'keywordReply', label: 'Trả lời Keyword', description: 'Tự động trả lời theo keyword được cấu hình' },
     { key: 'autoReply', label: 'Tin nhắn tự động', description: 'Các tin nhắn tự động khác (hướng dẫn, v.v.)' }
 ];
@@ -44,6 +45,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                 groupName: group?.groupName,
                 features: {
                     filterCoupon: true,
+                    issueCoupon: true,
                     syntax_tk: true,
                     syntax_cancel: true,
                     syntax_search: true,
@@ -87,6 +89,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
             groupName: group?.groupName,
             features: {
                 filterCoupon: true,
+                issueCoupon: true,
                 syntax_tk: true,
                 syntax_cancel: true,
                 syntax_search: true,

@@ -9,6 +9,7 @@ import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from
 import { formatShortUserName } from './userName';
 import { isStrictPmhRequestForm } from './pmhForm';
 import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
+import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './groupFeatureHelper';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -2190,6 +2191,15 @@ export const lineBotWebhook = onRequest(
 
                 console.info(`[lineBotWebhook] Received message "${cleanText}" from ${groupId ? 'GROUP:' + groupId : 'DIRECT:' + senderUserId}`);
 
+                // Giới hạn tính năng theo nhóm (tab "Giới Hạn Tính Năng" trên Dashboard). Đọc 1 lần
+                // cho cả tin nhắn này (có cache 60s trong groupFeatureHelper) rồi chặn đúng nhánh.
+                // Chat 1-1 không bị giới hạn. Trước 2026-09-22 cấu hình này KHÔNG có tác dụng gì.
+                const groupFeatures: GroupFeatures | null = groupId ? await getGroupFeatures(uid, groupId) : null;
+                const allow = (key: GroupFeatureKey) => !groupFeatures || groupFeatures[key] !== false;
+                const denyLog = (key: GroupFeatureKey, what: string) => {
+                    console.info(`[Giới hạn tính năng] Nhóm ${groupId} đã TẮT "${key}" — bỏ qua ${what}.`);
+                };
+
                 // 1. Kiểm tra lệnh hỏi ID (id, lineid, groupid)
                 if (lower === 'id' || lower === 'admin' || lower === 'lineid' || lower === 'groupid' || lower === '.id' || lower === '/id' || lower === '!id') {
                     if (groupId) {
@@ -2228,6 +2238,7 @@ export const lineBotWebhook = onRequest(
 
                 // 1.5 Kiểm tra lệnh hướng dẫn sử dụng (hd, help, huong dan, ...)
                 if (isHelpCommand(cleanText)) {
+                    if (!allow('autoReply')) { denyLog('autoReply', 'hướng dẫn "hd"'); continue; }
                     const helpMsg = formatHelpGuideMessage();
                     await replyLineMessage(token, replyToken, [
                         {
@@ -2241,6 +2252,7 @@ export const lineBotWebhook = onRequest(
 
                 // 1.6 Kiểm tra lệnh huỷ mã vừa xin nếu không dùng (huy [mã coupon] hoặc huy [MĐH])
                 const cancelCmd = parseCancelCouponCommand(cleanText);
+                if (cancelCmd.isCancel && !allow('syntax_cancel')) { denyLog('syntax_cancel', 'lệnh huỷ mã'); continue; }
                 if (cancelCmd.isCancel && cancelCmd.target) {
                     const target = cancelCmd.target;
                     const userProfile = await getLineUserProfile(token, senderUserId, groupId);
@@ -2350,6 +2362,7 @@ export const lineBotWebhook = onRequest(
                 // status ở Firestore (1 field, không cần composite index — project hiện KHÔNG có index
                 // nào), còn "trong tháng" lọc bằng tay theo filteredAt (ISO UTC) so với đầu tháng giờ VN.
                 if (isRelistUnusedCommand(cleanText)) {
+                    if (!allow('filterCoupon')) { denyLog('filterCoupon', 'lệnh "loc csd"'); continue; }
                     const { label: monthLabel } = getVnMonthStartIso();
                     const MAX_CARDS = 40; // 4 carousel × 10 thẻ, chừa 1 tin văn bản báo phần còn lại (reply tối đa 5 tin)
 
@@ -2421,6 +2434,7 @@ export const lineBotWebhook = onRequest(
                 // được ai dùng lúc nào (trích dẫn tin của người hỏi) hoặc chưa sử dụng. Không tìm thấy:
                 // chat 1-1 báo rõ, trong nhóm im lặng (tránh nhiễu khi ai đó gõ 1 từ HOA dài).
                 const bareCode = extractBareCouponCode(cleanText);
+                if (bareCode && !allow('syntax_search')) { denyLog('syntax_search', 'tra cứu mã'); continue; }
                 if (bareCode) {
                     try {
                         const [fSnap, cSnap] = await Promise.all([
@@ -2451,6 +2465,7 @@ export const lineBotWebhook = onRequest(
                 const isTkGvgs = /^(?:[./!]?tk\s*(?:gvgs|gv|giovang|giờ vàng)|(?:thống kê|thong ke)\s*(?:gvgs|gv))$/i.test(cleanText);
                 const isTkAll = /^(?:[./!]?tk|thống kê|thong ke|tonkho|ton kho|tồn kho|kiem tra ton|kiểm tra tồn)$/i.test(cleanText) || lower.startsWith('tk ');
 
+                if ((isTkEvent || isTkGvgs || isTkAll) && !allow('syntax_tk')) { denyLog('syntax_tk', 'lệnh thống kê tồn kho'); continue; }
                 if (isTkEvent || isTkGvgs || isTkAll) {
                     // Dọn dẹp các coupon UNUSED đã quá hạn trước khi thống kê tồn kho
                     await cleanupExpiredCoupons(uid);
@@ -2583,6 +2598,7 @@ export const lineBotWebhook = onRequest(
 
                 // 3. Nhận diện lệnh xin nhận mã PMH: e+STT (Event) hoặc gv+STT (Giờ Vàng) hoặc số trần (nhắc nhở)
                 const claimCmd = parseCouponClaimCommand(cleanText);
+                if ((claimCmd.isBareNumber || claimCmd.isClaim) && !allow('issueCoupon')) { denyLog('issueCoupon', 'lệnh xin cấp mã PMH'); continue; }
 
                 if (claimCmd.isBareNumber && claimCmd.productIndex) {
                     // Người dùng gõ số trần (ví dụ: 1, 2, 2 12345678) mà chưa ghi rõ loại e hay gv
@@ -3001,6 +3017,7 @@ export const lineBotWebhook = onRequest(
                 const isExplicitFilter = lower.startsWith('lọc') || lower.startsWith('loc') || lower.startsWith('.loc');
                 const isForwardedPmhList = !isReport && pmhBlocks.length > 0 && (pmhBlocks.length > 1 || isExplicitFilter || (!parsed.orderId && /(?:➜|->|=>|►|•)\s*(?:PMH|phiếu|[❌⚠️])/i.test(rawText)));
 
+                if (isForwardedPmhList && !allow('filterCoupon')) { denyLog('filterCoupon', 'lọc PMH từ tin chuyển tiếp'); continue; }
                 if (isForwardedPmhList) {
                     const isGroupOrRoom = Boolean(groupId || event.source?.roomId);
                     let candidates: string[] = [];
@@ -3094,6 +3111,7 @@ export const lineBotWebhook = onRequest(
                 if (!isStrictForm && parsed.orderId && (parsed.couponType || parsed.requestedProduct)) {
                     console.log('[Form PMH] Tin có MĐH/Sản phẩm nhưng KHÔNG đúng cú pháp form xin PMH. Bot giữ im lặng.');
                 }
+                if (isStrictForm && !allow('issueCoupon')) { denyLog('issueCoupon', 'form xin PMH'); continue; }
                 if (
                     isStrictForm &&
                     parsed.orderId &&
@@ -3287,6 +3305,7 @@ export const lineBotWebhook = onRequest(
                 }
 
                 // 5. Kiểm tra Thư viện Từ khoá tự động (Keywords)
+                if (!allow('keywordReply')) { denyLog('keywordReply', 'trả lời theo từ khoá'); continue; }
                 const kwSnap = await db.collection('line_bots').doc(uid).collection('keywords')
                     .where('active', '==', true).get();
 
