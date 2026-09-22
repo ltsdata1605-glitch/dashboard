@@ -115,17 +115,26 @@ test.describe('Report BI › Thưởng — menu chế độ xem + So sánh cùng
         await expect(table).toBeVisible({ timeout: 15_000 });
         await expect(page.getByText(/SO SÁNH 01→21\/8 VS 01→21\/9/i).first()).toBeVisible();
 
+        // Mỗi nhóm cột = 1 tiêu chí (ERP / T.Nóng / Tổng), cột phụ H.Tại | CK | +/- (Tổng thêm %).
         const headers = (await table.locator('thead tr').first().locator('th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').trim());
         console.log('HEADER NHÓM:', JSON.stringify(headers));
-        expect(headers[1]).toMatch(/Kỳ trước 01→21\/8/i);
-        expect(headers[2]).toMatch(/Kỳ này 01→21\/9/i);
-        expect(headers[3]).toMatch(/Tăng \/ giảm/i);
+        expect(headers[1]).toMatch(/^ERP$/i);
+        expect(headers[2]).toMatch(/^T\.Nóng$/i);
+        expect(headers[3]).toMatch(/^Tổng$/i);
+        // innerText trả chữ HOA do CSS uppercase — so sánh không phân biệt hoa/thường.
+        const subHeaders = (await table.locator('thead tr').nth(1).locator('th').allInnerTexts()).map(t => t.replace(/\s+/g, ' ').replace(/ [▲▼]$/, '').trim().toUpperCase());
+        console.log('CỘT PHỤ:', JSON.stringify(subHeaders));
+        expect(subHeaders).toEqual(['H.TẠI', 'CK', '+/-', 'H.TẠI', 'CK', '+/-', 'H.TẠI', 'CK', '+/-', '%']);
+        // Kỳ của H.Tại/CK ghi ở chú thích dưới bảng.
+        await expect(page.getByText(/H\.Tại = 01→21\/9 · CK \(cùng kỳ tháng trước\) = 01→21\/8/)).toBeVisible();
 
         const rowTexts = await table.locator('tbody tr').allInnerTexts();
         console.log('DÒNG:', JSON.stringify(rowTexts.map(t => t.replace(/\s+/g, ' ').trim())));
         // Sort mặc định Δ Tổng giảm dần: Tâm (+2.944) trước Hương (−4.792); Nhân thiếu kỳ trước -> cuối.
         // Tên hiển thị đã rút gọn (formatEmployeeName): "Chí Tâm" -> "C.Tâm".
         expect(rowTexts[0]).toContain('C.Tâm');
+        // Thứ tự ô trong nhóm ERP: H.Tại 9.745 | CK 8.000 | +/- +1.745
+        expect(rowTexts[0].replace(/\s+/g, ' ')).toMatch(/9\.745 8\.000 \+1\.745/);
         expect(rowTexts[0]).toMatch(/\+2\.944/);
         expect(rowTexts[1]).toContain('M.Hương');
         expect(rowTexts[1]).toMatch(/−4\.792/);

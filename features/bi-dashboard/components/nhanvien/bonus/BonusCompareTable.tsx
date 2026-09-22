@@ -53,10 +53,11 @@ const deltaColor = (v: number | null) => v == null
 const stripeColor = (v: number | null) => v == null ? '#cbd5e1' : v >= 0 ? '#059669' : '#dc2626';
 
 /**
- * Bảng "So sánh cùng kỳ tháng": mỗi nhân viên 1 dòng, 3 nhóm cột KỲ TRƯỚC · KỲ NÀY · TĂNG/GIẢM
- * (ERP / T.Nóng / Tổng, thêm % cho Tổng). Số liệu đọc từ kho bonus-compare-* do lựa chọn
- * "So sánh cùng kỳ" của chế độ Tự động đổ vào — hai kỳ cùng số ngày (01→21/8 vs 01→21/9).
- * Sort mặc định Δ Tổng giảm dần: ai tiến bộ nhất lên đầu, ai tụt nhất xuống cuối.
+ * Bảng "So sánh cùng kỳ tháng": mỗi nhân viên 1 dòng; MỖI NHÓM CỘT LÀ 1 TIÊU CHÍ (ERP · T.Nóng ·
+ * Tổng), cột phụ H.Tại (kỳ này) | CK (cùng kỳ tháng trước) | +/- (chênh lệch), riêng Tổng thêm %.
+ * Số liệu đọc từ kho bonus-compare-* do lựa chọn "So sánh cùng kỳ" của chế độ Tự động đổ vào —
+ * hai kỳ cùng số ngày (01→21/8 vs 01→21/9). Sort mặc định +/- Tổng giảm dần: ai tiến bộ nhất
+ * lên đầu, ai tụt nhất xuống cuối.
  */
 export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
     employees, current, previous, loading, supermarketName, highlightedEmployees, onEmployeeClick, f,
@@ -117,7 +118,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         return {
             prevErp: sum(r => r.prev?.erp), prevTnong: sum(r => r.prev?.tNong), prevTong: sum(r => r.prev?.tong),
             curErp: sum(r => r.cur?.erp), curTnong: sum(r => r.cur?.tNong), curTong: sum(r => r.cur?.tong),
-            // Δ tổng chỉ tính trên nhân viên có ĐỦ 2 kỳ — cộng cả người thiếu 1 kỳ sẽ bịa ra tăng/giảm.
+            // +/- tổng chỉ tính trên nhân viên có ĐỦ 2 kỳ — cộng cả người thiếu 1 kỳ sẽ bịa ra tăng/giảm.
             dErp: bothRows.reduce((s, r) => s + (r.dErp || 0), 0),
             dTnong: bothRows.reduce((s, r) => s + (r.dTnong || 0), 0),
             dTong: curTong - prevTong,
@@ -150,24 +151,41 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
 
     const prevLabel = formatShortRange(previous);
     const curLabel = formatShortRange(current);
+    const curTitle = `Hiện tại: ${current.fromDate} → ${current.toDate}`;
+    const prevTitle = `Cùng kỳ tháng trước: ${previous.fromDate} → ${previous.toDate}`;
 
-    const groupTh = 'px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-b border-slate-200 dark:border-slate-700';
-    const th = (extra = '') => `px-1.5 h-7 text-center text-[11px] font-bold uppercase tracking-wider bg-slate-50 dark:bg-slate-800/60 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none ${extra}`;
+    // Mỗi nhóm 1 tông màu — trùng tông cột ERP (sky) / T.Nóng (amber) / Tổng (emerald) của bảng Tổng hợp.
+    const GROUP_STYLE = {
+        erp: { head: 'text-sky-700 dark:text-sky-400 bg-sky-50/60 dark:bg-sky-950/40', sub: 'text-sky-700/80 dark:text-sky-400/80 bg-sky-50/40 dark:bg-sky-950/20', cur: 'text-sky-800 dark:text-sky-200' },
+        tnong: { head: 'text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/40', sub: 'text-amber-700/80 dark:text-amber-400/80 bg-amber-50/40 dark:bg-amber-950/20', cur: 'text-amber-800 dark:text-amber-200' },
+        tong: { head: 'text-emerald-900 dark:text-emerald-100 bg-emerald-100/90 dark:bg-emerald-950/70', sub: 'text-emerald-800/80 dark:text-emerald-200/80 bg-emerald-50/60 dark:bg-emerald-950/30', cur: 'text-emerald-900 dark:text-emerald-100 bg-emerald-50/60 dark:bg-emerald-950/30' },
+    } as const;
+
+    const groupTh = 'px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider border-l-2 border-l-slate-300 dark:border-l-slate-600 border-r border-b border-slate-200 dark:border-slate-700';
+    const th = (extra = '') => `px-1.5 h-7 text-center text-[11px] font-bold uppercase tracking-wider border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none ${extra}`;
     const sortMark = (field: SortField) => sortField === field ? (sortDir === 'desc' ? ' ▼' : ' ▲') : '';
     const td = 'px-1.5 py-[3px] text-[13px] text-center tabular-nums border-r border-slate-100 dark:border-slate-700/50';
     const tdFoot = 'px-1.5 py-1 text-[13px] text-center tabular-nums font-black border-r border-slate-200 dark:border-slate-700';
 
-    const periodCells = (m: BonusMetrics | null, emphasis: boolean) => {
-        const has = !!m;
-        const base = has ? 'text-slate-700 dark:text-slate-300 font-bold' : 'text-slate-400 dark:text-slate-500 font-normal';
+    /** 3 cột phụ của 1 tiêu chí: H.Tại | CK | +/- (nhóm Tổng nối thêm % ở caller). */
+    const criterionCells = (cur: number | null, prev: number | null, delta: number | null, curClass: string) => {
+        const curBase = cur == null ? 'text-slate-400 dark:text-slate-500 font-normal' : `font-black ${curClass}`;
+        const prevBase = prev == null ? 'text-slate-400 dark:text-slate-500 font-normal' : 'text-slate-600 dark:text-slate-400 font-bold';
         return (
             <>
-                <td className={`${td} border-l-2 border-l-slate-300 dark:border-l-slate-600 ${base}`}>{has ? fmtK(f, m.erp) : '-'}</td>
-                <td className={`${td} ${base}`}>{has ? fmtK(f, m.tNong) : '-'}</td>
-                <td className={`${td} ${base} ${emphasis && has ? 'bg-emerald-50/60 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-200 font-black' : ''}`}>{has ? fmtK(f, m.tong) : '-'}</td>
+                <td className={`${td} border-l-2 border-l-slate-300 dark:border-l-slate-600 ${curBase}`}>{cur == null ? '-' : fmtK(f, cur)}</td>
+                <td className={`${td} ${prevBase}`}>{prev == null ? '-' : fmtK(f, prev)}</td>
+                <td className={`${td} ${deltaColor(delta)}`}>{delta == null ? '—' : fmtDeltaK(f, delta)}</td>
             </>
         );
     };
+    const subHeaders = (key: SortField, group: 'erp' | 'tnong' | 'tong', prevKey: SortField, deltaKey: SortField) => (
+        <>
+            <th className={th(`border-l-2 border-l-slate-300 dark:border-l-slate-600 ${GROUP_STYLE[group].sub}`)} title={curTitle} onClick={() => handleSort(key)}>H.Tại{sortMark(key)}</th>
+            <th className={th('text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60')} title={prevTitle} onClick={() => handleSort(prevKey)}>CK{sortMark(prevKey)}</th>
+            <th className={th('text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60')} title="Chênh lệch H.Tại − CK" onClick={() => handleSort(deltaKey)}>+/-{sortMark(deltaKey)}</th>
+        </>
+    );
 
     return (
         <div>
@@ -175,21 +193,15 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                 <thead className="sticky top-0 z-10">
                     <tr>
                         <th rowSpan={2} className="px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[3px] border-l-slate-300 dark:border-l-slate-600 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 align-middle select-none" onClick={() => handleSort('name')}>Nhân viên{sortMark('name')}</th>
-                        <th colSpan={3} className={`${groupTh} text-slate-600 dark:text-slate-300`}>Kỳ trước <span className="normal-case tracking-normal text-slate-500 dark:text-slate-400">{prevLabel}</span></th>
-                        <th colSpan={3} className={`${groupTh} text-sky-700 dark:text-sky-400`}>Kỳ này <span className="normal-case tracking-normal text-sky-600/80 dark:text-sky-400/80">{curLabel}</span></th>
-                        <th colSpan={4} className={`${groupTh} text-emerald-800 dark:text-emerald-200 bg-emerald-100/80 dark:bg-emerald-950/60 border-b-emerald-300 dark:border-b-emerald-800`}>Tăng / giảm</th>
+                        <th colSpan={3} className={`${groupTh} ${GROUP_STYLE.erp.head}`}>ERP</th>
+                        <th colSpan={3} className={`${groupTh} ${GROUP_STYLE.tnong.head}`}>T.Nóng</th>
+                        <th colSpan={4} className={`${groupTh} ${GROUP_STYLE.tong.head} border-b-emerald-300 dark:border-b-emerald-800`}>Tổng</th>
                     </tr>
                     <tr>
-                        <th className={th('border-l-2 border-l-slate-300 dark:border-l-slate-600 text-slate-500 dark:text-slate-400')} onClick={() => handleSort('prevErp')}>ERP{sortMark('prevErp')}</th>
-                        <th className={th('text-slate-500 dark:text-slate-400')} onClick={() => handleSort('prevTnong')}>T.Nóng{sortMark('prevTnong')}</th>
-                        <th className={th('text-slate-600 dark:text-slate-300')} onClick={() => handleSort('prevTong')}>Tổng{sortMark('prevTong')}</th>
-                        <th className={th('border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400 bg-sky-50/60 dark:bg-sky-950/40')} onClick={() => handleSort('curErp')}>ERP{sortMark('curErp')}</th>
-                        <th className={th('text-amber-700 dark:text-amber-400 bg-amber-50/60 dark:bg-amber-950/40')} onClick={() => handleSort('curTnong')}>T.Nóng{sortMark('curTnong')}</th>
-                        <th className={th('text-emerald-900 dark:text-emerald-100 bg-emerald-100/90 dark:bg-emerald-950/70')} onClick={() => handleSort('curTong')}>Tổng{sortMark('curTong')}</th>
-                        <th className={th('border-l-2 border-l-slate-300 dark:border-l-slate-600 text-slate-600 dark:text-slate-300')} onClick={() => handleSort('dErp')}>ERP{sortMark('dErp')}</th>
-                        <th className={th('text-slate-600 dark:text-slate-300')} onClick={() => handleSort('dTnong')}>T.Nóng{sortMark('dTnong')}</th>
-                        <th className={th('text-emerald-900 dark:text-emerald-100 bg-emerald-100/90 dark:bg-emerald-950/70')} onClick={() => handleSort('dTong')}>Tổng{sortMark('dTong')}</th>
-                        <th className={th('text-emerald-900 dark:text-emerald-100 bg-emerald-100/90 dark:bg-emerald-950/70 border-r-0')} onClick={() => handleSort('dPct')}>%{sortMark('dPct')}</th>
+                        {subHeaders('curErp', 'erp', 'prevErp', 'dErp')}
+                        {subHeaders('curTnong', 'tnong', 'prevTnong', 'dTnong')}
+                        {subHeaders('curTong', 'tong', 'prevTong', 'dTong')}
+                        <th className={th(`${GROUP_STYLE.tong.sub} border-r-0`)} title="% chênh lệch Tổng so với cùng kỳ" onClick={() => handleSort('dPct')}>%{sortMark('dPct')}</th>
                     </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -210,11 +222,9 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                                         <span className={`text-[13px] font-bold truncate ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
                                     </div>
                                 </td>
-                                {periodCells(r.prev, false)}
-                                {periodCells(r.cur, true)}
-                                <td className={`${td} border-l-2 border-l-slate-300 dark:border-l-slate-600 ${deltaColor(r.dErp)}`}>{r.dErp == null ? '—' : fmtDeltaK(f, r.dErp)}</td>
-                                <td className={`${td} ${deltaColor(r.dTnong)}`}>{r.dTnong == null ? '—' : fmtDeltaK(f, r.dTnong)}</td>
-                                <td className={`${td} text-[13.5px] ${deltaColor(r.dTong)}`}>{r.dTong == null ? '—' : fmtDeltaK(f, r.dTong)}</td>
+                                {criterionCells(r.cur?.erp ?? null, r.prev?.erp ?? null, r.dErp, GROUP_STYLE.erp.cur)}
+                                {criterionCells(r.cur?.tNong ?? null, r.prev?.tNong ?? null, r.dTnong, GROUP_STYLE.tnong.cur)}
+                                {criterionCells(r.cur?.tong ?? null, r.prev?.tong ?? null, r.dTong, GROUP_STYLE.tong.cur)}
                                 <td className={`${td} border-r-0 ${deltaColor(r.dPct)}`}>{r.dPct == null ? '—' : fmtPct(r.dPct)}</td>
                             </tr>
                         );
@@ -223,22 +233,23 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                 <tfoot>
                     <tr style={{ borderLeft: `3px solid ${stripeColor(totals.bothCount > 0 ? totals.dTong : null)}` }} className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800">
                         <td className="px-2 py-1 text-[13px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700">Tổng cộng</td>
-                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600`}>{fmtK(f, totals.prevErp)}</td>
-                        <td className={tdFoot}>{fmtK(f, totals.prevTnong)}</td>
-                        <td className={tdFoot}>{fmtK(f, totals.prevTong)}</td>
                         <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{fmtK(f, totals.curErp)}</td>
-                        <td className={`${tdFoot} text-amber-600 dark:text-amber-400`}>{fmtK(f, totals.curTnong)}</td>
-                        <td className={`${tdFoot} bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, totals.curTong)}</td>
-                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 ${deltaColor(totals.dErp)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dErp) : '—'}</td>
+                        <td className={tdFoot}>{fmtK(f, totals.prevErp)}</td>
+                        <td className={`${tdFoot} ${deltaColor(totals.dErp)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dErp) : '—'}</td>
+                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-amber-600 dark:text-amber-400`}>{fmtK(f, totals.curTnong)}</td>
+                        <td className={tdFoot}>{fmtK(f, totals.prevTnong)}</td>
                         <td className={`${tdFoot} ${deltaColor(totals.dTnong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTnong) : '—'}</td>
+                        <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, totals.curTong)}</td>
+                        <td className={tdFoot}>{fmtK(f, totals.prevTong)}</td>
                         <td className={`${tdFoot} text-[13.5px] ${deltaColor(totals.dTong)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dTong) : '—'}</td>
                         <td className={`${tdFoot} border-r-0 ${deltaColor(totals.dPct)}`}>{totals.bothCount > 0 ? fmtPct(totals.dPct) : '—'}</td>
                     </tr>
                 </tfoot>
             </table>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 px-1">
-                * Đơn vị: nghìn đồng. Vạch mép trái: xanh = kỳ này cao hơn, đỏ = thấp hơn, xám = thiếu 1 kỳ (không so được).
-                Dòng TỔNG CỘNG phần Tăng/giảm chỉ tính trên {totals.bothCount} nhân viên có đủ 2 kỳ.
+                * H.Tại = {curLabel} · CK (cùng kỳ tháng trước) = {prevLabel} · +/- = H.Tại − CK. Đơn vị: nghìn đồng.
+                Vạch mép trái: xanh = Tổng tăng, đỏ = giảm, xám = thiếu 1 kỳ (không so được).
+                Dòng TỔNG CỘNG phần +/- chỉ tính trên {totals.bothCount} nhân viên có đủ 2 kỳ.
             </p>
         </div>
     );
