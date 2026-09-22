@@ -146,17 +146,16 @@ export const BonusView: React.FC<{
                         items={periodModeItems}
                         onSelect={handleSelectPeriodMode}
                         trigger={
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                asChild
+                            // Dropdown đã bọc trigger trong div[role=button] — không lồng <Button> thật bên
+                            // trong (2 phần tử tương tác lồng nhau); span này chỉ mượn style ghost/icon.
+                            <span
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}
+                                className={`inline-flex items-center justify-center h-9 w-9 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
                             >
-                                <span><activePeriodMode.Icon className="h-4 w-4" /></span>
-                            </Button>
+                                <activePeriodMode.Icon className="h-4 w-4" />
+                            </span>
                         }
                     />
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
