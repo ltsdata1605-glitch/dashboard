@@ -142,7 +142,8 @@
         <div id="spinner" class="spinner"></div>
         <div id="statusTitle" class="title">⚡ Đang xử lý...</div>
         <div id="statusDesc" class="desc">Tự động sao chép & gửi xác nhận</div>
-        <div id="codeDisplay" class="code-box"><script>document.write(couponCode || '---');</script></div>
+        <!-- Không hiển thị mã (yêu cầu 2026-09-22): chỉ chuỗi * cùng độ dài; mã chỉ vào clipboard khi bấm copy -->
+        <div id="codeDisplay" class="code-box"><script>document.write(couponCode ? '*'.repeat(couponCode.length) : '---');</script></div>
         <button id="btnManualCopy" class="btn-copy" type="button">📋 Sao chép thủ công</button>
         <div id="statusDetail" class="status-msg">Tự động đóng trong tích tắc...</div>
     </div>
@@ -183,7 +184,7 @@
             btnManualCopy.style.display = 'block';
             btnManualCopy.onclick = async () => {
                 const ok = await copyToClipboard(couponCode);
-                btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Hãy chọn & copy mã ở trên';
+                btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Chưa copy được — chạm lại';
                 if (ok) btnManualCopy.style.background = '#059669';
             };
         }
@@ -309,7 +310,7 @@
             btnManualCopy.onclick = async () => {
                 btnManualCopy.disabled = true;
                 const ok = await copyToClipboard(couponCode);
-                btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Hãy chọn & copy mã ở trên';
+                btnManualCopy.textContent = ok ? '✅ Đã sao chép!' : '⚠️ Chưa copy được — chạm lại';
                 btnManualCopy.style.background = ok ? '#059669' : '#B45309';
                 if (!ok) { btnManualCopy.disabled = false; return; }
                 spinner.style.display = 'block';
