@@ -57,8 +57,21 @@ import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
  * the user may never open → saves CPU + battery.
  */
 const TabContent = React.memo(() => {
-    const { activeTab } = useActiveTab();
+    const { activeTab, setActiveTab } = useActiveTab();
     const [mountedTabs, setMountedTabs] = React.useState<Set<string>>(() => new Set([activeTab]));
+
+    // Nút "Nhập nhân viên (File YCX)" ở Report BI phát sự kiện này. Hộp chọn file nằm trong
+    // DashboardView (tab Phân Tích) — nếu tab đó đã mount thì chính nó mở hộp chọn, người dùng ở
+    // yên tại chỗ; chưa mount thì phải chuyển sang Phân Tích cho view đó có mặt rồi tự mở.
+    React.useEffect(() => {
+        const onRequestUpload = () => {
+            if (mountedTabs.has('analysis')) return;
+            try { sessionStorage.setItem('ycx-pending-upload-ycx', '1'); } catch { /* Private Mode */ }
+            setActiveTab('analysis');
+        };
+        window.addEventListener('ycx-request-upload-ycx', onRequestUpload);
+        return () => window.removeEventListener('ycx-request-upload-ycx', onRequestUpload);
+    }, [mountedTabs, setActiveTab]);
 
     // Mount tab on first visit
     React.useEffect(() => {

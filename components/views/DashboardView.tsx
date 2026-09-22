@@ -153,6 +153,24 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const shiftFileInputRef = useRef<HTMLInputElement>(null);
 
     const handleNewFileClick = () => mainFileInputRef.current?.click();
+
+    // Report BI (features/bi-dashboard) không được import hook/service của gốc (CLAUDE.md mục 1)
+    // nên nút "Nhập nhân viên (File YCX)" bên đó chỉ phát sự kiện; phần mở hộp chọn file nằm ở đây.
+    // View này được giữ mount (App.tsx persistentViews) nên input file luôn có sẵn trong DOM.
+    useEffect(() => {
+        const onRequestUpload = () => mainFileInputRef.current?.click();
+        window.addEventListener('ycx-request-upload-ycx', onRequestUpload);
+        // Lần đầu mở app ở tab khác: App.tsx chuyển sang Phân Tích và để lại cờ; view vừa mount
+        // thì tự mở hộp chọn file (trình duyệt có thể chặn vì đã qua 1 nhịp render — khi đó người
+        // dùng vẫn đang đứng ở màn Phân Tích, bấm "File YCX" là xong).
+        let pending = false;
+        try {
+            pending = sessionStorage.getItem('ycx-pending-upload-ycx') === '1';
+            if (pending) sessionStorage.removeItem('ycx-pending-upload-ycx');
+        } catch { /* Private Mode */ }
+        if (pending) setTimeout(() => mainFileInputRef.current?.click(), 300);
+        return () => window.removeEventListener('ycx-request-upload-ycx', onRequestUpload);
+    }, []);
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
 
     const overdueUnshippedOrders = useMemo(() => {

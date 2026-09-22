@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import { XIcon, TrashIcon, PencilIcon, ResetIcon } from './Icons';
+import { XIcon, TrashIcon, PencilIcon, ResetIcon, UploadIcon } from './Icons';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -359,8 +359,36 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
         setDepartmentWeights(newWeights);
     };
 
+    // Lần đầu dùng: chưa tải file YCX ở Phân Tích nên chưa có danh sách nhân viên -> mọi ô
+    // "… Tr/người" và phân bổ bộ phận đều trống. Thay vì để người dùng tự đoán, hiện lời nhắc
+    // kèm nút mở thẳng hộp chọn file YCX (root xử lý qua sự kiện 'ycx-request-upload-ycx' —
+    // features/* không được import hooks/services của gốc, xem CLAUDE.md mục 1).
+    const hasEmployees = !!analysisEmployees && analysisEmployees.employees.length > 0 && totalAllocatedEmployees > 0;
+    const requestUploadYcx = () => {
+        window.dispatchEvent(new CustomEvent('ycx-request-upload-ycx', { detail: { source: 'bi-target-hero' } }));
+    };
+
     return (
         <section className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+            {!hasEmployees && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-3.5 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30">
+                    <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-amber-800 dark:text-amber-200">Chưa có danh sách nhân viên</h4>
+                        <p className="text-xs text-amber-700/90 dark:text-amber-300/90 mt-0.5">
+                            Tải file YCX (báo cáo Phân Tích) để có danh sách nhân viên — khi đó Target mới chia được theo đầu người và theo bộ phận.
+                        </p>
+                    </div>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={requestUploadYcx}
+                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors"
+                        title="Mở hộp chọn file YCX (giống nút File YCX ở chức năng Phân Tích)"
+                    >
+                        <UploadIcon className="h-3.5 w-3.5" />
+                        <span>Nhập nhân viên (File YCX)</span>
+                    </Button>
+                </div>
+            )}
             <div className="grid grid-cols-2 gap-3 sm:gap-x-12 sm:gap-y-8">
                 {/* Cột trái: Điều chỉnh Target chính */}
                 <div className="space-y-3">
