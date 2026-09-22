@@ -8,6 +8,7 @@ import { db } from './firebaseAdmin';
 import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from './relistUnused';
 import { formatShortUserName } from './userName';
 import { isStrictPmhRequestForm } from './pmhForm';
+import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -520,7 +521,8 @@ function formatHelpGuideMessage(): string {
         '',
         '🎯 4. LỌC MÃ RIÊNG (CHAT 1-1):',
         '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.',
-        '• "loc csd": Hiện lại mọi thẻ đã lọc nhưng CHƯA sử dụng trong tháng.'
+        '• "loc csd": Hiện lại mọi thẻ đã lọc nhưng CHƯA sử dụng trong tháng.',
+        '• Dán 1 mã coupon vào chat: BOT báo mã đã được ai dùng lúc nào / chưa dùng.'
     ].join('\n');
 }
 
@@ -2413,6 +2415,35 @@ export const lineBotWebhook = onRequest(
                     }
                     console.info(`[loc csd] Hiện lại ${shown.length}/${unusedDocs.length} thẻ chưa sử dụng tháng ${monthLabel}`);
                     continue;
+                }
+
+                // 1.10. Tra cứu mã: người dùng dán ĐÚNG 1 mã coupon (8-12 ký tự) vào chat → bot báo mã đã
+                // được ai dùng lúc nào (trích dẫn tin của người hỏi) hoặc chưa sử dụng. Không tìm thấy:
+                // chat 1-1 báo rõ, trong nhóm im lặng (tránh nhiễu khi ai đó gõ 1 từ HOA dài).
+                const bareCode = extractBareCouponCode(cleanText);
+                if (bareCode) {
+                    try {
+                        const [fSnap, cSnap] = await Promise.all([
+                            db.collection('line_bots').doc(uid).collection('filtered_coupons').where('code', '==', bareCode).get(),
+                            db.collection('line_bots').doc(uid).collection('coupons').where('code', '==', bareCode).get(),
+                        ]);
+                        const docs = [...fSnap.docs, ...cSnap.docs].map(d => d.data());
+                        const replyText = buildCouponStatusReply(docs);
+                        if (replyText) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: replyText, quoteToken: event.message?.quoteToken }]);
+                            console.info(`[Tra mã] ${bareCode}: ${docs.length} bản ghi -> ${replyText.split('\n')[0]}`);
+                            continue;
+                        }
+                        if (!groupId && !event.source?.roomId) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: `⚠️ Không tìm thấy mã này trong hệ thống của kho.`, quoteToken: event.message?.quoteToken }]);
+                            continue;
+                        }
+                        console.log(`[Tra mã] ${bareCode}: không có trong hệ thống — nhóm chat, bot im lặng.`);
+                        continue;
+                    } catch (err) {
+                        console.warn('[Tra mã] Lỗi đọc Firestore:', err);
+                        // rơi xuống các bước sau như bình thường
+                    }
                 }
 
                 // 2. Kiểm tra lệnh thống kê tồn kho (tk, tk event, tk gvgs...)
