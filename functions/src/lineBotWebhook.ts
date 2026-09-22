@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import { db } from './firebaseAdmin';
 import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from './relistUnused';
 import { formatShortUserName } from './userName';
+import { isStrictPmhRequestForm } from './pmhForm';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -3055,8 +3056,15 @@ export const lineBotWebhook = onRequest(
                     continue;
                 }
 
-                // 4. Kiểm tra form đăng ký PMH
+                // 4. Kiểm tra form đăng ký PMH — NGHIÊM: phải đúng cấu trúc form (tiêu đề ở dòng đầu +
+                // Loại PMH + MĐH Áp dụng, xem pmhForm.ts). Chỉ có MĐH + Sản phẩm (vd tin "HỖ TRỢ GIAO
+                // HÀNG") thì KHÔNG phải form xin PMH — bot im lặng tuyệt đối.
+                const isStrictForm = isStrictPmhRequestForm(cleanText);
+                if (!isStrictForm && parsed.orderId && (parsed.couponType || parsed.requestedProduct)) {
+                    console.log('[Form PMH] Tin có MĐH/Sản phẩm nhưng KHÔNG đúng cú pháp form xin PMH. Bot giữ im lặng.');
+                }
                 if (
+                    isStrictForm &&
                     parsed.orderId &&
                     (parsed.couponType || parsed.requestedProduct || lower.includes('lấy pmh') || lower.includes('loại pmh') || lower.includes('áp dụng'))
                 ) {
