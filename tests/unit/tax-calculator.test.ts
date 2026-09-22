@@ -93,6 +93,68 @@ describe('taxCalculatorService', () => {
             expect(result.unionFeeDeduction).toBe(100_000);
             expect(result.totalDeductions).toBe(15_500_000 + 12_400_000 + 2_000_000 + 100_000);
         });
+
+        it('calculates exact MWG HRM 2-slot payroll slips (Trương Hoàng Phúc example)', () => {
+            // Dữ liệu bóc tách từ 2 ảnh HRM thực tế của người dùng:
+            // Đợt 1 (Ngày 04/09): Lương chịu thuế 5.278.580 đ, BHXH 496.650 đ, Bản thân 15.5M
+            // Đợt 2 (Ngày 21/09): Tổng thu nhập tháng = 30.740.804 đ (hoặc 5.278.580 + 25.462.224)
+            // 2 khoản nhận thay: Khoán công việc (9.305.000) + Thưởng thi đua VAS (2.337.000) = 11.642.000 đ
+            const input = {
+                name: 'TRƯƠNG HOÀNG PHÚC',
+                incomeDay5: 5_278_580,
+                insurance: 496_650,
+                dependents: 0,
+                personalDeduction: 15_500_000,
+                incomeDay20: 25_462_224,
+                totalIncome: 30_740_804,
+                bonusItems: [
+                    { id: 'b1', name: 'Thưởng ERP còn lại', amount: 702_909 },
+                    { id: 'b2', name: 'Thưởng thêm Hệ số K', amount: 373_488 },
+                    { id: 'b3', name: 'Khoán công việc T08.2026', amount: 9_305_000 },
+                    { id: 'b4', name: 'Thưởng bán hàng Combo', amount: 190_000 },
+                    { id: 'b5', name: 'Thưởng thi đua VAS T08.2026', amount: 2_337_000 },
+                ],
+                selectedProxyItemIds: ['b3', 'b5'], // Tích chọn 2 khoản nhận thay
+                customProxyAmount: 0,
+                actualTaxDay20: 974_415,
+            };
+
+            const result = calculateTax(input);
+
+            // 1. Tổng giảm trừ đợt 1
+            expect(result.personalDeduction).toBe(15_500_000);
+            expect(result.insuranceDeductions).toBe(496_650);
+            expect(result.totalDeductions).toBe(15_996_650);
+
+            // 2. Mức giảm trừ còn dư từ Đợt 1 chuyển sang Đợt 2
+            expect(result.remainingDeductionsDay1).toBe(15_996_650 - 5_278_580); // 10.718.070 đ
+
+            // 3. Thu nhập tính thuế thực tế Đợt 2: 30.740.804 - 15.996.650 = 14.744.154 đ
+            expect(result.assessableIncomeWithProxy).toBe(14_744_154);
+
+            // 4. Thuế TNCN thực tế tính theo Luật 2026 (5 bậc):
+            // Bậc 1: 10.000.000 * 5% = 500.000
+            // Bậc 2: 4.744.154 * 10% = 474.415,4 -> 474.415
+            // Tổng thuế = 974.415 đ -> KHỚP 100% VỚI DÒNG "Trừ thuế TNCN: 974.415" TRÊN PHIẾU LƯƠNG HRM!
+            expect(result.totalTaxWithProxy).toBe(974_415);
+
+            // 5. Khoản nhận thay
+            // Tổng nhận thay: 9.305.000 + 2.337.000 = 11.642.000 đ
+            // Thu nhập chuẩn không nhận thay: 30.740.804 - 11.642.000 = 19.098.804 đ
+            // TNTT chuẩn: 19.098.804 - 15.996.650 = 3.102.154 đ
+            // Thuế chuẩn: 3.102.154 * 5% = 155.108 đ
+            expect(result.incomeWithoutProxy).toBe(19_098_804);
+            expect(result.assessableIncomeWithoutProxy).toBe(3_102_154);
+            expect(result.totalTaxWithoutProxy).toBe(155_108);
+
+            // 6. Chênh lệch thuế cần giữ lại từ đồng nghiệp:
+            // 974.415 - 155.108 = 819.307 đ
+            expect(result.taxOnProxyAmount).toBe(819_307);
+
+            // 7. Số tiền thực chuyển lại cho đồng nghiệp:
+            // 11.642.000 - 819.307 = 10.822.693 đ
+            expect(result.netRefundToFriend).toBe(10_822_693);
+        });
     });
 
     describe('matchBankFromRawText (AI bank extractor)', () => {

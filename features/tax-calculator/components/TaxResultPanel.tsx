@@ -221,7 +221,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
           <div className="divide-y divide-slate-100 dark:divide-slate-800 text-xs">
             {/* Thu nhập chịu thuế */}
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} p-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40`}>
-              <div className="text-slate-500 dark:text-slate-400 font-medium">1. Tổng thu nhập</div>
+              <div className="text-slate-500 dark:text-slate-400 font-medium">1. Tổng thu nhập (Đợt 1 + 2)</div>
               <div className="text-right text-slate-800 dark:text-slate-200 font-medium">
                 {maskValue(formatVnd(totalIncome))}
               </div>
@@ -232,9 +232,27 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               )}
             </div>
 
+            {/* Chi tiết 2 đợt nếu có dữ liệu */}
+            {(result.incomeDay5 > 0 || result.incomeDay20 > 0) && (
+              <div className="bg-slate-50/40 dark:bg-slate-900/20 px-2.5 py-2 space-y-1 text-[11px] text-slate-500 dark:text-slate-400 border-y border-slate-100 dark:border-slate-800">
+                <div className="flex justify-between">
+                  <span>• Đợt 1 (Ngày 5 - Chi tiết lương):</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {maskValue(formatVnd(result.incomeDay5))} (Dư giảm trừ: {maskValue(formatVnd(result.remainingDeductionsDay1))})
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>• Đợt 2 (Ngày 20 - Xem chi tiết thưởng):</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">
+                    {maskValue(formatVnd(result.incomeDay20))}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Giảm trừ gia cảnh & BH */}
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} p-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40`}>
-              <div className="text-slate-500 dark:text-slate-400">2. Tổng giảm trừ</div>
+              <div className="text-slate-500 dark:text-slate-400">2. Tổng giảm trừ (Bản thân + BH)</div>
               <div className="text-right text-slate-700 dark:text-slate-300">
                 {maskValue(formatVnd(totalDeductions))}
               </div>
@@ -247,7 +265,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
             {/* Thu nhập tính thuế */}
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} p-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 font-medium`}>
-              <div className="text-slate-600 dark:text-slate-300">3. Thu nhập tính thuế (TNTT)</div>
+              <div className="text-slate-600 dark:text-slate-300">3. Thu nhập tính thuế Đợt 2</div>
               <div className="text-right text-sky-600 dark:text-sky-400">
                 {maskValue(formatVnd(assessableIncomeWithProxy))}
               </div>
@@ -260,7 +278,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
             {/* Tiền thuế TNCN */}
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} p-2.5 bg-slate-50/80 dark:bg-slate-900/30 font-semibold`}>
-              <div className="text-slate-700 dark:text-slate-200">4. Thuế TNCN phải nộp</div>
+              <div className="text-slate-700 dark:text-slate-200">4. Thuế TNCN Đợt 2 (Lũy tiến)</div>
               <div className="text-right text-rose-600 dark:text-rose-400">
                 {maskValue(formatVnd(totalTaxWithProxy))}
               </div>
@@ -275,7 +293,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             {hasProxy && (
               <div className="grid grid-cols-3 p-2.5 bg-emerald-50/70 dark:bg-emerald-950/20 font-bold border-t border-emerald-200 dark:border-emerald-800/30">
                 <div className="text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
-                  <span>Chênh lệch (Thuế nhận thay)</span>
+                  <span>Chênh lệch thuế do nhận thay</span>
                 </div>
                 <div className="col-span-2 text-right text-emerald-600 dark:text-emerald-400 text-sm">
                   + {maskValue(formatVnd(taxOnProxyAmount))}

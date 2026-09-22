@@ -7,6 +7,8 @@ import { generateVietQrUrl, formatVnd, formatNumber } from '../services/taxCalcu
 
 interface TaxPaymentQrCardProps {
     amount: number;
+    netRefundAmount?: number;
+    taxDifferenceAmount?: number;
     name: string;
     bankAccount: string;
     setBankAccount: (v: string) => void;
@@ -18,6 +20,8 @@ interface TaxPaymentQrCardProps {
 
 export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
     amount,
+    netRefundAmount,
+    taxDifferenceAmount,
     name,
     bankAccount,
     setBankAccount,
@@ -27,6 +31,11 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
     setQrDescription
 }) => {
     const [copiedField, setCopiedField] = useState<string | null>(null);
+    const [transferMode, setTransferMode] = useState<'net_refund' | 'tax_difference'>('net_refund');
+
+    const effectiveAmount = transferMode === 'net_refund'
+        ? (netRefundAmount && netRefundAmount > 0 ? netRefundAmount : amount)
+        : (taxDifferenceAmount && taxDifferenceAmount > 0 ? taxDifferenceAmount : amount);
 
     const handleCopy = (text: string, label: string) => {
         if (!text) return;
@@ -36,27 +45,59 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
         setTimeout(() => setCopiedField(null), 2000);
     };
 
+    const defaultDes = transferMode === 'net_refund'
+        ? `Chuyen tien thuong sau thue cho ${name || 'dong nghiep'}`
+        : `Hoan tra thue TNCN nhan thay`;
+
     const qrUrl = generateVietQrUrl({
         bankAccount,
         bankCode,
-        amount,
-        description: qrDescription || `Hoan thue TNCN cho ${name || 'dong nghiep'}`
+        amount: effectiveAmount,
+        description: qrDescription || defaultDes
     });
 
     return (
         <div className="p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-800/90 shadow-2xs space-y-3.5">
-            <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-2.5">
                 <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
                         <QrCode size={16} />
                     </div>
                     <div>
                         <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white">
-                            Mã QR Chuyển Khoản Hoàn Thuế
+                            Mã QR Chuyển Khoản Nhanh
                         </h4>
                         <p className="text-[10px] sm:text-[11px] text-slate-400">Quét mã bằng app ngân hàng để chuyển đúng số tiền</p>
                     </div>
                 </div>
+
+                {/* Tabs chuyển đổi giữa Thực chuyển cho đồng nghiệp và Hoàn thuế */}
+                {netRefundAmount && taxDifferenceAmount ? (
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900/60 p-0.5 rounded-lg text-xs font-semibold self-start sm:self-auto">
+                        <button
+                            type="button"
+                            onClick={() => setTransferMode('net_refund')}
+                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                                transferMode === 'net_refund'
+                                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                            }`}
+                        >
+                            Thực chuyển đồng nghiệp
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setTransferMode('tax_difference')}
+                            className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                                transferMode === 'tax_difference'
+                                    ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                            }`}
+                        >
+                            Đồng nghiệp trả thuế
+                        </button>
+                    </div>
+                ) : null}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-start">

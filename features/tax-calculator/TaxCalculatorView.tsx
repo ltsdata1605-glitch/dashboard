@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Cloud,
   HardDrive,
+  Key,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { auth } from '../../services/firebase';
@@ -23,21 +24,35 @@ import { TaxResultPanel } from './components/TaxResultPanel';
 import { TaxPaymentQrCard } from './components/TaxPaymentQrCard';
 import { TaxBracketModal } from './components/TaxBracketModal';
 import { TaxHistoryModal } from './components/TaxHistoryModal';
+import { ApiKeyConfigModal } from './components/ApiKeyConfigModal';
 
 const DEFAULT_INPUTS: TaxCalculationInput = {
   name: '',
-  totalIncome: 25000000,
-  dependents: 0,
-  proxyAmount: 5000000,
+  monthYear: '',
+  incomeDay5: 0,
+  insuranceSalary: 0,
   insurance: 0,
+  dependents: 0,
+  personalDeduction: 15_500_000,
+  incomeDay20: 0,
+  bonusMain: 0,
+  bonusHot: 0,
+  actualTaxDay20: 0,
+  bonusItems: [],
+  selectedProxyItemIds: [],
+  customProxyAmount: 0,
+  totalIncome: 0,
+  proxyAmount: 0,
   unionFee: 0,
   bankAccount: '',
   bankCode: 'MB',
   qrDescription: 'HOAN THUE NHAN THAY',
   taxLawVersion: '2026_law',
+  hasDay5Slip: false,
+  hasDay20Slip: false,
 };
 
-const STORAGE_KEY = 'TAX_CALCULATOR_INPUTS_V3';
+const STORAGE_KEY = 'TAX_CALCULATOR_INPUTS_V4';
 
 export const TaxCalculatorView: React.FC = () => {
   // 1. State input
@@ -56,6 +71,7 @@ export const TaxCalculatorView: React.FC = () => {
   // 2. Modals state
   const [showBracketModal, setShowBracketModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [historyList, setHistoryList] = useState<SavedTaxRecord[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isCloudUser, setIsCloudUser] = useState<boolean>(!!auth.currentUser);
@@ -114,12 +130,15 @@ export const TaxCalculatorView: React.FC = () => {
     try {
       await taxSyncService.saveRecord({
         name: input.name || 'Người kê khai',
-        totalIncome: input.totalIncome,
+        incomeDay5: input.incomeDay5,
+        incomeDay20: input.incomeDay20,
+        totalIncome: result.totalIncome || input.totalIncome,
         dependents: input.dependents,
-        proxyAmount: input.proxyAmount,
+        proxyAmount: result.netRefundToFriend > 0 ? (result.netRefundToFriend + result.taxOnProxyAmount) : input.proxyAmount,
+        taxOnProxyAmount: result.taxOnProxyAmount,
+        netRefundToFriend: result.netRefundToFriend,
         insurance: input.insurance,
         unionFee: input.unionFee,
-        taxOnProxyAmount: result.taxOnProxyAmount,
         taxLawVersion: input.taxLawVersion || '2026_law',
         bankAccount: input.bankAccount,
         bankCode: input.bankCode,
@@ -140,16 +159,21 @@ export const TaxCalculatorView: React.FC = () => {
 
   const handleLoadRecord = (record: SavedTaxRecord) => {
     setInput({
+      ...DEFAULT_INPUTS,
       name: record.name,
+      incomeDay5: record.incomeDay5 || 0,
+      incomeDay20: record.incomeDay20 || 0,
       totalIncome: record.totalIncome,
       dependents: record.dependents,
       proxyAmount: record.proxyAmount,
-      insurance: record.insurance,
-      unionFee: record.unionFee,
+      insurance: record.insurance || 0,
+      unionFee: record.unionFee || 0,
       taxLawVersion: record.taxLawVersion || '2026_law',
       bankAccount: record.bankAccount || '',
       bankCode: record.bankCode || 'MB',
       qrDescription: `HOAN THUE CHO ${record.name}`.toUpperCase(),
+      hasDay5Slip: (record.incomeDay5 || 0) > 0,
+      hasDay20Slip: (record.incomeDay20 || 0) > 0,
     });
     setShowHistoryModal(false);
     toast.success(`Đã tải dữ liệu của: ${record.name}`);
@@ -220,6 +244,16 @@ export const TaxCalculatorView: React.FC = () => {
           <div className="flex items-center gap-2 self-end sm:self-auto">
             <button
               type="button"
+              onClick={() => setShowApiKeyModal(true)}
+              title="Cài đặt Gemini API Key cá nhân (Dự phòng)"
+              className="px-2.5 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+            >
+              <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span className="hidden xs:inline">API Key</span>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setShowBracketModal(true)}
               className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60 dark:hover:bg-slate-700 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
             >
@@ -270,15 +304,17 @@ export const TaxCalculatorView: React.FC = () => {
         <div className="lg:col-span-7 space-y-4 sm:space-y-5">
           <TaxResultPanel
             result={result}
-            proxyAmount={input.proxyAmount}
-            totalIncome={input.totalIncome}
+            proxyAmount={result.netRefundToFriend > 0 ? (result.netRefundToFriend + result.taxOnProxyAmount) : input.proxyAmount}
+            totalIncome={result.totalIncome || input.totalIncome}
             name={input.name}
             onOpenBracketModal={() => setShowBracketModal(true)}
           />
 
-          {input.proxyAmount > 0 && result.taxOnProxyAmount > 0 && (
+          {(result.taxOnProxyAmount > 0 || result.netRefundToFriend > 0) && (
             <TaxPaymentQrCard
-              amount={result.taxOnProxyAmount}
+              amount={result.netRefundToFriend > 0 ? result.netRefundToFriend : result.taxOnProxyAmount}
+              netRefundAmount={result.netRefundToFriend}
+              taxDifferenceAmount={result.taxOnProxyAmount}
               name={input.name}
               bankAccount={input.bankAccount || ''}
               setBankAccount={(v) => handleInputChange({ bankAccount: v })}
@@ -307,8 +343,15 @@ export const TaxCalculatorView: React.FC = () => {
         onDeleteRecord={handleDeleteRecord}
         onClearAll={handleClearAllHistory}
       />
+
+      <ApiKeyConfigModal
+        isOpen={showApiKeyModal}
+        onClose={() => setShowApiKeyModal(false)}
+        onSaveKey={() => {}}
+      />
     </div>
   );
 };
+
 
 export default TaxCalculatorView;

@@ -99,23 +99,47 @@ export const calculateProgressiveTaxDetailed = (
 
 /**
  * Tính toán thuế TNCN theo phiên bản luật được chọn (mặc định: luật mới nhất 2026)
+ * Hỗ trợ quy trình gộp thu nhập 2 đợt (Ngày 5 và Ngày 20) chuẩn MWG
  */
-export const calculateTax = (input: TaxCalculationInput): TaxCalculationResult => {
+export const calculateTax = (input: Partial<TaxCalculationInput>): TaxCalculationResult => {
     const version: TaxLawVersion = input.taxLawVersion || '2026_law';
     const isNewLaw = version === '2026_law';
 
-    const personalDeduction = isNewLaw ? PERSONAL_DEDUCTION_2026 : PERSONAL_DEDUCTION_LEGACY;
+    const personalDeduction = input.personalDeduction || (isNewLaw ? PERSONAL_DEDUCTION_2026 : PERSONAL_DEDUCTION_LEGACY);
     const dependentDeductionUnit = isNewLaw ? DEPENDENT_DEDUCTION_2026 : DEPENDENT_DEDUCTION_LEGACY;
     const brackets = isNewLaw ? TAX_BRACKETS_2026 : TAX_BRACKETS_LEGACY;
 
-    const totalIncome = Math.max(0, input.totalIncome || 0);
+    const incomeDay5 = Math.max(0, input.incomeDay5 || 0);
+    const incomeDay20 = Math.max(0, input.incomeDay20 || 0);
+
+    // Tổng thu nhập tháng: Nếu có dữ liệu 2 đợt thì ưu tiên tổng 2 đợt (hoặc input.totalIncome nếu được nhập trực tiếp)
+    let totalIncome = Math.max(0, input.totalIncome || 0);
+    if (totalIncome === 0 && (incomeDay5 > 0 || incomeDay20 > 0)) {
+        totalIncome = incomeDay5 + incomeDay20;
+    }
+
     const dependents = Math.max(0, input.dependents || 0);
-    const proxyAmount = Math.max(0, input.proxyAmount || 0);
-    const insurance = Math.max(0, input.insurance || 0);
+    const insurance = Math.max(0, input.insurance || (input.insuranceSalary ? Math.round(input.insuranceSalary * 0.105) : 0));
     const unionFee = Math.max(0, input.unionFee || 0);
+
+    // Tính tiền nhận thay: Tổng từ các mục thưởng được tích chọn + tiền nhập tuỳ biến
+    let proxyAmount = 0;
+    if (input.bonusItems && input.selectedProxyItemIds && input.selectedProxyItemIds.length > 0) {
+        const selectedBonusSum = input.bonusItems
+            .filter(item => input.selectedProxyItemIds?.includes(item.id))
+            .reduce((sum, item) => sum + item.amount, 0);
+        proxyAmount = selectedBonusSum + Math.max(0, input.customProxyAmount || 0);
+    } else if (input.customProxyAmount && input.customProxyAmount > 0) {
+        proxyAmount = input.customProxyAmount;
+    } else {
+        proxyAmount = Math.max(0, input.proxyAmount || 0);
+    }
 
     const dependentDeductions = dependents * dependentDeductionUnit;
     const totalDeductions = personalDeduction + dependentDeductions + insurance + unionFee;
+
+    // Giảm trừ còn thừa từ Đợt 1 mang sang Đợt 2
+    const remainingDeductionsDay1 = Math.max(0, totalDeductions - incomeDay5);
 
     // 1. Trường hợp có số tiền nhận thay (thực tế nhận)
     const assessableIncomeWithProxy = Math.max(0, totalIncome - totalDeductions);
@@ -124,7 +148,7 @@ export const calculateTax = (input: TaxCalculationInput): TaxCalculationResult =
         brackets
     );
 
-    // 2. Trường hợp KHÔNG có số tiền nhận thay
+    // 2. Trường hợp KHÔNG có số tiền nhận thay (thu nhập chuẩn của nhân viên)
     const incomeWithoutProxy = Math.max(0, totalIncome - proxyAmount);
     const assessableIncomeWithoutProxy = Math.max(0, incomeWithoutProxy - totalDeductions);
     const { totalTax: totalTaxWithoutProxy, details: bracketsWithoutProxy } = calculateProgressiveTaxDetailed(
@@ -132,10 +156,14 @@ export const calculateTax = (input: TaxCalculationInput): TaxCalculationResult =
         brackets
     );
 
-    // 3. Số tiền thuế phát sinh do nhận thay (chênh lệch cần hoàn lại cho người nhận thay)
+    // 3. Số tiền thuế phát sinh do nhận thay (chênh lệch cần giữ lại từ đồng nghiệp)
     const taxOnProxyAmount = Math.max(0, Math.round(totalTaxWithProxy - totalTaxWithoutProxy));
 
-    // 4. Nếu đang dùng luật mới 2026, tính xem tiết kiệm được bao nhiêu so với luật cũ
+    // 4. Số tiền thực chuyển lại cho đồng nghiệp (Khoản nhận thay - Thuế phát sinh)
+    const netRefundToFriend = Math.max(0, proxyAmount - taxOnProxyAmount);
+    const effectiveProxyTaxRate = proxyAmount > 0 ? (taxOnProxyAmount / proxyAmount) * 100 : 0;
+
+    // 5. Nếu đang dùng luật mới 2026, tính xem tiết kiệm được bao nhiêu so với luật cũ
     let savingsVsLegacy: number | undefined = undefined;
     if (isNewLaw) {
         const legacyDeductions = PERSONAL_DEDUCTION_LEGACY + (dependents * DEPENDENT_DEDUCTION_LEGACY) + insurance + unionFee;
@@ -146,6 +174,11 @@ export const calculateTax = (input: TaxCalculationInput): TaxCalculationResult =
 
     return {
         taxLawVersion: version,
+        incomeDay5,
+        incomeDay20,
+        totalIncome,
+        totalDeductions,
+        remainingDeductionsDay1,
         assessableIncomeWithProxy,
         totalTaxWithProxy,
         bracketsWithProxy,
@@ -154,11 +187,12 @@ export const calculateTax = (input: TaxCalculationInput): TaxCalculationResult =
         totalTaxWithoutProxy,
         bracketsWithoutProxy,
         taxOnProxyAmount,
+        netRefundToFriend,
+        effectiveProxyTaxRate,
         personalDeduction,
         dependentDeductions,
         insuranceDeductions: insurance,
         unionFeeDeduction: unionFee,
-        totalDeductions,
         savingsVsLegacy
     };
 };

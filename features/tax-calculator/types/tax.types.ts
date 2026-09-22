@@ -1,7 +1,7 @@
 /**
  * Kiểu dữ liệu cho module Tính Thuế
  * Hỗ trợ Luật Thuế TNCN mới nhất 2026 (Luật 109/2025/QH15 - 5 bậc)
- * và Biểu thuế hiện hành cũ (Nghị quyết 954/2020 - 7 bậc)
+ * Chuẩn nghiệp vụ chi trả 2 đợt (Ngày 5 và Ngày 20) của MWG (Thế Giới Di Động / Điện Máy Xanh)
  */
 
 export type TaxLawVersion = '2026_law' | 'legacy_law';
@@ -12,17 +12,80 @@ export interface TaxBracket {
     rate: number; // e.g. 0.05
 }
 
+export interface BonusItem {
+    id: string;
+    name: string;
+    amount: number;
+    category?: 'hot' | 'main' | 'other';
+    isProxy?: boolean;
+}
+
+/** Dữ liệu bóc tách từ Bảng lương ngày 5 (Chi tiết lương) */
+export interface SalarySlipDay5Data {
+    fullName: string;
+    monthYear: string;
+    incomeDay5: number; // Tổng thu nhập chịu thuế đợt 1
+    insuranceSalary: number; // Lương đóng BHXH
+    insurance: number; // Tổng giảm trừ bảo hiểm (10.5%: BHXH, BHYT, BHTN)
+    dependents: number; // Số người phụ thuộc
+    personalDeduction: number; // Mức giảm trừ bản thân (15.5M)
+    totalDeductionsDay1: number; // Tổng giảm trừ đợt 1
+    remainingDeductionsDay1: number; // Giảm trừ còn thừa chuyển sang đợt 2
+    bankAccount?: string;
+    bankName?: string;
+    matchedBankCode?: string;
+    isValid?: boolean;
+    error?: string;
+}
+
+/** Dữ liệu bóc tách từ Bảng thưởng ngày 20 (Xem chi tiết thưởng) */
+export interface SalarySlipDay20Data {
+    fullName: string;
+    monthYear: string;
+    incomeDay20: number; // Tổng thu nhập chịu thuế đợt 2 (hoặc tổng thưởng)
+    bonusMain: number; // Thưởng chính
+    bonusHot: number; // Thưởng nóng
+    actualTaxDay20: number; // Thuế TNCN bị trừ thực tế (dòng "Trừ thuế TNCN")
+    bonusItems: BonusItem[]; // Danh sách từng khoản thưởng
+    bankAccount?: string;
+    bankName?: string;
+    matchedBankCode?: string;
+    isValid?: boolean;
+    error?: string;
+}
+
 export interface TaxCalculationInput {
     name: string;
-    totalIncome: number; // Tổng thu nhập chịu thuế (VND)
-    dependents: number; // Số người phụ thuộc
-    proxyAmount: number; // Số tiền nhận thay (VND)
-    insurance: number; // Bảo hiểm bắt buộc (VND)
-    unionFee: number; // Phí công đoàn (VND)
-    bankAccount?: string; // Số tài khoản nhận hoàn thuế
-    bankCode?: string; // Mã ngân hàng (short_name)
-    qrDescription?: string; // Nội dung chuyển khoản
-    taxLawVersion?: TaxLawVersion; // Phiên bản luật thuế ('2026_law' hoặc 'legacy_law')
+    monthYear?: string;
+
+    // Đợt 1 (Ngày 5)
+    incomeDay5: number;
+    insuranceSalary: number;
+    insurance: number;
+    dependents: number;
+    personalDeduction: number;
+
+    // Đợt 2 (Ngày 20)
+    incomeDay20: number;
+    bonusMain: number;
+    bonusHot: number;
+    actualTaxDay20: number;
+    bonusItems: BonusItem[];
+    selectedProxyItemIds: string[];
+    customProxyAmount: number;
+
+    // Tổng hợp & Nhận thay
+    totalIncome: number; // Tổng thu nhập tháng (incomeDay5 + incomeDay20)
+    proxyAmount: number; // Tổng tiền nhận thay (tổng selected items + customProxyAmount)
+    unionFee: number; // Phí công đoàn (nếu có)
+    bankAccount?: string;
+    bankCode?: string;
+    qrDescription?: string;
+    taxLawVersion?: TaxLawVersion;
+
+    // Trạng thái đã tải ảnh
+    hasDay5Slip?: boolean;
+    hasDay20Slip?: boolean;
 }
 
 export interface BracketDetail {
@@ -35,28 +98,36 @@ export interface BracketDetail {
 export interface TaxCalculationResult {
     taxLawVersion: TaxLawVersion;
 
-    // Với số tiền nhận thay (thực tế)
-    assessableIncomeWithProxy: number; // Thu nhập tính thuế (sau giảm trừ)
-    totalTaxWithProxy: number; // Thuế TNCN thực tế phát sinh
+    // Thông tin tổng hợp 2 đợt
+    incomeDay5: number;
+    incomeDay20: number;
+    totalIncome: number;
+    totalDeductions: number;
+    remainingDeductionsDay1: number; // Mức giảm trừ còn thừa từ đợt 1 mang sang đợt 2
+
+    // Với số tiền nhận thay (thực tế tại Đợt 2)
+    assessableIncomeWithProxy: number; // Thu nhập tính thuế thực tế
+    totalTaxWithProxy: number; // Thuế TNCN thực tế (khớp với dòng Trừ thuế TNCN đợt 2)
     bracketsWithProxy: BracketDetail[]; // Chi tiết phân rã từng bậc thuế
 
-    // Nếu KHÔNG có số tiền nhận thay
-    incomeWithoutProxy: number; // Thu nhập nếu không nhận thay
-    assessableIncomeWithoutProxy: number; // Thu nhập tính thuế nếu không nhận thay
-    totalTaxWithoutProxy: number; // Thuế TNCN nếu không nhận thay
-    bracketsWithoutProxy: BracketDetail[]; // Chi tiết phân rã từng bậc thuế
+    // Nếu KHÔNG có số tiền nhận thay (Thu nhập chuẩn của nhân viên)
+    incomeWithoutProxy: number; // Thu nhập chuẩn không nhận thay
+    assessableIncomeWithoutProxy: number; // TNTT chuẩn
+    totalTaxWithoutProxy: number; // Thuế chuẩn không nhận thay
+    bracketsWithoutProxy: BracketDetail[]; // Chi tiết phân rã từng bậc thuế chuẩn
 
-    // Chênh lệch cần hoàn lại
-    taxOnProxyAmount: number; // Số tiền thuế phát sinh do nhận thay (tiền cần hoàn)
+    // Chênh lệch cần hoàn lại & Thực chuyển
+    taxOnProxyAmount: number; // Tiền thuế phát sinh do nhận thay (cần giữ lại / lấy lại)
+    netRefundToFriend: number; // Thực chuyển lại cho đồng nghiệp (Khoản nhận thay - Thuế phát sinh)
+    effectiveProxyTaxRate: number; // Tỷ lệ thuế phát sinh trên khoản nhận thay (%)
 
     // Các khoản giảm trừ
-    personalDeduction: number; // 15.5M (2026) hoặc 11M (cũ)
-    dependentDeductions: number; // 6.2M x dependents (2026) hoặc 4.4M x dependents (cũ)
+    personalDeduction: number;
+    dependentDeductions: number;
     insuranceDeductions: number;
     unionFeeDeduction: number;
-    totalDeductions: number;
 
-    // Khoản tiết kiệm thuế so với luật cũ (khi áp dụng luật mới 2026)
+    // Khoản tiết kiệm thuế so với luật cũ (nếu có)
     savingsVsLegacy?: number;
 }
 
@@ -70,12 +141,16 @@ export interface Bank {
 export interface SavedTaxRecord {
     id?: number;
     name: string;
+    monthYear?: string;
+    incomeDay5?: number;
+    incomeDay20?: number;
     totalIncome: number;
     dependents: number;
     proxyAmount: number;
-    insurance: number;
-    unionFee: number;
     taxOnProxyAmount: number;
+    netRefundToFriend?: number;
+    insurance?: number;
+    unionFee?: number;
     taxLawVersion?: TaxLawVersion;
     bankAccount?: string;
     bankCode?: string;
