@@ -5091,3 +5091,58 @@ thành tính năng nội bộ, **phong cách thiết kế Report BI** (chuẩn "
 
 **Chưa làm / cần chủ dự án quyết:** (1) lưu Firestore để xem chéo máy & quản lý xem đội — hiện chỉ
 IndexedDB như app cũ; (2) đồng bộ Google Sheet của app cũ đã bỏ (code chết trong app cũ, không port).
+
+---
+
+# Report BI › Thưởng: menu chọn chế độ xem + So sánh cùng kỳ tháng (2026-09-22)
+
+## Yêu cầu (chủ dự án, kèm 2 ảnh)
+1. Nút chế độ xem (icon lịch, cạnh nút Bộ phận/Danh sách) hiện đang **xoay vòng** 3 chế độ
+   (Tổng hợp → Theo ngày → Luỹ kế tháng) — đổi thành **menu thả xuống liệt kê mọi chế độ**
+   để người dùng chọn thẳng.
+2. Thêm chế độ **So sánh cùng kỳ tháng**: hôm nay 22/9 → so 1→21/8 với 1→21/9, hiện tăng/giảm.
+   Popup "Chọn thời gian đổ thưởng" (⚡ Tự động) có thêm lựa chọn **So sánh cùng kỳ tháng**.
+
+## Thiết kế
+- **Kỳ so sánh** (`utils/bonusDateRange.ts`): `getSamePeriodPreviousMonth(range)` giữ nguyên
+  ngày đầu/cuối, lùi 1 tháng, KẸP ngày cuối theo độ dài tháng trước (30/03 → 28/02).
+  `getComparePeriodDefault(now)` = kỳ "Hiện tại" + cùng kỳ tháng trước; ngày 01 → trọn tháng
+  trước vs trọn tháng trước nữa.
+- **Chạy 2 job tuần tự** — mở rộng `useMultiMonthBonusRun` thành bộ chạy kế hoạch tuần tự
+  (`runPlan(items)`) thay vì viết hook thứ 3 copy 150 dòng: `startYear` = kế hoạch N tháng
+  (save → `handleSaveBonusMonthly`), `startCompare` = kế hoạch 2 bước [kỳ này, kỳ trước]
+  (save → `handleSaveBonusCompare`). Progress/summary thêm `kind: 'year' | 'compare'` để
+  toast/modal đổi đơn vị "tháng" ↔ "kỳ". Chạy KỲ NÀY trước để bảng Tổng hợp cập nhật sớm.
+- **Lưu trữ**: key mới `bonus-compare-${safeName}` = `{ runId, current?: {fromDate,toDate,data},
+  previous?: {...}, updatedAt }`. Mỗi bước ghi phần của mình; `runId` khác → bỏ phần cũ của
+  bước kia (tránh ghép kỳ này mới với kỳ trước cũ khi 1 bước lỗi). Bước "kỳ này" đồng thời
+  mirror sang `bonus-data-*` qua `handleSaveBonusBatch` (giữ tab Tổng hợp/Theo ngày khớp).
+- **State chế độ xem**: gộp 2 boolean `isDaily`/`isMonthly` thành 1 `periodMode:
+  'summary'|'daily'|'monthly'|'compare'` (key IndexedDB mới `bonus-view-period-mode-v3`,
+  2 key cũ bỏ hoang — người dùng chọn lại 1 lần từ menu).
+- **Menu**: dùng `components/shared/ui/Dropdown` (đang chưa ai dùng thật) + thêm prop tuỳ chọn
+  `active?: boolean` cho `DropdownItem` để tô mục đang chọn — thay đổi tương thích ngược.
+- **Bảng so sánh** (`bonus/BonusCompareTable.tsx`): 3 nhóm cột KỲ TRƯỚC (ERP/T.Nóng/Tổng) ·
+  KỲ NÀY (ERP/T.Nóng/Tổng) · TĂNG/GIẢM (Δ Tổng, %), vạch 3px mép trái xanh/đỏ theo tăng/giảm,
+  sort mặc định Δ Tổng giảm dần, chân bảng TỔNG CỘNG, lọc theo bộ phận đang chọn. Đơn vị nghìn
+  đồng như bảng Tổng hợp (`Math.ceil(v/1000)`).
+
+## File thay đổi
+- `components/shared/ui/Dropdown.tsx` — thêm `active`.
+- `features/bi-dashboard/utils/bonusDateRange.ts` — 3 hàm mới + test `bonusDateRange.test.ts`.
+- `features/bi-dashboard/utils/db.ts` — key `bonus-compare-*`.
+- `features/bi-dashboard/hooks/useNhanVienData.ts` — `handleSaveBonusCompare`.
+- `features/bi-dashboard/hooks/useMultiMonthBonusRun.ts` — `runPlan` + `startCompare` + `kind`.
+- `features/bi-dashboard/hooks/useBonusCompareData.ts` (mới) — đọc key compare, lắng nghe
+  `indexeddb-change`, chỉ tải khi bật chế độ.
+- `features/bi-dashboard/components/nhanvien/bonus/AutoBonusRangePickerModal.tsx` — tab
+  "So sánh cùng kỳ" + `onRunCompare`.
+- `AutoBonusPanel.tsx`, `AutoBonusToasts.tsx`, `MultiMonthResultDetailModal.tsx` — đơn vị
+  tháng/kỳ, nhãn tiến độ, nhãn tiêu đề "SO SÁNH 01→21/8 vs 01→21/9".
+- `useBonusViewData.ts`, `BonusTab.tsx` — `periodMode` + Dropdown + render `BonusCompareTable`.
+- `features/bi-dashboard/components/NhanVien.tsx` — truyền `handleSaveBonusCompare`.
+
+## Rủi ro
+- Chạy so sánh = 2 job × N nhân viên (~2× thời gian "Hiện tại"); popup ghi rõ số lượt.
+- Không thể tự test luồng userscript MWG thật — test: unit (hàm ngày), Playwright (menu +
+  bảng so sánh với dữ liệu giả ghi thẳng IndexedDB).
