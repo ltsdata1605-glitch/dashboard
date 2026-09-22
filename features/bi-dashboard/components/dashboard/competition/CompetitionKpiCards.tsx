@@ -24,6 +24,14 @@ interface CompetitionKpiCardsProps {
  */
 const UNITS = [
     {
+        key: 'bonus',
+        label: 'Tổng thưởng',
+        tone: 'text-sky-700 dark:text-sky-400',
+        bar: 'bg-sky-500',
+        barBg: 'bg-sky-100 dark:bg-sky-950/40',
+        dot: 'bg-sky-500',
+    },
+    {
         key: 'over',
         label: '% Nhóm đạt ≥100%',
         tone: 'text-emerald-700 dark:text-emerald-400',
@@ -54,14 +62,6 @@ const UNITS = [
         bar: 'bg-slate-400 dark:bg-slate-500',
         barBg: 'bg-slate-100 dark:bg-slate-800',
         dot: 'bg-slate-400',
-    },
-    {
-        key: 'bonus',
-        label: 'Tổng thưởng',
-        tone: 'text-sky-700 dark:text-sky-400',
-        bar: 'bg-sky-500',
-        barBg: 'bg-sky-100 dark:bg-sky-950/40',
-        dot: 'bg-sky-500',
     },
 ] as const;
 
@@ -121,7 +121,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
 
     return (
         <div
-            className={`competition-kpi-container w-full grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2.5 sm:mb-3 ${units.length === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}
+            className={`competition-kpi-container w-full grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-2 sm:mb-2.5 ${units.length === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}
             title={`Tính theo ${modeLabel}`}
         >
             {units.map((u) => {
@@ -129,28 +129,28 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                 return (
                     <div
                         key={u.key}
-                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-2.5 py-2 transition-all shadow-2xs hover:shadow-xs"
+                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-2 py-1.5 transition-all shadow-2xs hover:shadow-xs"
                     >
                         {/* Vạch nhận diện 3px trên đỉnh mỗi thẻ riêng biệt */}
-                        <div className={`absolute top-0 left-0 right-0 h-[3px] ${u.bar}`} />
+                        <div className={`absolute top-0 left-0 right-0 h-[2px] ${u.bar}`} />
 
-                        <div className="flex items-center justify-between gap-1 mb-1">
+                        <div className="flex items-center justify-between gap-1">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate" title={u.label}>
                                 {u.label}
                             </span>
                             <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
                         </div>
 
-                        <div className={`text-lg sm:text-xl font-black tabular-nums leading-tight tracking-tight ${u.tone}`}>
+                        <div className={`text-base sm:text-lg font-black tabular-nums leading-none tracking-tight mt-0.5 ${u.tone}`}>
                             {v.big}
                         </div>
 
-                        <div className="mt-0.5 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                        <div className="mt-0.5 flex items-center justify-between text-[11px] leading-tight text-slate-500 dark:text-slate-400">
                             <span className="truncate" title={v.sub}>{v.sub}</span>
                         </div>
 
                         {/* Vạch tiến độ */}
-                        <div className={`mt-1.5 h-[3px] w-full ${u.barBg} overflow-hidden`}>
+                        <div className={`mt-1 h-[2px] w-full ${u.barBg} overflow-hidden`}>
                             <div
                                 className={`h-full ${u.bar} transition-all duration-300`}
                                 style={{ width: `${Math.min(100, Math.max(0, v.pct))}%` }}
