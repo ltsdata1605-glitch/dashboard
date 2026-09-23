@@ -32,6 +32,7 @@ import {
   DEPENDENT_DEDUCTION_2026,
 } from '../services/taxCalculatorService';
 import { extractSalarySlip, SAMPLE_MWG_DAY20_BONUS_ITEMS } from '../services/salarySlipOcrService';
+import { normalizeBankCode } from '../services/bankCatalog';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface TaxInputPanelProps {
@@ -99,8 +100,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       if (data.bankAccount && !input.bankAccount) {
         updates.bankAccount = data.bankAccount;
       }
-      if (data.matchedBankCode && !input.bankCode) {
-        updates.bankCode = data.matchedBankCode;
+      // Ngân hàng nhận tiền: lấy thẳng từ phiếu (chỉ giữ lựa chọn cũ nếu nó là ngân hàng hợp lệ
+      // người dùng đã tự chọn — giá trị cũ kiểu "MB" không có trong danh mục coi như chưa chọn).
+      const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
+      if (autoBankCode && !normalizeBankCode(input.bankCode)) {
+        updates.bankCode = autoBankCode;
       }
 
       // Tự động cộng tổng thu nhập nếu cả 2 đợt đã sẵn sàng
@@ -161,8 +165,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       if (data.bankAccount && !input.bankAccount) {
         updates.bankAccount = data.bankAccount;
       }
-      if (data.matchedBankCode && !input.bankCode) {
-        updates.bankCode = data.matchedBankCode;
+      // Ngân hàng nhận tiền: lấy thẳng từ phiếu (chỉ giữ lựa chọn cũ nếu nó là ngân hàng hợp lệ
+      // người dùng đã tự chọn — giá trị cũ kiểu "MB" không có trong danh mục coi như chưa chọn).
+      const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
+      if (autoBankCode && !normalizeBankCode(input.bankCode)) {
+        updates.bankCode = autoBankCode;
       }
 
       if (input.incomeDay5 > 0) {

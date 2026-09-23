@@ -18,6 +18,7 @@ import {
   DEPENDENT_DEDUCTION_2026,
   formatVnd,
 } from './services/taxCalculatorService';
+import { normalizeBankCode } from './services/bankCatalog';
 import { taxSyncService } from './services/taxSyncService';
 import { TaxInputPanel } from './components/TaxInputPanel';
 import { TaxResultPanel } from './components/TaxResultPanel';
@@ -45,7 +46,7 @@ const DEFAULT_INPUTS: TaxCalculationInput = {
   proxyAmount: 0,
   unionFee: 0,
   bankAccount: '',
-  bankCode: 'MB',
+  bankCode: '',
   qrDescription: 'HOAN THUE NHAN THAY',
   taxLawVersion: '2026_law',
   hasDay5Slip: false,
@@ -60,7 +61,10 @@ export const TaxCalculatorView: React.FC = () => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return { ...DEFAULT_INPUTS, ...JSON.parse(saved) };
+        const parsed = { ...DEFAULT_INPUTS, ...JSON.parse(saved) } as TaxCalculationInput;
+        // Bản cũ lưu bankCode 'MB' — không khớp danh mục nên <select> trống và QR không dựng được.
+        parsed.bankCode = normalizeBankCode(parsed.bankCode);
+        return parsed;
       }
     } catch (e) {
       console.warn('Lỗi đọc tax inputs từ localStorage', e);
@@ -170,7 +174,7 @@ export const TaxCalculatorView: React.FC = () => {
       unionFee: record.unionFee || 0,
       taxLawVersion: record.taxLawVersion || '2026_law',
       bankAccount: record.bankAccount || '',
-      bankCode: record.bankCode || 'MB',
+      bankCode: normalizeBankCode(record.bankCode),
       qrDescription: `HOAN THUE CHO ${record.name}`.toUpperCase(),
       hasDay5Slip: (record.incomeDay5 || 0) > 0,
       hasDay20Slip: (record.incomeDay20 || 0) > 0,
@@ -198,6 +202,12 @@ export const TaxCalculatorView: React.FC = () => {
       await refreshHistory();
     }
   };
+
+  // Tổng tiền nhận thay (đã gồm phần thuế phát sinh) — dùng chung cho bảng kết quả và thẻ QR
+  const proxyTotal =
+    result.netRefundToFriend > 0
+      ? result.netRefundToFriend + result.taxOnProxyAmount
+      : input.proxyAmount;
 
   const personalDeduction = PERSONAL_DEDUCTION_2026;
   const dependentDeduction = DEPENDENT_DEDUCTION_2026;
@@ -296,7 +306,7 @@ export const TaxCalculatorView: React.FC = () => {
         <div className="lg:col-span-6 space-y-3 sm:space-y-4">
           <TaxResultPanel
             result={result}
-            proxyAmount={result.netRefundToFriend > 0 ? (result.netRefundToFriend + result.taxOnProxyAmount) : input.proxyAmount}
+            proxyAmount={proxyTotal}
             totalIncome={result.totalIncome || input.totalIncome}
             name={input.name}
             onOpenBracketModal={() => setShowBracketModal(true)}
@@ -304,13 +314,13 @@ export const TaxCalculatorView: React.FC = () => {
 
           {(result.taxOnProxyAmount > 0 || result.netRefundToFriend > 0) && (
             <TaxPaymentQrCard
-              amount={result.netRefundToFriend > 0 ? result.netRefundToFriend : result.taxOnProxyAmount}
+              amount={result.taxOnProxyAmount}
+              proxyAmount={proxyTotal}
               netRefundAmount={result.netRefundToFriend}
-              taxDifferenceAmount={result.taxOnProxyAmount}
               name={input.name}
               bankAccount={input.bankAccount || ''}
               setBankAccount={(v) => handleInputChange({ bankAccount: v })}
-              bankCode={input.bankCode || 'MB'}
+              bankCode={input.bankCode || ''}
               setBankCode={(v) => handleInputChange({ bankCode: v })}
               qrDescription={input.qrDescription || ''}
               setQrDescription={(v) => handleInputChange({ qrDescription: v })}

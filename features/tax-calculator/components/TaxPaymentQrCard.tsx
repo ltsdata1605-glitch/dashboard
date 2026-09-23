@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { QrCode, Copy, Check, ExternalLink, Building2, CreditCard } from 'lucide-react';
+import { QrCode, Copy, Check, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { BANK_OPTIONS } from '../services/bankCatalog';
-import { generateVietQrUrl, formatVnd, formatNumber } from '../services/taxCalculatorService';
+import { generateVietQrUrl, formatVnd } from '../services/taxCalculatorService';
 
 interface TaxPaymentQrCardProps {
+    /** Số tiền đồng nghiệp phải chuyển lại = phần thuế phát sinh do nhận thay */
     amount: number;
+    /** Tổng khoản đã nhận thay (đã gồm thuế) — chỉ để giải thích cho người dùng */
+    proxyAmount?: number;
+    /** Số thực chuyển lại đồng nghiệp sau khi trừ thuế — chỉ để giải thích */
     netRefundAmount?: number;
-    taxDifferenceAmount?: number;
     name: string;
     bankAccount: string;
     setBankAccount: (v: string) => void;
@@ -20,8 +23,8 @@ interface TaxPaymentQrCardProps {
 
 export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
     amount,
+    proxyAmount,
     netRefundAmount,
-    taxDifferenceAmount,
     name,
     bankAccount,
     setBankAccount,
@@ -31,11 +34,6 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
     setQrDescription
 }) => {
     const [copiedField, setCopiedField] = useState<string | null>(null);
-    const [transferMode, setTransferMode] = useState<'net_refund' | 'tax_difference'>('net_refund');
-
-    const effectiveAmount = transferMode === 'net_refund'
-        ? (netRefundAmount && netRefundAmount > 0 ? netRefundAmount : amount)
-        : (taxDifferenceAmount && taxDifferenceAmount > 0 ? taxDifferenceAmount : amount);
 
     const handleCopy = (text: string, label: string) => {
         if (!text) return;
@@ -45,14 +43,12 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
         setTimeout(() => setCopiedField(null), 2000);
     };
 
-    const defaultDes = transferMode === 'net_refund'
-        ? `Chuyen tien thuong sau thue cho ${name || 'dong nghiep'}`
-        : `Hoan tra thue TNCN nhan thay`;
+    const defaultDes = `Hoan tra thue TNCN nhan thay`;
 
     const qrUrl = generateVietQrUrl({
         bankAccount,
         bankCode,
-        amount: effectiveAmount,
+        amount,
         description: qrDescription || defaultDes
     });
 
@@ -71,33 +67,9 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                     </div>
                 </div>
 
-                {/* Tabs chuyển đổi giữa Thực chuyển cho đồng nghiệp và Hoàn thuế */}
-                {netRefundAmount && taxDifferenceAmount ? (
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-900/60 p-0.5 rounded-lg text-xs font-semibold self-start sm:self-auto">
-                        <button
-                            type="button"
-                            onClick={() => setTransferMode('net_refund')}
-                            className={`px-2 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
-                                transferMode === 'net_refund'
-                                    ? 'bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-2xs'
-                                    : 'text-slate-500 hover:text-slate-800'
-                            }`}
-                        >
-                            Thực chuyển đồng nghiệp
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setTransferMode('tax_difference')}
-                            className={`px-2 py-0.5 rounded-md text-[11px] transition-all cursor-pointer ${
-                                transferMode === 'tax_difference'
-                                    ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-2xs'
-                                    : 'text-slate-500 hover:text-slate-800'
-                            }`}
-                        >
-                            Đồng nghiệp trả thuế
-                        </button>
-                    </div>
-                ) : null}
+                <span className="self-start sm:self-auto inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 rounded-md">
+                    Đồng nghiệp trả thuế
+                </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-start">
@@ -172,22 +144,43 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                     </div>
 
                     {/* Copy amount helper */}
-                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-between gap-2">
-                        <div>
-                            <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Số tiền cần chuyển:</span>
-                            <span className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-300">
-                                {formatVnd(amount)}
-                            </span>
+                    <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                            <div>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Số tiền cần chuyển:</span>
+                                <span
+                                    data-testid="qr-transfer-amount"
+                                    className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-300"
+                                >
+                                    {formatVnd(amount)}
+                                </span>
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleCopy(String(Math.round(amount)), 'Số tiền')}
+                                className="gap-1 text-xs text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+                            >
+                                {copiedField === 'Số tiền' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                                <span>Copy số tiền</span>
+                            </Button>
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCopy(String(Math.round(amount)), 'Số tiền')}
-                            className="gap-1 text-xs text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
-                        >
-                            {copiedField === 'Số tiền' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                            <span>Copy số tiền</span>
-                        </Button>
+
+                        {/* Giải thích: đây chính là tiền thuế bạn được nhận lại do nhận thay */}
+                        <div className="flex items-start gap-1.5 pt-1.5 border-t border-emerald-200/70 dark:border-emerald-800/50">
+                            <Info size={12} className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                            <p className="text-[10px] leading-relaxed text-slate-600 dark:text-slate-300">
+                                Đồng nghiệp quét mã này để trả lại phần thuế bạn đã nộp thay
+                                {proxyAmount && proxyAmount > 0 ? (
+                                    <> cho khoản nhận thay <span className="font-semibold">{formatVnd(proxyAmount)}</span></>
+                                ) : null}
+                                . Bạn sẽ <span className="font-bold text-emerald-700 dark:text-emerald-300">nhận lại {formatVnd(amount)}</span> tiền hoàn thuế do nhận thay
+                                {netRefundAmount && netRefundAmount > 0 ? (
+                                    <> (phần <span className="font-semibold">{formatVnd(netRefundAmount)}</span> còn lại bạn chuyển thẳng cho đồng nghiệp)</>
+                                ) : null}
+                                .
+                            </p>
+                        </div>
                     </div>
                 </div>
 

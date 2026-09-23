@@ -31,19 +31,35 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 }) => {
   const [hideSensitive, setHideSensitive] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  // Bật trong lúc chụp ảnh: ảnh gửi cho đồng nghiệp không được lộ thu nhập của người kê khai
+  const [maskIncomeForExport, setMaskIncomeForExport] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
+
+  const MASK_TEXT = '•••••••• đ';
 
   const maskValue = (formattedStr: string) => {
     if (!hideSensitive) return formattedStr;
-    return '•••••••• đ';
+    return MASK_TEXT;
+  };
+
+  /** Các con số thu nhập: luôn bị che trong ảnh xuất ra (ngoài ảnh thì theo nút "Bảo mật") */
+  const maskIncome = (formattedStr: string) => {
+    if (maskIncomeForExport) return MASK_TEXT;
+    return maskValue(formattedStr);
   };
 
   const handleExportImage = async () => {
     if (!captureRef.current) return;
     setIsExporting(true);
+    setMaskIncomeForExport(true);
     const toastId = toast.loading('Đang khởi tạo ảnh bảng tính thuế...');
 
     try {
+      // Chờ React vẽ lại với số liệu thu nhập đã che rồi mới chụp
+      await new Promise<void>(resolve =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+      );
+
       const safeName = (name || 'Tinh_Thue').trim().replace(/\s+/g, '_');
       const filename = `Bang_Tinh_Thue_${safeName}_${new Date().toISOString().slice(0, 10)}.png`;
 
@@ -62,6 +78,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
       toast.error('Có lỗi xảy ra khi tạo ảnh báo cáo. Vui lòng thử lại.', { id: toastId });
     } finally {
       setIsExporting(false);
+      setMaskIncomeForExport(false);
     }
   };
 
@@ -86,6 +103,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
       {/* Container chính dùng để xuất ảnh báo cáo */}
       <div
         ref={captureRef}
+        data-testid="tax-result-panel"
         className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs relative overflow-hidden transition-all duration-200"
       >
         {/* Header kết quả */}
@@ -103,8 +121,15 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                   Biểu 5 bậc
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 truncate">
-                {name ? `Kê khai: ${name}` : 'Theo luật thuế TNCN 2026'}
+              <p className="text-[11px] truncate">
+                {name ? (
+                  <>
+                    <span className="text-slate-400">Kê khai: </span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200">{name}</span>
+                  </>
+                ) : (
+                  <span className="text-slate-400">Theo luật thuế TNCN 2026</span>
+                )}
               </p>
             </div>
           </div>
@@ -182,7 +207,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Thu nhập tính thuế:{' '}
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
-                    {maskValue(formatVnd(assessableIncomeWithProxy))}
+                    {maskIncome(formatVnd(assessableIncomeWithProxy))}
                   </span>
                 </p>
               </div>
@@ -223,11 +248,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} px-3 py-2 hover:bg-slate-50/50 dark:hover:bg-slate-800/40`}>
               <div className="text-slate-500 dark:text-slate-400 font-medium">1. Tổng thu nhập (Đợt 1 + 2)</div>
               <div className="text-right text-slate-800 dark:text-slate-200 font-medium">
-                {maskValue(formatVnd(totalIncome))}
+                {maskIncome(formatVnd(totalIncome))}
               </div>
               {hasProxy && (
                 <div className="text-right text-slate-500 dark:text-slate-400">
-                  {maskValue(formatVnd(incomeWithoutProxy))}
+                  {maskIncome(formatVnd(incomeWithoutProxy))}
                 </div>
               )}
             </div>
@@ -238,13 +263,13 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <div className="flex justify-between">
                   <span>• Đợt 1 (Ngày 5 - Lương):</span>
                   <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {maskValue(formatVnd(result.incomeDay5))}
+                    {maskIncome(formatVnd(result.incomeDay5))}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>• Đợt 2 (Ngày 20 - Thưởng):</span>
                   <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {maskValue(formatVnd(result.incomeDay20))}
+                    {maskIncome(formatVnd(result.incomeDay20))}
                   </span>
                 </div>
               </div>
@@ -267,11 +292,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} px-3 py-2 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 font-medium`}>
               <div className="text-slate-600 dark:text-slate-300">3. Thu nhập tính thuế Đợt 2</div>
               <div className="text-right text-sky-600 dark:text-sky-400">
-                {maskValue(formatVnd(assessableIncomeWithProxy))}
+                {maskIncome(formatVnd(assessableIncomeWithProxy))}
               </div>
               {hasProxy && (
                 <div className="text-right text-slate-600 dark:text-slate-400">
-                  {maskValue(formatVnd(assessableIncomeWithoutProxy))}
+                  {maskIncome(formatVnd(assessableIncomeWithoutProxy))}
                 </div>
               )}
             </div>
@@ -303,10 +328,18 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
           </div>
         </div>
 
+        {/* Ghi chú chỉ xuất hiện trong ảnh: giải thích các dấu chấm thay cho số thu nhập */}
+        {maskIncomeForExport && (
+          <div className="mb-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/60 text-[10px] text-slate-500 dark:text-slate-400">
+            Thông tin thu nhập đã được ẩn khi xuất ảnh.
+          </div>
+        )}
+
         {/* Footer ghi chú trong ảnh export */}
-        <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
-          <span>Tính Thuế TNCN</span>
-          <span className="font-mono">Luật 109/2025/QH15</span>
+        <div className="pt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
+          <span className="truncate min-w-0">{name ? `Tính Thuế TNCN — ${name}` : 'Tính Thuế TNCN'}</span>
+          {/* pr-1.5: chừa chỗ cho sai lệch bề rộng phông lúc chụp ảnh (chữ cuối từng bị cắt mép phải) */}
+          <span className="font-mono shrink-0 pr-1.5">Luật 109/2025/QH15</span>
         </div>
       </div>
     </div>

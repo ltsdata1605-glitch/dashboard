@@ -31,3 +31,73 @@ export const BANK_OPTIONS = BANKS.map(b => ({
     label: `${b.short_name} - ${b.name}`,
     bank: b
 })).sort((a, b) => a.label.localeCompare(b.label, 'vi'));
+
+/**
+ * Bí danh ngân hàng thường gặp trên phiếu lương MWG (viết tắt, tên tiếng Việt không dấu).
+ * Khoá = short_name trong BANKS. Bí danh dưới 3 ký tự chỉ khớp khi trùng khít cả chuỗi.
+ */
+const BANK_ALIASES: Record<string, string[]> = {
+    Vietcombank: ['vcb', 'vietcombank', 'ngoaithuong'],
+    VietinBank: ['ctg', 'vietinbank', 'viettinbank', 'congthuong'],
+    BIDV: ['bidv', 'dautuvaphattrien'],
+    Agribank: ['vba', 'agribank', 'nongnghiep'],
+    MBBank: ['mb', 'mbb', 'mbbank', 'quandoi', 'militarybank'],
+    Techcombank: ['tcb', 'techcombank', 'kythuong'],
+    ACB: ['acb', 'achau'],
+    VPBank: ['vpb', 'vpbank', 'vietnamthinhvuong'],
+    Sacombank: ['stb', 'sacombank', 'saigonthuongtin'],
+    VIB: ['vib', 'quocte'],
+    TPBank: ['tpb', 'tpbank', 'tienphong'],
+    HDBank: ['hdb', 'hdbank', 'phattrienthanhphohochiminh'],
+    OCB: ['ocb', 'phuongdong'],
+    SeABank: ['seab', 'seabank', 'dongnama'],
+    SHB: ['shb', 'saigonhanoi'],
+    ShinhanBank: ['shbvn', 'shinhan', 'shinhanbank'],
+    VietCapitalBank: ['vccb', 'bvbank', 'banviet', 'vietcapital'],
+    BacABank: ['bab', 'bacabank', 'baca'],
+    ABBANK: ['abb', 'abbank', 'anbinh'],
+    Eximbank: ['eib', 'eximbank', 'xuatnhapkhau'],
+    KienLongBank: ['klb', 'kienlong', 'kienlongbank'],
+};
+
+/** Bỏ dấu tiếng Việt và mọi ký tự không phải chữ/số: "Ngân hàng TMCP Quân Đội" -> "nganhangtmcpquandoi" */
+const slugifyBankText = (raw: string): string =>
+    raw
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .replace(/[đĐ]/g, 'd')
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, '');
+
+/**
+ * Quy về đúng `short_name` trong BANKS (giá trị mà <select> và generateVietQrUrl dùng).
+ * Nhận cả mã ("MBB"), short_name ("MBBank"), bí danh ("MB") lẫn tên đầy đủ trên phiếu lương.
+ * Trả về '' khi không nhận ra — để UI hiển thị "-- Chọn ngân hàng --" thay vì giá trị rác.
+ */
+export const normalizeBankCode = (rawValue?: string | null): string => {
+    const slug = slugifyBankText(rawValue || '');
+    if (!slug) return '';
+
+    // 1. Trùng khít short_name hoặc code trong danh mục
+    const exact = BANKS.find(b => slugifyBankText(b.short_name) === slug || slugifyBankText(b.code) === slug);
+    if (exact) return exact.short_name;
+
+    // 2. Trùng khít một bí danh (kể cả bí danh ngắn như "mb")
+    for (const [shortName, aliases] of Object.entries(BANK_ALIASES)) {
+        if (aliases.includes(slug)) return shortName;
+    }
+
+    // 3. Chuỗi dài (tên đầy đủ) chứa bí danh — lấy bí danh dài nhất để tránh khớp nhầm
+    let best: { shortName: string; length: number } | null = null;
+    for (const [shortName, aliases] of Object.entries(BANK_ALIASES)) {
+        for (const alias of aliases) {
+            if (alias.length >= 3 && slug.includes(alias) && (!best || alias.length > best.length)) {
+                best = { shortName, length: alias.length };
+            }
+        }
+    }
+    return best ? best.shortName : '';
+};
+
+/** Ngân hàng đã chọn có hợp lệ (nằm trong danh mục) hay không */
+export const isKnownBankCode = (rawValue?: string | null): boolean => !!normalizeBankCode(rawValue);

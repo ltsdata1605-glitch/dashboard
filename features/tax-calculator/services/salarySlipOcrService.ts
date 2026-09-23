@@ -1,7 +1,7 @@
 
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { functions, app } from '../../../services/firebase';
-import { VIETNAMESE_BANKS } from './bankCatalog';
+import { normalizeBankCode } from './bankCatalog';
 import { SalarySlipDay5Data, SalarySlipDay20Data, BonusItem } from '../types/tax.types';
 
 export interface SalarySlipExtractedData {
@@ -82,21 +82,7 @@ export const processAndResizeImage = (file: File): Promise<{ base64Data: string;
  * Tìm mã ngân hàng tương ứng trong danh mục 21 ngân hàng Việt Nam
  */
 export const matchBankFromRawText = (rawBankName: string): string | undefined => {
-    if (!rawBankName) return undefined;
-    const cleanName = rawBankName.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
-    if (!cleanName) return undefined;
-
-    const found = VIETNAMESE_BANKS.find(b => {
-        const shortLower = b.short_name.toLowerCase();
-        const codeLower = b.code.toLowerCase();
-        const nameClean = b.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-        return cleanName.includes(shortLower) ||
-               cleanName.includes(codeLower) ||
-               (cleanName.length >= 3 && nameClean.includes(cleanName));
-    });
-
-    return found ? found.short_name : undefined;
+    return normalizeBankCode(rawBankName) || undefined;
 };
 
 /**
