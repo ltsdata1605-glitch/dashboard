@@ -59,6 +59,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   // Bật trong lúc chụp ảnh: ảnh gửi cho đồng nghiệp không được lộ thu nhập của người kê khai
   const [maskIncomeForExport, setMaskIncomeForExport] = useState(false);
+  const [exportedAt, setExportedAt] = useState('');
   const captureRef = useRef<HTMLDivElement>(null);
   // Ảnh QR phải ở dạng data URL thì html-to-image mới nhúng được (ảnh từ máy chủ ngoài làm
   // bước chụp treo vì thư viện phải tự tải lại ảnh).
@@ -103,6 +104,15 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
     if (!captureRef.current) return;
     setIsExporting(true);
     setMaskIncomeForExport(true);
+    setExportedAt(
+      new Date().toLocaleString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })
+    );
     const toastId = toast.loading('Đang khởi tạo ảnh bảng tính thuế...');
 
     try {
@@ -168,6 +178,9 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
         data-testid="tax-result-panel"
         className="bg-white dark:bg-slate-800/90 rounded-2xl border border-slate-200 dark:border-slate-700/60 p-3.5 sm:p-4 shadow-xs relative overflow-hidden transition-all duration-200"
       >
+        {/* Lớp lót chỉ dùng khi chụp ảnh: uiService ép padding của khối gốc về 0, nên nếu không có
+            lớp này thì các khối con dính sát mép và viền trái/phải bị cắt trong ảnh. */}
+        <div className={maskIncomeForExport ? 'px-2 pt-1' : ''}>
         {/* Header kết quả */}
         <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-100 dark:border-slate-700/50">
           <div className="flex items-center gap-2">
@@ -183,16 +196,22 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                   Biểu 5 bậc
                 </span>
               </div>
-              <p className="text-[11px] truncate">
-                {name ? (
-                  <>
-                    <span className="text-slate-400">Kê khai: </span>
-                    <span className="font-bold text-slate-700 dark:text-slate-200">{name}</span>
-                  </>
-                ) : (
-                  <span className="text-slate-400">Theo luật thuế TNCN 2026</span>
-                )}
-              </p>
+              {name ? (
+                <>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-400 leading-none mt-0.5">
+                    Phiếu của
+                  </p>
+                  <p
+                    className={`font-extrabold uppercase tracking-tight text-slate-900 dark:text-white leading-tight truncate ${
+                      maskIncomeForExport ? 'text-xl' : 'text-base sm:text-lg'
+                    }`}
+                  >
+                    {name}
+                  </p>
+                </>
+              ) : (
+                <p className="text-[11px] text-slate-400">Theo luật thuế TNCN 2026</p>
+              )}
             </div>
           </div>
 
@@ -289,7 +308,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* Chi tiết khoản nhận thay — chỉ in trong ảnh xuất để thủ quỹ đối chiếu từng khoản */}
         {maskIncomeForExport && hasProxy && proxyItems.length > 0 && (
-          <div className="mb-3 border border-amber-200 dark:border-amber-800/60 rounded-xl overflow-hidden">
+          <div className="mb-3 border border-amber-200 dark:border-amber-800/60 rounded-xl overflow-clip">
             <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800/60 text-xs font-bold text-amber-800 dark:text-amber-300">
               Các khoản nhận thay ({proxyItems.length} khoản)
             </div>
@@ -313,7 +332,9 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
         )}
 
         {/* BẢNG SO SÁNH ĐỐI CHIẾU */}
-        <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden mb-3">
+        {/* overflow-clip (không phải overflow-hidden): uiService xoá viền của mọi khối
+            .overflow-hidden khi xuất ảnh, làm bảng mất viền trái/phải trong ảnh. */}
+        <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-clip mb-3">
           <div className="bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 border-b border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
               <Layers className="w-3.5 h-3.5 text-sky-500" />
@@ -454,7 +475,10 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
         <div className="pt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
           <span className="truncate min-w-0">{name ? `Tính Thuế TNCN — ${name}` : 'Tính Thuế TNCN'}</span>
           {/* pr-1.5: chừa chỗ cho sai lệch bề rộng phông lúc chụp ảnh (chữ cuối từng bị cắt mép phải) */}
-          <span className="font-mono shrink-0 pr-1.5">Luật 109/2025/QH15</span>
+          <span className="font-mono shrink-0 pr-1.5">
+            {exportedAt ? `Xuất lúc ${exportedAt}` : 'Luật 109/2025/QH15'}
+          </span>
+        </div>
         </div>
       </div>
     </div>

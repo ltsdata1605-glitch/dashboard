@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
  */
 const day5Text = readFileSync('tests/fixtures/hrm-luong-ngay5.txt', 'utf8');
 const day20Text = readFileSync('tests/fixtures/hrm-thuong-ngay20.txt', 'utf8');
+const day5CollapsedText = readFileSync('tests/fixtures/hrm-luong-ngay5-thu-gon.txt', 'utf8');
 
 const openTax = async (page: import('@playwright/test').Page) => {
     await page.goto('/?tab=tools-tax');
@@ -91,6 +92,7 @@ test('trình duyệt chặn đọc bộ nhớ tạm: hiện ô để tự Ctrl+V
 });
 
 test('ảnh xuất có chi tiết từng khoản nhận thay và tổng', async ({ page, context }) => {
+    page.on('console', m => { if (m.text().includes('DO-VIEN')) console.log(m.text()); });
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await openTax(page);
 
@@ -135,4 +137,24 @@ test('ảnh xuất có chi tiết từng khoản nhận thay và tổng', async 
 
     // Ngoài ảnh thì khối này không hiện (giữ giao diện gọn)
     await expect(page.getByTestId('tax-result-panel')).not.toContainText('Các khoản nhận thay');
+});
+
+test('phiếu có khối "Tổng tiền giảm trừ" đang thu gọn: vẫn ra đúng số người phụ thuộc', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await openTax(page);
+
+    await page.evaluate(text => navigator.clipboard.writeText(text), day5CollapsedText);
+    await page.getByTestId('paste-day5').click();
+    await expect(page.getByText(/Đã đọc Chi tiết lương Đợt 1/)).toBeVisible({ timeout: 10_000 });
+
+    // Mở phần "Kê khai thêm & Giảm trừ gia cảnh" để xem số người phụ thuộc app suy ra
+    await page.getByText(/Kê khai thêm & Giảm trừ gia cảnh/).click();
+    const deps = page.locator('input[type="number"]').first();
+    console.log('SỐ NGƯỜI PHỤ THUỘC APP SUY RA:', await deps.inputValue());
+    expect(await deps.inputValue()).toBe('2');
+
+    // Tổng giảm trừ trong bảng kết quả phải khớp đúng con số HRM in ra: 28.740.000
+    const panel = await page.getByTestId('tax-result-panel').innerText();
+    console.log('BẢNG KẾT QUẢ:', panel.replace(/\n/g, ' | '));
+    expect(panel.replace(/\s/g, '')).toContain('28.740.000');
 });

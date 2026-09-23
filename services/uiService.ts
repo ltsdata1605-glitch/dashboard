@@ -940,8 +940,10 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             el.style.setProperty('max-width', `${forcedWidth - 48}px`, 'important'); // 48px for padding
         });
     } else if (captureAsDisplayed) {
-        // Lock width to viewport display width, but allow full content height
-        const viewportWidth = element.clientWidth;
+        // Lock width to viewport display width, but allow full content height.
+        // offsetWidth (không phải clientWidth): clientWidth bỏ đường viền nên bản sao hẹp hơn khối
+        // gốc 2px, viền phải bị cắt mất trong ảnh (thấy ở ảnh xuất màn Tính Thuế).
+        const viewportWidth = element.offsetWidth || element.clientWidth;
         captureContainer.style.width = `${viewportWidth}px`;
         captureContainer.style.height = 'auto';
         clone.style.width = `${viewportWidth}px`;
@@ -1109,7 +1111,9 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const rect = clone.getBoundingClientRect();
         const exportPadding = 4; // px on each side — must match the padding in htmlToImage style below
         const contentHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || rect.height);
-        const contentWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
+        const contentWidth = captureAsDisplayed
+            ? (element.offsetWidth || element.clientWidth)
+            : (rect.width || clone.scrollWidth);
 
         const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
         let finalHeight = contentHeight + exportPadding * 2;

@@ -88,9 +88,6 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       personalDeduction: data.personalDeduction || 15_500_000,
     };
 
-    if (typeof data.unionFee === 'number' && data.unionFee > 0) {
-      updates.unionFee = data.unionFee;
-    }
     if (data.fullName && !input.name) {
       updates.name = data.fullName;
     }

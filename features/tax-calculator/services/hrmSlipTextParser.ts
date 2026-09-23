@@ -1,5 +1,6 @@
 import { BonusItem, SalarySlipDay5Data, SalarySlipDay20Data } from '../types/tax.types';
 import { normalizeBankCode } from './bankCatalog';
+import { DEPENDENT_DEDUCTION_2026, PERSONAL_DEDUCTION_2026 } from './taxCalculatorService';
 
 /**
  * Bóc tách phiếu lương / bảng thưởng HRM của MWG từ TEXT dán trực tiếp (Ctrl+A, Ctrl+C trên trang
@@ -102,6 +103,35 @@ export const detectHrmSlipKind = (text: string): HrmSlipKind | null => {
     return null;
 };
 
+/**
+ * Số người phụ thuộc. Trên HRM, khối "Tổng tiền giảm trừ" CÓ THỂ ĐANG THU GỌN — lúc đó text copy
+ * ra chỉ có dòng tổng, không có "Số lượng người phụ thuộc". Vẫn suy ra được vì:
+ *   Tổng giảm trừ = Giảm trừ bản thân + Bảo hiểm (8%+1.5%+1%) + Số người phụ thuộc × 6.2tr
+ * (các dòng bảo hiểm luôn hiện ở khối "Tổng khấu trừ" nên không mất).
+ */
+export const resolveDependents = (args: {
+    explicit: number | null;
+    dependentDeduction: number | null;
+    totalDeductions: number;
+    personalDeduction: number;
+    insurance: number;
+}): number => {
+    const { explicit, dependentDeduction, totalDeductions, personalDeduction, insurance } = args;
+    if (explicit !== null && explicit >= 0) return explicit;
+
+    if (dependentDeduction !== null && dependentDeduction > 0) {
+        return Math.round(dependentDeduction / DEPENDENT_DEDUCTION_2026);
+    }
+
+    if (totalDeductions > 0) {
+        const rest = totalDeductions - personalDeduction - insurance;
+        if (rest >= DEPENDENT_DEDUCTION_2026 / 2) {
+            return Math.round(rest / DEPENDENT_DEDUCTION_2026);
+        }
+    }
+    return 0;
+};
+
 export interface ParsedDay5 extends SalarySlipDay5Data {
     unionFee: number;
 }
@@ -121,8 +151,14 @@ export const parseHrmDay5Text = (text: string): ParsedDay5 => {
     const bhyt = numberByLabel(lines, '1.5% BHYT') ?? 0;
     const bhtn = numberByLabel(lines, '1% BHTN') ?? 0;
     const totalDeductionsDay1 = numberByLabel(lines, 'Tổng tiền giảm trừ') ?? 0;
-    const personalDeduction = numberByLabel(lines, 'Giảm trừ bản thân') ?? 15_500_000;
-    const dependents = numberByLabel(lines, 'Số lượng người phụ thuộc') ?? 0;
+    const personalDeduction = numberByLabel(lines, 'Giảm trừ bản thân') ?? PERSONAL_DEDUCTION_2026;
+    const dependents = resolveDependents({
+        explicit: numberByLabel(lines, 'Số lượng người phụ thuộc'),
+        dependentDeduction: numberByLabel(lines, 'Giảm trừ người phụ thuộc'),
+        totalDeductions: totalDeductionsDay1,
+        personalDeduction,
+        insurance: bhxh + bhyt + bhtn,
+    });
     const unionFee = numberByLabel(lines, 'đoàn phí công đoàn') ?? 0;
     const bankAccount = textByLabel(lines, 'Số TK').replace(/\s+/g, '');
     const bankName = textByLabel(lines, 'Ngân hàng CK') || textByLabel(lines, 'Ngân hàng');
