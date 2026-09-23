@@ -345,11 +345,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
           </div>
         ) : null}
 
-        {/* 2 THANH TẢI ẢNH GỌN GÀNG (HORIZONTAL SLOTS) */}
-        <div className="space-y-2">
-          {/* ĐỢT 1: LƯƠNG NGÀY 5 */}
+        {/* 2 KHU VỰC NHẬP ẢNH: GRID 2 CỘT NẰM TRÊN 1 DÒNG */}
+        <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+          {/* CỘT 1: LƯƠNG NGÀY 5 */}
           <div
-            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all ${
+            className={`p-2.5 rounded-xl border flex flex-col justify-between transition-all ${
               errorDay5
                 ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay5Slip
@@ -357,57 +357,52 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-sky-300'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                input.hasDay5Slip ? 'bg-sky-500 text-white' : 'bg-sky-100 dark:bg-sky-950/50 text-sky-600'
-              }`}>
-                <Calendar className="w-4 h-4" />
-              </div>
-
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
+            <div>
+              <div className="flex items-center justify-between gap-1 mb-1.5">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
+                    input.hasDay5Slip ? 'bg-sky-500 text-white' : 'bg-sky-100 dark:bg-sky-950/50 text-sky-600'
+                  }`}>
+                    <Calendar className="w-3.5 h-3.5" />
+                  </div>
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                     1. Lương ngày 5
                   </span>
-                  <a
-                    href="https://newinsite.thegioididong.com/hrm/chi-tiet-luong-dmx"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Mở HRM Chi tiết lương"
-                    className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-sky-600 dark:text-sky-400 hover:underline"
-                  >
-                    <span>Vào HRM</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
-                  {input.hasDay5Slip && (
-                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded">
-                      Đã nạp
-                    </span>
-                  )}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  {input.hasDay5Slip ? (
-                    <span>Lương: <strong className="text-slate-800 dark:text-slate-200 font-mono">{formatVnd(input.incomeDay5)}</strong> • BH: <strong className="font-mono">{formatVnd(input.insurance)}</strong></span>
-                  ) : (
-                    <span>Chi tiết lương & BHXH</span>
-                  )}
-                </div>
+
+                <a
+                  href="https://newinsite.thegioididong.com/hrm/chi-tiet-luong-dmx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Mở HRM Chi tiết lương (Đợt 1)"
+                  className="p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors shrink-0"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                {input.hasDay5Slip ? (
+                  <div className="space-y-0.5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Lương:</span>
+                      <strong className="font-mono text-slate-800 dark:text-slate-200">{formatVnd(input.incomeDay5)}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">BHXH:</span>
+                      <strong className="font-mono text-slate-700 dark:text-slate-300">{formatVnd(input.insurance)}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-slate-400 block truncate">Chi tiết lương & BHXH</span>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
-              <a
-                href="https://newinsite.thegioididong.com/hrm/chi-tiet-luong-dmx"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Mở link HRM Chi tiết lương (Đợt 1)"
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors inline-flex items-center justify-center"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+            <div>
               <label
                 htmlFor="upload-slot-day5"
-                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                className={`w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                   uploadingSlot === 'day5'
                     ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                     : input.hasDay5Slip
@@ -438,20 +433,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               />
             </div>
           </div>
-          {errorDay5 && (
-            <div className="px-1 space-y-1">
-              <p className="text-[11px] text-rose-600 dark:text-rose-400">{errorDay5}</p>
-              {isApiKeyRelatedError(errorDay5) && onOpenApiKeyConfig && (
-                <Button variant="outline" size="sm" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
-                  🔑 Dùng API Key riêng của bạn (miễn phí)
-                </Button>
-              )}
-            </div>
-          )}
 
-          {/* ĐỢT 2: THƯỞNG NGÀY 20 */}
+          {/* CỘT 2: THƯỞNG NGÀY 20 */}
           <div
-            className={`p-2.5 rounded-xl border flex items-center justify-between gap-2.5 transition-all ${
+            className={`p-2.5 rounded-xl border flex flex-col justify-between transition-all ${
               errorDay20
                 ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay20Slip
@@ -459,57 +444,52 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-indigo-300'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                input.hasDay20Slip ? 'bg-indigo-600 text-white' : 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600'
-              }`}>
-                <Gift className="w-4 h-4" />
-              </div>
-
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
+            <div>
+              <div className="flex items-center justify-between gap-1 mb-1.5">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
+                    input.hasDay20Slip ? 'bg-indigo-600 text-white' : 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600'
+                  }`}>
+                    <Gift className="w-3.5 h-3.5" />
+                  </div>
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                     2. Thưởng ngày 20
                   </span>
-                  <a
-                    href="https://newinsite.thegioididong.com/hrm/xem-chi-tiet-thuong"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Mở HRM Xem chi tiết thưởng"
-                    className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    <span>Vào HRM</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
-                  </a>
-                  {input.hasDay20Slip && (
-                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded">
-                      Đã nạp
-                    </span>
-                  )}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                  {input.hasDay20Slip ? (
-                    <span>Thưởng: <strong className="text-slate-800 dark:text-slate-200 font-mono">{formatVnd(input.incomeDay20)}</strong> • Thuế: <strong className="text-rose-600 font-mono">{formatVnd(input.actualTaxDay20)}</strong></span>
-                  ) : (
-                    <span>Thưởng nóng & thuế khấu trừ</span>
-                  )}
-                </div>
+
+                <a
+                  href="https://newinsite.thegioididong.com/hrm/xem-chi-tiet-thuong"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Mở HRM Xem chi tiết thưởng (Đợt 2)"
+                  className="p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors shrink-0"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
+                {input.hasDay20Slip ? (
+                  <div className="space-y-0.5">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Thưởng:</span>
+                      <strong className="font-mono text-slate-800 dark:text-slate-200">{formatVnd(input.incomeDay20)}</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Thuế:</span>
+                      <strong className="font-mono text-rose-600">{formatVnd(input.actualTaxDay20)}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-slate-400 block truncate">Thưởng nóng & thuế khấu trừ</span>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
-              <a
-                href="https://newinsite.thegioididong.com/hrm/xem-chi-tiet-thuong"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Mở link HRM Xem chi tiết thưởng (Đợt 2)"
-                className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 transition-colors inline-flex items-center justify-center"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+            <div>
               <label
                 htmlFor="upload-slot-day20"
-                className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                className={`w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                   uploadingSlot === 'day20'
                     ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
                     : input.hasDay20Slip
@@ -540,17 +520,22 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               />
             </div>
           </div>
-          {errorDay20 && (
-            <div className="px-1 space-y-1">
-              <p className="text-[11px] text-rose-600 dark:text-rose-400">{errorDay20}</p>
-              {isApiKeyRelatedError(errorDay20) && onOpenApiKeyConfig && (
-                <Button variant="outline" size="sm" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
-                  🔑 Dùng API Key riêng của bạn (miễn phí)
-                </Button>
-              )}
-            </div>
-          )}
         </div>
+
+        {/* CẢNH BÁO LỖI (NẾU CÓ) */}
+        {(errorDay5 || errorDay20) && (
+          <div className="space-y-1 px-1">
+            {errorDay5 && <p className="text-[11px] text-rose-600 dark:text-rose-400">Đợt 1: {errorDay5}</p>}
+            {errorDay20 && <p className="text-[11px] text-rose-600 dark:text-rose-400">Đợt 2: {errorDay20}</p>}
+            {/* Lỗi do khoá chung hết hạn mức / bị vô hiệu: người dùng tự cứu được bằng API Key
+                riêng (miễn phí), nên đưa lối đi ngay cạnh thông báo lỗi. */}
+            {isApiKeyRelatedError(errorDay5 || errorDay20 || '') && onOpenApiKeyConfig && (
+              <Button variant="outline" size="sm" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
+                🔑 Dùng API Key riêng của bạn (miễn phí)
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* KHUNG BÓC TÁCH DANH SÁCH THƯỞNG NÓNG (CHECKBOX NHẬN THAY)                   */}
