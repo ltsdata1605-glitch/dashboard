@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   User,
   ClipboardPaste,
+  HelpCircle,
   ShieldCheck,
   RotateCcw,
   Save,
@@ -35,6 +36,7 @@ import {
 import { extractSalarySlip, SAMPLE_MWG_DAY20_BONUS_ITEMS } from '../services/salarySlipOcrService';
 import { normalizeBankCode } from '../services/bankCatalog';
 import { ParsedDay5, parseHrmDay5Text, parseHrmDay20Text } from '../services/hrmSlipTextParser';
+import { HrmCopyGuideModal } from './HrmCopyGuideModal';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface TaxInputPanelProps {
@@ -66,6 +68,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
   const [bonusFilter, setBonusFilter] = useState<'hot' | 'main' | 'all'>('hot');
   // Trình duyệt không cho đọc bộ nhớ tạm (Firefox, hoặc người dùng từ chối quyền) -> hiện ô dán tay
   const [pasteSlot, setPasteSlot] = useState<'day5' | 'day20' | null>(null);
+  const [showCopyGuide, setShowCopyGuide] = useState(false);
   const [showAddCustomBonus, setShowAddCustomBonus] = useState(false);
   const [customItemName, setCustomItemName] = useState('');
   const [customItemAmount, setCustomItemAmount] = useState('');
@@ -394,6 +397,19 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
           </div>
         </div>
 
+        <div className="flex items-center gap-1.5">
+        <Button
+          variant="unstyled"
+          size="none"
+          data-testid="open-copy-guide"
+          onClick={() => setShowCopyGuide(true)}
+          title="Hướng dẫn cách copy dữ liệu từ HRM"
+          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-sky-700 hover:text-sky-800 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors cursor-pointer"
+        >
+          <HelpCircle className="w-3 h-3" />
+          <span>Hướng dẫn</span>
+        </Button>
+
         <button
           type="button"
           onClick={onReset}
@@ -403,7 +419,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
           <RotateCcw className="w-3 h-3" />
           <span>Đặt lại</span>
         </button>
+        </div>
       </div>
+
+      <HrmCopyGuideModal isOpen={showCopyGuide} onClose={() => setShowCopyGuide(false)} />
 
       <div className="space-y-3">
         {/* BANNER TRẠNG THÁI (KHI ĐÃ TẢI ÍT NHẤT 1 ĐỢT) */}
@@ -446,9 +465,15 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   }`}>
                     <Calendar className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                  <a
+                    href="https://newinsite.thegioididong.com/hrm/chi-tiet-luong-dmx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Mở trang HRM tương ứng"
+                    className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer no-underline"
+                  >
                     1. Lương ngày 5
-                  </span>
+                  </a>
                 </div>
 
                 <a
@@ -561,9 +586,15 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   }`}>
                     <Gift className="w-3.5 h-3.5" />
                   </div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                  <a
+                    href="https://newinsite.thegioididong.com/hrm/xem-chi-tiet-thuong"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Mở trang HRM tương ứng"
+                    className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer no-underline"
+                  >
                     2. Thưởng ngày 20
-                  </span>
+                  </a>
                 </div>
 
                 <a

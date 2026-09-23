@@ -158,3 +158,34 @@ test('phiếu có khối "Tổng tiền giảm trừ" đang thu gọn: vẫn ra 
     console.log('BẢNG KẾT QUẢ:', panel.replace(/\n/g, ' | '));
     expect(panel.replace(/\s/g, '')).toContain('28.740.000');
 });
+
+test('tiêu đề thẻ mở được trang HRM và có hướng dẫn cách copy', async ({ page }) => {
+    await openTax(page);
+
+    // Bấm ngay vào TIÊU ĐỀ thẻ là mở trang HRM (không phải chỉ mỗi icon nhỏ)
+    const title5 = page.getByRole('link', { name: '1. Lương ngày 5' });
+    const title20 = page.getByRole('link', { name: '2. Thưởng ngày 20' });
+    await expect(title5).toHaveAttribute('href', /chi-tiet-luong-dmx/);
+    await expect(title20).toHaveAttribute('href', /xem-chi-tiet-thuong/);
+    await expect(title5).toHaveAttribute('target', '_blank');
+
+    const [popup] = await Promise.all([
+        page.waitForEvent('popup', { timeout: 15_000 }),
+        title5.click(),
+    ]);
+    // HRM thật sẽ chuyển tiếp sang trang đăng nhập MWG nên chỉ kiểm tra có mở tab mới
+    console.log('BẤM TIÊU ĐỀ MỞ TRANG:', popup.url().slice(0, 60));
+    expect(popup).toBeTruthy();
+    await popup.close();
+
+    // Hướng dẫn copy dữ liệu 2 đợt
+    await page.getByTestId('open-copy-guide').click();
+    await expect(page.getByText('Cách lấy dữ liệu từ HRM')).toBeVisible();
+    await expect(page.getByText(/Chọn đúng tháng|chọn đúng/i).first()).toBeVisible();
+    await expect(page.getByText(/Dán dữ liệu/).first()).toBeVisible();
+    await expect(page.getByText(/tự suy ra số người phụ thuộc/i)).toBeVisible();
+    await page.screenshot({ path: 'test-results/tax-copy-guide.png' });
+    await page.getByRole('button', { name: 'Đã hiểu' }).click();
+    await expect(page.getByText('Cách lấy dữ liệu từ HRM')).toHaveCount(0);
+    console.log('HƯỚNG DẪN COPY HIỂN THỊ VÀ ĐÓNG ĐƯỢC');
+});
