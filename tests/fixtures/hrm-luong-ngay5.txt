@@ -1,0 +1,52 @@
+logo
+Trang chủ
+Tìm nhân viên
+Công việc 
+Hành chính 
+HRM 
+Hệ thống 
+0
+Lý Thị Thu Ngân 
+Trang chủ  HRM  Chi tiết lương
+BỨC TRANH THU NHẬP THEO NĂM
+ THỐNG KÊ TỔNG THU NHẬP = Tổng lương phụ cấp + Thưởng chính + Thưởng nóng + Thưởng quý (nếu có)...(lưu ý đây không phải là Thu nhập tính thưởng cuối năm)
+Tháng/2026	T1	T2	T3	T4	T5	T6	T7	T8	T9	T10	T11	T12	Tổng
+Thu nhập	60,523,752	26,995,255	20,309,441	27,929,110	25,362,658	23,457,509	32,415,051	28,302,349	0	0	0	0	245,295,125
+
+08/2026
+ Giờ công chuẩn: 208
+Lương BHXH	4,730,000
+Chấm công	
+Giờ nghỉ phép thường niên	16
+Lương phép thường niên	363,846
+Tổng lương	363,846
+ Lương khoán	7,358,564
+Thưởng ERP T08.2026	7,358,564
+Tổng lương, phụ cấp	7,722,410
+ Tổng thu nhập chịu thuế TNCN trong tháng	7,722,410
+ Tổng tiền giảm trừ	22,196,650
+8% BHXH	378,400
+1.5% BHYT	70,950
+1% BHTN	47,300
+Giảm trừ bản thân	15,500,000
+Giảm trừ người phụ thuộc	6,200,000
+Số lượng người phụ thuộc	1
+Thu nhập tính thuế	0
+Thuế TNCN phải nộp	0
+ Tổng khấu trừ	520,300
+Khấu trừ đoàn phí công đoàn	23,650
+8% BHXH	378,400
+1.5% BHYT	70,950
+1% BHTN	47,300
+Thuế TNCN phải nộp	0
+Thực lãnh (làm tròn 1.000đ)	7,202,000
+Chi lương	7,202,000
+Giữ lương	0
+DS thu thêm Thuế TNCN T08.2026	-17,000
+Tổng CK	7,185,000
+Số TK	109005866487
+Ngân hàng CK	NH TMCP VietinBank_CN Tân Bình_TPHCM
+GHI CHÚ
+
+Giờ công chuẩn 8h: = (Tổng số ngày của tháng - các ngày chủ nhật) * 8h
+2017 © Báo cáo nội bộ Thegioididong.com

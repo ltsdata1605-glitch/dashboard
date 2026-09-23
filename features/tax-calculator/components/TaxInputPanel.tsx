@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   User,
+  ClipboardPaste,
   ShieldCheck,
   RotateCcw,
   Save,
@@ -33,6 +34,7 @@ import {
 } from '../services/taxCalculatorService';
 import { extractSalarySlip, SAMPLE_MWG_DAY20_BONUS_ITEMS } from '../services/salarySlipOcrService';
 import { normalizeBankCode } from '../services/bankCatalog';
+import { ParsedDay5, parseHrmDay5Text, parseHrmDay20Text } from '../services/hrmSlipTextParser';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface TaxInputPanelProps {
@@ -62,6 +64,8 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
   const [errorDay5, setErrorDay5] = useState<string | null>(null);
   const [errorDay20, setErrorDay20] = useState<string | null>(null);
   const [bonusFilter, setBonusFilter] = useState<'hot' | 'main' | 'all'>('hot');
+  // Trình duyệt không cho đọc bộ nhớ tạm (Firefox, hoặc người dùng từ chối quyền) -> hiện ô dán tay
+  const [pasteSlot, setPasteSlot] = useState<'day5' | 'day20' | null>(null);
   const [showAddCustomBonus, setShowAddCustomBonus] = useState(false);
   const [customItemName, setCustomItemName] = useState('');
   const [customItemAmount, setCustomItemAmount] = useState('');
@@ -73,7 +77,149 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     onChange({ [field]: numValue });
   };
 
-  // 1. Xử lý Upload Bảng Lương Ngày 5 (Chi tiết lương)
+  // Áp dữ liệu Đợt 1 vào biểu mẫu — dùng chung cho cả 2 đường vào: dán text HRM và đọc ảnh bằng AI
+  const applyDay5Data = (data: SalarySlipDay5Data & { unionFee?: number }) => {
+    const updates: Partial<TaxCalculationInput> = {
+      hasDay5Slip: true,
+      incomeDay5: data.incomeDay5,
+      insuranceSalary: data.insuranceSalary,
+      insurance: data.insurance,
+      dependents: data.dependents ?? input.dependents,
+      personalDeduction: data.personalDeduction || 15_500_000,
+    };
+
+    if (typeof data.unionFee === 'number' && data.unionFee > 0) {
+      updates.unionFee = data.unionFee;
+    }
+    if (data.fullName && !input.name) {
+      updates.name = data.fullName;
+    }
+    // Tháng lương trên phiếu: dùng để gom nhóm lịch sử theo tháng
+    if (data.monthYear && !input.monthYear) {
+      updates.monthYear = data.monthYear;
+    }
+    if (data.bankAccount && !input.bankAccount) {
+      updates.bankAccount = data.bankAccount;
+    }
+    // Ngân hàng nhận tiền: lấy thẳng từ phiếu (chỉ giữ lựa chọn cũ nếu nó là ngân hàng hợp lệ
+    // người dùng đã tự chọn — giá trị cũ kiểu "MB" không có trong danh mục coi như chưa chọn).
+    const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
+    if (autoBankCode && !normalizeBankCode(input.bankCode)) {
+      updates.bankCode = autoBankCode;
+    }
+    // Tự động cộng tổng thu nhập nếu cả 2 đợt đã sẵn sàng
+    if (input.incomeDay20 > 0) {
+      updates.totalIncome = data.incomeDay5 + input.incomeDay20;
+    }
+
+    onChange(updates);
+  };
+
+  // Áp dữ liệu Đợt 2 vào biểu mẫu
+  const applyDay20Data = (data: SalarySlipDay20Data) => {
+    const income20 = data.incomeDay20 > 0 ? data.incomeDay20 : data.bonusMain + data.bonusHot;
+
+    // Tự động gợi ý các mục nhận thay nếu tên có chứa từ khoá "khoán" hoặc "thi đua"
+    const defaultSelectedProxyIds: string[] = [];
+    (data.bonusItems || []).forEach((item) => {
+      const lower = item.name.toLowerCase();
+      if (lower.includes('khoán') || lower.includes('thi đua') || lower.includes('nhận thay')) {
+        defaultSelectedProxyIds.push(item.id);
+      }
+    });
+
+    const updates: Partial<TaxCalculationInput> = {
+      hasDay20Slip: true,
+      incomeDay20: income20,
+      bonusMain: data.bonusMain,
+      bonusHot: data.bonusHot,
+      actualTaxDay20: data.actualTaxDay20,
+      bonusItems: data.bonusItems || [],
+      selectedProxyItemIds: defaultSelectedProxyIds,
+    };
+
+    if (data.fullName && !input.name) {
+      updates.name = data.fullName;
+    }
+    if (data.monthYear && !input.monthYear) {
+      updates.monthYear = data.monthYear;
+    }
+    if (data.bankAccount && !input.bankAccount) {
+      updates.bankAccount = data.bankAccount;
+    }
+    const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
+    if (autoBankCode && !normalizeBankCode(input.bankCode)) {
+      updates.bankCode = autoBankCode;
+    }
+    if (input.incomeDay5 > 0) {
+      updates.totalIncome = input.incomeDay5 + income20;
+    }
+
+    onChange(updates);
+    return income20;
+  };
+
+  // 1. DÁN TEXT từ trang HRM (cách chính: nhanh, miễn phí, không qua AI)
+  const processDay5Text = (text: string) => {
+    try {
+      const data: ParsedDay5 = parseHrmDay5Text(text);
+      applyDay5Data(data);
+      setErrorDay5(null);
+      setPasteSlot(null);
+      toast.success(
+        `Đã đọc Chi tiết lương Đợt 1${data.fullName ? ` — ${data.fullName}` : ''}: ${formatVnd(data.incomeDay5)}`
+      );
+      return true;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không đọc được nội dung dán vào.';
+      setErrorDay5(msg);
+      toast.error(`❌ ${msg}`, { duration: 6000 });
+      return false;
+    }
+  };
+
+  const processDay20Text = (text: string) => {
+    try {
+      const data = parseHrmDay20Text(text);
+      applyDay20Data(data);
+      setErrorDay20(null);
+      setPasteSlot(null);
+      toast.success(
+        `Đã đọc Chi tiết thưởng Đợt 2: ${data.bonusItems.length} khoản thưởng • Thuế khấu trừ ${formatVnd(data.actualTaxDay20)}`
+      );
+      return true;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Không đọc được nội dung dán vào.';
+      setErrorDay20(msg);
+      toast.error(`❌ ${msg}`, { duration: 6000 });
+      return false;
+    }
+  };
+
+  /** Bấm vào ô là tự dán (giống Report BI › Cập nhật dữ liệu) */
+  const handlePasteClick = async (slot: 'day5' | 'day20') => {
+    if (uploadingSlot) return;
+    if (!navigator?.clipboard?.readText) {
+      setPasteSlot(slot);
+      return;
+    }
+    try {
+      const text = await navigator.clipboard.readText();
+      if (!text || !text.trim()) {
+        toast('Bộ nhớ tạm đang trống. Mở trang HRM, bấm Ctrl+A rồi Ctrl+C trước nhé!', { icon: '📋' });
+        setPasteSlot(slot);
+        return;
+      }
+      if (slot === 'day5') processDay5Text(text);
+      else processDay20Text(text);
+    } catch (err) {
+      // Trình duyệt chặn đọc bộ nhớ tạm -> mở ô để người dùng tự Ctrl+V
+      console.warn('Không đọc được bộ nhớ tạm:', err);
+      setPasteSlot(slot);
+    }
+  };
+
+  // 2. Đường dự phòng: đọc ẢNH bằng AI (chậm hơn, phụ thuộc hạn mức Gemini)
   const handleUploadDay5 = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -84,39 +230,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
     try {
       const data = (await extractSalarySlip(file, 'day5')) as SalarySlipDay5Data;
-
-      const updates: Partial<TaxCalculationInput> = {
-        hasDay5Slip: true,
-        incomeDay5: data.incomeDay5,
-        insuranceSalary: data.insuranceSalary,
-        insurance: data.insurance,
-        dependents: data.dependents ?? input.dependents,
-        personalDeduction: data.personalDeduction || 15_500_000,
-      };
-
-      if (data.fullName && !input.name) {
-        updates.name = data.fullName;
-      }
-      // Tháng lương trên phiếu: dùng để gom nhóm lịch sử theo tháng
-      if (data.monthYear && !input.monthYear) {
-        updates.monthYear = data.monthYear;
-      }
-      if (data.bankAccount && !input.bankAccount) {
-        updates.bankAccount = data.bankAccount;
-      }
-      // Ngân hàng nhận tiền: lấy thẳng từ phiếu (chỉ giữ lựa chọn cũ nếu nó là ngân hàng hợp lệ
-      // người dùng đã tự chọn — giá trị cũ kiểu "MB" không có trong danh mục coi như chưa chọn).
-      const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
-      if (autoBankCode && !normalizeBankCode(input.bankCode)) {
-        updates.bankCode = autoBankCode;
-      }
-
-      // Tự động cộng tổng thu nhập nếu cả 2 đợt đã sẵn sàng
-      if (input.incomeDay20 > 0) {
-        updates.totalIncome = data.incomeDay5 + input.incomeDay20;
-      }
-
-      onChange(updates);
+      applyDay5Data(data);
       toast.success(`Đã nhận diện Bảng lương Đợt 1: ${data.fullName || 'Thành công'}`, { id: toastId });
     } catch (err: unknown) {
       console.error('Lỗi khi phân tích Bảng lương ngày 5:', err);
@@ -129,7 +243,6 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     }
   };
 
-  // 2. Xử lý Upload Bảng Thưởng Ngày 20 (Xem chi tiết thưởng)
   const handleUploadDay20 = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -140,51 +253,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
     try {
       const data = (await extractSalarySlip(file, 'day20')) as SalarySlipDay20Data;
-      const income20 = data.incomeDay20 > 0 ? data.incomeDay20 : data.bonusMain + data.bonusHot;
-
-      // Tự động gợi ý các mục nhận thay nếu tên có chứa từ khoá "khoán" hoặc "thi đua"
-      const defaultSelectedProxyIds: string[] = [];
-      if (data.bonusItems && data.bonusItems.length > 0) {
-        data.bonusItems.forEach((item) => {
-          const lower = item.name.toLowerCase();
-          if (lower.includes('khoán') || lower.includes('thi đua') || lower.includes('nhận thay')) {
-            defaultSelectedProxyIds.push(item.id);
-          }
-        });
-      }
-
-      const updates: Partial<TaxCalculationInput> = {
-        hasDay20Slip: true,
-        incomeDay20: income20,
-        bonusMain: data.bonusMain,
-        bonusHot: data.bonusHot,
-        actualTaxDay20: data.actualTaxDay20,
-        bonusItems: data.bonusItems || [],
-        selectedProxyItemIds: defaultSelectedProxyIds,
-      };
-
-      if (data.fullName && !input.name) {
-        updates.name = data.fullName;
-      }
-      // Tháng lương trên phiếu: dùng để gom nhóm lịch sử theo tháng
-      if (data.monthYear && !input.monthYear) {
-        updates.monthYear = data.monthYear;
-      }
-      if (data.bankAccount && !input.bankAccount) {
-        updates.bankAccount = data.bankAccount;
-      }
-      // Ngân hàng nhận tiền: lấy thẳng từ phiếu (chỉ giữ lựa chọn cũ nếu nó là ngân hàng hợp lệ
-      // người dùng đã tự chọn — giá trị cũ kiểu "MB" không có trong danh mục coi như chưa chọn).
-      const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
-      if (autoBankCode && !normalizeBankCode(input.bankCode)) {
-        updates.bankCode = autoBankCode;
-      }
-
-      if (input.incomeDay5 > 0) {
-        updates.totalIncome = input.incomeDay5 + income20;
-      }
-
-      onChange(updates);
+      applyDay20Data(data);
       toast.success(
         `Đã bóc tách Bảng thưởng Đợt 2: ${data.bonusItems?.length || 0} khoản thưởng. Thuế khấu trừ: ${formatVnd(data.actualTaxDay20)}`,
         { id: toastId }
@@ -323,7 +392,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               Nhập Lương & Thưởng
             </h3>
             <p className="text-[11px] text-slate-400">
-              Tải ảnh 2 đợt lương & thưởng từ HRM
+              Copy trang HRM (Ctrl+A, Ctrl+C) rồi bấm "Dán dữ liệu" 
             </p>
           </div>
         </div>
@@ -414,29 +483,57 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="upload-slot-day5"
+            <div className="space-y-1">
+              <Button
+                variant="unstyled"
+                size="none"
+                data-testid="paste-day5"
+                onClick={() => handlePasteClick('day5')}
+                disabled={uploadingSlot === 'day5'}
+                title="Bấm để tự dán nội dung đã copy từ trang HRM"
                 className={`w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                  uploadingSlot === 'day5'
-                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                    : input.hasDay5Slip
+                  input.hasDay5Slip
                     ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                     : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
                 }`}
               >
+                <ClipboardPaste className="w-3.5 h-3.5" />
+                <span>{input.hasDay5Slip ? 'Dán lại' : 'Dán dữ liệu'}</span>
+              </Button>
+
+              {pasteSlot === 'day5' && (
+                <textarea
+                  autoFocus
+                  data-testid="paste-area-day5"
+                  onPaste={(e) => {
+                    const text = e.clipboardData.getData('text');
+                    if (text) {
+                      e.preventDefault();
+                      processDay5Text(text);
+                    }
+                  }}
+                  onChange={(e) => {
+                    if (e.target.value.trim().length > 200) processDay5Text(e.target.value);
+                  }}
+                  placeholder="Bấm Ctrl+V để dán nội dung trang HRM vào đây..."
+                  className="w-full h-16 p-1.5 text-[10px] font-mono rounded-md border border-sky-300 dark:border-sky-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                />
+              )}
+
+              <label
+                htmlFor="upload-slot-day5"
+                className={`w-full flex items-center justify-center gap-1 py-1 text-[10px] font-medium rounded-md cursor-pointer transition-colors ${
+                  uploadingSlot === 'day5'
+                    ? 'text-slate-400 cursor-not-allowed'
+                    : 'text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30'
+                }`}
+              >
                 {uploadingSlot === 'day5' ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
-                  <UploadCloud className="w-3.5 h-3.5" />
+                  <UploadCloud className="w-3 h-3" />
                 )}
-                <span>
-                  {uploadingSlot === 'day5'
-                    ? 'Đang đọc...'
-                    : input.hasDay5Slip
-                    ? 'Đổi ảnh'
-                    : 'Tải ảnh'}
-                </span>
+                <span>{uploadingSlot === 'day5' ? 'AI đang đọc ảnh...' : 'hoặc tải ảnh (AI)'}</span>
               </label>
               <input
                 id="upload-slot-day5"
@@ -501,29 +598,57 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               </div>
             </div>
 
-            <div>
-              <label
-                htmlFor="upload-slot-day20"
+            <div className="space-y-1">
+              <Button
+                variant="unstyled"
+                size="none"
+                data-testid="paste-day20"
+                onClick={() => handlePasteClick('day20')}
+                disabled={uploadingSlot === 'day20'}
+                title="Bấm để tự dán nội dung đã copy từ trang HRM"
                 className={`w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-                  uploadingSlot === 'day20'
-                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
-                    : input.hasDay20Slip
+                  input.hasDay20Slip
                     ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
                     : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
                 }`}
               >
+                <ClipboardPaste className="w-3.5 h-3.5" />
+                <span>{input.hasDay20Slip ? 'Dán lại' : 'Dán dữ liệu'}</span>
+              </Button>
+
+              {pasteSlot === 'day20' && (
+                <textarea
+                  autoFocus
+                  data-testid="paste-area-day20"
+                  onPaste={(e) => {
+                    const text = e.clipboardData.getData('text');
+                    if (text) {
+                      e.preventDefault();
+                      processDay20Text(text);
+                    }
+                  }}
+                  onChange={(e) => {
+                    if (e.target.value.trim().length > 200) processDay20Text(e.target.value);
+                  }}
+                  placeholder="Bấm Ctrl+V để dán nội dung trang HRM vào đây..."
+                  className="w-full h-16 p-1.5 text-[10px] font-mono rounded-md border border-indigo-300 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              )}
+
+              <label
+                htmlFor="upload-slot-day20"
+                className={`w-full flex items-center justify-center gap-1 py-1 text-[10px] font-medium rounded-md cursor-pointer transition-colors ${
+                  uploadingSlot === 'day20'
+                    ? 'text-slate-400 cursor-not-allowed'
+                    : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30'
+                }`}
+              >
                 {uploadingSlot === 'day20' ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
-                  <UploadCloud className="w-3.5 h-3.5" />
+                  <UploadCloud className="w-3 h-3" />
                 )}
-                <span>
-                  {uploadingSlot === 'day20'
-                    ? 'Đang đọc...'
-                    : input.hasDay20Slip
-                    ? 'Đổi ảnh'
-                    : 'Tải ảnh'}
-                </span>
+                <span>{uploadingSlot === 'day20' ? 'AI đang đọc ảnh...' : 'hoặc tải ảnh (AI)'}</span>
               </label>
               <input
                 id="upload-slot-day20"
