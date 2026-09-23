@@ -10,7 +10,9 @@ test('đổi tài khoản: dữ liệu cục bộ của tài khoản trước b�
     await page.goto('/');
 
     const result = await page.evaluate(async () => {
-        const mod = await import('/services/localDataOwner.ts');
+        // Đường dẫn qua dev server của Vite — dùng biến để TypeScript không cố phân giải module
+        const modPath = '/services/localDataOwner.ts';
+        const mod = (await import(/* @vite-ignore */ modPath)) as typeof import('../../services/localDataOwner');
 
         // Giả lập dữ liệu của "tài khoản cũ" trong đúng các kho app dùng thật
         // DB có thể đã tồn tại với version khác (app tự tạo) -> mở không kèm version, thiếu store
@@ -95,7 +97,9 @@ test('cùng một tài khoản: KHÔNG dọn dữ liệu', async ({ page }) => {
     await page.goto('/');
 
     const kept = await page.evaluate(async () => {
-        const mod = await import('/services/localDataOwner.ts');
+        // Đường dẫn qua dev server của Vite — dùng biến để TypeScript không cố phân giải module
+        const modPath = '/services/localDataOwner.ts';
+        const mod = (await import(/* @vite-ignore */ modPath)) as typeof import('../../services/localDataOwner');
         localStorage.setItem('ycx-giu-lai', 'dữ liệu của chính tôi');
         mod.setLocalDataOwner('uid-cua-toi');
         const wiped = await mod.ensureLocalDataBelongsTo('uid-cua-toi');

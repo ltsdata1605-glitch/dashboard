@@ -220,25 +220,86 @@ export const parseSimpleDepartments = (danhSachData: string): DepartmentInfo[] =
 };
 
 /**
+ * Bộ so khớp "nhân viên này có trong danh sách Phân Tích không" — dùng chung cho cả việc lấy
+ * danh sách lẫn đếm theo bộ phận. Chấp nhận mọi biến thể tên: "Mã - Tên", "Tên - Mã", chỉ mã.
+ */
+const buildAnalysisMatcher = (employees: AnalysisEmployeeItem[]) => {
+    const lookup = new Map<string, AnalysisEmployeeItem>();
+    employees.forEach(e => {
+        lookup.set(e.originalName.toLowerCase().trim(), e);
+        lookup.set(standardizeEmployeeName(e.originalName).toLowerCase().trim(), e);
+        if (e.id) lookup.set(e.id.toLowerCase().trim(), e);
+    });
+
+    return (name: string): boolean => {
+        const clean = name.toLowerCase().trim();
+        if (lookup.has(clean)) return true;
+        const canonical = standardizeEmployeeName(name).toLowerCase().trim();
+        if (lookup.has(canonical)) return true;
+        if (name.includes(' - ')) {
+            const parts = name.split(' - ').map(p => p.trim().toLowerCase());
+            if (lookup.has(parts[0]) || lookup.has(parts[1])) return true;
+        }
+        return false;
+    };
+};
+
+/**
+ * Tập tên nhân viên xuất hiện trong dữ liệu "Luỹ kế doanh thu nhân viên" dán cho MỘT siêu thị.
+ * Dữ liệu này dư (có người không thuộc siêu thị), nên luôn phải giao với danh sách Phân Tích.
+ */
+const namesInStoreReport = (rawEmployeesText: string): Set<string> => {
+    const names = new Set<string>();
+    if (!rawEmployeesText) return names;
+
+    rawEmployeesText.split(/\r?\n/).forEach(line => {
+        const namePart = (line.split('\t')[0] || '').trim();
+        if (!namePart || !namePart.includes(' - ')) return;
+        if (namePart.startsWith('BP ') || namePart.includes('http') || namePart.includes('Báo cáo') || namePart.includes('Dashboards')) return;
+        names.add(standardizeEmployeeName(namePart).toLowerCase().trim());
+        names.add(namePart.toLowerCase().trim());
+    });
+    return names;
+};
+
+/**
  * Lấy danh sách nhân viên Employee[] chuẩn hoá từ danh sách Phân Tích (ưu tiên cao nhất).
+ *
+ * `storeEmployeesRaw` = dữ liệu "Luỹ kế doanh thu nhân viên" dán cho CHÍNH siêu thị đang xem:
+ * MỖI SIÊU THỊ CÓ DANH SÁCH RIÊNG (chủ dự án chốt 2026-09-23). Siêu thị nào cũng lấy trọn danh
+ * sách Phân Tích là sai — mọi siêu thị hiện cùng một số NV. Quy tắc: nhân viên thuộc siêu thị khi
+ * CÓ trong báo cáo luỹ kế của siêu thị đó VÀ có trong danh sách Phân Tích (danh sách Phân Tích
+ * mới là nguồn đúng và đủ; báo cáo luỹ kế dư một số người không thuộc siêu thị).
+ * Chưa dán báo cáo cho siêu thị (hoặc dán mà không khớp ai) thì giữ nguyên toàn bộ danh sách —
+ * thà thừa còn hơn làm trắng màn hình của siêu thị chưa kịp dán dữ liệu.
  */
 export const getEmployeesFromAnalysis = (
     analysisEmployees: AnalysisEmployeeItem[],
-    hiddenEmployees: string[] = []
+    hiddenEmployees: string[] = [],
+    storeEmployeesRaw: string = ''
 ): Employee[] => {
     if (!analysisEmployees || analysisEmployees.length === 0) return [];
     const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
-    return analysisEmployees
-        .filter(e => {
-            if (hiddenSet.has(e.originalName) || hiddenSet.has(standardizeEmployeeName(e.originalName))) return false;
-            const dept = (e.department || '').trim();
-            if (!dept || isSystemOrIgnoredEmployee(e.originalName, dept)) return false;
-            return true;
-        })
-        .map(e => ({
-            originalName: e.originalName,
-            name: e.name || formatEmployeeName(e.originalName)
-        }));
+    const active = analysisEmployees.filter(e => {
+        if (hiddenSet.has(e.originalName) || hiddenSet.has(standardizeEmployeeName(e.originalName))) return false;
+        const dept = (e.department || '').trim();
+        if (!dept || isSystemOrIgnoredEmployee(e.originalName, dept)) return false;
+        return true;
+    });
+
+    const storeNames = namesInStoreReport(storeEmployeesRaw);
+    const inThisStore = storeNames.size > 0
+        ? active.filter(e =>
+            storeNames.has(standardizeEmployeeName(e.originalName).toLowerCase().trim()) ||
+            storeNames.has(e.originalName.toLowerCase().trim()))
+        : [];
+
+    const chosen = inThisStore.length > 0 ? inThisStore : active;
+
+    return chosen.map(e => ({
+        originalName: e.originalName,
+        name: e.name || formatEmployeeName(e.originalName)
+    }));
 };
 
 /**
@@ -258,24 +319,7 @@ export const getDepartmentsFromAnalysis = (
     );
     if (activeAnalysisEmployees.length === 0) return [];
 
-    const analysisLookup = new Map<string, AnalysisEmployeeItem>();
-    activeAnalysisEmployees.forEach(e => {
-        analysisLookup.set(e.originalName.toLowerCase().trim(), e);
-        analysisLookup.set(standardizeEmployeeName(e.originalName).toLowerCase().trim(), e);
-        if (e.id) analysisLookup.set(e.id.toLowerCase().trim(), e);
-    });
-
-    const isMatch = (name: string): boolean => {
-        const clean = name.toLowerCase().trim();
-        if (analysisLookup.has(clean)) return true;
-        const canonical = standardizeEmployeeName(name).toLowerCase().trim();
-        if (analysisLookup.has(canonical)) return true;
-        if (name.includes(' - ')) {
-            const parts = name.split(' - ').map(p => p.trim().toLowerCase());
-            if (analysisLookup.has(parts[0]) || analysisLookup.has(parts[1])) return true;
-        }
-        return false;
-    };
+    const isMatch = buildAnalysisMatcher(activeAnalysisEmployees);
 
     // Nếu có dữ liệu dán thô, quét các dòng phòng ban (BP ...) và chỉ đếm nhân viên thuộc Phân tích
     if (rawEmployeesText) {
@@ -302,15 +346,10 @@ export const getDepartmentsFromAnalysis = (
         }
 
         if (deptMap.size > 0 && matchedEmpKeys.size > 0) {
-            // Các nhân viên Phân tích chưa xuất hiện trong báo cáo dán thô: gom vào phòng ban chính đầu tiên
-            const firstDeptName = Array.from(deptMap.keys())[0];
-            activeAnalysisEmployees.forEach(e => {
-                const canonical = standardizeEmployeeName(e.originalName);
-                if (!matchedEmpKeys.has(canonical)) {
-                    deptMap.get(firstDeptName)!.add(canonical);
-                }
-            });
-
+            // 🔴 KHÔNG gom những người Phân Tích vắng mặt trong báo cáo vào bộ phận đầu tiên nữa:
+            // báo cáo luỹ kế này là CỦA MỘT SIÊU THỊ, ai không có trong đó là người của siêu thị
+            // khác. Bước gom cũ khiến siêu thị nào cũng hiện đủ danh sách Phân Tích (cùng "19 NV"
+            // ở mọi tab — chủ dự án báo 2026-09-23).
             return Array.from(deptMap.entries())
                 .filter(([_, set]) => set.size > 0)
                 .map(([name, set]) => ({
