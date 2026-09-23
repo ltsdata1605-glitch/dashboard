@@ -1,6 +1,7 @@
 import type { DataRow, ProductConfig, Status } from '../types';
 import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize, getErrorMessage } from '../utils/dataUtils';
 import { COL, DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../constants';
+import { isAllInOneDepartment, keepOnlyAllInOne } from '../utils/departmentFilter';
 
 type StatusUpdater = (status: Status) => void;
 
@@ -408,7 +409,9 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
     }
 }
 
-export async function processShiftFile(file: File): Promise<{ map: DepartmentMap, uniqueDepartments: string[] }> {
+export async function processShiftFile(
+    file: File
+): Promise<{ map: DepartmentMap; uniqueDepartments: string[]; skippedCount: number; skippedDepartments: string[] }> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = async (e: ProgressEvent<FileReader>) => {
@@ -485,7 +488,21 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
                     throw new Error("File phân ca không hợp lệ hoặc không chứa dữ liệu nhân viên và bộ phận.");
                 }
 
-                resolve({ map, uniqueDepartments: Array.from(departments).sort() });
+                // Phân Tích & Report BI chỉ dùng nhân viên BP All In One (chủ dự án chốt
+                // 2026-09-23). Phân Ca có đường nhập Excel riêng nên vẫn nạp đủ mọi bộ phận.
+                const filtered = keepOnlyAllInOne(map);
+                if (filtered.keptCount === 0) {
+                    throw new Error(
+                        `File không có nhân viên nào thuộc BP All In One (chỉ thấy: ${filtered.skippedDepartments.join(', ') || 'không rõ bộ phận'}).`
+                    );
+                }
+
+                resolve({
+                    map: filtered.map,
+                    uniqueDepartments: Array.from(departments).filter(isAllInOneDepartment).sort(),
+                    skippedCount: filtered.skippedCount,
+                    skippedDepartments: filtered.skippedDepartments,
+                });
 
             } catch (error) {
                 console.error("Lỗi khi xử lý file phân ca:", error);

@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import type { Status, AppState, CrossSellingConfig } from '../types';
 import type { DepartmentMap } from '../services/dataService';
 import { useAuth } from '../contexts/AuthContext';
+import { keepOnlyAllInOne } from '../utils/departmentFilter';
 
 // Import specialized hooks
 import { useExportLogic } from './useExportLogic';
@@ -199,10 +200,16 @@ export const useDashboardLogic = () => {
      * Tên ghép lại dạng "mã - Tên" đúng khuôn mà normalizeAnalysisEmployees mong đợi.
      */
     const departmentMapToEmployeeList = (map: DepartmentMap) =>
-        Object.entries(map || {}).map(([id, raw]) => {
+        // Chỉ đẩy nhân viên BP All In One sang Report BI. Lọc lại ở đây (dù file nạp vào đã lọc)
+        // để danh sách cũ lưu từ trước cũng theo đúng quy tắc mà không cần nạp lại file.
+        Object.entries(keepOnlyAllInOne(map).map).map(([id, raw]) => {
             const [dept, name] = String(raw || '').split(';;');
             const cleanName = (name || '').trim();
-            return { name: cleanName ? `${id} - ${cleanName}` : id, department: (dept || '').trim() };
+            // File có cột "Mã NV" và "Tên" tách riêng thì phần tên đã kèm sẵn mã ("101 - Nguyễn
+            // Văn A") — ghép thêm mã lần nữa sẽ ra "101 - 101 - Nguyễn Văn A".
+            const alreadyHasId = cleanName.startsWith(`${id} -`) || cleanName.startsWith(`${id}-`);
+            const fullName = !cleanName ? id : alreadyHasId ? cleanName : `${id} - ${cleanName}`;
+            return { name: fullName, department: (dept || '').trim() };
         });
 
     const updateDepartmentMap = useStableCallback(async (map: DepartmentMap) => {

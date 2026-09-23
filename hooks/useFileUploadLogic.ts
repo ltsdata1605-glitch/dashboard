@@ -118,19 +118,30 @@ export const useFileUploadLogic = ({
         setStatus({ message: `Đang xử lý ${files.length} file phân ca...`, type: 'info', progress: 20 });
         try {
             let mergedMap: DepartmentMap = {}; 
+            let skippedTotal = 0;
+            const skippedDepts = new Set<string>();
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const shiftMsg = files.length > 1 ? `Đang xử lý tệp ${i + 1}/${files.length}...` : 'Đang xử lý tệp phân ca...';
                 setStatus({ message: shiftMsg, type: 'info', progress: 20 + (60 * (i + 1) / files.length) });
-                const { map } = await processShiftFile(file); 
+                const { map, skippedCount, skippedDepartments } = await processShiftFile(file); 
                 mergedMap = { ...mergedMap, ...map }; 
+                skippedTotal += skippedCount;
+                skippedDepartments.forEach(d => skippedDepts.add(d));
             }
             
             await dbService.saveDepartmentMap(mergedMap);
             await dbService.saveSetting('originalDepartmentMap', mergedMap);
             setDepartmentMap(mergedMap);
-            setStatus({ message: `Đã xử lý và gộp ${files.length} file phân ca!`, type: 'success', progress: 100 });
+            // Nói rõ đã bỏ qua bao nhiêu người ngoài BP All In One, tránh người dùng tưởng mất dữ liệu
+            const keptMsg = `Đã nạp ${Object.keys(mergedMap).length} nhân viên BP All In One`;
+            const skipMsg = skippedTotal > 0
+                ? ` • bỏ qua ${skippedTotal} người thuộc ${Array.from(skippedDepts).join(', ')}`
+                : '';
+            setStatus({ message: `${keptMsg}${skipMsg}`, type: 'success', progress: 100 });
+            // Toast để người dùng chắc chắn thấy vì sao danh sách ít hơn file (banner tự ẩn)
+            toast.success(`${keptMsg}${skipMsg}`, { duration: skippedTotal > 0 ? 7000 : 4000 });
         } catch (error) {
             const msg = error instanceof Error ? error.message : "Lỗi không xác định";
             setStatus({ message: msg, type: 'error', progress: 0 });

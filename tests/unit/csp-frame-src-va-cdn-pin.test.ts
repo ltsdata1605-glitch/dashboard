@@ -60,8 +60,13 @@ describe('CSP frame-src trong index.html', () => {
         const app = readRepoFile('App.tsx');
         const urls = [...app.matchAll(/<ExternalToolView[^>]*\surl="(https:\/\/[^"]+)"/g)].map(m => m[1]);
 
-        expect(urls.length, 'không tìm thấy <ExternalToolView url="…"> nào — regex có thể đã lỗi thời')
-            .toBeGreaterThan(0);
+        // 2026-09-23: mục "Kiểm quỹ" (công cụ ngoài duy nhất còn render qua ExternalToolView) đã
+        // bị gỡ theo yêu cầu chủ dự án, nên danh sách này rỗng là ĐÚNG — không còn iframe ngoài
+        // nào để kiểm. Giữ vòng lặp bên dưới cho ngày có người nhúng công cụ ngoài trở lại.
+        if (urls.length === 0) {
+            expect(app).not.toMatch(/<ExternalToolView[^>]*\surl=\{/);
+            return;
+        }
 
         const sources = frameSrc.split(/\s+/).filter(Boolean);
         for (const url of urls) {
