@@ -11,14 +11,16 @@ const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 const GEMINI_REGION = 'asia-southeast1';
 
 /**
- * Thứ tự model: alias `gemini-flash-latest` đứng ĐẦU vì luôn tồn tại; trước đây
- * `gemini-3.6-flash` đứng đầu, model nào không dùng được sẽ tốn nguyên 1 lượt gọi hỏng
- * (~1-2s) trước khi thử model kế.
+ * Thứ tự model — ĐO THẬT 2026-09-23 trên ảnh bảng thưởng ngày 20 (12 dòng thưởng):
+ *   gemini-3.6-flash  : xong trong 4,0s
+ *   gemini-flash-latest: TREO, chạm trần 30s rồi phải bỏ
+ * Nên model cụ thể đứng đầu, alias `-latest` chỉ là dự phòng (alias có lúc trỏ sang bản đang
+ * quá tải). Sáng cùng ngày từng đảo ngược thứ tự này và làm mỗi lượt ảnh thưởng tốn thêm 30s.
  */
-const CANDIDATE_MODELS = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.5-flash'];
+const CANDIDATE_MODELS = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash'];
 
-/** Trần thời gian cho MỖI model: hết thì bỏ, thử model kế — tránh treo cả lượt vì 1 model chậm. */
-const MODEL_TIMEOUT_MS = 30_000;
+/** Trần thời gian cho MỖI model: model tốt chỉ mất 2-5s, nên 20s là quá đủ để kết luận "treo". */
+const MODEL_TIMEOUT_MS = 20_000;
 
 function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([

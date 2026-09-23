@@ -696,8 +696,13 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
             </div>
           ) : (
             <div className="text-center py-3 px-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-dashed border-rose-200 dark:border-rose-900/40">
+              {/* ĐÃ tải ảnh Ngày 20 mà danh sách vẫn trống: câu "hãy tải ảnh Ngày 20" cũ khiến
+                  người dùng tưởng app chưa nhận ảnh (chủ dự án báo 2026-09-23). Nói đúng việc
+                  cần làm: chụp lại đủ phần danh sách, hoặc thêm tay. */}
               <p className="text-xs text-slate-400 dark:text-slate-500">
-                Chưa có danh sách thưởng nóng. Tải ảnh Ngày 20 ở trên để tự động bóc tách.
+                {input.hasDay20Slip
+                  ? 'Ảnh Ngày 20 chưa gồm phần danh sách chi tiết các khoản (hoặc AI chưa đọc được). Bấm "Đổi ảnh" rồi chụp trọn trang "Xem chi tiết thưởng", hoặc bấm "+ Thêm" để nhập tay.'
+                  : 'Chưa có danh sách thưởng nóng. Tải ảnh Ngày 20 ở trên để tự động bóc tách.'}
               </p>
             </div>
           )}
