@@ -6,7 +6,7 @@ Hành chính
 HRM 
 Hệ thống 
 0
-Lý Thị Thu Ngân 
+Nguyễn Văn A 
 Trang chủ  HRM  Chi tiết lương
 BỨC TRANH THU NHẬP THEO NĂM
  THỐNG KÊ TỔNG THU NHẬP = Tổng lương phụ cấp + Thưởng chính + Thưởng nóng + Thưởng quý (nếu có)...(lưu ý đây không phải là Thu nhập tính thưởng cuối năm)
@@ -44,7 +44,7 @@ Chi lương	7,202,000
 Giữ lương	0
 DS thu thêm Thuế TNCN T08.2026	-17,000
 Tổng CK	7,185,000
-Số TK	109005866487
+Số TK	100000000001
 Ngân hàng CK	NH TMCP VietinBank_CN Tân Bình_TPHCM
 GHI CHÚ
 

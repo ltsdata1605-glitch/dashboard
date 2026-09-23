@@ -9,6 +9,8 @@ import { readFileSync } from 'node:fs';
 const day5Text = readFileSync('tests/fixtures/hrm-luong-ngay5.txt', 'utf8');
 const day20Text = readFileSync('tests/fixtures/hrm-thuong-ngay20.txt', 'utf8');
 const day5CollapsedText = readFileSync('tests/fixtures/hrm-luong-ngay5-thu-gon.txt', 'utf8');
+const day5BText = readFileSync('tests/fixtures/hrm-luong-ngay5-b.txt', 'utf8');
+const day20MultiCkText = readFileSync('tests/fixtures/hrm-thuong-ngay20-nhieu-dot-ck.txt', 'utf8');
 
 const openTax = async (page: import('@playwright/test').Page) => {
     await page.goto('/?tab=tools-tax');
@@ -30,9 +32,10 @@ test('bấm ô là tự dán: nạp đủ 2 đợt từ text HRM, số liệu kh
     await page.getByTestId('paste-day20').click();
     await expect(page.getByText(/Đã đọc Chi tiết thưởng Đợt 2/)).toBeVisible({ timeout: 10_000 });
 
-    // Banner đủ 2 đợt + tổng thu nhập = 7.722.410 + 28.302.349
+    // Banner đủ 2 đợt. Tổng thu nhập = ĐÚNG số HRM in ra cho cả tháng (28.302.349),
+    // KHÔNG phải 7.722.410 + 28.302.349 (cộng đôi đợt 1 như bản cũ).
     await expect(page.getByText('Đã nạp đủ 2 đợt lương & thưởng')).toBeVisible();
-    await expect(page.getByText('36.024.759 đ').first()).toBeVisible();
+    await expect(page.getByText('28.302.349 đ').first()).toBeVisible();
 
     // Thẻ Đợt 1: lương và BHXH đúng phiếu
     const card5 = await page.getByText('1. Lương ngày 5').locator('xpath=../../..').innerText();
@@ -43,7 +46,7 @@ test('bấm ô là tự dán: nạp đủ 2 đợt từ text HRM, số liệu kh
     // Thẻ Đợt 2: thưởng và thuế đã khấu trừ đúng phiếu
     const card20 = await page.getByText('2. Thưởng ngày 20').locator('xpath=../../..').innerText();
     console.log('THẺ ĐỢT 2:', card20.replace(/\n/g, ' | '));
-    expect(card20).toContain('28.302.349');
+    expect(card20).toContain('20.579.939'); // tổng tháng 28.302.349 - lương đợt 1 7.722.410
     expect(card20).toContain('305.285');
 
     // Danh sách thưởng nóng: 8 khoản, 2 khoản "Khoán/Thi đua" được chọn sẵn làm nhận thay
@@ -53,7 +56,7 @@ test('bấm ô là tự dán: nạp đủ 2 đợt từ text HRM, số liệu kh
     // Ngân hàng nhận tiền tự khớp VietinBank + số tài khoản lấy từ phiếu
     const bankSelect = page.locator('select').filter({ hasText: 'Chọn ngân hàng' }).first();
     await expect(bankSelect).toHaveValue('VietinBank');
-    await expect(page.locator('input[value="109005866487"]').first()).toBeVisible();
+    await expect(page.locator('input[value="100000000001"]').first()).toBeVisible();
     console.log('NGÂN HÀNG TỰ CHỌN TỪ PHIẾU:', await bankSelect.inputValue());
 
     await page.screenshot({ path: 'test-results/tax-paste-hrm.png', fullPage: true });
@@ -188,4 +191,40 @@ test('tiêu đề thẻ mở được trang HRM và có hướng dẫn cách cop
     await page.getByRole('button', { name: 'Đã hiểu' }).click();
     await expect(page.getByText('Cách lấy dữ liệu từ HRM')).toHaveCount(0);
     console.log('HƯỚNG DẪN COPY HIỂN THỊ VÀ ĐÓNG ĐƯỢC');
+});
+
+test('phiếu thật B: trang thưởng nhiều đợt CK — danh sách sạch, số khớp HRM', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await openTax(page);
+
+    await page.evaluate(text => navigator.clipboard.writeText(text), day5BText);
+    await page.getByTestId('paste-day5').click();
+    await expect(page.getByText(/Đã đọc Chi tiết lương Đợt 1/)).toBeVisible({ timeout: 10_000 });
+
+    await page.evaluate(text => navigator.clipboard.writeText(text), day20MultiCkText);
+    await page.getByTestId('paste-day20').click();
+    await expect(page.getByText(/Đã đọc Chi tiết thưởng Đợt 2/)).toBeVisible({ timeout: 10_000 });
+
+    // Tổng thu nhập cả tháng = đúng cột T1 của bảng thu nhập theo năm HRM
+    await expect(page.getByText('65.203.822 đ').first()).toBeVisible();
+
+    // Thuế đã khấu trừ đợt 2 đọc từ dòng "Trừ Thuế TNCN -2,848,000"
+    const card20 = await page.getByText('2. Thưởng ngày 20').locator('xpath=../../..').innerText();
+    console.log('THẺ ĐỢT 2 (phiếu B):', card20.replace(/\n/g, ' | '));
+    expect(card20).toContain('2.848.000');
+    expect(card20).toContain('14.540.999'); // 65.203.822 - 50.662.823
+
+    // Danh sách thưởng: 10 nóng + 8 chính, KHÔNG còn dòng rác
+    await expect(page.getByText(/Nóng \(10\)/)).toBeVisible();
+    await expect(page.getByText(/Chính \(8\)/)).toBeVisible();
+    await page.getByText(/Tất cả \(18\)/).click();
+    const list = await page.getByText(/Tất cả \(18\)/).locator('xpath=../..').innerText();
+    console.log('DANH SÁCH THƯỞNG:', list.replace(/\n/g, ' | ').slice(0, 400));
+    expect(list).not.toContain('Tổng chuyển khoản');
+    expect(list).not.toContain('Số tài khoản');
+    expect(list).not.toContain('Trừ Thuế TNCN');
+    expect(list).toContain('Khoán chi phí VPP T03.2026');
+    expect(list).toContain('Thưởng ERP còn lại');
+
+    await page.screenshot({ path: 'test-results/tax-paste-phieu-b.png', fullPage: true });
 });

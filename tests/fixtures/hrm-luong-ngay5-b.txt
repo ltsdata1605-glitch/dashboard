@@ -1,0 +1,48 @@
+logo
+Trang chủ
+Tìm nhân viên
+Công việc 
+Hành chính 
+HRM 
+Hệ thống 
+0
+Trần Văn B 
+Trang chủ  HRM  Chi tiết lương
+BỨC TRANH THU NHẬP THEO NĂM
+ THỐNG KÊ TỔNG THU NHẬP = Tổng lương phụ cấp + Thưởng chính + Thưởng nóng + Thưởng quý (nếu có)...(lưu ý đây không phải là Thu nhập tính thưởng cuối năm)
+Tháng/2026	T1	T2	T3	T4	T5	T6	T7	T8	T9	T10	T11	T12	Tổng
+Thu nhập	65,203,822	26,383,311	26,052,834	33,437,712	28,741,712	32,302,349	39,182,710	33,242,593	0	0	0	0	284,547,043
+
+01/2026
+ Giờ công chuẩn: 216
+Lương BHXH	4,730,000
+Chấm công	
+Giờ nghỉ chế độ	8
+Lương nghỉ chế độ	175,185
+Tổng lương	175,185
+ Lương khoán	6,161,638
+Thưởng ERP T01.2026	6,161,638
+Tổng lương, phụ cấp	6,336,823
+ Tổng thu nhập chịu thuế TNCN trong tháng	50,662,823
+ Tổng tiền giảm trừ	15,996,650
+Thu nhập tính thuế	34,666,173
+Thuế TNCN phải nộp	3,433,235
+ Tổng khấu trừ	3,953,535
+Khấu trừ đoàn phí công đoàn	23,650
+8% BHXH	378,400
+1.5% BHYT	70,950
+1% BHTN	47,300
+Thuế TNCN phải nộp	3,433,235
+Thực lãnh (làm tròn 1.000đ)	2,383,000
+Chi lương	2,383,000
+Giữ lương	0
+Khoán chi phí VPP TGDĐ T02.2026	1,400,000
+Khoán lễ T01.2026	347,000
+Hoàn lại khoản tạm giữ Lương khoán CK 02.02.2026	2,208,000
+Tổng CK	6,338,000
+Số TK	0100000000003
+Ngân hàng CK	NH TMCP VietcomBank_TPHCM
+GHI CHÚ
+
+Tổng tiền giảm trừ = Giảm trừ bản thân (15.5tr) + Giảm trừ BHXH, BHYT, BHTN + Giảm trừ gia cảnh (6.2tr/người phụ thuộc - nếu có đăng ký)
+2017 © Báo cáo nội bộ Thegioididong.com

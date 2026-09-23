@@ -80,6 +80,33 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     onChange({ [field]: numValue });
   };
 
+  /**
+   * Chốt "Tổng thu nhập cả tháng" và "thu nhập đợt 2" trước khi ghi vào biểu mẫu.
+   *
+   * 🔴 Quan trọng: dòng "(1) Tổng thu nhập chịu thuế TNCN trong tháng" ở trang thưởng — và cột
+   * tháng trong bảng thu nhập theo năm ở trang lương — là TỔNG CẢ THÁNG (gồm cả đợt 1), KHÔNG
+   * phải riêng đợt 2. Cộng thêm lương đợt 1 lần nữa là thổi phồng thu nhập -> sai tiền thuế
+   * (đã đo trên phiếu thật: 36.024.759 thay vì 28.302.349, thuế 880.446 thay vì 305.285 đúng như
+   * HRM in ra). Vì vậy khi có số tổng tháng của HRM thì lấy thẳng, đợt 2 = tổng - đợt 1.
+   */
+  const applyMonthTotals = (updates: Partial<TaxCalculationInput>) => {
+    const monthTotal = updates.monthTotalIncome ?? input.monthTotalIncome ?? 0;
+    const day5 = updates.incomeDay5 ?? input.incomeDay5 ?? 0;
+    const hasDay20 = updates.hasDay20Slip ?? input.hasDay20Slip;
+    const bonusSum =
+      (updates.bonusMain ?? input.bonusMain ?? 0) + (updates.bonusHot ?? input.bonusHot ?? 0);
+
+    if (!hasDay20) {
+      updates.incomeDay20 = 0;
+      updates.totalIncome = day5;
+      return;
+    }
+
+    const total = monthTotal > day5 ? monthTotal : day5 + bonusSum;
+    updates.totalIncome = total;
+    updates.incomeDay20 = Math.max(0, total - day5);
+  };
+
   // Áp dữ liệu Đợt 1 vào biểu mẫu — dùng chung cho cả 2 đường vào: dán text HRM và đọc ảnh bằng AI
   const applyDay5Data = (data: SalarySlipDay5Data & { unionFee?: number }) => {
     const updates: Partial<TaxCalculationInput> = {
@@ -107,11 +134,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     if (autoBankCode && !normalizeBankCode(input.bankCode)) {
       updates.bankCode = autoBankCode;
     }
-    // Tự động cộng tổng thu nhập nếu cả 2 đợt đã sẵn sàng
-    if (input.incomeDay20 > 0) {
-      updates.totalIncome = data.incomeDay5 + input.incomeDay20;
+    if (data.monthTotalIncome && data.monthTotalIncome > 0) {
+      updates.monthTotalIncome = data.monthTotalIncome;
     }
 
+    applyMonthTotals(updates);
     onChange(updates);
   };
 
@@ -151,10 +178,11 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     if (autoBankCode && !normalizeBankCode(input.bankCode)) {
       updates.bankCode = autoBankCode;
     }
-    if (input.incomeDay5 > 0) {
-      updates.totalIncome = input.incomeDay5 + income20;
+    if (data.monthTotalIncome && data.monthTotalIncome > 0) {
+      updates.monthTotalIncome = data.monthTotalIncome;
     }
 
+    applyMonthTotals(updates);
     onChange(updates);
     return income20;
   };

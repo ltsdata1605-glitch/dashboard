@@ -17,6 +17,8 @@ export interface ParsedHrmLine {
     label: string;
     value: string;
     amount: number | null;
+    /** Các cột sau nhãn — cần cho bảng thu nhập 12 tháng */
+    columns: string[];
 }
 
 const NUMBER_RE = /^-?[\d.,]+$/;
@@ -39,7 +41,8 @@ export const splitHrmLines = (text: string): ParsedHrmLine[] =>
             const parts = line.split('\t');
             const label = (parts[0] || '').replace(/\s+/g, ' ').trim();
             const value = (parts.length > 1 ? parts[parts.length - 1] : '').trim();
-            return { label, value, amount: parseHrmNumber(value) };
+            const columns = parts.slice(1).map(c => c.trim());
+            return { label, value, amount: parseHrmNumber(value), columns };
         })
         .filter(l => l.label.length > 0 || l.value.length > 0);
 
@@ -73,6 +76,25 @@ const findMonthYear = (lines: ParsedHrmLine[]): string => {
         if (m && labelMatches(line.label, 'thuong')) return m[1];
     }
     return '';
+};
+
+/**
+ * Tổng thu nhập chịu thuế CẢ THÁNG, lấy từ bảng "BỨC TRANH THU NHẬP THEO NĂM" ở đầu trang
+ * Chi tiết lương (dòng "Thu nhập" có 12 cột T1..T12 + cột Tổng).
+ * Đây là con số HRM dùng để tính thuế cho cả tháng (gồm cả đợt 1 lẫn đợt 2), đã đối chiếu:
+ *   - Phiếu A: cột T8 = 28.302.349 = đúng dòng "(1) Tổng thu nhập chịu thuế" ở trang thưởng.
+ *   - Phiếu B: cột T1 - lương đợt 1 = 14.540.999 = đúng tổng các khoản thưởng đợt 2.
+ */
+export const monthIncomeFromYearTable = (lines: ParsedHrmLine[], monthYear: string): number | null => {
+    const m = monthYear.match(/^(\d{1,2})\/(\d{4})$/);
+    if (!m) return null;
+    const monthIndex = Number(m[1]) - 1;
+    if (monthIndex < 0 || monthIndex > 11) return null;
+
+    const row = lines.find(l => l.label === 'Thu nhập' && l.columns.length >= 13);
+    if (!row) return null;
+    const value = parseHrmNumber(row.columns[monthIndex]);
+    return value !== null && value > 0 ? value : null;
 };
 
 /** Tên người: dòng ngay trước thanh điều hướng "Trang chủ … HRM …" */
@@ -169,9 +191,12 @@ export const parseHrmDay5Text = (text: string): ParsedDay5 => {
         );
     }
 
+    const monthYear = findMonthYear(lines);
+
     return {
         fullName: findHeaderName(lines),
-        monthYear: findMonthYear(lines),
+        monthYear,
+        monthTotalIncome: monthIncomeFromYearTable(lines, monthYear) ?? undefined,
         incomeDay5,
         insuranceSalary,
         insurance: bhxh + bhyt + bhtn,
@@ -187,27 +212,63 @@ export const parseHrmDay5Text = (text: string): ParsedDay5 => {
     };
 };
 
-/** Các dòng tiền nằm giữa 2 mốc tiêu đề */
-const itemsBetween = (
-    lines: ParsedHrmLine[],
-    startNeedle: string,
-    endNeedle: string,
-    skip: (label: string) => boolean
-): ParsedHrmLine[] => {
-    const start = lines.findIndex(l => labelMatches(l.label, startNeedle));
-    if (start < 0) return [];
-    const out: ParsedHrmLine[] = [];
-    for (let i = start + 1; i < lines.length; i++) {
-        const line = lines[i];
-        if (labelMatches(line.label, endNeedle)) break;
-        if (line.amount === null || line.amount === 0) continue;
-        if (skip(line.label)) continue;
-        out.push(line);
-    }
-    return out;
+/**
+ * Các nhãn KHÔNG phải khoản thưởng — phải loại khỏi danh sách, nếu không sẽ lọt "Tổng chuyển
+ * khoản", "Số tài khoản" (bị đọc thành 251.002.772.022 đ), "Trừ Thuế TNCN"… vào danh sách chọn
+ * nhận thay (chủ dự án báo 2026-09-23: "dư quá nhiều thông tin").
+ */
+const NON_BONUS_EXACT = [
+    'Tổng chuyển khoản',
+    'Chủ tài khoản',
+    'Số tài khoản',
+    'Ngân hàng',
+    'Trừ Thuế TNCN',
+    'Trừ TNCN',
+    'Tổng thưởng chính',
+    'Thực nhận thưởng chính',
+    'Thực nhận thưởng nóng',
+    'Còn lại', // phải so KHỚP CẢ DÒNG: có khoản thưởng tên "Thưởng ERP còn lại (tích lũy…)"
+    'Thuế TNCN phải nộp',
+];
+
+const NON_BONUS_CONTAINS = [
+    'Phải thu Công nhân viên',
+    'Thưởng Nhân viên ST', // dòng TỔNG của nhóm thưởng chính, không phải 1 khoản riêng
+    'Tổng thu nhập chịu thuế',
+    'Tổng tiền giảm trừ',
+    'Thu nhập tính thuế',
+    'Giờ công chuẩn',
+];
+
+const isNonBonusLabel = (label: string): boolean => {
+    const clean = stripDiacritics(label.trim().replace(/\s+/g, ' '));
+    if (NON_BONUS_EXACT.some(needle => stripDiacritics(needle) === clean)) return true;
+    if (NON_BONUS_CONTAINS.some(needle => labelMatches(label, needle))) return true;
+    return /^CK\s*\d{2}\/\d{2}\/\d{4}$/i.test(label.trim());
 };
 
-/** Phiếu "2. Thưởng ngày 20" (HRM › Xem chi tiết thưởng) */
+/** Dòng thưởng chính được HRM đánh số "01." … "15." */
+const isNumberedMainItem = (label: string): boolean => /^\d{2}\.\s/.test(label.trim());
+
+/** Thuế TNCN đã bị khấu trừ ở đợt 2 — phiếu ghi "Trừ Thuế TNCN -2,848,000" hoặc "Thuế TNCN phải nộp" */
+const findWithheldTax = (lines: ParsedHrmLine[]): number => {
+    let best = 0;
+    lines.forEach(line => {
+        if (line.amount === null) return;
+        const isTaxLine =
+            labelMatches(line.label, 'Trừ Thuế TNCN') ||
+            labelMatches(line.label, 'Trừ TNCN') ||
+            labelMatches(line.label, 'Thuế TNCN phải nộp');
+        if (isTaxLine) best = Math.max(best, Math.abs(line.amount));
+    });
+    return best;
+};
+
+/**
+ * Phiếu "2. Thưởng ngày 20" (HRM › Xem chi tiết thưởng).
+ * Trang này có thể gồm NHIỀU đợt chuyển khoản (CK 26/02, CK 09/02, CK 05/03…) — lấy hết các khoản
+ * thưởng của mọi đợt, vì khoản nào cũng có thể là tiền nhận thay.
+ */
 export const parseHrmDay20Text = (text: string): SalarySlipDay20Data => {
     const lines = splitHrmLines(text);
     if (detectHrmSlipKind(text) !== 'day20') {
@@ -216,52 +277,47 @@ export const parseHrmDay20Text = (text: string): SalarySlipDay20Data => {
         );
     }
 
-    const bonusMain = numberByLabel(lines, 'Tổng thưởng chính') ?? 0;
-    const bonusHot = numberByLabel(lines, 'Thực nhận thưởng nóng') ?? 0;
-    const incomeDay20 = numberByLabel(lines, 'Tổng thu nhập chịu thuế TNCN trong tháng') ?? 0;
-    const actualTaxDay20 = numberByLabel(lines, 'Thuế TNCN phải nộp') ?? 0;
+    // Tổng thưởng chính có thể xuất hiện nhiều lần (mỗi đợt CK một dòng) -> cộng dồn
+    const bonusMain = lines
+        .filter(l => l.amount !== null && labelMatches(l.label, 'Tổng thưởng chính'))
+        .reduce((sum, l) => sum + (l.amount as number), 0);
 
-    // Thưởng chính: chỉ lấy các dòng đánh số "01." "02." … — dòng "Thưởng Nhân viên ST …" là TỔNG
-    // của nhóm, lấy cả hai là cộng đôi.
-    const mainItems = itemsBetween(
-        lines,
-        'Thưởng chính',
-        'Tổng thưởng chính',
-        label => !/^\d{2}\./.test(label.trim())
-    ).map<BonusItem>((line, i) => ({
-        id: `hrm_main_${i + 1}`,
-        name: line.label.replace(/^\d{2}\.\s*/, '').trim(),
-        amount: line.amount as number,
-        category: 'main',
-    }));
+    const mainItems: BonusItem[] = [];
+    const hotItems: BonusItem[] = [];
+    lines.forEach(line => {
+        if (line.amount === null || line.amount === 0) return;
+        if (isNonBonusLabel(line.label)) return;
+        const name = line.label.replace(/^\d{2}\.\s*/, '').trim();
+        if (!name) return;
+        if (isNumberedMainItem(line.label)) {
+            mainItems.push({ id: `hrm_main_${mainItems.length + 1}`, name, amount: line.amount, category: 'main' });
+        } else {
+            hotItems.push({ id: `hrm_hot_${hotItems.length + 1}`, name, amount: line.amount, category: 'hot' });
+        }
+    });
 
-    const hotItems = itemsBetween(
-        lines,
-        'Thưởng nóng',
-        'Thực nhận thưởng nóng',
-        () => false
-    ).map<BonusItem>((line, i) => ({
-        id: `hrm_hot_${i + 1}`,
-        name: line.label.trim(),
-        amount: line.amount as number,
-        category: 'hot',
-    }));
+    const bonusHot = hotItems.reduce((sum, item) => sum + item.amount, 0);
 
-    if (bonusHot <= 0 && hotItems.length === 0 && bonusMain <= 0) {
+    if (bonusHot <= 0 && bonusMain <= 0) {
         throw new Error(
             'Không tìm thấy khoản thưởng nào trong nội dung dán. Hãy copy TOÀN BỘ trang Xem chi tiết thưởng.'
         );
     }
 
+    // "(1) Tổng thu nhập chịu thuế TNCN trong tháng" trên trang này là tổng CẢ THÁNG (gồm cả đợt 1),
+    // không phải riêng đợt 2 — đã đối chiếu trên phiếu thật. Có thể vắng mặt khi khối "Trừ thuế
+    // TNCN" đang thu gọn.
+    const monthTotalIncome = numberByLabel(lines, 'Tổng thu nhập chịu thuế') ?? undefined;
     const bankName = textByLabel(lines, 'Ngân hàng');
 
     return {
         fullName: textByLabel(lines, 'Chủ tài khoản') || findHeaderName(lines),
         monthYear: findMonthYear(lines),
-        incomeDay20: incomeDay20 > 0 ? incomeDay20 : bonusMain + bonusHot,
+        monthTotalIncome,
+        incomeDay20: bonusMain + bonusHot,
         bonusMain,
         bonusHot,
-        actualTaxDay20,
+        actualTaxDay20: findWithheldTax(lines),
         bonusItems: [...hotItems, ...mainItems],
         bankAccount: textByLabel(lines, 'Số tài khoản').replace(/\s+/g, ''),
         bankName,

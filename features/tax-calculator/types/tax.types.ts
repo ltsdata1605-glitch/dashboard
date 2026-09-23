@@ -24,6 +24,8 @@ export interface BonusItem {
 export interface SalarySlipDay5Data {
     fullName: string;
     monthYear: string;
+    /** Tổng thu nhập chịu thuế CẢ THÁNG (đợt 1 + đợt 2) — lấy từ bảng thu nhập theo năm của HRM */
+    monthTotalIncome?: number;
     incomeDay5: number; // Tổng thu nhập chịu thuế đợt 1
     insuranceSalary: number; // Lương đóng BHXH
     insurance: number; // Tổng giảm trừ bảo hiểm (10.5%: BHXH, BHYT, BHTN)
@@ -42,6 +44,8 @@ export interface SalarySlipDay5Data {
 export interface SalarySlipDay20Data {
     fullName: string;
     monthYear: string;
+    /** Dòng "(1) Tổng thu nhập chịu thuế TNCN trong tháng" — là tổng CẢ THÁNG, không phải riêng đợt 2 */
+    monthTotalIncome?: number;
     incomeDay20: number; // Tổng thu nhập chịu thuế đợt 2 (hoặc tổng thưởng)
     bonusMain: number; // Thưởng chính
     bonusHot: number; // Thưởng nóng
@@ -57,6 +61,8 @@ export interface SalarySlipDay20Data {
 export interface TaxCalculationInput {
     name: string;
     monthYear?: string;
+    /** Tổng thu nhập chịu thuế cả tháng do HRM công bố (ưu tiên hơn phép cộng 2 đợt) */
+    monthTotalIncome?: number;
 
     // Đợt 1 (Ngày 5)
     incomeDay5: number;

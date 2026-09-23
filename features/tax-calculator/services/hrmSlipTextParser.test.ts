@@ -11,6 +11,8 @@ import {
 const day5Text = readFileSync('tests/fixtures/hrm-luong-ngay5.txt', 'utf8');
 const day20Text = readFileSync('tests/fixtures/hrm-thuong-ngay20.txt', 'utf8');
 const day5CollapsedText = readFileSync('tests/fixtures/hrm-luong-ngay5-thu-gon.txt', 'utf8');
+const day5BText = readFileSync('tests/fixtures/hrm-luong-ngay5-b.txt', 'utf8');
+const day20MultiCkText = readFileSync('tests/fixtures/hrm-thuong-ngay20-nhieu-dot-ck.txt', 'utf8');
 
 describe('parseHrmNumber', () => {
     it('đọc số kiểu HRM', () => {
@@ -49,8 +51,8 @@ describe('parseHrmDay5Text — trang Chi tiết lương (dữ liệu thật)', (
     });
 
     it('lấy được tên, số tài khoản và tự khớp ngân hàng', () => {
-        expect(data.fullName).toBe('Lý Thị Thu Ngân');
-        expect(data.bankAccount).toBe('109005866487');
+        expect(data.fullName).toBe('Nguyễn Văn A');
+        expect(data.bankAccount).toBe('100000000001');
         expect(data.bankName).toContain('VietinBank');
         expect(data.matchedBankCode).toBe('VietinBank');
     });
@@ -72,7 +74,9 @@ describe('parseHrmDay20Text — trang Xem chi tiết thưởng (dữ liệu th�
             monthYear: '08/2026',
             bonusMain: 2_114_939,
             bonusHot: 18_465_000,
-            incomeDay20: 28_302_349,
+            // incomeDay20 = riêng thưởng đợt 2; còn (1) trên phiếu là tổng CẢ THÁNG
+            incomeDay20: 2_114_939 + 18_465_000,
+            monthTotalIncome: 28_302_349,
             actualTaxDay20: 305_285,
         });
     });
@@ -94,8 +98,8 @@ describe('parseHrmDay20Text — trang Xem chi tiết thưởng (dữ liệu th�
     });
 
     it('lấy chủ tài khoản, số tài khoản và ngân hàng', () => {
-        expect(data.fullName).toBe('LY THI THU NGAN');
-        expect(data.bankAccount).toBe('109005866487');
+        expect(data.fullName).toBe('NGUYEN VAN A');
+        expect(data.bankAccount).toBe('100000000001');
         expect(data.matchedBankCode).toBe('VietinBank');
     });
 
@@ -118,7 +122,7 @@ describe('parseHrmDay5Text — khối "Tổng tiền giảm trừ" đang THU G�
         expect(data.insurance).toBe(640_000 + 120_000 + 80_000);
         expect(data.incomeDay5).toBe(22_399_946);
         expect(data.totalDeductionsDay1).toBe(28_740_000);
-        expect(data.bankAccount).toBe('107867333424');
+        expect(data.bankAccount).toBe('100000000002');
     });
 
     it('tổng giảm trừ tự tính lại khớp đúng con số HRM in ra', () => {
@@ -141,5 +145,54 @@ describe('resolveDependents', () => {
         expect(resolveDependents({ explicit: null, dependentDeduction: null, totalDeductions: 28_740_000, personalDeduction: 15_500_000, insurance: 840_000 })).toBe(2);
         // Không có người phụ thuộc: 15.5tr + 496.650 -> phần dư quá nhỏ, không được làm tròn thành 1
         expect(resolveDependents({ explicit: null, dependentDeduction: null, totalDeductions: 15_996_650, personalDeduction: 15_500_000, insurance: 496_650 })).toBe(0);
+    });
+});
+
+describe('Phiếu thật B — trang thưởng có NHIỀU đợt chuyển khoản', () => {
+    const day5 = parseHrmDay5Text(day5BText);
+    const day20 = parseHrmDay20Text(day20MultiCkText);
+
+    it('không để lọt dòng rác vào danh sách thưởng', () => {
+        const names = day20.bonusItems.map(i => i.name);
+        // Trước đây các dòng này lọt vào danh sách chọn nhận thay ("dư quá nhiều thông tin")
+        expect(names).not.toContain('Tổng chuyển khoản');
+        expect(names).not.toContain('Số tài khoản');
+        expect(names).not.toContain('Trừ Thuế TNCN');
+        expect(names).not.toContain('Chủ tài khoản');
+        expect(names.some(n => n.includes('Thưởng Nhân viên ST'))).toBe(false);
+        expect(day20.bonusItems.every(i => i.amount > 0)).toBe(true);
+    });
+
+    it('lấy đủ khoản thưởng của CẢ 3 đợt chuyển khoản', () => {
+        const hot = day20.bonusItems.filter(i => i.category === 'hot');
+        const main = day20.bonusItems.filter(i => i.category === 'main');
+        expect(main).toHaveLength(8);
+        expect(hot).toHaveLength(10); // 7 khoản CK 26/02 + 1 Tết + 2 khoản CK 05/03
+        expect(hot.map(i => i.name)).toContain('Thưởng Nóng mỗi ngày mùa Tết 2026 (Từ 07/02/2026 – 22/02/2026)');
+        expect(hot.map(i => i.name)).toContain('Khoán chi phí VPP T03.2026');
+        expect(main.reduce((s, i) => s + i.amount, 0)).toBe(2_959_999);
+    });
+
+    it('đọc được thuế đã khấu trừ từ dòng "Trừ Thuế TNCN" (số âm)', () => {
+        expect(day20.actualTaxDay20).toBe(2_848_000);
+        expect(day20.bonusMain).toBe(2_959_999);
+    });
+
+    it('lấy tổng thu nhập cả tháng từ bảng thu nhập theo năm của trang lương', () => {
+        expect(day5.monthTotalIncome).toBe(65_203_822);
+        expect(day5.incomeDay5).toBe(50_662_823);
+        // Thu nhập đợt 2 = tổng tháng - đợt 1, khớp đúng tổng các khoản thưởng thuộc tháng 01
+        expect(day5.monthTotalIncome! - day5.incomeDay5).toBe(14_540_999);
+    });
+});
+
+describe('Phiếu A — "(1) Tổng thu nhập chịu thuế" là tổng CẢ THÁNG', () => {
+    it('(1) = lương đợt 1 + toàn bộ thưởng đợt 2 (không phải riêng đợt 2)', () => {
+        const day5 = parseHrmDay5Text(day5Text);
+        const day20 = parseHrmDay20Text(day20Text);
+        expect(day20.monthTotalIncome).toBe(28_302_349);
+        expect(day5.incomeDay5 + day20.bonusMain + day20.bonusHot).toBe(28_302_349);
+        // Bảng thu nhập theo năm của trang lương cho cùng con số
+        expect(day5.monthTotalIncome).toBe(28_302_349);
     });
 });
