@@ -1,9 +1,56 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { defineSecret } from 'firebase-functions/params';
+// Import TĨNH thay vì await import(...) trong handler: module nặng được nạp lúc khởi động
+// container, request đầu tiên sau cold start không phải chờ nạp nữa (đo 2026-09-23: lượt gọi
+// đầu 24s, các lượt sau 5-7s).
+import { GoogleGenAI, Type } from '@google/genai';
 
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 
-export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY] }, async (request) => {
+/** Vùng gần người dùng nhất (Singapore) — ảnh phiếu lương vài trăm KB không phải bay sang Mỹ. */
+const GEMINI_REGION = 'asia-southeast1';
+
+/**
+ * Thứ tự model: alias `gemini-flash-latest` đứng ĐẦU vì luôn tồn tại; trước đây
+ * `gemini-3.6-flash` đứng đầu, model nào không dùng được sẽ tốn nguyên 1 lượt gọi hỏng
+ * (~1-2s) trước khi thử model kế.
+ */
+const CANDIDATE_MODELS = ['gemini-flash-latest', 'gemini-3.6-flash', 'gemini-3.5-flash'];
+
+/** Trần thời gian cho MỖI model: hết thì bỏ, thử model kế — tránh treo cả lượt vì 1 model chậm. */
+const MODEL_TIMEOUT_MS = 30_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`${label} quá ${ms / 1000}s`)), ms)),
+  ]);
+}
+
+/**
+ * Tắt "thinking" của model flash: đọc bảng lương là việc trích xuất thuần, không cần suy luận
+ * nhiều bước, mà thinking làm mỗi lượt lâu thêm vài giây. Model không hiểu trường này sẽ báo lỗi
+ * và vòng lặp tự chuyển sang model kế.
+ */
+const NO_THINKING = { thinkingConfig: { thinkingBudget: 0 } } as const;
+
+/**
+ * Gemini có thể trả Infinity/NaN (vd chia cho 0 khi suy luận số) — firebase-functions không
+ * encode được, ném "Data cannot be encoded in JSON: Infinity" và CẢ REQUEST hỏng, client phải
+ * chạy lại đường dự phòng (gặp thật 2026-09-23, log Cloud Run).
+ */
+function sanitizeForJson<T>(value: T): T {
+  if (typeof value === 'number') return (Number.isFinite(value) ? value : 0) as unknown as T;
+  if (Array.isArray(value)) return value.map(sanitizeForJson) as unknown as T;
+  if (value && typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = sanitizeForJson(v);
+    return out as unknown as T;
+  }
+  return value;
+}
+
+export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY], memory: '512MiB' }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
@@ -13,10 +60,9 @@ export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY] }, async (r
     throw new HttpsError('invalid-argument', 'Thiếu prompt.');
   }
 
-  const { GoogleGenAI, Type } = await import('@google/genai');
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY.value() });
 
-  const candidateModels = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash'];
+  const candidateModels = CANDIDATE_MODELS;
   let lastError: unknown = null;
   let responseText = '';
 
@@ -70,7 +116,11 @@ export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY] }, async (r
 /**
  * Cloud Function trích xuất thông tin phiếu lương & bảng thưởng 2 đợt của MWG bằng Gemini AI
  */
-export const parseSalarySlipWithGemini = onCall({ secrets: [GEMINI_API_KEY] }, async (request) => {
+export const parseSalarySlipWithGemini = onCall(
+  // 512MiB: Cloud Run cấp CPU theo RAM nên container khởi động & parse JSON nhanh hơn hẳn 256MiB.
+  // timeout 120s: ảnh dài (phiếu lương chụp dọc) có lúc chạm trần 60s mặc định rồi hỏng cả lượt.
+  { secrets: [GEMINI_API_KEY], region: GEMINI_REGION, memory: '512MiB', timeoutSeconds: 120 },
+  async (request) => {
   const { base64Data, mimeType, targetSlip } = (request.data ?? {}) as {
     base64Data?: string;
     mimeType?: string;
@@ -81,10 +131,9 @@ export const parseSalarySlipWithGemini = onCall({ secrets: [GEMINI_API_KEY] }, a
     throw new HttpsError('invalid-argument', 'Thiếu dữ liệu hình ảnh phiếu lương.');
   }
 
-  const { GoogleGenAI, Type } = await import('@google/genai');
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY.value() });
 
-  const candidateModels = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-3.5-flash'];
+  const candidateModels = CANDIDATE_MODELS;
   let lastError: unknown = null;
   let responseText = '';
 
@@ -121,8 +170,9 @@ Yêu cầu phân tích và trích xuất dữ liệu:
 Trả về 0 cho số không tìm thấy, chuỗi rỗng cho chữ không tìm thấy, mảng rỗng [] cho danh sách không có.`;
 
   for (const model of candidateModels) {
+    const startedAt = Date.now();
     try {
-      const response = await ai.models.generateContent({
+      const response = await withTimeout(ai.models.generateContent({
         model,
         contents: {
           parts: [
@@ -172,15 +222,22 @@ Trả về 0 cho số không tìm thấy, chuỗi rỗng cho chữ không tìm t
               'bankAccount',
               'bankName'
             ]
-          }
+          },
+          ...NO_THINKING
         }
-      });
+      }), MODEL_TIMEOUT_MS, `Model ${model}`);
 
-      responseText = response.text?.trim() || '{}';
-      if (responseText) break;
+      const text = response.text?.trim() || '';
+      if (!text) throw new Error('AI trả về nội dung rỗng');
+      // Parse NGAY tại đây: model trả chuỗi không phải JSON thì còn cơ hội thử model kế, thay vì
+      // hỏng cả lượt như trước (log 2026-09-23: "AI trả về phản hồi không hợp lệ" sau 113 giây).
+      JSON.parse(text);
+      responseText = text;
+      console.info(`[Gemini OCR] Model ${model} xong sau ${Date.now() - startedAt}ms`);
+      break;
     } catch (err) {
       lastError = err;
-      console.warn(`[Gemini OCR] Model ${model} thất bại, thử model tiếp theo:`, err);
+      console.warn(`[Gemini OCR] Model ${model} thất bại sau ${Date.now() - startedAt}ms, thử model tiếp theo:`, err);
     }
   }
 
@@ -221,5 +278,6 @@ Trả về 0 cho số không tìm thấy, chuỗi rỗng cho chữ không tìm t
   }
 
   parsed.isValid = true;
-  return parsed;
-});
+  return sanitizeForJson(parsed);
+  }
+);

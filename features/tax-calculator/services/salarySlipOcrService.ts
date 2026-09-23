@@ -1,6 +1,6 @@
 
-import { httpsCallable } from 'firebase/functions';
-import { functions } from '../../../services/firebase';
+import { httpsCallable, getFunctions } from 'firebase/functions';
+import { functions, app } from '../../../services/firebase';
 import { VIETNAMESE_BANKS } from './bankCatalog';
 import { SalarySlipDay5Data, SalarySlipDay20Data, BonusItem } from '../types/tax.types';
 
@@ -19,6 +19,13 @@ export interface SalarySlipExtractedData {
  * Resize và nén hình ảnh phiếu lương về kích thước tối ưu (max width 1024px, JPEG 0.9)
  * Giúp tải lên Cloud siêu nhanh và không vượt hạn mức payload
  */
+/**
+ * Hàm OCR chạy ở Singapore (functions/src/gemini.ts GEMINI_REGION) — ảnh vài trăm KB không phải
+ * bay sang us-central1 nữa. Giữ sẵn instance us-central1 để còn chạy được nếu bản function mới
+ * chưa deploy xong (lỗi 'not-found' -> thử lại vùng cũ).
+ */
+const asiaFunctions = getFunctions(app, 'asia-southeast1');
+
 export const processAndResizeImage = (file: File): Promise<{ base64Data: string; mimeType: string }> => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -28,13 +35,23 @@ export const processAndResizeImage = (file: File): Promise<{ base64Data: string;
             img.src = event.target?.result as string;
             img.onload = () => {
                 const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 1024;
+                // Ảnh chụp màn hình HRM là chữ đen nền trắng: 900px bề ngang vẫn đọc rõ số, mà
+                // payload base64 nhỏ hơn đáng kể so với 1024px — thời gian tải lên (mạng 4G ở
+                // siêu thị) là phần chậm nhất của cả lượt phân tích.
+                const MAX_WIDTH = 900;
+                // Ảnh chụp dọc (điện thoại) cao 2500-3000px vẫn giữ nguyên chiều cao sau khi thu
+                // ngang -> vẫn rất nặng. Chặn thêm chiều cao để ảnh không vượt ~1.6 triệu điểm ảnh.
+                const MAX_HEIGHT = 1800;
                 let width = img.width;
                 let height = img.height;
 
                 if (width > MAX_WIDTH) {
                     height *= MAX_WIDTH / width;
                     width = MAX_WIDTH;
+                }
+                if (height > MAX_HEIGHT) {
+                    width *= MAX_HEIGHT / height;
+                    height = MAX_HEIGHT;
                 }
 
                 canvas.width = width;
@@ -44,8 +61,12 @@ export const processAndResizeImage = (file: File): Promise<{ base64Data: string;
                     return reject(new Error('Không thể khởi tạo Canvas 2D'));
                 }
 
+                // Nền trắng: ảnh PNG có kênh alpha khi vẽ lên canvas trống sẽ thành viền đen ở
+                // JPEG; tô trắng trước cho chắc.
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, width, height);
                 ctx.drawImage(img, 0, 0, width, height);
-                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
                 resolve({
                     base64Data: dataUrl.split(',')[1],
                     mimeType: 'image/jpeg'
@@ -141,12 +162,23 @@ export const extractSalarySlip = async (
 
     // 1. Thử gọi qua Firebase Cloud Function trước
     try {
-        const parseFn = httpsCallable<
+        const makeParseFn = (fns: typeof functions) => httpsCallable<
             { base64Data: string; mimeType: string; targetSlip: 'day5' | 'day20' },
             any
-        >(functions, 'parseSalarySlipWithGemini');
+        >(fns, 'parseSalarySlipWithGemini');
 
-        const res = await parseFn({ base64Data, mimeType, targetSlip });
+        let res;
+        try {
+            res = await makeParseFn(asiaFunctions)({ base64Data, mimeType, targetSlip });
+        } catch (regionErr: any) {
+            // Bản function ở Singapore chưa sẵn sàng (vừa đổi vùng) -> dùng lại vùng cũ.
+            if (regionErr?.code === 'functions/not-found' || regionErr?.code === 'not-found') {
+                console.warn('[SalarySlipOcr] Chưa có hàm ở asia-southeast1, thử lại us-central1');
+                res = await makeParseFn(functions)({ base64Data, mimeType, targetSlip });
+            } else {
+                throw regionErr;
+            }
+        }
         if (res.data) {
             const raw = res.data;
 
