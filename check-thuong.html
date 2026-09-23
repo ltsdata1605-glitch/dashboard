@@ -3121,7 +3121,7 @@
                 });
             }
 
-            top10InfoCard.addEventListener('click', (e) => {
+            top10InfoCard.addEventListener('click', async (e) => {
                 const filterBtn = e.target.closest('#filterContainer .filter-btn');
                 if (filterBtn) {
                     const filter = filterBtn.dataset.filter;
