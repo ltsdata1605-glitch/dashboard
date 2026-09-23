@@ -1,3 +1,4 @@
+import { BI_HUB_DB_VERSION, biHubDbName, ensureBiHubDbReady } from '../../../utils/localDbScope';
 
 // Script di chuyển dữ liệu từ ClusterDataDB (cũ) sang BI_HUB_DATABASE_V2 (mới)
 // Chạy một lần tự động khi khởi động app. Sau khi migrate xong, ghi cờ để không chạy lại.
@@ -5,16 +6,22 @@
 const OLD_DB_NAME = 'ClusterDataDB';
 const OLD_STORE_NAME = 'FormDataStore';
 
-const NEW_DB_NAME = 'BI_HUB_DATABASE_V2';
+// Database đích KHÔNG còn cố định: mỗi tài khoản một database riêng (utils/localDbScope.ts).
 const NEW_STORE_NAME = 'settings';
-const NEW_DB_VERSION = 3;
+const NEW_DB_VERSION = BI_HUB_DB_VERSION;
+
+/** Mở database của tài khoản đang đăng nhập (chờ xong bước chép dữ liệu từ database dùng chung cũ) */
+async function openMainDb(): Promise<IDBDatabase> {
+    await ensureBiHubDbReady();
+    return openDb(biHubDbName(), NEW_DB_VERSION);
+}
 const BI_PREFIX = 'bi_';
 const MIGRATION_FLAG_KEY = 'bi_migration_completed_v1';
 
 export async function migrateClusterDataToMain(): Promise<void> {
     // 1. Kiểm tra đã migrate chưa
     try {
-        const newDb = await openDb(NEW_DB_NAME, NEW_DB_VERSION);
+        const newDb = await openMainDb();
         const checkTx = newDb.transaction([NEW_STORE_NAME], 'readonly');
         const checkStore = checkTx.objectStore(NEW_STORE_NAME);
         const flagReq = checkStore.get(MIGRATION_FLAG_KEY);
@@ -74,7 +81,7 @@ export async function migrateClusterDataToMain(): Promise<void> {
 
     // 3. Ghi vào BI_HUB_DATABASE_V2 với prefix bi_
     try {
-        const newDb = await openDb(NEW_DB_NAME, NEW_DB_VERSION);
+        const newDb = await openMainDb();
         
         // Đọc toàn bộ keys hiện tại của store mới để lọc tránh trùng lặp
         const readTx = newDb.transaction([NEW_STORE_NAME], 'readonly');
@@ -130,7 +137,7 @@ export async function migrateClusterDataToMain(): Promise<void> {
 
 async function setMigrationFlag(): Promise<void> {
     try {
-        const db = await openDb(NEW_DB_NAME, NEW_DB_VERSION);
+        const db = await openMainDb();
         const tx = db.transaction([NEW_STORE_NAME], 'readwrite');
         tx.objectStore(NEW_STORE_NAME).put(true, MIGRATION_FLAG_KEY);
         await new Promise<void>((resolve) => {
@@ -189,7 +196,7 @@ function openDb(name: string, version: number, onUpgrade?: (db: IDBDatabase) => 
 
 export async function migrateOldAvatars(): Promise<void> {
     try {
-        const db = await openDb(NEW_DB_NAME, NEW_DB_VERSION);
+        const db = await openMainDb();
         
         // 1. Đọc tất cả key và value trong settings store ở một read transaction duy nhất
         const readTx = db.transaction([NEW_STORE_NAME], 'readonly');

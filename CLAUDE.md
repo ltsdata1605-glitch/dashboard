@@ -88,7 +88,11 @@ Dự án thực tế gồm 4 khu vực "mini-app" song song hoạt động độ
 
 **Quy tắc cách ly bắt buộc:**
 - ❌ Các thư mục `features/*` **không được import chéo lẫn nhau** và **không được import** `hooks/*` hoặc `services/*` ở thư mục gốc.
-- ✅ Cả 4 khu vực chỉ được dùng chung đúng 2 thứ: các UI component trong `components/shared/ui/*` và các hàm thuần tiện ích trong `utils/dataUtils.ts`.
+- ✅ Cả 4 khu vực chỉ được dùng chung đúng 3 thứ: các UI component trong `components/shared/ui/*`, các hàm thuần tiện ích trong `utils/dataUtils.ts`, và `utils/localDbScope.ts` *(bổ sung 2026-09-23)*.
+  `utils/localDbScope.ts` quyết định **tên IndexedDB theo tài khoản đang đăng nhập** (xem mục 1.2).
+  Nó BẮT BUỘC dùng chung chứ không được chép thành bản zone-local như `dbService.ts`: 3 khu vực
+  phải mở ĐÚNG CÙNG MỘT database, chỉ cần một bản tính tên lệch là Report BI ghi một nơi còn Phân
+  Tích đọc một nơi — hỏng âm thầm, không có lỗi nào hiện ra.
 - ✅ **Ngoại lệ thứ 3 (bổ sung 2026-08-31)**: `features/bi-dashboard/` được phép import `services/firebase.ts` ở gốc (chỉ instance `db`/`auth`, KHÔNG import các `services/*` khác) — cần thiết cho tính năng phân quyền theo siêu thị (đọc/ghi collection `biData/{maKho}` dùng chung, xem mục 1.1). Đây là truy cập trực tiếp instance Firebase đã khởi tạo sẵn (không phải import logic nghiệp vụ của root), nên không phá vỡ tinh thần cách ly — ngoại lệ này chỉ cần cho các khu vực dùng chung database `(default)` của project `dashboa-7e20b`. *(Sửa 2026-09-17: bản cũ ghi "chỉ 2 khu vực dùng chung 1 project Firebase" — thực tế cả 4 khu vực dùng chung project này; xem mục 1.1.)*
 - ✅ **Ngoại lệ thứ 4 (bổ sung 2026-09-09)**: DUY NHẤT file `features/bi-dashboard/services/analysisEmployeeSyncService.ts` được phép import `services/dbService` ở gốc. File này là **cầu nối có chủ đích** giữa 2 khu vực: đẩy danh sách nhân viên từ Phân Tích (gốc) sang Report BI, nên bắt buộc phải chạm cả 2 phía. Cụ thể nó cần `saveSetting()` của gốc vì hàm đó phát event `ycx-setting-changed` mà `hooks/useCloudSync` ở gốc đang lắng nghe — `saveSetting` riêng của bi-dashboard ghi sang IndexedDB khác (`BI_HUB_DATABASE_V2`) và KHÔNG phát event này. ⚠️ Ngoại lệ được khai trong `eslint.config.js` theo **đúng 1 đường dẫn file**, không phải mở cho cả thư mục: thêm file thứ 2 import `services/` gốc vẫn bị chặn (đã kiểm chứng bằng file dò).
 - ⚠️ Một hàm cùng tên ở 2 khu vực khác nhau (ví dụ: `formatCurrency` ở sticker-event dùng in nhãn, khác với rút gọn "1.2 Tr" ở dashboard) **không mặc nhiên là trùng lặp cần gộp**. Kiểm tra ngữ cảnh trước khi dedupe.
@@ -130,6 +134,33 @@ deploy CẢ HAI file cùng lúc.
   tiêu chuẩn và nâng Blaze được → **di trú sang `(default)` thực sự gỡ được trần**. Database In
   Sticker thuộc diện **"free tier database"**: server trả nguyên văn *"This database cannot exceed free quota limits even when a billing instrument is enabled"*. Nghĩa là **nâng lên gói Blaze cũng KHÔNG nới được** hạn mức cho database này. (Thông báo lỗi không nêu con số; hạn mức đọc miễn phí tiêu chuẩn của Firestore là 50.000/ngày — con số này là suy ra từ tài liệu, chưa phải quan sát.) Hạn mức bị chạm thật ngày 2026-09-17 là hạn mức **ĐỌC**. Khi sửa bất cứ gì trong `features/sticker-event` chạm Firestore, **phải cân nhắc số lượt đọc**: đừng thêm query chạy mỗi lần mở app/mở modal mà không có cơ chế cache hoặc smart-sync theo mốc thời gian (`metadata/sync`). Xem `implementation_plan.md` mục "Audit hạn mức đọc/ghi Firestore" để biết các mẫu đã áp dụng và cách ĐO (`tests/unit/sticker-firestore-quota.test.ts` — bộ mock Firestore đếm chính xác số lượt đọc/ghi/xoá của hàm thật).
 - ⚠️ Riêng In Sticker, `role` được dùng qua **custom claim `stickerRole`/`stickerStoreId`** (không phải `role`/`departmentId` của app gốc) — 2 hệ phân quyền tách biệt dù ở cùng project.
+
+---
+
+## 1.2. Dữ liệu cục bộ tách theo tài khoản (bổ sung 2026-09-23)
+
+Trước đây 3 khu vực (gốc, Report BI, In Sticker — Phân Ca có kho `ScheduleAppDB` riêng) dùng chung
+đúng một IndexedDB tên cố định `BI_HUB_DATABASE_V2`, nên dữ liệu cục bộ thuộc về **trình duyệt**
+chứ không thuộc **tài khoản**: ai đăng nhập sau trên cùng máy cũng
+thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-23 ở Report BI).
+
+**Quy tắc hiện tại:**
+- 🔴 Tên database là **hàm thuần của uid**: `BI_HUB_DATABASE_V2__<uid>`. Chưa đăng nhập (kể cả Chế
+  độ Dùng Thử) thì dùng tên cũ `BI_HUB_DATABASE_V2` — lúc đó không có dữ liệu riêng tư của ai.
+- 🔴 **Mọi nơi mở database này phải lấy tên từ `utils/localDbScope.ts → biHubDbName()`** và `await
+  ensureBiHubDbReady(name)` trước khi mở. CẤM viết lại hằng `'BI_HUB_DATABASE_V2'` trong code mới.
+  Hiện có đúng 4 nơi mở: `services/dbService/core.ts`, `features/bi-dashboard/services/dbService.ts`,
+  `features/sticker-event/services/dbService.ts`, `features/bi-dashboard/utils/dbMigration.ts`.
+- Lần đầu của mỗi tài khoản, `ensureBiHubDbReady()` **chép** dữ liệu từ database dùng chung cũ sang
+  database riêng — nhưng CHỈ KHI kho cũ đúng là của tài khoản đó (`services/localDataOwner.ts`
+  quyết định qua dấu chủ sở hữu, trước khi dấu đó bị ghi đè).
+- Trạng thái của module này nằm trên `globalThis`, KHÔNG phải biến module: nếu bundler tách module
+  thành 2 bản (đã gặp thật, xem chú thích "module duplication" ở `contexts/AuthContext.tsx`) thì 2
+  bản vẫn phải thấy chung một uid. Test `tests/e2e/indexeddb-rieng-theo-tai-khoan.spec.ts` từng đỏ
+  đúng vì chuyện này.
+- Các kho còn lại (`ScheduleAppDB`, `TaxCalculatorDB`, `ProductSearchDB`, `YCX_KHAI_THAC_DB`,
+  `keyval-store`) VẪN dùng chung → vẫn bị **xoá sạch khi đổi tài khoản** (`clearAllLocalAppData`).
+  Thêm kho mới mà quên khai vào `APP_DATABASES` là để lại dữ liệu người cũ ở khu đó.
 
 ---
 

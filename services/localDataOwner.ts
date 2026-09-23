@@ -6,18 +6,28 @@
  * Cơ chế: ghi lại UID đang "sở hữu" dữ liệu cục bộ. Khi UID đổi (đăng nhập tài khoản khác) hoặc
  * khi đăng xuất -> dọn sạch dữ liệu cục bộ của app. Dữ liệu thật vẫn nằm trên cloud của từng
  * tài khoản nên đăng nhập lại là tự tải về.
+ *
+ * Bổ sung 2026-09-23 (chủ dự án yêu cầu "mỗi tài khoản có localStorage/IndexedDB riêng"):
+ * kho LỚN NHẤT — `BI_HUB_DATABASE_V2`, nơi chứa dữ liệu của gốc + Report BI + In Sticker — nay
+ * được tách hẳn theo uid (utils/localDbScope.ts), nên nó KHÔNG còn nằm trong danh sách dọn theo
+ * kiểu xoá sạch nữa: dữ liệu của mỗi người nằm ở database riêng, người cũ quay lại vẫn còn
+ * nguyên. Các kho còn lại vẫn dùng chung nên vẫn phải dọn khi đổi tài khoản.
  */
+
+import { LEGACY_BI_HUB_DB_NAME, setActiveLocalUid } from '../utils/localDbScope';
 
 const OWNER_KEY = 'ycx-local-data-owner-uid';
 
-/** Mọi IndexedDB do app tạo ra. Thiếu tên nào là dữ liệu của người cũ còn sót lại ở khu đó. */
+/** Các IndexedDB còn DÙNG CHUNG cho mọi tài khoản — phải dọn khi đổi tài khoản.
+ *  (`BI_HUB_DATABASE_V2` ở đây là database dùng chung CŨ: từ nay chỉ còn dùng khi chưa đăng nhập,
+ *  và dọn nó chính là cách thu hồi bản sao dữ liệu đã chuyển sang database riêng.) */
 export const APP_DATABASES = [
-    'BI_HUB_DATABASE_V2', // gốc + Report BI + In Sticker
-    'ScheduleAppDB',      // Phân ca
-    'YCX_KHAI_THAC_DB',   // Báo cáo khai thác
-    'ProductSearchDB',    // In Sticker - tra cứu sản phẩm
-    'TaxCalculatorDB',    // Tính thuế
-    'keyval-store',       // Check thưởng (iframe)
+    LEGACY_BI_HUB_DB_NAME, // kho dùng chung cũ + kho tạm lúc chưa đăng nhập
+    'ScheduleAppDB',       // Phân ca
+    'YCX_KHAI_THAC_DB',    // Báo cáo khai thác
+    'ProductSearchDB',     // In Sticker - tra cứu sản phẩm
+    'TaxCalculatorDB',     // Tính thuế
+    'keyval-store',        // Check thưởng (iframe)
 ];
 
 /** Tiền tố khoá localStorage của app — dọn kèm để không còn vết của tài khoản cũ */
@@ -32,6 +42,8 @@ export const getLocalDataOwner = (): string | null => {
 };
 
 export const setLocalDataOwner = (uid: string | null): void => {
+    // Lớp IndexedDB phải biết ngay: mọi lần mở database SAU câu lệnh này đi vào database của uid.
+    setActiveLocalUid(uid);
     try {
         if (uid) localStorage.setItem(OWNER_KEY, uid);
         else localStorage.removeItem(OWNER_KEY);
@@ -117,6 +129,13 @@ export const clearAllLocalAppData = async (): Promise<void> => {
  */
 export const ensureLocalDataBelongsTo = async (uid: string): Promise<boolean> => {
     const owner = getLocalDataOwner();
+
+    // Tài khoản này có được thừa kế dữ liệu trong database DÙNG CHUNG cũ hay không: chỉ khi kho
+    // đó vốn đã là của chính nó, hoặc chưa ai nhận (lần đầu chạy bản này — phiên đăng nhập đang
+    // được Firebase nhớ sẵn chính là chủ của đống dữ liệu đó). Phải quyết định TRƯỚC khi
+    // setLocalDataOwner() ghi đè dấu chủ sở hữu.
+    setActiveLocalUid(uid, { inheritLegacyData: !owner || owner === uid });
+
     if (owner && owner !== uid) {
         await clearAllLocalAppData();
         setLocalDataOwner(uid);

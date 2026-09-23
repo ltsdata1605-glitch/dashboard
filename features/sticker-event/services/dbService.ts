@@ -1,20 +1,45 @@
 // Bản zone-local của services/dbService.ts (chỉ getDb/getSetting/saveSetting mà sticker-event cần).
-// Dùng chung tên/version database với hệ thống chính để không mất dữ liệu IndexedDB đã lưu
-// trước đó (layout, print settings, saved lists, print history). Xem RULES.md §2.0.
-const DB_NAME = 'BI_HUB_DATABASE_V2';
-const DB_VERSION = 3;
-const APP_STORE = 'appStorage';
-const SETTINGS_STORE = 'settings';
+// Dùng chung database với hệ thống chính để không mất dữ liệu IndexedDB đã lưu trước đó
+// (layout, print settings, saved lists, print history). Xem RULES.md §2.0.
+import {
+    APP_STORE as SCOPED_APP_STORE,
+    BI_HUB_DB_VERSION,
+    SETTINGS_STORE as SCOPED_SETTINGS_STORE,
+    biHubDbName,
+    ensureBiHubDbReady,
+} from '../../../utils/localDbScope';
+
+// Tên database KHÔNG còn cố định: mỗi tài khoản một database riêng, xem utils/localDbScope.ts.
+// Cả 4 khu vực bắt buộc phải lấy tên từ đúng một nguồn này, nếu không hai khu vực sẽ ghi vào hai
+// database khác nhau và dữ liệu âm thầm tách đôi.
+const DB_VERSION = BI_HUB_DB_VERSION;
+const APP_STORE = SCOPED_APP_STORE;
+const SETTINGS_STORE = SCOPED_SETTINGS_STORE;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+let openedDbName: string | null = null;
 
 export function getDb(): Promise<IDBDatabase> {
     if (typeof window === 'undefined' || !window.indexedDB) {
         return Promise.reject(new Error('IndexedDB is not supported/enabled in this environment.'));
     }
-    if (dbPromise) return dbPromise;
 
-    dbPromise = new Promise((resolve, reject) => {
+    const dbName = biHubDbName();
+    if (dbPromise && openedDbName === dbName) return dbPromise;
+    if (dbPromise) {
+        // Đổi tài khoản giữa phiên: đóng kết nối của tài khoản trước.
+        const stale = dbPromise;
+        dbPromise = null;
+        stale.then(db => { try { db.close(); } catch { /* đã đóng sẵn */ } }).catch(() => { /* mở hụt từ đầu */ });
+    }
+    openedDbName = dbName;
+
+    dbPromise = ensureBiHubDbReady(dbName).then(() => openDatabase(dbName));
+    return dbPromise;
+}
+
+function openDatabase(DB_NAME: string): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
         let active = true;
 
         const timeoutId = setTimeout(() => {
@@ -79,7 +104,6 @@ export function getDb(): Promise<IDBDatabase> {
             }
         }
     });
-    return dbPromise;
 }
 
 export async function saveSetting(key: string, value: unknown, source?: string): Promise<void> {

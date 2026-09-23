@@ -5164,3 +5164,81 @@ IndexedDB như app cũ; (2) đồng bộ Google Sheet của app cũ đã bỏ (c
   01→21/9".
 - Ý tưởng để sau (chưa làm): kỳ trước có thể suy từ kho `bonus-monthly-*` (cộng dailyData
   ngày 1→N) để khỏi chạy job thứ 2 — nhưng chỉ ra được Tổng, không có ERP/T.Nóng.
+
+---
+
+# Tách IndexedDB theo tài khoản — `BI_HUB_DATABASE_V2` → `BI_HUB_DATABASE_V2__<uid>` (2026-09-23)
+
+## Bối cảnh
+
+Chủ dự án báo: *"Tài khoản người dùng mới lại dính dữ liệu cũ"*, rồi hỏi *"Mỗi tài khoản sẽ có
+localstore và indexdb riêng được không?"* và chốt: **"tách BI_HUB_DATABASE_V2 theo uid"**.
+
+Bản vá trước đó (commit `9eca99b4`, `services/localDataOwner.ts`) chỉ **xoá sạch** dữ liệu cục bộ
+khi phát hiện đổi tài khoản. An toàn nhưng thô: người cũ quay lại máy đó phải tải lại toàn bộ từ
+cloud và mất mọi trạng thái chỉ có ở máy.
+
+## Thiết kế
+
+- `utils/localDbScope.ts` (MỚI, dùng chung cho cả 4 khu vực — ngoại lệ cách ly thứ 3 của mục
+  "shared", xem CLAUDE.md mục 1 và 1.2):
+  - `biHubDbName()` = `BI_HUB_DATABASE_V2__<uid>`, **hàm thuần của uid**. Chưa đăng nhập → tên cũ.
+  - `setActiveLocalUid(uid, { inheritLegacyData })` — `services/localDataOwner.ts` gọi ngay khi
+    biết uid, TRƯỚC khi ghi đè dấu chủ sở hữu.
+  - `ensureBiHubDbReady(name)` — lần đầu của mỗi tài khoản: chép dữ liệu (cả `settings` lẫn
+    `appStorage`, theo mẻ 20 khoá để không ngốn RAM) từ database dùng chung cũ sang database
+    riêng, rồi ghi cờ `__ycx_scope_migrated_v1` vào chính DB đó.
+- **Vì sao không chép logic này thành 3 bản zone-local** như `dbService.ts`: 3 khu vực phải mở
+  ĐÚNG cùng một database. Một bản tính tên lệch = Report BI ghi một nơi, Phân Tích đọc một nơi,
+  không có lỗi nào hiện ra.
+- **Trạng thái đặt trên `globalThis`** chứ không phải biến module: bundler tách module thành 2 bản
+  thì 2 bản vẫn phải thấy chung một uid. Đây KHÔNG phải phòng xa lý thuyết — test
+  `indexeddb-rieng-theo-tai-khoan.spec.ts` đỏ thật vì chuyện này (dev server của Vite phục vụ
+  `/utils/localDbScope.ts` và `/utils/localDbScope.ts?t=…` thành 2 instance khác nhau).
+- **Ai được thừa kế dữ liệu cũ**: chỉ tài khoản mà kho cũ vốn là của nó (`owner === uid`), hoặc khi
+  chưa ai nhận (`owner === null` — lần chạy đầu tiên của bản này; phiên đăng nhập Firebase đang
+  nhớ sẵn trên máy chính là chủ của đống dữ liệu đó). Tài khoản thứ hai luôn bắt đầu từ trống.
+- **KHÔNG xoá database cũ ngay sau khi chép**: tab khác có thể đang mở bản app cũ. Nó được dọn ở
+  `clearAllLocalAppData()` — tức lần đăng xuất hoặc đổi tài khoản kế tiếp.
+
+## File thay đổi
+
+| File | Việc |
+|---|---|
+| `utils/localDbScope.ts` | MỚI — tên database theo uid + chép dữ liệu lần đầu |
+| `utils/localDbScope.test.ts` | MỚI — 8 test cho phần tính tên (hàm thuần) |
+| `services/dbService/core.ts` | Lấy tên qua `biHubDbName()`, đóng/mở lại kết nối khi uid đổi giữa phiên |
+| `features/bi-dashboard/services/dbService.ts` | Như trên (bản zone-local) |
+| `features/sticker-event/services/dbService.ts` | Như trên (bản zone-local) |
+| `features/bi-dashboard/utils/dbMigration.ts` | `openMainDb()` thay cho hằng `NEW_DB_NAME` |
+| `services/localDataOwner.ts` | Báo uid cho lớp DB; bỏ `BI_HUB_DATABASE_V2` khỏi diện "xoá sạch theo tài khoản" (nay nó là kho dùng chung/chưa đăng nhập) |
+| `tests/e2e/indexeddb-rieng-theo-tai-khoan.spec.ts` | MỚI — 2 test: tách theo uid + 3 khu vực mở đúng 1 DB |
+| `tests/e2e/bi-du-lieu-khong-lan-giua-tai-khoan.spec.ts` | MỚI — kiểm chứng ở mức GIAO DIỆN trên Report BI |
+| `CLAUDE.md` | Mục 1.2 mới + sửa "dùng chung 2 thứ" → 3 thứ |
+
+## Kết quả (2026-09-23) — ĐÃ XONG, đã tự test
+
+- Unit: **783 test xanh** (thêm 8 test mới cho `biHubDbName`).
+- E2E (Chromium, code thật chạy trong trình duyệt thật):
+  - `indexeddb-rieng-theo-tai-khoan.spec.ts`: A thừa kế đủ dữ liệu cũ (cả `settings` lẫn
+    `appStorage`); B **không thấy gì** của A; **A quay lại vẫn còn nguyên dữ liệu** (khác hẳn cách
+    chữa cũ); chưa đăng nhập vẫn dùng kho chung. 3 khu vực mở đúng 1 database.
+  - `bi-du-lieu-khong-lan-giua-tai-khoan.spec.ts`: Report BI của tài khoản 1 hiện "Tân Hiệp",
+    tài khoản 2 hiện đúng màn trống "Chưa có danh sách siêu thị" (ảnh `test-results/bi-tai-khoan-*.png`).
+  - Chạy lại các bộ cũ đụng IndexedDB: `doi-tai-khoan-don-du-lieu`, `bi-nhan-vien-theo-sieu-thi`,
+    `analysis-only-all-in-one`, `auth-fresh-login-no-flash`, `analysis-employees-sync` — **7/7 xanh**.
+
+## Việc CÒN LẠI (cố ý chưa làm)
+
+- Các kho nhỏ còn lại (`ScheduleAppDB`, `TaxCalculatorDB`, `ProductSearchDB`, `YCX_KHAI_THAC_DB`,
+  `keyval-store`) vẫn dùng chung + xoá sạch khi đổi tài khoản. Tách tiếp được nhưng lợi ích nhỏ
+  hơn nhiều (dữ liệu nhẹ, tải lại nhanh).
+- `localStorage` vẫn dùng chung (chỉ xoá theo tiền tố khi đổi tài khoản). Ở đây chủ yếu là tuỳ
+  chọn giao diện, không phải dữ liệu kinh doanh.
+- Cửa sổ ~100ms lúc mở app: cache "Ultra-Fast Boot" đọc theo uid ĐOÁN từ lần trước. Nếu lần này
+  là tài khoản khác thì có thể thấy tên/Kho của người trước trong chớp mắt rồi bị dọn ngay. Muốn
+  bịt hẳn thì phải bỏ Ultra-Fast Boot (đánh đổi tốc độ mở app).
+- `npm run check` đỏ ở bước cuối `lint:ratchet` vì **lý do có từ trước thay đổi này** (đã kiểm
+  chứng trên worktree HEAD sạch): `features/line-bot/*` và `features/tax-calculator/*` chưa có
+  trong `violations-baseline.json` (baseline ghi từ commit `280c99ad`, lúc 2 khu vực này chưa tồn
+  tại). Không sửa kèm ở đây vì nó chạm chuẩn màu của 2 khu vực khác — việc riêng.

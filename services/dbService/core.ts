@@ -1,17 +1,44 @@
-const DB_NAME = 'BI_HUB_DATABASE_V2';
-const DB_VERSION = 3;
-export const APP_STORE = 'appStorage';
-const SETTINGS_STORE = 'settings';
+import {
+    APP_STORE as SCOPED_APP_STORE,
+    BI_HUB_DB_VERSION,
+    SETTINGS_STORE as SCOPED_SETTINGS_STORE,
+    biHubDbName,
+    ensureBiHubDbReady,
+} from '../../utils/localDbScope';
+
+const DB_VERSION = BI_HUB_DB_VERSION;
+export const APP_STORE = SCOPED_APP_STORE;
+const SETTINGS_STORE = SCOPED_SETTINGS_STORE;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+// Tên database ĐANG mở. Mỗi tài khoản một database riêng (utils/localDbScope.ts) nên tên có thể
+// đổi giữa phiên trang — ngay khi Firebase Auth xác nhận uid khác với lúc đoán, hoặc khi đăng
+// xuất/đăng nhập tài khoản khác mà không tải lại trang.
+let openedDbName: string | null = null;
 
 export function getDb(): Promise<IDBDatabase> {
     if (typeof window === 'undefined' || !window.indexedDB) {
         return Promise.reject(new Error('IndexedDB is not supported/enabled in this environment.'));
     }
-    if (dbPromise) return dbPromise;
 
-    dbPromise = new Promise((resolve, reject) => {
+    const dbName = biHubDbName();
+    if (dbPromise && openedDbName === dbName) return dbPromise;
+    if (dbPromise) {
+        // Đổi tài khoản giữa phiên: đóng kết nối của tài khoản trước, nếu không mọi lượt ghi sau
+        // đó vẫn chảy vào database của người cũ.
+        const stale = dbPromise;
+        dbPromise = null;
+        stale.then(db => { try { db.close(); } catch { /* đã đóng sẵn */ } }).catch(() => { /* mở hụt từ đầu */ });
+    }
+    openedDbName = dbName;
+
+    // Lần đầu của mỗi tài khoản: chép dữ liệu từ database dùng chung cũ sang database riêng.
+    dbPromise = ensureBiHubDbReady(dbName).then(() => openDatabase(dbName));
+    return dbPromise;
+}
+
+function openDatabase(DB_NAME: string): Promise<IDBDatabase> {
+    return new Promise((resolve, reject) => {
         let active = true;
 
         // Failsafe timeout: if IndexedDB open takes > 10 seconds, reject it to let app fallback
@@ -79,7 +106,6 @@ export function getDb(): Promise<IDBDatabase> {
             }
         }
     });
-    return dbPromise;
 }
 
 // Lõi dùng chung cho saveSetting/saveSettingOrThrow — chỉ khác nhau ở hành vi khi retry lần 2
