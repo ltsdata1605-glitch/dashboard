@@ -10,8 +10,6 @@ import {
     Ticket,
     Calculator,
     Sticker,
-    ClipboardCheck,
-    ExternalLink,
     Settings,
     HelpCircle,
     Shield,
@@ -40,7 +38,6 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
     const moreTabs = [
         { id: 'reports', label: 'Báo cáo', icon: FileText },
-        { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-487587635482.asia-southeast1.run.app' },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
         { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
         { id: 'tools-line-bot', label: 'Bot LINE', icon: Bot },
@@ -102,32 +99,17 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Công cụ<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
                                 <div className="grid grid-cols-4 gap-2.5">
                                     {moreTabs.filter(t => t.id.startsWith('tools-')).map(tab => (
-                                        'externalUrl' in tab ? (
-                                            <a
-                                                key={tab.id}
-                                                href={tab.externalUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                                            >
-                                                <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
-                                                    <tab.icon size={20} className="text-sky-700 dark:text-sky-400" />
-                                                </div>
-                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
-                                            </a>
-                                        ) : (
-                                            <Button
-                                                variant="unstyled" size="none"
-                                                key={tab.id}
-                                                onClick={() => handleTabClick(tab.id)}
-                                                className="justify-start flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                                            >
-                                                <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
-                                                    <tab.icon size={20} className="text-sky-700 dark:text-sky-400" />
-                                                </div>
-                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
-                                            </Button>
-                                        )
+                                        <Button
+                                            variant="unstyled" size="none"
+                                            key={tab.id}
+                                            onClick={() => handleTabClick(tab.id)}
+                                            className="justify-start flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                        >
+                                            <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
+                                                <tab.icon size={20} className="text-sky-700 dark:text-sky-400" />
+                                            </div>
+                                            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
+                                        </Button>
                                     ))}
                                 </div>
                             </div>
@@ -138,22 +120,6 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 <div className="space-y-1">
                                     {moreTabs.filter(t => !t.id.startsWith('tools-')).map(tab => {
                                         const isActive = activeTab === tab.id;
-                                        if ('externalUrl' in tab) {
-                                            return (
-                                                <a
-                                                    key={tab.id}
-                                                    href={tab.externalUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                                                    onClick={() => setIsMoreOpen(false)}
-                                                >
-                                                    <tab.icon size={20} />
-                                                    <span className="font-medium text-sm flex-grow">{tab.label}</span>
-                                                    <ExternalLink size={14} className="opacity-50" />
-                                                </a>
-                                            );
-                                        }
                                         return (
                                             <Button
                                                 variant="unstyled" size="none"

@@ -23,6 +23,8 @@ interface TaxResultPanelProps {
   qrUrl?: string;
   qrBankLabel?: string;
   qrBankAccount?: string;
+  /** Gọi sau khi xuất ảnh thành công — dùng để tự lưu kết quả vào lịch sử */
+  onExported?: () => void | Promise<void>;
   onOpenBracketModal: () => void;
 }
 
@@ -34,6 +36,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
   qrUrl = '',
   qrBankLabel = '',
   qrBankAccount = '',
+  onExported,
   onOpenBracketModal,
 }) => {
   const [hideSensitive, setHideSensitive] = useState(false);
@@ -109,6 +112,8 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
       if (blob) {
         toast.success('Đã xuất ảnh bảng tính thuế thành công!', { id: toastId });
+        // Xuất ảnh là lúc kết quả đã chốt -> tự lưu vào lịch sử luôn
+        await onExported?.();
       } else {
         toast.error('Không thể tạo ảnh báo cáo. Vui lòng thử lại.', { id: toastId });
       }

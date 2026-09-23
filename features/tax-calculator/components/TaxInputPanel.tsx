@@ -97,6 +97,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       if (data.fullName && !input.name) {
         updates.name = data.fullName;
       }
+      // Tháng lương trên phiếu: dùng để gom nhóm lịch sử theo tháng
+      if (data.monthYear && !input.monthYear) {
+        updates.monthYear = data.monthYear;
+      }
       if (data.bankAccount && !input.bankAccount) {
         updates.bankAccount = data.bankAccount;
       }
@@ -161,6 +165,10 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
       if (data.fullName && !input.name) {
         updates.name = data.fullName;
+      }
+      // Tháng lương trên phiếu: dùng để gom nhóm lịch sử theo tháng
+      if (data.monthYear && !input.monthYear) {
+        updates.monthYear = data.monthYear;
       }
       if (data.bankAccount && !input.bankAccount) {
         updates.bankAccount = data.bankAccount;

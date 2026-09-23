@@ -209,3 +209,52 @@ test('nút "Nút Chụp ảnh" kéo thả được lên thanh dấu trang + có 
     expect(Number(tipOpacity)).toBe(1);
     await page.screenshot({ path: 'test-results/tax-bookmarklet-tooltip.png' });
 });
+
+test('xuất ảnh xong: tự lưu vào lịch sử và lịch sử gom nhóm theo tháng', async ({ page }) => {
+    await openTaxWithBothSlips(page);
+
+    // Chưa xuất ảnh -> lịch sử trống
+    await page.getByRole('button', { name: /Lịch sử/i }).click();
+    await expect(page.getByText(/Chưa có bản ghi tính thuế nào/)).toBeVisible();
+    await page.getByRole('button', { name: /^Đóng$/ }).click();
+
+    const downloadPromise = page.waitForEvent('download', { timeout: 30_000 });
+    await page.getByRole('button', { name: /Xuất ảnh/i }).click();
+    await downloadPromise;
+    await expect(page.getByText(/Đã tự động lưu kết quả vào lịch sử/)).toBeVisible({ timeout: 15_000 });
+
+    // Xuất ảnh lần 2 khi chưa sửa gì: không được tạo bản ghi trùng
+    const download2 = page.waitForEvent('download', { timeout: 30_000 });
+    await page.getByRole('button', { name: /Xuất ảnh/i }).click();
+    await download2;
+    await page.waitForTimeout(1000);
+
+    await page.getByRole('button', { name: /Lịch sử/i }).click();
+    await expect(page.getByText(/Lịch Sử Tính Thuế \(1\)/)).toBeVisible();
+    // Bản ghi vừa lưu nằm dưới dải tháng lương của phiếu (08/2026)
+    await expect(page.getByText('Tháng 8/2026')).toBeVisible();
+    await expect(page.getByText('(1 bản ghi)')).toBeVisible();
+    await expect(page.getByText('TRƯƠNG HOÀNG PHÚC').last()).toBeVisible();
+    const groupLine = await page.getByText('Tháng 8/2026').locator('xpath=../..').innerText();
+    console.log('DẢI THÁNG TRONG LỊCH SỬ:', groupLine.replace(/\n/g, ' | '));
+    await page.screenshot({ path: 'test-results/tax-history-grouped.png' });
+});
+
+test('menu không còn mục "Kiểm quỹ"', async ({ page }) => {
+    await page.goto('/?tab=tools-tax');
+    await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
+    await expect(page.getByRole('button', { name: /Xuất ảnh/i })).toBeVisible({ timeout: 30_000 });
+
+    // Sidebar thu gọn: rê chuột vào để nó bung ra rồi mở nhóm "Công cụ"
+    const sidebar = page.locator('aside').first();
+    await sidebar.hover();
+    const toolsBtn = page.getByText('Công cụ', { exact: true }).first();
+    await expect(toolsBtn).toBeVisible({ timeout: 10_000 });
+    await toolsBtn.click();
+
+    await expect(page.getByText('In Sticker').first()).toBeVisible();
+    await expect(page.getByText('Tính thuế').first()).toBeVisible();
+    await expect(page.getByText('Kiểm quỹ')).toHaveCount(0);
+    console.log('MỤC CON CỦA "Công cụ":', await page.locator('aside').first().innerText());
+    await page.screenshot({ path: 'test-results/menu-khong-con-kiem-quy.png' });
+});

@@ -140,10 +140,11 @@ export const TaxCalculatorView: React.FC = () => {
     }
   };
 
-  const handleSaveHistory = async () => {
+  const handleSaveHistory = async (opts?: { silent?: boolean }) => {
     try {
       await taxSyncService.saveRecord({
         name: input.name || 'Người kê khai',
+        monthYear: input.monthYear,
         incomeDay5: input.incomeDay5,
         incomeDay20: input.incomeDay20,
         totalIncome: result.totalIncome || input.totalIncome,
@@ -160,9 +161,11 @@ export const TaxCalculatorView: React.FC = () => {
       });
       setIsSaved(true);
       toast.success(
-        isCloudUser
-          ? 'Đã lưu vào lịch sử (IndexedDB & Firebase Cloud)'
-          : 'Đã lưu vào bộ nhớ máy (IndexedDB)'
+        opts?.silent
+          ? 'Đã tự động lưu kết quả vào lịch sử'
+          : isCloudUser
+            ? 'Đã lưu vào lịch sử (IndexedDB & Firebase Cloud)'
+            : 'Đã lưu vào bộ nhớ máy (IndexedDB)'
       );
       await refreshHistory();
     } catch (e) {
@@ -350,7 +353,7 @@ export const TaxCalculatorView: React.FC = () => {
             input={input}
             onChange={handleInputChange}
             onReset={handleReset}
-            onSave={handleSaveHistory}
+            onSave={() => handleSaveHistory()}
             isSaved={isSaved}
             onOpenApiKeyConfig={() => setShowApiKeyModal(true)}
           />
@@ -366,6 +369,8 @@ export const TaxCalculatorView: React.FC = () => {
             qrUrl={qrUrl}
             qrBankLabel={qrBankLabel}
             qrBankAccount={input.bankAccount}
+            // Xuất ảnh lại mà chưa sửa gì thì không tạo thêm bản ghi trùng
+            onExported={() => (isSaved ? undefined : handleSaveHistory({ silent: true }))}
             onOpenBracketModal={() => setShowBracketModal(true)}
           />
 

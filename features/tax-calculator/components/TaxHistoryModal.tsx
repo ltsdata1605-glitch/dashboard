@@ -1,8 +1,9 @@
-import React from 'react';
-import { X, History, Trash2, RotateCcw, Cloud, HardDrive } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { X, History, Trash2, RotateCcw, Cloud, HardDrive, CalendarDays } from 'lucide-react';
 import { Button } from '../../../components/shared/ui/Button';
 import { SavedTaxRecord } from '../types/tax.types';
 import { formatVnd } from '../services/taxCalculatorService';
+import { groupRecordsByMonth } from '../services/taxHistoryGrouping';
 
 interface TaxHistoryModalProps {
     isOpen: boolean;
@@ -21,6 +22,9 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
     onDeleteRecord,
     onClearAll
 }) => {
+    // Gom theo tháng lương để rà soát nhanh (tháng mới nhất lên đầu)
+    const monthGroups = useMemo(() => groupRecordsByMonth(records), [records]);
+
     if (!isOpen) return null;
 
     return (
@@ -55,7 +59,26 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                             <p className="text-[11px] text-slate-400 mt-0.5">Sau khi tính toán, bấm nút "Lưu Kết Quả" để lưu lại tra cứu sau.</p>
                         </div>
                     ) : (
-                        records.map(rec => (
+                        monthGroups.map(group => (
+                            <div key={group.key} className="space-y-2">
+                                {/* Dải tháng: dính trên để cuộn dài vẫn biết đang ở tháng nào */}
+                                <div className="sticky top-0 z-10 -mx-3 sm:-mx-4 px-3 sm:px-4 py-1.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                        <CalendarDays size={12} className="text-sky-500" />
+                                        {group.label}
+                                        <span className="text-slate-400 font-semibold normal-case tracking-normal">
+                                            ({group.records.length} bản ghi)
+                                        </span>
+                                    </span>
+                                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                                        Thuế:{' '}
+                                        <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                            {formatVnd(group.totalTax)}
+                                        </strong>
+                                    </span>
+                                </div>
+
+                                {group.records.map(rec => (
                             <div
                                 key={rec.id || rec.createdAt}
                                 className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-sky-50/40 dark:hover:bg-sky-950/20 transition-all flex items-center justify-between gap-3 shadow-2xs"
@@ -111,6 +134,8 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                         </button>
                                     )}
                                 </div>
+                            </div>
+                                ))}
                             </div>
                         ))
                     )}
