@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Download,
   Eye,
@@ -19,6 +19,10 @@ interface TaxResultPanelProps {
   proxyAmount: number;
   totalIncome: number;
   name?: string;
+  /** Mã VietQR để đồng nghiệp/thủ quỹ hoàn lại tiền thuế — được chèn vào ảnh xuất ra */
+  qrUrl?: string;
+  qrBankLabel?: string;
+  qrBankAccount?: string;
   onOpenBracketModal: () => void;
 }
 
@@ -27,6 +31,9 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
   proxyAmount,
   totalIncome,
   name = '',
+  qrUrl = '',
+  qrBankLabel = '',
+  qrBankAccount = '',
   onOpenBracketModal,
 }) => {
   const [hideSensitive, setHideSensitive] = useState(false);
@@ -34,6 +41,38 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
   // Bật trong lúc chụp ảnh: ảnh gửi cho đồng nghiệp không được lộ thu nhập của người kê khai
   const [maskIncomeForExport, setMaskIncomeForExport] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
+  // Ảnh QR phải ở dạng data URL thì html-to-image mới nhúng được (ảnh từ máy chủ ngoài làm
+  // bước chụp treo vì thư viện phải tự tải lại ảnh).
+  const [qrDataUrl, setQrDataUrl] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!qrUrl) {
+      setQrDataUrl('');
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(qrUrl);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const blob = await res.blob();
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(blob);
+        });
+        if (!cancelled) setQrDataUrl(dataUrl);
+      } catch (e) {
+        // Không tải được QR thì ảnh xuất ra bỏ qua khối QR, vẫn xuất bình thường
+        console.warn('Không tải được mã QR để nhúng vào ảnh:', e);
+        if (!cancelled) setQrDataUrl('');
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [qrUrl]);
 
   const MASK_TEXT = '•••••••• đ';
 
@@ -183,11 +222,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               </div>
 
               <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-emerald-200/60 dark:border-emerald-800/30">
-                <span className="text-[11px] text-slate-500">Thực chuyển lại đồng nghiệp:</span>
-                <div className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">Cần chuyển lại cho thủ quỹ:</span>
+                <div className="text-xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">
                   {maskValue(formatVnd(netRefundToFriend))}
                 </div>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-rose-400 dark:text-rose-400/80">
                   (Đã khấu trừ thuế phát sinh)
                 </span>
               </div>
@@ -327,6 +366,34 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             )}
           </div>
         </div>
+
+        {/* Mã QR trong ảnh xuất: gửi ảnh cho thủ quỹ là quét được để hoàn lại tiền thuế */}
+        {maskIncomeForExport && qrDataUrl && (
+          <div className="mb-2 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/60 dark:bg-emerald-950/20 flex items-center gap-3">
+            <img
+              src={qrDataUrl}
+              alt="Mã VietQR hoàn lại tiền thuế nhận thay"
+              className="w-24 h-24 object-contain bg-white rounded-lg border border-emerald-200 p-1 shrink-0"
+            />
+            <div className="min-w-0">
+              <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300">
+                Quét mã để hoàn lại tiền thuế nhận thay
+              </div>
+              <div className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 leading-tight">
+                {formatVnd(taxOnProxyAmount)}
+              </div>
+              {qrBankLabel && (
+                <div className="text-[11px] text-slate-600 dark:text-slate-300 truncate">{qrBankLabel}</div>
+              )}
+              {qrBankAccount && (
+                <div className="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-200">
+                  {qrBankAccount}
+                </div>
+              )}
+              {name && <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{name}</div>}
+            </div>
+          </div>
+        )}
 
         {/* Ghi chú chỉ xuất hiện trong ảnh: giải thích các dấu chấm thay cho số thu nhập */}
         {maskIncomeForExport && (

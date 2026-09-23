@@ -115,11 +115,18 @@ test('xuất ảnh: ẩn thông tin thu nhập, ảnh có tên người kê khai
 
     // Ghi lại nội dung khối kết quả trong lúc chụp ảnh (trạng thái che chỉ tồn tại vài khung hình)
     await page.evaluate(() => {
-        const w = window as unknown as { __snaps: string[]; __stop?: boolean };
+        const w = window as unknown as { __snaps: string[]; __qr: string[]; __stop?: boolean };
         w.__snaps = [];
+        w.__qr = [];
         const tick = () => {
             const panel = document.querySelector('[data-testid="tax-result-panel"]') as HTMLElement | null;
-            if (panel) w.__snaps.push(panel.innerText);
+            if (panel) {
+                w.__snaps.push(panel.innerText);
+                panel.querySelectorAll('img').forEach(img => {
+                    const el = img as HTMLImageElement;
+                    if (el.complete && el.naturalWidth > 0) w.__qr.push(el.src.slice(0, 30));
+                });
+            }
             if (!w.__stop) requestAnimationFrame(tick);
         };
         tick();
@@ -143,9 +150,62 @@ test('xuất ảnh: ẩn thông tin thu nhập, ảnh có tên người kê khai
     expect(sample).not.toContain('5.278.580');
 
     await download.saveAs('test-results/tax-export-anh-that.png');
+    // Mã QR phải nằm TRONG ảnh để gửi cho thủ quỹ quét trả lại tiền thuế
+    expect(sample).toContain('Quét mã để hoàn lại tiền thuế nhận thay');
+    const qrSrcs = await page.evaluate(() => (window as unknown as { __qr: string[] }).__qr);
+    console.log('ẢNH QR ĐÃ TẢI XONG TRONG VÙNG CHỤP:', qrSrcs.length, '|', qrSrcs[0] || '(không có)');
+    expect(qrSrcs.some(src => src.startsWith('data:image'))).toBe(true);
+
     console.log('TÊN FILE ẢNH:', download.suggestedFilename());
     expect(download.suggestedFilename()).toContain('TRƯƠNG_HOÀNG_PHÚC');
 
     // Sau khi chụp xong, màn hình trở lại hiển thị đầy đủ
     await expect(page.getByTestId('tax-result-panel')).not.toContainText('••••••••');
+});
+
+test('nhãn "Cần chuyển lại cho thủ quỹ" màu đỏ thay cho "Thực chuyển lại đồng nghiệp"', async ({ page }) => {
+    await openTaxWithBothSlips(page);
+
+    await expect(page.getByText('Cần chuyển lại cho thủ quỹ:')).toBeVisible();
+    await expect(page.getByText('Thực chuyển lại đồng nghiệp')).toHaveCount(0);
+
+    const color = await page.getByText('Cần chuyển lại cho thủ quỹ:').evaluate(
+        el => getComputedStyle(el as HTMLElement).color
+    );
+    console.log('MÀU NHÃN THỦ QUỸ:', color);
+    expect(color).toBe('oklch(0.586 0.253 17.585)'); // rose-600 (Tailwind v4 dùng oklch)
+});
+
+test('nút "Nút Chụp ảnh" kéo thả được lên thanh dấu trang + có tooltip hướng dẫn', async ({ page }) => {
+    await openTaxWithBothSlips(page);
+
+    const link = page.getByRole('link', { name: /Nút Chụp ảnh/i });
+    await expect(link).toBeVisible();
+
+    const info = await link.evaluate((el: HTMLAnchorElement) => ({
+        href: el.getAttribute('href') || '',
+        draggable: el.draggable,
+    }));
+    console.log('ĐỘ DÀI MÃ BOOKMARKLET:', info.href.length, '| KÉO THẢ ĐƯỢC:', info.draggable);
+    expect(info.draggable).toBe(true);
+    expect(info.href.startsWith('javascript:')).toBe(true);
+
+    // Mã giải nén ra phải là JS chạy được và đúng là bản chụp ảnh html2canvas
+    const decoded = decodeURIComponent(info.href.replace(/^javascript:/, ''));
+    expect(decoded).toContain('html2canvas');
+    expect(decoded).toContain('fullpage_sieunet_');
+    const parses = await page.evaluate(src => {
+        try { new Function(src); return true; } catch { return false; }
+    }, decoded);
+    expect(parses).toBe(true);
+
+    // Tooltip hướng dẫn hiện khi rê chuột
+    await link.hover();
+    const tip = page.getByText(/Kéo thả nút này lên thanh Dấu trang/i).first();
+    await expect(tip).toBeVisible();
+    await page.waitForTimeout(400); // chờ hiệu ứng hiện xong rồi mới chụp
+    const tipOpacity = await tip.evaluate(el => getComputedStyle(el.parentElement as HTMLElement).opacity);
+    console.log('ĐỘ MỜ TOOLTIP KHI RÊ CHUỘT:', tipOpacity);
+    expect(Number(tipOpacity)).toBe(1);
+    await page.screenshot({ path: 'test-results/tax-bookmarklet-tooltip.png' });
 });

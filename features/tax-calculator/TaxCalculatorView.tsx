@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   Calculator,
   History,
@@ -8,6 +8,8 @@ import {
   Cloud,
   HardDrive,
   Key,
+  Camera,
+  MousePointerClick,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { auth } from '../../services/firebase';
@@ -17,8 +19,10 @@ import {
   PERSONAL_DEDUCTION_2026,
   DEPENDENT_DEDUCTION_2026,
   formatVnd,
+  generateVietQrUrl,
 } from './services/taxCalculatorService';
-import { normalizeBankCode } from './services/bankCatalog';
+import { BANK_OPTIONS, normalizeBankCode } from './services/bankCatalog';
+import { SCREENSHOT_BOOKMARKLET } from './services/screenshotBookmarklet';
 import { taxSyncService } from './services/taxSyncService';
 import { TaxInputPanel } from './components/TaxInputPanel';
 import { TaxResultPanel } from './components/TaxResultPanel';
@@ -79,6 +83,12 @@ export const TaxCalculatorView: React.FC = () => {
   const [historyList, setHistoryList] = useState<SavedTaxRecord[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isCloudUser, setIsCloudUser] = useState<boolean>(!!auth.currentUser);
+
+  // Nút bookmarklet "Chụp ảnh": href là javascript: nên phải gắn bằng DOM, React chặn trong JSX
+  const bookmarkletRef = useRef<HTMLAnchorElement>(null);
+  useEffect(() => {
+    bookmarkletRef.current?.setAttribute('href', SCREENSHOT_BOOKMARKLET);
+  }, []);
 
   // Lắng nghe trạng thái đăng nhập Firebase
   useEffect(() => {
@@ -209,6 +219,15 @@ export const TaxCalculatorView: React.FC = () => {
       ? result.netRefundToFriend + result.taxOnProxyAmount
       : input.proxyAmount;
 
+  // Mã QR hoàn thuế: dựng ở đây để CẢ thẻ QR lẫn ảnh xuất ra dùng chung một mã
+  const qrUrl = generateVietQrUrl({
+    bankAccount: input.bankAccount,
+    bankCode: input.bankCode,
+    amount: result.taxOnProxyAmount,
+    description: input.qrDescription || 'Hoan tra thue TNCN nhan thay',
+  });
+  const qrBankLabel = BANK_OPTIONS.find(o => o.value === input.bankCode)?.label || '';
+
   const personalDeduction = PERSONAL_DEDUCTION_2026;
   const dependentDeduction = DEPENDENT_DEDUCTION_2026;
 
@@ -252,6 +271,41 @@ export const TaxCalculatorView: React.FC = () => {
 
           {/* Action buttons */}
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Kéo thả lên thanh dấu trang -> có nút "Chụp ảnh" dùng được ở mọi trang web */}
+            <div className="relative group">
+              <a
+                ref={bookmarkletRef}
+                href="#"
+                draggable
+                onClick={(e) => {
+                  e.preventDefault();
+                  toast(
+                    'Kéo thả nút này lên thanh Dấu trang của trình duyệt, rồi bấm vào dấu trang đó ở trang cần chụp.',
+                    { icon: '📸', duration: 6000 }
+                  );
+                }}
+                className="px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"
+              >
+                <Camera className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                <span className="hidden sm:inline">Nút Chụp ảnh</span>
+              </a>
+
+              {/* Tooltip hướng dẫn */}
+              <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-50 w-64 opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-md bg-slate-800 text-white p-2.5 shadow-lg text-[11px] leading-relaxed">
+                <div className="font-bold mb-1 flex items-center gap-1">
+                  <MousePointerClick className="w-3 h-3" />
+                  Kéo thả nút này lên thanh Dấu trang
+                </div>
+                <div className="text-slate-200">
+                  Sau đó mở trang cần chụp (HRM, phiếu lương…) và bấm vào dấu trang “Nút Chụp ảnh” —
+                  ảnh PNG full trang, siêu nét sẽ tự tải về.
+                </div>
+                <div className="mt-1 text-slate-400">
+                  Chưa thấy thanh dấu trang? Nhấn Ctrl+Shift+B (Windows) hoặc ⌘+Shift+B (Mac).
+                </div>
+              </div>
+            </div>
+
             <button
               type="button"
               onClick={() => setShowApiKeyModal(true)}
@@ -309,6 +363,9 @@ export const TaxCalculatorView: React.FC = () => {
             proxyAmount={proxyTotal}
             totalIncome={result.totalIncome || input.totalIncome}
             name={input.name}
+            qrUrl={qrUrl}
+            qrBankLabel={qrBankLabel}
+            qrBankAccount={input.bankAccount}
             onOpenBracketModal={() => setShowBracketModal(true)}
           />
 
