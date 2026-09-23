@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
+import { clearAllLocalAppData, ensureLocalDataBelongsTo, setLocalDataOwner } from '../services/localDataOwner';
 import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
@@ -124,6 +125,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearTimeout(fallbackTimer);
             setUser(currentUser);
             if (currentUser) {
+                // Dữ liệu cục bộ thuộc về TRÌNH DUYỆT chứ không theo tài khoản: tài khoản khác
+                // đăng nhập trên cùng máy sẽ thấy dữ liệu của người trước (chủ dự án gặp thật
+                // 2026-09-23 — tài khoản mới vẫn thấy cụm siêu thị cũ ở Report BI). Dọn trước khi
+                // nạp bất cứ thứ gì.
+                try {
+                    const wiped = await ensureLocalDataBelongsTo(currentUser.uid);
+                    if (wiped) {
+                        console.info('[Auth] Đổi tài khoản — đã dọn dữ liệu cục bộ của tài khoản trước.');
+                    }
+                } catch (err) {
+                    console.warn('[Auth] Không dọn được dữ liệu cục bộ của tài khoản trước:', err);
+                }
                 // Đăng nhập MỚI ngay trong phiên trang (vừa đăng xuất rồi đăng nhập lại, hoặc mở
                 // app không có cache): isLoading lúc này đã là false (nhánh else bên dưới tắt từ
                 // trước) trong khi role/status/departmentId còn rỗng → App.tsx render NGAY
@@ -250,6 +263,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = async () => {
         await logoutProvider();
         setDemoMode(false); // Xóa trạng thái demo khi dăng xuất
+        // Dọn dữ liệu cục bộ để người đăng nhập tiếp theo trên máy này không thấy dữ liệu của
+        // tài khoản vừa đăng xuất. Dữ liệu thật vẫn nằm trên cloud theo từng tài khoản.
+        try {
+            await clearAllLocalAppData();
+            setLocalDataOwner(null);
+        } catch (err) {
+            console.warn('[Auth] Không dọn được dữ liệu cục bộ khi đăng xuất:', err);
+        }
     };
 
     const activeUserRole = isDemoMode ? 'manager' : userRole;
