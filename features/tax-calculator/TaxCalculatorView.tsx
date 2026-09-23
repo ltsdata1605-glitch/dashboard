@@ -222,6 +222,17 @@ export const TaxCalculatorView: React.FC = () => {
       ? result.netRefundToFriend + result.taxOnProxyAmount
       : input.proxyAmount;
 
+  // Các khoản nhận thay đang chọn — đưa vào ảnh xuất để thủ quỹ đối chiếu từng khoản
+  const proxyItems = useMemo(() => {
+    const selected = (input.bonusItems || [])
+      .filter(b => (input.selectedProxyItemIds || []).includes(b.id))
+      .map(b => ({ id: b.id, name: b.name, amount: b.amount }));
+    if ((input.customProxyAmount || 0) > 0) {
+      selected.push({ id: 'custom', name: 'Khoản nhập tay', amount: input.customProxyAmount });
+    }
+    return selected;
+  }, [input.bonusItems, input.selectedProxyItemIds, input.customProxyAmount]);
+
   // Mã QR hoàn thuế: dựng ở đây để CẢ thẻ QR lẫn ảnh xuất ra dùng chung một mã
   const qrUrl = generateVietQrUrl({
     bankAccount: input.bankAccount,
@@ -366,6 +377,7 @@ export const TaxCalculatorView: React.FC = () => {
             proxyAmount={proxyTotal}
             totalIncome={result.totalIncome || input.totalIncome}
             name={input.name}
+            proxyItems={proxyItems}
             qrUrl={qrUrl}
             qrBankLabel={qrBankLabel}
             qrBankAccount={input.bankAccount}

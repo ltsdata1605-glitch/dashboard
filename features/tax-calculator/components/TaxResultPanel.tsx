@@ -14,11 +14,26 @@ import { exportElementAsImage } from '../../../services/uiService';
 import { TaxCalculationResult } from '../types/tax.types';
 import { formatVnd } from '../services/taxCalculatorService';
 
+/** Tải ảnh QR về dạng data URL — html-to-image không nhúng được ảnh từ máy chủ ngoài */
+const fetchQrDataUrl = async (url: string): Promise<string> => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const blob = await res.blob();
+  return await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+};
+
 interface TaxResultPanelProps {
   result: TaxCalculationResult;
   proxyAmount: number;
   totalIncome: number;
   name?: string;
+  /** Danh sách khoản nhận thay đang chọn — in vào ảnh xuất để đối chiếu từng khoản */
+  proxyItems?: Array<{ id: string; name: string; amount: number }>;
   /** Mã VietQR để đồng nghiệp/thủ quỹ hoàn lại tiền thuế — được chèn vào ảnh xuất ra */
   qrUrl?: string;
   qrBankLabel?: string;
@@ -33,6 +48,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
   proxyAmount,
   totalIncome,
   name = '',
+  proxyItems = [],
   qrUrl = '',
   qrBankLabel = '',
   qrBankAccount = '',
@@ -56,15 +72,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
     }
     (async () => {
       try {
-        const res = await fetch(qrUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result));
-          reader.onerror = () => reject(reader.error);
-          reader.readAsDataURL(blob);
-        });
+        const dataUrl = await fetchQrDataUrl(qrUrl);
         if (!cancelled) setQrDataUrl(dataUrl);
       } catch (e) {
         // Không tải được QR thì ảnh xuất ra bỏ qua khối QR, vẫn xuất bình thường
@@ -72,6 +80,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
         if (!cancelled) setQrDataUrl('');
       }
     })();
+
     return () => {
       cancelled = true;
     };
@@ -97,6 +106,15 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
     const toastId = toast.loading('Đang khởi tạo ảnh bảng tính thuế...');
 
     try {
+      // Bấm xuất ảnh ngay sau khi nhập liệu thì ảnh QR có thể chưa tải xong -> chờ nó trước
+      if (qrUrl && !qrDataUrl) {
+        try {
+          setQrDataUrl(await fetchQrDataUrl(qrUrl));
+        } catch (e) {
+          console.warn('Bỏ qua mã QR trong ảnh (không tải được):', e);
+        }
+      }
+
       // Chờ React vẽ lại với số liệu thu nhập đã che rồi mới chụp
       await new Promise<void>(resolve =>
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
@@ -263,6 +281,31 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 </div>
                 <span className="text-[10px] text-slate-400">
                   (Bản thân + Người phụ thuộc + BH)
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Chi tiết khoản nhận thay — chỉ in trong ảnh xuất để thủ quỹ đối chiếu từng khoản */}
+        {maskIncomeForExport && hasProxy && proxyItems.length > 0 && (
+          <div className="mb-3 border border-amber-200 dark:border-amber-800/60 rounded-xl overflow-hidden">
+            <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-800/60 text-xs font-bold text-amber-800 dark:text-amber-300">
+              Các khoản nhận thay ({proxyItems.length} khoản)
+            </div>
+            <div className="divide-y divide-amber-100 dark:divide-amber-900/40 text-xs">
+              {proxyItems.map(item => (
+                <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-1.5">
+                  <span className="text-slate-600 dark:text-slate-300 min-w-0 truncate">{item.name}</span>
+                  <span className="font-mono font-semibold text-slate-800 dark:text-slate-100 shrink-0">
+                    {formatVnd(item.amount)}
+                  </span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between gap-3 px-3 py-1.5 bg-amber-50/70 dark:bg-amber-950/20 font-bold">
+                <span className="text-amber-800 dark:text-amber-300">Tổng nhận thay</span>
+                <span className="font-mono text-amber-700 dark:text-amber-300 shrink-0">
+                  {formatVnd(proxyAmount)}
                 </span>
               </div>
             </div>

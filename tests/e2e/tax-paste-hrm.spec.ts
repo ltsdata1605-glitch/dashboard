@@ -89,3 +89,50 @@ test('trình duyệt chặn đọc bộ nhớ tạm: hiện ô để tự Ctrl+V
     await expect(area).toHaveCount(0);
     console.log('Ô DÁN TAY HOẠT ĐỘNG KHI BỊ CHẶN CLIPBOARD');
 });
+
+test('ảnh xuất có chi tiết từng khoản nhận thay và tổng', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await openTax(page);
+
+    await page.evaluate(text => navigator.clipboard.writeText(text), day5Text);
+    await page.getByTestId('paste-day5').click();
+    await expect(page.getByText(/Đã đọc Chi tiết lương Đợt 1/)).toBeVisible({ timeout: 10_000 });
+    await page.evaluate(text => navigator.clipboard.writeText(text), day20Text);
+    await page.getByTestId('paste-day20').click();
+    await expect(page.getByText(/Đã đọc Chi tiết thưởng Đợt 2/)).toBeVisible({ timeout: 10_000 });
+
+    // Ghi lại nội dung vùng chụp trong lúc xuất ảnh (khối nhận thay chỉ có mặt khi chụp)
+    await page.evaluate(() => {
+        const w = window as unknown as { __snaps: string[]; __stop?: boolean };
+        w.__snaps = [];
+        const tick = () => {
+            const panel = document.querySelector('[data-testid="tax-result-panel"]') as HTMLElement | null;
+            if (panel) w.__snaps.push(panel.innerText);
+            if (!w.__stop) requestAnimationFrame(tick);
+        };
+        tick();
+    });
+
+    const downloadPromise = page.waitForEvent('download', { timeout: 30_000 });
+    await page.getByRole('button', { name: /Xuất ảnh/i }).click();
+    const download = await downloadPromise;
+    await download.saveAs('test-results/tax-export-nhan-thay.png');
+    await page.evaluate(() => { (window as unknown as { __stop: boolean }).__stop = true; });
+
+    const snaps = await page.evaluate(() => (window as unknown as { __snaps: string[] }).__snaps);
+    const withProxy = snaps.filter(s => s.includes('Các khoản nhận thay'));
+    expect(withProxy.length).toBeGreaterThan(0);
+
+    const sample = withProxy[withProxy.length - 1];
+    console.log('KHỐI NHẬN THAY TRONG ẢNH:', sample.split('Các khoản nhận thay')[1].split('Đối chiếu')[0].replace(/\n/g, ' | '));
+    // 2 khoản được chọn sẵn (Khoán công việc + 2 khoản "thi đua") và tổng của chúng
+    expect(sample).toContain('Khoán công việc T08.2026');
+    expect(sample).toContain('60.000 đ');
+    expect(sample).toContain('Thưởng thi đua Nạp rút tiền T08.2026');
+    expect(sample).toContain('1.500.000 đ');
+    expect(sample).toContain('Tổng nhận thay');
+    expect(sample).toContain('4.558.000 đ');
+
+    // Ngoài ảnh thì khối này không hiện (giữ giao diện gọn)
+    await expect(page.getByTestId('tax-result-panel')).not.toContainText('Các khoản nhận thay');
+});
