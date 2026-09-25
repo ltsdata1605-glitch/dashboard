@@ -5405,3 +5405,59 @@ phải đổi hẳn thư viện giải mã (vd `zxing-wasm`), là việc riêng.
 `tests/e2e/sticker-toc-do-quet-ma.spec.ts` (MỚI): tự sinh video mã vạch rồi khẳng định nhận được
 dưới 5 giây (ngưỡng đặt rộng so với ~200ms đo được, tránh đỏ vặt trên máy chậm), và vùng quét
 không nhỏ lại dưới 340x240.
+
+---
+
+# Phân quyền & Duyệt yêu cầu — "load danh sách rất lâu" (2026-09-25)
+
+## Yêu cầu
+
+Chủ dự án (kèm ảnh, tài khoản Quản lý kho 405): *"load danh sách rất lâu, mặc dù danh sách không
+có siêu thị nào"* — màn Phân quyền đứng ở "Đang tải danh sách..." rất lâu rồi ra danh sách rỗng.
+
+## Nguyên nhân (tra log production + đo bằng Cloud Function giả)
+
+1. 🔴 **Gọi lại đúng dữ liệu app đã có sẵn trong RAM.** Chuông thông báo và badge "chờ duyệt" đã
+   lấy `listManagedUsers('pending')` qua `services/pendingApprovalsStore.ts` (poll 120s, cache 60s,
+   gộp request đang bay) ngay từ lúc mở app — cả hai đều mount ở cấp `App.tsx` nên luôn chạy.
+   `UserManagementView.fetchRequests()` **không dùng nguồn đó**, nó tự gọi Cloud Function lần nữa.
+2. Tải thẳng `?tab=settings` thì chuông và màn này gọi **song song**, thành 2 request cho cùng một
+   câu hỏi, cùng chậm.
+3. Log production (`firebase functions:log --only listManagedUsers`) khớp: nền đều đặn 1 lượt/2
+   phút, nhưng lúc chủ dự án mở màn này thì vọt lên **11 lượt trong 2 phút**.
+
+Latency của bản thân hàm không phải thủ phạm chính: đo `curl` tới endpoint (bị chặn ở lớp xác thực,
+không chạy thân hàm) là ~420–490ms, tức hạ tầng đang ấm.
+
+## Đã sửa
+
+- `services/pendingApprovalsStore.ts`: thêm `isPendingApprovalsLoaded()` và
+  `getPendingApprovalsFetchedAt()` — cần thiết vì snapshot rỗng KHÔNG phân biệt được "chưa tải" với
+  "đã tải, không có ai chờ duyệt"; không phân biệt được thì không dám vẽ ngay màn rỗng.
+- `components/views/UserManagementView.tsx`: tab "Chờ duyệt" đi qua `refreshPendingApprovals()` —
+  một chỗ lo cả 3 tình huống: còn hạn 60s thì không gọi mạng; đang có request bay thì dùng chung;
+  hết hạn thì gọi đúng một lượt. Nguồn chung tải hụt thì **quay về đường cũ** để lỗi vẫn hiện ra
+  cho người dùng thay vì im lặng báo "không có yêu cầu nào".
+
+## Kết quả đo (cùng một harness, Cloud Function giả chậm 2,5s)
+
+| Tình huống | Trước | Sau |
+|---|---|---|
+| Bấm mở màn Phân quyền trong app | **3.180ms**, **+2 lượt gọi** | **906ms**, **+0 lượt gọi** |
+| Tải thẳng `?tab=settings` | **3 lượt gọi** | **1 lượt gọi** |
+
+Cách lấy mốc "trước": `git stash` đúng 2 file vừa sửa rồi chạy lại cùng bài test.
+
+## Test hồi quy
+
+`tests/e2e/phan-quyen-tai-danh-sach.spec.ts` (MỚI, 2 bài): dựng Cloud Function giả chậm 2,5s có đếm
+lượt gọi; khẳng định mở màn trong app tốn 0 lượt gọi thêm và hiện danh sách nhanh hơn một vòng
+mạng, còn tải thẳng bằng đường dẫn thì tổng cộng đúng 1 lượt.
+
+## Việc CÒN LẠI (cố ý chưa làm)
+
+- Tab **"Hoạt động"** và **"Hết hạn"** chưa có nguồn dùng chung nên lần đầu mở vẫn phải chờ một
+  vòng gọi mạng. Làm store cho 2 tab đó sẽ tốn thêm hạn mức đọc Firestore định kỳ — nên chỉ làm nếu
+  chủ dự án thấy 2 tab này cũng chậm khó chịu.
+- Hàm `listManagedUsers` với manager đang đọc `users` theo `status`/`role` rồi mới lọc Kho ở server;
+  kho lớn lên thì nên thêm điều kiện `where('departmentId', 'in', ...)` + index.

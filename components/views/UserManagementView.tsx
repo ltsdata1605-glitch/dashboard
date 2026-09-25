@@ -11,6 +11,11 @@ import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { adminUpdateUser, listManagedUsers, AdminRole, AdminStatus, ManagedUserDoc } from '../../services/adminUserService';
+import {
+    getPendingApprovalsSnapshot,
+    isPendingApprovalsLoaded,
+    refreshPendingApprovals,
+} from '../../services/pendingApprovalsStore';
 import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
@@ -285,8 +290,35 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
             let rawUsers: ManagedUserDoc[] = [];
 
+            /**
+             * 1b. TAB "CHỜ DUYỆT" — đi qua NGUỒN DÙNG CHUNG thay vì tự gọi Cloud Function.
+             *
+             * Chuông thông báo và badge "chờ duyệt" đã lấy đúng danh sách này qua
+             * `services/pendingApprovalsStore.ts` từ lúc mở app. Trước bản sửa này, mở màn Phân
+             * quyền lại gọi `listManagedUsers('pending')` MỘT LẦN NỮA — chủ dự án báo 2026-09-25:
+             * *"load danh sách rất lâu, mặc dù danh sách không có siêu thị nào"*. Đo bằng Cloud
+             * Function giả chậm 2,5s: mở màn này tốn **2 lượt gọi** và chờ 3.369ms, dù app đã biết
+             * danh sách rỗng từ trước.
+             *
+             * `refreshPendingApprovals()` lo cả 3 tình huống trong đúng một chỗ:
+             *   - đã tải trong vòng 60s  -> trả về ngay, KHÔNG gọi mạng;
+             *   - đang có request bay    -> dùng chung request đó, không tạo cái thứ 2;
+             *   - quá hạn/chưa có        -> gọi đúng một lượt.
+             */
+            let dungNguonChung = listMode === 'pending' && !forceRefresh;
+            if (dungNguonChung) {
+                await refreshPendingApprovals();
+                if (isPendingApprovalsLoaded()) {
+                    rawUsers = getPendingApprovalsSnapshot();
+                } else {
+                    // Nguồn chung tải hụt (mất mạng, hàm lỗi): quay về đường cũ để lỗi hiện ra cho
+                    // người dùng thay vì im lặng báo "không có yêu cầu nào".
+                    dungNguonChung = false;
+                }
+            }
+
             // 2. Admin: Query TRỰC TIẾP Firestore Client SDK 1 lần toàn bộ users collection (~50ms)
-            if (userRole === 'admin') {
+            if (!dungNguonChung && userRole === 'admin') {
                 if (!allAdminUsersRef.current || forceRefresh) {
                     try {
                         const usersRef = collection(db, 'users');
@@ -307,7 +339,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 if (allAdminUsersRef.current) {
                     rawUsers = allAdminUsersRef.current;
                 }
-            } else {
+            } else if (!dungNguonChung) {
                 // Manager: Gọi qua Cloud Function listManagedUsers (functions/src/admin.ts) để lọc theo Kho an toàn ở server
                 try {
                     rawUsers = await listManagedUsers(listMode);

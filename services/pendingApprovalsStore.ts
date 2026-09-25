@@ -116,6 +116,16 @@ function unbindListeners() {
 export const getPendingApprovalsSnapshot = (): ManagedUserDoc[] => cachedUsers;
 
 /**
+ * Đã có ít nhất một lượt tải thành công hay chưa. Cần thiết vì `getPendingApprovalsSnapshot()`
+ * trả mảng rỗng cho CẢ HAI trường hợp "chưa tải" và "đã tải, không có ai chờ duyệt" — nơi gọi
+ * phải phân biệt được thì mới dám vẽ ngay màn "không có yêu cầu nào" mà không chờ mạng.
+ */
+export const isPendingApprovalsLoaded = (): boolean => fetchedAt > 0;
+
+/** Mốc thời gian của lượt tải gần nhất (0 = chưa tải lần nào). */
+export const getPendingApprovalsFetchedAt = (): number => fetchedAt;
+
+/**
  * Đăng ký nhận danh sách. Trả về hàm hủy đăng ký.
  * @param scopeKey uid + vai trò + Kho của người dùng hiện tại — đổi thì cache bị xoá.
  */
