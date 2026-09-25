@@ -67,7 +67,7 @@ export const useCloudSync = () => {
     }, []);
 
     const forceSync = useCallback(async () => {
-        if (!user || isDemoMode) return;
+        if (!user || isDemoMode || (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data)) return;
         setSyncState('syncing');
         setLastError(null);
         clearSyncTimeout();
@@ -161,6 +161,7 @@ export const useCloudSync = () => {
             // 1. Setup real-time Firestore listeners
             const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
             unsubConfig = onSnapshot(configRef, async (snapshot) => {
+                if (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data) return;
                 if (!snapshot.exists() || snapshot.metadata.hasPendingWrites) return;
                 
                 // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
@@ -194,6 +195,7 @@ export const useCloudSync = () => {
 
             const configsCollRef = collection(db, 'users', user.uid, 'configs');
             unsubConfigs = onSnapshot(configsCollRef, async (snapshot) => {
+                if (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data) return;
                 // Chốt ngay đầu lượt gọi: lượt NÀY có phải lượt bắn đầu tiên của listener không (đồng
                 // bộ khởi động) — xem giải thích ở khai báo isInitialConfigsSnapshotRef phía trên.
                 const isInitialSnapshot = isInitialConfigsSnapshotRef.current;
@@ -365,6 +367,7 @@ export const useCloudSync = () => {
         };
 
         const syncIfChanged = () => {
+            if (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data) return;
             if (hasUnsavedChanges.current) forceSync();
             syncPendingHeavySettings();
         };

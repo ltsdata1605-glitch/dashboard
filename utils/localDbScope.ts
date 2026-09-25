@@ -247,3 +247,28 @@ export const ensureBiHubDbReady = (name: string = biHubDbName()): Promise<void> 
 export const resetLocalDbScopeForTests = (): void => {
     delete (globalThis as ScopeGlobal).__ycxLocalDbScope;
 };
+
+/**
+ * Ngăn tài khoản thừa kế dữ liệu từ database dùng chung cũ khi xoá mới hoặc làm sạch dữ liệu.
+ */
+export const resetLocalScopeInheritance = (uid: string): void => {
+    state().inherit.set(uid, false);
+};
+
+/**
+ * Ghi marker rỗng { settings: 0, app: 0 } vào database riêng của user để ensureBiHubDbReady
+ * biết là đã hoàn tất và không bao giờ copy dữ liệu cũ từ legacy DB sang nữa.
+ */
+export const markCleanSlateMigrated = async (uid?: string | null): Promise<void> => {
+    const targetDbName = uid ? `${LEGACY_BI_HUB_DB_NAME}__${slugifyUid(uid)}` : biHubDbName();
+    try {
+        const target = await openRawDb(targetDbName, BI_HUB_DB_VERSION);
+        try {
+            await markMigrated(target, { settings: 0, app: 0 });
+        } finally {
+            try { target.close(); } catch { /* đã đóng sẵn */ }
+        }
+    } catch (e) {
+        console.warn('[LocalDbScope] markCleanSlateMigrated error:', e);
+    }
+};

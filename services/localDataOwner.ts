@@ -14,7 +14,7 @@
  * nguyên. Các kho còn lại vẫn dùng chung nên vẫn phải dọn khi đổi tài khoản.
  */
 
-import { LEGACY_BI_HUB_DB_NAME, setActiveLocalUid } from '../utils/localDbScope';
+import { LEGACY_BI_HUB_DB_NAME, setActiveLocalUid, biHubDbName } from '../utils/localDbScope';
 
 const OWNER_KEY = 'ycx-local-data-owner-uid';
 
@@ -23,6 +23,7 @@ const OWNER_KEY = 'ycx-local-data-owner-uid';
  *  và dọn nó chính là cách thu hồi bản sao dữ liệu đã chuyển sang database riêng.) */
 export const APP_DATABASES = [
     LEGACY_BI_HUB_DB_NAME, // kho dùng chung cũ + kho tạm lúc chưa đăng nhập
+    'ClusterDataDB',       // Dữ liệu cụm / FormDataStore cũ
     'ScheduleAppDB',       // Phân ca
     'YCX_KHAI_THAC_DB',    // Báo cáo khai thác
     'ProductSearchDB',     // In Sticker - tra cứu sản phẩm
@@ -63,7 +64,7 @@ const clearDatabase = (name: string): Promise<void> =>
                 resolve();
             }
         };
-        // Không để một DB hỏng làm treo cả quy trình đăng nhập
+        // Không để một DB hỏng làm treo cả quy trình
         const timeout = setTimeout(done, 3000);
 
         try {
@@ -83,13 +84,14 @@ const clearDatabase = (name: string): Promise<void> =>
                 }
                 try {
                     const tx = db.transaction(stores, 'readwrite');
-                    stores.forEach(store => tx.objectStore(store).clear());
-                    tx.oncomplete = () => {
-                        db.close();
-                        clearTimeout(timeout);
-                        done();
-                    };
-                    tx.onerror = () => {
+                    stores.forEach(store => {
+                        try {
+                            tx.objectStore(store).clear();
+                        } catch {
+                            /* bỏ qua lỗi từng store */
+                        }
+                    });
+                    tx.oncomplete = tx.onerror = tx.onabort = () => {
                         db.close();
                         clearTimeout(timeout);
                         done();
@@ -108,15 +110,94 @@ const clearDatabase = (name: string): Promise<void> =>
 
 /** Dọn toàn bộ dữ liệu cục bộ của app (IndexedDB + localStorage của app) */
 export const clearAllLocalAppData = async (): Promise<void> => {
-    await Promise.all(APP_DATABASES.map(clearDatabase));
+    const userDb = biHubDbName();
+    const dbsToClear = Array.from(new Set([...APP_DATABASES, userDb]));
+
+    if (typeof indexedDB !== 'undefined' && typeof indexedDB.databases === 'function') {
+        try {
+            const dbs = await indexedDB.databases();
+            dbs.forEach(d => {
+                if (d.name && d.name !== 'firebaseLocalStorageDb' && !dbsToClear.includes(d.name)) {
+                    dbsToClear.push(d.name);
+                }
+            });
+        } catch {
+            /* bỏ qua */
+        }
+    }
+
+    await Promise.all(dbsToClear.map(clearDatabase));
 
     try {
         const keys: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key && LOCAL_STORAGE_PREFIXES.some(p => key.startsWith(p))) keys.push(key);
+            if (key && (LOCAL_STORAGE_PREFIXES.some(p => key.startsWith(p)) || (!key.startsWith('firebase:authUser') && !key.startsWith('firebase:host')))) {
+                keys.push(key);
+            }
         }
         keys.forEach(k => localStorage.removeItem(k));
+    } catch {
+        /* bỏ qua */
+    }
+
+    try {
+        sessionStorage.clear();
+    } catch {
+        /* bỏ qua */
+    }
+};
+
+/**
+ * Xoá sạch toàn bộ dữ liệu trên thiết bị và cloud để đưa người dùng về trạng thái như mới hoàn toàn.
+ * Giữ lại phiên đăng nhập tài khoản.
+ */
+export const resetAllDataAsNewUser = async (user?: any): Promise<void> => {
+    // 0. Chặn toàn bộ tiến trình đồng bộ ngầm hoặc ghi đè từ Cloud Sync / DB hooks
+    if (typeof window !== 'undefined') {
+        (window as any).__ycx_is_resetting_all_data = true;
+    }
+
+    // 1. Xoá sạch toàn bộ dữ liệu người dùng trên Cloud Firestore
+    if (user?.uid) {
+        try {
+            const { purgeAllUserCloudData, purgeUserBiDataReports } = await import('./firestoreService');
+            await purgeAllUserCloudData(user.uid);
+            if (user.departmentId) {
+                await purgeUserBiDataReports(user.departmentId);
+            }
+        } catch (e) {
+            console.warn('[resetAllDataAsNewUser] Lỗi khi xoá dữ liệu cloud Firestore:', e);
+        }
+    }
+
+    // 2. Dọn sạch toàn bộ cơ sở dữ liệu cục bộ IndexedDB + localStorage + sessionStorage
+    await clearAllLocalAppData();
+
+    // 3. Đánh dấu cấm kế thừa dữ liệu cũ (đặt MIGRATED_MARKER rỗng vào DB riêng của user)
+    try {
+        const { markCleanSlateMigrated, resetLocalScopeInheritance } = await import('../utils/localDbScope');
+        if (user?.uid) {
+            resetLocalScopeInheritance(user.uid);
+            await markCleanSlateMigrated(user.uid);
+        }
+    } catch (e) {
+        console.warn('[resetAllDataAsNewUser] Lỗi thiết lập marker làm sạch:', e);
+    }
+
+    // 4. Xoá sạch bộ nhớ RAM cache của BI Module
+    try {
+        const { configStore } = await import('../features/bi-dashboard/store/configStore');
+        configStore.clearCache();
+    } catch {
+        /* bỏ qua */
+    }
+
+    // 5. Phát các sự kiện reset UI toàn hệ thống
+    try {
+        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'ALL' } }));
+        window.dispatchEvent(new CustomEvent('bi-supermarket-map-changed', { detail: { userId: user?.uid || 'guest', map: {} } }));
+        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_clear_all' } }));
     } catch {
         /* bỏ qua */
     }

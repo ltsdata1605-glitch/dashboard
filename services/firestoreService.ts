@@ -573,3 +573,57 @@ export const fetchProductConfigFromCloud = async (user: User): Promise<{ config:
     };
 };
 
+/**
+ * Xoá sạch toàn bộ các collection cấu hình, dữ liệu bán hàng, lịch ca của người dùng trên Cloud Firestore.
+ * Giúp đưa tài khoản về trạng thái mới tinh 100%.
+ */
+export const purgeAllUserCloudData = async (uid: string): Promise<void> => {
+    if (!uid) return;
+    const { collection, getDocs, writeBatch, deleteDoc } = await import('firebase/firestore');
+
+    const subCollections = ['configs', 'setting', 'salesData', 'schedules'];
+
+    for (const subCol of subCollections) {
+        try {
+            const colRef = collection(db, 'users', uid, subCol);
+            const snap = await getDocs(colRef);
+            if (!snap.empty) {
+                for (const docSnap of snap.docs) {
+                    // Nếu là heavy key có lưu subcollection chunks, xoá sạch chunks trước
+                    try {
+                        const chunksRef = collection(docSnap.ref, 'chunks');
+                        const chunkSnap = await getDocs(chunksRef);
+                        if (!chunkSnap.empty) {
+                            const chunkBatch = writeBatch(db);
+                            chunkSnap.docs.forEach(c => chunkBatch.delete(c.ref));
+                            await chunkBatch.commit();
+                        }
+                    } catch {
+                        /* bỏ qua lỗi chunk con */
+                    }
+                    await deleteDoc(docSnap.ref);
+                }
+            }
+        } catch (err) {
+            console.warn(`[purgeAllUserCloudData] Lỗi xoá subcollection "${subCol}":`, err);
+        }
+    }
+};
+
+/**
+ * Xoá các báo cáo Report BI dùng chung của kho (biData) nếu người dùng có mã kho.
+ */
+export const purgeUserBiDataReports = async (departmentId?: string): Promise<void> => {
+    if (!departmentId) return;
+    const { doc: firestoreDoc, deleteDoc } = await import('firebase/firestore');
+    const khos = String(departmentId).split(',').map(k => k.trim()).filter(Boolean);
+    for (const kho of khos) {
+        try {
+            await deleteDoc(firestoreDoc(db, 'biData', kho, 'reports', 'summaryLuyKe'));
+            await deleteDoc(firestoreDoc(db, 'biData', kho, 'reports', 'competitionLuyKe'));
+        } catch (err) {
+            console.warn(`[purgeUserBiDataReports] Lỗi xoá biData kho "${kho}":`, err);
+        }
+    }
+};
+

@@ -22,6 +22,25 @@ export const SettingsAccountTab: React.FC = () => {
     const [stagedEmployee, setStagedEmployee] = useState(employeeName || '');
     const [deptError, setDeptError] = useState<string>('');
     const [isSaving, setIsSaving] = useState(false);
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
+
+    const handleConfirmResetData = async () => {
+        try {
+            setIsResetting(true);
+            const { resetAllDataAsNewUser } = await import('../../../services/localDataOwner');
+            await resetAllDataAsNewUser(user);
+            toast.success("Đã xoá toàn bộ dữ liệu! Đang tải lại ứng dụng...", { duration: 3000 });
+            setIsResetModalOpen(false);
+            setTimeout(() => {
+                window.location.href = window.location.origin + window.location.pathname;
+            }, 1200);
+        } catch (error) {
+            console.error("Lỗi khi xoá dữ liệu:", error);
+            toast.error("Có lỗi xảy ra khi xoá dữ liệu!");
+            setIsResetting(false);
+        }
+    };
 
     const validateDept = (value: string): string => {
         if (!value.trim()) return "Mã Kho không được bỏ trống";
@@ -72,7 +91,19 @@ export const SettingsAccountTab: React.FC = () => {
         <div className="space-y-8">
             {/* Tài Khoản Section */}
             <div>
-                <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh</h3>
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white">Hồ Sơ Định Danh</h3>
+                    <Button
+                        variant="unstyled"
+                        size="none"
+                        onClick={() => setIsResetModalOpen(true)}
+                        className="px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95"
+                        title="Xoá tất cả dữ liệu cục bộ và đưa về trạng thái như người dùng mới hoàn toàn"
+                    >
+                        <Icon name="trash-2" size={3.5} />
+                        <span>Xoá tất cả dữ liệu (Người dùng mới)</span>
+                    </Button>
+                </div>
 
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
                     {/* Header: Avatar + Name/Email/Role + Action Button */}
@@ -147,18 +178,35 @@ export const SettingsAccountTab: React.FC = () => {
 
                         {/* Action Button */}
                         {userRole !== 'admin' && (
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                className={`px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-all shadow-sm rounded-lg flex-shrink-0 ${
-                                    isEditingProfile
-                                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                        : 'bg-white dark:bg-slate-800 border-2 border-rose-200 dark:border-rose-800/30 text-slate-700 dark:text-slate-300 hover:border-rose-400'
-                                }`}
-                            >
-                                <Icon name={isEditingProfile ? 'save' : 'edit-3'} size={4} />
-                                {isEditingProfile ? 'Lưu' : 'Chuyên lên dây'}
-                            </Button>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                {isEditingProfile && (
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => {
+                                            setIsEditingProfile(false);
+                                            setStagedDept(departmentId || '');
+                                            setStagedEmployee(employeeName || '');
+                                            setDeptError('');
+                                        }}
+                                        className="px-3 py-2 text-xs font-semibold"
+                                    >
+                                        Hủy
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
+                                    className={`px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-all shadow-sm rounded-lg flex-shrink-0 ${
+                                        isEditingProfile
+                                            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                            : 'bg-white dark:bg-slate-800 border-2 border-rose-200 dark:border-rose-800/30 text-slate-700 dark:text-slate-300 hover:border-rose-400'
+                                    }`}
+                                >
+                                    <Icon name={isEditingProfile ? 'save' : 'edit-3'} size={4} />
+                                    {isEditingProfile ? 'Lưu' : 'Đổi mã kho'}
+                                </Button>
+                            </div>
                         )}
                     </div>
 
@@ -249,6 +297,63 @@ export const SettingsAccountTab: React.FC = () => {
                     <span>Đăng Xuất</span>
                 </Button>,
                 document.getElementById('mobile-topbar-actions')!
+            )}
+
+            {/* Modal xác nhận xoá toàn bộ dữ liệu như người dùng mới */}
+            {isResetModalOpen && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+                    <div className="bg-white dark:bg-slate-850 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                        <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                            <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 shrink-0">
+                                <Icon name="trash-2" size={6} />
+                            </div>
+                            <div>
+                                <h3 className="text-base font-bold text-slate-800 dark:text-white">Xoá Tất Cả Dữ Liệu</h3>
+                                <p className="text-xs text-rose-500 font-medium">Khởi tạo trạng thái người dùng mới hoàn toàn</p>
+                            </div>
+                        </div>
+
+                        <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2 leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+                            <p>
+                                Hành động này sẽ <strong>xoá sạch toàn bộ dữ liệu cục bộ</strong> đã lưu trên thiết bị (Doanh thu, Phân ca, Báo cáo khai thác, Lịch sử tính thuế, Cấu hình siêu thị, Dữ liệu tạm...).
+                            </p>
+                            <p className="text-slate-500 dark:text-slate-400">
+                                Ứng dụng sẽ trở về trạng thái ban đầu như một <strong>người dùng mới hoàn toàn</strong>. Tài khoản đăng nhập của bạn vẫn được giữ nguyên.
+                            </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-2.5 pt-2">
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={isResetting}
+                                onClick={() => setIsResetModalOpen(false)}
+                                className="px-4 py-2 text-xs font-semibold cursor-pointer"
+                            >
+                                Hủy bỏ
+                            </Button>
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                disabled={isResetting}
+                                onClick={handleConfirmResetData}
+                                className="px-4 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-all shadow-sm flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+                            >
+                                {isResetting ? (
+                                    <>
+                                        <Icon name="refresh-cw" size={3.5} className="animate-spin" />
+                                        <span>Đang xoá...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Icon name="trash-2" size={3.5} />
+                                        <span>Xác nhận xoá sạch</span>
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -67,6 +67,7 @@ export function useIndexedDBState<T>(
     const writeVersionRef = useRef(0);
 
     const performWrite = useCallback((keyToSave: db.BIKey, valueToWrite: T) => {
+        if (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data) return;
         const processQueue = () => {
             if (isWritingRef.current || writeQueueRef.current.length === 0) return;
             isWritingRef.current = true;

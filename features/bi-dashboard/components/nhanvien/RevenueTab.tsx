@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import ExportButton from '../ExportButton';
-import { SpinnerIcon, UsersIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon, AlertTriangleIcon } from '../Icons';
+import ExportButton, { ExportOptionItem } from '../ExportButton';
+import { SpinnerIcon, UsersIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon, AlertTriangleIcon, ImagesIcon, ChartBarIcon, SparklesIcon } from '../Icons';
 import { RevenueRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -177,14 +177,62 @@ const RevenueView: React.FC<{
 
     const { showExportOptions } = useExportOptionsContext();
 
-    const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+    type RevenueExportScope = 'all' | 'revenue' | 'performance';
+
+    const handleExportPNG = async (
+        scope: RevenueExportScope = 'all',
+        customFilename?: string,
+        autoAction?: 'download' | 'share' | 'cancel' | null
+    ): Promise<'download' | 'share' | 'cancel' | null> => {
         if (!cardRef.current) return null;
         const original = cardRef.current;
         
         try {
-            const safeName = customFilename || `Báo Cáo Doanh Thu Nhân Viên - ${supermarketName}.png`;
+            const scopeSuffix = scope === 'revenue' ? ' - Nhóm Doanh Thu' : (scope === 'performance' ? ' - Nhóm Hiệu Suất' : '');
+            const defaultName = isRealtimeMode
+                ? `Doanh Thu Realtime${scopeSuffix} - ${supermarketName}.png`
+                : `Báo Cáo Doanh Thu${scopeSuffix} - ${supermarketName}.png`;
+            const safeName = customFilename || defaultName;
+
+            const hideSelectors = ['.no-print', '.export-button-component'];
+            if (scope === 'revenue') {
+                hideSelectors.push('.export-col-performance');
+            } else if (scope === 'performance') {
+                hideSelectors.push('.export-col-revenue');
+            }
+
             const blob = await exportElementAsImage(original, safeName, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component'], isCompactTable: true
+                mode: 'blob-only',
+                elementsToHide: hideSelectors,
+                isCompactTable: true,
+                onCloneReady: (clone: HTMLElement) => {
+                    if (scope === 'revenue' || scope === 'performance') {
+                        const titleEl = clone.querySelector('.js-report-title');
+                        if (titleEl) {
+                            const badge = document.createElement('span');
+                            badge.style.display = 'inline-block';
+                            badge.style.marginLeft = '8px';
+                            badge.style.padding = '2px 8px';
+                            badge.style.borderRadius = '9999px';
+                            badge.style.fontSize = '11px';
+                            badge.style.fontWeight = 'bold';
+                            badge.style.textTransform = 'uppercase';
+                            badge.style.letterSpacing = '0.05em';
+                            if (scope === 'revenue') {
+                                badge.style.backgroundColor = '#e0f2fe';
+                                badge.style.color = '#0369a1';
+                                badge.style.border = '1px solid #7dd3fc';
+                                badge.textContent = 'Nhóm Doanh Thu';
+                            } else {
+                                badge.style.backgroundColor = '#ecfdf5';
+                                badge.style.color = '#047857';
+                                badge.style.border = '1px solid #6ee7b7';
+                                badge.textContent = 'Nhóm Hiệu Suất';
+                            }
+                            titleEl.appendChild(badge);
+                        }
+                    }
+                }
             });
             if (blob) {
                 if (autoAction === 'download') {
@@ -204,6 +252,30 @@ const RevenueView: React.FC<{
         }
     };
 
+    const exportOptions = useMemo<ExportOptionItem[]>(() => [
+        {
+            id: 'all',
+            label: 'Xuất all (Tất cả)',
+            sublabel: 'Đầy đủ nhóm Doanh thu & Hiệu suất',
+            icon: <ImagesIcon className="h-4 w-4 text-sky-500" />,
+            onSelect: async () => { await handleExportPNG('all'); }
+        },
+        {
+            id: 'revenue',
+            label: 'Xuất nhóm Doanh thu',
+            sublabel: 'M.Tiêu, Thực, DTQĐ, D.Kiến, %D.Kiến',
+            icon: <ChartBarIcon className="h-4 w-4 text-emerald-500" />,
+            onSelect: async () => { await handleExportPNG('revenue'); }
+        },
+        {
+            id: 'performance',
+            label: 'Xuất nhóm Hiệu suất',
+            sublabel: 'HQQĐ, % Trả chậm & Thưởng',
+            icon: <SparklesIcon className="h-4 w-4 text-amber-500" />,
+            onSelect: async () => { await handleExportPNG('performance'); }
+        }
+    ], [handleExportPNG, isRealtimeMode, supermarketName]);
+
     const handleBatchExportByDept = async () => {
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         if (allDepts.length === 0) return;
@@ -219,7 +291,7 @@ const RevenueView: React.FC<{
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
             const safeDeptName = dept.replace(/[\\/:*?"<>|]/g, '');
-            const action = await handleExportPNG(`Doanh Thu - ${safeDeptName} - ${supermarketName}.png`, autoAction);
+            const action = await handleExportPNG('all', `Doanh Thu - ${safeDeptName} - ${supermarketName}.png`, autoAction);
             if (action === 'cancel') break;
             autoAction = action;
         }
@@ -323,7 +395,7 @@ const RevenueView: React.FC<{
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
                     </Button>
-                    <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
+                    <ExportButton options={exportOptions} />
                 </div>
             </div>
             <div ref={cardRef}>
@@ -347,40 +419,40 @@ const RevenueView: React.FC<{
                                             <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[4px] border-l-slate-200 dark:border-l-slate-700 border-b border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors min-w-[190px]" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th colSpan={isRealtimeMode ? 4 : 5} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
+                                            <th colSpan={isRealtimeMode ? 4 : 5} className="export-col-revenue px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
                                                 Doanh thu
                                             </th>
                                             {isShowRemaining && (
-                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
+                                                <th colSpan={2} className="export-col-revenue px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={isRealtimeMode ? 2 : 3} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                                            <th colSpan={isRealtimeMode ? 2 : 3} className="export-col-performance px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                                                 Hiệu suất
                                             </th>
                                         </tr>
                                         {/* Tier 2: Column Headers */}
                                         <tr>
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
                                             {/* NỔI BẬT 1: DTQĐ */}
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-900 dark:text-sky-100 bg-sky-100 dark:bg-sky-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-200/80 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-900 dark:text-sky-100 bg-sky-100 dark:bg-sky-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-200/80 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
                                             {!isRealtimeMode && (
-                                                <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('duKien')}>D.Kiến</th>
+                                                <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('duKien')}>D.Kiến</th>
                                             )}
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('pctDkht')}>{isRealtimeMode ? '%HT' : '%D.KIẾN'}</th>
+                                            <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('pctDkht')}>{isRealtimeMode ? '%HT' : '%D.KIẾN'}</th>
                                             {isShowRemaining && (
                                                 <>
-                                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
-                                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
+                                                    <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
+                                                    <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
                                                 </>
                                             )}
                                             {/* NỔI BẬT 2: HQQĐ */}
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 bg-emerald-100 dark:bg-emerald-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
+                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 bg-emerald-100 dark:bg-emerald-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             {/* NỔI BẬT 3: %T.Chậm */}
-                                            <th className={`px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors`} onClick={() => handleSort('installment')}>%T.Chậm</th>
+                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors`} onClick={() => handleSort('installment')}>%T.Chậm</th>
                                             {!isRealtimeMode && (
-                                                <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
+                                                <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                             )}
                                         </tr>
                                     </thead>
@@ -398,51 +470,51 @@ const RevenueView: React.FC<{
                                                     className={`${rowStripeColor ? 'border-l-[4px]' : ''} ${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}
                                                 >
                                                     <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'} whitespace-nowrap min-w-[190px]`}>{row.name}</td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold`}>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold`}>
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                     </td>
                                                     {/* NỔI BẬT 1: DTQĐ */}
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[14px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-sky-50/70 dark:bg-sky-950/30`}>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[14px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-sky-50/70 dark:bg-sky-950/30`}>
                                                         <div className="font-bold text-[13px]" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion, hasTarget) }}>{f.format(roundUp(row.dtqd))}</div>
                                                         <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                     </td>
                                                     {!isRealtimeMode && (
-                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-extrabold`}>
+                                                        <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-extrabold`}>
                                                             <div>{f.format(roundUp(row.duKien || 0))}</div>
                                                             <DeltaBadge current={row.duKien} previous={prev?.duKien} isCurrency />
                                                         </td>
                                                     )}
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDkhtColor(row.pctDkht || 0, hasTarget) }}>
+                                                    <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDkhtColor(row.pctDkht || 0, hasTarget) }}>
                                                         <div className="font-bold">{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</div>
                                                         <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
                                                     </td>
                                                     {isShowRemaining && (
                                                         <>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
+                                                            <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                                                             </td>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-amber-700 dark:text-amber-400 font-bold`}>
+                                                            <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-amber-700 dark:text-amber-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_daily || 0))}</div>
                                                             </td>
                                                         </>
                                                     )}
                                                     {/* NỔI BẬT 2: HQQĐ */}
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-emerald-50/60 dark:bg-emerald-950/20`}>
+                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-emerald-50/60 dark:bg-emerald-950/20`}>
                                                         <div className="font-bold" style={{ color: getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                     </td>
                                                     {/* NỔI BẬT 3: %T.Chậm */}
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
+                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
                                                         <div className="font-bold">{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                     </td>
                                                     {!isRealtimeMode && (
-                                                        <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                        <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
                                                             <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
                                                         </td>
                                                     )}
