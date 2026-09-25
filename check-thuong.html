@@ -439,7 +439,7 @@
          màn hình. -->
     <button id="versionInfoPersistent" title="Lịch sử phiên bản" class="version-info-trigger no-print" style="position:fixed;bottom:10px;right:10px;z-index:40;display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:9999px;background:rgba(255,255,255,0.85);backdrop-filter:blur(4px);border:1px solid #e2e8f0;color:#94a3b8;font-size:10px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.06);cursor:pointer">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
-        V10.7
+        V10.8
     </button>
 
     <!-- Loading Overlay -->
@@ -724,6 +724,14 @@
 
 
             const versionHistory = [
+                 {
+                    version: "V10.8 - Tối ưu Xuất Ảnh Nhóm Đạt & Chưa Đạt 100%",
+                    date: "25/09/2026 12:50:00",
+                    changes: [
+                        "Bỏ nút xuất ảnh toàn bộ trang ở khung thông tin siêu thị theo yêu cầu.",
+                        "Tối ưu xuất ảnh nhóm Đạt ≥ 100% và < 100%: Chỉ xuất riêng bảng danh sách nhóm, không kèm khung tổng thưởng phía trên."
+                    ]
+                },
                  {
                     version: "V10.7 - Nâng cấp Xuất Ảnh & Sửa lỗi Màn hình trắng",
                     date: "23/09/2026 12:25:00",
@@ -1209,9 +1217,6 @@
 
                 summaryCard.innerHTML = `
                     <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:10" class="no-print">
-                        <button id="exportFullPageImageButton" title="Xuất ảnh toàn bộ trang" style="padding:5px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="2"/><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"/></svg>
-                        </button>
                         <button id="exportSummaryImageButton" title="Xuất ảnh báo cáo tổng hợp" style="padding:5px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         </button>
@@ -2770,27 +2775,7 @@
                         }
                     });
                 }
-                const exportFullPageBtn = event.target.closest('#exportFullPageImageButton');
-                if (exportFullPageBtn) {
-                    const captureArea = document.getElementById('mainContent');
-                    const truncatedElements = captureArea.querySelectorAll('.truncate');
-                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
-                    
-                    captureElementAsImage(captureArea, `${storeName}_toan_trang.png`, {
-                        onBeforeCapture: () => {
-                            truncatedElements.forEach(el => {
-                                if (el.closest('.check-thuong-table')) return;
-                                el.classList.remove('truncate');
-                            });
-                        },
-                        onAfterCapture: () => {
-                            truncatedElements.forEach(el => {
-                                if (el.closest('.check-thuong-table')) return;
-                                el.classList.add('truncate');
-                            });
-                        }
-                    });
-                }
+
                 const exportComparisonBtn = event.target.closest('#exportComparisonImageButton');
                 if (exportComparisonBtn) {
                     const captureArea = document.getElementById('captureComparisonMain');
@@ -2954,7 +2939,11 @@
                             const friendlyKey = keyNames[groupKey] || groupKey;
                             const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
                             const filename = `${storeName}_${friendlyKey}.png`;
-                            captureWithStoreBanner(captureTarget, filename);
+                            if (groupKey === 'achieved100' || groupKey === 'notAchieved100') {
+                                captureElementAsImage(captureTarget, filename);
+                            } else {
+                                captureWithStoreBanner(captureTarget, filename);
+                            }
                         }
                     }
                     return;
@@ -3150,7 +3139,11 @@
                         : document.querySelector(`.group-container[data-group-key="${activeFilter}"] .capture-target`);
                     
                     if (captureTarget) {
-                        captureWithStoreBanner(captureTarget, filename);
+                        if (activeFilter === 'achieved100' || activeFilter === 'notAchieved100') {
+                            captureElementAsImage(captureTarget, filename);
+                        } else {
+                            captureWithStoreBanner(captureTarget, filename);
+                        }
                     }
                     return;
                 }
@@ -3189,7 +3182,11 @@
                                              noSale: 'nhom_no_sale'
                                          };
                                          const friendlyKey = keyNames[filter] || filter;
-                                         await captureWithStoreBanner(captureTarget, `${storeName}_${friendlyKey}.png`);
+                                         if (filter === 'achieved100' || filter === 'notAchieved100') {
+                                             await captureElementAsImage(captureTarget, `${storeName}_${friendlyKey}.png`);
+                                         } else {
+                                             await captureWithStoreBanner(captureTarget, `${storeName}_${friendlyKey}.png`);
+                                         }
                                          await new Promise(res => setTimeout(res, 250));
                                      }
                                  }

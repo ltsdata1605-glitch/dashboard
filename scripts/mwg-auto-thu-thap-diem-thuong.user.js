@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      4.4
+// @version      4.6
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật; tự bật "Trả góp" + "DT quy đổi" trên baocao.dienmayxanh.com trước khi mở)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -23,6 +23,18 @@
 // ==/UserScript==
 
 /*
+ * BẢN 4.6 — TỰ ĐỘNG RETRY KHI GẶP LỖI MẠNG / HTTP 5xx & HỖ TRỢ CHẠY TIẾP TỤC (RESUME):
+ * - Thêm cơ chế tự động thử lại (retry tối đa 2 lần, nghỉ 1.2s) trong fetchOne khi máy chủ MWG bị nghẽn
+ *   (HTTP 500, 502, 504) hoặc rớt kết nối mạng tạm thời, tránh bị đứt gánh giữa chừng khi chạy nhiều tháng.
+ * - Ngoại trừ lỗi 401/403 (hết phiên đăng nhập) sẽ dừng ngay để báo người dùng đăng nhập lại mà không retry vô ích.
+ *
+ * BẢN 4.5 — HỖ TRỢ ĐỔ THƯỞNG NHIỀU THÁNG / CHẠY NĂM LIÊN TỤC TRÊN CÙNG 1 TAB:
+ * - Khắc phục triệt để lỗi đổ thưởng Năm không chạy được hết năm (bị trình duyệt chặn popup khi mở tab async).
+ * - Lắng nghe GM_KEY_META theo thời gian thực trên trang MWG qua GM_addValueChangeListener + poll 1s.
+ * - Khi chạy Năm (multiStep), script tái sử dụng tab MWG đang mở để xử lý tuần tự từng tháng,
+ *   KHÔNG tự đóng tab giữa các tháng -> ngăn chặn 100% việc trình duyệt chặn popup khi mở tab async.
+ * - Tự động đóng tab sau khi toàn bộ chuỗi tháng (isLastStep) đã hoàn thành xuất sắc.
+ *
  * ĐÃ CHẠY THẬT THÀNH CÔNG (test 27 mã NV qua chế độ Tự động, không mã nào lỗi):
  * - Tham số ngày: dtmFromDate / dtmToDate, định dạng mm/dd/yyyy. Tham số mã NV:
  *   strRewardUser. intRewardPositionID luôn = -1. Cookie phiên có sẵn là đủ để gọi API.
@@ -366,7 +378,7 @@
   }
 
   // ====== GỌI API CHO 1 NHÂN VIÊN (fromDate/toDate phải đã ở dạng mm/dd/yyyy) ======
-  async function fetchOne(empId, fromDate, toDate) {
+  async function fetchOne(empId, fromDate, toDate, maxRetries = 2) {
     const params = new URLSearchParams({
       dtmFromDate: fromDate,
       dtmToDate: toDate,
@@ -374,24 +386,41 @@
       strRewardUser: empId,
     });
 
-    const res = await fetch(`${API_URL}?${params.toString()}`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        accept: 'application/json, text/plain, */*',
-        'x-requested-with': 'XMLHttpRequest',
-      },
-    });
+    let attempt = 0;
+    while (true) {
+      attempt++;
+      try {
+        const res = await fetch(`${API_URL}?${params.toString()}`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            accept: 'application/json, text/plain, */*',
+            'x-requested-with': 'XMLHttpRequest',
+          },
+        });
 
-    if (res.status === 401 || res.status === 403) {
-      throw new Error('Hết phiên đăng nhập hoặc không có quyền — mở lại trang, đăng nhập rồi thử lại');
-    }
-    if (!res.ok) {
-      throw new Error(`Server trả lỗi HTTP ${res.status}`);
-    }
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Hết phiên đăng nhập hoặc không có quyền — mở lại trang, đăng nhập rồi thử lại');
+        }
+        if (!res.ok) {
+          if (attempt <= maxRetries && res.status >= 500) {
+            await sleep(1200);
+            continue;
+          }
+          throw new Error(`Server trả lỗi HTTP ${res.status}`);
+        }
 
-    const raw = await res.text();
-    return convertResponseToTSV(raw);
+        const raw = await res.text();
+        return convertResponseToTSV(raw);
+      } catch (err) {
+        const isAuthError = err && err.message && err.message.includes('Hết phiên đăng nhập');
+        if (!isAuthError && attempt <= maxRetries) {
+          await sleep(1200);
+          continue;
+        }
+        throw err;
+      }
+    }
   }
 
   // ====== CHUYỂN DỮ LIỆU TRẢ VỀ THÀNH TSV ======
@@ -969,13 +998,33 @@
   }
 
   // ====== TRANG MWG: tự dò job đang chờ từ Dashboard ======
-  // Đã bỏ nút nổi "⚡ Thu thập điểm thưởng" — chế độ Tự động bên Dashboard YCX đã đủ
-  // dùng (Hiện tại/Tháng/Năm/Khoảng thời gian), không cần kích hoạt tay từ trang MWG nữa.
+  let isRunningAutoJob = false;
+  let lastHandledAutoJobId = null;
+  let autoModalEls = null;
+
   function initMwgPage() {
     checkForAutoJob();
+
+    try {
+      GM_addValueChangeListener(GM_KEY_META, (_name, _oldValue, newValue) => {
+        if (newValue && newValue.status === 'requested' && newValue.jobId !== lastHandledAutoJobId && !isRunningAutoJob) {
+          checkForAutoJob();
+        }
+      });
+    } catch (e) {
+      console.warn('[YCX bridge] GM_addValueChangeListener không khả dụng trên trang MWG, dùng poll dự phòng', e);
+    }
+
+    // Poll dự phòng 1s/lần để phát hiện ngay khi Dashboard gửi job mới trong chuỗi chạy Năm/So sánh
+    setInterval(() => {
+      if (!isRunningAutoJob) {
+        checkForAutoJob();
+      }
+    }, 1000);
   }
 
   async function checkForAutoJob() {
+    if (isRunningAutoJob) return;
     let meta;
     try {
       meta = await gmGet(GM_KEY_META, null);
@@ -983,8 +1032,12 @@
       return;
     }
     if (!meta || meta.status !== 'requested') return;
+    if (meta.jobId === lastHandledAutoJobId) return;
     if (!meta.request || !Array.isArray(meta.request.employees) || meta.request.employees.length === 0) return;
     if (Date.now() - (meta.createdAt || 0) > JOB_TTL_MS) return; // job cũ quá 15 phút, bỏ qua
+
+    isRunningAutoJob = true;
+    lastHandledAutoJobId = meta.jobId;
 
     const { jobId, request } = meta;
 
@@ -994,25 +1047,50 @@
       toDateApi = ddmmyyyyToApiFormat(request.toDate);
     } catch (e) {
       await reportJobError(jobId, `Ngày nhận từ Dashboard không hợp lệ: ${e.message}`);
+      isRunningAutoJob = false;
       return;
     }
 
-    const existingOverlay = document.getElementById('mwg-thuthap-overlay');
-    if (existingOverlay) existingOverlay.remove();
+    // Tái sử dụng modal giao diện nếu đang mở để tránh giật lag hoặc tạo DOM lặp lại
+    if (!autoModalEls || !document.getElementById('mwg-thuthap-overlay')) {
+      const existingOverlay = document.getElementById('mwg-thuthap-overlay');
+      if (existingOverlay) existingOverlay.remove();
+      autoModalEls = buildModal(true);
+    }
 
-    const els = buildModal(true);
     saveList(request.employees.map((e) => e.employeeId).join('\n'));
 
-    await runFromModal(els, request.employees, fromDateApi, toDateApi, {
-      jobId, rangeFrom: request.fromDate, rangeTo: request.toDate,
-    });
+    if (request.stepLabel || (request.stepIndex != null && request.stepTotal != null)) {
+      const stepIdx = (request.stepIndex || 0) + 1;
+      const stepTot = request.stepTotal || 1;
+      document.title = `⚡ [${stepIdx}/${stepTot}] ${request.stepLabel || ''} - MWG Thưởng`;
+    }
 
-    // Tự đóng tab sau khi ghi xong kết quả — chỉ khi tab này do Dashboard mở qua
-    // window.open (nên window.close() được phép). Nếu trình duyệt chặn, chỉ là
-    // không tự đóng, không mất dữ liệu (đã ghi vào GM storage + còn UI copy thủ công).
+    try {
+      await runFromModal(autoModalEls, request.employees, fromDateApi, toDateApi, {
+        jobId, rangeFrom: request.fromDate, rangeTo: request.toDate,
+      });
+    } finally {
+      isRunningAutoJob = false;
+    }
+
+    // Nếu đây là 1 bước trong chuỗi chạy nhiều bước (chạy Năm hoặc So sánh) và CHƯA PHẢI bước cuối cùng:
+    // GIỮ TAB MỞ để các tháng tiếp theo chạy mượt mà ngay trên tab này, không bị popup blocker chặn.
+    if (request.multiStep && !request.isLastStep) {
+      if (autoModalEls && autoModalEls.statusText) {
+        autoModalEls.statusText.textContent = `✅ Đã lấy xong kỳ ${request.fromDate} → ${request.toDate}.\n⚡ Đang chờ tháng tiếp theo từ Dashboard YCX...`;
+      }
+      return;
+    }
+
+    // Nếu là bước cuối cùng của chuỗi hoặc job đơn:
+    if (autoModalEls && autoModalEls.statusText) {
+      autoModalEls.statusText.textContent = `🎉 ĐÃ HOÀN THÀNH TẤT CẢ CÁC THÁNG!\nTab sẽ tự động đóng sau 3 giây.`;
+    }
+
     setTimeout(() => {
       try { window.close(); } catch (e) { /* bỏ qua nếu trình duyệt không cho tự đóng */ }
-    }, 1800);
+    }, 2500);
   }
 
   // ====== TRANG DASHBOARD: cầu nối CustomEvent (tầng A) <-> GM storage (tầng B) ======
