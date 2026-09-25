@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      4.6
+// @version      4.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; nút Click+ trên trang BI để mở rộng cây dữ liệu theo cấp + tự copy (click theo lô nhỏ, chờ đúng vòng xoay #Loading thật; tự bật "Trả góp" + "DT quy đổi" trên baocao.dienmayxanh.com trước khi mở)
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -23,6 +23,12 @@
 // ==/UserScript==
 
 /*
+ * BẢN 4.7 — ĐỒNG BỘ CLICK TRIGGER MOUSEEVENT & MỞ RỘNG TOÀN DIỆN CÁC LOẠI NÚT [+]:
+ * - Thêm cơ chế trigger click kép (mousedown + mouseup + click) và tự định vị control bao ngoài (closest button/a/td),
+ *   đảm bảo bung rộng 100% dòng dữ liệu trên mọi biến thể giao diện React, jQuery, Ant Design và DevExpress.
+ * - Mở rộng nhận diện FontAwesome 5/6 (.fa-plus-square, .fa-plus-circle) và DevExpress group row.
+ * - Đồng bộ với Bookmarklet Auto Click+ chuẩn zero-hash, loại bỏ toàn bộ ký tự '#' gây cắt đứt script khi kéo thả lên thanh Dấu trang.
+ *
  * BẢN 4.6 — TỰ ĐỘNG RETRY KHI GẶP LỖI MẠNG / HTTP 5xx & HỖ TRỢ CHẠY TIẾP TỤC (RESUME):
  * - Thêm cơ chế tự động thử lại (retry tối đa 2 lần, nghỉ 1.2s) trong fetchOne khi máy chủ MWG bị nghẽn
  *   (HTTP 500, 502, 504) hoặc rớt kết nối mạng tạm thời, tránh bị đứt gánh giữa chừng khi chạy nhiều tháng.
@@ -1199,14 +1205,16 @@
   const ACP_SPINNER_MAX_WAIT_MS = 5000; // chờ tối đa vòng xoay biến mất cho MỖI LÔ — tránh treo vĩnh viễn nếu trang không phản hồi
   const ACP_SPINNER_POLL_MS = 25;
   const ACP_BATCH_PACING_DELAY = 10; // nghỉ thêm sau khi vòng xoay đã tắt, trước khi click lô kế tiếp
-  const ACP_FA_PLUS_SELECTOR = '.fa-plus';
-  const ACP_DX_CLOSED_SELECTOR = '.dx-datagrid-group-closed, td.dx-command-expand.dx-datagrid-group-closed';
+  const ACP_FA_PLUS_SELECTOR = '.fa-plus, .fa-plus-square, .fa-plus-circle, [class*="fa-plus"], [class*="plus-circle"]';
+  const ACP_DX_CLOSED_SELECTOR = '.dx-datagrid-group-closed, td.dx-command-expand.dx-datagrid-group-closed, tr.dx-group-row:not(.dx-datagrid-group-opened) .dx-command-expand';
   const ACP_ANT_CLOSED_SELECTOR = [
     'button.ant-table-row-expand-icon-collapsed',
     '.ant-table-row-expand-icon-collapsed',
     'button.ant-table-row-expand-icon[aria-expanded="false"]',
     'button[aria-label="Mở rộng dòng"][aria-expanded="false"]',
     '[aria-label="Mở rộng dòng"]:not([aria-expanded="true"])',
+    '[aria-label*="Mở rộng" i]:not([aria-expanded="true"])',
+    '[aria-label*="expand" i]:not([aria-expanded="true"])',
   ].join(', ');
   const ACP_SPINNER_SELECTOR = [
     '#Loading',
@@ -1674,7 +1682,15 @@
         try {
           if (acpIsVisible(el) && !acpIsAlreadyOpened(el) && el.dataset.acpDone !== '1') {
             el.dataset.acpDone = '1';
-            el.click();
+            const clickTarget = el.closest('button, a, [role="button"], td.dx-command-expand, td') || el;
+            try {
+              clickTarget.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+              clickTarget.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+            } catch (_) {}
+            clickTarget.click();
+            if (clickTarget !== el) {
+              try { el.click(); } catch (_) {}
+            }
             clicked++;
             wasClicked = true;
           }
