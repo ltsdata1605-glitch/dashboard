@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { XIcon, SwitchCameraIcon, CheckCircleIcon, XCircleIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
+import { Flashlight, FlashlightOff, Keyboard, CornerDownLeft } from 'lucide-react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+
+/** `torch` là thuộc tính NGOÀI chuẩn (Chrome Android hỗ trợ, iOS Safari thì không) nên không có
+ *  trong kiểu MediaTrackCapabilities của TypeScript — khai riêng ở đây thay vì dùng `any`. */
+type TorchCapabilities = MediaTrackCapabilities & { torch?: boolean };
+type TorchConstraint = MediaTrackConstraints & { advanced?: Array<{ torch: boolean }> };
 
 interface CameraDevice {
   id: string;
@@ -24,6 +31,14 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   const [scanResult, setScanResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const isScanningPaused = useRef(false);
   const scanTimeoutRef = useRef<number | null>(null);
+  /** Đèn pin: kệ hàng siêu thị thiếu sáng là tình huống thường trực, không có đèn thì quét trượt liên tục */
+  const [hasTorch, setHasTorch] = useState(false);
+  const [isTorchOn, setIsTorchOn] = useState(false);
+  /** Nhập mã bằng tay — đường thoát khi mã vạch mờ/rách hoặc máy ảnh bị từ chối quyền */
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualCode, setManualCode] = useState('');
+  /** Đếm số mã quét được trong phiên này để khỏi phải đóng máy quét ra đếm */
+  const [scannedCount, setScannedCount] = useState(0);
 
   useEffect(() => {
     return () => {
@@ -65,7 +80,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     }
   }, []);
 
-  const qrCodeSuccessCallback = useCallback((decodedText: string) => {
+  /** Dùng chung cho mã quét được từ camera VÀ mã gõ tay — để hai đường đi cho cùng phản hồi
+   *  (âm thanh, rung, màn báo kết quả, bộ đếm), người dùng không phải học 2 kiểu hành vi. */
+  const handleDecodedCode = useCallback((decodedText: string) => {
     if (isScanningPaused.current) return;
     
     isScanningPaused.current = true;
@@ -75,6 +92,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     if (success) {
       if (navigator.vibrate) navigator.vibrate(200); // Vibrate once on success
       playSound('success');
+      setScannedCount(c => c + 1);
       setScanResult({ type: 'success', message: `Đã tìm thấy: ${decodedText}` });
     } else {
       if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // Short pattern for error
@@ -89,6 +107,42 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     }, 1200); // Slightly reduced delay
   }, [playSound]);
 
+  const qrCodeSuccessCallback = handleDecodedCode;
+
+  /** Bật/tắt đèn pin của camera đang chạy */
+  const handleToggleTorch = useCallback(async () => {
+    const scanner = scannerRef.current;
+    if (!scanner || !scanner.isScanning) return;
+    const next = !isTorchOn;
+    try {
+      await scanner.applyVideoConstraints({ advanced: [{ torch: next }] } as TorchConstraint);
+      setIsTorchOn(next);
+    } catch (err) {
+      console.warn('Không bật/tắt được đèn pin:', err);
+      setHasTorch(false); // thiết bị báo có nhưng không dùng được -> ẩn nút đi cho đỡ gây hiểu nhầm
+    }
+  }, [isTorchOn]);
+
+  /** Gửi mã gõ tay đi đúng đường xử lý như mã quét được */
+  const handleSubmitManualCode = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    const code = manualCode.trim();
+    if (!code) return;
+    isScanningPaused.current = false; // gõ tay thì không phải chờ nhịp nghỉ của camera
+    handleDecodedCode(code);
+    setManualCode('');
+  }, [manualCode, handleDecodedCode]);
+
+  /** Hỏi camera đang chạy xem có đèn pin không (Chrome Android có, iOS Safari không) */
+  const detectTorch = useCallback(() => {
+    try {
+      const caps = scannerRef.current?.getRunningTrackCapabilities() as TorchCapabilities | undefined;
+      setHasTorch(!!caps && caps.torch === true);
+    } catch {
+      setHasTorch(false);
+    }
+  }, []);
+
   const config = useMemo(() => ({
     fps: 10, // Reduced from 25 to 10 to prevent high CPU utilization and device overheating on mobile
     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
@@ -98,7 +152,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         return { width, height };
     },
     rememberLastUsedCamera: true,
-    aspectRatio: 1.0, // Force square aspect ratio constraint on the video feed to match our container aspect-square!
+    // KHÔNG ép aspectRatio 1.0 nữa: khung vuông cắt mất chiều cao trên điện thoại cầm dọc, trong
+    // khi mã vạch EAN-13 là vệt dài — vùng nhìn càng rộng càng dễ bắt. Khung do CSS quyết định
+    // (video đã `object-fit: cover`), mobile dùng khung cao 3:4, desktop giữ vuông.
   }), []);
 
   useEffect(() => {
@@ -130,6 +186,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         if (stream) setActiveCameraId(stream.deviceId);
         setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
         setError(null);
+        detectTorch();
       }).catch((err: unknown) => {
         console.warn("Could not start scanner with ideal facingMode constraint, falling back to manual selection.", err);
         // Method 2 (Fallback): If the constraint fails, find a camera with "back" in its label or use the first available camera.
@@ -145,6 +202,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           setActiveCameraId(fallbackCameraId);
           setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
           setError(null);
+          detectTorch();
         }).catch((startErr: Error) => {
           let userFriendlyError = 'Không thể khởi động máy ảnh.';
           if (startErr.name === 'NotAllowedError') {
@@ -181,7 +239,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         });
       }
     };
-  }, [config, qrCodeSuccessCallback]);
+  }, [config, qrCodeSuccessCallback, detectTorch]);
 
   const handleSwitchCamera = useCallback(() => {
     if (cameras.length > 1 && activeCameraId && scannerRef.current?.isScanning) {
@@ -200,24 +258,29 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         .then(() => {
           setActiveCameraId(nextCamera.id);
           setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
+          setIsTorchOn(false); // camera mới luôn bắt đầu với đèn tắt
+          detectTorch();
         });
       });
     }
-  }, [activeCameraId, cameras, config, qrCodeSuccessCallback]);
+  }, [activeCameraId, cameras, config, qrCodeSuccessCallback, detectTorch]);
 
   const handleOpenInNewTab = () => {
     window.open(window.location.href, '_blank');
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-900/30 flex flex-col items-center justify-center p-4 backdrop-blur-md">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] bg-slate-900/40 flex flex-col items-center justify-center p-3 backdrop-blur-md overflow-y-auto"
+      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
+    >
       <style dangerouslySetInnerHTML={{ __html: `
         #html5-qrcode-reader {
           border: none !important;
         }
         #html5-qrcode-reader video {
           object-fit: cover !important;
-          border-radius: 1rem;
+          border-radius: 0.375rem;
           width: 100% !important;
           height: 100% !important;
         }
@@ -229,8 +292,18 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           animation: scan-laser 2s infinite ease-in-out;
         }
       ` }} />
-      <div className="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-xl">
-        <div id={readerId} className="w-full aspect-square"></div>
+      <div className="relative w-full max-w-md bg-slate-900 rounded-md overflow-hidden shadow-xl">
+        {/* Khung cao 3:4 trên điện thoại (mã vạch là vệt dài, vùng nhìn càng rộng càng dễ bắt),
+            trở lại vuông từ sm trở lên cho vừa màn hình ngang. */}
+        <div id={readerId} className="w-full aspect-3/4 sm:aspect-square max-h-[52vh]"></div>
+
+        {/* Bộ đếm số mã đã quét trong phiên — khỏi phải đóng máy quét ra đếm */}
+        {scannedCount > 0 && !scanResult && (
+          <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded">
+            <CheckCircleIcon className="h-3.5 w-3.5" />
+            Đã quét {scannedCount}
+          </div>
+        )}
         
         {/* Overlay for scanning frame */}
         {!scanResult && (
@@ -261,29 +334,73 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         )}
 
       </div>
-      <div className="text-center text-white mt-4 w-full max-w-md px-4">
+      <div className="text-center text-white mt-3 w-full max-w-md shrink-0">
         {error ? (
-          <div className="font-semibold text-rose-400 bg-rose-900 bg-opacity-50 px-4 py-3 rounded-lg space-y-3">
+          <div className="font-semibold text-rose-100 bg-rose-900/60 px-4 py-3 rounded space-y-2.5">
               <p>{error}</p>
+              <p className="text-[11px] font-medium text-rose-200/90">
+                  Máy ảnh không dùng được vẫn thêm sản phẩm được: bấm <strong>"Nhập mã tay"</strong> bên dưới.
+              </p>
               {isIframeError && (
-                  <Button
-                      variant="ghost"
-                      onClick={handleOpenInNewTab}
-                      className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-10 px-6 py-2"
-                  >
+                  <Button variant="primary" size="none" onClick={handleOpenInNewTab} className="w-full h-10 rounded text-sm font-bold">
                       Mở trong Tab Mới để Quét
                   </Button>
               )}
           </div>
         ) : (
-          <p className="font-medium bg-slate-900 bg-opacity-50 px-4 py-2 rounded-lg">{!scanResult ? status : ' '}</p>
+          <p className="font-medium text-sm bg-slate-900/60 px-4 py-2 rounded">{!scanResult ? status : ' '}</p>
         )}
         
-        {/* Prominent mobile close/stop button */}
+        {/* Nhập mã bằng tay: mã vạch mờ/rách hoặc máy ảnh bị chặn thì vẫn thêm được sản phẩm */}
+        {showManualInput && (
+          <form onSubmit={handleSubmitManualCode} className="mt-3 flex items-center gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              autoFocus
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value)}
+              placeholder="Gõ mã sản phẩm rồi Enter..."
+              className="flex-1 min-w-0 h-11 px-3 text-sm rounded border border-slate-300 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
+            />
+            <Button type="submit" variant="primary" size="none" disabled={!manualCode.trim()} className="h-11 px-4 rounded text-sm font-bold gap-1.5">
+              <CornerDownLeft className="h-4 w-4" />
+              Thêm
+            </Button>
+          </form>
+        )}
+
+        {/* Hàng thao tác: đèn pin và nhập tay đứng cạnh nhau, nút đóng tách riêng bên dưới để
+            không bấm nhầm khi đang quét bằng một tay. */}
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <Button
+            variant="secondary"
+            size="none"
+            onClick={handleToggleTorch}
+            disabled={!hasTorch}
+            title={hasTorch ? 'Bật/tắt đèn pin' : 'Thiết bị này không có đèn pin'}
+            className={`h-11 rounded text-sm font-bold gap-2 ${isTorchOn ? 'bg-amber-400 border-amber-400 text-slate-900 hover:bg-amber-300' : ''}`}
+          >
+            {isTorchOn ? <Flashlight className="h-4 w-4" /> : <FlashlightOff className="h-4 w-4" />}
+            {isTorchOn ? 'Tắt đèn' : 'Đèn pin'}
+          </Button>
+          <Button
+            variant="secondary"
+            size="none"
+            onClick={() => setShowManualInput(v => !v)}
+            className={`h-11 rounded text-sm font-bold gap-2 ${showManualInput ? 'bg-sky-100 border-sky-300 text-sky-800 hover:bg-sky-200' : ''}`}
+          >
+            <Keyboard className="h-4 w-4" />
+            Nhập mã tay
+          </Button>
+        </div>
+
+        {/* Nút đóng/dừng quét */}
         <Button
-          variant="ghost"
+          variant="danger"
+          size="none"
           onClick={onClose}
-          className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-sm shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
+          className="w-full mt-2 h-12 rounded text-base font-bold gap-2"
         >
           <XIcon className="h-5 w-5" />
           Đóng / Dừng quét
@@ -292,24 +409,25 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
        <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
           {cameras.length > 1 && (
             <Button
-                variant="ghost"
+                variant="unstyled"
                 onClick={handleSwitchCamera}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-colors"
+                className="p-2 rounded-full bg-slate-900/60 text-white hover:bg-slate-900/80 transition-colors"
                 aria-label="Chuyển camera"
             >
                 <SwitchCameraIcon className="h-6 w-6" />
             </Button>
           )}
           <Button
-            variant="ghost"
+            variant="unstyled"
             onClick={onClose}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-colors"
+            className="p-2 rounded-full bg-slate-900/60 text-white hover:bg-slate-900/80 transition-colors"
             aria-label="Đóng máy quét"
           >
             <XIcon className="h-6 w-6" />
           </Button>
        </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

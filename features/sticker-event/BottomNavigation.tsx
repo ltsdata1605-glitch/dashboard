@@ -33,64 +33,52 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   const { activeTab: globalActiveTab } = useActiveTab();
   if (globalActiveTab !== 'tools-print-sticker') return null;
 
+  /** Một kiểu nút duy nhất cho cả 4 mục: trước đây mỗi mục tự viết lại chuỗi class nên "Lưu DS"
+   *  và "Lọc" luôn xám như đang bị vô hiệu hoá, dù bấm được bình thường. */
+  const navItemClass = (isActive: boolean) =>
+    `flex flex-col items-center justify-center w-full h-full gap-1 px-0.5 whitespace-nowrap transition-colors active:scale-95 ${
+      isActive ? 'text-sky-700 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'
+    }`;
+
   return createPortal(
     <div
-      className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 flex justify-around items-center z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]"
+      className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 flex justify-around items-center z-50"
       style={{
         height: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      <Button
-        variant="ghost"
-        onClick={() => onTabChange('home')}
-        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-1 transition-all active:scale-95 ${
-          activeTab === 'home' ? 'text-sky-600 font-bold' : 'text-slate-400 hover:text-slate-700 font-medium'
-        }`}
-      >
-        <Home className={`w-5 h-5 transition-transform ${activeTab === 'home' ? 'scale-110 stroke-[2.4]' : 'stroke-[1.8]'}`} />
-        <span className="text-[10px] leading-none">Trang chủ</span>
+      <Button variant="unstyled" onClick={() => onTabChange('home')} className={navItemClass(activeTab === 'home')}>
+        <Home className={`w-5 h-5 ${activeTab === 'home' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
+        <span className="text-[11px] leading-none">Trang chủ</span>
       </Button>
 
-      <Button
-        variant="ghost"
-        onClick={() => onTabChange('tools')}
-        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-1 transition-all active:scale-95 ${
-          activeTab === 'tools' ? 'text-sky-600 font-bold' : 'text-slate-400 hover:text-slate-700 font-medium'
-        }`}
-      >
-        <Wrench className={`w-5 h-5 transition-transform ${activeTab === 'tools' ? 'scale-110 stroke-[2.4]' : 'stroke-[1.8]'}`} />
-        <span className="text-[10px] leading-none">Công cụ</span>
+      <Button variant="unstyled" onClick={() => onTabChange('tools')} className={navItemClass(activeTab === 'tools')}>
+        <Wrench className={`w-5 h-5 ${activeTab === 'tools' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
+        <span className="text-[11px] leading-none">Công cụ</span>
       </Button>
 
-      {/* Nút Quét Mã Nổi bật ở giữa */}
+      {/* Quét mã — việc làm nhiều nhất trên điện thoại nên để nút nổi ở giữa, vùng bấm to */}
       <Button
-        variant="ghost"
+        variant="unstyled"
         onClick={onScanClick}
-        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-500 hover:text-slate-900 relative active:scale-90 transition-transform"
+        aria-label="Quét mã vạch"
+        className="flex flex-col items-center justify-center w-full h-full relative active:scale-90 transition-transform"
       >
-        <div className="absolute -top-4.5 bg-gradient-to-tr from-sky-600 to-sky-500 text-white p-3 rounded-full shadow-lg shadow-sky-500/30 border-4 border-white">
+        <div className="absolute -top-4.5 bg-sky-600 text-white p-3 rounded-full shadow-lg shadow-sky-600/30 border-4 border-white">
           <ScanLine className="w-5 h-5 stroke-[2.2]" />
         </div>
-        <span className="text-[10px] font-bold text-sky-700 mt-6.5 leading-none">Quét mã</span>
+        <span className="text-[11px] font-bold text-sky-700 mt-6.5 leading-none whitespace-nowrap">Quét mã</span>
       </Button>
 
-      <Button
-        variant="ghost"
-        onClick={onSaveListClick}
-        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 hover:text-slate-700 font-medium transition-all active:scale-95"
-      >
+      <Button variant="unstyled" onClick={onSaveListClick} className={navItemClass(false)}>
         <Save className="w-5 h-5 stroke-[1.8]" />
-        <span className="text-[10px] leading-none">Lưu DS</span>
+        <span className="text-[11px] leading-none">Lưu DS</span>
       </Button>
 
-      <Button
-        variant="ghost"
-        onClick={onFilterClick}
-        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 hover:text-slate-700 font-medium transition-all active:scale-95"
-      >
+      <Button variant="unstyled" onClick={onFilterClick} className={navItemClass(false)}>
         <Filter className="w-5 h-5 stroke-[1.8]" />
-        <span className="text-[10px] leading-none">Lọc</span>
+        <span className="text-[11px] leading-none">Lọc</span>
       </Button>
     </div>,
     document.body

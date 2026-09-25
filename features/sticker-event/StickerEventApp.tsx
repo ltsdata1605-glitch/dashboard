@@ -499,7 +499,10 @@ export default function App(): React.JSX.Element {
           ẩn/hiện thanh địa chỉ. */}
       <div
         className={`min-h-dvh bg-white text-slate-800 flex flex-col items-center ${isMobile ? 'p-0' : 'p-2 sm:p-3'}`}
-        style={isMobile ? { paddingBottom: selectedCount > 0 ? 'calc(3.5rem + 76px + env(safe-area-inset-bottom, 0px))' : 'calc(3.5rem + 24px + env(safe-area-inset-bottom, 0px))' } : {}}
+        // ĐO THẬT 2026-09-25 (Playwright, 390x844): ở tab Công cụ, nút "In tất cả" nằm cuối khối
+        // và bị thanh điều hướng dưới che mất 17px — đệm 24px cũ không đủ cho nút cuối cùng.
+        // Tab Công cụ vốn không có thanh "đã chọn" nổi lên nên cứ để đệm rộng hơn cho chắc.
+        style={isMobile ? { paddingBottom: selectedCount > 0 ? 'calc(3.5rem + 76px + env(safe-area-inset-bottom, 0px))' : 'calc(3.5rem + 48px + env(safe-area-inset-bottom, 0px))' } : {}}
       >
         <div className="w-full max-w-7xl mx-auto">
           <div className={`flex items-center justify-between gap-2 ${isMobile ? 'sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200/80 px-3 py-2 shadow-2xs' : 'mb-3 px-1'}`}>

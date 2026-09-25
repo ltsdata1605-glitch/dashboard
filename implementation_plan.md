@@ -5242,3 +5242,101 @@ cloud và mất mọi trạng thái chỉ có ở máy.
   chứng trên worktree HEAD sạch): `features/line-bot/*` và `features/tax-calculator/*` chưa có
   trong `violations-baseline.json` (baseline ghi từ commit `280c99ad`, lúc 2 khu vực này chưa tồn
   tại). Không sửa kèm ở đây vì nó chạm chuẩn màu của 2 khu vực khác — việc riêng.
+
+---
+
+# In Sticker — Hệ thống nút + trải nghiệm mobile & quét mã vạch (2026-09-25)
+
+## Yêu cầu (chủ dự án, kèm ảnh màn hình desktop)
+
+1. "Thiết kế giao diện các nút bấm cho khoa học và giao diện gọn gàng".
+2. "Phù hợp và thuận tiện, hoạt động tốt trên mobile. Và **đặc biệt tính năng quét mã vạch** và
+   các chức năng thuận tiện cho người dùng".
+
+## Hiện trạng đo được (ảnh chụp thật, harness Playwright stub đăng nhập + dữ liệu mẫu)
+
+Cách dựng harness: stub `hooks/useStickerEventAuth.ts` (trả user cố định, KHÔNG gọi hook React nào
+bên trong nên không phá thứ tự hook, không cần import React) + gieo `ProductSearchDB` rồi thêm sản
+phẩm qua đúng luồng tìm kiếm. Không chạm Firestore thật → không tốn hạn mức, không ghi dữ liệu.
+
+**Nút bấm:**
+- Khối "Công cụ nhanh" có **9 nút gần như cùng trọng số thị giác**, không phân nhóm theo tần suất
+  hay tính chất: Nhập tay / Lưu DS / DS đã lưu / Nhập JSON / Xuất JSON / Cài đặt in / Xóa DS /
+  In đã chọn / In tất cả. Nút huỷ (Xóa DS) nằm lẫn giữa các nút thường.
+- **Anti-pattern lặp ~20 lần**: `variant="ghost"` + `className="bg-transparent hover:bg-transparent
+  border-0 rounded-none h-auto w-auto p-0 ..."` — dùng Button dùng chung rồi vô hiệu hoá toàn bộ
+  style của nó và tự vẽ lại bằng class inline. Đây chính là lý do mỗi nút lệch nhau một chút.
+- Sai chuẩn thiết kế (CLAUDE.md mục 2): `rounded-xl`/`rounded-2xl` cho card, `shadow-2xs`/`shadow-xs`
+  cho khối tĩnh, `text-[10px]`, `bg-gradient-to-r` cho nút in.
+
+**Mobile:**
+- Thẻ sản phẩm cao ~150px → màn 844px chỉ thấy **3 sản phẩm**; phần "vỏ" (header app + hàng
+  ADMIN/Kho + ô tìm kiếm + banner lỗi) chiếm ~270px trước khi tới sản phẩm đầu tiên.
+- Nhãn thanh điều hướng dưới dùng `text-[10px]` (dưới mức tối thiểu 11px của chuẩn).
+
+**Máy quét (Scanner.tsx) — thiếu đúng thứ nhân viên siêu thị cần:**
+- **Không có đèn pin (torch)**: kệ hàng thiếu sáng là tình huống thường trực, không bật được đèn
+  thì quét trượt liên tục.
+- **Không có đường nhập mã thủ công**: mã vạch mờ/rách hoặc máy ảnh bị từ chối quyền là tắc hoàn
+  toàn, phải thoát ra tìm kiếm tay.
+- Khung quét ép `aspect-square` → trên điện thoại dọc, vùng nhìn bé hơn mức cần cho mã vạch dài.
+- Quét xong không biết **đã quét được bao nhiêu mã** trong phiên, phải đóng máy quét ra đếm.
+
+## Việc sẽ làm
+
+| Đợt | Nội dung |
+|---|---|
+| A | Hệ thống lại nút ở `ControlPanel.tsx`: dùng đúng variant của `components/shared/ui/Button`, gom nhóm theo tần suất (In → Danh sách → Dữ liệu → Xoá), áp chuẩn bo góc/đổ bóng/cỡ chữ |
+| B | `Scanner.tsx`: đèn pin, nhập mã thủ công, khung quét cao hơn trên mobile, đếm số mã đã quét trong phiên |
+| C | Mobile: nhãn điều hướng ≥11px, nén thẻ sản phẩm để thấy nhiều hơn |
+
+## Kết quả (2026-09-25) — ĐÃ XONG, đã tự kiểm chứng bằng ảnh chụp thật
+
+**Đợt A — nút bấm (`ControlPanel.tsx`)**
+- Gom 9 nút rời thành **4 nhóm theo việc**, có nhãn nhóm: *Danh sách* (Nhập tay / Lưu DS / DS đã
+  lưu) → *Dữ liệu & cài đặt* (Nhập / Xuất / Cài đặt, nhỏ hơn một bậc vì dùng thưa) → *In* (tách
+  bằng đường kẻ, nút chính cao 44px) → *Xoá danh sách* (tách hẳn xuống dưới, nhỏ nhất, màu rose —
+  trước đây nằm lẫn giữa các nút thường nên dễ bấm nhầm).
+- **Gỡ sạch 100% anti-pattern** `variant="ghost" + className="bg-transparent ... rounded-none h-auto
+  w-auto p-0"` trong `ControlPanel.tsx` và `ResultsDisplay.tsx` (đếm còn 0), thay bằng đúng
+  variant `primary/secondary/outline/unstyled` của `components/shared/ui/Button`.
+- Áp chuẩn CLAUDE.md mục 2: `rounded-xl` → `rounded-md`/`rounded`, bỏ `shadow-xs`/`shadow-2xs` cho
+  khối tĩnh, bỏ gradient nút in, **8 chỗ `text-[10px]` → `text-[11px]`**.
+
+**Đợt B — máy quét mã vạch (`Scanner.tsx`)**
+- **Đèn pin (torch)**: tự dò khả năng của camera đang chạy (`getRunningTrackCapabilities().torch`),
+  bật/tắt bằng `applyVideoConstraints`. Thiết bị không hỗ trợ thì nút hiện mờ kèm giải thích thay
+  vì biến mất khó hiểu. Đổi camera thì dò lại và tắt đèn.
+- **Nhập mã bằng tay**: mã vạch mờ/rách hoặc máy ảnh bị chặn quyền vẫn thêm được sản phẩm; đi đúng
+  đường xử lý của mã quét được (cùng âm thanh, rung, màn báo kết quả) nên người dùng không phải
+  học 2 kiểu hành vi. Khi camera lỗi, banner lỗi chỉ thẳng sang nút này.
+- **Khung quét cao hơn**: bỏ ép `aspectRatio: 1.0`, mobile dùng khung 3:4 (`max-h-[52vh]`) — mã vạch
+  EAN-13 là vệt dài, vùng nhìn rộng hơn thì dễ bắt hơn; desktop giữ khung vuông.
+- **Bộ đếm "Đã quét N"** ngay trên khung, khỏi phải đóng máy quét ra đếm.
+- 🔴 **Lỗi thật phát hiện qua ảnh chụp**: thanh điều hướng dưới (portal ra `document.body`, z-50)
+  **vẽ đè lên nút "Đóng / Dừng quét"**. Nguyên nhân: máy quét nằm lồng trong cây app nên z-index
+  của nó chỉ có tác dụng trong stacking context nội bộ. Sửa bằng cách portal máy quét ra
+  `document.body` + `z-[60]`.
+
+**Đợt C — mobile**
+- Nhãn thanh điều hướng 10px → **11px**, không còn xuống dòng, và "Lưu DS"/"Lọc" hết bị xám như
+  đang vô hiệu hoá (trước mỗi mục tự viết lại chuỗi class riêng).
+- 🔴 **Lỗi thật đo được**: ở tab Công cụ, nút "In tất cả" bị thanh dưới che **17px** khi cuộn tới
+  đáy. Tăng đệm đáy 24px → 48px, đo lại: đáy nút 790px < đỉnh thanh 823px.
+- Thẻ sản phẩm gọn lại (đệm nhỏ hơn, bỏ đổ bóng, `rounded-md`).
+
+**Tự kiểm chứng:** `tests/e2e/sticker-nut-va-quet-ma.spec.ts` (MỚI, 2 bài, xanh) — chạy code thật
+trong Chromium với camera giả: có đủ đèn pin / nhập mã tay / nút đóng; nút đóng và nút "In tất cả"
+đều nằm trọn trên thanh điều hướng; nhập tay mã `2001238` ra màn "THÀNH CÔNG"; nhãn thanh dưới
+≥11px. Cách stub: thay `hooks/useStickerEventAuth.ts` bằng hook trả user cố định (không gọi hook
+React nào bên trong) + gieo `ProductSearchDB` → **không chạm Firestore thật, không tốn hạn mức**.
+Ngoài ra: typecheck 0 lỗi, eslint 0 lỗi, 783 unit test xanh, build xanh.
+
+## Việc CÒN LẠI (cố ý chưa làm)
+
+- Thẻ sản phẩm trên mobile vẫn cao ~130px (thấy ~3 sản phẩm/màn). Nén tiếp được nhưng phải thiết kế
+  lại bố cục giá/thưởng — việc riêng, rủi ro cao hơn.
+- `StickerEventApp.tsx` (919 dòng) và các modal còn nhiều `rounded-xl`/`shadow` sai chuẩn; chỉ dọn
+  những file chạm tới trong đợt này.
+- Chưa test trên máy thật (chỉ Chromium giả lập + camera giả): **đèn pin và rung chỉ kiểm được
+  trên điện thoại thật** — cần chủ dự án mở bằng điện thoại để xác nhận đèn pin bật được.

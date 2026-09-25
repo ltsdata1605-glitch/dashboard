@@ -43,7 +43,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
   return (
   <div 
     data-msp={result.msp}
-    className={`bg-white ${isMobile ? 'p-2.5 rounded-xl gap-2' : 'px-3 py-2.5 rounded-lg gap-3'} shadow-xs border transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center fade-in ${
+    className={`bg-white ${isMobile ? 'px-2.5 py-2 rounded-md gap-1.5' : 'px-3 py-2.5 rounded-md gap-3'} border transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center fade-in ${
       isHighlighted 
         ? 'animate-pulse-strong border-amber-500 border-2 ring-2 ring-amber-200' 
         : result.selected 
@@ -56,7 +56,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-            <span className="font-mono text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200/60">
+            <span className="font-mono text-[11px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200/60">
               {result.msp}
             </span>
             {result.selected && (
@@ -77,13 +77,13 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
             <div className="flex items-center gap-1.5 sm:justify-end">
               <p className="text-sm sm:text-base font-extrabold text-rose-600 leading-none tabular-nums">{result.giaGiam}</p>
               {discountPercent > 0 && (
-                <span className="text-[10px] font-black text-white bg-rose-500 px-1.5 py-0.5 rounded leading-none tabular-nums shadow-xs">
+                <span className="text-[11px] font-black text-white bg-rose-500 px-1.5 py-0.5 rounded leading-none tabular-nums shadow-xs">
                   -{discountPercent}%
                 </span>
               )}
             </div>
             {result.giaGoc && (
-              <p className="text-[10px] sm:text-[11px] text-slate-400 line-through tabular-nums mt-0.5">{result.giaGoc}</p>
+              <p className="text-[11px] sm:text-[11px] text-slate-400 line-through tabular-nums mt-0.5">{result.giaGoc}</p>
             )}
           </div>
 
@@ -92,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
             <p className="text-xs sm:text-sm font-bold text-sky-600 leading-none tabular-nums">
               {formatCurrency(result.tongThuong)}
             </p>
-            <p className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5">
+            <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5">
               <span className="text-emerald-600 tabular-nums">ERP: {formatCurrency(result.thuongERP)}</span>
               <span className="mx-0.5">|</span>
               <span className="text-rose-500 tabular-nums">Nóng: {formatCurrency(result.thuongNong)}</span>
@@ -117,10 +117,10 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
         {/* Checkbox & Stepper */}
         <div className="flex items-center gap-2">
              <Button
-                variant="ghost"
+                variant="unstyled"
                 onClick={() => onToggleSelect(result.msp)}
                 title={result.selected ? "Bỏ chọn" : "Chọn in"}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-sky-600 transition-colors p-1 active:scale-95"
+                className="text-slate-500 hover:text-sky-600 transition-colors p-1 active:scale-95"
             >
                 {result.selected ? <CheckboxCheckedIcon className="h-7 w-7 text-sky-600" /> : <CheckboxIcon className="h-7 w-7" />}
             </Button>
@@ -130,7 +130,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                     variant="ghost"
                     onClick={() => onQuantityChange(result.msp, -1)}
                     disabled={result.quantity <= 0}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-90"
+                    className="p-1.5 text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-90"
                     title="Giảm số lượng"
                 >
                     <MinusCircleIcon className="h-5 w-5" />
@@ -147,9 +147,9 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                     className="w-10 text-center font-black text-sm sm:text-base text-slate-800 bg-transparent border-none focus:ring-0 p-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none -moz-appearance-textfield tabular-nums"
                 />
                 <Button
-                    variant="ghost"
+                    variant="unstyled"
                     onClick={() => onQuantityChange(result.msp, 1)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-500 hover:text-slate-800 transition-colors active:scale-90"
+                    className="p-1.5 text-slate-500 hover:text-slate-800 transition-colors active:scale-90"
                     title="Tăng số lượng"
                 >
                     <PlusCircleIcon className="h-5 w-5" />
@@ -160,20 +160,21 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
         {/* Action buttons: Quick Print & Delete */}
         <div className="flex items-center gap-1.5">
             <Button
-                variant="ghost"
+                variant="outline"
+                size="none"
                 onClick={() => onPrintSingle(result)}
                 title="In ngay 1 sản phẩm này"
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2.5 py-1.5 text-xs bg-sky-50 hover:bg-sky-100 text-sky-700 font-bold rounded-lg border border-sky-200/80 transition-colors active:scale-95 shadow-2xs`}
+                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded bg-sky-50 hover:bg-sky-100 transition-colors active:scale-95"
             >
                 <PrintIcon className="h-3.5 w-3.5" />
                 <span>In</span>
             </Button>
             
             <Button
-                variant="ghost"
+                variant="unstyled"
                 onClick={() => onDelete(result.msp)}
                 title="Xóa sản phẩm"
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors active:scale-90"
+                className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors active:scale-90"
             >
                 <Trash2Icon className="h-4.5 w-4.5" />
             </Button>
@@ -281,10 +282,10 @@ const InstructionsPanel = () => (
             </div>
          </div>
          <div className="mt-4 px-4 text-xs text-slate-600 grid grid-cols-2 gap-x-6 gap-y-2">
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">1</div><span>Mã QR của sản phẩm</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">2</div><span>Tên người in & Tổng thưởng</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">3</div><span>Tên, Giá & Khuyến mãi</span></div>
-            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[10px]">4</div><span>Ngày giờ in sticker</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[11px]">1</div><span>Mã QR của sản phẩm</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[11px]">2</div><span>Tên người in & Tổng thưởng</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[11px]">3</div><span>Tên, Giá & Khuyến mãi</span></div>
+            <div className="flex items-center gap-2"><div className="w-4 h-4 shrink-0 rounded-full bg-sky-600 text-white flex items-center justify-center font-bold text-[11px]">4</div><span>Ngày giờ in sticker</span></div>
          </div>
     </div>
   </div>
@@ -324,7 +325,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
                     <Button
                         variant="ghost"
                         onClick={() => setVisibleCount(prev => prev + 50)}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold rounded-xl border border-sky-200 dark:border-sky-800 transition-colors text-sm shadow-sm flex items-center gap-2"
+                        className="px-6 py-2 rounded text-sm font-semibold gap-2"
                     >
                         Hiển thị thêm (còn {results.length - visibleCount} sản phẩm)
                     </Button>
