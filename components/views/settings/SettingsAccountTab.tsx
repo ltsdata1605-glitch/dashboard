@@ -317,6 +317,9 @@ export const SettingsAccountTab: React.FC = () => {
                             <p>
                                 Hành động này sẽ <strong>xoá sạch toàn bộ dữ liệu cục bộ</strong> đã lưu trên thiết bị (Doanh thu, Phân ca, Báo cáo khai thác, Lịch sử tính thuế, Cấu hình siêu thị, Dữ liệu tạm...).
                             </p>
+                            <p>
+                                Và <strong>xoá luôn trên cloud</strong>: dữ liệu riêng của tài khoản bạn, <strong className="text-rose-600 dark:text-rose-400">kèm báo cáo Luỹ kế &amp; Thi đua dùng chung của siêu thị{departmentId ? ` ${departmentId}` : ''}</strong> — mọi người cùng Kho sẽ mất các báo cáo đó và <strong>không khôi phục lại được</strong>.
+                            </p>
                             <p className="text-slate-500 dark:text-slate-400">
                                 Ứng dụng sẽ trở về trạng thái ban đầu như một <strong>người dùng mới hoàn toàn</strong>. Tài khoản đăng nhập của bạn vẫn được giữ nguyên.
                             </p>
