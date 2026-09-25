@@ -192,6 +192,7 @@ export const BonusView: React.FC<{
                                 highlightedEmployees={highlightedEmployees}
                                 onEmployeeClick={onEmployeeClick}
                                 f={f}
+                                viewMode={viewMode}
                             />
                         ) : isMonthly ? (
                             <MonthlyBonusTable
@@ -203,6 +204,7 @@ export const BonusView: React.FC<{
                                 selectedYear={monthlyArchive.selectedYear}
                                 onSelectYear={monthlyArchive.setSelectedYear}
                                 availableYears={monthlyArchive.availableYears}
+                                viewMode={viewMode}
                             />
                         ) : isDaily ? (
                             <BonusDailyTable

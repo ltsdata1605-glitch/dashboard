@@ -1,9 +1,9 @@
 import React, { useRef, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
+import { ChevronDownIcon, ChevronUpIcon, CameraIcon, ClockIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
-import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
+import { roundUp, shortenName, extractEmployeeId, standardizeEmployeeName } from '../../utils/nhanVienHelpers';
 import {
     selectAndSortEmployees,
     computeGrandTotals,
@@ -14,6 +14,8 @@ import {
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
+import { MedalBadge } from '../shared/Badges';
+import AvatarDisplay from './shared/AvatarDisplay';
 
 interface CompetitionGroupCardProps {
     header: CompetitionHeader;
@@ -23,6 +25,7 @@ interface CompetitionGroupCardProps {
     highlightColorMap: Record<string, string>;
     viewMode?: 'group' | 'list';
     isRealtime?: boolean;
+    supermarketName?: string;
 }
 
 // Exclude store-level summary rows (e.g. "ĐMX - I.One") from employee lists
@@ -34,7 +37,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     employeeCompetitionTargets,
     highlightColorMap,
     viewMode = 'group',
-    isRealtime = false
+    isRealtime = false,
+    supermarketName = ''
 }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     type SortKey = 'name' | 'target' | 'actual' | 'completion' | 'remaining';
@@ -68,15 +72,36 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         try {
             const originalCard = cardRef.current;
             const filename = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
-            const cardWidth = Math.max(originalCard.offsetWidth, 480);
+            
+            // Đo chiều rộng bảng tự nhiên để xuất ảnh vừa khít nội dung
+            const tableEl = originalCard.querySelector('table');
+            const naturalTableWidth = tableEl ? tableEl.scrollWidth : 0;
+            const exportWidth = naturalTableWidth > 0
+                ? Math.min(Math.max(naturalTableWidth + 16, 420), 480)
+                : 460;
+
             const blob = await exportElementAsImage(originalCard, filename, {
                 mode: 'blob-only',
                 elementsToHide: ['.export-button-component'],
-                forcedWidth: cardWidth,
+                forcedWidth: exportWidth,
+                fitAllColumns: true,
                 onCloneReady: (clone: HTMLElement) => {
                     clone.classList.remove('h-full', 'overflow-hidden');
-                    clone.style.width = `${cardWidth}px`;
+                    clone.style.width = `${exportWidth}px`;
+                    clone.style.maxWidth = `${exportWidth}px`;
                     clone.style.overflow = 'visible';
+
+                    // Xoá colgroup nếu còn và đặt table tự căn theo nội dung
+                    clone.querySelectorAll('colgroup').forEach(cg => cg.remove());
+                    const table = clone.querySelector('table');
+                    if (table) {
+                        table.style.width = '100%';
+                        table.style.tableLayout = 'auto';
+                    }
+                    clone.querySelectorAll('tr').forEach(tr => {
+                        tr.style.borderLeft = 'none';
+                        tr.classList.remove('border-l-[3px]');
+                    });
                 }
             });
             if (blob) showExportOptions(blob, filename);
@@ -90,6 +115,14 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         () => selectAndSortEmployees(sortedEmployees, header, employeeDataMap, employeeCompetitionTargets, sortConfig),
         [sortedEmployees, sortConfig, employeeCompetitionTargets, employeeDataMap, header]
     );
+
+    const globalRankMap = useMemo(() => {
+        const map = new Map<string, number>();
+        sortedEmployeesForCard.forEach((emp, idx) => {
+            map.set(emp.originalName, idx + 1);
+        });
+        return map;
+    }, [sortedEmployeesForCard]);
 
     const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
     
@@ -158,14 +191,27 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             actualClass = 'text-slate-700 dark:text-slate-300 font-bold';
         }
 
-        const highlightClass = highlightColorMap[employee.originalName] || '';
+        const getHighlightClass = (): string => {
+            if (!highlightColorMap) return '';
+            const empId = extractEmployeeId(employee.originalName) || extractEmployeeId(employee.name);
+            const stdOrig = standardizeEmployeeName(employee.originalName);
+            const stdName = standardizeEmployeeName(employee.name);
+            return highlightColorMap[employee.originalName]
+                || highlightColorMap[employee.name]
+                || (stdOrig ? highlightColorMap[stdOrig] : '')
+                || (stdName ? highlightColorMap[stdName] : '')
+                || (empId ? highlightColorMap[empId] || highlightColorMap[`id_${empId}`] : '')
+                || '';
+        };
+
+        const highlightClass = getHighlightClass();
         const isHighlighted = !!highlightClass;
 
         // When highlighted, clear conditional colors so highlight style shines through
         if (isHighlighted) {
-            percentClass = 'font-bold';
+            percentClass = 'font-black text-slate-900 dark:text-white';
             percentInlineStyle = {};
-            actualClass = 'font-bold';
+            actualClass = 'font-black text-slate-900 dark:text-white';
             actualInlineStyle = {};
         }
 
@@ -173,28 +219,30 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         const isEven = globalRowIndex % 2 === 0;
         globalRowIndex++;
 
+        const rank = globalRankMap.get(employee.originalName) || (_index + 1);
+
         return (
             <tr key={employee.originalName}
-                /* Vạch trạng thái 3px mép trái — dùng lại ĐÚNG màu đã tính cho ô %HT
-                   (`percentInlineStyle`), không viết lại ngưỡng. */
-                style={{ borderLeftColor: (percentInlineStyle.color as string) || 'var(--color-slate-200)' }}
-                className={`border-l-[3px]
-                ${isHighlighted
-                    ? `${highlightClass} font-bold`
+                className={`${isHighlighted
+                    ? `${highlightClass} font-bold ring-1 ring-inset ring-sky-300/80 dark:ring-sky-600/60 shadow-2xs`
                     : `hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors`
                 }
                 border-b border-slate-100 dark:border-slate-700`}>
-                <td className={`px-1.5 py-0.5 sm:py-1 whitespace-nowrap text-[11px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50`} style={isHighlighted ? {} : { color: 'var(--color-sky-600)' }}>
-                    <span>{employee.name}</span>
+                <td className={`px-2 py-0.5 sm:py-1 whitespace-nowrap text-[11px] font-bold text-left leading-tight border-r border-slate-100 dark:border-slate-700/50 min-w-[170px]`} style={isHighlighted ? { color: '#0369a1', fontWeight: 800 } : { color: 'var(--color-sky-600)' }}>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <MedalBadge rank={rank} className="w-6 text-center text-[11px] font-black tabular-nums" />
+                        <AvatarDisplay employeeName={employee.originalName} supermarketName={supermarketName} />
+                        <span className="truncate">{employee.name}</span>
+                    </div>
                 </td>
-                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? '' : 'text-slate-800 dark:text-slate-200'}`}>{formatter.format(roundUp(target))}</td>
-                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
+                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-800 dark:text-slate-200'}`}>{formatter.format(roundUp(target))}</td>
+                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
                     {(!actual || actual === 0) ? '-' : formatter.format(roundUp(actual))}
                 </td>
-                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${percentClass}`} style={percentInlineStyle}>
+                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${percentClass}`} style={percentInlineStyle}>
                     {(!actual || actual === 0) ? '-' : `${roundUp(completion).toFixed(0)}%`}
                 </td>
-                <td className={`px-1 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums ${isHighlighted ? '' : remainingColor}`}>{formatter.format(roundUp(remaining))}</td>
+                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums ${isHighlighted ? 'text-slate-900 dark:text-white font-bold' : remainingColor}`}>{formatter.format(roundUp(remaining))}</td>
             </tr>
         );
     };
@@ -222,18 +270,28 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         </Button>
                     </div>
                 </div>
-                {/* Time budget bar */}
-                <div className="flex flex-col gap-1 bg-sky-700/60 dark:bg-sky-800/60 rounded px-2.5 py-1 border border-sky-500/30">
-                    <div className="flex justify-between items-end">
-                        <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-black text-sky-100 uppercase tracking-wider leading-none">Quỹ thời gian</span>
-                            <span className="text-[11px] font-bold text-sky-200 italic">{timeProgress.label}</span>
+                {/* Time budget bar — thiết kế tinh tế, hiện đại */}
+                <div className="bg-black/15 dark:bg-black/25 backdrop-blur-xs rounded-lg px-2.5 py-1.5 border border-white/10 flex flex-col gap-1.5 shadow-2xs">
+                    <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <ClockIcon className="w-3.5 h-3.5 text-sky-200 shrink-0" />
+                            <span className="text-[11px] font-bold text-sky-100 uppercase tracking-wider leading-none">
+                                Quỹ thời gian
+                            </span>
+                            <span className="text-[10px] font-semibold text-sky-100/90 bg-white/15 px-1.5 py-0.5 rounded tabular-nums leading-none">
+                                {timeProgress.label.replace(/^\(|\)$/g, '')}
+                            </span>
                         </div>
-                        <span className="text-[11px] font-black text-white tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
+                        <div className="flex items-baseline gap-0.5 shrink-0">
+                            <span className="text-[12px] font-black text-white tabular-nums leading-none drop-shadow-xs">
+                                {Math.round(timeProgress.percentage)}
+                            </span>
+                            <span className="text-[10px] font-bold text-sky-200 leading-none">%</span>
+                        </div>
                     </div>
-                    <div className="w-full bg-black/20 rounded-full h-1.5 relative overflow-hidden">
+                    <div className="w-full bg-black/25 dark:bg-black/40 rounded-full h-1.5 relative overflow-hidden shadow-inner">
                         <div 
-                            className="h-full bg-white rounded-full transition-all duration-500"
+                            className="h-full bg-gradient-to-r from-sky-200 via-white to-sky-100 rounded-full transition-all duration-500 shadow-[0_0_6px_rgba(255,255,255,0.4)]"
                             style={{ width: `${timeProgress.percentage}%` }}
                         />
                     </div>
@@ -241,29 +299,22 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             </div>
             {/* Table — Thưởng design */}
             <div className="flex-1">
-                <table className="w-full border-collapse table-fixed">
-                    <colgroup>
-                        <col className="w-[30%]" />
-                        <col className="w-[17%]" />
-                        <col className="w-[17%]" />
-                        <col className="w-[15%]" />
-                        <col className="w-[21%]" />
-                    </colgroup>
+                <table className="w-full border-collapse">
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider bg-sky-600 dark:bg-sky-700 text-white">
-                            <th className="text-center px-2 py-1.5 border-b border-r border-sky-500/40 text-white">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">NHÂN VIÊN{getSortIcon('name')}</Button>
+                            <th className="text-left px-2 py-1.5 border-b border-r border-sky-500/40 text-white min-w-[170px]">
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-start w-full group text-white hover:text-sky-100">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-2 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-2 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-2 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">%HT{getSortIcon('completion')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-2 py-1.5 whitespace-nowrap border-b border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>
@@ -295,11 +346,11 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                         {/* Dept total — emerald style */}
                                         {departmentNames.length > 1 && (
                                             <tr className="bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-400 border-t-2 border-emerald-200 dark:border-emerald-800">
-                                                <td className="px-1.5 py-0.5 sm:py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
-                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
-                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
-                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
-                                                <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(totalRemaining))}</td>
+                                                <td className="px-2 py-0.5 sm:py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
+                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
+                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
+                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
+                                                <td className="w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(totalRemaining))}</td>
                                             </tr>
                                         )}
                                     </React.Fragment>
@@ -314,11 +365,11 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         })}
                         {/* Grand Total — solid blue matching Image 3 */}
                         <tr className="bg-sky-600 dark:bg-sky-700 font-black text-white border-t-2 border-sky-700">
-                             <td className="px-1.5 py-1 text-center uppercase text-[11px] tracking-wider border-r border-sky-500/40 text-white">TỔNG</td>
-                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalTarget))}</td>
-                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalActual))}</td>
-                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
-                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap tabular-nums text-white">{formatter.format(roundUp(grandTotalRemaining))}</td>
+                             <td className="px-2 py-1 text-center uppercase text-[11px] tracking-wider border-r border-sky-500/40 text-white">TỔNG</td>
+                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalTarget))}</td>
+                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalActual))}</td>
+                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
+                             <td className="w-[1%] px-2 py-1 text-center text-[11px] whitespace-nowrap tabular-nums text-white">{formatter.format(roundUp(grandTotalRemaining))}</td>
                         </tr>
                     </tbody>
                 </table>

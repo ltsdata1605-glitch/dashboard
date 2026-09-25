@@ -16,6 +16,7 @@ interface BonusCompareTableProps {
     highlightedEmployees: Set<string>;
     onEmployeeClick: (emp: Employee) => void;
     f: Intl.NumberFormat;
+    viewMode?: 'group' | 'list';
 }
 
 type SortField = 'name' | 'prevErp' | 'prevTnong' | 'prevTong' | 'curErp' | 'curTnong' | 'curTong' | 'dErp' | 'dTnong' | 'dTong' | 'dPct';
@@ -55,12 +56,11 @@ const stripeColor = (v: number | null) => v == null ? '#cbd5e1' : v >= 0 ? '#059
 /**
  * Bảng "So sánh cùng kỳ tháng": mỗi nhân viên 1 dòng; MỖI NHÓM CỘT LÀ 1 TIÊU CHÍ (ERP · T.Nóng ·
  * Tổng), cột phụ H.Tại (kỳ này) | CK (cùng kỳ tháng trước) | +/- (chênh lệch), riêng Tổng thêm %.
- * Số liệu đọc từ kho bonus-compare-* do lựa chọn "So sánh cùng kỳ" của chế độ Tự động đổ vào —
- * hai kỳ cùng số ngày (01→21/8 vs 01→21/9). Sort mặc định +/- Tổng giảm dần: ai tiến bộ nhất
- * lên đầu, ai tụt nhất xuống cuối.
+ * Hỗ trợ xem theo Bộ phận (group) hoặc Danh sách (list).
  */
 export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
     employees, current, previous, loading, supermarketName, highlightedEmployees, onEmployeeClick, f,
+    viewMode = 'group',
 }) => {
     const [sortField, setSortField] = useState<SortField>('dTong');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -187,6 +187,52 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         </>
     );
 
+    const rowsByDept = useMemo(() => {
+        if (viewMode === 'list') return { 'Tất cả': sortedRows };
+        const acc: Record<string, CompareRow[]> = {};
+        sortedRows.forEach(r => {
+            const dept = r.emp.department || 'Khác';
+            if (!acc[dept]) acc[dept] = [];
+            acc[dept].push(r);
+        });
+        return acc;
+    }, [sortedRows, viewMode]);
+
+    const deptNames = useMemo(() => Object.keys(rowsByDept).sort((a, b) => a.localeCompare(b)), [rowsByDept]);
+
+    const globalRankMap = useMemo(() => {
+        const map = new Map<string, number>();
+        sortedRows.forEach((r, idx) => {
+            map.set(r.emp.originalName, idx + 1);
+        });
+        return map;
+    }, [sortedRows]);
+
+    const renderCompareRow = (r: CompareRow, rank: number) => {
+        const keyName = r.emp.originalName || r.emp.name;
+        const isHighlighted = highlightedEmployees.has(keyName);
+        return (
+            <tr
+                key={r.emp.originalName}
+                style={{ borderLeft: `3px solid ${stripeColor(r.dTong)}` }}
+                className={`cursor-pointer transition-colors ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'}`}
+                onClick={() => onEmployeeClick(r.emp)}
+            >
+                <td className="px-2 py-[3px] border-r border-slate-100 dark:border-slate-700/50">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <MedalBadge rank={rank} />
+                        <AvatarDisplay employeeName={r.emp.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(r.emp)} />
+                        <span className={`text-[13px] font-bold truncate ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
+                    </div>
+                </td>
+                {criterionCells(r.cur?.erp ?? null, r.prev?.erp ?? null, r.dErp, GROUP_STYLE.erp.cur)}
+                {criterionCells(r.cur?.tNong ?? null, r.prev?.tNong ?? null, r.dTnong, GROUP_STYLE.tnong.cur)}
+                {criterionCells(r.cur?.tong ?? null, r.prev?.tong ?? null, r.dTong, GROUP_STYLE.tong.cur)}
+                <td className={`${td} border-r-0 ${deltaColor(r.dPct)}`}>{r.dPct == null ? '—' : fmtPct(r.dPct)}</td>
+            </tr>
+        );
+    };
+
     return (
         <div>
             <table className="w-full border-collapse compact-export-table" data-testid="bonus-compare-table">
@@ -205,30 +251,44 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                     </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-100 dark:divide-slate-700/60">
-                    {sortedRows.map((r, idx) => {
-                        const keyName = r.emp.originalName || r.emp.name;
-                        const isHighlighted = highlightedEmployees.has(keyName);
-                        return (
-                            <tr
-                                key={r.emp.originalName}
-                                style={{ borderLeft: `3px solid ${stripeColor(r.dTong)}` }}
-                                className={`cursor-pointer transition-colors ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'}`}
-                                onClick={() => onEmployeeClick(r.emp)}
-                            >
-                                <td className="px-2 py-[3px] border-r border-slate-100 dark:border-slate-700/50">
-                                    <div className="flex items-center gap-2 min-w-0">
-                                        <MedalBadge rank={idx + 1} />
-                                        <AvatarDisplay employeeName={r.emp.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(r.emp)} />
-                                        <span className={`text-[13px] font-bold truncate ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
-                                    </div>
-                                </td>
-                                {criterionCells(r.cur?.erp ?? null, r.prev?.erp ?? null, r.dErp, GROUP_STYLE.erp.cur)}
-                                {criterionCells(r.cur?.tNong ?? null, r.prev?.tNong ?? null, r.dTnong, GROUP_STYLE.tnong.cur)}
-                                {criterionCells(r.cur?.tong ?? null, r.prev?.tong ?? null, r.dTong, GROUP_STYLE.tong.cur)}
-                                <td className={`${td} border-r-0 ${deltaColor(r.dPct)}`}>{r.dPct == null ? '—' : fmtPct(r.dPct)}</td>
-                            </tr>
-                        );
-                    })}
+                    {viewMode === 'list' ? (
+                        sortedRows.map((r, idx) => renderCompareRow(r, idx + 1))
+                    ) : (
+                        deptNames.map(deptName => {
+                            const deptRows = rowsByDept[deptName];
+                            const deptBothRows = deptRows.filter(r => r.prev && r.cur);
+                            const deptCurTong = deptBothRows.reduce((s, r) => s + (r.cur!.tong || 0), 0);
+                            const deptPrevTong = deptBothRows.reduce((s, r) => s + (r.prev!.tong || 0), 0);
+                            const deptDTong = deptCurTong - deptPrevTong;
+                            const deptDPct = deptPrevTong > 0 ? (deptDTong / deptPrevTong) * 100 : (deptCurTong > 0 ? Infinity : 0);
+
+                            return (
+                                <React.Fragment key={deptName}>
+                                    <tr className="bg-slate-100/90 dark:bg-slate-800/70 font-black text-slate-700 dark:text-slate-300">
+                                        <td colSpan={11} className="px-2 py-1.5 text-left text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                            {deptName} <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">({deptRows.length} nhân viên)</span>
+                                        </td>
+                                    </tr>
+                                    {deptRows.map(r => renderCompareRow(r, globalRankMap.get(r.emp.originalName) || 1))}
+                                    {deptNames.length > 1 && (
+                                        <tr className="bg-emerald-50/60 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-300 border-t border-b border-emerald-200 dark:border-emerald-800">
+                                            <td className="px-2 py-1 text-[12px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700">Tổng {deptName}</td>
+                                            <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.erp || 0), 0))}</td>
+                                            <td className={tdFoot}>{fmtK(f, deptRows.reduce((s, r) => s + (r.prev?.erp || 0), 0))}</td>
+                                            <td className={`${tdFoot} ${deltaColor(deptBothRows.reduce((s, r) => s + (r.dErp || 0), 0))}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptBothRows.reduce((s, r) => s + (r.dErp || 0), 0)) : '—'}</td>
+                                            <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-amber-600 dark:text-amber-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.tNong || 0), 0))}</td>
+                                            <td className={tdFoot}>{fmtK(f, deptRows.reduce((s, r) => s + (r.prev?.tNong || 0), 0))}</td>
+                                            <td className={`${tdFoot} ${deltaColor(deptBothRows.reduce((s, r) => s + (r.dTnong || 0), 0))}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptBothRows.reduce((s, r) => s + (r.dTnong || 0), 0)) : '—'}</td>
+                                            <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 bg-emerald-100/90 dark:bg-emerald-900/50`}>{fmtK(f, deptCurTong)}</td>
+                                            <td className={tdFoot}>{fmtK(f, deptPrevTong)}</td>
+                                            <td className={`${tdFoot} text-[13.5px] ${deltaColor(deptDTong)}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptDTong) : '—'}</td>
+                                            <td className={`${tdFoot} border-r-0 ${deltaColor(deptDPct)}`}>{deptBothRows.length > 0 ? fmtPct(deptDPct) : '—'}</td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })
+                    )}
                 </tbody>
                 <tfoot>
                     <tr style={{ borderLeft: `3px solid ${stripeColor(totals.bothCount > 0 ? totals.dTong : null)}` }} className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800">

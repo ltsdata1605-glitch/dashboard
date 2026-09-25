@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { Criterion, CompetitionHeader, Employee } from '../types/nhanVienTypes';
-import type { CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
+import { extractEmployeeId, standardizeEmployeeName, type CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
 
 interface UseCompetitionDataProps {
     groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: CompetitionEmployeeRow[] }>;
@@ -131,32 +131,71 @@ export const useCompetitionData = ({
         });
     }, [selectedHeadersForNhom, filteredEmployees, employeeDataMap, employeeCompetitionTargets, isActive]);
 
-    // Map tra cứu O(1) originalName -> vị trí trong allEmployees, thay cho .findIndex() O(n)
-    // lặp lại nhiều lần (effectiveHighlightColorMap, getEmployeeDotColor).
+    // Map tra cứu O(1) vị trí trong allEmployees hỗ trợ đầy đủ: originalName, name, chuẩn hoá và Mã NV
     const employeeIndexMap = useMemo(() => {
         const map = new Map<string, number>();
-        allEmployees.forEach((e, idx) => { if (!map.has(e.originalName)) map.set(e.originalName, idx); });
+        allEmployees.forEach((e, idx) => {
+            if (e.originalName && !map.has(e.originalName)) map.set(e.originalName, idx);
+            if (e.name && !map.has(e.name)) map.set(e.name, idx);
+            const stdOrig = standardizeEmployeeName(e.originalName);
+            if (stdOrig && !map.has(stdOrig)) map.set(stdOrig, idx);
+            const stdName = standardizeEmployeeName(e.name);
+            if (stdName && !map.has(stdName)) map.set(stdName, idx);
+            const id = extractEmployeeId(e.originalName) || extractEmployeeId(e.name);
+            if (id && !map.has(id)) map.set(id, idx);
+        });
         return map;
     }, [allEmployees]);
 
     const effectiveHighlightColorMap = useMemo(() => {
         if (isActive === false) return {};
         const map: Record<string, string> = {};
+
+        const addHighlightForEmployee = (emp: Employee, color: string) => {
+            if (emp.originalName) map[emp.originalName] = color;
+            if (emp.name) map[emp.name] = color;
+            const stdOrig = standardizeEmployeeName(emp.originalName);
+            if (stdOrig) map[stdOrig] = color;
+            const stdName = standardizeEmployeeName(emp.name);
+            if (stdName) map[stdName] = color;
+            const id = extractEmployeeId(emp.originalName) || extractEmployeeId(emp.name);
+            if (id) {
+                map[id] = color;
+                map[`id_${id}`] = color;
+            }
+        };
+
         if (isolatedHighlightEmployee) {
-             const employeeIndex = employeeIndexMap.get(isolatedHighlightEmployee);
-             if (employeeIndex !== undefined) map[isolatedHighlightEmployee] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
-             return map;
+            const empId = extractEmployeeId(isolatedHighlightEmployee);
+            const employeeIndex = employeeIndexMap.get(isolatedHighlightEmployee) ?? (empId ? employeeIndexMap.get(empId) : undefined);
+            if (employeeIndex !== undefined && allEmployees[employeeIndex]) {
+                const color = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
+                addHighlightForEmployee(allEmployees[employeeIndex], color);
+            }
+            return map;
         }
+
         const highlightedArray = Array.from(highlightedEmployees) as string[];
         highlightedArray.forEach((name) => {
-            const employeeIndex = employeeIndexMap.get(name);
-            if (employeeIndex !== undefined) map[name] = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
+            const empId = extractEmployeeId(name);
+            const employeeIndex = employeeIndexMap.get(name) ?? (empId ? employeeIndexMap.get(empId) : undefined);
+            if (employeeIndex !== undefined && allEmployees[employeeIndex]) {
+                const color = HIGHLIGHT_COLORS[employeeIndex % HIGHLIGHT_COLORS.length].row;
+                addHighlightForEmployee(allEmployees[employeeIndex], color);
+            } else {
+                map[name] = HIGHLIGHT_COLORS[0].row;
+                if (empId) {
+                    map[empId] = HIGHLIGHT_COLORS[0].row;
+                    map[`id_${empId}`] = HIGHLIGHT_COLORS[0].row;
+                }
+            }
         });
         return map;
-    }, [highlightedEmployees, isolatedHighlightEmployee, employeeIndexMap, isActive]);
+    }, [highlightedEmployees, isolatedHighlightEmployee, employeeIndexMap, allEmployees, isActive]);
 
     const getEmployeeDotColor = useCallback((originalName: string) => {
-        const index = employeeIndexMap.get(originalName);
+        const empId = extractEmployeeId(originalName);
+        const index = employeeIndexMap.get(originalName) ?? (empId ? employeeIndexMap.get(empId) : undefined);
         if (index === undefined) return 'bg-slate-300';
         return HIGHLIGHT_COLORS[index % HIGHLIGHT_COLORS.length].dot;
     }, [employeeIndexMap]);

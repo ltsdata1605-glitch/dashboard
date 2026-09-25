@@ -18,6 +18,7 @@ interface MonthlyBonusTableProps {
     selectedYear?: number;
     onSelectYear?: (year: number) => void;
     availableYears?: number[];
+    viewMode?: 'group' | 'list';
 }
 
 type MonthRank = 'top' | 'bot' | 'mid';
@@ -53,9 +54,7 @@ function computeRankMap(entries: { originalName: string; value: number }[]): Map
 
 /** Bảng luỹ kế "Xem theo tháng" — mỗi cột là 1 tháng (cũ nhất trước, tăng dần), kèm cột
  * Trung bình + Tổng cộng, đọc từ kho bonus-monthly-* do lựa chọn Tháng/Năm của chế độ
- * Tự động đổ vào. Số được rút gọn theo đơn vị triệu (formatMillionShort). Cột Nhân viên có
- * hạng #1/#2/#3 + avatar giống chế độ xem Doanh thu; mỗi cột tháng tô màu theo hạng
- * TƯƠNG ĐỐI trong chính tháng đó: TOP 3 xanh (emerald), BOT 30% đỏ (rose), còn lại xám.
+ * Tự động đổ vào. Hỗ trợ xem theo Bộ phận (group) hoặc Danh sách (list).
  */
 export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
     employees,
@@ -66,6 +65,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
     selectedYear,
     onSelectYear,
     availableYears,
+    viewMode = 'group',
 }) => {
     const [sortField, setSortField] = useState<string>('total');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -73,15 +73,27 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
     // Cũ nhất -> mới nhất, trái sang phải (months truyền vào đang mới nhất trước).
     const orderedMonths = useMemo(() => [...months].reverse(), [months]);
 
+    // Ngưỡng tối thiểu để tính vào trung bình thưởng: tháng có thưởng < 1 triệu sẽ không tính vào TB
+    const MIN_BONUS_FOR_AVERAGE = 1_000_000;
+
     const getMonthValue = (originalName: string, yyyymm: string): number | null => {
         const metrics = dataByMonth[yyyymm]?.[originalName];
         return metrics ? metrics.tong : null;
     };
     const getMonthsWithData = (originalName: string) => orderedMonths.filter(m => getMonthValue(originalName, m.yyyymm) !== null);
     const getTotal = (originalName: string): number => getMonthsWithData(originalName).reduce((sum, m) => sum + (getMonthValue(originalName, m.yyyymm) || 0), 0);
+    
+    // Chỉ các tháng có thưởng >= 1 triệu mới được tính vào trung bình
+    const getMonthsForAverage = (originalName: string) => orderedMonths.filter(m => {
+        const val = getMonthValue(originalName, m.yyyymm);
+        return val !== null && val >= MIN_BONUS_FOR_AVERAGE;
+    });
+
     const getAverage = (originalName: string): number => {
-        const withData = getMonthsWithData(originalName);
-        return withData.length > 0 ? getTotal(originalName) / withData.length : 0;
+        const eligibleMonths = getMonthsForAverage(originalName);
+        if (eligibleMonths.length === 0) return 0;
+        const eligibleTotal = eligibleMonths.reduce((sum, m) => sum + (getMonthValue(originalName, m.yyyymm) || 0), 0);
+        return eligibleTotal / eligibleMonths.length;
     };
     const monthHasData = (yyyymm: string): boolean => Object.keys(dataByMonth[yyyymm] || {}).length > 0;
     const anyMonthHasData = orderedMonths.some(m => monthHasData(m.yyyymm));
@@ -98,17 +110,14 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
             maps[m.yyyymm] = computeRankMap(entries);
         });
         return maps;
-         
     }, [employees, dataByMonth, orderedMonths]);
 
-    // Chỉ xếp hạng những NV có ít nhất 1 tháng dữ liệu — NV chưa có dữ liệu nào không nên
-    // bị tính là "BOT 30%" (không phải kém, chỉ là chưa có gì để so sánh).
+    // Chỉ xếp hạng những NV có ít nhất 1 tháng đạt điều kiện tính TB (≥ 1tr) — NV chưa có tháng nào đủ điều kiện
+    // không bị tính là "BOT 30%"
     const averageRankMap = useMemo(() => computeRankMap(
-        employees.filter(e => getMonthsWithData(e.originalName).length > 0)
+        employees.filter(e => getMonthsForAverage(e.originalName).length > 0)
             .map(e => ({ originalName: e.originalName, value: getAverage(e.originalName) })),
-    ),
-     
-    [employees, dataByMonth, orderedMonths]);
+    ), [employees, dataByMonth, orderedMonths]);
 
     const totalRankMap = useMemo(() => computeRankMap(
         employees.filter(e => getMonthsWithData(e.originalName).length > 0)
@@ -132,8 +141,62 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
             return sortDir === 'asc' ? vA - vB : vB - vA;
         });
         return arr;
-         
     }, [employees, sortField, sortDir, dataByMonth, orderedMonths]);
+
+    // Nhóm nhân viên theo bộ phận khi viewMode === 'group'
+    const employeesByDept = useMemo(() => {
+        if (viewMode === 'list') {
+            return { 'Tất cả': sortedEmployees };
+        }
+        const acc: Record<string, Employee[]> = {};
+        sortedEmployees.forEach(emp => {
+            const dept = emp.department || 'Khác';
+            if (!acc[dept]) acc[dept] = [];
+            acc[dept].push(emp);
+        });
+        return acc;
+    }, [sortedEmployees, viewMode]);
+
+    const departmentNames = useMemo(() => {
+        return Object.keys(employeesByDept).sort((a, b) => a.localeCompare(b));
+    }, [employeesByDept]);
+
+    const globalRankMap = useMemo(() => {
+        const map = new Map<string, number>();
+        sortedEmployees.forEach((emp, index) => {
+            map.set(emp.originalName, index + 1);
+        });
+        return map;
+    }, [sortedEmployees]);
+
+    const renderEmployeeRow = (emp: Employee, rank: number) => (
+        <tr key={emp.originalName} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+            <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 min-w-0">
+                    <RankBadge rank={rank} />
+                    <AvatarDisplay employeeName={emp.originalName} supermarketName={supermarketName} />
+                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{emp.name}</span>
+                </div>
+            </td>
+            {orderedMonths.map(m => {
+                const val = getMonthValue(emp.originalName, m.yyyymm);
+                const rankMonth = monthRankMaps[m.yyyymm]?.get(emp.originalName);
+                return (
+                    <td key={m.yyyymm} className={`${tdBase} font-bold ${rankColorClass(rankMonth)}`}>
+                        {val === null ? <span className="font-normal text-slate-300 dark:text-slate-700">—</span> : formatMillionShort(val)}
+                    </td>
+                );
+            })}
+            <td className={`${tdBase} font-black ${rankColorClass(averageRankMap.get(emp.originalName))}`}>
+                {getMonthsWithData(emp.originalName).length === 0
+                    ? <span className="font-normal text-slate-300 dark:text-slate-700">—</span>
+                    : formatMillionShort(getAverage(emp.originalName))}
+            </td>
+            <td className={`px-2 py-1 text-center text-[13px] tabular-nums font-black ${rankColorClass(totalRankMap.get(emp.originalName))}`}>
+                {formatMillionShort(getTotal(emp.originalName))}
+            </td>
+        </tr>
+    );
 
     const yearToggleHeader = availableYears && availableYears.length > 1 && onSelectYear ? (
         <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 no-print">
@@ -192,7 +255,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
                                 T{m.label.split('/')[0]}
                             </th>
                         ))}
-                        <th onClick={() => handleSort('average')} className={`${thBase} text-emerald-700 dark:text-emerald-400`}>
+                        <th onClick={() => handleSort('average')} className={`${thBase} text-emerald-700 dark:text-emerald-400`} title="Trung bình các tháng có thưởng ≥ 1 triệu (các tháng < 1 triệu không tính vào TB)">
                             T.Bình
                         </th>
                         <th onClick={() => handleSort('total')} className={`${thBase} text-sky-700 dark:text-sky-400 border-r-0`}>
@@ -201,32 +264,48 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {sortedEmployees.map((emp, idx) => (
-                        <tr key={emp.originalName} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                            <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-800">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <RankBadge rank={idx + 1} />
-                                    <AvatarDisplay employeeName={emp.originalName} supermarketName={supermarketName} />
-                                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200 truncate">{emp.name}</span>
-                                </div>
-                            </td>
-                            {orderedMonths.map(m => {
-                                const val = getMonthValue(emp.originalName, m.yyyymm);
-                                const rank = monthRankMaps[m.yyyymm]?.get(emp.originalName);
-                                return (
-                                    <td key={m.yyyymm} className={`${tdBase} font-bold ${rankColorClass(rank)}`}>
-                                        {val === null ? <span className="font-normal text-slate-300 dark:text-slate-700">—</span> : formatMillionShort(val)}
-                                    </td>
-                                );
-                            })}
-                            <td className={`${tdBase} font-black ${rankColorClass(averageRankMap.get(emp.originalName))}`}>
-                                {formatMillionShort(getAverage(emp.originalName))}
-                            </td>
-                            <td className={`px-2 py-1 text-center text-[13px] tabular-nums font-black ${rankColorClass(totalRankMap.get(emp.originalName))}`}>
-                                {formatMillionShort(getTotal(emp.originalName))}
-                            </td>
-                        </tr>
-                    ))}
+                    {viewMode === 'list' ? (
+                        sortedEmployees.map((emp, idx) => renderEmployeeRow(emp, idx + 1))
+                    ) : (
+                        departmentNames.map(deptName => {
+                            const empsInDept = employeesByDept[deptName];
+                            return (
+                                <React.Fragment key={deptName}>
+                                    <tr className="bg-slate-100/90 dark:bg-slate-800/70 font-black text-slate-700 dark:text-slate-300">
+                                        <td colSpan={orderedMonths.length + 3} className="px-2 py-1.5 text-left text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700">
+                                            {deptName} <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">({empsInDept.length} nhân viên)</span>
+                                        </td>
+                                    </tr>
+                                    {empsInDept.map(emp => renderEmployeeRow(emp, globalRankMap.get(emp.originalName) || 1))}
+                                    {departmentNames.length > 1 && (
+                                        <tr className="bg-emerald-50/60 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-400 border-t border-b border-emerald-200 dark:border-emerald-800">
+                                            <td className="px-2 py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">
+                                                Tổng {deptName}
+                                            </td>
+                                            {orderedMonths.map(m => {
+                                                const sum = empsInDept.reduce((s, e) => s + (getMonthValue(e.originalName, m.yyyymm) || 0), 0);
+                                                return (
+                                                    <td key={m.yyyymm} className="px-2 py-1 text-center text-xs tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">
+                                                        {formatMillionShort(sum)}
+                                                    </td>
+                                                );
+                                            })}
+                                            <td className="px-2 py-1 text-center text-xs tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">
+                                                {(() => {
+                                                    const activeMonths = orderedMonths.filter(m => monthHasData(m.yyyymm)).length;
+                                                    const deptTotal = empsInDept.reduce((s, e) => s + getTotal(e.originalName), 0);
+                                                    return formatMillionShort(activeMonths > 0 ? deptTotal / activeMonths : 0);
+                                                })()}
+                                            </td>
+                                            <td className="px-2 py-1 text-center text-xs tabular-nums">
+                                                {formatMillionShort(empsInDept.reduce((s, e) => s + getTotal(e.originalName), 0))}
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })
+                    )}
                 </tbody>
                 <tfoot>
                     <tr className="bg-slate-100 dark:bg-slate-800 font-black">
@@ -253,7 +332,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
                 </tfoot>
             </table>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-2 px-1">
-                * Ô &quot;—&quot;: tháng chưa có dữ liệu. Mỗi cột (tháng/T.Bình/Tổng) tự so hạng riêng: TOP 3 tô xanh, BOT 30% tô đỏ. Đơn vị: triệu đồng.
+                * Ô &quot;—&quot;: tháng chưa có dữ liệu. Cột T.Bình: không tính các tháng có thưởng &lt; 1 triệu vào trung bình. Mỗi cột (tháng/T.Bình/Tổng) tự so hạng riêng: TOP 3 tô xanh, BOT 30% tô đỏ. Đơn vị: triệu đồng.
             </p>
         </div>
     );

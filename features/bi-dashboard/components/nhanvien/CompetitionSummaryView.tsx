@@ -23,6 +23,8 @@ import {
 import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
+import { MedalBadge } from '../shared/Badges';
+import AvatarDisplay from './shared/AvatarDisplay';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
@@ -689,7 +691,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         <th
                                             rowSpan={2}
                                             onClick={() => handleSort('employee')}
-                                            className="sticky left-0 z-30 bg-slate-100 dark:bg-slate-800 px-2 py-[5px] text-center border-l-[3px] border-l-slate-100 dark:border-l-slate-800 border-b border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                            className="sticky left-0 z-30 bg-slate-100 dark:bg-slate-800 px-2 py-[5px] text-center border-l-[3px] border-l-slate-100 dark:border-l-slate-800 border-b border-r border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[170px] align-middle cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>Nhân viên</span>
@@ -804,11 +806,15 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         return (
                                             <tr key={emp.originalName} className={`border-l-[3px] ${stripeClass} ${zebraClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
                                                 <td 
-                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-[3px] font-bold border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[120px]`}
+                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-[3px] font-bold border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[170px]`}
                                                     /* Tên NV là NHÃN, không phải dữ liệu — dùng mực đậm, nhường màu cho con số. */
                                                     style={{ color: 'var(--color-slate-800)' }}
                                                 >
-                                                    {emp.name}
+                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                        <MedalBadge rank={idx + 1} />
+                                                        <AvatarDisplay employeeName={emp.originalName} supermarketName={supermarketName} />
+                                                        <span className="truncate">{emp.name}</span>
+                                                    </div>
                                                 </td>
                                                 {(() => {
                                                     const dat = getEmployeeDat(emp.name);
@@ -883,7 +889,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     })}
                                     {/* TRUNG BÌNH row */}
                                     <tr className="border-l-[3px] border-l-amber-200 dark:border-l-amber-800/60 bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t border-slate-200 dark:border-slate-700">
-                                        <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-r border-slate-100 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
+                                        <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-r border-slate-100 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[170px]">
                                             TRUNG BÌNH
                                         </td>
                                         <td className="px-1 py-1 text-center text-[13px] border-r border-r-slate-100 dark:border-slate-700/50 whitespace-nowrap font-bold text-emerald-700 dark:text-emerald-400 tabular-nums">
@@ -934,7 +940,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                     </tr>
                                     {/* Grand Total — sky accent */}
                                     <tr className="border-l-[3px] border-l-sky-300 dark:border-l-sky-700 bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t border-sky-200 dark:border-sky-800">
-                                         <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-r border-slate-100 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
+                                         <td className="sticky left-0 z-10 bg-sky-50 dark:bg-sky-900/30 px-2 py-[3px] text-left uppercase text-[13px] tracking-wider border-r border-slate-100 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[170px]">
                                              TỔNG
                                          </td>
                                          <td className="px-1 py-1 text-center text-[13px] border-r border-r-slate-100 dark:border-r-slate-700/50 whitespace-nowrap tabular-nums">
