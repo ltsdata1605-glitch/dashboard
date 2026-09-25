@@ -12,6 +12,7 @@ import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './In
 import CompetitionCompareView from './CompetitionCompareView';
 import CompetitionSummaryView, { CompetitionSummaryViewHandle } from './CompetitionSummaryView';
 import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
+import { getDefaultGroupLabel } from '../../utils/dashboardHelpers';
 import { getErrorMessage } from '../../../../utils/dataUtils';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -22,6 +23,7 @@ import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import TimeProgressBar from './shared/TimeProgressBar';
+import { Layers } from 'lucide-react';
 
 import { useCompetitionData } from '../../hooks/useCompetitionData';
 
@@ -104,6 +106,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const summaryViewRefs = useRef<Record<string, CompetitionSummaryViewHandle>>({});
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
+    const [groupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
+    const [canhanGroupingMode, setCanhanGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('competition-view-mode', 'list');
 
     // --- Logic cho Tab TỔNG đa bảng ---
@@ -337,24 +341,30 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 const title = titleElement ? titleElement.innerText : `Nhóm ${i}`;
                 
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
-                const tableEl = card.querySelector('table');
-                const naturalTableWidth = tableEl ? tableEl.scrollWidth : 0;
-                const exportWidth = Math.min(Math.max(naturalTableWidth, 380), 440);
                 const blob = await exportElementAsImage(card, safeName, {
                     mode: 'blob-only', 
                     elementsToHide: ['.export-button-component'],
-                    forcedWidth: exportWidth,
-                    fitAllColumns: true,
                     onCloneReady: (clone: HTMLElement) => {
                         clone.classList.remove('h-full', 'overflow-hidden');
-                        clone.style.width = `${exportWidth}px`;
-                        clone.style.maxWidth = `${exportWidth}px`;
+                        clone.style.width = 'max-content';
+                        clone.style.minWidth = '100%';
+                        clone.style.maxWidth = 'none';
                         clone.style.overflow = 'visible';
+                        clone.style.display = 'inline-flex';
+                        clone.style.flexDirection = 'column';
+
+                        const titleBar = clone.firstElementChild as HTMLElement;
+                        if (titleBar) {
+                            titleBar.style.width = '100%';
+                            titleBar.style.minWidth = '100%';
+                            titleBar.style.boxSizing = 'border-box';
+                        }
 
                         clone.querySelectorAll('colgroup').forEach(cg => cg.remove());
                         const table = clone.querySelector('table');
                         if (table) {
                             table.style.width = '100%';
+                            table.style.minWidth = '100%';
                             table.style.tableLayout = 'auto';
                         }
                         clone.querySelectorAll('tr').forEach(tr => {
@@ -457,6 +467,44 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides).toUpperCase(), checked: selectedCompetitions.has(c.originalTitle) }))
         }));
 
+    const canhanFilterGroups = useMemo(() => {
+        if (canhanGroupingMode === 'default') {
+            return (Object.entries(allCompetitionsByCriterion || {}) as [string, { headers?: CompetitionHeader[] }][])
+                .filter(([, data]) => Boolean(data && data.headers))
+                .map(([criterion, data]) => ({
+                    key: criterion,
+                    label: `Tiêu chí ${criterion}`,
+                    options: (data?.headers || [])
+                        .filter(c => shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase()))
+                        .map(c => ({ key: c.originalTitle, label: shortenName(c.originalTitle, nameOverrides).toUpperCase(), checked: selectedCompetitions.has(c.originalTitle) }))
+                }));
+        } else {
+            const groupMap = new Map<string, { key: string; label: string; checked: boolean }[]>();
+            (Object.entries(allCompetitionsByCriterion || {}) as [string, { headers?: CompetitionHeader[] }][])
+                .forEach(([criterion, data]) => {
+                    (data?.headers || []).forEach(c => {
+                        const defaultGroup = getDefaultGroupLabel(criterion) || criterion;
+                        const customGroup = (groupOverrides[c.originalTitle] && groupOverrides[c.originalTitle].trim())
+                            ? groupOverrides[c.originalTitle].trim()
+                            : defaultGroup;
+                        if (!groupMap.has(customGroup)) groupMap.set(customGroup, []);
+                        if (shortenName(c.originalTitle, nameOverrides).toLowerCase().includes(filterSearch.toLowerCase())) {
+                            groupMap.get(customGroup)!.push({
+                                key: c.originalTitle,
+                                label: shortenName(c.originalTitle, nameOverrides).toUpperCase(),
+                                checked: selectedCompetitions.has(c.originalTitle)
+                            });
+                        }
+                    });
+                });
+            return Array.from(groupMap.entries()).map(([groupName, options]) => ({
+                key: groupName,
+                label: `Nhóm ${groupName}`,
+                options
+            }));
+        }
+    }, [canhanGroupingMode, allCompetitionsByCriterion, groupOverrides, nameOverrides, filterSearch, selectedCompetitions]);
+
     // Tab "Tổng" — luôn hiển thị TẤT CẢ nhóm hàng thi đua hiện có (không cho tự chọn cột,
     // khác với tab "Tuỳ chỉnh" nơi người dùng tự chọn/lưu nhiều bảng riêng).
     const allCompetitionTitles = useMemo(() => {
@@ -532,79 +580,75 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 </div>
             </div>
 
-            {/* 2. Thanh Tab chuyển đổi các góc nhìn thi đua */}
-            <div className="flex flex-wrap justify-between items-center px-4 py-2 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
-                <div className="flex gap-2 items-center flex-wrap">
-                    {/* Segmented Tabs chính */}
-                    <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 gap-0.5 shadow-2xs">
-                        {([['tatca', 'Tổng'], ['nhom', 'Nhóm'], ['tong', 'Tuỳ chỉnh'], ['canhan', 'Cá nhân'], ['sosanh', 'So sánh']] as const).map(([key, label]) => {
-                            const isActive = activeVersionName === null && activeCompetitionTab === key;
-                            return (
+            {/* 2. Thanh Tab chuyển đổi các góc nhìn thi đua chuẩn như tab trên */}
+            <div className="flex flex-wrap justify-between items-center px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700/60 no-print gap-2">
+                <div className="flex items-center overflow-x-auto no-scrollbar gap-1 sm:gap-2">
+                    {([['tatca', 'Tổng'], ['nhom', 'Nhóm'], ['tong', 'Tuỳ chỉnh'], ['canhan', 'Cá nhân'], ['sosanh', 'So sánh']] as const).map(([key, label]) => {
+                        const isActive = activeVersionName === null && activeCompetitionTab === key;
+                        return (
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                key={key}
+                                onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }}
+                                className={`relative flex items-center gap-1.5 px-3 sm:px-3.5 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
+                                    isActive
+                                        ? 'text-sky-700 dark:text-sky-400 font-bold'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <span>{label}</span>
+                                {isActive && (
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 dark:bg-sky-400 rounded-full" />
+                                )}
+                            </Button>
+                        );
+                    })}
+
+                    {/* Các phiên bản bộ lọc đã lưu (nếu có) */}
+                    {versions.filter(v => v && typeof v === 'object' && v.name).map(version => {
+                        const isActive = activeVersionName === version.name;
+                        return (
+                            <div
+                                key={version.name}
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => onVersionTabClick(version)}
+                                onKeyDown={onActivateKey(() => onVersionTabClick(version))}
+                                className={`relative flex items-center gap-1.5 pl-3 pr-6 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
+                                    isActive
+                                        ? 'text-sky-700 dark:text-sky-400 font-bold'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <span>{version.name}</span>
+                                {isActive && hasUnsavedVersionChanges && (
+                                    <span title="Bộ lọc đã đổi, chưa lưu lại" className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                                )}
                                 <Button
                                     variant="unstyled"
                                     size="none"
-                                    key={key}
-                                    onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }}
-                                    className={`relative flex items-center justify-center h-7 px-3 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                                        isActive
-                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs ring-1 ring-slate-900/5 dark:ring-white/10 font-extrabold'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/40'
-                                    }`}
+                                    onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }}
+                                    className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-60 hover:opacity-100 transition-all"
                                 >
-                                    {label}
+                                    <XIcon className="h-3 w-3" />
                                 </Button>
-                            );
-                        })}
-                    </div>
-
-                    {/* Các phiên bản bộ lọc đã lưu (nếu có) */}
-                    {versions.filter(v => v && typeof v === 'object' && v.name).length > 0 && (
-                        <>
-                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                            <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 gap-0.5 shadow-2xs">
-                                {versions.filter(v => v && typeof v === 'object' && v.name).map(version => {
-                                    const isActive = activeVersionName === version.name;
-                                    return (
-                                        <div
-                                            key={version.name}
-                                            role="button"
-                                            tabIndex={0}
-                                            onClick={() => onVersionTabClick(version)}
-                                            onKeyDown={onActivateKey(() => onVersionTabClick(version))}
-                                            className={`group relative flex items-center h-7 pl-2.5 pr-5 text-xs font-bold rounded-lg cursor-pointer transition-all ${
-                                                isActive
-                                                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs ring-1 ring-slate-900/5 dark:ring-white/10 font-extrabold'
-                                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/40'
-                                            }`}
-                                        >
-                                            <span>{version.name}</span>
-                                            {isActive && hasUnsavedVersionChanges && (
-                                                <span title="Bộ lọc đã đổi, chưa lưu lại" className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0 ml-1" />
-                                            )}
-                                            <Button
-                                                variant="unstyled"
-                                                size="none"
-                                                onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }}
-                                                className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-60 hover:opacity-100 transition-all"
-                                            >
-                                                <XIcon className="h-3 w-3" />
-                                            </Button>
-                                        </div>
-                                    );
-                                })}
+                                {isActive && (
+                                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 dark:bg-sky-400 rounded-full" />
+                                )}
                             </div>
-                        </>
-                    )}
+                        );
+                    })}
 
                     {hasUnsavedVersionChanges && (
-                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="h-7 px-2.5 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 flex items-center shadow-xs transition-colors">Cập nhật</Button>
+                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="h-6 px-2 bg-amber-500 text-white rounded text-[11px] font-bold hover:bg-amber-600 flex items-center shadow-xs transition-colors shrink-0">Cập nhật</Button>
                     )}
 
                     {activeVersionName === 'new' ? (
-                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-0.5 rounded-xl border border-sky-300 dark:border-sky-600 shadow-xs">
-                            <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên bản lưu..."} className="w-28 text-xs h-7 border-0 focus:ring-0" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
-                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-7 px-2.5 bg-sky-600 text-white rounded-lg text-xs font-bold hover:bg-sky-700 disabled:bg-slate-300 flex items-center transition-colors" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
-                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><XIcon className="h-3 w-3" /></Button>
+                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-sky-300 dark:border-sky-600 shadow-xs shrink-0 my-1">
+                            <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên bản lưu..."} className="w-28 text-xs h-6 border-0 focus:ring-0" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
+                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-6 px-2 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-300 flex items-center transition-colors" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
+                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ) : (
                         <Button
@@ -613,7 +657,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             onClick={onStartNewVersion}
                             disabled={!supermarket}
                             title="Tạo bản lưu mới từ các nhóm đang chọn"
-                            className="p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer"
+                            className="p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer shrink-0"
                         >
                             <PlusIcon className="h-4 w-4" />
                         </Button>
@@ -642,6 +686,47 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                         <>
+                            {/* Nút chuyển đổi Chế độ xem: Mặc định vs Tuỳ chỉnh */}
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                onClick={() => setCanhanGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold border transition-all cursor-pointer rounded-none ${
+                                    canhanGroupingMode === 'configured'
+                                        ? 'border-sky-300 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:border-sky-700 dark:text-sky-300'
+                                        : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
+                                }`}
+                                title={
+                                    canhanGroupingMode === 'configured'
+                                        ? 'Chế độ xem: Tuỳ chỉnh (Click để chuyển về Mặc định SLLK/DTLK/DTQĐ)'
+                                        : 'Chế độ xem: Mặc định (Click để chuyển sang Tuỳ chỉnh theo nhóm target)'
+                                }
+                                aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
+                            >
+                                <Layers className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />
+                                <span>{canhanGroupingMode === 'configured' ? 'Tuỳ chỉnh' : 'Mặc định'}</span>
+                            </Button>
+
+                            {/* Lọc nhóm — MultiSelectDropdown */}
+                            <MultiSelectDropdown
+                                icon={<FilterIcon className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />}
+                                triggerLabel="Lọc nhóm"
+                                count={isFiltered ? activeFilterCount : undefined}
+                                allLabel="Chọn tất cả"
+                                allChecked={activeFilterCount === totalFilterCount}
+                                onToggleAll={handleToggleAllCompetitions}
+                                groups={canhanFilterGroups}
+                                onToggleOption={handleToggleCompetition}
+                                searchValue={filterSearch}
+                                onSearchChange={setFilterSearch}
+                                searchPlaceholder="Tìm nhóm thi đua..."
+                                panelWidthClass="w-80"
+                                maxHeightClass="max-h-[80vh]"
+                                usePortal
+                            />
+
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+
                             <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="h-8 w-8 text-slate-400">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
@@ -758,6 +843,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 installmentRows={installmentRows}
                                 banKemRows={banKemRows}
                                 bonusData={bonusData}
+                                groupingMode={canhanGroupingMode}
+                                setGroupingMode={setCanhanGroupingMode}
                             />
                         )}
                         {activeCompetitionTab === 'tatca' && (
@@ -780,22 +867,28 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 {Array.isArray(summaryTables) && summaryTables.length > 0 && (
                                     <div className="flex flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 gap-3 no-print">
                                         {/* Left: Summary Table Tabs */}
-                                        <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 gap-0.5 shadow-2xs">
-                                            {summaryTables.map((tableConfig) => (
-                                                <Button
-                                                    variant="unstyled" size="none"
-                                                    key={tableConfig.id}
-                                                    type="button"
-                                                    onClick={() => setActiveSummaryTableId(tableConfig.id)}
-                                                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
-                                                        activeTableId === tableConfig.id
-                                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs ring-1 ring-slate-900/5 dark:ring-white/10 font-extrabold'
-                                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/40'
-                                                    }`}
-                                                >
-                                                    {tableConfig.name}
-                                                </Button>
-                                            ))}
+                                        <div className="flex items-center overflow-x-auto no-scrollbar gap-1 sm:gap-2">
+                                            {summaryTables.map((tableConfig) => {
+                                                const isActive = activeTableId === tableConfig.id;
+                                                return (
+                                                    <Button
+                                                        variant="unstyled" size="none"
+                                                        key={tableConfig.id}
+                                                        type="button"
+                                                        onClick={() => setActiveSummaryTableId(tableConfig.id)}
+                                                        className={`relative flex items-center px-3 sm:px-3.5 h-9 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
+                                                            isActive
+                                                                ? 'text-sky-700 dark:text-sky-400 font-bold'
+                                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                                        }`}
+                                                    >
+                                                        <span>{tableConfig.name}</span>
+                                                        {isActive && (
+                                                            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 dark:bg-sky-400 rounded-full" />
+                                                        )}
+                                                    </Button>
+                                                );
+                                            })}
                                         </div>
 
                                         {/* Right: Add Button */}

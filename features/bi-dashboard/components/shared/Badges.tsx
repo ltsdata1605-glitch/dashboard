@@ -1,6 +1,6 @@
 export const MedalBadge: React.FC<{ rank?: number; className?: string }> = ({ rank, className }) => {
     if (!rank) return <div className={className || "w-7"} />;
-    const base = className || "w-7 text-center text-[13px] font-black tabular-nums";
+    const base = className || "w-7 text-center text-[13px] font-normal tabular-nums";
     if (rank === 1) return <span className={`${base} text-amber-500 dark:text-amber-400`} title="TOP 1">#1</span>;
     if (rank === 2) return <span className={`${base} text-slate-500 dark:text-slate-400`} title="TOP 2">#2</span>;
     if (rank === 3) return <span className={`${base} text-amber-700 dark:text-amber-500`} title="TOP 3">#3</span>;

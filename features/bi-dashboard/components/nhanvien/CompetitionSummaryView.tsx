@@ -510,10 +510,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
                     <Button type="button" variant="unstyled" size="none" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="p-0 text-emerald-700">
-                        <CheckCircleIcon className="h-6 w-6" />
+                        <CheckCircleIcon className="h-4 w-4" />
                     </Button>
                     <Button type="button" variant="unstyled" size="none" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="p-0 text-slate-400">
-                        <XIcon className="h-6 w-6" />
+                        <XIcon className="h-4 w-4" />
                     </Button>
                 </div>
             ) : (
@@ -521,7 +521,6 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     {tableName}{activeGroupFilter ? ` - ${activeGroupFilter}` : ''} - ĐẾN {getYesterdayDateString()}
                 </span>
             )}
-            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold no-print">Dữ liệu thi đua được tổng hợp theo thời gian thực từ BI.</span>
         </div>
     );
 
@@ -532,10 +531,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                        className="h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                         title="Chọn cột hiển thị"
                     >
-                        <FilterIcon className="h-5 w-5" />
+                        <FilterIcon className="h-4 w-4" />
                         {selectedTitles.length > 0 && (
                             <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[11px] rounded-full w-4 h-4 flex items-center justify-center">
                                 {selectedTitles.length}
@@ -579,10 +578,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsEditingName(true)}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    className="h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     title="Đổi tên bảng"
                 >
-                    <PencilIcon className="h-5 w-5" />
+                    <PencilIcon className="h-4 w-4" />
                 </Button>
             )}
 
@@ -591,10 +590,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
+                    className="h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
                     title="Xóa bảng"
                 >
-                    <TrashIcon className="h-5 w-5" />
+                    <TrashIcon className="h-4 w-4" />
                 </Button>
             )}
 
@@ -632,7 +631,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
+                    className="h-8 w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
                 >
                     {isExportingByGroup ? (
                         <SpinnerIcon className="h-4 w-4 animate-spin text-sky-700" />
@@ -647,15 +646,15 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`h-8 w-8 p-1.5 rounded-lg flex items-center justify-center transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
-                {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
+                {showPercent ? <HashIcon className="h-4 w-4" /> : <PercentIcon className="h-4 w-4" />}
             </Button>
 
             <ExportButton
                 onExportPNG={async () => { await handleExportSummaryPNG(); }}
-                icon={<Columns3 className="h-5 w-5" />}
+                icon={<Columns3 className="h-4 w-4" />}
                 title="Xuất ảnh rút gọn (chỉ Nhân viên, %HT 100%, Hiệu quả)"
                 ariaLabel="Xuất ảnh rút gọn"
             />
@@ -678,11 +677,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 ) : (
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div
-                            /* `sticky` của <thead> tính theo VÙNG CUỘN gần nhất, mà container này đã
-                               là vùng cuộn (overflow-x:auto ⇒ trình duyệt tự đặt overflow-y:auto).
-                               Không giới hạn chiều cao thì nó không cuộn dọc ⇒ thead KHÔNG BAO GIỜ
-                               dính. Cho max-height để đây thành vùng cuộn dọc thật. */
-                            className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-13rem)] border border-slate-200 dark:border-slate-700"
+                            className="overflow-x-auto overflow-y-hidden border border-slate-200 dark:border-slate-700"
                             style={{ WebkitOverflowScrolling: 'touch' }}
                         >
                             <table className="min-w-max w-full table-auto border-collapse">

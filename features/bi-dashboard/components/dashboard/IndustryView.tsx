@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
-import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, shortenSupermarketName } from '../../utils/dashboardHelpers';
+import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, shortenSupermarketName, formatIndustryDisplayName } from '../../utils/dashboardHelpers';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
 import { renderHeaderText } from './SafeHeaderText';
@@ -12,6 +12,9 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { Input } from '../../../../components/shared/ui/Input';
 import { GROUP_TONE_BG, GROUP_TONE_TEXT, GROUP_EDGE } from '../../utils/tableTokens';
+import { IndustryKpiGrid } from './industryKpi';
+
+export { formatIndustryDisplayName };
 
 type SortDirection = 'asc' | 'desc' | null;
 interface SortConfig {
@@ -26,26 +29,6 @@ interface IndustryViewProps {
     activeSupermarket?: string;
     onExport?: () => Promise<void>;
 }
-
-export const formatIndustryDisplayName = (text: string): string => {
-    if (!text) return '';
-    let str = text.replace(/^NNH\s+/i, '').trim();
-    // Loại bỏ số mã ở đầu (ví dụ: "464 - giao dịch airtime" -> "giao dịch airtime")
-    str = str.replace(/^\d+\s*-\s*/, '').trim();
-    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-
-    return str
-        .replace(/\bDmx\b/gi, 'DMX')
-        .replace(/\bIt\b/gi, 'IT')
-        .replace(/\bBi\b/gi, 'BI')
-        .replace(/\bDv\b/gi, 'DV')
-        .replace(/\bVas\b/gi, 'VAS')
-        .replace(/\bImei\b/gi, 'IMEI')
-        .replace(/\bPc\b/gi, 'PC')
-        .replace(/\bIp\b/gi, 'IP')
-        .replace(/\bUsb\b/gi, 'USB')
-        .replace(/\bLed\b/gi, 'LED');
-};
 
 /**
 
@@ -642,6 +625,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                             {/* ─── DESKTOP TABLE VIEW ─── */}
                             <div className="overflow-hidden px-4 pb-4">
+                                <IndustryKpiGrid
+                                    tree={isRealtime ? realtimeData?.tree : luykeData?.tree}
+                                    headers={processedTable.headers}
+                                    isRealtime={isRealtime}
+                                />
                                 <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
                                 <table className="w-full border-collapse compact-export-table">
                                     <thead>

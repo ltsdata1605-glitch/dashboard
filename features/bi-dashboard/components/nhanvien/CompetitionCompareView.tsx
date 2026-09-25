@@ -100,7 +100,7 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
                 <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
-                <CameraIcon className="w-5 h-5 drop-shadow-md" />
+                <CameraIcon className="w-4 h-4 drop-shadow-md" />
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </div>

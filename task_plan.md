@@ -1,39 +1,45 @@
-# Task Plan: Tính Năng Chọn Ngày Hết Hạn Mã PMH & Tự Động Xoá Khỏi Kho
+# Task Plan: Thẻ KPI các Ngành hàng (Industry & Sub-Industry KPI Cards)
 
-## 1. Mục tiêu (Goals)
-- Bổ sung bộ chọn **Ngày hết hạn (Expiry Date)** tại góc dưới bên trái của modal "Nạp Mã PMH Vào Kho" (`CouponImportModal.tsx`).
-- Tự động nhận diện ngày trong nội dung dán (ví dụ `Ngày 18/09/2026` ... `Ngày 27/09/2026`) để gợi ý sẵn ngày hết hạn mới nhất cho người dùng.
-- **Tự động xoá khỏi kho**: Nếu qua ngày hết hạn (ví dụ chọn ngày `27/09/2026` thì bắt đầu từ 00:00 ngày `28/09/2026` trở đi), toàn bộ mã chưa dùng (`UNUSED`) của sản phẩm sẽ tự động xoá hoàn toàn khỏi kho PMH.
-- **Thông báo hết hạn khi người dùng xin mã**: Nếu người dùng gửi cú pháp xin mã cho sản phẩm mà mã đã bị xoá do hết hạn, Bot LINE sẽ thông báo rõ ràng cho người dùng là mã đã hết hạn dùng (kèm ngày hết hạn cụ thể), thay vì thông báo "Hết mã" hoặc không tìm thấy.
-- Hiển thị thông tin hạn sử dụng trực quan trong bảng quản lý kho PMH (`CouponManagerTab.tsx`).
+## 1. Mục tiêu
+Tạo lưới các thẻ KPI cho Ngành hàng & Nhóm hàng trong mục "CHI TIẾT NGÀNH HÀNG":
+- Có nút `+` để người dùng thêm thẻ KPI (cho phép chọn Ngành hàng hoặc Nhóm hàng).
+- Thiết kế thẻ KPI nhỏ gọn, responsive Grid với 6 cột trên 1 hàng (trên màn hình lớn).
+- Danh sách 12 thẻ mặc định:
+  1. Smartphone
+  2. Laptop
+  3. Iphone
+  4. Đồng hồ thời trang
+  5. Sim data
+  6. Pin sạc dự phòng
+  7. Camera
+  8. Tai nghe
+  9. Tủ lạnh, đông, mát
+  10. Tivi
+  11. Máy giặt, sấy
+  12. Máy lạnh & máy nước nóng
+- Cho phép xóa thẻ (nút xóa/remove), khôi phục mặc định.
+- Lưu danh sách thẻ đã chọn vào IndexedDB để bảo toàn cấu hình khi tải lại trang.
 
----
+## 2. Kiến trúc & Phân chia Component (Feature-Sliced Design)
+- `features/bi-dashboard/services/industryKpiCalc.ts`:
+  - Trích xuất số liệu cho một thẻ (SL, DT Thực, DTQĐ, %TT, %HT, Trả góp, % Trả góp) từ cây ngành hàng (`IndustryTreeNode[]`) hoặc bảng phẳng.
+  - Chuẩn hoá và đối soát tên (bỏ mã số, case-insensitive, không dấu).
+- `features/bi-dashboard/services/industryKpiCalc.test.ts`:
+  - Unit tests kiểm tra tính chính xác của việc trích xuất số liệu cho cả 12 thẻ mặc định và các ngành/nhóm hàng tùy chọn.
+- `features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiCard.tsx`:
+  - Component hiển thị thẻ KPI nhỏ gọn, sắc sảo.
+- `features/bi-dashboard/components/dashboard/industryKpi/AddIndustryKpiModal.tsx`:
+  - Modal chọn thêm Ngành hàng hoặc Nhóm hàng với ô tìm kiếm tiện lợi.
+- `features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiGrid.tsx`:
+  - Grid 6 cột hiển thị các thẻ KPI kèm nút `+` thêm thẻ và menu tuỳ chỉnh.
+- `features/bi-dashboard/components/dashboard/industryKpi/index.ts`:
+  - Public export API.
+- Tích hợp vào `IndustryView.tsx` phía trên bảng dữ liệu.
 
-## 2. Các giai đoạn thực hiện (Phases)
-
-### Phase 1: Chuẩn hoá Type & Dữ liệu (Hoàn thành)
-- [x] Cập nhật `Coupon` và `ParsedImportItem` với trường `expiryDate?: string` trong `lineBot.types.ts`.
-- [x] Định nghĩa interface `ExpiredProductRecord`.
-
-### Phase 2: Nâng cấp Parser & Trích xuất Ngày (Hoàn thành)
-- [x] Bổ sung hàm bóc tách ngày `extractLatestDateFromText` và cập nhật `parsePastedCouponList` trong `couponParser.ts`.
-- [x] Bổ sung helper `isDateExpired(expiryDate, compareDate)`.
-- [x] Viết test trong `tests/unit/coupon-parser.test.ts`.
-
-### Phase 3: Nâng cấp Giao diện Nạp Mã & Quản lý Kho (Hoàn thành)
-- [x] Thêm input chọn ngày hết hạn ở góc dưới bên trái footer `CouponImportModal.tsx`.
-- [x] Tự động gợi ý ngày lớn nhất từ danh sách dán vào ô chọn ngày.
-- [x] Cập nhật `CouponManagerTab.tsx` thêm cột "Hạn Dùng" với các trạng thái màu sắc phù hợp.
-
-### Phase 4: Nâng cấp Service & Tự Động Xoá Khỏi Kho (Hoàn thành)
-- [x] Cập nhật `lineBotFirestoreService.addCouponsBatch` để lưu `expiryDate`.
-- [x] Bổ sung hàm `cleanupExpiredCoupons(userId)` tự động xoá mã hết hạn và lưu vết vào `expired_products`.
-
-### Phase 5: Nâng cấp Backend Bot LINE Webhook & Thông Báo Hết Hạn (Hoàn thành)
-- [x] Thêm hàm dọn dẹp mã hết hạn trong `functions/src/lineBotWebhook.ts`.
-- [x] Kiểm tra `expired_products` khi người dùng xin mã để trả về thông báo mã đã hết hạn dùng.
-
-### Phase 6: Kiểm thử, Build & Triển khai (Hoàn thành)
-- [x] Chạy targeted unit test: `npx vitest run tests/unit/coupon-parser.test.ts` (27/27 passed).
-- [x] Chạy `npx tsc --noEmit` (0 lỗi).
-- [x] Chạy `npm --prefix functions run build` (0 lỗi).
+## 3. Các bước thực hiện
+- [x] Bước 1: Tạo `industryKpiCalc.ts` và viết unit test `industryKpiCalc.test.ts`.
+- [x] Bước 2: Chạy unit test để kiểm tra logic tính toán dữ liệu thẻ KPI.
+- [x] Bước 3: Tạo `IndustryKpiCard.tsx`, `AddIndustryKpiModal.tsx`, `IndustryKpiGrid.tsx`, và `index.ts`.
+- [x] Bước 4: Tích hợp `IndustryKpiGrid` vào `IndustryView.tsx`.
+- [x] Bước 5: Kiểm tra TypeScript `npx tsc --noEmit` và chạy targeted test suite (44/44 tests passed).
+- [x] Bước 6: Đánh giá visual và báo cáo kết quả kèm timestamp.

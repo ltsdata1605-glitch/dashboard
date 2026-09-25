@@ -160,10 +160,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md sm:rounded-lg shrink-0"
+                                variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg shrink-0"
                                 title="Xuất tất cả ảnh"
                             >
-                                {isBatchExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <ImagesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
 
                             {/* Single export */}
@@ -171,10 +171,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md sm:rounded-lg shrink-0"
+                                    variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg shrink-0"
                                     title="Xuất ảnh"
                                 >
-                                    {isExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <CameraIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
+                                    {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
                                 </Button>
                             )}
                         </div>

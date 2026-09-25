@@ -198,7 +198,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     }`}
                                     title={tab.label || tab.id}
                                 >
-                                    <Icon name={tab.icon} size={4.5} />
+                                    <Icon name={tab.icon} size={4} />
                                 </Button>
                             );
                         })}
@@ -221,7 +221,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
                                     title={tab.label}
                                 >
-                                    <Icon name={tab.icon} size={4.5} />
+                                    <Icon name={tab.icon} size={4} />
                                     <span>{tab.label}</span>
                                 </Button>
                             );

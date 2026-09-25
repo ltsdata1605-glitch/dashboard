@@ -37,6 +37,26 @@ export const getDefaultGroupLabel = (metric: string): string =>
 import { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../../utils/dataUtils';
 export { roundUp, parseNumber, shortenName, shortenSupermarketName };
 
+export const formatIndustryDisplayName = (text: string): string => {
+    if (!text) return '';
+    let str = text.replace(/^NNH\s+/i, '').trim();
+    // Loại bỏ số mã ở đầu (ví dụ: "464 - giao dịch airtime" -> "giao dịch airtime")
+    str = str.replace(/^\d+\s*-\s*/, '').trim();
+    str = str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+    return str
+        .replace(/\bDmx\b/gi, 'DMX')
+        .replace(/\bIt\b/gi, 'IT')
+        .replace(/\bBi\b/gi, 'BI')
+        .replace(/\bDv\b/gi, 'DV')
+        .replace(/\bVas\b/gi, 'VAS')
+        .replace(/\bImei\b/gi, 'IMEI')
+        .replace(/\bPc\b/gi, 'PC')
+        .replace(/\bIp\b/gi, 'IP')
+        .replace(/\bUsb\b/gi, 'USB')
+        .replace(/\bLed\b/gi, 'LED');
+};
+
 // --- TLPVTC & BILL/KHÁCH EXTRACTORS ---
 
 /**

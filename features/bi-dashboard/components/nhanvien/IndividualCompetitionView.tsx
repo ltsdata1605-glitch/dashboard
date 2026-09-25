@@ -1,5 +1,6 @@
 
 import React, { useRef, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { createPortal } from 'react-dom';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import toast from 'react-hot-toast';
 import { FilterIcon, ChevronDownIcon, CameraIcon } from '../Icons';
@@ -55,6 +56,8 @@ interface IndividualCompetitionViewProps {
     installmentRows?: InstallmentRow[];
     banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
+    groupingMode?: 'default' | 'configured';
+    setGroupingMode?: React.Dispatch<React.SetStateAction<'default' | 'configured'>>;
 }
 
 export interface IndividualCompetitionViewHandle {
@@ -132,13 +135,92 @@ const EmployeeProfileCard: React.FC<{
     banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
     groupedPerformanceData: GroupedPerformanceData;
-}> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
+    allEmployees?: Employee[];
+    onSelectIndividual?: (emp: Employee) => void;
+}> = ({
+    selectedEmployee,
+    supermarketName,
+    revenueRows,
+    installmentRows,
+    banKemRows,
+    bonusData,
+    groupedPerformanceData,
+    allEmployees,
+    onSelectIndividual
+}) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const safeName = shortenSupermarketName(supermarketName || '');
     const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
     const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 45);
     const targetQuyDoi = storedQuyDoi ?? 40;
     const targetTraGop = storedTraGop ?? 45;
+
+    // --- State chọn nhân viên khi click vào tên ---
+    const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
+    const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
+    const employeeSelectorRef = useRef<HTMLDivElement>(null);
+    const employeePanelRef = useRef<HTMLDivElement>(null);
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!isEmployeeSelectorOpen) return;
+        const updatePosition = () => {
+            if (!employeeSelectorRef.current) return;
+            const rect = employeeSelectorRef.current.getBoundingClientRect();
+            const panelWidth = Math.min(320, window.innerWidth - 32);
+            let left = rect.left;
+            if (left + panelWidth > window.innerWidth - 16) {
+                left = window.innerWidth - panelWidth - 16;
+            }
+            if (left < 16) left = 16;
+
+            setDropdownStyle({
+                position: 'fixed',
+                top: rect.bottom + 6,
+                left: left,
+                width: panelWidth,
+                zIndex: 999999,
+            });
+        };
+        updatePosition();
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('resize', updatePosition);
+        return () => {
+            window.removeEventListener('scroll', updatePosition, true);
+            window.removeEventListener('resize', updatePosition);
+        };
+    }, [isEmployeeSelectorOpen]);
+
+    useEffect(() => {
+        if (!isEmployeeSelectorOpen) return;
+        const handleClick = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (
+                employeeSelectorRef.current && !employeeSelectorRef.current.contains(target) &&
+                employeePanelRef.current && !employeePanelRef.current.contains(target)
+            ) {
+                setIsEmployeeSelectorOpen(false);
+            }
+        };
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsEmployeeSelectorOpen(false);
+        };
+        document.addEventListener('mousedown', handleClick);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handleClick);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isEmployeeSelectorOpen]);
+
+    const filteredEmployees = useMemo(() => {
+        if (!allEmployees) return [];
+        if (!employeeSearchTerm.trim()) return allEmployees;
+        const term = employeeSearchTerm.toLowerCase().trim();
+        return allEmployees.filter(emp => emp.name.toLowerCase().includes(term));
+    }, [allEmployees, employeeSearchTerm]);
 
     const { avatarSrc, uploadAvatar } = useEmployeeAvatar({
         employeeName: selectedEmployee.name,
@@ -217,13 +299,73 @@ const EmployeeProfileCard: React.FC<{
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white no-print">
-                            <CameraIcon className="w-6 h-6 drop-shadow-md" />
+                            <CameraIcon className="w-4 h-4 drop-shadow-md" />
                             <span className="text-[11px] font-bold mt-1 drop-shadow-md uppercase tracking-wider">Đổi ảnh</span>
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-black text-white uppercase truncate leading-tight drop-shadow-sm">{selectedEmployee.name}</h3>
+                        {/* Tên nhân viên: Bấm vào để chọn nhân viên */}
+                        <div className="relative inline-block" ref={employeeSelectorRef}>
+                            <button
+                                type="button"
+                                onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)}
+                                className="group/name inline-flex items-center gap-2 text-left text-lg sm:text-xl font-black text-white uppercase truncate leading-tight drop-shadow-sm hover:bg-white/20 px-2 py-1 -ml-2 rounded-sm transition-all cursor-pointer ring-0 hover:ring-1 hover:ring-white/40"
+                                title="Bấm vào tên để chọn nhân viên khác"
+                            >
+                                <span className="truncate">{selectedEmployee.name}</span>
+                                <ChevronDownIcon className={`w-4 h-4 text-white/80 group-hover/name:text-white transition-transform shrink-0 ${isEmployeeSelectorOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {isEmployeeSelectorOpen && createPortal(
+                                <div
+                                    ref={employeePanelRef}
+                                    style={dropdownStyle}
+                                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-none overflow-hidden flex flex-col max-h-80 text-slate-800 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150"
+                                >
+                                    <div className="p-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 sticky top-0">
+                                        <Input
+                                            ref={searchInputRef}
+                                            type="text"
+                                            value={employeeSearchTerm}
+                                            onChange={(e) => setEmployeeSearchTerm(e.target.value)}
+                                            placeholder="Tìm nhân viên..."
+                                            leftIcon="search"
+                                            className="text-xs"
+                                        />
+                                    </div>
+                                    <div className="overflow-y-auto flex-1 p-1">
+                                        {filteredEmployees.length > 0 ? (
+                                            filteredEmployees.map(emp => (
+                                                <button
+                                                    type="button"
+                                                    key={emp.originalName}
+                                                    onClick={() => {
+                                                        onSelectIndividual?.(emp);
+                                                        setIsEmployeeSelectorOpen(false);
+                                                        setEmployeeSearchTerm('');
+                                                    }}
+                                                    className={`w-full text-left px-2.5 py-1.5 text-xs font-semibold hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-700 dark:hover:text-sky-300 transition-colors flex items-center justify-between rounded-none cursor-pointer ${
+                                                        selectedEmployee.originalName === emp.originalName
+                                                            ? 'bg-sky-100/70 dark:bg-sky-900/40 text-sky-800 dark:text-sky-200 font-bold'
+                                                            : 'text-slate-700 dark:text-slate-300'
+                                                    }`}
+                                                >
+                                                    <span className="truncate">{emp.name}</span>
+                                                    {emp.department && (
+                                                        <span className="text-[10px] text-slate-400 font-normal ml-1 shrink-0">{emp.department}</span>
+                                                    )}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <div className="p-3 text-center text-xs text-slate-400">Không tìm thấy</div>
+                                        )}
+                                    </div>
+                                </div>,
+                                document.body
+                            )}
+                        </div>
+
                         <p className="text-[11px] text-white/80 font-medium mt-0.5 flex items-center gap-1.5 flex-wrap">
                             <span>{selectedEmployee.department}</span>
                             <span className="text-white/40">·</span>
@@ -318,7 +460,9 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     revenueRows,
     installmentRows,
     banKemRows,
-    bonusData
+    bonusData,
+    groupingMode: propGroupingMode,
+    setGroupingMode: propSetGroupingMode
 }, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining'; direction: 'asc' | 'desc' } | null>(null);
@@ -337,24 +481,13 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
     const [isBatchExporting, setIsBatchExporting] = useState(false);
     const [exportProgress, setExportProgress] = useState<{current: number; total: number} | null>(null);
-    const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
-    const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
-    const employeeSelectorRef = useRef<HTMLDivElement>(null);
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [groupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
     const [customOrder] = useIndexedDBState<Record<string, string[]>>('competition-custom-order', {});
-    const [groupingMode, setGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (employeeSelectorRef.current && !employeeSelectorRef.current.contains(event.target as Node)) {
-                setIsEmployeeSelectorOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    const [localGroupingMode, setLocalGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
+    const groupingMode = propGroupingMode ?? localGroupingMode;
+    const setGroupingMode = propSetGroupingMode ?? setLocalGroupingMode;
 
     useImperativeHandle(ref, () => ({
         handleExportPNG,
@@ -535,10 +668,6 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
         });
     };
 
-    const filteredEmployees = useMemo(() => {
-        if (!employeeSearchTerm) return allEmployees;
-        return allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeSearchTerm.toLowerCase()));
-    }, [allEmployees, employeeSearchTerm]);
 
     // Lọc theo tên HIỂN THỊ (đã áp dụng nameOverrides), không phải originalTitle thô — nếu
     // không, gõ đúng tên đã đổi (VD "VIEON") sẽ không khớp được với tên gốc chưa đổi.
@@ -595,72 +724,6 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm p-4 sm:p-6 mb-8">
-                <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar relative z-50">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {/* Nút chuyển đổi Chế độ xem: Mặc định vs Tuỳ chỉnh (giống Tổng quan > Thi đua) */}
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                            className={`flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-bold border transition-all cursor-pointer rounded-none ${
-                                groupingMode === 'configured'
-                                    ? 'border-sky-300 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:border-sky-700 dark:text-sky-300'
-                                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
-                            }`}
-                            title={
-                                groupingMode === 'configured'
-                                    ? 'Chế độ xem: Tuỳ chỉnh (Click để chuyển về Mặc định SLLK/DTLK/DTQĐ)'
-                                    : 'Chế độ xem: Mặc định (Click để chuyển sang Tuỳ chỉnh theo nhóm target)'
-                            }
-                            aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
-                        >
-                            <Layers className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />
-                            <span>{groupingMode === 'configured' ? 'Tuỳ chỉnh' : 'Mặc định'}</span>
-                        </Button>
-
-                        {/* Lọc nhóm — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
-                            style với các bộ lọc khác trong dự án */}
-                        <MultiSelectDropdown
-                            icon={<FilterIcon className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />}
-                            triggerLabel="Lọc nhóm"
-                            count={isFiltered ? activeFilterCount : undefined}
-                            allLabel="Chọn tất cả"
-                            allChecked={activeFilterCount === totalFilterCount}
-                            onToggleAll={handleToggleAllCompetitions}
-                            groups={filterGroups}
-                            onToggleOption={handleToggleCompetition}
-                            searchValue={filterSearch}
-                            onSearchChange={setFilterSearch}
-                            searchPlaceholder="Tìm nhóm thi đua..."
-                            panelWidthClass="w-80"
-                            maxHeightClass="max-h-[80vh]"
-                        />
-                        <div className="relative" ref={employeeSelectorRef}>
-                            <Button variant="unstyled" size="none" onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded-none">
-                                <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
-                                <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400" />
-                            </Button>
-                            {isEmployeeSelectorOpen && (
-                                <div className="absolute top-full right-0 mt-1 w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-xl z-50 overflow-hidden flex flex-col max-h-72">
-                                    <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 sticky top-0">
-                                        <Input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." leftIcon="search" autoFocus />
-                                    </div>
-                                    <div className="overflow-y-auto flex-1">
-                                        {filteredEmployees.length > 0 ? (
-                                            filteredEmployees.map(emp => (
-                                                <Button variant="unstyled" size="none" key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-sky-50 text-sky-700 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                    {emp.name}
-                                                </Button>
-                                            ))
-                                        ) : (
-                                            <div className="p-3 text-center text-sm text-slate-500">Không tìm thấy</div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
                 <div className="w-full overflow-hidden px-4 pb-4" ref={cardRef}>
                     {/* === EMPLOYEE PROFILE CARD === */}
                     <EmployeeProfileCard
@@ -671,6 +734,8 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         banKemRows={banKemRows}
                         bonusData={bonusData}
                         groupedPerformanceData={groupedPerformanceData}
+                        allEmployees={allEmployees}
+                        onSelectIndividual={onSelectIndividual}
                     />
                     <div className="overflow-hidden">
                         <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">

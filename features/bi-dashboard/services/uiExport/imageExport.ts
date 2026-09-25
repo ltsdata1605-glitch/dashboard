@@ -950,8 +950,11 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         captureContainer.style.height = 'auto';
     }
 
-    // Remove artificial outer border box on clone root to prevent nested double borders
-    clone.style.border = 'none';
+    // Remove artificial outer border box on clone root to prevent nested double borders,
+    // trừ trường hợp clone chính là thẻ card cần viền (competition-group-card)
+    if (!clone.classList.contains('competition-group-card')) {
+        clone.style.border = 'none';
+    }
     clone.style.borderRadius = '0';
 
     // Remove redundant inner borders ONLY on table overflow wrappers inside cards (keep card borders intact)
@@ -1189,28 +1192,61 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         // Đo chiều rộng chính xác nhất, kiểm tra cả các bảng bên trong clone để không bao giờ bị cắt cột
         let maxTableWidth = 0;
         clone.querySelectorAll('table').forEach((t) => {
-            maxTableWidth = Math.max(maxTableWidth, t.scrollWidth || 0, t.offsetWidth || 0);
+            const tableRect = t.getBoundingClientRect();
+            maxTableWidth = Math.max(maxTableWidth, t.scrollWidth || 0, t.offsetWidth || 0, Math.ceil(tableRect.width || 0));
         });
 
         const measuredWidth = Math.max(
-            rect.width || 0,
+            Math.ceil(rect.width || 0),
             clone.scrollWidth || 0,
             clone.offsetWidth || 0,
             maxTableWidth
         );
-        const contentWidth = captureAsDisplayed ? element.clientWidth : measuredWidth;
+        // Thêm +4px đệm an toàn để tránh subpixel rounding hay border-collapse làm tràn lấn mất viền mép phải
+        const contentWidth = captureAsDisplayed ? element.clientWidth : (measuredWidth + 4);
 
         const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
         let finalHeight = contentHeight + exportPadding * 2;
 
-        // Đảm bảo clone và captureContainer không co nhỏ hơn finalWidth
+        // Đảm bảo clone và captureContainer không co nhỏ hơn finalWidth và không bị giới hạn max-width
         clone.style.setProperty('width', `${finalWidth}px`, 'important');
         clone.style.setProperty('min-width', `${finalWidth}px`, 'important');
+        clone.style.setProperty('max-width', 'none', 'important');
         clone.style.setProperty('overflow', 'visible', 'important');
         if (captureContainer) {
             captureContainer.style.setProperty('width', `${finalWidth}px`, 'important');
             captureContainer.style.setProperty('min-width', `${finalWidth}px`, 'important');
+            captureContainer.style.setProperty('max-width', 'none', 'important');
         }
+
+        // Đảm bảo tất cả các khối con (title bar, header, table container) phủ kín 100% finalWidth
+        Array.from(clone.children).forEach((child) => {
+            if (child instanceof HTMLElement) {
+                child.style.setProperty('width', '100%', 'important');
+                child.style.setProperty('min-width', '100%', 'important');
+                child.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+        });
+        clone.querySelectorAll<HTMLElement>('.competition-group-card').forEach((card) => {
+            card.style.setProperty('width', '100%', 'important');
+            card.style.setProperty('box-sizing', 'border-box', 'important');
+            const titleBar = card.firstElementChild as HTMLElement;
+            if (titleBar) {
+                titleBar.style.setProperty('width', '100%', 'important');
+                titleBar.style.setProperty('min-width', '100%', 'important');
+                titleBar.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+        });
+        if (clone.classList.contains('competition-group-card')) {
+            const isDark = document.documentElement.classList.contains('dark');
+            clone.style.setProperty('border', `1px solid ${isDark ? '#334155' : '#cbd5e1'}`, 'important');
+            clone.style.setProperty('box-sizing', 'border-box', 'important');
+        }
+        clone.querySelectorAll('table').forEach((t) => {
+            t.style.setProperty('width', '100%', 'important');
+            t.style.setProperty('min-width', '100%', 'important');
+            t.style.setProperty('box-sizing', 'border-box', 'important');
+        });
 
         let finalScale = scale;
         if (finalHeight * scale > 32000) {

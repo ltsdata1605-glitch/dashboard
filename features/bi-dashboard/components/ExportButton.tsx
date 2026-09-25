@@ -95,7 +95,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         onClick={hasOptions ? () => setIsOpen(p => !p) : handleSingleExport}
         disabled={disabled || isLoading}
         className={cn(
-          "export-button-component p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-0.5",
+          "export-button-component h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
+          hasOptions ? "px-2 gap-1.5" : "w-8 p-1.5",
           isOpen && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
           className
         )}
@@ -104,12 +105,12 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         aria-expanded={hasOptions ? isOpen : undefined}
       >
         {isLoading ? (
-          <SpinnerIcon className="h-5 w-5 animate-spin text-sky-500" />
+          <SpinnerIcon className="h-4 w-4 animate-spin text-sky-500 shrink-0" />
         ) : (
           <>
-            {icon || <CameraIcon className="h-5 w-5" />}
+            {icon || <CameraIcon className="h-4 w-4 shrink-0" />}
             {hasOptions && (
-              <ChevronDownIcon className={cn("h-3 w-3 opacity-60 transition-transform duration-200", isOpen && "rotate-180")} />
+              <ChevronDownIcon className={cn("h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200", isOpen && "rotate-180")} />
             )}
           </>
         )}

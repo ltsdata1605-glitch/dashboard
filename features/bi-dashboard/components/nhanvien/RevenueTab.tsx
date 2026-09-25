@@ -101,6 +101,7 @@ const RevenueView: React.FC<{
 
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('revenue-view-mode', 'group');
     const [isShowRemaining, setIsShowRemaining] = useIndexedDBState<boolean>('rev-show-remaining', false);
+    const [isShowPrevMonth, setIsShowPrevMonth] = useIndexedDBState<boolean>('rev-show-prev-month', true);
     
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-revenue-${supermarketName}`, '');
     const prevMonthRows = useMemo(() => {
@@ -152,7 +153,7 @@ const RevenueView: React.FC<{
         rows: activeRows,
         departmentNames,
         sortConfig,
-        prevMonthRows: isRealtimeMode ? [] : prevMonthRows,
+        prevMonthRows: (isRealtimeMode || !isShowPrevMonth) ? [] : prevMonthRows,
         departmentWeights,
         deptEmployeeCounts,
         supermarketTarget,
@@ -340,15 +341,46 @@ const RevenueView: React.FC<{
                         <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setIsPrevMonthModalOpen(true)}
-                            className={`h-8 gap-1.5 px-2.5 text-xs ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
+                            onClick={() => {
+                                if (!prevMonthRaw) {
+                                    setIsPrevMonthModalOpen(true);
+                                } else {
+                                    setIsShowPrevMonth(p => !p);
+                                }
+                            }}
+                            title={!prevMonthRaw ? 'Nhập dữ liệu cùng kỳ' : (isShowPrevMonth ? 'Bấm để tắt so sánh cùng kỳ' : 'Bấm để bật so sánh cùng kỳ')}
+                            className={`h-8 gap-1.5 px-2.5 text-xs transition-colors ${
+                                prevMonthRaw
+                                    ? isShowPrevMonth
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300'
+                                        : 'bg-slate-100 border-slate-300 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500'
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                            }`}
                         >
-                            <ClockIcon className="h-3.5 w-3.5" />
+                            <ClockIcon className={`h-3.5 w-3.5 ${prevMonthRaw && isShowPrevMonth ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
                             <span className="hidden sm:inline">Cùng kỳ</span>
                             {prevMonthRaw && (
-                                <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200">
+                                <span
+                                    role="button"
+                                    tabIndex={0}
+                                    title="Xoá dữ liệu cùng kỳ"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setPrevMonthRaw('');
+                                        setIsShowPrevMonth(true);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            setPrevMonthRaw('');
+                                            setIsShowPrevMonth(true);
+                                        }
+                                    }}
+                                    className="ml-0.5 p-0.5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
+                                >
                                     <XIcon className="h-3 w-3" />
-                                </Button>
+                                </span>
                             )}
                         </Button>
                     )}
@@ -557,7 +589,14 @@ const RevenueView: React.FC<{
                             </div>
                         </div>
                     </div>
-            <ImportPrevMonthModal isOpen={isPrevMonthModalOpen} onClose={() => setIsPrevMonthModalOpen(false)} onSave={setPrevMonthRaw} />
+            <ImportPrevMonthModal
+                isOpen={isPrevMonthModalOpen}
+                onClose={() => setIsPrevMonthModalOpen(false)}
+                onSave={(data) => {
+                    setPrevMonthRaw(data);
+                    setIsShowPrevMonth(true);
+                }}
+            />
         </div>
     );
 };
