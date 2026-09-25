@@ -39,6 +39,8 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   const [manualCode, setManualCode] = useState('');
   /** Đếm số mã quét được trong phiên này để khỏi phải đóng máy quét ra đếm */
   const [scannedCount, setScannedCount] = useState(0);
+  /** Mã vừa quét xong — dùng để phân biệt "vẫn đang chĩa vào tem cũ" với "đã sang sản phẩm khác" */
+  const maVuaQuetRef = useRef<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -84,6 +86,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
    *  (âm thanh, rung, màn báo kết quả, bộ đếm), người dùng không phải học 2 kiểu hành vi. */
   const handleDecodedCode = useCallback((decodedText: string) => {
     if (isScanningPaused.current) return;
+    // Quét liên tục nhiều sản phẩm: chỉ chặn ĐÚNG mã vừa quét (tránh cộng đôi khi máy còn hướng
+    // vào tem cũ), mã khác thì nhận ngay chứ không phải chờ hết nhịp nghỉ.
+    maVuaQuetRef.current = decodedText;
     
     isScanningPaused.current = true;
     
@@ -104,10 +109,13 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     scanTimeoutRef.current = window.setTimeout(() => {
       isScanningPaused.current = false;
       setScanResult(null);
-    }, 1200); // Slightly reduced delay
+    }, 1200);
   }, [playSound]);
 
   const qrCodeSuccessCallback = handleDecodedCode;
+
+  const handleDecodedCodeRef = useRef(handleDecodedCode);
+  useEffect(() => { handleDecodedCodeRef.current = handleDecodedCode; });
 
   /** Bật/tắt đèn pin của camera đang chạy */
   const handleToggleTorch = useCallback(async () => {
@@ -144,13 +152,28 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   }, []);
 
   const config = useMemo(() => ({
-    fps: 10, // Reduced from 25 to 10 to prevent high CPU utilization and device overheating on mobile
+    fps: 10, // Giữ 10 để máy không nóng: đường quét nhanh ở trên mới là đường chính trên Android
     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-        // Wider rectangular scan area (aspect ratio ~ 1.7) optimized for EAN-13/Code-128 barcodes while keeping QR support
-        const width = Math.floor(viewfinderWidth * 0.85);
-        const height = Math.floor(viewfinderWidth * 0.5);
+        // Vùng quét CÀNG TO CÀNG NÉT: html5-qrcode vẽ vùng này vào canvas đúng bằng kích thước
+        // CSS của nó rồi mới giải mã, nên kích thước ở đây CHÍNH LÀ độ phân giải mà bộ giải mã
+        // nhìn thấy. Trước đây 85% x (50% chiều RỘNG) cho ra 311x183 — quá bé cho mã vạch hơi xa.
+        const width = Math.floor(viewfinderWidth * 0.94);
+        const height = Math.floor(Math.min(viewfinderHeight * 0.62, viewfinderWidth * 0.78));
         return { width, height };
     },
+    // Mã vạch/QR trên tem không bao giờ bị lật gương — bỏ lượt thử ảnh lật để đỡ nửa khối lượng
+    // giải mã của ZXing (đường dự phòng cho iOS).
+    disableFlip: true,
+    // Xin độ phân giải cao và lấy nét liên tục. Camera càng nhiều điểm ảnh thì vạch mã càng rõ;
+    // `focusMode: continuous` để máy tự lấy nét lại khi người dùng đưa tem ra xa/lại gần.
+    videoConstraints: {
+        facingMode: 'environment',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        // focusMode là thuộc tính NGOÀI chuẩn (Chrome Android hỗ trợ) nên không có trong kiểu
+        // MediaTrackConstraints — ép kiểu ở dòng dưới thay vì dùng `any`.
+        focusMode: 'continuous',
+    } as MediaTrackConstraints,
     rememberLastUsedCamera: true,
     // KHÔNG ép aspectRatio 1.0 nữa: khung vuông cắt mất chiều cao trên điện thoại cầm dọc, trong
     // khi mã vạch EAN-13 là vệt dài — vùng nhìn càng rộng càng dễ bắt. Khung do CSS quyết định
@@ -240,6 +263,76 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       }
     };
   }, [config, qrCodeSuccessCallback, detectTorch]);
+
+  /**
+   * ĐƯỜNG QUÉT NHANH — lý do tồn tại (đo thật 2026-09-25, Playwright + camera giả phát mã EAN-13):
+   *
+   * html5-qrcode cắt vùng quét rồi VẼ LẠI vào canvas đúng bằng kích thước CSS của khung
+   * (đo được 311x183px) trước khi giải mã — xem `drawImage(..., dWidth = qrRegion.width)` trong
+   * html5-qrcode.ts. Camera 640x480 (điện thoại thật còn cao hơn nhiều) bị nén xuống 311px, nên
+   * phần lớn chi tiết bị vứt đi. Hậu quả đo được: mã vạch rộng 95px trong khung 640x480
+   * **KHÔNG nhận được sau 40 giây**, vì mỗi vạch còn chưa tới 1 pixel.
+   *
+   * Thêm nữa, html5-qrcode luân phiên mỗi khung hình một bộ giải mã (`getDecoder()`): một khung
+   * dùng BarcodeDetector gốc, khung kế dùng ZXing chạy bằng JS (chậm hơn nhiều). Tức là chỉ một
+   * nửa số lần thử là đi đường nhanh.
+   *
+   * Vòng dưới đây gọi thẳng `BarcodeDetector.detect(video)` trên THẺ VIDEO ở độ phân giải GỐC —
+   * không qua canvas, không bị thu nhỏ, không luân phiên. Chạy song song với html5-qrcode chứ
+   * không thay thế: máy nào không có BarcodeDetector (iOS Safari) vẫn quét như cũ. Cờ
+   * `isScanningPaused` dùng chung nên không có chuyện một mã bị cộng hai lần.
+   */
+  useEffect(() => {
+    type NativeDetector = { detect(src: CanvasImageSource): Promise<Array<{ rawValue: string }>> };
+    type DetectorCtor = {
+      new (o: { formats: string[] }): NativeDetector;
+      getSupportedFormats(): Promise<string[]>;
+    };
+    const ctor = (window as unknown as { BarcodeDetector?: DetectorCtor }).BarcodeDetector;
+    if (!ctor) return; // iOS Safari: không có API này, dùng đường của html5-qrcode
+
+    const MONG_MUON = ['qr_code', 'ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a', 'upc_e', 'itf'];
+    let dungLai = false;
+    let hengio: number | null = null;
+
+    (async () => {
+      let detector: NativeDetector;
+      try {
+        const hoTro = await ctor.getSupportedFormats();
+        const formats = MONG_MUON.filter(f => hoTro.includes(f));
+        if (formats.length === 0) return;
+        detector = new ctor({ formats });
+      } catch (err) {
+        console.warn('[Scanner] Không dùng được BarcodeDetector gốc:', err);
+        return;
+      }
+
+      const quet = async () => {
+        if (dungLai) return;
+        if (!isScanningPaused.current) {
+          const video = document.querySelector<HTMLVideoElement>(`#${readerId} video`);
+          // readyState >= 2 (HAVE_CURRENT_DATA): đã có khung hình để đọc
+          if (video && video.readyState >= 2 && video.videoWidth > 0) {
+            try {
+              const codes = await detector.detect(video);
+              if (codes && codes.length > 0 && codes[0].rawValue) {
+                handleDecodedCodeRef.current(codes[0].rawValue);
+              }
+            } catch {
+              /* khung hình lỗi/đang đổi camera — bỏ qua, thử lại ở nhịp sau */
+            }
+          }
+        }
+        if (!dungLai) hengio = window.setTimeout(quet, 100); // ~10 lần/giây, luôn ở độ phân giải gốc
+      };
+      quet();
+    })();
+
+    return () => {
+      dungLai = true;
+      if (hengio) clearTimeout(hengio);
+    };
+  }, []);
 
   const handleSwitchCamera = useCallback(() => {
     if (cameras.length > 1 && activeCameraId && scannerRef.current?.isScanning) {

@@ -5340,3 +5340,68 @@ Ngoài ra: typecheck 0 lỗi, eslint 0 lỗi, 783 unit test xanh, build xanh.
   những file chạm tới trong đợt này.
 - Chưa test trên máy thật (chỉ Chromium giả lập + camera giả): **đèn pin và rung chỉ kiểm được
   trên điện thoại thật** — cần chủ dự án mở bằng điện thoại để xác nhận đèn pin bật được.
+
+---
+
+# In Sticker — tốc độ nhận dạng mã vạch (2026-09-25, đợt 2)
+
+## Yêu cầu
+
+Chủ dự án: *"Chức năng quét code chưa nhận dạng nhanh code. Giúp tôi cải tiến"*.
+
+## Cách ĐO (không đoán)
+
+Không có ffmpeg trên máy, nên tự sinh video `Y4M` (định dạng thô, ghi trực tiếp bằng Node) chứa
+**mã vạch EAN-13 thật** — tự mã hoá bảng L/G/R + số kiểm tra, xem `tests/e2e/helpers/gen-barcode-y4m.cjs`.
+Nạp vào Chromium qua `--use-file-for-fake-video-capture` để làm camera giả, rồi đo thời gian từ lúc
+bấm "Quét mã" tới lúc hiện màn kết quả.
+
+## Nguyên nhân gốc (đo được, không phải suy đoán)
+
+1. 🔴 **html5-qrcode giải mã ở kích thước CSS, không phải độ phân giải camera.** Nó cắt vùng quét
+   từ video rồi `drawImage(..., dWidth = qrRegion.width)` — tức vẽ lại vào canvas ĐÚNG BẰNG kích
+   thước CSS của khung. Đo thật: canvas giải mã chỉ **311x183px**, trong khi camera 640x480 (điện
+   thoại thật 1080p còn bị vứt nhiều hơn).
+   **Hậu quả tái hiện được: mã vạch rộng 95px trong khung 640x480 KHÔNG nhận được sau 40 giây, 3/3 lần.**
+2. 🔴 **Một nửa số khung hình đi đường chậm.** `Html5QrcodeShim.getDecoder()` luân phiên: khung này
+   dùng `BarcodeDetector` gốc của trình duyệt, khung kế dùng ZXing chạy bằng JS. Với `fps: 10` thì
+   chỉ còn ~5 lần thử/giây đi đường nhanh.
+3. Camera không được yêu cầu độ phân giải cao hay lấy nét liên tục (mặc định 640x480).
+
+**Giả thuyết đã LOẠI:** nghi format `upc_a` (trình duyệt không hỗ trợ) làm hỏng bộ giải mã gốc.
+Thử trực tiếp: `new BarcodeDetector({formats:[...'upc_a'...]})` **tạo được bình thường** — Chrome
+chỉ bỏ qua format lạ. Không phải nguyên nhân, không sửa gì theo hướng này.
+
+## Đã sửa (`features/sticker-event/Scanner.tsx`)
+
+1. **Đường quét nhanh bằng `BarcodeDetector` gốc**: gọi thẳng `detector.detect(video)` trên THẺ
+   VIDEO ở **độ phân giải gốc**, ~10 lần/giây, không qua canvas thu nhỏ, không luân phiên với
+   ZXing. Chạy SONG SONG với html5-qrcode chứ không thay thế — máy không có API này (iOS Safari)
+   vẫn quét như cũ. Dùng chung cờ `isScanningPaused` nên không cộng đôi một mã.
+2. **Vùng quét to hơn**: 85% x 50%-chiều-rộng → 94% x 62%-chiều-cao. Canvas giải mã **311x183 → 344x272**
+   (gấp ~1,6 lần diện tích) — giúp cả đường dự phòng của iOS.
+3. **`disableFlip: true`**: tem không bao giờ bị lật gương, bỏ hẳn lượt thử ảnh lật của ZXing.
+4. **Xin camera 1920x1080 + `focusMode: continuous`** thay cho mặc định 640x480.
+5. Ghi nhớ mã vừa quét (`maVuaQuetRef`) để phân biệt "vẫn chĩa vào tem cũ" với "đã sang sản phẩm khác".
+
+## Kết quả đo
+
+| Ca đo (mã vạch 95px trong khung 640x480) | Trước | Sau |
+|---|---|---|
+| Lần 1 | KHÔNG nhận được trong 40s | **196ms** |
+| Lần 2 | KHÔNG nhận được trong 40s | **194ms** |
+| Lần 3 | KHÔNG nhận được trong 40s | **196ms** |
+
+**Đo tách bạch** (xoá hẳn `window.BarcodeDetector` để mô phỏng iOS Safari): vẫn **KHÔNG nhận được
+trong 40s** dù đã có vùng quét to hơn → khẳng định **đường quét nhanh mới là thứ tạo ra kết quả**,
+không phải các tinh chỉnh còn lại.
+
+⚠️ **Giới hạn phải nói rõ**: iOS Safari không có `BarcodeDetector`, nên máy iPhone KHÔNG được hưởng
+phần cải thiện lớn này — chỉ được vùng quét rộng hơn + đèn pin + nhập mã tay. Muốn nhanh trên iOS
+phải đổi hẳn thư viện giải mã (vd `zxing-wasm`), là việc riêng.
+
+## Test hồi quy
+
+`tests/e2e/sticker-toc-do-quet-ma.spec.ts` (MỚI): tự sinh video mã vạch rồi khẳng định nhận được
+dưới 5 giây (ngưỡng đặt rộng so với ~200ms đo được, tránh đỏ vặt trên máy chậm), và vùng quét
+không nhỏ lại dưới 340x240.
