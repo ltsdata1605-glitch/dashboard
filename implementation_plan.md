@@ -5454,10 +5454,32 @@ Cách lấy mốc "trước": `git stash` đúng 2 file vừa sửa rồi chạy
 lượt gọi; khẳng định mở màn trong app tốn 0 lượt gọi thêm và hiện danh sách nhanh hơn một vòng
 mạng, còn tải thẳng bằng đường dẫn thì tổng cộng đúng 1 lượt.
 
-## Việc CÒN LẠI (cố ý chưa làm)
+## Đợt 2 (cùng ngày) — làm nốt tab "Hoạt động" và "Hết hạn"
 
-- Tab **"Hoạt động"** và **"Hết hạn"** chưa có nguồn dùng chung nên lần đầu mở vẫn phải chờ một
-  vòng gọi mạng. Làm store cho 2 tab đó sẽ tốn thêm hạn mức đọc Firestore định kỳ — nên chỉ làm nếu
-  chủ dự án thấy 2 tab này cũng chậm khó chịu.
+Chủ dự án chốt: *"Làm luôn Hoạt động và Hết hạn"*.
+
+**Đo trước khi sửa** (Cloud Function giả có đếm lượt gọi, bấm lần lượt 3 tab):
+`["pending", "active", "expired", "active"]` — **4 lượt gọi**. Lượt `active` cuối là nhánh gộp thêm
+của tab "Hết hạn" (khi không thấy ai hết hạn thì lấy thêm danh sách đang hoạt động), tức lấy lại
+ĐÚNG dữ liệu mà tab "Hoạt động" vừa lấy xong vài giây trước.
+
+**Cách làm — CỐ Ý KHÔNG giống `pendingApprovalsStore`:** tab "Chờ duyệt" cần vòng poll nền vì chuông
+thông báo và badge phải có con số đó mọi lúc. Hai tab này thì **không ai cần khi người dùng không mở
+màn Phân quyền** — thêm poll chỉ đốt hạn mức đọc Firestore vô ích (CLAUDE.md mục 1.1). Nên
+`services/managedUsersCache.ts` (MỚI) chỉ có **cache 60s + gộp request đang bay + tự bỏ cache khi có
+event `ycx-managed-users-changed`**, KHÔNG có poll.
+
+Sửa kèm một lỗi hiển thị phát hiện lúc đọc code: đổi sang tab chưa có dữ liệu thì `requests` vẫn giữ
+danh sách của tab vừa rời, nên trong lúc chờ mạng màn hình **hiện nhầm dữ liệu tab khác** (bấm "Hết
+hạn" lại thấy danh sách "Hoạt động") rồi mới tự đổi. Nay xoá danh sách cũ và hiện spinner.
+
+**Kết quả đo:** `["pending", "active", "expired"]` — **3 lượt** (bỏ được lượt thừa), và bấm qua lại
+cả 3 tab trong 60 giây **không tốn thêm lượt nào**.
+
+**Test:** `services/managedUsersCache.test.ts` (6 bài: cache, gộp request, tách cache theo tab,
+force, tự bỏ cache khi có thay đổi) + `tests/e2e/phan-quyen-3-tab.spec.ts` (đếm lượt gọi thật trên
+trình duyệt).
+
+## Việc CÒN LẠI (cố ý chưa làm)
 - Hàm `listManagedUsers` với manager đang đọc `users` theo `status`/`role` rồi mới lọc Kho ở server;
   kho lớn lên thì nên thêm điều kiện `where('departmentId', 'in', ...)` + index.

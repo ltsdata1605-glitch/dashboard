@@ -16,6 +16,7 @@ import {
     isPendingApprovalsLoaded,
     refreshPendingApprovals,
 } from '../../services/pendingApprovalsStore';
+import { getManagedUsers, hasFreshManagedUsers } from '../../services/managedUsersCache';
 import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
@@ -211,6 +212,19 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             setIsLoading(true);
         }
 
+        // Đổi sang tab CHƯA có dữ liệu: xoá danh sách cũ và bật spinner. Trước đây `requests` vẫn
+        // giữ nguyên danh sách của tab vừa rời, nên trong lúc chờ mạng màn hình hiện NHẦM dữ liệu
+        // tab khác (vd bấm "Hết hạn" lại thấy danh sách "Hoạt động") rồi mới tự đổi.
+        const coSanChoTabNay =
+            !!usersCacheRef.current[listMode] ||
+            (listMode === 'pending' && isPendingApprovalsLoaded()) ||
+            (userRole === 'admin' && !!allAdminUsersRef.current) ||
+            hasFreshManagedUsers(listMode);
+        if (!coSanChoTabNay) {
+            setRequests([]);
+            setIsLoading(true);
+        }
+
         try {
             if (isDemoMode) {
                 // Mock data for demo mode to prevent Firestore permission-denied errors
@@ -340,13 +354,19 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     rawUsers = allAdminUsersRef.current;
                 }
             } else if (!dungNguonChung) {
-                // Manager: Gọi qua Cloud Function listManagedUsers (functions/src/admin.ts) để lọc theo Kho an toàn ở server
+                // Manager, tab "Hoạt động"/"Hết hạn": qua `services/managedUsersCache.ts` — cache
+                // 60s + gộp request đang bay, KHÔNG có vòng poll nền (hai tab này không ai cần khi
+                // người dùng không mở màn Phân quyền, poll chỉ tốn hạn mức đọc Firestore).
+                // Cloud Function vẫn là nơi lọc theo Kho (functions/src/admin.ts), client chỉ cache.
                 try {
-                    rawUsers = await listManagedUsers(listMode);
+                    rawUsers = await getManagedUsers(listMode, forceRefresh);
                     if (listMode === 'expired') {
                         const hasExpired = rawUsers.some(u => u.status === 'expired' || (u.expiresAt && new Date(u.expiresAt).getTime() < Date.now()));
                         if (!hasExpired) {
-                            const activeUsers = await listManagedUsers('active');
+                            // Lượt gộp thêm này TRƯỚC ĐÂY luôn là 1 lượt gọi mạng nữa (đo được:
+                            // bấm "Hết hạn" tốn 2 lượt). Qua cache thì nếu tab "Hoạt động" vừa lấy
+                            // trong 60s, nó không tốn lượt nào.
+                            const activeUsers = await getManagedUsers('active', false);
                             const combined = [...rawUsers, ...activeUsers];
                             const seen = new Set<string>();
                             rawUsers = combined.filter(u => {
@@ -358,7 +378,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     }
                 } catch {
                     if (listMode === 'expired') {
-                        rawUsers = await listManagedUsers('active');
+                        rawUsers = await getManagedUsers('active', false);
                     }
                 }
             }
