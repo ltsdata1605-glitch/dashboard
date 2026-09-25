@@ -115,14 +115,25 @@ export const BonusView: React.FC<{
     }
 
     return (
-        <div className="space-y-0">
-            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
-                <div className="flex gap-3 items-center">
+        <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
+            {/* 1. Tiêu đề lên TRÊN CÙNG */}
+            <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
+                    {cardTitle}
+                </h2>
+                <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                    {cardSubtitle}
+                </div>
+            </div>
+
+            {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
+            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
+                <div className="flex gap-1.5 items-center">
                     <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => { setHrmWindowRef(window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank')); onBatchUpdate(); }}
-                        className="gap-1.5 bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95"
+                        className="h-8 gap-1.5 px-2.5 text-xs bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Thủ công</span>
@@ -135,7 +146,7 @@ export const BonusView: React.FC<{
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="text-sky-700 dark:text-sky-400"
+                        className="h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>
@@ -152,7 +163,7 @@ export const BonusView: React.FC<{
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={`inline-flex items-center justify-center h-9 w-9 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
+                                className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
                             >
                                 <activePeriodMode.Icon className="h-4 w-4" />
                             </span>
@@ -162,13 +173,15 @@ export const BonusView: React.FC<{
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
             </div>
-            <div ref={cardRef}>
-                <Card noPadding bordered={false} rounded={false} title={cardTitle} subtitle={cardSubtitle}>
-                    <div className="px-4 pt-3 pb-1">
-                        <TimeProgressBar />
-                    </div>
-                    <div className="w-full overflow-hidden px-4 pb-4">
-                        <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
+
+            {/* 3. Tiến độ thời gian */}
+            <div className="px-4 pt-3 pb-1">
+                <TimeProgressBar />
+            </div>
+
+            {/* 4. Bảng thưởng */}
+            <div className="w-full overflow-hidden px-4 pb-4">
+                <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
                         {isCompare ? (
                             <BonusCompareTable
                                 employees={monthlyEmployees}
@@ -187,6 +200,9 @@ export const BonusView: React.FC<{
                                 dataByMonth={monthlyArchive.dataByMonth}
                                 loading={monthlyArchive.loading}
                                 supermarketName={supermarketName}
+                                selectedYear={monthlyArchive.selectedYear}
+                                onSelectYear={monthlyArchive.setSelectedYear}
+                                availableYears={monthlyArchive.availableYears}
                             />
                         ) : isDaily ? (
                             <BonusDailyTable
@@ -233,8 +249,6 @@ export const BonusView: React.FC<{
                         )}
                         </div>
                     </div>
-                </Card>
-            </div>
         </div>
     );
 });

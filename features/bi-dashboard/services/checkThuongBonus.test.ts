@@ -39,6 +39,11 @@ describe('computeBonusByGroup — luật chép từ Check Thưởng', () => {
     it('có Mã Kho từ bảng map → khớp theo mã dù tên khác hẳn', () => {
         expect(computeBonusByGroup(ROWS, 'Siêu thị Hùng Vương (tên tự đặt)', '910').size).toBe(4);
     });
+    it('khớp siêu thị chỉ bằng tên địa chỉ cuối (VD: "99 Hùng Vương" khớp "910 - ĐML_STR_STR - 99 Hùng Vương")', () => {
+        const hvuMap = computeBonusByGroup(ROWS, '99 Hùng Vương');
+        expect(hvuMap.size).toBe(4);
+        expect(hvuMap.get('ĐIỆN THOẠI VIVO')?.amount).toBe(699655);
+    });
 });
 
 describe('getBonusForProgram — khớp tên gốc Report BI (khác hoa/thường)', () => {

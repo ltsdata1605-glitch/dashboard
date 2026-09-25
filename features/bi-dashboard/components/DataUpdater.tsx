@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, PlusIcon } from './Icons';
-import { Link2, Pencil } from 'lucide-react';
+import { Link2, Pencil, X } from 'lucide-react';
 import SupermarketConfig from './SupermarketConfig';
 import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
@@ -16,7 +16,7 @@ import {
     resetTileLink,
     TILE_CUSTOM_LINKS_KEY,
 } from '../services/tileLinkService';
-import { extractSupermarketList, extractAllSupermarketList } from '../utils/dashboardHelpers';
+import { extractSupermarketList, extractAllSupermarketList, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';
@@ -453,6 +453,26 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         toast.success(`Đã thêm siêu thị "${trimmed}". Bạn có thể cấu hình dữ liệu ngay!`);
     };
 
+    const handleDeleteSupermarket = (sm: string) => {
+        const shortName = shortenSupermarketName(sm);
+        const lower = sm.toLowerCase();
+        const shortLower = shortName.toLowerCase();
+
+        // 1. Xoá khỏi customSupermarkets
+        setCustomSupermarkets(prev => (prev || []).filter(item => 
+            item.toLowerCase() !== lower && 
+            shortenSupermarketName(item).toLowerCase() !== shortLower
+        ));
+
+        // 2. Chuyển activeSupermarket sang siêu thị khác nếu đang chọn siêu thị này
+        if (activeSupermarket && (activeSupermarket.toLowerCase() === lower || shortenSupermarketName(activeSupermarket).toLowerCase() === shortLower)) {
+            const remaining = supermarkets.filter(s => s.toLowerCase() !== lower && shortenSupermarketName(s).toLowerCase() !== shortLower);
+            setActiveSupermarket(remaining[0] || null);
+        }
+
+        toast.success(`Đã xoá siêu thị "${shortName}" khỏi danh sách cấu hình.`);
+    };
+
     useEffect(() => {
         getAnalysisEmployees().then(setAnalysisEmployees).catch(console.error);
         const handler = (e: CustomEvent<AnalysisEmployeesPayload>) => {
@@ -580,6 +600,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         allowedKhos={allowedKhos}
                         summaryLuyKe={summaryLuyKe}
                         competitionLuyKe={competitionLuyKe}
+                        summaryRealtime={summaryRealtime}
+                        competitionRealtime={competitionRealtime}
                         userId={user?.uid}
                     />
                 </div>
@@ -768,20 +790,48 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         title="CẤU HÌNH SIÊU THỊ & NHÂN VIÊN"
                         actionButton={
                             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-                                {supermarkets.map((sm) => (
-                                    <Button
-                                        variant="unstyled" size="none"
-                                        key={sm}
-                                        onClick={() => setActiveSupermarket(sm)}
-                                        className={`shrink-0 px-4 py-1.5 rounded-md text-[11px] font-bold transition-all border ${
-                                            activeSupermarket === sm
-                                                ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
-                                                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
-                                        }`}
-                                    >
-                                        {sm.split(' - ').pop()}
-                                    </Button>
-                                ))}
+                                {supermarkets.map((sm) => {
+                                    const shortName = shortenSupermarketName(sm);
+                                    const isCustom = customSupermarkets.some(c => 
+                                        c.toLowerCase() === sm.toLowerCase() || 
+                                        shortenSupermarketName(c).toLowerCase() === shortName.toLowerCase()
+                                    );
+                                    return (
+                                        <div key={sm} className="relative group inline-flex items-center">
+                                            <Button
+                                                variant="unstyled" size="none"
+                                                onClick={() => setActiveSupermarket(sm)}
+                                                className={`shrink-0 pl-3 pr-2 py-1.5 rounded-md text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
+                                                    activeSupermarket === sm
+                                                        ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
+                                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
+                                                }`}
+                                            >
+                                                <span>{sm.split(' - ').pop()}</span>
+                                                {isCustom && (
+                                                    <span
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDeleteSupermarket(sm);
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                                e.stopPropagation();
+                                                                handleDeleteSupermarket(sm);
+                                                            }
+                                                        }}
+                                                        className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors"
+                                                        title={`Xoá siêu thị tuỳ chỉnh "${shortName}"`}
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                    </span>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => setIsAddingSupermarket(true)}

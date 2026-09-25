@@ -21,6 +21,8 @@ interface BiSupermarketMapAdminProps {
     allowedKhos: string[];
     summaryLuyKe: string;
     competitionLuyKe: string;
+    summaryRealtime?: string;
+    competitionRealtime?: string;
     userId?: string;
 }
 
@@ -57,6 +59,8 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
     allowedKhos,
     summaryLuyKe,
     competitionLuyKe,
+    summaryRealtime,
+    competitionRealtime,
     userId
 }) => {
     const [map, setMap] = useState<SupermarketToKhoMap>({});
@@ -107,13 +111,16 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
         };
     }, [userId]);
 
-    // Tên siêu thị xuất hiện trong dữ liệu Báo cáo vừa dán
+    // Tên siêu thị xuất hiện trong dữ liệu Báo cáo vừa dán (quét cả LK và RT)
     const pastedNames = useMemo(() => {
-        const fromSummary = extractSupermarketList(summaryLuyKe);
-        const fromCompetition = Object.keys(parseCompetitionDataBySupermarket(competitionLuyKe))
+        const fromSummary = extractSupermarketList(summaryLuyKe || '');
+        const fromSummaryRT = extractSupermarketList(summaryRealtime || '');
+        const fromCompetition = Object.keys(parseCompetitionDataBySupermarket(competitionLuyKe || ''))
             .filter(n => n.toUpperCase() !== 'TỔNG' && !isEmployeeName(n));
-        return Array.from(new Set([...fromSummary, ...fromCompetition])).filter(n => !isEmployeeName(n));
-    }, [summaryLuyKe, competitionLuyKe]);
+        const fromCompetitionRT = Object.keys(parseCompetitionDataBySupermarket(competitionRealtime || ''))
+            .filter(n => n.toUpperCase() !== 'TỔNG' && !isEmployeeName(n));
+        return Array.from(new Set([...fromSummary, ...fromSummaryRT, ...fromCompetition, ...fromCompetitionRT])).filter(n => !isEmployeeName(n));
+    }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime]);
 
     const unmappedNames = useMemo(() => pastedNames.filter(name => !map[name]), [pastedNames, map]);
 

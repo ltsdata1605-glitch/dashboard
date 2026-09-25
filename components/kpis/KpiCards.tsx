@@ -504,7 +504,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             progressPercent={progressPercent}
                             isGood={isGood}
                         >
-                            <div className={`text-[17px] sm:text-xl lg:text-3xl xl:text-[34px] 2xl:text-[36px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
+                            <div className={`text-[20px] sm:text-2xl lg:text-[34px] xl:text-[40px] 2xl:text-[44px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
                                 {displayValue}
                             </div>
                         </KpiCard>

@@ -23,10 +23,13 @@ export interface AutoBonusRangePickerModalProps {
     /** Chạy 1 job đơn (tab Hiện tại/Tháng/Khoảng thời gian). `label` dùng để cập nhật
      * tiêu đề báo cáo (VD "THÁNG 6/2026") — xem AutoBonusPanel. */
     onRunSingle: (range: { fromDate: string; toDate: string; label: string }) => void;
-    /** Chạy trọn 1 năm — lặp tuần tự nhiều job (tab Năm). */
-    onRunYear: (year: number, label: string) => void;
+    /** Chạy trọn 1 năm (hoặc dải tháng trong năm) — lặp tuần tự nhiều job (tab Năm). */
+    onRunYear: (year: number, label: string, fromMonthIndex0?: number, toMonthIndex0?: number) => void;
     /** So sánh cùng kỳ tháng — 2 job tuần tự [kỳ này, kỳ trước] (tab So sánh cùng kỳ). */
     onRunCompare: (periods: { current: { fromDate: string; toDate: string }; previous: { fromDate: string; toDate: string } }, label: string) => void;
+    canResume?: boolean;
+    resumeInfo?: { label: string; remainingCount: number } | null;
+    onResume?: () => void;
 }
 
 /** "06/07/2026" -> "6/7" — khớp định dạng getYesterdayDateString() đang dùng làm tiêu đề mặc định. */
@@ -63,25 +66,43 @@ const tabButtonClass = (active: boolean) => `px-3 py-1.5 text-xs font-bold round
 
 export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps> = ({
     isOpen, onClose, employeeCount, onRunSingle, onRunYear, onRunCompare,
+    canResume, resumeInfo, onResume,
 }) => {
     const [activeTab, setActiveTab] = useState<PickerTab>('current');
     const recentMonths = useMemo(() => listRecentMonths(12), []);
     const [selectedMonth, setSelectedMonth] = useState(recentMonths[0]?.yyyymm || '');
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
+    const [fromMonth, setFromMonth] = useState(0);
+    const [toMonth, setToMonth] = useState<number | null>(null);
     const [customFrom, setCustomFrom] = useState('');
     const [customTo, setCustomTo] = useState('');
     const [showYearConfirm, setShowYearConfirm] = useState(false);
+
+    const now = useMemo(() => new Date(), []);
+    const maxMonthIndex = useMemo(() => {
+        if (!selectedYear) return 11;
+        return selectedYear === now.getFullYear() ? now.getMonth() : 11;
+    }, [selectedYear, now]);
 
     useEffect(() => {
         if (!isOpen) return;
         setActiveTab('current');
         setSelectedMonth(recentMonths[0]?.yyyymm || '');
         setSelectedYear(null);
+        setFromMonth(0);
+        setToMonth(null);
         const def = getCurrentRangeDefault();
         setCustomFrom(def.fromDate);
         setCustomTo(def.toDate);
         setShowYearConfirm(false);
     }, [isOpen, recentMonths]);
+
+    useEffect(() => {
+        if (selectedYear) {
+            setFromMonth(0);
+            setToMonth(selectedYear === now.getFullYear() ? now.getMonth() : 11);
+        }
+    }, [selectedYear, now]);
 
     const currentRange = useMemo(() => getCurrentRangeDefault(), []);
     const comparePeriods = useMemo(() => getComparePeriodDefault(), []);
@@ -90,7 +111,11 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
     // So sánh tự đặt tiêu đề "SO SÁNH ... VS ..." từ kho compare (xem BonusTab).
     const compareLabel = `ĐẾN NGÀY ${toShortDDMM(comparePeriods.current.toDate)}`;
     const monthRange = useMemo(() => selectedMonth ? getMonthRange(selectedMonth) : null, [selectedMonth]);
-    const yearPlan = useMemo(() => selectedYear ? getYearMonthPlan(selectedYear) : null, [selectedYear]);
+    const actualToMonth = toMonth != null ? toMonth : maxMonthIndex;
+    const yearPlan = useMemo(
+        () => (selectedYear ? getYearMonthPlan(selectedYear, now, fromMonth, actualToMonth) : null),
+        [selectedYear, now, fromMonth, actualToMonth],
+    );
     const yearEstimate = useMemo(
         () => (yearPlan ? estimateRunTime(yearPlan.length, employeeCount) : null),
         [yearPlan, employeeCount],
@@ -113,7 +138,6 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
 
     if (!isOpen) return null;
 
-    const now = new Date();
     const yearOptions = [
         { year: now.getFullYear(), label: `${now.getFullYear()} — năm nay` },
         { year: now.getFullYear() - 1, label: `${now.getFullYear() - 1} — năm trước` },
@@ -140,7 +164,10 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
     const confirmYearRun = () => {
         if (selectedYear == null) return;
         setShowYearConfirm(false);
-        onRunYear(selectedYear, `NĂM ${selectedYear} (LUỸ KẾ)`);
+        const label = fromMonth === 0 && actualToMonth === maxMonthIndex
+            ? `NĂM ${selectedYear} (LUỸ KẾ)`
+            : `NĂM ${selectedYear} (T${fromMonth + 1} → T${actualToMonth + 1})`;
+        onRunYear(selectedYear, label, fromMonth, actualToMonth);
         onClose();
     };
 
@@ -220,6 +247,21 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
 
                 {activeTab === 'year' && (
                     <div className="space-y-3">
+                        {canResume && resumeInfo && onResume && (
+                            <div className="p-3 bg-amber-50 dark:bg-amber-900/25 border border-amber-300 dark:border-amber-700/60 rounded-xl flex items-center justify-between gap-3">
+                                <div className="space-y-0.5">
+                                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300">💡 Có đợt chạy trước chưa hoàn tất:</p>
+                                    <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">{resumeInfo.label}</p>
+                                </div>
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={() => { onResume(); onClose(); }}
+                                    className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm flex-shrink-0"
+                                >
+                                    Tiếp tục ngay
+                                </Button>
+                            </div>
+                        )}
                         <div>
                             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">Chọn năm</label>
                             <div className="flex gap-2">
@@ -239,6 +281,39 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                 ))}
                             </div>
                         </div>
+                        {selectedYear && (
+                            <div className="grid grid-cols-2 gap-2 pt-1">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Từ tháng</label>
+                                    <select
+                                        value={fromMonth}
+                                        onChange={e => {
+                                            const v = Number(e.target.value);
+                                            setFromMonth(v);
+                                            if (toMonth != null && toMonth < v) setToMonth(v);
+                                        }}
+                                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                    >
+                                        {Array.from({ length: maxMonthIndex + 1 }, (_, i) => (
+                                            <option key={i} value={i}>Tháng {i + 1}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Đến tháng</label>
+                                    <select
+                                        value={actualToMonth}
+                                        onChange={e => setToMonth(Number(e.target.value))}
+                                        className="w-full px-2.5 py-1.5 text-xs rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                                    >
+                                        {Array.from({ length: maxMonthIndex - fromMonth + 1 }, (_, idx) => {
+                                            const m = fromMonth + idx;
+                                            return <option key={m} value={m}>Tháng {m + 1}</option>;
+                                        })}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
                         {yearPlan && yearEstimate && (() => {
                             const lastItem = yearPlan[yearPlan.length - 1];
                             const isLastMonthPartial = lastItem.yyyymm === toYYYYMM(now.getFullYear(), now.getMonth());

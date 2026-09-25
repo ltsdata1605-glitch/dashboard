@@ -27,6 +27,11 @@ export interface BridgeStartJobRequest {
     employees: BridgeEmployeeRequest[];
     fromDate: string; // dd/mm/yyyy
     toDate: string;   // dd/mm/yyyy
+    multiStep?: boolean;
+    isLastStep?: boolean;
+    stepIndex?: number;
+    stepTotal?: number;
+    stepLabel?: string;
 }
 
 export interface BridgeJobResultItem {

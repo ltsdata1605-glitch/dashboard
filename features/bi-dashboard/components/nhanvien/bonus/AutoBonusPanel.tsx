@@ -35,6 +35,7 @@ export const AutoBonusPanel: React.FC<{
     const {
         status: monthStatus, progress: monthProgress, stalled: monthStalled, startYear, startCompare,
         summary: monthSummary, errorMessage: monthErrorMessage, dismiss: monthDismiss, stop: stopYear,
+        resume, canResume, resumeInfo,
     } = multiMonthRun;
 
     const isBusy = status === 'detecting' || status === 'running' || monthStatus === 'detecting' || monthStatus === 'running';
@@ -109,9 +110,9 @@ export const AutoBonusPanel: React.FC<{
         pendingRetryRef.current = { type: 'single', label: range.label };
         startAuto(range);
     };
-    const handleRunYear = (year: number, label: string) => {
+    const handleRunYear = (year: number, label: string, fromMonthIndex0?: number, toMonthIndex0?: number) => {
         pendingRetryRef.current = { type: 'year', year, label };
-        startYear(year);
+        startYear(year, fromMonthIndex0, toMonthIndex0);
     };
     const handleRunCompare = (periods: ComparePeriodsInput, label: string) => {
         pendingRetryRef.current = { type: 'compare', periods, label };
@@ -137,6 +138,16 @@ export const AutoBonusPanel: React.FC<{
             >
                 <span>⚡ Tự động</span>
             </Button>
+            {!isBusy && canResume && resumeInfo && (
+                <Button
+                    variant="unstyled" size="none"
+                    onClick={resume}
+                    title={resumeInfo.label}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[11px] font-bold border border-amber-300 dark:border-amber-700 hover:bg-amber-100 transition-all active:scale-95"
+                >
+                    <span>▶ Tiếp tục ({resumeInfo.remainingCount} tháng)</span>
+                </Button>
+            )}
             {isDetecting && (
                 <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Đang kiểm tra tiện ích...</span>
             )}
@@ -164,6 +175,9 @@ export const AutoBonusPanel: React.FC<{
                 onRunSingle={handleRunSingle}
                 onRunYear={handleRunYear}
                 onRunCompare={handleRunCompare}
+                canResume={canResume}
+                resumeInfo={resumeInfo}
+                onResume={resume}
             />
             <AutoBonusInstallGuideModal
                 isNotInstalled={isNotInstalled}
@@ -173,7 +187,13 @@ export const AutoBonusPanel: React.FC<{
                 onUseManual={onUseManual}
             />
             <AutoBonusErrorDetailModal isOpen={showDetail} onClose={() => { setShowDetail(false); dismiss(); }} summary={summary} />
-            <MultiMonthResultDetailModal isOpen={showMonthDetail} onClose={() => { setShowMonthDetail(false); monthDismiss(); }} summary={monthSummary} />
+            <MultiMonthResultDetailModal
+                isOpen={showMonthDetail}
+                onClose={() => { setShowMonthDetail(false); monthDismiss(); }}
+                summary={monthSummary}
+                resumeInfo={resumeInfo}
+                onResume={resume}
+            />
         </div>
     );
 };

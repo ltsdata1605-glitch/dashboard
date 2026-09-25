@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { Settings, Search, Layers, MessageSquareQuote } from 'lucide-react';
+import { Settings, Search, Layers, MessageSquareQuote, Check } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { configStore } from '../../store/configStore';
@@ -8,8 +9,7 @@ import { SupermarketCompetitionData, Criterion, shortenName, parseNumber, roundU
 import { buildCompetitionTable, type ProcessedProgram } from '../../services/competitionViewCalc';
 import CompetitionListView from './competition/CompetitionListView';
 import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
-import { CompetitionCommentaryModal } from './competition/CompetitionCommentaryModal';
-import { calculateCompetitionCommentary } from '../../services/competitionCommentaryCalc';
+import { calculateCompetitionCommentary, generateZaloCommentaryMessage } from '../../services/competitionCommentaryCalc';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -75,7 +75,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     // Mặc định là 'configured' (Tuỳ chỉnh) và tự động đồng bộ lên Firebase qua useCloudSync
     const [groupingMode, setGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
-    const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
+    const [copiedCommentary, setCopiedCommentary] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
 
@@ -246,18 +246,43 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         }, 150);
     };
 
+    const handleCopyCommentary = async () => {
+        if (!commentaryData) {
+            toast.error('Chưa có dữ liệu nhận xét thi đua.');
+            return;
+        }
+        try {
+            const message = generateZaloCommentaryMessage(commentaryData);
+            await navigator.clipboard.writeText(message);
+            setCopiedCommentary(true);
+            toast.success('Đã sao chép nội dung nhận xét!');
+            setTimeout(() => setCopiedCommentary(false), 2000);
+        } catch (err) {
+            console.error('Lỗi khi sao chép nhận xét:', err);
+            toast.error('Không thể sao chép văn bản.');
+        }
+    };
+
     const toolbarControls = (
-        <div id="competition-view-controls" className="flex items-center gap-1.5">
-            {/* Nút Nhận xét & Đánh giá theo nhóm tiêu chí */}
+        <div id="competition-view-controls" className="flex items-center gap-0.5 sm:gap-1.5">
+            {/* Nút Sao chép Nhận xét thi đua (icon-only, sao chép trực tiếp không hiện modal) */}
             <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsCommentModalOpen(true)}
-                className="h-7 px-2.5 text-xs font-bold text-sky-700 bg-sky-50/80 hover:bg-sky-100 border-sky-200 dark:text-sky-300 dark:bg-sky-950/40 dark:border-sky-800 rounded-lg flex items-center gap-1.5 shadow-2xs transition-all"
-                title="Xem nhận xét & đánh giá thi đua theo từng nhóm tiêu chí"
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyCommentary}
+                className={`h-6 w-6 sm:h-7 sm:w-7 transition-all rounded-md sm:rounded-lg flex items-center justify-center border shrink-0 ${
+                    copiedCommentary
+                        ? 'text-emerald-600 bg-emerald-50 border-emerald-300 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-800'
+                        : 'text-sky-600 bg-sky-50/80 hover:bg-sky-100 border-sky-200 dark:text-sky-300 dark:bg-sky-950/40 dark:border-sky-800'
+                }`}
+                title={copiedCommentary ? "Đã sao chép nhận xét!" : "Sao chép nhận xét thi đua (Zalo/Telegram)"}
+                aria-label="Sao chép nhận xét thi đua"
             >
-                <MessageSquareQuote className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
-                <span>Nhận xét</span>
+                {copiedCommentary ? (
+                    <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                    <MessageSquareQuote className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-600 dark:text-sky-400" />
+                )}
             </Button>
 
             {/* Chuyển đổi chế độ gom nhóm: Mặc định (gốc) vs Tuỳ chỉnh (theo cấu hình Target) */}
@@ -265,7 +290,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                className={`h-7 w-7 transition-colors ${
+                className={`h-6 w-6 sm:h-7 sm:w-7 transition-colors rounded-md sm:rounded-lg shrink-0 ${
                     groupingMode === 'configured'
                         ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -277,7 +302,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 }
                 aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
             >
-                <Layers className="h-4 w-4" />
+                <Layers className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
 
             {/* Bộ lọc tích hợp 2 cột: Lọc chương trình & Cột hiển thị */}
@@ -286,16 +311,16 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className={`relative h-7 w-7 transition-colors ${
+                    className={`relative h-6 w-6 sm:h-7 sm:w-7 transition-colors rounded-md sm:rounded-lg shrink-0 ${
                         isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
                             ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     title="Bộ lọc thi đua (Chương trình & Cột hiển thị)"
                 >
-                    <FilterIcon className="h-4 w-4" />
+                    <FilterIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     {isProgramFiltered && (
-                        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-sky-500 px-1 text-[11px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                        <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-sky-500 px-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                             {validSelectedPrograms.length}
                         </span>
                     )}
@@ -424,10 +449,10 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={handleOpenTargetThiDua}
-                className="h-7 w-7 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors"
+                className="h-6 w-6 sm:h-7 sm:w-7 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-md sm:rounded-lg shrink-0"
                 title="Cấu hình Thi đua"
             >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
         </div>
     );
@@ -437,9 +462,9 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             {/* Portal controls into DashboardHeader action bar */}
             {portalTarget && ReactDOM.createPortal(toolbarControls, portalTarget)}
 
-            {/* 4 Thẻ KPI tổng hợp dưới Quỹ thời gian */}
+            {/* Thẻ KPI tổng hợp dưới Quỹ thời gian */}
             {processedSupermarketData && sortedPrograms.length > 0 && (
-                <div className="pt-2 px-4">
+                <div className="pt-1.5 sm:pt-2 px-1 sm:px-4">
                     <CompetitionKpiCards
                         programs={sortedPrograms}
                         headers={processedSupermarketData.headers}
@@ -450,10 +475,10 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 </div>
             )}
 
-            {/* Scrollable table content */}
-            <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                <div className="px-4 pb-4 pt-2 min-w-fit">
-                    <div className="p-0">
+            {/* Scrollable table content — hiển thị trọn vẹn trên mobile không cần cuộn ngang */}
+            <div className="overflow-x-auto scrollbar-hide w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div className="px-1 sm:px-4 pb-4 pt-2 w-full">
+                    <div className="p-0 w-full">
                         {processedSupermarketData && sortedPrograms.length > 0 ? (
                             <CompetitionListView
                                 groupedAndSortedPrograms={groupedAndSortedPrograms}
@@ -474,13 +499,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     </div>
                 </div>
             </div>
-
-            {/* Modal Nhận xét & Đánh giá thi đua */}
-            <CompetitionCommentaryModal
-                isOpen={isCommentModalOpen}
-                onClose={() => setIsCommentModalOpen(false)}
-                commentaryData={commentaryData}
-            />
         </div>
     );
 });

@@ -15,6 +15,9 @@ interface MonthlyBonusTableProps {
     dataByMonth: Record<string, Record<string, BonusMetrics>>;
     loading: boolean;
     supermarketName: string;
+    selectedYear?: number;
+    onSelectYear?: (year: number) => void;
+    availableYears?: number[];
 }
 
 type MonthRank = 'top' | 'bot' | 'mid';
@@ -54,7 +57,16 @@ function computeRankMap(entries: { originalName: string; value: number }[]): Map
  * hạng #1/#2/#3 + avatar giống chế độ xem Doanh thu; mỗi cột tháng tô màu theo hạng
  * TƯƠNG ĐỐI trong chính tháng đó: TOP 3 xanh (emerald), BOT 30% đỏ (rose), còn lại xám.
  */
-export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees, months, dataByMonth, loading, supermarketName }) => {
+export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
+    employees,
+    months,
+    dataByMonth,
+    loading,
+    supermarketName,
+    selectedYear,
+    onSelectYear,
+    availableYears,
+}) => {
     const [sortField, setSortField] = useState<string>('total');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
@@ -123,6 +135,28 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
          
     }, [employees, sortField, sortDir, dataByMonth, orderedMonths]);
 
+    const yearToggleHeader = availableYears && availableYears.length > 1 && onSelectYear ? (
+        <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 no-print">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Năm hiển thị:</span>
+            <div className="flex gap-1.5">
+                {availableYears.map(yr => (
+                    <button
+                        key={yr}
+                        type="button"
+                        onClick={() => onSelectYear(yr)}
+                        className={`px-3 py-1 text-xs font-bold rounded transition-colors ${
+                            selectedYear === yr
+                                ? 'bg-sky-600 text-white shadow-xs'
+                                : 'bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600'
+                        }`}
+                    >
+                        {yr} {yr === new Date().getFullYear() ? '(Năm nay)' : '(Năm trước)'}
+                    </button>
+                ))}
+            </div>
+        </div>
+    ) : null;
+
     if (loading) {
         return (
             <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
@@ -133,10 +167,13 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
 
     if (!anyMonthHasData) {
         return (
-            <EmptyState
-                title="Chưa có dữ liệu tháng nào"
-                description='Vào "⚡ Tự động" > Năm hoặc Tháng để đổ dữ liệu.'
-            />
+            <div>
+                {yearToggleHeader}
+                <EmptyState
+                    title="Chưa có dữ liệu tháng nào"
+                    description='Vào "⚡ Tự động" > Năm hoặc Tháng để đổ dữ liệu.'
+                />
+            </div>
         );
     }
 
@@ -145,6 +182,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({ employees,
 
     return (
         <div>
+            {yearToggleHeader}
             <table className="w-full border-collapse compact-export-table">
                 <thead className="sticky top-0 z-10">
                     <tr>

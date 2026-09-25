@@ -5,7 +5,6 @@ import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
 import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
 import { CompetitionTab } from './nhanvien/CompetitionTab';
-import DetailTab from './nhanvien/DetailTab';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
@@ -30,7 +29,6 @@ const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'installment', label: 'Trả chậm' },
     { tab: 'competition', label: 'Thi đua' },
     { tab: 'bonus', label: 'Thưởng' },
-    { tab: 'detail', label: 'Chi tiết' },
 ];
 
 interface NhanVienProps {
@@ -457,11 +455,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         />
                     </div>
                 )}
-                {visitedTabs.has('detail') && (
-                    <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
-                        <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} hiddenEmployees={hiddenEmployees} allowedEmployeeNames={allowedEmployeeNames} isActive={isActive && activeTab === 'detail'} />
-                    </div>
-                )}
+
             </div>
 
             {/* BonusDataModal — giữ conditional vì là modal overlay */}

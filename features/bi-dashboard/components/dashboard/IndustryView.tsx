@@ -447,18 +447,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         </div>
     );
 
-    const getDateLabel = (isRt: boolean) => {
-        const d = new Date();
-        if (!isRt) {
-            d.setDate(d.getDate() - 1);
-        }
-        return `${d.getDate()}/${d.getMonth() + 1}`;
-    };
-
-    const dateText = isRealtime ? `NGÀY ${getDateLabel(true)}` : `ĐẾN NGÀY ${getDateLabel(false)}`;
-    const smName = activeSupermarket && activeSupermarket !== 'Tổng' ? shortenSupermarketName(activeSupermarket) : '';
-    const smText = smName ? ` - ${smName}` : '';
-    const title = `${isRealtime ? 'REALTIME' : 'LUỸ KẾ'} ${dateText}${smText}`;
+    const title = 'CHI TIẾT NGÀNH HÀNG';
 
 
 

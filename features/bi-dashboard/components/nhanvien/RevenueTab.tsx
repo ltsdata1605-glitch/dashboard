@@ -322,15 +322,26 @@ const RevenueView: React.FC<{
     if (isLoading) return <Card bordered={false} title={cardTitle} subtitle={cardSubtitle}><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-sky-500 animate-spin" /></div></Card>;
 
     return (
-        <div className="space-y-0">
-            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white no-print border-b border-slate-200 gap-3">
-                <div className="flex gap-2 items-center">
+        <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
+            {/* 1. Tiêu đề lên TRÊN CÙNG */}
+            <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
+                    {cardTitle}
+                </h2>
+                <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                    {cardSubtitle}
+                </div>
+            </div>
+
+            {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
+            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
+                <div className="flex gap-1.5 items-center">
                     {!isRealtimeMode && (
                         <Button
                             variant="secondary"
                             size="sm"
                             onClick={() => setIsPrevMonthModalOpen(true)}
-                            className={`gap-1.5 ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
+                            className={`h-8 gap-1.5 px-2.5 text-xs ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
                         >
                             <ClockIcon className="h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Cùng kỳ</span>
@@ -346,7 +357,7 @@ const RevenueView: React.FC<{
                             variant="secondary"
                             size="sm"
                             onClick={() => setIsShowRemaining(p => !p)}
-                            className={`gap-1.5 ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
+                            className={`h-8 gap-1.5 px-2.5 text-xs ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
                         >
                             <span
                                 aria-hidden="true"
@@ -359,50 +370,50 @@ const RevenueView: React.FC<{
                     )}
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    {/* Nút chuyển chế độ REALTIME tại vị trí khoanh đỏ */}
+                    {/* Nút chuyển chế độ REALTIME */}
                     <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => setIsRealtimeMode(p => !p)}
-                        className={`gap-1.5 font-bold transition-all ${
+                        className={`h-8 gap-1.5 px-2.5 text-xs font-bold transition-all ${
                             isRealtimeMode
                                 ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-sm ring-2 ring-amber-400/40'
-                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                         }`}
                         title={isRealtimeMode ? 'Đang xem Doanh thu Realtime (Bấm để xem Luỹ kế)' : 'Bấm để xem Doanh thu Realtime trong ngày'}
                     >
                         <span className={`w-2 h-2 rounded-full ${isRealtimeMode ? 'bg-white animate-pulse' : 'bg-amber-500'}`} />
                         <span>Realtime</span>
                     </Button>
-                    <div className="h-4 w-px bg-slate-200 mx-0.5" />
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="text-sky-700 dark:text-sky-400"
+                        className="h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>
-                    <div className="h-4 w-px bg-slate-200 mx-0.5" />
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="text-slate-400"
+                        className="h-8 w-8 text-slate-400"
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
                     </Button>
                     <ExportButton options={exportOptions} />
                 </div>
             </div>
-            <div ref={cardRef}>
-                <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false}>
-                    <div className="px-4 pt-3 pb-1">
-                        <TimeProgressBar isRealtime={isRealtimeMode} />
-                    </div>
+
+            {/* 3. Tiến độ thời gian */}
+            <div className="px-4 pt-3 pb-1">
+                <TimeProgressBar isRealtime={isRealtimeMode} />
+            </div>
                     {isRealtimeMode && activeRows.length === 0 && (
                         <div className="mx-4 my-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex items-center gap-2">
                             <AlertTriangleIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
@@ -544,10 +555,8 @@ const RevenueView: React.FC<{
                                 </tbody>
                             </table>
                             </div>
+                        </div>
                     </div>
-                    </div>
-                </Card>
-            </div>
             <ImportPrevMonthModal isOpen={isPrevMonthModalOpen} onClose={() => setIsPrevMonthModalOpen(false)} onSave={setPrevMonthRaw} />
         </div>
     );

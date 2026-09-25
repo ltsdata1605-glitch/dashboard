@@ -10,13 +10,16 @@ export const MultiMonthResultDetailModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     summary: MultiMonthSummary | null;
-}> = ({ isOpen, onClose, summary }) => {
+    resumeInfo?: { label: string; remainingCount: number } | null;
+    onResume?: () => void;
+}> = ({ isOpen, onClose, summary, resumeInfo, onResume }) => {
     if (!isOpen || !summary) return null;
 
     const errorMonths = summary.monthResults.filter(m => !!m.error).length;
     const isCompare = summary.kind === 'compare';
     const unit = isCompare ? 'kỳ' : 'tháng';
     const runName = isCompare ? 'So sánh cùng kỳ' : 'chạy Năm';
+    const canResume = (summary.stoppedEarly || errorMonths > 0) && !!onResume;
 
     return (
         <Modal
@@ -24,7 +27,26 @@ export const MultiMonthResultDetailModal: React.FC<{
             onClose={onClose}
             title={summary.stoppedEarly ? `Kết quả ${runName} (đã dừng giữa chừng)` : `Kết quả ${runName}`}
             maxWidth="lg"
-            footer={<Button variant="unstyled" size="none" onClick={onClose} className="w-full py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">Đóng</Button>}
+            footer={
+                <div className="flex items-center justify-between gap-3 w-full">
+                    {canResume ? (
+                        <Button
+                            variant="primary"
+                            onClick={() => { onClose(); onResume(); }}
+                            className="flex-1 py-2 text-xs sm:text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white rounded-md shadow transition-colors"
+                        >
+                            ▶ {resumeInfo?.label ? `Tiếp tục (${resumeInfo.label})` : 'Chạy tiếp các tháng còn lại'}
+                        </Button>
+                    ) : <div />}
+                    <Button
+                        variant="secondary"
+                        onClick={onClose}
+                        className="px-5 py-2 text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors"
+                    >
+                        Đóng
+                    </Button>
+                </div>
+            }
         >
             <div className="flex items-center gap-2 mb-4 flex-wrap">
                 <Badge variant="success">{summary.monthsDone - errorMonths}/{summary.monthsTotal} {unit} thành công</Badge>

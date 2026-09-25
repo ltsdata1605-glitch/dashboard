@@ -112,9 +112,13 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
         }
     };
 
+    const gridColsClass = units.length === 3
+        ? 'grid-cols-3'
+        : 'grid-cols-2 sm:grid-cols-4';
+
     return (
         <div
-            className={`competition-kpi-container w-full grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 mb-2 sm:mb-2.5 ${units.length === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}
+            className={`competition-kpi-container w-full grid ${gridColsClass} gap-1 sm:gap-2 mb-1.5 sm:mb-2`}
             title={`Tính theo ${modeLabel}`}
         >
             {units.map((u) => {
@@ -122,28 +126,28 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                 return (
                     <div
                         key={u.key}
-                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-2 py-1.5 transition-all shadow-2xs hover:shadow-xs"
+                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-2 sm:px-2.5 py-1.5 sm:py-2 transition-all shadow-2xs hover:shadow-xs"
                     >
-                        {/* Vạch nhận diện 3px trên đỉnh mỗi thẻ riêng biệt */}
-                        <div className={`absolute top-0 left-0 right-0 h-[2px] ${u.bar}`} />
+                        {/* Vạch nhận diện 2.5px trên đỉnh mỗi thẻ riêng biệt */}
+                        <div className={`absolute top-0 left-0 right-0 h-[2.5px] ${u.bar}`} />
 
-                        <div className="flex items-center justify-between gap-1">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate" title={u.label}>
+                        <div className="flex items-center justify-between gap-0.5 sm:gap-1">
+                            <span className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 truncate" title={u.label}>
                                 {u.label}
                             </span>
                             <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
                         </div>
 
-                        <div className={`text-base sm:text-lg font-black tabular-nums leading-none tracking-tight mt-0.5 ${u.tone}`}>
+                        <div className={`text-[19px] xs:text-[21px] sm:text-[24px] md:text-[27px] lg:text-[30px] font-black tabular-nums leading-tight tracking-tight my-1 sm:my-1.5 ${u.tone}`}>
                             {v.big}
                         </div>
 
-                        <div className="mt-0.5 flex items-center justify-between text-[11px] leading-tight text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center justify-between text-[9px] xs:text-[9.5px] sm:text-[10.5px] leading-tight text-slate-500 dark:text-slate-400">
                             <span className="truncate" title={v.sub}>{v.sub}</span>
                         </div>
 
                         {/* Vạch tiến độ */}
-                        <div className={`mt-1 h-[2px] w-full ${u.barBg} overflow-hidden`}>
+                        <div className={`mt-1 sm:mt-1.5 h-[2px] sm:h-[2.5px] w-full ${u.barBg} overflow-hidden`}>
                             <div
                                 className={`h-full ${u.bar} transition-all duration-300`}
                                 style={{ width: `${Math.min(100, Math.max(0, v.pct))}%` }}

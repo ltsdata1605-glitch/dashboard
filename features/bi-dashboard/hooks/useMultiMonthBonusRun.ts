@@ -3,13 +3,22 @@ import { Employee, BonusMetrics, BonusComparePart } from '../types/nhanVienTypes
 import { parseBonusBlock } from '../utils/bonusParser';
 import { formatEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { detectUserscript } from '../utils/bonusBridge';
-import { runSingleBonusJob } from '../utils/bonusJobRunner';
+import { runSingleBonusJob, reopenWorkerTab } from '../utils/bonusJobRunner';
 import { getYearMonthPlan, formatShortRange, DateRangeDDMMYYYY } from '../utils/bonusDateRange';
 
 const STALL_WARNING_MS = 90_000;
 // Nghỉ giữa các bước — dài hơn nghỉ giữa các nhân viên (700ms trong userscript), để
 // không dội tải liên tục hệ thống MWG khi chạy trọn 1 năm.
 const INTER_STEP_DELAY_MS = 3000;
+const RESUME_STORAGE_KEY = 'ycx_bonus_year_resume';
+
+interface StoredResumeCheckpoint {
+    kind: MultiRunKind;
+    year: number;
+    uncompletedYyyymm: string[];
+    label: string;
+    updatedAt: number;
+}
 
 export type MultiMonthStatus = 'idle' | 'detecting' | 'not-installed' | 'running' | 'done' | 'error';
 
@@ -67,12 +76,16 @@ export interface UseMultiMonthBonusRunResult {
     stalled: boolean;
     summary: MultiMonthSummary | null;
     errorMessage: string | null;
-    startYear: (year: number) => void;
+    startYear: (year: number, fromMonthIndex0?: number, toMonthIndex0?: number) => void;
     /** So sánh cùng kỳ tháng: chạy KỲ NÀY trước (để bảng Tổng hợp cập nhật sớm) rồi KỲ TRƯỚC. */
     startCompare: (periods: ComparePeriodsInput) => void;
     /** B1a: chỉ có hiệu lực ở ranh giới bước — bước đang chạy vẫn hoàn tất bình thường. */
     stop: () => void;
     dismiss: () => void;
+    reopenTab: () => void;
+    resume: () => void;
+    canResume: boolean;
+    resumeInfo: { label: string; remainingCount: number } | null;
 }
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -107,6 +120,13 @@ export function useMultiMonthBonusRun(
     const [stalled, setStalled] = useState(false);
     const [summary, setSummary] = useState<MultiMonthSummary | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [resumeInfo, setResumeInfo] = useState<{ label: string; remainingCount: number } | null>(null);
+
+    const resumePlanRef = useRef<{
+        kind: MultiRunKind;
+        buildPlan: () => SequentialStep[];
+        info: { label: string; remainingCount: number };
+    } | null>(null);
 
     const stopRequestedRef = useRef(false);
     const stallTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -123,6 +143,46 @@ export function useMultiMonthBonusRun(
     }, []);
 
     useEffect(() => () => clearStallTimer(), []);
+
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(RESUME_STORAGE_KEY);
+            if (!raw) return;
+            const parsed: StoredResumeCheckpoint = JSON.parse(raw);
+            if (Date.now() - (parsed.updatedAt || 0) > 24 * 3600 * 1000) {
+                localStorage.removeItem(RESUME_STORAGE_KEY);
+                return;
+            }
+            if (parsed.uncompletedYyyymm && parsed.uncompletedYyyymm.length > 0) {
+                const now = new Date();
+                const allSteps = getYearMonthPlan(parsed.year, now);
+                const remainingSteps: SequentialStep[] = allSteps
+                    .filter(m => parsed.uncompletedYyyymm.includes(m.yyyymm))
+                    .map(m => ({
+                        key: m.yyyymm,
+                        label: m.label,
+                        fromDate: m.fromDate,
+                        toDate: m.toDate,
+                        save: entries => handleSaveBonusMonthly(entries, m.yyyymm),
+                    }));
+
+                if (remainingSteps.length > 0) {
+                    const info = {
+                        label: parsed.label || `Tiếp tục từ ${remainingSteps[0].label} (${remainingSteps.length} tháng còn lại)`,
+                        remainingCount: remainingSteps.length,
+                    };
+                    resumePlanRef.current = {
+                        kind: 'year',
+                        buildPlan: () => remainingSteps,
+                        info,
+                    };
+                    setResumeInfo(info);
+                }
+            }
+        } catch {
+            // bỏ qua nếu lỗi đọc storage
+        }
+    }, [handleSaveBonusMonthly]);
 
     const runPlan = useCallback((kind: MultiRunKind, buildPlan: () => SequentialStep[]) => {
         if (status === 'detecting' || status === 'running') return;
@@ -180,6 +240,14 @@ export function useMultiMonthBonusRun(
                         armStallTimer();
                         setProgress({ kind, monthIndex: i, monthTotal: plan.length, monthLabel: step.label, employeeDone: done, employeeTotal: total, currentEmployeeId });
                     },
+                    {
+                        multiStep: plan.length > 1,
+                        isLastStep: i === plan.length - 1,
+                        stepIndex: i,
+                        stepTotal: plan.length,
+                        stepLabel: step.label,
+                        isFirstStep: i === 0,
+                    },
                 );
 
                 try {
@@ -209,13 +277,54 @@ export function useMultiMonthBonusRun(
                 }
             }
 
+            const uncompletedSteps = plan.filter(step => {
+                const res = monthResults.find(m => m.yyyymm === step.key);
+                return !res || Boolean(res.error) || res.successCount === 0;
+            });
+
+            if (uncompletedSteps.length > 0) {
+                const unit = kind === 'compare' ? 'kỳ' : 'tháng';
+                const info = {
+                    label: `Tiếp tục từ ${uncompletedSteps[0].label} (${uncompletedSteps.length} ${unit} còn lại)`,
+                    remainingCount: uncompletedSteps.length,
+                };
+                resumePlanRef.current = {
+                    kind,
+                    buildPlan: () => uncompletedSteps,
+                    info,
+                };
+                setResumeInfo(info);
+                if (kind === 'year') {
+                    try {
+                        const year = parseInt(uncompletedSteps[0].key.split('-')[0], 10);
+                        localStorage.setItem(RESUME_STORAGE_KEY, JSON.stringify({
+                            kind: 'year',
+                            year,
+                            uncompletedYyyymm: uncompletedSteps.map(s => s.key),
+                            label: info.label,
+                            updatedAt: Date.now(),
+                        }));
+                    } catch { /* ignore */ }
+                }
+            } else {
+                resumePlanRef.current = null;
+                setResumeInfo(null);
+                try { localStorage.removeItem(RESUME_STORAGE_KEY); } catch { /* ignore */ }
+            }
+
             setStatus('done');
             setSummary({ kind, monthsTotal: plan.length, monthsDone: monthResults.length, stoppedEarly, monthResults, skippedNames });
         });
     }, [status, allEmployees, armStallTimer]);
 
-    const startYear = useCallback((year: number) => {
-        runPlan('year', () => getYearMonthPlan(year).map(m => ({
+    const resume = useCallback(() => {
+        if (!resumePlanRef.current) return;
+        const { kind, buildPlan } = resumePlanRef.current;
+        runPlan(kind, buildPlan);
+    }, [runPlan]);
+
+    const startYear = useCallback((year: number, fromMonthIndex0 = 0, toMonthIndex0?: number) => {
+        runPlan('year', () => getYearMonthPlan(year, new Date(), fromMonthIndex0, toMonthIndex0).map(m => ({
             key: m.yyyymm,
             label: m.label,
             fromDate: m.fromDate,
@@ -249,5 +358,19 @@ export function useMultiMonthBonusRun(
         setStalled(false);
     }, []);
 
-    return { status, progress, stalled, summary, errorMessage, startYear, startCompare, stop, dismiss };
+    return {
+        status,
+        progress,
+        stalled,
+        summary,
+        errorMessage,
+        startYear,
+        startCompare,
+        stop,
+        dismiss,
+        reopenTab: reopenWorkerTab,
+        resume,
+        canResume: Boolean(resumeInfo && resumePlanRef.current),
+        resumeInfo,
+    };
 }

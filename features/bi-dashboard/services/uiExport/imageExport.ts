@@ -1185,10 +1185,32 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const rect = clone.getBoundingClientRect();
         const exportPadding = 4; // px on each side — must match the padding in htmlToImage style below
         const contentHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || rect.height);
-        const contentWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
+        
+        // Đo chiều rộng chính xác nhất, kiểm tra cả các bảng bên trong clone để không bao giờ bị cắt cột
+        let maxTableWidth = 0;
+        clone.querySelectorAll('table').forEach((t) => {
+            maxTableWidth = Math.max(maxTableWidth, t.scrollWidth || 0, t.offsetWidth || 0);
+        });
+
+        const measuredWidth = Math.max(
+            rect.width || 0,
+            clone.scrollWidth || 0,
+            clone.offsetWidth || 0,
+            maxTableWidth
+        );
+        const contentWidth = captureAsDisplayed ? element.clientWidth : measuredWidth;
 
         const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
         let finalHeight = contentHeight + exportPadding * 2;
+
+        // Đảm bảo clone và captureContainer không co nhỏ hơn finalWidth
+        clone.style.setProperty('width', `${finalWidth}px`, 'important');
+        clone.style.setProperty('min-width', `${finalWidth}px`, 'important');
+        clone.style.setProperty('overflow', 'visible', 'important');
+        if (captureContainer) {
+            captureContainer.style.setProperty('width', `${finalWidth}px`, 'important');
+            captureContainer.style.setProperty('min-width', `${finalWidth}px`, 'important');
+        }
 
         let finalScale = scale;
         if (finalHeight * scale > 32000) {

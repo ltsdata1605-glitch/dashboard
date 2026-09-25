@@ -68,7 +68,23 @@ export function findCheckThuongStore(storeNames: string[], supermarketName: stri
     }
     const norm = normalizeSupermarketKey(supermarketName);
     if (!norm) return undefined;
-    return storeNames.find(n => normalizeSupermarketKey(n) === norm);
+
+    // 1. Trùng khớp chính xác sau khi bỏ mã kho đầu
+    const exact = storeNames.find(n => normalizeSupermarketKey(n) === norm);
+    if (exact) return exact;
+
+    // 2. Trùng phân đoạn cuối sau dấu '-' (VD: "910 - ĐML_STR_STR - 99 Hùng Vương" -> phân đoạn cuối "99 Hùng Vương")
+    const byLastSegment = storeNames.find(n => {
+        const parts = n.split(/\s*-\s*/);
+        if (parts.length > 1) {
+            const lastPart = parts[parts.length - 1];
+            if (normalizeSupermarketKey(lastPart) === norm) return true;
+        }
+        return false;
+    });
+    if (byLastSegment) return byLastSegment;
+
+    return undefined;
 }
 
 /**

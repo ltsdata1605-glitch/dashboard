@@ -109,6 +109,14 @@
     @apply px-1.5 py-1 text-[13px] font-extrabold leading-tight align-middle;
   }
 
+  @media (max-width: 640px) {
+    .competition-list-table th,
+    .competition-list-table td {
+      padding-left: 2px !important;
+      padding-right: 2px !important;
+    }
+  }
+
   /* Report BI — tiêu đề & chú thích mặc định dùng UTM Avo */
   .js-report-title {
     font-family: 'UTM Avo', sans-serif !important;

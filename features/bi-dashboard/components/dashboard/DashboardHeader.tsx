@@ -63,13 +63,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // chết còn sót lại từ lúc bỏ chế độ "Báo cáo", và là 1 trong các lỗi làm hỏng `npm run check`.
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
-        const subTabLabel = activeSubTab === 'competition' ? 'THI ĐUA' : 'DOANH THU';
+        const subTabLabel = activeSubTab === 'competition' ? ' THI ĐUA' : '';
+        const smLabel = !activeSupermarket || activeSupermarket === 'Tổng'
+            ? 'CỤM'
+            : shortenSupermarketName(activeSupermarket).toUpperCase();
 
         if (isRealtime) {
-            return `REALTIME ${subTabLabel} NGÀY ${getDateLabel(true)}`;
+            return `REALTIME${subTabLabel} NGÀY ${getDateLabel(true)} - ${smLabel}`;
         }
-        return `LUỸ KẾ ${subTabLabel} ĐẾN NGÀY ${getDateLabel(false)}`;
-    }, [activeMainTab, activeSubTab]);
+        return `LUỸ KẾ${subTabLabel} ĐẾN NGÀY ${getDateLabel(false)} - ${smLabel}`;
+    }, [activeMainTab, activeSubTab, activeSupermarket]);
 
     return (
         <div className="space-y-0">
@@ -80,24 +83,24 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         {title}
                     </h2>
                 </div>
-                <div className="flex flex-none justify-end hide-on-export">
+                <div className="flex flex-none justify-end hide-on-export shrink-0">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên).
                         BUG FIX: KHÔNG overflow-hidden — panel của MultiSelectDropdown (supermarket
                         selector bên dưới) định vị absolute, xổ ra NGOÀI khung pill; overflow-hidden
                         sẽ cắt mất panel dù dropdown vẫn "mở" trong state (không bấm chọn được gì) —
                         xem giải thích đầy đủ ở NhanVien.tsx, nơi bug này được user báo cáo trước. */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
-                            className="flex items-center justify-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-[11px] sm:text-sm font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors select-none cursor-pointer"
+                            className="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-[11px] sm:text-sm font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors select-none cursor-pointer whitespace-nowrap shrink-0"
                             title="Bấm để chuyển đổi giữa Realtime và Luỹ kế"
                         >
                             <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0 animate-pulse" />
-                            <span>{activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}</span>
+                            <span className="whitespace-nowrap">{activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}</span>
                         </Button>
                         <MultiSelectDropdown
-                            triggerClassName="rounded-r-full"
+                            triggerClassName="rounded-r-full whitespace-nowrap"
                             icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
@@ -140,7 +143,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         </div>
 
                         {/* Right: Inline Actions [Lọc] [⚙️ Cột] [Công cụ thi đua] | [🖼️] [📷] */}
-                        <div className="flex items-center gap-1 no-print shrink-0 mt-0.5">
+                        <div className="flex items-center gap-0.5 sm:gap-1 no-print shrink-0 mt-0.5">
                             {/* Portal target for inline filter from SummaryTableView */}
                             <div id="summary-table-inline-actions" className="flex items-center gap-0.5" />
 
@@ -151,16 +154,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             {toolbarSlot}
 
                             {/* Divider */}
-                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+                            <div className="h-3.5 sm:h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />
 
                             {/* Batch export */}
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md sm:rounded-lg shrink-0"
                                 title="Xuất tất cả ảnh"
                             >
-                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                                {isBatchExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <ImagesIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                             </Button>
 
                             {/* Single export */}
@@ -168,10 +171,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                    variant="ghost" size="icon" className="h-6 w-6 sm:h-7 sm:w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md sm:rounded-lg shrink-0"
                                     title="Xuất ảnh"
                                 >
-                                    {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
+                                    {isExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <CameraIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                                 </Button>
                             )}
                         </div>

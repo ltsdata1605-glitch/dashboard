@@ -340,8 +340,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 const blob = await exportElementAsImage(card, safeName, {
                     mode: 'blob-only', elementsToHide: ['.export-button-component'],
                     fitAllColumns: true,
+                    forcedWidth: Math.max(card.offsetWidth, 480),
                     onCloneReady: (clone: HTMLElement) => {
-                        clone.classList.remove('h-full');
+                        clone.classList.remove('h-full', 'overflow-hidden');
                     }
                 });
                 
@@ -502,24 +503,34 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const cardSubtitle = <span className="js-report-title">Thi đua là động lực, hiệu quả là mục tiêu - Vượt qua giới hạn, khẳng định bản thân.</span>;
 
     return (
-        <div className="space-y-0">
-            {/* Toolbar bar - giống Trả Góp */}
-            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
-                <div className="flex gap-2 items-center">
+        <div className="space-y-0 bg-white dark:bg-slate-900">
+            {/* 1. Tiêu đề lên TRÊN CÙNG */}
+            <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
+                    {cardTitle}
+                </h2>
+                <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                    {cardSubtitle}
+                </div>
+            </div>
+
+            {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
+            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
+                <div className="flex gap-1.5 items-center flex-wrap">
                     {([['tatca', 'Tổng'], ['nhom', 'Nhóm'], ['tong', 'Tuỳ chỉnh'], ['canhan', 'Cá nhân'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
                         <Button
                             variant="secondary"
                             size="sm"
                             key={key}
                             onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }}
-                            className={activeVersionName === null && activeCompetitionTab === key ? 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100' : 'text-slate-500'}
+                            className={`h-8 px-2.5 text-xs ${activeVersionName === null && activeCompetitionTab === key ? 'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100' : 'text-slate-500'}`}
                         >
                             {label}
                         </Button>
                     ))}
-                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
-                        <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} onKeyDown={onActivateKey(() => onVersionTabClick(version))} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/30 dark:border-sky-800 dark:text-sky-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
+                        <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} onKeyDown={onActivateKey(() => onVersionTabClick(version))} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1 h-8 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-900/30 dark:border-sky-800 dark:text-sky-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
                             <span>{version.name}</span>
                             {activeVersionName === version.name && hasUnsavedVersionChanges && (
                                 <span title="Bộ lọc đã đổi, chưa lưu lại" className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
@@ -528,12 +539,12 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         </div>
                     ))}
                     {hasUnsavedVersionChanges && (
-                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="px-2 py-1 bg-amber-500 text-white rounded text-[11px] font-bold hover:bg-amber-600">Cập nhật</Button>
+                        <Button variant="unstyled" size="none" onClick={handleUpdateActiveVersion} title={`Lưu lại thay đổi vào "${activeVersionName}"`} className="h-8 px-2 bg-amber-500 text-white rounded text-[11px] font-bold hover:bg-amber-600 flex items-center">Cập nhật</Button>
                     )}
                     {activeVersionName === 'new' ? (
                         <div className="flex items-center gap-1.5">
-                            <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="w-28 text-[11px]" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
-                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="px-2 py-1 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
+                            <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="w-28 text-[11px] h-8" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
+                            <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-8 px-2 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-400 flex items-center" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
                             <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ) : (
@@ -549,21 +560,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 size="icon"
                                 onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                                 title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                                className="text-sky-700 dark:text-sky-400"
+                                className="h-8 w-8 text-sky-700 dark:text-sky-400"
                             >
                                 {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                             </Button>
-                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="h-8 w-8 text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
                             {highlightedEmployees.size > 0 && (
-                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
+                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="h-8 w-8 text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
                             )}
                             <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="text-slate-400">
+                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="h-8 w-8 text-slate-400">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
                             <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} />
@@ -571,18 +582,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="text-slate-400">
+                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="h-8 w-8 text-slate-400">
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
                         </>
                     )}
                 </div>
             </div>
-            <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false}>
-                <div className="px-4 pt-3 pb-1">
-                    <TimeProgressBar />
-                </div>
-                <div className="w-full overflow-visible px-4 pb-4">
+
+            {/* 3. Tiến độ thời gian */}
+            <div className="px-4 pt-3 pb-1">
+                <TimeProgressBar />
+            </div>
+
+            {/* 4. Nội dung thi đua */}
+            <div className="w-full overflow-visible px-4 pb-4">
                     <div className="pt-2">
                         {activeCompetitionTab === 'nhom' && (
                             <>
@@ -792,7 +806,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         )}
                     </div>
                 </div>
-            </Card>
         </div>
     );
 });

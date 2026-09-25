@@ -389,15 +389,26 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
 
 
     return (
-        <div className="space-y-0">
-            <div className="flex flex-wrap justify-between items-center px-4 py-[3px] bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
-                <div className="flex gap-2 items-center">
+        <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
+            {/* 1. Tiêu đề lên TRÊN CÙNG */}
+            <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
+                    {cardTitle}
+                </h2>
+                <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                    {cardSubtitle}
+                </div>
+            </div>
+
+            {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
+            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
+                <div className="flex gap-1.5 items-center">
                     <input type="file" ref={importFileRef} onChange={handleFileImport} accept=".json" className="hidden" />
                     <Button
                         variant="secondary"
                         size="sm"
                         onClick={() => importFileRef.current?.click()}
-                        className={`gap-1.5 ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
+                        className={`h-8 gap-1.5 px-2.5 text-xs ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Cùng kỳ</span>
@@ -409,84 +420,101 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                     </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <Button variant="ghost" size="icon" onClick={() => setHidePercent(v => !v)} title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'} className={`text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400'}`}><span className={hidePercent ? 'line-through' : ''}>%</span></Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setHidePercent(v => !v)}
+                        title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'}
+                        className={`h-8 w-8 text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400'}`}
+                    >
+                        <span className={hidePercent ? 'line-through' : ''}>%</span>
+                    </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="text-sky-700 dark:text-sky-400"
+                        className="h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <Button variant="ghost" size="icon" onClick={handleBatchExportByDept} disabled={isExportingByDept} title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'} className="text-slate-400">{isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}</Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleBatchExportByDept}
+                        disabled={isExportingByDept}
+                        title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
+                        className="h-8 w-8 text-slate-400"
+                    >
+                        {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
+                    </Button>
                     <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
                 </div>
             </div>
-            <div ref={cardRef}>
-                <Card noPadding bordered={false} title={cardTitle} subtitle={cardSubtitle} rounded={false}>
-                    <div className="px-4 pt-3 pb-1">
-                        <TimeProgressBar />
-                    </div>
-                    <div className="w-full overflow-hidden px-4 pb-4">
-                        <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            <table className="w-full border-collapse border border-slate-200 dark:border-slate-700">
-                                <thead className="sticky top-0 z-10">
-                                    {/* Tier 1: Group Headers */}
-                                    <tr>
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('name')} className="px-3 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[3px] border-l-slate-200 dark:border-l-slate-700 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 min-w-[200px] align-middle">Nhân viên</th>
-                                        {providers.map(p => <th key={p.name} rowSpan={hidePercent ? 1 : undefined} colSpan={hidePercent ? 1 : 2} className="px-1 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 leading-tight align-middle">{p.shortName}</th>)}
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-emerald-900/40 leading-tight align-middle"><div>D.THU</div><div>THỰC</div></th>
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalPercent')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-amber-900/40 leading-tight align-middle">%T.Chậm</th>
-                                    </tr>
-                                    {/* Tier 2: Column Headers - only shown when % columns visible */}
-                                    {!hidePercent && <tr>
-                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">DT</th><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">%</th></React.Fragment>)}
-                                    </tr>}
-                                </thead>
-                                <tbody className="bg-white dark:bg-slate-900">
-                                    {displayList.map((row, idx) => {
-                                        if (row.type === 'department') {
-                                            return (
-                                                <tr key={`dept-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300 border-t border-b border-slate-200 dark:border-slate-700">
-                                                    <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 font-extrabold whitespace-nowrap min-w-[200px]">{row.name}</td>
-                                                    {row.providers.map((p, pIdx: number) => (
-                                                        <React.Fragment key={pIdx}>
-                                                            <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                             {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= effectiveTargetTraCham ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div></td>}
-                                                        </React.Fragment>
-                                                    ))}
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold" style={{ color: getMetricColorByTarget(row.totalPercent, effectiveTargetTraCham) }}>{Math.round(row.totalPercent)}%</td>
-                                                </tr>
-                                            );
-                                        }
-                                        const isTotal = row.type === 'total';
-                                        const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                        const tiers = employeeTiersMap.get(row.originalName || row.name);
-                                        return (
-                                            <InstallmentDesktopRow
-                                                key={row.originalName || idx}
-                                                row={row}
-                                                isTotal={isTotal}
-                                                isHighlighted={isHighlighted}
-                                                onHighlightToggle={handleHighlightToggle}
-                                                supermarketName={supermarketName}
-                                                hidePercent={hidePercent}
-                                                f={f}
-                                                targetTraGop={effectiveTargetTraCham}
-                                                providerTiers={tiers?.providerTiers}
-                                                totalTier={tiers?.totalTier}
-                                            />
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                    </div>
-                    </div>
-                </Card>
+
+            {/* 3. Tiến độ thời gian */}
+            <div className="px-4 pt-3 pb-1">
+                <TimeProgressBar />
+            </div>
+
+            {/* 4. Bảng dữ liệu */}
+            <div className="w-full overflow-hidden px-4 pb-4">
+                <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <table className="w-full border-collapse border border-slate-200 dark:border-slate-700">
+                        <thead className="sticky top-0 z-10">
+                            {/* Tier 1: Group Headers */}
+                            <tr>
+                                <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('name')} className="px-3 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[3px] border-l-slate-200 dark:border-l-slate-700 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 min-w-[200px] align-middle">Nhân viên</th>
+                                {providers.map(p => <th key={p.name} rowSpan={hidePercent ? 1 : undefined} colSpan={hidePercent ? 1 : 2} className="px-1 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 leading-tight align-middle">{p.shortName}</th>)}
+                                <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-emerald-900/40 leading-tight align-middle"><div>D.THU</div><div>THỰC</div></th>
+                                <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalPercent')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-amber-900/40 leading-tight align-middle">%T.Chậm</th>
+                            </tr>
+                            {/* Tier 2: Column Headers - only shown when % columns visible */}
+                            {!hidePercent && <tr>
+                                {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">DT</th><th className="px-1 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-sky-900/50 transition-colors">%</th></React.Fragment>)}
+                            </tr>}
+                        </thead>
+                        <tbody className="bg-white dark:bg-slate-900">
+                            {displayList.map((row, idx) => {
+                                if (row.type === 'department') {
+                                    return (
+                                        <tr key={`dept-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300 border-t border-b border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 font-extrabold whitespace-nowrap min-w-[200px]">{row.name}</td>
+                                            {row.providers.map((p, pIdx: number) => (
+                                                <React.Fragment key={pIdx}>
+                                                    <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
+                                                     {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= effectiveTargetTraCham ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div></td>}
+                                                </React.Fragment>
+                                            ))}
+                                            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
+                                            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold" style={{ color: getMetricColorByTarget(row.totalPercent, effectiveTargetTraCham) }}>{Math.round(row.totalPercent)}%</td>
+                                        </tr>
+                                    );
+                                }
+                                const isTotal = row.type === 'total';
+                                const isHighlighted = highlightedEmployees.has(row.originalName || '');
+                                const tiers = employeeTiersMap.get(row.originalName || row.name);
+                                return (
+                                    <InstallmentDesktopRow
+                                        key={row.originalName || idx}
+                                        row={row}
+                                        isTotal={isTotal}
+                                        isHighlighted={isHighlighted}
+                                        onHighlightToggle={handleHighlightToggle}
+                                        supermarketName={supermarketName}
+                                        hidePercent={hidePercent}
+                                        f={f}
+                                        targetTraGop={effectiveTargetTraCham}
+                                        providerTiers={tiers?.providerTiers}
+                                        totalTier={tiers?.totalTier}
+                                    />
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { ChevronDownIcon, ChevronUpIcon, CameraIcon, ChartBarIcon } from '../Icons';
+import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
 import {
@@ -68,9 +68,16 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         try {
             const originalCard = cardRef.current;
             const filename = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
+            const cardWidth = Math.max(originalCard.offsetWidth, 480);
             const blob = await exportElementAsImage(originalCard, filename, {
-                mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                fitAllColumns: true, isCompactTable: true,
+                mode: 'blob-only',
+                elementsToHide: ['.export-button-component'],
+                forcedWidth: cardWidth,
+                onCloneReady: (clone: HTMLElement) => {
+                    clone.classList.remove('h-full', 'overflow-hidden');
+                    clone.style.width = `${cardWidth}px`;
+                    clone.style.overflow = 'visible';
+                }
             });
             if (blob) showExportOptions(blob, filename);
         } catch (err) {
@@ -197,13 +204,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             ref={cardRef} 
             className="competition-group-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
         >
-            {/* Title bar — flat, professional */}
-            <div className="py-2 px-3 flex flex-col gap-1.5 border-b border-slate-200 dark:border-slate-700">
-                <div className="flex justify-center items-center relative gap-2">
-                    <div className="w-6 h-6 rounded-none flex items-center justify-center shrink-0 bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-                        <ChartBarIcon className="h-3.5 w-3.5" />
-                    </div>
-                    <h4 className="text-[14px] font-black uppercase text-sky-700 dark:text-sky-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
+            {/* Title bar — solid blue background with bold title matching Image 3 */}
+            <div className="bg-sky-600 dark:bg-sky-700 text-white p-2.5 sm:p-3 flex flex-col gap-2">
+                <div className="flex justify-center items-center relative">
+                    <h4 className="text-[14px] sm:text-[15px] font-black uppercase text-white text-center whitespace-normal px-8 leading-snug tracking-wider drop-shadow-xs" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -211,7 +215,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                             type="button"
                             variant="unstyled" size="none"
                             onClick={handleExportPNG}
-                            className="export-button-component p-1 text-slate-400 hover:text-sky-700 transition-colors"
+                            className="export-button-component p-1.5 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <CameraIcon className="h-4 w-4" />
@@ -219,17 +223,17 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                     </div>
                 </div>
                 {/* Time budget bar */}
-                <div className="flex flex-col gap-0.5">
+                <div className="flex flex-col gap-1 bg-sky-700/60 dark:bg-sky-800/60 rounded px-2.5 py-1 border border-sky-500/30">
                     <div className="flex justify-between items-end">
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-wider leading-none">Quỹ thời gian</span>
-                            <span className="text-[11px] font-bold text-slate-400 italic">{timeProgress.label}</span>
+                            <span className="text-[11px] font-black text-sky-100 uppercase tracking-wider leading-none">Quỹ thời gian</span>
+                            <span className="text-[11px] font-bold text-sky-200 italic">{timeProgress.label}</span>
                         </div>
-                        <span className="text-[11px] font-black text-sky-700 tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
+                        <span className="text-[11px] font-black text-white tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 relative overflow-hidden">
+                    <div className="w-full bg-black/20 rounded-full h-1.5 relative overflow-hidden">
                         <div 
-                            className="h-full bg-sky-500 rounded-full transition-all duration-500"
+                            className="h-full bg-white rounded-full transition-all duration-500"
                             style={{ width: `${timeProgress.percentage}%` }}
                         />
                     </div>
@@ -246,21 +250,21 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         <col className="w-[21%]" />
                     </colgroup>
                     <thead>
-                        <tr className="text-[11px] font-black uppercase tracking-wider">
-                            <th className="text-center px-2 py-1.5 border-b border-r border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">NHÂN VIÊN{getSortIcon('name')}</Button>
+                        <tr className="text-[11px] font-black uppercase tracking-wider bg-sky-600 dark:bg-sky-700 text-white">
+                            <th className="text-center px-2 py-1.5 border-b border-r border-sky-500/40 text-white">
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">M.TIÊU{getSortIcon('target')}</Button>
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">T.HIỆN{getSortIcon('actual')}</Button>
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">%HT{getSortIcon('completion')}</Button>
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">%HT{getSortIcon('completion')}</Button>
                             </th>
-                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400">
-                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group">C.LẠI{getSortIcon('remaining')}</Button>
+                            <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b border-sky-500/40 text-white">
+                                <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>
                     </thead>
@@ -308,13 +312,13 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                 );
                             }
                         })}
-                        {/* Grand Total — sky accent */}
-                        <tr className="bg-sky-50 dark:bg-sky-900/30 font-extrabold text-sky-800 dark:text-sky-300 border-t-2 border-sky-200 dark:border-sky-800">
-                             <td className="px-1.5 py-0.5 sm:py-1 text-center uppercase text-[11px] tracking-wider border-r border-sky-200 dark:border-sky-800/50">TỔNG</td>
-                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalTarget))}</td>
-                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{formatter.format(roundUp(grandTotalActual))}</td>
-                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-200 dark:border-sky-800/50 tabular-nums">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
-                             <td className="px-1 py-0.5 sm:py-1 text-center text-[11px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(grandTotalRemaining))}</td>
+                        {/* Grand Total — solid blue matching Image 3 */}
+                        <tr className="bg-sky-600 dark:bg-sky-700 font-black text-white border-t-2 border-sky-700">
+                             <td className="px-1.5 py-1 text-center uppercase text-[11px] tracking-wider border-r border-sky-500/40 text-white">TỔNG</td>
+                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalTarget))}</td>
+                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{formatter.format(roundUp(grandTotalActual))}</td>
+                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap border-r border-sky-500/40 tabular-nums text-white">{roundUp(grandTotalCompletion).toFixed(0)}%</td>
+                             <td className="px-1 py-1 text-center text-[11px] whitespace-nowrap tabular-nums text-white">{formatter.format(roundUp(grandTotalRemaining))}</td>
                         </tr>
                     </tbody>
                 </table>

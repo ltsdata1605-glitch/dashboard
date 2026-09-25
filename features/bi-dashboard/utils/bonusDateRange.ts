@@ -125,18 +125,26 @@ export interface YearMonthPlanItem {
 
 /**
  * Kế hoạch chạy trọn 1 năm (tab "Năm"):
- * - Năm quá khứ: đủ 12 tháng, mỗi tháng trọn vẹn 01 -> ngày cuối tháng.
+ * - Năm quá khứ: đủ 12 tháng (hoặc khoảng tháng chỉ định), mỗi tháng trọn vẹn 01 -> ngày cuối tháng.
  * - Năm hiện tại: tháng 1 -> tháng hiện tại. Nếu hôm nay là ngày 01 -> bỏ luôn tháng
  *   hiện tại (chưa có dữ liệu gì, tránh sinh 1 tháng rỗng/khoảng ngày âm).
+ * - Hỗ trợ fromMonthIndex0 và toMonthIndex0 để chạy tiếp tục từ tháng bất kỳ mà không cần chạy lại từ đầu.
  */
-export function getYearMonthPlan(year: number, now: Date = new Date()): YearMonthPlanItem[] {
+export function getYearMonthPlan(
+    year: number,
+    now: Date = new Date(),
+    fromMonthIndex0 = 0,
+    toMonthIndex0?: number,
+): YearMonthPlanItem[] {
     const isCurrentYear = year === now.getFullYear();
-    const lastMonthIndex0 = isCurrentYear ? now.getMonth() : 11;
+    const maxMonthIndex0 = isCurrentYear ? now.getMonth() : 11;
+    const lastMonthIndex0 = toMonthIndex0 != null ? Math.min(toMonthIndex0, maxMonthIndex0) : maxMonthIndex0;
+    const startMonthIndex0 = Math.max(0, Math.min(fromMonthIndex0, lastMonthIndex0));
     const skipCurrentMonth = isCurrentYear && now.getDate() === 1;
 
     const plan: YearMonthPlanItem[] = [];
-    for (let m = 0; m <= lastMonthIndex0; m++) {
-        if (isCurrentYear && m === lastMonthIndex0 && skipCurrentMonth) continue;
+    for (let m = startMonthIndex0; m <= lastMonthIndex0; m++) {
+        if (isCurrentYear && m === maxMonthIndex0 && skipCurrentMonth) continue;
         const yyyymm = toYYYYMM(year, m);
         const { fromDate, toDate } = getMonthRange(yyyymm, now);
         plan.push({ yyyymm, label: formatMonthLabel(yyyymm), fromDate, toDate });

@@ -127,7 +127,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
     bonusSource = null,
 }) => {
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
-    const showBonusCol = !!bonusByGroup && bonusByGroup.size > 0;
+    const showBonusCol = (!!bonusByGroup && bonusByGroup.size > 0) || (Boolean(bonusSource) && !isRealtime);
 
     // Ô THƯỞNG: thật = xanh, dự kiến = cam kèm "~" (đúng cách Check Thưởng đang hiện), không quỹ = 0 xám, không khớp tên = "-".
     const renderBonusCell = (programName: string) => {
@@ -173,12 +173,12 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
     return (
         <div className="overflow-hidden">
             <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-                    <table className="w-full border-collapse compact-export-table">
+                    <table className="w-full border-collapse compact-export-table competition-list-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
-                                    <th className="text-center px-2 py-[5px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-10">#</th>
+                                    <th className="text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-7 sm:w-8 text-[10px] sm:text-[11px]">#</th>
                                     <th
-                                        className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 whitespace-nowrap hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+                                        className="text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[10.5px] sm:text-[11px] font-black uppercase leading-tight hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
                                         onClick={() => handleSort(-1)}
                                     >
                                         NHÓM THI ĐUA
@@ -187,12 +187,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                         // 'Còn Lại' không nằm trong program.data (tính riêng ở CompetitionView) nên sắp
                                         // xếp bằng khoá 'conLai'; các cột khác sắp theo chỉ số ô trong data.
                                         const isConLai = column === 'Còn Lại';
-                                        const isProgressBarCol = column.includes('%HT') || column.includes('%DKHT');
                                         return (
                                             <th
                                                 key={column}
                                                 onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
-                                                className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[13px] align-middle ${isProgressBarCol ? 'min-w-[105px] w-[105px]' : ''} ${getHeaderCellClass(column)}`}
+                                                className={`px-0.5 sm:px-1.5 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[10px] sm:text-[12px] font-black uppercase leading-tight align-middle ${getHeaderCellClass(column)}`}
                                             >
                                                 {renderHeaderText(getFormattedHeader(column))}
                                             </th>
@@ -200,7 +199,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                     })}
                                     {showBonusCol && (
                                         <th
-                                            className={`px-2 py-[5px] text-center whitespace-nowrap border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass('Thưởng')}`}
+                                            className={`px-0.5 sm:px-1.5 py-[4px] text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[10px] sm:text-[12px] font-black uppercase leading-tight align-middle ${getHeaderCellClass('Thưởng')}`}
                                             title={bonusSource ? `Nguồn: Check Thưởng — ${bonusSource.fileName}` : 'Nguồn: Check Thưởng'}
                                         >
                                             THƯỞNG
@@ -265,14 +264,14 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
 
                                             return (
                                                 <tr key={program.name} className={`border-l-[3px] ${stripeClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
-                                                    <td className="px-2 py-[3px] text-center text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
-                                                    <td className="px-2 py-[3px] text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
+                                                    <td className="px-0.5 sm:px-1 py-[3px] text-center text-[10.5px] sm:text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
+                                                    <td className="px-1.5 sm:px-2 py-[3px] text-[11px] sm:text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 break-words leading-tight uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
                                                     </td>
                                                     {visibleColumns.map(header => {
                                                         if (header === 'Còn Lại') {
                                                             return (
-                                                                <td key={header} className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400')}`}>
+                                                                <td key={header} className={`px-0.5 sm:px-1.5 py-[3px] text-center text-[11px] sm:text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400')}`}>
                                                                     {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
                                                                 </td>
                                                             );
@@ -341,13 +340,13 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                                         };
 
                                                         return (
-                                                            <td key={header} className={`px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums ${isProgressBarColumn ? 'min-w-[105px] w-[105px]' : ''}`}>
+                                                            <td key={header} className="px-0.5 sm:px-1.5 py-[3px] text-center text-[11px] sm:text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums">
                                                                 {cellContent()}
                                                             </td>
                                                         );
                                                     })}
                                                     {showBonusCol && (
-                                                        <td className="px-2 py-[3px] text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums" data-testid="bonus-cell">
+                                                        <td className="px-0.5 sm:px-1.5 py-[3px] text-center text-[11px] sm:text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums" data-testid="bonus-cell">
                                                             {renderBonusCell(program.name)}
                                                         </td>
                                                     )}

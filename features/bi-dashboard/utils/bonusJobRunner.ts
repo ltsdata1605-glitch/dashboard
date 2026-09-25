@@ -23,6 +23,18 @@ export interface RunBonusJobHandle {
     promise: Promise<RunBonusJobResult>;
 }
 
+let currentWorkerWindow: Window | null = null;
+
+export function reopenWorkerTab(): Window | null {
+    try {
+        currentWorkerWindow = window.open(MWG_URL, 'mwg_bonus_worker');
+        return currentWorkerWindow;
+    } catch (e) {
+        console.warn('[bonusJobRunner] Không thể mở tab MWG:', e);
+        return null;
+    }
+}
+
 /**
  * Gửi 1 job tới userscript đang chạy trên trang này (giả định đã dò `detectUserscript`
  * thành công trước đó) và mở tab MWG mới. Promise resolve khi nhận job-done, reject khi
@@ -35,6 +47,14 @@ export function runSingleBonusJob(
     fromDate: string,
     toDate: string,
     onProgressTick?: (done: number, total: number, currentEmployeeId?: string) => void,
+    meta?: {
+        multiStep?: boolean;
+        isLastStep?: boolean;
+        stepIndex?: number;
+        stepTotal?: number;
+        stepLabel?: string;
+        isFirstStep?: boolean;
+    },
 ): RunBonusJobHandle {
     const jobId = makeJobId();
     const createdAt = Date.now();
@@ -58,8 +78,24 @@ export function runSingleBonusJob(
             reject(new Error(detail.message));
         }));
 
-        sendStartJob(jobId, createdAt, { employees, fromDate, toDate });
-        window.open(MWG_URL, '_blank');
+        sendStartJob(jobId, createdAt, {
+            employees,
+            fromDate,
+            toDate,
+            multiStep: meta?.multiStep,
+            isLastStep: meta?.isLastStep,
+            stepIndex: meta?.stepIndex,
+            stepTotal: meta?.stepTotal,
+            stepLabel: meta?.stepLabel,
+        });
+
+        // Chỉ mở tab mới ở bước đầu tiên hoặc khi chưa có tab đang mở.
+        // Các bước tiếp theo trong chuỗi chạy Năm/So sánh sẽ tái sử dụng tab đang mở qua GM storage,
+        // ngăn chặn 100% việc trình duyệt chặn popup do không có thao tác click trực tiếp.
+        const shouldOpenWindow = meta?.isFirstStep ?? (!meta?.multiStep || !currentWorkerWindow || currentWorkerWindow.closed);
+        if (shouldOpenWindow) {
+            reopenWorkerTab();
+        }
     });
 
     return { jobId, promise };
