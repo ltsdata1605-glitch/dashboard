@@ -11,7 +11,7 @@ import { formatShortUserName } from './userName';
 import { isStrictPmhRequestForm } from './pmhForm';
 import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
 import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './groupFeatureHelper';
-import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText } from './pmhSequence';
+import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText, couponKind } from './pmhSequence';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -2760,11 +2760,12 @@ export const lineBotWebhook = onRequest(
                         const cData = chosenDoc.data();
                         const now = new Date().toISOString();
 
-                        // Số thứ tự CHẠY THEO THÁNG, DÙNG CHUNG một bộ đếm với thẻ "LỌC PMH"
+                        const shortCatForSeq = claimCmd.category === 'EVENT' ? 'Event' : 'Giờ Vàng';
+                        // Số thứ tự CHẠY THEO THÁNG, mỗi LOẠI một dải riêng
                         // (functions/src/pmhSequence.ts) — chủ dự án chốt 2026-09-26. Trước đây luồng
                         // cấp mã từ kho không cấp số nên thẻ nào cũng hiện "PMH 0001", không gọi tên
                         // được một thẻ cụ thể để đối chiếu.
-                        const seqStock = await allocatePmhSequence(uid, 1);
+                        const seqStock = await allocatePmhSequence(uid, 1, new Date(), couponKind(shortCatForSeq));
 
                         await chosenDoc.ref.update({
                             status: 'SENT',
@@ -2777,7 +2778,7 @@ export const lineBotWebhook = onRequest(
                         });
 
                         const mdhLine = claimCmd.orderId ? `\nMĐH Áp dụng: ${claimCmd.orderId}` : '';
-                        const shortCat = claimCmd.category === 'EVENT' ? 'Event' : 'Giờ Vàng';
+                        const shortCat = shortCatForSeq;
 
                         // Gửi Flex Message Card hỗ trợ chạm tự động copy mã
                         const flexMsg = createCouponFlexMessage({
@@ -3000,7 +3001,7 @@ export const lineBotWebhook = onRequest(
                     const now = new Date().toISOString();
 
                     // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
-                    const seqApprove = await allocatePmhSequence(uid, 1);
+                    const seqApprove = await allocatePmhSequence(uid, 1, new Date(), couponKind(pData.category === 'EVENT' ? 'Event' : 'Giờ Vàng'));
 
                     await chosenDoc.ref.update({
                         status: 'SENT',
@@ -3106,12 +3107,27 @@ export const lineBotWebhook = onRequest(
 
                     // Số thứ tự thẻ CHẠY THEO THÁNG (0001, 0002…, reset đầu tháng) — cấp cả dải
                     // trong 1 transaction, xem functions/src/pmhSequence.ts.
-                    let seqStart = 0;
                     if (newItems.length > 0) {
-                        seqStart = await allocatePmhSequence(uid, newItems.length);
-                        if (seqStart > 0) {
-                            newItems = newItems.map((item, idx) => ({ ...item, cardIndex: seqStart + idx }));
+                        // Mỗi LOẠI một dải số riêng (Event 0001…, GVGS 0001…, PMH lọc 0001…).
+                        // MỘT LẦN LỌC CÓ THỂ LẪN NHIỀU LOẠI (xem filterPmhByUsers: cat có thể là
+                        // EVENT / GIỜ VÀNG / MM200…), nên phải cấp theo từng nhóm — cấp một dải
+                        // chung sẽ khiến số của loại này đè lên loại kia.
+                        const nhomTheoLoai = new Map<string, number[]>();
+                        newItems.forEach((item, idx) => {
+                            const k = couponKind((item as { categoryLabel?: string }).categoryLabel);
+                            if (!nhomTheoLoai.has(k)) nhomTheoLoai.set(k, []);
+                            nhomTheoLoai.get(k)!.push(idx);
+                        });
+                        const daDanhSo: Array<(typeof newItems)[number] & { cardIndex?: number }> = [...newItems];
+                        for (const [loai, viTri] of nhomTheoLoai) {
+                            const batDau = await allocatePmhSequence(uid, viTri.length, new Date(), loai as 'event' | 'gvgs' | 'pmh');
+                            if (batDau > 0) {
+                                viTri.forEach((pos, i) => {
+                                    daDanhSo[pos] = { ...daDanhSo[pos], cardIndex: batDau + i } as typeof daDanhSo[number];
+                                });
+                            }
                         }
+                        newItems = daDanhSo;
                     }
 
                     // Danh sách rút gọn (bỏ thẻ trùng) -> phải dựng lại thẻ Flex theo đúng số thứ tự mới
@@ -3314,7 +3330,7 @@ export const lineBotWebhook = onRequest(
                         const cData = couponDoc.data();
                         const now = new Date().toISOString();
                         // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
-                        const seqForm = await allocatePmhSequence(uid, 1);
+                        const seqForm = await allocatePmhSequence(uid, 1, new Date(), couponKind(String(cData.type || parsed.couponType || '')));
 
                         await couponDoc.ref.update({
                             status: 'SENT',

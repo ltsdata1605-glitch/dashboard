@@ -239,8 +239,15 @@
         // Nhãn theo LOẠI thẻ — BẢN CHÉP của couponUsedLabel() trong functions/src/pmhSequence.ts
         // (trang tĩnh không có bundler). Sửa bên kia thì sửa cả đây, nếu không 2 đường gửi ra 2 câu
         // khác nhau cho cùng một việc.
+        /** 68 -> "0068" — khớp hệt huy hiệu in trên thẻ (formatPmhLabel ở pmhSequence.ts) */
+        function formatPmhLabel(n) {
+            const num = Number(n);
+            if (!Number.isFinite(num) || num <= 0) return String(n == null ? '' : n);
+            return String(Math.floor(num)).padStart(4, '0');
+        }
+
         function couponUsedLabel(categoryLabel, index) {
-            const so = String(index == null ? '' : index).trim();
+            const so = formatPmhLabel(index);
             const cat = String(categoryLabel || '').toLowerCase();
             if (cat.includes('event')) return `Coupon Event ${so}`;
             if (cat.includes('giờ vàng') || cat.includes('gio vang') || cat.includes('gvgs') || /^gv\b/.test(cat)) {

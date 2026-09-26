@@ -10,19 +10,19 @@ import { couponUsedLabel, buildCouponUsedText } from '../../functions/src/pmhSeq
  */
 describe('couponUsedLabel — nhãn theo loại thẻ', () => {
     it('Event', () => {
-        expect(couponUsedLabel('Event', 68)).toBe('Coupon Event 68');
-        expect(couponUsedLabel('MÃ COUPON EVENT', 5)).toBe('Coupon Event 5');
+        expect(couponUsedLabel('Event', 68)).toBe('Coupon Event 0068');
+        expect(couponUsedLabel('MÃ COUPON EVENT', 5)).toBe('Coupon Event 0005');
     });
 
     it('Giờ Vàng / GVGS — mọi cách viết đều ra GVGS', () => {
         for (const cat of ['Giờ Vàng', 'giờ vàng', 'GVGS', 'gvgs', 'Gio Vang', 'gv']) {
-            expect(couponUsedLabel(cat, 68), cat).toBe('Coupon GVGS 68');
+            expect(couponUsedLabel(cat, 68), cat).toBe('Coupon GVGS 0068');
         }
     });
 
     it('thẻ LỌC PMH — categoryLabel là loại phiếu (MM200/MM300/MM700)', () => {
         for (const cat of ['MM200', 'MM300', 'MM700', 'PMH', '', undefined, null]) {
-            expect(couponUsedLabel(cat as string, 68), String(cat)).toBe('PMH 68');
+            expect(couponUsedLabel(cat as string, 68), String(cat)).toBe('PMH 0068');
         }
     });
 });
@@ -32,15 +32,15 @@ describe('buildCouponUsedText — đúng từng chữ theo mẫu chủ dự án 
 
     it('Event', () => {
         expect(buildCouponUsedText({ ...chung, categoryLabel: 'Event' }))
-            .toBe('👉 Coupon Event 68 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân');
+            .toBe('👉 Coupon Event 0068 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân');
     });
     it('Lọc PMH', () => {
         expect(buildCouponUsedText({ ...chung, categoryLabel: 'MM200' }))
-            .toBe('👉 PMH 68 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân');
+            .toBe('👉 PMH 0068 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân');
     });
     it('GVGS', () => {
         expect(buildCouponUsedText({ ...chung, categoryLabel: 'Giờ Vàng' }))
-            .toBe('👉 Coupon GVGS 68 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân');
+            .toBe('👉 Coupon GVGS 0068 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân');
     });
     it('bỏ hẳn cụm "đã được" của câu cũ', () => {
         const t = buildCouponUsedText({ ...chung, categoryLabel: 'Event' });
@@ -60,9 +60,9 @@ describe('webhook đọc lại được câu MỚI lẫn câu CŨ', () => {
     };
 
     const cauMoi = [
-        '👉 Coupon Event 68 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân',
-        '👉 PMH 68 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân',
-        '👉 Coupon GVGS 68 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân',
+        '👉 Coupon Event 0068 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân',
+        '👉 PMH 0068 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân',
+        '👉 Coupon GVGS 0068 sử dụng lúc 14:33!\n↳ User: 24754 - Ngân',
     ];
     it.each(cauMoi)('câu mới: nhận diện được và lấy đúng số thẻ — %s', (t) => {
         expect(nhanDien(t)).toBe(true);

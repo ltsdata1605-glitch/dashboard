@@ -33,10 +33,10 @@ vi.mock('../../functions/src/firebaseAdmin', () => {
     };
 });
 
-const { allocatePmhSequence, pmhCounterPeriod, formatPmhLabel } =
+const { allocatePmhSequence, pmhCounterPeriod, formatPmhLabel, couponKind } =
     await import('../../functions/src/pmhSequence');
 
-describe('Số thẻ PMH dùng CHUNG một dải cho mọi luồng, reset theo tháng', () => {
+describe('Số thẻ: MỖI LOẠI một dải riêng, reset theo tháng', () => {
     beforeEach(() => khoDem.clear());
 
     it('thẻ đầu tiên trong tháng là 0001', async () => {
@@ -44,14 +44,39 @@ describe('Số thẻ PMH dùng CHUNG một dải cho mọi luồng, reset theo t
         expect(formatPmhLabel(n)).toBe('0001');
     });
 
-    it('lọc phiếu cấp cả dải, thẻ cấp từ kho sau đó nối tiếp — KHÔNG quay lại 0001', async () => {
+    it('lọc PMH cấp cả dải; thẻ PMH cấp từ kho sau đó NỐI TIẾP cùng dải', async () => {
         const t = new Date('2026-09-26T03:00:00Z');
-        // Lọc 1 lô 3 thẻ (luồng "LỌC PMH")
-        const dauLo = await allocatePmhSequence('bot-1', 3, t);
+        const dauLo = await allocatePmhSequence('bot-1', 3, t, 'pmh');
         expect([dauLo, dauLo + 1, dauLo + 2].map(formatPmhLabel)).toEqual(['0001', '0002', '0003']);
-        // Rồi cấp 1 thẻ từ kho (luồng chọn trong danh sách `tk`)
-        const tuKho = await allocatePmhSequence('bot-1', 1, t);
+        const tuKho = await allocatePmhSequence('bot-1', 1, t, 'pmh');
         expect(formatPmhLabel(tuKho)).toBe('0004');
+    });
+
+    it('Event và GVGS đếm ĐỘC LẬP với PMH — mỗi loại bắt đầu lại từ 0001', async () => {
+        const t = new Date('2026-09-26T03:00:00Z');
+        await allocatePmhSequence('bot-1', 68, t, 'pmh');          // PMH đã chạy tới 0068
+        const event1 = await allocatePmhSequence('bot-1', 1, t, 'event');
+        const gvgs1 = await allocatePmhSequence('bot-1', 1, t, 'gvgs');
+        const event2 = await allocatePmhSequence('bot-1', 1, t, 'event');
+        expect(formatPmhLabel(event1)).toBe('0001');
+        expect(formatPmhLabel(gvgs1)).toBe('0001');
+        expect(formatPmhLabel(event2)).toBe('0002');
+        // và PMH vẫn đi tiếp từ 0069, KHÔNG bị hai loại kia đẩy số
+        expect(formatPmhLabel(await allocatePmhSequence('bot-1', 1, t, 'pmh'))).toBe('0069');
+    });
+
+    it('couponKind quy mọi cách viết về đúng 3 loại', () => {
+        expect(couponKind('Event')).toBe('event');
+        expect(couponKind('MÃ COUPON EVENT')).toBe('event');
+        for (const c of ['Giờ Vàng', 'GVGS', 'gv', 'Gio Vang']) expect(couponKind(c), c).toBe('gvgs');
+        for (const c of ['MM200', 'MM700', 'PMH', '', undefined]) expect(couponKind(c), String(c)).toBe('pmh');
+    });
+
+    it('thẻ LỌC PMH giữ NGUYÊN khoá bộ đếm cũ — số đang chạy giữa tháng không nhảy về 0001', async () => {
+        const t = new Date('2026-09-26T03:00:00Z');
+        // Giả lập bộ đếm cũ của tháng (khoá "pmh-2026-09") đã chạy tới 68
+        await allocatePmhSequence('bot-1', 68, t, 'pmh');
+        expect(formatPmhLabel(await allocatePmhSequence('bot-1', 1, t, 'pmh'))).toBe('0069');
     });
 
     it('mỗi bot có bộ đếm riêng, không giẫm số của nhau', async () => {
@@ -67,8 +92,8 @@ describe('Số thẻ PMH dùng CHUNG một dải cho mọi luồng, reset theo t
         expect(pmhCounterPeriod(cuoiThang9)).toBe('2026-09');
         expect(pmhCounterPeriod(dauThang10)).toBe('2026-10');
 
-        await allocatePmhSequence('bot-1', 40, cuoiThang9);
-        const sauReset = await allocatePmhSequence('bot-1', 1, dauThang10);
+        await allocatePmhSequence('bot-1', 40, cuoiThang9, 'event');
+        const sauReset = await allocatePmhSequence('bot-1', 1, dauThang10, 'event');
         expect(formatPmhLabel(sauReset)).toBe('0001');
     });
 
