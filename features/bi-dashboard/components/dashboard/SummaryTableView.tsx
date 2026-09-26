@@ -207,14 +207,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`p-1 sm:p-1.5 transition-colors ${
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
                     hiddenSupermarkets.length > 0
-                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                 }`}
                 title="Lọc danh sách siêu thị"
             >
-                <FilterIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <FilterIcon className="h-4 w-4" />
             </Button>
             {isSupermarketFilterOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
@@ -250,20 +250,19 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         </div>
     );
 
-    // Column settings dropdown element — exposed for parent to place in toolbar
     const columnSettingsDropdown = (
         <div className="relative" ref={selectorRef}>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`p-1 sm:p-1.5 transition-colors ${
+                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
                     isColumnSelectorOpen
-                        ? 'text-sky-700 dark:text-sky-400'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
             >
-                <CogIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <CogIcon className="h-4 w-4" />
             </Button>
             {isColumnSelectorOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
@@ -317,7 +316,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {/* Tuỳ chọn: Sử dụng Target DTQĐ sau chỉnh làm target cho các thẻ KPI & bảng bên dưới */}
             {setUseAdjustedTarget && (
                 <label
-                    className={`inline-flex items-center gap-1.5 px-2 py-1 rounded text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border ${
+                    className={`inline-flex items-center gap-1.5 px-2.5 h-8 rounded text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border ${
                         useAdjustedTarget
                             ? 'bg-sky-50 border-sky-300 text-sky-700 dark:bg-sky-950/50 dark:border-sky-700 dark:text-sky-300 font-bold shadow-xs'
                             : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'

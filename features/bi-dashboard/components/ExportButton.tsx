@@ -95,7 +95,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         onClick={hasOptions ? () => setIsOpen(p => !p) : handleSingleExport}
         disabled={disabled || isLoading}
         className={cn(
-          "export-button-component h-8 min-h-11 sm:min-h-0 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
+          "export-button-component h-8 min-h-11 sm:min-h-0 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
           hasOptions ? "px-2 gap-1.5" : "w-8 p-1.5",
           isOpen && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
           className

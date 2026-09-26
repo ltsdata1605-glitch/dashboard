@@ -216,14 +216,14 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     }, []);
 
     const actionButton = (
-        <div className="industry-view-controls flex items-center gap-1 sm:gap-2 no-print flex-wrap justify-end">
+        <div className="industry-view-controls flex items-center gap-0.5 sm:gap-1 no-print shrink-0">
              {/* Expand/Collapse buttons for tree mode */}
              {hasTreeData && (
-                <div className="flex items-center gap-0.5">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                     <Button
                         variant="unstyled" size="none"
                         onClick={expandAll}
-                        className="p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
                         title="Mở rộng tất cả"
                     >
                         <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
@@ -231,7 +231,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={collapseAll}
-                        className={`p-1 rounded-full transition-colors ${hasAnyExpanded ? 'text-slate-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400' : 'text-slate-300 cursor-not-allowed'}`}
+                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${hasAnyExpanded ? 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
@@ -241,23 +241,23 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
              )}
 
              {/* Divider: expand/collapse | filter+column */}
-             {hasTreeData && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />}
+             {hasTreeData && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />}
 
              {/* Filter Ngành Hàng & Nhóm Hàng (Gộp chung 1 nút, mở popup 2 cột) */}
              <div className="relative" ref={filterRef}>
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsFilterOpen(prev => !prev)}
-                    className={`p-1.5 transition-colors relative ${
+                    className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors relative ${
                         (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0)
-                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-md'
-                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                     }`}
                     title="Bộ lọc ngành hàng & nhóm hàng"
                 >
                     <FilterIcon className="h-4 w-4" />
                     {(hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0) && (
-                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
                     )}
                 </Button>
                 {isFilterOpen && (
@@ -389,10 +389,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`p-1.5 transition-colors ${
+                    className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
                         isColumnSelectorOpen
-                            ? 'text-sky-700 dark:text-sky-400'
-                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
                 >
@@ -423,7 +423,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             </div>
 
             {/* Divider: filter+column | export */}
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />
 
             {/* Export */}
             {onExport && <ExportButton onExportPNG={onExport} />}
@@ -617,6 +617,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 title={title} 
                 titleClassName="text-lg sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5"
                 actionButton={actionButton} 
+                headerClassName="px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700/60"
                 bordered={false} 
                 noPadding
             >
