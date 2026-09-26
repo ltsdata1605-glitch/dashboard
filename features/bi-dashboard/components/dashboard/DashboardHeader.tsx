@@ -63,16 +63,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // chết còn sót lại từ lúc bỏ chế độ "Báo cáo", và là 1 trong các lỗi làm hỏng `npm run check`.
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
-        const subTabLabel = activeSubTab === 'competition' ? ' THI ĐUA' : '';
         const smLabel = !activeSupermarket || activeSupermarket === 'Tổng'
             ? 'CỤM'
             : shortenSupermarketName(activeSupermarket).toUpperCase();
 
         if (isRealtime) {
-            return `REALTIME${subTabLabel} NGÀY ${getDateLabel(true)} - ${smLabel}`;
+            return `REALTIME NGÀY ${getDateLabel(true)} - ${smLabel}`;
         }
-        return `LUỸ KẾ${subTabLabel} ĐẾN NGÀY ${getDateLabel(false)} - ${smLabel}`;
-    }, [activeMainTab, activeSubTab, activeSupermarket]);
+        return `LUỸ KẾ ĐẾN NGÀY ${getDateLabel(false)} - ${smLabel}`;
+    }, [activeMainTab, activeSupermarket]);
 
     return (
         <div className="space-y-0">
