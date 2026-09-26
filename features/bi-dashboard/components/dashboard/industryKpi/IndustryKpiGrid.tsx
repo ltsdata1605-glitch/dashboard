@@ -49,6 +49,9 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
         );
     }, [cards, tree, headers, isRealtime]);
 
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
     const handleAddCard = useCallback((newCard: IndustryKpiCardConfig) => {
         setCards((prev) => {
             const list = prev || DEFAULT_INDUSTRY_KPI_CARDS;
@@ -70,6 +73,54 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
     const handleResetDefault = useCallback(() => {
         setCards(DEFAULT_INDUSTRY_KPI_CARDS);
     }, [setCards]);
+
+    // Kéo thả sắp xếp thẻ
+    const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', index.toString());
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }, []);
+
+    const handleDragEnter = useCallback((e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        if (draggedIndex !== null && draggedIndex !== index) {
+            setDragOverIndex(index);
+        }
+    }, [draggedIndex]);
+
+    const handleDragLeave = useCallback((e: React.DragEvent, index: number) => {
+        if (dragOverIndex === index) {
+            setDragOverIndex(null);
+        }
+    }, [dragOverIndex]);
+
+    const handleDrop = useCallback((e: React.DragEvent, dropIndex: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === dropIndex) {
+            setDraggedIndex(null);
+            setDragOverIndex(null);
+            return;
+        }
+
+        const activeList = cards && cards.length > 0 ? cards : DEFAULT_INDUSTRY_KPI_CARDS;
+        const newList = [...activeList];
+        const [draggedItem] = newList.splice(draggedIndex, 1);
+        newList.splice(dropIndex, 0, draggedItem);
+
+        setCards(newList);
+        setDraggedIndex(null);
+        setDragOverIndex(null);
+    }, [cards, draggedIndex, setCards]);
+
+    const handleDragEnd = useCallback(() => {
+        setDraggedIndex(null);
+        setDragOverIndex(null);
+    }, []);
 
     if (!tree || tree.length === 0) {
         return null;
@@ -150,6 +201,14 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         index={index}
                         isRealtime={isRealtime}
                         focusMetric={focusMetric}
+                        isDragging={draggedIndex === index}
+                        isDragOver={dragOverIndex === index}
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={(e) => handleDragOver(e, index)}
+                        onDragEnter={(e) => handleDragEnter(e, index)}
+                        onDragLeave={(e) => handleDragLeave(e, index)}
+                        onDrop={(e) => handleDrop(e, index)}
+                        onDragEnd={handleDragEnd}
                         onRemove={handleRemoveCard}
                     />
                 ))}

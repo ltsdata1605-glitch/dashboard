@@ -131,6 +131,14 @@ interface IndustryKpiCardProps {
     index?: number;
     isRealtime: boolean;
     focusMetric?: IndustryKpiFocusMetric;
+    isDragging?: boolean;
+    isDragOver?: boolean;
+    onDragStart?: (e: React.DragEvent) => void;
+    onDragOver?: (e: React.DragEvent) => void;
+    onDragEnter?: (e: React.DragEvent) => void;
+    onDragLeave?: (e: React.DragEvent) => void;
+    onDrop?: (e: React.DragEvent) => void;
+    onDragEnd?: (e: React.DragEvent) => void;
     onRemove?: (id: string) => void;
 }
 
@@ -139,18 +147,41 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
     index = 0,
     isRealtime,
     focusMetric = 'revenue',
+    isDragging = false,
+    isDragOver = false,
+    onDragStart,
+    onDragOver,
+    onDragEnter,
+    onDragLeave,
+    onDrop,
+    onDragEnd,
     onRemove,
 }) => {
     const isRevenueFocus = focusMetric === 'revenue';
     const theme = PASTEL_THEMES[Math.abs(index) % PASTEL_THEMES.length];
 
     return (
-        <div className={`group relative ${theme.cardBg} border ${theme.cardBorder} transition-all duration-200 shadow-2xs hover:shadow-xs flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden`}>
+        <div
+            draggable
+            onDragStart={onDragStart}
+            onDragOver={onDragOver}
+            onDragEnter={onDragEnter}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            onDragEnd={onDragEnd}
+            className={`group relative ${theme.cardBg} border ${
+                isDragOver
+                    ? 'ring-2 ring-sky-500 border-sky-400 scale-[1.03] shadow-md z-10'
+                    : theme.cardBorder
+            } ${
+                isDragging ? 'opacity-40 scale-95 shadow-none' : 'shadow-2xs hover:shadow-xs'
+            } transition-all duration-150 flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden cursor-grab active:cursor-grabbing select-none`}
+            title={metric.parentName ? `${metric.displayTitle} (${metric.parentName}) — Kéo thả để sắp xếp` : `${metric.displayTitle} — Kéo thả để sắp xếp`}
+        >
             {/* Hàng trên: Chỉ hiển thị TÊN (metric.displayTitle) không in đậm và nút X khi hover */}
             <div className="flex items-center justify-between gap-1 mb-1">
                 <span
                     className={`text-[11.5px] sm:text-[12px] font-medium uppercase truncate tracking-tight leading-none flex-1 min-w-0 ${theme.titleColor}`}
-                    title={metric.parentName ? `${metric.displayTitle} (${metric.parentName})` : metric.displayTitle}
                 >
                     {metric.displayTitle}
                 </span>
@@ -160,6 +191,8 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                         type="button"
                         variant="unstyled"
                         size="none"
+                        draggable={false}
+                        onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => {
                             e.stopPropagation();
                             onRemove(metric.id);
