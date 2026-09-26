@@ -310,7 +310,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                     <span className="text-[11px] font-bold">
                         {isLoading ? 'Đang tải...' : hasUnmapped ? `${unmappedNames.length} siêu thị chưa có Mã Kho` : 'Đã cấu hình đủ Mã Kho'}
                     </span>
-                    {isExpanded ? <ChevronUpIcon className="h-3 w-3 shrink-0" /> : <ChevronDownIcon className="h-3 w-3 shrink-0" />}
+                    {isExpanded ? <ChevronUpIcon className="h-3.5 w-3.5 shrink-0" /> : <ChevronDownIcon className="h-3.5 w-3.5 shrink-0" />}
                 </Button>
             }
         >
@@ -366,7 +366,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                     ) : (
                         <>
                             <Button variant="unstyled" size="none" onClick={() => setTableOpen(v => !v)} className="flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 py-1">
-                                {tableOpen ? <ChevronUpIcon className="h-3 w-3" /> : <ChevronDownIcon className="h-3 w-3" />}
+                                {tableOpen ? <ChevronUpIcon className="h-3.5 w-3.5" /> : <ChevronDownIcon className="h-3.5 w-3.5" />}
                                 {tableOpen ? 'Thu gọn danh sách đã map' : `Xem tất cả ${rows.length} dòng đã map`}
                             </Button>
                             {tableOpen && (

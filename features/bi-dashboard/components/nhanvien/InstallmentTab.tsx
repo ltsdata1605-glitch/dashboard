@@ -414,7 +414,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         <span className="hidden sm:inline">Cùng kỳ</span>
                         {prevMonthRaw && (
                             <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800">
-                                <XIcon className="h-3 w-3" />
+                                <XIcon className="h-3.5 w-3.5" />
                             </Button>
                         )}
                     </Button>

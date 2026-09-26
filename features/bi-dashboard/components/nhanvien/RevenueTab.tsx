@@ -379,7 +379,7 @@ const RevenueView: React.FC<{
                                     }}
                                     className="ml-0.5 p-0.5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
                                 >
-                                    <XIcon className="h-3 w-3" />
+                                    <XIcon className="h-3.5 w-3.5" />
                                 </span>
                             )}
                         </Button>
@@ -395,7 +395,7 @@ const RevenueView: React.FC<{
                                 aria-hidden="true"
                                 className={`h-3.5 w-3.5 rounded border flex items-center justify-center transition-colors ${isShowRemaining ? 'bg-amber-600 border-amber-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}
                             >
-                                {isShowRemaining && <CheckCircleIcon className="h-3 w-3 text-white" />}
+                                {isShowRemaining && <CheckCircleIcon className="h-3.5 w-3.5 text-white" />}
                             </span>
                             <span>Còn lại</span>
                         </Button>

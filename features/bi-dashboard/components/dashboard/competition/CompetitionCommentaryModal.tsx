@@ -53,7 +53,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
             title={
                 <div className="flex items-center gap-2">
                     <span className="flex h-8 w-8 items-center justify-center rounded bg-sky-100 text-sky-600">
-                        <MessageSquareQuote className="h-4.5 w-4.5" />
+                        <MessageSquareQuote className="h-4 w-4" />
                     </span>
                     <div>
                         <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
                                 Nhận Xét & Đánh Giá Thi Đua
                             </span>
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-extrabold bg-sky-50 text-sky-700 border border-sky-200">
-                                <Sparkles className="h-3 w-3 text-sky-500 animate-pulse" />
+                                <Sparkles className="h-3.5 w-3.5 text-sky-500 animate-pulse" />
                                 BI Analysis
                             </span>
                         </div>

@@ -141,7 +141,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                     <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
                                         <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
                                         <Button variant="unstyled" size="none" onClick={() => toggleEmp(empName)} className="p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title="Bỏ chọn">
-                                            <XIcon className="h-3 w-3" />
+                                            <XIcon className="h-3.5 w-3.5" />
                                         </Button>
                                     </span>
                                 ))}
@@ -246,7 +246,7 @@ const CompactTargetItem: React.FC<{
                 <div className="flex items-center justify-between">
                     <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{label}</span>
                     <Button variant="ghost" size="icon" onClick={onReset} title="Reset về mặc định" className="text-slate-400 hover:text-rose-500 h-5 w-5 p-0 shrink-0">
-                        <ResetIcon className="h-3 w-3" />
+                        <ResetIcon className="h-3.5 w-3.5" />
                     </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
@@ -478,7 +478,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3.5 w-3.5" /></Button>
                                                     <Button variant="unstyled" size="none" onClick={() => {
                                                         showConfirm({
                                                             title: 'Xóa Bộ phận',
@@ -495,7 +495,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                                 closeConfirm();
                                                             }
                                                         });
-                                                    }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></Button>
+                                                    }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3.5 w-3.5" /></Button>
                                                 </div>
                                             )}
                                         </div>

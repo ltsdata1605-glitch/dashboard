@@ -243,7 +243,7 @@ const StatusTile: React.FC<{
                                 {hasData ? (
                                     lastUpdated && (
                                         <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
-                                            <ClockIcon className="h-3 w-3" /> {lastUpdated}
+                                            <ClockIcon className="h-3.5 w-3.5" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
@@ -316,7 +316,7 @@ const StatusTile: React.FC<{
 
             {error && (
                 <div className="mt-1 flex items-center gap-1 px-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200">
-                    <AlertTriangleIcon className="h-3 w-3 shrink-0" />
+                    <AlertTriangleIcon className="h-3.5 w-3.5 shrink-0" />
                     <span>{error}</span>
                 </div>
             )}

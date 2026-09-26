@@ -631,7 +631,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }}
                                     className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-60 hover:opacity-100 transition-all"
                                 >
-                                    <XIcon className="h-3 w-3" />
+                                    <XIcon className="h-3.5 w-3.5" />
                                 </Button>
                                 {isActive && (
                                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 dark:bg-sky-400 rounded-full" />
@@ -648,7 +648,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-sky-300 dark:border-sky-600 shadow-xs shrink-0 my-1">
                             <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên bản lưu..."} className="w-28 text-xs h-6 border-0 focus:ring-0" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
                             <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-6 px-2 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-300 flex items-center transition-colors" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
-                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><XIcon className="h-3 w-3" /></Button>
+                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><XIcon className="h-3.5 w-3.5" /></Button>
                         </div>
                     ) : (
                         <Button
@@ -777,7 +777,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
                                         <Button variant="unstyled" size="none" onClick={handleToggleEmployeeFilter} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
-                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
+                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </Button>
                                         {isEmployeeFilterOpen && createPortal(
                                             <div

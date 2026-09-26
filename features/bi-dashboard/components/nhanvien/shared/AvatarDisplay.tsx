@@ -138,7 +138,7 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                     onClick={(e) => { e.stopPropagation(); onClick?.(); }}
                     className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-200"
                 >
-                    <UsersIcon className="h-3 w-3 text-slate-400" />
+                    <UsersIcon className="h-3.5 w-3.5 text-slate-400" />
                 </div>
             )}
             <Button

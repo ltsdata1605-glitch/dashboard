@@ -499,7 +499,7 @@ const StatusTile: React.FC<{
                                 {hasData ? (
                                     lastUpdated && (
                                     <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
-                                        <ClockIcon className="h-3 w-3" /> {lastUpdated}
+                                        <ClockIcon className="h-3.5 w-3.5" /> {lastUpdated}
                                     </span>
                                 )) : (
                                     <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để tự dán</span>
