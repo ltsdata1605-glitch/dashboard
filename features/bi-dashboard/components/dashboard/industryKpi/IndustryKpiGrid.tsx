@@ -78,7 +78,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                     <span className="text-[11px] sm:text-[12px] font-black uppercase text-slate-700 dark:text-slate-200 tracking-wider">
                         CHỈ SỐ KPI NGÀNH HÀNG
                     </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-xs bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-300/40">
+                    <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-xs bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-300/40">
                         {metricList.length} thẻ
                     </span>
                 </div>

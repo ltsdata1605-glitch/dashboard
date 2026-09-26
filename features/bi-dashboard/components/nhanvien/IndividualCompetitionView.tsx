@@ -353,7 +353,7 @@ const EmployeeProfileCard: React.FC<{
                                                 >
                                                     <span className="truncate">{emp.name}</span>
                                                     {emp.department && (
-                                                        <span className="text-[10px] text-slate-400 font-normal ml-1 shrink-0">{emp.department}</span>
+                                                        <span className="text-[11px] text-slate-400 font-normal ml-1 shrink-0">{emp.department}</span>
                                                     )}
                                                 </button>
                                             ))

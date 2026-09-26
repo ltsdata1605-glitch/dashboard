@@ -42,7 +42,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
                                 Hướng Dẫn Tính Năng Auto Click+ & CopyAll
                             </h3>
-                            <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                                 1-Click
                             </span>
                         </div>
@@ -157,7 +157,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                             <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-800">
                                 <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
-                                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] flex items-center justify-center font-bold">1</span>
+                                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-center font-bold">1</span>
                                     Mở Báo cáo MWG
                                 </div>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -167,7 +167,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
 
                             <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-800">
                                 <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
-                                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] flex items-center justify-center font-bold">2</span>
+                                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-center font-bold">2</span>
                                     Bấm Auto Click+ hoặc CopyAll
                                 </div>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -177,11 +177,11 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
 
                             <div className="p-2.5 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-800">
                                 <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
-                                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] flex items-center justify-center font-bold">3</span>
+                                    <span className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] flex items-center justify-center font-bold">3</span>
                                     Dán vào Dashboard
                                 </div>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                    Quay lại Dashboard này, chọn ô cần nhập và nhấn <kbd className="px-1 py-0.2 bg-slate-200 dark:bg-slate-700 rounded font-mono text-[10px]">Ctrl+V</kbd>.
+                                    Quay lại Dashboard này, chọn ô cần nhập và nhấn <kbd className="px-1 py-0.2 bg-slate-200 dark:bg-slate-700 rounded font-mono text-[11px]">Ctrl+V</kbd>.
                                 </p>
                             </div>
                         </div>

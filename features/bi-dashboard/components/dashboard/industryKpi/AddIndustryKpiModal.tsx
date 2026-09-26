@@ -153,7 +153,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                                 {item.displayName}
                                             </span>
                                             {item.parentName && (
-                                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
                                                     ({item.parentName})
                                                 </span>
                                             )}

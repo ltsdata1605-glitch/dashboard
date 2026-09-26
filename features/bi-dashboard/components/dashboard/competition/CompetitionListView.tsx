@@ -176,7 +176,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                     <table className="w-full border-collapse compact-export-table competition-list-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
-                                    <th className="text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-7 sm:w-8 text-[10px] sm:text-[11px]">#</th>
+                                    <th className="text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-7 sm:w-8 text-[11px] sm:text-[11px]">#</th>
                                     <th
                                         className="text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[10.5px] sm:text-[11px] font-black uppercase leading-tight hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
                                         onClick={() => handleSort(-1)}
@@ -191,7 +191,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                             <th
                                                 key={column}
                                                 onClick={() => handleSort(isConLai ? 'conLai' : headers.indexOf(column))}
-                                                className={`px-0.5 sm:px-1.5 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[10px] sm:text-[12px] font-black uppercase leading-tight align-middle ${getHeaderCellClass(column)}`}
+                                                className={`px-0.5 sm:px-1.5 py-[4px] text-center cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[11px] sm:text-[12px] font-black uppercase leading-tight align-middle ${getHeaderCellClass(column)}`}
                                             >
                                                 {renderHeaderText(getFormattedHeader(column))}
                                             </th>
@@ -199,7 +199,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                                     })}
                                     {showBonusCol && (
                                         <th
-                                            className={`px-0.5 sm:px-1.5 py-[4px] text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[10px] sm:text-[12px] font-black uppercase leading-tight align-middle ${getHeaderCellClass('Thưởng')}`}
+                                            className={`px-0.5 sm:px-1.5 py-[4px] text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[11px] sm:text-[12px] font-black uppercase leading-tight align-middle ${getHeaderCellClass('Thưởng')}`}
                                             title={bonusSource ? `Nguồn: Check Thưởng — ${bonusSource.fileName}` : 'Nguồn: Check Thưởng'}
                                         >
                                             THƯỞNG

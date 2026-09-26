@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../../components/common/Icon';
+import { TOUCH_TARGET } from '../utils/mobileUi';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
@@ -122,25 +123,32 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         <div className="flex flex-col w-full min-h-screen bi-report-module">
             <style>{`
                 @media (max-width: 768px) {
-                    /* High-Density Typography cho toàn bộ Report BI trên mobile */
+                    /* THANG CHỮ TRÊN ĐIỆN THOẠI — SÀN 11px.
+                       Bản cũ ("High-Density Typography") ép NHỎ HƠN cả cỡ tác giả viết:
+                       text-[11px] -> 9px, text-[10px] -> 8px, text-xs -> 9px. Tức là quy tắc
+                       "cỡ chữ nhỏ nhất là 11px" của CLAUDE.md mục 2 bị phá ĐÚNG ở chế độ điện
+                       thoại — nơi chữ khó đọc nhất. Đo thật trên iPhone 15 (2026-09-26): 71 chỗ
+                       chữ dưới 11px, nhỏ nhất 8px.
+                       Nay vẫn nén so với desktop (vẫn là màn hình nhỏ, vẫn ưu tiên số liệu) nhưng
+                       KHÔNG bao giờ xuống dưới 11px. */
                     .bi-report-module .text-3xl { font-size: 20px !important; }
-                    .bi-report-module .text-2xl { font-size: 16px !important; }
-                    .bi-report-module .text-xl { font-size: 14px !important; }
-                    .bi-report-module .text-lg { font-size: 12px !important; }
-                    .bi-report-module .text-base { font-size: 11px !important; }
-                    .bi-report-module .text-sm { font-size: 10px !important; }
-                    .bi-report-module .text-xs { font-size: 9px !important; }
-                    .bi-report-module .text-\\[14px\\] { font-size: 11px !important; }
-                    .bi-report-module .text-\\[13px\\] { font-size: 10px !important; }
-                    .bi-report-module .text-\\[12px\\] { font-size: 9px !important; }
-                    .bi-report-module .text-\\[11px\\] { font-size: 9px !important; }
-                    .bi-report-module .text-\\[10px\\] { font-size: 8px !important; }
-                    .bi-report-module .text-\\[9px\\] { font-size: 8px !important; }
+                    .bi-report-module .text-2xl { font-size: 18px !important; }
+                    .bi-report-module .text-xl { font-size: 16px !important; }
+                    .bi-report-module .text-lg { font-size: 14px !important; }
+                    .bi-report-module .text-base { font-size: 13px !important; }
+                    .bi-report-module .text-sm { font-size: 12px !important; }
+                    .bi-report-module .text-xs { font-size: 11px !important; }
+                    .bi-report-module .text-\\[14px\\] { font-size: 13px !important; }
+                    .bi-report-module .text-\\[13px\\] { font-size: 12px !important; }
+                    .bi-report-module .text-\\[12px\\] { font-size: 11px !important; }
+                    .bi-report-module .text-\\[11px\\] { font-size: 11px !important; }
+                    .bi-report-module .text-\\[10px\\] { font-size: 11px !important; }
+                    .bi-report-module .text-\\[9px\\] { font-size: 11px !important; }
                     
-                    /* Inline styles font size */
-                    .bi-report-module span[style*="font-size:13px"] { font-size: 10px !important; }
-                    .bi-report-module span[style*="font-size:12px"] { font-size: 9px !important; }
-                    .bi-report-module span[style*="font-size:11px"] { font-size: 9px !important; }
+                    /* Inline styles font size — cũng giữ sàn 11px */
+                    .bi-report-module span[style*="font-size:13px"] { font-size: 12px !important; }
+                    .bi-report-module span[style*="font-size:12px"] { font-size: 11px !important; }
+                    .bi-report-module span[style*="font-size:11px"] { font-size: 11px !important; }
                     
                     /* Triệt tiêu khoảng trắng thừa */
                     .bi-report-module .p-4 { padding: 10px !important; }
@@ -193,8 +201,11 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded font-medium text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
-                                        isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                                    // Đây là ĐIỀU HƯỚNG CHÍNH của Report BI trên điện thoại (Siêu thị /
+                                    // Nhân viên / Cập nhật). Đo trước khi sửa: chỉ 28x24px — dưới xa mức
+                                    // 44x44 tối thiểu của Apple, bấm rất dễ trượt.
+                                    className={`flex items-center justify-center gap-1 ${TOUCH_TARGET} rounded font-medium text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                        isActive ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                     }`}
                                     title={tab.label || tab.id}
                                 >
@@ -203,7 +214,9 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                             );
                         })}
                         <div className="flex shrink-0 items-center pl-0.5 ml-0.5">
-                            <div className="rounded-xl overflow-hidden scale-90 origin-right">
+                            {/* Bỏ `scale-90`: trên điện thoại nút chọn phông vốn đã 33x32px, thu nhỏ
+                                thêm 10% nữa thì càng khó bấm. */}
+                            <div className="rounded-xl overflow-hidden origin-right">
                                 <FontSelector />
                             </div>
                         </div>

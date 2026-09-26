@@ -48,11 +48,20 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       unstyled: '',
     };
 
+    // VÙNG CHẠM TRÊN ĐIỆN THOẠI — `min-h-11` (44px) là mức tối thiểu trong Human Interface
+    // Guidelines của Apple. Đo thật trên iPhone 15 (2026-09-26) ở Report BI: 20 nút nhỏ hơn 44px,
+    // nhỏ nhất chỉ 14px cao. Dùng `min-h`/`min-w` chứ KHÔNG đổi `h`: nhiều nơi tự đè `className="h-8"`,
+    // mà theo CSS thì min-height vẫn thắng height — nên các nút đó cũng được chạm đủ rộng mà
+    // không phải sửa từng chỗ. Từ `sm:` trở lên trả về đúng chiều cao cũ để desktop không phình
+    // thanh công cụ, chiếm chỗ của số liệu (CLAUDE.md mục 2).
+    //
+    // CỐ Ý không áp cho `size="none"`: đó là nút tự lo style hoàn toàn (ô trong bảng, nhãn bấm
+    // được, icon bọc trong dòng dữ liệu) — ép 44px ở đó sẽ phá vỡ mật độ bảng.
     const sizes: Record<ButtonSize, string> = {
-      sm: 'h-8 px-3 text-xs rounded-md',
-      md: 'h-9 px-4 text-sm rounded-md',
+      sm: 'h-8 min-h-11 sm:min-h-0 px-3 text-xs rounded-md',
+      md: 'h-9 min-h-11 sm:min-h-0 px-4 text-sm rounded-md',
       lg: 'h-11 px-6 text-base rounded-md',
-      icon: 'h-9 w-9 rounded-md p-0',
+      icon: 'h-9 w-9 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 rounded-md p-0',
       none: '',
     };
 

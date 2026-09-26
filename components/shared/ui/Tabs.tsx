@@ -56,9 +56,12 @@ export const Tabs = React.memo<TabsProps>(({
     onChange(id);
   }, [onChange]);
 
+  // Trên điện thoại tab phải cao tối thiểu 44px (mức tối thiểu của Apple HIG) — đo thật trên
+  // iPhone 15 trước khi sửa: tab con của Report BI chỉ 40px, nằm trong nhóm 20 nút khó chạm.
+  // Desktop giữ nguyên chiều cao cũ để không đội thanh công cụ lên, chiếm chỗ của số liệu.
   const sizeClasses = {
-    sm: 'text-xs h-8',
-    md: 'text-sm h-10',
+    sm: 'text-xs h-11 sm:h-8',
+    md: 'text-sm h-11 sm:h-10',
   };
 
   if (variant === 'underline') {

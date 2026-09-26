@@ -320,7 +320,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 >
                     <FilterIcon className="h-4 w-4" />
                     {isProgramFiltered && (
-                        <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-sky-500 px-0.5 text-[9px] sm:text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                        <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-sky-500 px-0.5 text-[11px] sm:text-[11px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                             {validSelectedPrograms.length}
                         </span>
                     )}

@@ -41,7 +41,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                 </div>
 
                 <div className="flex items-center shrink-0">
-                    <span className={`text-[9px] font-bold px-1 py-0.2 rounded-xs leading-none uppercase ${
+                    <span className={`text-[11px] font-bold px-1 py-0.2 rounded-xs leading-none uppercase ${
                         metric.type === 'industry'
                             ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/60 dark:border-sky-800/60'
                             : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60'
@@ -72,14 +72,14 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     <span className="text-[17px] sm:text-[19px] lg:text-[20px] font-black text-sky-700 dark:text-sky-400 tracking-tight tabular-nums leading-none">
                         {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase leading-none">
+                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase leading-none">
                         {isRealtime ? 'DTQĐ' : 'QĐ'}
                     </span>
                 </div>
 
                 {/* Số lượng bán (SL) */}
                 <div className="flex items-baseline gap-0.5 shrink-0 text-right">
-                    <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">SL:</span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">SL:</span>
                     <span className="text-[11px] sm:text-[11.5px] font-black text-slate-800 dark:text-slate-200 tabular-nums">
                         {roundUp(metric.sl).toLocaleString('vi-VN')}
                     </span>
@@ -87,7 +87,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
             </div>
 
             {/* Sub Metrics: Tăng trưởng / %HT & Trả góp */}
-            <div className="pt-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[10.5px] gap-1">
+            <div className="pt-1 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] sm:text-[10.5px] gap-1">
                 {/* Growth or %HT */}
                 <div className="flex items-center gap-0.5 min-w-0 shrink-0">
                     {metric.growth !== 0 ? (
@@ -112,7 +112,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
 
                 {/* Trả góp */}
                 <div className="flex items-baseline gap-0.5 shrink-0 text-right" title={`Trả góp: ${roundUp(metric.dtTraGop).toLocaleString('vi-VN')} tr (${metric.ptTraGop}%)`}>
-                    <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400">TG:</span>
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">TG:</span>
                     <span className={`font-bold tabular-nums ${
                         metric.ptTraGop > 0
                             ? (isTgGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400')

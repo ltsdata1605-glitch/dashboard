@@ -95,7 +95,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         onClick={hasOptions ? () => setIsOpen(p => !p) : handleSingleExport}
         disabled={disabled || isLoading}
         className={cn(
-          "export-button-component h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
+          "export-button-component h-8 min-h-11 sm:min-h-0 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
           hasOptions ? "px-2 gap-1.5" : "w-8 p-1.5",
           isOpen && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
           className
@@ -118,7 +118,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
 
       {hasOptions && isOpen && (
         <div className="absolute right-0 top-full mt-1.5 w-64 sm:w-72 bg-white dark:bg-slate-850 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/80 p-1.5 z-[200] animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 mb-1">
+          <div className="px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 mb-1">
             Tuỳ chọn xuất ảnh
           </div>
           <div className="space-y-0.5">

@@ -77,7 +77,7 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
                     <span className="text-[12px] font-black text-sky-700 dark:text-sky-400 tabular-nums">
                         {Math.round(percentage)}
                     </span>
-                    <span className="text-[10px] font-bold text-sky-600 dark:text-sky-500">%</span>
+                    <span className="text-[11px] font-bold text-sky-600 dark:text-sky-500">%</span>
                 </div>
             </div>
             <ProgressBar value={percentage} variant="brand" size="xs" />

@@ -1217,7 +1217,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             </span>
                             <SparklesIcon className="w-3.5 h-3.5 text-emerald-100 group-hover:rotate-12 transition-transform duration-200 shrink-0" />
                             <span className="tracking-wide">Auto Click+</span>
-                            <span className="ml-0.5 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded bg-emerald-700/80 text-emerald-100 border border-emerald-400/30">
+                            <span className="ml-0.5 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-wider rounded bg-emerald-700/80 text-emerald-100 border border-emerald-400/30">
                                 1-Click
                             </span>
                         </a>

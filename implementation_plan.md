@@ -5483,3 +5483,77 @@ trình duyệt).
 ## Việc CÒN LẠI (cố ý chưa làm)
 - Hàm `listManagedUsers` với manager đang đọc `users` theo `status`/`role` rồi mới lọc Kho ở server;
   kho lớn lên thì nên thêm điều kiện `where('departmentId', 'in', ...)` + index.
+
+---
+
+# Report BI — tối ưu cho iPhone + thống nhất cỡ tiêu đề/icon/nút (2026-09-26)
+
+## Yêu cầu
+
+Chủ dự án: *"rà soát lại chức năng Report BI — tối ưu cho giao diện mobile sử dụng trên iPhone;
+các tiêu đề, icon, nút chức năng: fix size lại cho phù hợp chế độ mobile"*. Kèm yêu cầu backup zip
+trước khi làm (đã chạy `node archive/backup.cjs` → `archive/136. dashboardycx_backup_20260926_085429.zip`).
+
+## Đo TRƯỚC khi sửa (Playwright, iPhone 15 393x852 và iPhone SE 375x667 — hai máy GIỐNG HỆT nhau)
+
+| Hạng mục | Tab Nhân viên |
+|---|---|
+| Cỡ icon khác nhau trong cùng màn | **7** (8, 12, 14, 16, 18, 20, 22px) |
+| Chiều cao nút khác nhau | **7** (14, 24, 30, 32, 40, 42, 56px) |
+| Nút nhỏ hơn 44x44px | **20** — gồm CẢ 3 nút điều hướng chính chỉ **28x24** |
+| Chữ nhỏ hơn 11px | **71 chỗ**, nhỏ nhất **8px** |
+
+## NGUYÊN NHÂN GỐC của chữ quá nhỏ (tìm ra khi đọc code, không phải đoán)
+
+`BiWrapper.tsx` chèn một khối `<style>` trong `@media (max-width: 768px)` — tức **CHỈ trên điện
+thoại** — ép nhỏ mọi cỡ chữ bằng `!important`:
+`text-[11px] → 9px`, `text-[10px] → 8px`, `text-xs → 9px`, `text-sm → 10px`.
+Nghĩa là quy tắc *"cỡ chữ nhỏ nhất là 11px"* của CLAUDE.md mục 2 bị phá **đúng ở nơi chữ khó đọc
+nhất**. Đây là lý do việc sửa class `text-[9px]` trong từng file không có tác dụng gì.
+
+## Đã sửa
+
+| File | Việc |
+|---|---|
+| `features/bi-dashboard/utils/mobileUi.ts` | MỚI — thang dùng chung: `TOUCH_TARGET` (44px), `MOBILE_GUTTER`, `ICON_SIZE` (3 cỡ), `BUTTON_HEIGHT` (3 nấc), `TEXT_MIN` |
+| `features/bi-dashboard/components/BiWrapper.tsx` | **Nâng sàn chữ mobile lên 11px** (vẫn nén so với desktop, nhưng không bao giờ dưới 11px); 3 nút điều hướng chính 28x24 → **44x44**; bỏ `scale-90` của nút chọn phông |
+| `components/shared/ui/Button.tsx` | `min-h-11 sm:min-h-0` cho size sm/md/icon. Dùng `min-h` chứ không đổi `h` vì nhiều nơi tự đè `className="h-8"` — theo CSS thì min-height vẫn thắng, nên không phải sửa từng chỗ. CỐ Ý bỏ qua `size="none"` (ô trong bảng — ép 44px sẽ phá mật độ bảng) |
+| `components/shared/ui/Tabs.tsx` | Tab cao `h-11 sm:h-10` (mobile 44px) |
+| `components/shared/ui/MultiSelectDropdown.tsx` | Nút xổ bộ lọc `min-h-11` trên mobile (trước 30px) |
+| `features/bi-dashboard/components/NhanVien.tsx` | Hàng tiêu đề có lề riêng (`MOBILE_GUTTER`) — khung `<main>` cố ý `p-0` cho bảng, nhưng chữ "NHÂN VIÊN" ăn theo thì dính sát mép máy |
+| `features/bi-dashboard/components/ExportButton.tsx` | `min-h-11` trên mobile |
+| 12 file BI khác | 25 chỗ `text-[8/9/10px]` → `text-[11px]` |
+
+## 🔴 Lỗi NGHIÊM TRỌNG phát hiện thêm (không thuộc yêu cầu, nhưng ở đúng Report BI)
+
+`BonusCompareTable.tsx` có **3 `useMemo` nằm SAU 2 lệnh `return` sớm** (`if (loading)` và
+`if (!current || !previous)`). Lần render đầu React chạy ít hook hơn lần sau → *"Rendered more hooks
+than during the previous render"*, component ném lỗi và **màn "So sánh cùng kỳ" sập**. eslint báo
+`react-hooks/rules-of-hooks` — **3 error**. Lỗi này đến từ commit `0e6dbb6e` của phiên khác (đã đẩy
+lên main), không phải của đợt này. Đã đưa 3 hook lên trên các return sớm → eslint **3 error → 0**.
+
+## Kết quả đo SAU khi sửa
+
+| | Trước | Sau |
+|---|---|---|
+| Chữ dưới 11px (tab Nhân viên) | **71** | **0** |
+| Chữ dưới 11px (tab Siêu thị) | 4 | **0** |
+| Nút dưới 44px (tab Nhân viên) | **20** | **5** |
+| 3 nút điều hướng chính | 28x24 | **44x44** |
+| Tràn ngang trang | không | không (giữ nguyên) |
+
+5 nút còn dưới 44px: nút chọn phông (36px), chuông thông báo (42px — thuộc thanh tiêu đề app,
+không phải Report BI) và 3 icon 14px nằm TRONG dòng dữ liệu của bảng — ép 44px ở đó sẽ phá mật độ
+bảng, nên cố ý để nguyên.
+
+## Test hồi quy
+
+`tests/e2e/bi-mobile-iphone.spec.ts` (MỚI, 2 bài): khẳng định trên iPhone 15 **không còn chữ nào
+dưới 11px** và trang không tràn ngang; trên iPhone SE, 3 nút điều hướng chính đủ **44x44**.
+
+## Việc CÒN LẠI (cố ý chưa làm)
+
+- Icon vẫn còn 7 cỡ khác nhau. Đã có thang `ICON_SIZE` (3 cỡ) nhưng áp cho từng chỗ đòi sửa rải rác
+  hàng chục file — nên làm thành đợt riêng, đi kèm việc dọn `variant="ghost"` + class vô hiệu hoá.
+- Bảng nhiều cột vẫn phải cuộn ngang trong khung bảng trên iPhone (không phải tràn trang). Muốn bỏ
+  hẳn thì phải thiết kế lại dạng thẻ cho mobile — việc lớn, cần chủ dự án chốt.

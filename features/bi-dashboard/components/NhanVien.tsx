@@ -23,6 +23,7 @@ import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../../components/common/Icon';
 import { Button } from '../../../components/shared/ui/Button';
 import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
+import { MOBILE_GUTTER, TOUCH_TARGET } from '../utils/mobileUi';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
@@ -326,7 +327,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
 
             {/* Title + Filter Toolbar */}
-            <div className="relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
+            {/* Khung <main> của Report BI cố ý `p-0` trên điện thoại để BẢNG dùng hết bề ngang
+                (BiWrapper.tsx), nhưng hàng tiêu đề ăn theo thì chữ "NHÂN VIÊN" dính sát mép máy,
+                trên iPhone trông như bị cắt. Hàng này là chữ + nút nên phải có lề riêng. */}
+            <div className={`relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -342,7 +346,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         absolute và xổ xuống NGOÀI khung pill (top-[calc(100%+8px)]), nên overflow-hidden của pill
                         (dù chỉ để bo tròn góc 2 nút) sẽ cắt mất panel, làm dropdown "mở" trong state nhưng không
                         hiện gì để bấm chọn được (user báo cáo thật). */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className={`flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm ${TOUCH_TARGET}`}>
                         <MultiSelectDropdown
                             className="border-r border-slate-200 dark:border-slate-700"
                             triggerClassName="rounded-l-full"

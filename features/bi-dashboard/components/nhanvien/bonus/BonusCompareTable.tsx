@@ -132,6 +132,32 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         else { setSortField(field); setSortDir(field === 'name' ? 'asc' : 'desc'); }
     };
 
+    // ⚠️ MỌI HOOK PHẢI NẰM TRÊN CÁC LỆNH `return` SỚM Ở DƯỚI.
+    // Trước đây 3 useMemo này nằm SAU `if (loading) return ...` và `if (!current || !previous)
+    // return ...`, nên lần render đầu (đang tải) React chạy ít hook hơn lần render sau — đúng lỗi
+    // "Rendered more hooks than during the previous render", component ném lỗi và màn So sánh cùng
+    // kỳ sập. eslint đã báo `react-hooks/rules-of-hooks` (3 error).
+    const rowsByDept = useMemo(() => {
+        if (viewMode === 'list') return { 'Tất cả': sortedRows };
+        const acc: Record<string, CompareRow[]> = {};
+        sortedRows.forEach(r => {
+            const dept = r.emp.department || 'Khác';
+            if (!acc[dept]) acc[dept] = [];
+            acc[dept].push(r);
+        });
+        return acc;
+    }, [sortedRows, viewMode]);
+
+    const deptNames = useMemo(() => Object.keys(rowsByDept).sort((a, b) => a.localeCompare(b)), [rowsByDept]);
+
+    const globalRankMap = useMemo(() => {
+        const map = new Map<string, number>();
+        sortedRows.forEach((r, idx) => {
+            map.set(r.emp.originalName, idx + 1);
+        });
+        return map;
+    }, [sortedRows]);
+
     if (loading) {
         return (
             <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 border border-dashed border-slate-200 dark:border-slate-800">
@@ -187,26 +213,6 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         </>
     );
 
-    const rowsByDept = useMemo(() => {
-        if (viewMode === 'list') return { 'Tất cả': sortedRows };
-        const acc: Record<string, CompareRow[]> = {};
-        sortedRows.forEach(r => {
-            const dept = r.emp.department || 'Khác';
-            if (!acc[dept]) acc[dept] = [];
-            acc[dept].push(r);
-        });
-        return acc;
-    }, [sortedRows, viewMode]);
-
-    const deptNames = useMemo(() => Object.keys(rowsByDept).sort((a, b) => a.localeCompare(b)), [rowsByDept]);
-
-    const globalRankMap = useMemo(() => {
-        const map = new Map<string, number>();
-        sortedRows.forEach((r, idx) => {
-            map.set(r.emp.originalName, idx + 1);
-        });
-        return map;
-    }, [sortedRows]);
 
     const renderCompareRow = (r: CompareRow, rank: number) => {
         const keyName = r.emp.originalName || r.emp.name;

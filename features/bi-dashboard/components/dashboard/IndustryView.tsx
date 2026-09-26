@@ -286,7 +286,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                     <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                                         Ngành hàng ({allIndustries.length - hiddenIndustries.length}/{allIndustries.length})
                                     </p>
-                                    <div className="flex items-center gap-1.5 text-[10px]">
+                                    <div className="flex items-center gap-1.5 text-[11px]">
                                         <button
                                             onClick={() => setHiddenIndustries([])}
                                             className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"
@@ -336,7 +336,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                         <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">
                                             Nhóm hàng ({allSubIndustries.length - hiddenSubIndustries.length}/{allSubIndustries.length})
                                         </p>
-                                        <div className="flex items-center gap-1.5 text-[10px]">
+                                        <div className="flex items-center gap-1.5 text-[11px]">
                                             <button
                                                 onClick={() => setHiddenSubIndustries([])}
                                                 className="text-sky-600 dark:text-sky-400 hover:underline cursor-pointer"

@@ -241,7 +241,9 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
           size="none"
           onClick={toggle}
           className={cn(
-            "w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors",
+            // min-h-11 (44px) trên điện thoại: đo thật trên iPhone 15, nút xổ bộ lọc chỉ cao 30px
+            // nên rất dễ bấm trượt. Desktop giữ nguyên để không đội thanh công cụ lên.
+            "w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 min-h-11 sm:min-h-0 text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors",
             triggerClassName
           )}
         >
