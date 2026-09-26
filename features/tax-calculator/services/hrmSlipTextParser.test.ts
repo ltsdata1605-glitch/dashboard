@@ -2,10 +2,12 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
     detectHrmSlipKind,
+    findMonthYear,
     parseHrmDay20Text,
     parseHrmDay5Text,
     parseHrmNumber,
     resolveDependents,
+    splitHrmLines,
 } from './hrmSlipTextParser';
 
 const day5Text = readFileSync('tests/fixtures/hrm-luong-ngay5.txt', 'utf8');
@@ -196,3 +198,58 @@ describe('Phiếu A — "(1) Tổng thu nhập chịu thuế" là tổng CẢ TH
         expect(day5.monthTotalIncome).toBe(28_302_349);
     });
 });
+
+describe('Trích xuất họ tên nhân viên từ phiếu HRM', () => {
+    it('bóc đúng tên khi có dòng thông báo, số đếm hoặc khoảng trống trước breadcrumb', () => {
+        const textWithExtraHeader = `logo
+Trang chủ
+Tìm nhân viên
+HRM
+THACH NGOC PHUNG
+1
+Trang chủ  HRM  Chi tiết lương
+08/2026
+Lương BHXH\t4,730,000
+Tổng lương, phụ cấp\t8,283,003
+Tổng thu nhập chịu thuế TNCN trong tháng\t8,283,003
+Tổng tiền giảm trừ\t22,196,650
+8% BHXH\t378,400
+1.5% BHYT\t70,950
+1% BHTN\t47,300
+Số TK\t123456789
+Ngân hàng CK\tVietcombank`;
+        const res = parseHrmDay5Text(textWithExtraHeader);
+        expect(res.fullName).toBe('THACH NGOC PHUNG');
+    });
+
+    it('bóc đúng tên khi có dòng Chủ tài khoản hoặc Chủ TK', () => {
+        const day20WithChuTk = `Trang chủ  HRM  Quản lý chấm công  Xem chi tiết thưởng
+08/2026
+Tổng thưởng chính\t5,000,000
+Thưởng nóng bán hàng\t2,000,000
+Chủ TK\tNGUYEN VAN B
+Số tài khoản\t987654321
+Ngân hàng\tMB`;
+        const res = parseHrmDay20Text(day20WithChuTk);
+        expect(res.fullName).toBe('NGUYEN VAN B');
+    });
+});
+
+describe('findMonthYear — trích xuất tháng từ phiếu HRM', () => {
+    it('bóc đúng tháng từ dropdown "08/2026 Tìm"', () => {
+        const lines = splitHrmLines('08/2026 Tìm\tGiờ công chuẩn: 208\nLương BHXH\t4,730,000');
+        expect(findMonthYear(lines)).toBe('08/2026');
+    });
+
+    it('bóc đúng tháng từ nhãn thưởng "Thưởng ERP T08.2026" (Hình 1)', () => {
+        const lines = splitHrmLines('Thưởng ERP T08.2026\t11,869,119\nTổng lương, phụ cấp\t12,051,042');
+        expect(findMonthYear(lines)).toBe('08/2026');
+    });
+
+    it('không bị nhầm ngày thanh toán CK "CK 21/09/2026" thành tháng lương', () => {
+        const lines = splitHrmLines('Thưởng chính 08/2026\t2,000,000\nCK 21/09/2026\t1,800,000');
+        expect(findMonthYear(lines)).toBe('08/2026');
+    });
+});
+
+

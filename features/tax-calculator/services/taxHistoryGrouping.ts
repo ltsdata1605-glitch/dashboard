@@ -18,13 +18,25 @@ export interface TaxHistoryMonthGroup {
 export const monthKeyOfRecord = (record: SavedTaxRecord): string => {
     const raw = (record.monthYear || '').trim();
 
-    const slash = raw.match(/(\d{1,2})\s*[/\-.]\s*(\d{4})/);
+    // Loại trừ tiền tố ngày chuyển khoản CK dd/mm/yyyy nếu có
+    const clean = raw.replace(/^CK\s*\d{1,2}\/\d{1,2}\/\d{4}/i, '').trim();
+
+    // 1. Dạng T08.2026 hoặc T8.2026 / T08/2026
+    const tDot = clean.match(/\bT(0?[1-9]|1[0-2])\s*[/\.]\s*(\d{4})\b/i);
+    if (tDot) {
+        const month = Number(tDot[1]);
+        return `${tDot[2]}-${String(month).padStart(2, '0')}`;
+    }
+
+    // 2. Dạng MM/YYYY hoặc M/YYYY (không phải ngày dd/mm/yyyy)
+    const slash = clean.match(/(?<!\d\/)(?:^|\D)(0?[1-9]|1[0-2])\s*[/\-.]\s*(\d{4})(?!\/\d)/);
     if (slash) {
         const month = Number(slash[1]);
         if (month >= 1 && month <= 12) return `${slash[2]}-${String(month).padStart(2, '0')}`;
     }
 
-    const iso = raw.match(/(\d{4})\s*[/\-.]\s*(\d{1,2})/);
+    // 3. Dạng ISO YYYY-MM
+    const iso = clean.match(/(\d{4})\s*[/\-.]\s*(0?[1-9]|1[0-2])/);
     if (iso) {
         const month = Number(iso[2]);
         if (month >= 1 && month <= 12) return `${iso[1]}-${String(month).padStart(2, '0')}`;

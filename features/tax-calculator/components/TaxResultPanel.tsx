@@ -8,6 +8,10 @@ import {
   TrendingDown,
   CheckCircle2,
   Loader2,
+  Pencil,
+  Check,
+  X,
+  CalendarDays,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { exportElementAsImage } from '../../../services/uiService';
@@ -32,6 +36,7 @@ interface TaxResultPanelProps {
   proxyAmount: number;
   totalIncome: number;
   name?: string;
+  monthYear?: string;
   /** Danh sách khoản nhận thay đang chọn — in vào ảnh xuất để đối chiếu từng khoản */
   proxyItems?: Array<{ id: string; name: string; amount: number }>;
   /** Mã VietQR để đồng nghiệp/thủ quỹ hoàn lại tiền thuế — được chèn vào ảnh xuất ra */
@@ -41,6 +46,8 @@ interface TaxResultPanelProps {
   /** Gọi sau khi xuất ảnh thành công — dùng để tự lưu kết quả vào lịch sử */
   onExported?: () => void | Promise<void>;
   onOpenBracketModal: () => void;
+  onNameChange?: (name: string) => void;
+  onMonthYearChange?: (monthYear: string) => void;
 }
 
 export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
@@ -48,15 +55,42 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
   proxyAmount,
   totalIncome,
   name = '',
+  monthYear = '',
   proxyItems = [],
   qrUrl = '',
   qrBankLabel = '',
   qrBankAccount = '',
   onExported,
   onOpenBracketModal,
+  onNameChange,
+  onMonthYearChange,
 }) => {
   const [hideSensitive, setHideSensitive] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState(name);
+  const [editMonthValue, setEditMonthValue] = useState(monthYear);
+
+  useEffect(() => {
+    setEditNameValue(name);
+  }, [name]);
+
+  useEffect(() => {
+    setEditMonthValue(monthYear);
+  }, [monthYear]);
+
+  const handleSaveName = () => {
+    const trimmedName = editNameValue.trim();
+    if (trimmedName) {
+      onNameChange?.(trimmedName);
+    }
+    const trimmedMonth = editMonthValue.trim();
+    if (trimmedMonth) {
+      onMonthYearChange?.(trimmedMonth);
+    }
+    setIsEditingName(false);
+  };
+
   // Bật trong lúc chụp ảnh: ảnh gửi cho đồng nghiệp không được lộ thu nhập của người kê khai
   const [maskIncomeForExport, setMaskIncomeForExport] = useState(false);
   const [exportedAt, setExportedAt] = useState('');
@@ -196,21 +230,117 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                   Biểu 5 bậc
                 </span>
               </div>
-              {name ? (
-                <>
-                  <p className="text-[10px] uppercase tracking-wider text-slate-400 leading-none mt-0.5">
-                    Phiếu của
-                  </p>
-                  <p
-                    className={`font-extrabold uppercase tracking-tight text-slate-900 dark:text-white leading-tight truncate ${
-                      maskIncomeForExport ? 'text-xl' : 'text-base sm:text-lg'
-                    }`}
+              {isEditingName && !maskIncomeForExport ? (
+                <div className="flex items-center gap-1.5 mt-1 flex-wrap" data-html2canvas-ignore="true">
+                  <input
+                    type="text"
+                    value={editNameValue}
+                    onChange={(e) => setEditNameValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveName();
+                      if (e.key === 'Escape') {
+                        setEditNameValue(name);
+                        setEditMonthValue(monthYear);
+                        setIsEditingName(false);
+                      }
+                    }}
+                    autoFocus
+                    placeholder="Nhập tên nhân viên..."
+                    className="px-2 py-0.5 text-xs font-bold uppercase bg-white dark:bg-slate-800 border border-sky-500 rounded text-slate-900 dark:text-white outline-none w-44"
+                  />
+                  <input
+                    type="text"
+                    value={editMonthValue}
+                    onChange={(e) => setEditMonthValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSaveName();
+                      if (e.key === 'Escape') {
+                        setEditNameValue(name);
+                        setEditMonthValue(monthYear);
+                        setIsEditingName(false);
+                      }
+                    }}
+                    placeholder="08/2026"
+                    title="Kỳ lương (MM/YYYY)"
+                    className="px-1.5 py-0.5 text-xs font-bold bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white outline-none w-20 text-center"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSaveName}
+                    title="Lưu"
+                    className="p-1 rounded bg-sky-500 text-white hover:bg-sky-600 transition-colors cursor-pointer"
                   >
-                    {name}
-                  </p>
-                </>
+                    <Check className="w-3 h-3" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditNameValue(name);
+                      setEditMonthValue(monthYear);
+                      setIsEditingName(false);
+                    }}
+                    title="Huỷ"
+                    className="p-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : name ? (
+                <div className="group/name flex flex-col">
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <p className="text-[10px] uppercase tracking-wider text-slate-400 leading-none">
+                      Phiếu của
+                    </p>
+                    {!maskIncomeForExport && (onNameChange || onMonthYearChange) && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingName(true)}
+                        data-html2canvas-ignore="true"
+                        title="Đổi tên / tháng phiếu"
+                        className="opacity-0 group-hover/name:opacity-100 hover:text-sky-600 dark:hover:text-sky-400 text-slate-400 transition-opacity p-0.5 cursor-pointer"
+                      >
+                        <Pencil className="w-2.5 h-2.5" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p
+                      onClick={() => !maskIncomeForExport && (onNameChange || onMonthYearChange) && setIsEditingName(true)}
+                      title={!maskIncomeForExport && (onNameChange || onMonthYearChange) ? "Bấm vào tên để đổi tên / kỳ tháng" : undefined}
+                      className={`font-extrabold uppercase tracking-tight text-slate-900 dark:text-white leading-tight truncate ${
+                        maskIncomeForExport ? 'text-xl' : 'text-base sm:text-lg cursor-pointer hover:text-sky-600 dark:hover:text-sky-400 transition-colors'
+                      }`}
+                    >
+                      {name}
+                    </p>
+                    {monthYear && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shadow-2xs">
+                        <CalendarDays className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                        <span>{monthYear.includes('/') ? `Tháng ${monthYear}` : monthYear}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
               ) : (
-                <p className="text-[11px] text-slate-400">Theo luật thuế TNCN 2026</p>
+                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                  <p className="text-[11px] text-slate-400">Theo luật thuế TNCN 2026</p>
+                  {monthYear && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                      <CalendarDays className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                      <span>{monthYear.includes('/') ? `Tháng ${monthYear}` : monthYear}</span>
+                    </span>
+                  )}
+                  {!maskIncomeForExport && (onNameChange || onMonthYearChange) && (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingName(true)}
+                      data-html2canvas-ignore="true"
+                      className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold hover:underline cursor-pointer"
+                    >
+                      (Nhập tên / tháng)
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -459,7 +589,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                   {qrBankAccount}
                 </div>
               )}
-              {name && <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{name}</div>}
+              {name && (
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {name} {monthYear ? `• Kỳ ${monthYear}` : ''}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -473,7 +607,11 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* Footer ghi chú trong ảnh export */}
         <div className="pt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
-          <span className="truncate min-w-0">{name ? `Tính Thuế TNCN — ${name}` : 'Tính Thuế TNCN'}</span>
+          <span className="truncate min-w-0 font-medium">
+            {name
+              ? `Tính Thuế TNCN ${monthYear ? `(Tháng ${monthYear}) ` : ''}— ${name}`
+              : `Tính Thuế TNCN ${monthYear ? `(Tháng ${monthYear})` : ''}`}
+          </span>
           {/* pr-1.5: chừa chỗ cho sai lệch bề rộng phông lúc chụp ảnh (chữ cuối từng bị cắt mép phải) */}
           <span className="font-mono shrink-0 pr-1.5">
             {exportedAt ? `Xuất lúc ${exportedAt}` : 'Luật 109/2025/QH15'}

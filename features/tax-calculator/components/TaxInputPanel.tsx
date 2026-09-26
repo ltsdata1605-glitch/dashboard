@@ -107,8 +107,18 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     updates.incomeDay20 = Math.max(0, total - day5);
   };
 
+  /** So khớp 2 tên nhân viên (bỏ dấu tiếng Việt, viết thường) xem có cùng là một người không */
+  const isSameEmployeeName = (a?: string, b?: string): boolean => {
+    if (!a || !b) return true;
+    const cleanA = a.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().trim();
+    const cleanB = b.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase().trim();
+    return cleanA === cleanB;
+  };
+
   // Áp dữ liệu Đợt 1 vào biểu mẫu — dùng chung cho cả 2 đường vào: dán text HRM và đọc ảnh bằng AI
   const applyDay5Data = (data: SalarySlipDay5Data & { unionFee?: number }) => {
+    const isNewEmployee = Boolean(data.fullName && input.name && !isSameEmployeeName(data.fullName, input.name));
+
     const updates: Partial<TaxCalculationInput> = {
       hasDay5Slip: true,
       incomeDay5: data.incomeDay5,
@@ -118,24 +128,38 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       personalDeduction: data.personalDeduction || 15_500_000,
     };
 
-    if (data.fullName && !input.name) {
+    if (data.fullName) {
       updates.name = data.fullName;
     }
     // Tháng lương trên phiếu: dùng để gom nhóm lịch sử theo tháng
-    if (data.monthYear && !input.monthYear) {
+    if (data.monthYear) {
       updates.monthYear = data.monthYear;
     }
-    if (data.bankAccount && !input.bankAccount) {
+    if (data.bankAccount) {
       updates.bankAccount = data.bankAccount;
     }
-    // Ngân hàng nhận tiền: lấy thẳng từ phiếu (chỉ giữ lựa chọn cũ nếu nó là ngân hàng hợp lệ
-    // người dùng đã tự chọn — giá trị cũ kiểu "MB" không có trong danh mục coi như chưa chọn).
+    // Ngân hàng nhận tiền: lấy thẳng từ phiếu
     const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
-    if (autoBankCode && !normalizeBankCode(input.bankCode)) {
+    if (autoBankCode) {
       updates.bankCode = autoBankCode;
     }
     if (data.monthTotalIncome && data.monthTotalIncome > 0) {
       updates.monthTotalIncome = data.monthTotalIncome;
+    }
+
+    if (isNewEmployee) {
+      // Khi nạp phiếu của nhân viên mới, dọn sạch dữ liệu đợt 2 của nhân viên cũ để không bị lẫn số liệu
+      updates.hasDay20Slip = false;
+      updates.incomeDay20 = 0;
+      updates.bonusMain = 0;
+      updates.bonusHot = 0;
+      updates.actualTaxDay20 = 0;
+      updates.bonusItems = [];
+      updates.selectedProxyItemIds = [];
+      updates.customProxyAmount = 0;
+      if (data.fullName) {
+        updates.qrDescription = `HOAN THUE CHO ${data.fullName}`.toUpperCase();
+      }
     }
 
     applyMonthTotals(updates);
@@ -144,6 +168,8 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
 
   // Áp dữ liệu Đợt 2 vào biểu mẫu
   const applyDay20Data = (data: SalarySlipDay20Data) => {
+    const isNewEmployee = Boolean(data.fullName && input.name && !isSameEmployeeName(data.fullName, input.name));
+
     const income20 = data.incomeDay20 > 0 ? data.incomeDay20 : data.bonusMain + data.bonusHot;
 
     // Tự động gợi ý các mục nhận thay nếu tên có chứa từ khoá "khoán" hoặc "thi đua"
@@ -165,21 +191,33 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       selectedProxyItemIds: defaultSelectedProxyIds,
     };
 
-    if (data.fullName && !input.name) {
+    if (data.fullName) {
       updates.name = data.fullName;
     }
-    if (data.monthYear && !input.monthYear) {
+    if (data.monthYear) {
       updates.monthYear = data.monthYear;
     }
-    if (data.bankAccount && !input.bankAccount) {
+    if (data.bankAccount) {
       updates.bankAccount = data.bankAccount;
     }
     const autoBankCode = normalizeBankCode(data.matchedBankCode || data.bankName || '');
-    if (autoBankCode && !normalizeBankCode(input.bankCode)) {
+    if (autoBankCode) {
       updates.bankCode = autoBankCode;
     }
     if (data.monthTotalIncome && data.monthTotalIncome > 0) {
       updates.monthTotalIncome = data.monthTotalIncome;
+    }
+
+    if (isNewEmployee) {
+      // Khi nạp thưởng của nhân viên mới, dọn sạch đợt 1 của nhân viên cũ
+      updates.hasDay5Slip = false;
+      updates.incomeDay5 = 0;
+      updates.insuranceSalary = 0;
+      updates.insurance = 0;
+      updates.unionFee = 0;
+      if (data.fullName) {
+        updates.qrDescription = `HOAN THUE CHO ${data.fullName}`.toUpperCase();
+      }
     }
 
     applyMonthTotals(updates);
@@ -456,19 +494,39 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
         {/* BANNER TRẠNG THÁI (KHI ĐÃ TẢI ÍT NHẤT 1 ĐỢT) */}
         {hasBothSlips ? (
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-emerald-800 dark:text-emerald-300 text-xs">
-            <div className="flex items-center gap-1.5 font-semibold">
+            <div className="flex items-center gap-1.5 font-semibold min-w-0 flex-wrap">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>Đã nạp đủ 2 đợt lương & thưởng</span>
+              {input.name && (
+                <span className="font-bold text-emerald-950 dark:text-emerald-100 truncate ml-1">
+                  • {input.name}
+                </span>
+              )}
+              {input.monthYear && (
+                <span className="font-bold text-emerald-700 dark:text-emerald-300 bg-white/60 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded text-[11px] border border-emerald-300 dark:border-emerald-700 ml-1">
+                  Tháng {input.monthYear}
+                </span>
+              )}
             </div>
-            <span className="text-[11px] font-mono font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+            <span className="text-[11px] font-mono font-bold bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 shrink-0 ml-2">
               {formatVnd(input.totalIncome)}
             </span>
           </div>
         ) : (input.hasDay5Slip || input.hasDay20Slip) ? (
           <div className="flex items-center justify-between p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs">
-            <div className="flex items-center gap-1.5 font-semibold">
+            <div className="flex items-center gap-1.5 font-semibold min-w-0 flex-wrap">
               <Info className="w-4 h-4 text-amber-600 shrink-0" />
               <span>{input.hasDay5Slip ? 'Đã có Ngày 5 • Vui lòng tải tiếp Ngày 20' : 'Đã có Ngày 20 • Vui lòng tải tiếp Ngày 5'}</span>
+              {input.name && (
+                <span className="font-bold text-amber-950 dark:text-amber-100 truncate ml-1">
+                  • {input.name}
+                </span>
+              )}
+              {input.monthYear && (
+                <span className="font-bold text-amber-700 dark:text-amber-300 bg-white/60 dark:bg-amber-900/60 px-1.5 py-0.5 rounded text-[11px] border border-amber-300 dark:border-amber-700 ml-1">
+                  Tháng {input.monthYear}
+                </span>
+              )}
             </div>
           </div>
         ) : null}
@@ -742,7 +800,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
             <div className="flex items-center gap-1.5">
               <span className="px-2 py-0.5 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-100/90 dark:bg-rose-900/50 border border-rose-200 dark:border-rose-800 rounded-md inline-flex items-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-rose-600" />
-                <span>Thưởng nóng {input.monthYear || '08/2026'}</span>
+                <span>Thưởng nóng {input.monthYear ? (input.monthYear.includes('/') ? input.monthYear : input.monthYear) : '08/2026'}</span>
               </span>
             </div>
 
@@ -948,6 +1006,25 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     value={input.name}
                     onChange={(e) => onChange({ name: e.target.value })}
                     placeholder="VD: TRƯƠNG HOÀNG PHÚC"
+                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
+                  />
+                </div>
+              </div>
+
+              {/* Kỳ lương / Tháng */}
+              <div>
+                <label className="block text-[11px] font-medium text-slate-500 mb-0.5">
+                  Kỳ lương / Tháng tính thuế
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                    <Calendar className="w-3.5 h-3.5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={input.monthYear || ''}
+                    onChange={(e) => onChange({ monthYear: e.target.value })}
+                    placeholder="VD: 08/2026"
                     className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-100 outline-none focus:border-sky-500"
                   />
                 </div>

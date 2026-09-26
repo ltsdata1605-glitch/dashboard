@@ -10,6 +10,7 @@ import {
   Key,
   Camera,
   MousePointerClick,
+  FileSpreadsheet,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { auth } from '../../services/firebase';
@@ -23,6 +24,7 @@ import {
 } from './services/taxCalculatorService';
 import { BANK_OPTIONS, normalizeBankCode } from './services/bankCatalog';
 import { SCREENSHOT_BOOKMARKLET } from './services/screenshotBookmarklet';
+import { TaxHistorySidebar } from './components/TaxHistorySidebar';
 import { taxSyncService } from './services/taxSyncService';
 import { TaxInputPanel } from './components/TaxInputPanel';
 import { TaxResultPanel } from './components/TaxResultPanel';
@@ -76,13 +78,33 @@ export const TaxCalculatorView: React.FC = () => {
     return DEFAULT_INPUTS;
   });
 
-  // 2. Modals state
+  // 2. Modals & Sidebar state
   const [showBracketModal, setShowBracketModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [historyList, setHistoryList] = useState<SavedTaxRecord[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isCloudUser, setIsCloudUser] = useState<boolean>(!!auth.currentUser);
+  const [selectedRecordId, setSelectedRecordId] = useState<number | string | null>(null);
+
+  // Mở rộng danh sách lịch sử ở bên phải (mặc định mở trên màn hình rộng)
+  const [showHistorySidebar, setShowHistorySidebar] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('tax_show_history_sidebar');
+      if (saved !== null) return saved === 'true';
+      return true;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('tax_show_history_sidebar', String(showHistorySidebar));
+    } catch {
+      // ignore
+    }
+  }, [showHistorySidebar]);
 
   // Nút bookmarklet "Chụp ảnh": href là javascript: nên phải gắn bằng DOM, React chặn trong JSX
   const bookmarkletRef = useRef<HTMLAnchorElement>(null);
@@ -128,6 +150,32 @@ export const TaxCalculatorView: React.FC = () => {
     return calculateTax(input);
   }, [input]);
 
+  // Tổng tiền nhận thay (đã gồm phần thuế phát sinh) — dùng chung cho bảng kết quả và thẻ QR
+  const proxyTotal =
+    result.netRefundToFriend > 0
+      ? result.netRefundToFriend + result.taxOnProxyAmount
+      : input.proxyAmount;
+
+  // Các khoản nhận thay đang chọn — đưa vào ảnh xuất và lịch sử để thủ quỹ đối chiếu từng khoản
+  const proxyItems = useMemo(() => {
+    const selected = (input.bonusItems || [])
+      .filter(b => (input.selectedProxyItemIds || []).includes(b.id))
+      .map(b => ({ id: b.id, name: b.name, amount: b.amount }));
+    if ((input.customProxyAmount || 0) > 0) {
+      selected.push({ id: 'custom', name: 'Khoản nhập tay', amount: input.customProxyAmount });
+    }
+    return selected;
+  }, [input.bonusItems, input.selectedProxyItemIds, input.customProxyAmount]);
+
+  // Mã QR hoàn thuế: dựng ở đây để CẢ thẻ QR lẫn ảnh xuất ra dùng chung một mã
+  const qrUrl = generateVietQrUrl({
+    bankAccount: input.bankAccount,
+    bankCode: input.bankCode,
+    amount: result.taxOnProxyAmount,
+    description: input.qrDescription || 'Hoan tra thue TNCN nhan thay',
+  });
+  const qrBankLabel = BANK_OPTIONS.find(o => o.value === input.bankCode)?.label || '';
+
   // Handlers
   const handleInputChange = (updates: Partial<TaxCalculationInput>) => {
     setInput((prev) => ({ ...prev, ...updates }));
@@ -142,6 +190,12 @@ export const TaxCalculatorView: React.FC = () => {
 
   const handleSaveHistory = async (opts?: { silent?: boolean }) => {
     try {
+      const proxyItemsDetail = proxyItems.length > 0
+        ? proxyItems.map(p => `${p.name} (${p.amount.toLocaleString('vi-VN')} đ)`).join('; ')
+        : (result.netRefundToFriend > 0 || input.proxyAmount > 0)
+          ? `Khoản nhận thay (${(result.netRefundToFriend > 0 ? (result.netRefundToFriend + result.taxOnProxyAmount) : input.proxyAmount).toLocaleString('vi-VN')} đ)`
+          : undefined;
+
       await taxSyncService.saveRecord({
         name: input.name || 'Người kê khai',
         monthYear: input.monthYear,
@@ -157,6 +211,10 @@ export const TaxCalculatorView: React.FC = () => {
         taxLawVersion: input.taxLawVersion || '2026_law',
         bankAccount: input.bankAccount,
         bankCode: input.bankCode,
+        proxyItemsDetail,
+        proxyItemNames: proxyItems.map(p => p.name),
+        customProxyAmount: input.customProxyAmount,
+        vietQrUrl: qrUrl,
         createdAt: new Date().toISOString(),
       });
       setIsSaved(true);
@@ -175,9 +233,11 @@ export const TaxCalculatorView: React.FC = () => {
   };
 
   const handleLoadRecord = (record: SavedTaxRecord) => {
+    setSelectedRecordId(record.id || record.createdAt);
     setInput({
       ...DEFAULT_INPUTS,
       name: record.name,
+      monthYear: record.monthYear,
       incomeDay5: record.incomeDay5 || 0,
       incomeDay20: record.incomeDay20 || 0,
       totalIncome: record.totalIncome,
@@ -193,7 +253,7 @@ export const TaxCalculatorView: React.FC = () => {
       hasDay20Slip: (record.incomeDay20 || 0) > 0,
     });
     setShowHistoryModal(false);
-    toast.success(`Đã tải dữ liệu của: ${record.name}`);
+    toast.success(`Đã khôi phục dữ liệu: ${record.name}`, { icon: '⚡' });
   };
 
   const handleDeleteRecord = async (id: number) => {
@@ -216,37 +276,14 @@ export const TaxCalculatorView: React.FC = () => {
     }
   };
 
-  // Tổng tiền nhận thay (đã gồm phần thuế phát sinh) — dùng chung cho bảng kết quả và thẻ QR
-  const proxyTotal =
-    result.netRefundToFriend > 0
-      ? result.netRefundToFriend + result.taxOnProxyAmount
-      : input.proxyAmount;
-
-  // Các khoản nhận thay đang chọn — đưa vào ảnh xuất để thủ quỹ đối chiếu từng khoản
-  const proxyItems = useMemo(() => {
-    const selected = (input.bonusItems || [])
-      .filter(b => (input.selectedProxyItemIds || []).includes(b.id))
-      .map(b => ({ id: b.id, name: b.name, amount: b.amount }));
-    if ((input.customProxyAmount || 0) > 0) {
-      selected.push({ id: 'custom', name: 'Khoản nhập tay', amount: input.customProxyAmount });
-    }
-    return selected;
-  }, [input.bonusItems, input.selectedProxyItemIds, input.customProxyAmount]);
-
-  // Mã QR hoàn thuế: dựng ở đây để CẢ thẻ QR lẫn ảnh xuất ra dùng chung một mã
-  const qrUrl = generateVietQrUrl({
-    bankAccount: input.bankAccount,
-    bankCode: input.bankCode,
-    amount: result.taxOnProxyAmount,
-    description: input.qrDescription || 'Hoan tra thue TNCN nhan thay',
-  });
-  const qrBankLabel = BANK_OPTIONS.find(o => o.value === input.bankCode)?.label || '';
 
   const personalDeduction = PERSONAL_DEDUCTION_2026;
   const dependentDeduction = DEPENDENT_DEDUCTION_2026;
 
   return (
-    <div className="mx-auto w-full flex-grow max-w-[1100px] p-0 sm:px-4 sm:pb-4 lg:px-6 lg:pb-6 animate-fadeIn">
+    <div className={`mx-auto w-full flex-grow p-0 sm:px-4 sm:pb-4 lg:px-6 lg:pb-6 animate-fadeIn transition-all duration-300 ${
+      showHistorySidebar ? 'max-w-[1560px]' : 'max-w-[1100px]'
+    }`}>
       {/* HEADER: Gọn gàng & Hiện đại */}
       <div className="bg-white dark:bg-slate-800/90 border-b sm:border border-slate-200 dark:border-slate-700/60 sm:rounded-2xl p-3.5 sm:p-4 mb-3 sm:mb-4 shadow-xs">
         <div className="flex items-center justify-between gap-3">
@@ -341,13 +378,20 @@ export const TaxCalculatorView: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => setShowHistoryModal(true)}
-              className="px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60 rounded-lg transition-colors flex items-center gap-1 relative cursor-pointer"
+              onClick={() => setShowHistorySidebar((prev) => !prev)}
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 relative cursor-pointer ${
+                showHistorySidebar
+                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  : 'text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60'
+              }`}
+              title={showHistorySidebar ? 'Thu gọn danh sách lịch sử bên phải' : 'Mở danh sách lịch sử bên phải'}
             >
-              <History className="w-3.5 h-3.5 text-indigo-500" />
+              <History className={`w-3.5 h-3.5 ${showHistorySidebar ? 'text-white' : 'text-indigo-500'}`} />
               <span>Lịch sử</span>
               {historyList.length > 0 && (
-                <span className="ml-0.5 px-1.5 py-0.2 text-[10px] font-bold bg-indigo-500 text-white rounded-full">
+                <span className={`ml-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded-full ${
+                  showHistorySidebar ? 'bg-indigo-800 text-white' : 'bg-indigo-500 text-white'
+                }`}>
                   {historyList.length}
                 </span>
               )}
@@ -356,51 +400,71 @@ export const TaxCalculatorView: React.FC = () => {
         </div>
       </div>
 
-      {/* BODY GRID: Cân đối 2 cột trên Desktop (6 - 6) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
-        {/* Cột trái: Panel nhập liệu & danh sách nhận thay (6/12 cột) */}
-        <div className="lg:col-span-6">
-          <TaxInputPanel
-            input={input}
-            onChange={handleInputChange}
-            onReset={handleReset}
-            onSave={() => handleSaveHistory()}
-            isSaved={isSaved}
-            onOpenApiKeyConfig={() => setShowApiKeyModal(true)}
-          />
-        </div>
-
-        {/* Cột phải: Panel kết quả & VietQR (6/12 cột) */}
-        <div className="lg:col-span-6 space-y-3 sm:space-y-4">
-          <TaxResultPanel
-            result={result}
-            proxyAmount={proxyTotal}
-            totalIncome={result.totalIncome || input.totalIncome}
-            name={input.name}
-            proxyItems={proxyItems}
-            qrUrl={qrUrl}
-            qrBankLabel={qrBankLabel}
-            qrBankAccount={input.bankAccount}
-            // Xuất ảnh lại mà chưa sửa gì thì không tạo thêm bản ghi trùng
-            onExported={() => (isSaved ? undefined : handleSaveHistory({ silent: true }))}
-            onOpenBracketModal={() => setShowBracketModal(true)}
-          />
-
-          {(result.taxOnProxyAmount > 0 || result.netRefundToFriend > 0) && (
-            <TaxPaymentQrCard
-              amount={result.taxOnProxyAmount}
-              proxyAmount={proxyTotal}
-              netRefundAmount={result.netRefundToFriend}
-              name={input.name}
-              bankAccount={input.bankAccount || ''}
-              setBankAccount={(v) => handleInputChange({ bankAccount: v })}
-              bankCode={input.bankCode || ''}
-              setBankCode={(v) => handleInputChange({ bankCode: v })}
-              qrDescription={input.qrDescription || ''}
-              setQrDescription={(v) => handleInputChange({ qrDescription: v })}
+      {/* BODY LAYOUT: 2 cột chính (Nhập & Kết quả) + Cột 3 Lịch sử mở rộng bên phải */}
+      <div className="flex flex-col xl:flex-row gap-3 sm:gap-4 items-start">
+        {/* 2 Cột Chính: Nhập liệu & Kết quả */}
+        <div className="flex-1 min-w-0 grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 w-full">
+          {/* Cột trái: Panel nhập liệu & danh sách nhận thay (6/12 cột) */}
+          <div className="lg:col-span-6">
+            <TaxInputPanel
+              input={input}
+              onChange={handleInputChange}
+              onReset={handleReset}
+              onSave={() => handleSaveHistory()}
+              isSaved={isSaved}
+              onOpenApiKeyConfig={() => setShowApiKeyModal(true)}
             />
-          )}
+          </div>
+
+          {/* Cột phải: Panel kết quả & VietQR (6/12 cột) */}
+          <div className="lg:col-span-6 space-y-3 sm:space-y-4">
+            <TaxResultPanel
+              result={result}
+              proxyAmount={proxyTotal}
+              totalIncome={result.totalIncome || input.totalIncome}
+              name={input.name}
+              monthYear={input.monthYear}
+              proxyItems={proxyItems}
+              qrUrl={qrUrl}
+              qrBankLabel={qrBankLabel}
+              qrBankAccount={input.bankAccount}
+              // Xuất ảnh lại mà chưa sửa gì thì không tạo thêm bản ghi trùng
+              onExported={() => (isSaved ? undefined : handleSaveHistory({ silent: true }))}
+              onOpenBracketModal={() => setShowBracketModal(true)}
+              onNameChange={(name) => handleInputChange({ name })}
+              onMonthYearChange={(monthYear) => handleInputChange({ monthYear })}
+            />
+
+            {(result.taxOnProxyAmount > 0 || result.netRefundToFriend > 0) && (
+              <TaxPaymentQrCard
+                amount={result.taxOnProxyAmount}
+                proxyAmount={proxyTotal}
+                netRefundAmount={result.netRefundToFriend}
+                name={input.name}
+                bankAccount={input.bankAccount || ''}
+                setBankAccount={(v) => handleInputChange({ bankAccount: v })}
+                bankCode={input.bankCode || ''}
+                setBankCode={(v) => handleInputChange({ bankCode: v })}
+                qrDescription={input.qrDescription || ''}
+                setQrDescription={(v) => handleInputChange({ qrDescription: v })}
+              />
+            )}
+          </div>
         </div>
+
+        {/* Cột 3: Danh sách lịch sử mở rộng nằm ở bên phải */}
+        {showHistorySidebar && (
+          <aside className="w-full xl:w-[350px] 2xl:w-[380px] shrink-0 sticky top-3 animate-fadeIn">
+            <TaxHistorySidebar
+              records={historyList}
+              selectedRecordId={selectedRecordId}
+              onSelectRecord={handleLoadRecord}
+              onDeleteRecord={handleDeleteRecord}
+              onClearAll={handleClearAllHistory}
+              onClose={() => setShowHistorySidebar(false)}
+            />
+          </aside>
+        )}
       </div>
 
       {/* MODALS */}

@@ -160,6 +160,10 @@ export interface SavedTaxRecord {
     taxLawVersion?: TaxLawVersion;
     bankAccount?: string;
     bankCode?: string;
+    proxyItemsDetail?: string; // Chi tiết loại khoán, thưởng nhận thay
+    proxyItemNames?: string[]; // Danh sách tên các khoản nhận thay
+    customProxyAmount?: number;
+    vietQrUrl?: string; // Link ảnh QR chuyển khoản SePay / VietQR
     createdAt: string; // ISO string
     syncedToCloud?: boolean;
 }

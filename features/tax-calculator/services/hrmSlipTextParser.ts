@@ -64,17 +64,54 @@ export const textByLabel = (lines: ParsedHrmLine[], needle: string): string => {
     return hit ? hit.value : '';
 };
 
-/** "08/2026" — tháng lương của phiếu */
-const findMonthYear = (lines: ParsedHrmLine[]): string => {
+/**
+ * Trích xuất tháng lương / thưởng (dạng "MM/YYYY", ví dụ "08/2026").
+ * Đảm bảo:
+ *   1. Bắt đúng dropdown chọn tháng: "08/2026", "08/2026 Tìm", "08/2026\tTìm" (Hình 1)
+ *   2. Bắt đúng mã tháng trong các khoản lương/thưởng: "Thưởng ERP T08.2026", "Khoán T08.2026", "Thưởng ERP T08/2026"
+ *   3. Bắt đúng tiêu đề: "Thưởng chính 08/2026", "Thưởng nóng 08/2026", "Tháng 08/2026"
+ *   4. Bỏ qua các ngày chuyển khoản thanh toán dạng "CK 21/09/2026", "CK 26/02/2026" (tránh nhận nhầm ngày trả tiền thành tháng lương)
+ */
+export const findMonthYear = (lines: ParsedHrmLine[]): string => {
+    // 1. Tìm tháng đứng riêng hoặc đi kèm Tìm/chọn (VD dropdown "08/2026" hoặc "08/2026 Tìm")
     for (const line of lines) {
-        const m = line.label.match(/^(\d{1,2})\/(\d{4})$/);
-        if (m) return line.label;
+        if (/^CK\s*\d{1,2}\/\d{1,2}\/\d{4}/i.test(line.label)) continue;
+        const isolated = line.label.match(/(?<!\d\/)(?:^|\b)(0?[1-9]|1[0-2])\/(\d{4})\b(?!\/\d)/);
+        if (isolated) {
+            const m = String(Number(isolated[1])).padStart(2, '0');
+            return `${m}/${isolated[2]}`;
+        }
     }
-    // Bảng thưởng: tiêu đề "Thưởng chính 08/2026"
+
+    // 2. Tìm mã tháng dạng T08.2026 hoặc T8.2026 / T08/2026 (rất phổ biến trong HRM: "Thưởng ERP T08.2026")
     for (const line of lines) {
-        const m = line.label.match(/(\d{1,2}\/\d{4})/);
-        if (m && labelMatches(line.label, 'thuong')) return m[1];
+        const m = line.label.match(/\bT(0?[1-9]|1[0-2])\s*[/\.]\s*(\d{4})\b/i);
+        if (m) {
+            const mm = String(Number(m[1])).padStart(2, '0');
+            return `${mm}/${m[2]}`;
+        }
     }
+
+    // 3. Tìm "Tháng 08/2026", "Tháng 8/2026" hoặc "Tháng 08.2026"
+    for (const line of lines) {
+        const m = line.label.match(/(?:thang|tháng)\s*(?:t)?(0?[1-9]|1[0-2])\s*[/\-.]\s*(\d{4})/i);
+        if (m) {
+            const mm = String(Number(m[1])).padStart(2, '0');
+            return `${mm}/${m[2]}`;
+        }
+    }
+
+    // 4. Tìm trong tiêu đề thưởng: "Thưởng chính 08/2026", "Thưởng nóng 08/2026"
+    for (const line of lines) {
+        if (labelMatches(line.label, 'thuong')) {
+            const m = line.label.match(/(?<!\d\/)(0?[1-9]|1[0-2])\/(\d{4})/);
+            if (m) {
+                const mm = String(Number(m[1])).padStart(2, '0');
+                return `${mm}/${m[2]}`;
+            }
+        }
+    }
+
     return '';
 };
 
@@ -103,8 +140,14 @@ const findHeaderName = (lines: ParsedHrmLine[]): string => {
         l => labelMatches(l.label, 'trang chu') && labelMatches(l.label, 'hrm')
     );
     if (idx > 0) {
-        const prev = lines[idx - 1].label.trim();
-        if (prev && !/^\d+$/.test(prev) && prev.length <= 60) return prev;
+        for (let i = idx - 1; i >= Math.max(0, idx - 5); i--) {
+            const candidate = lines[i].label.trim();
+            if (!candidate) continue;
+            // Bỏ qua các dòng chỉ có số (thông báo 0, 1...) hoặc icon, logo
+            if (/^\d+$/.test(candidate)) continue;
+            if (/^(logo|he thong|hrm|thong bao|cong viec|hanh chinh|tim nhan vien)$/i.test(stripDiacritics(candidate))) continue;
+            if (candidate.length <= 60) return candidate;
+        }
     }
     return '';
 };
@@ -192,9 +235,16 @@ export const parseHrmDay5Text = (text: string): ParsedDay5 => {
     }
 
     const monthYear = findMonthYear(lines);
+    const fullName =
+        textByLabel(lines, 'Chủ tài khoản') ||
+        textByLabel(lines, 'Chủ TK') ||
+        textByLabel(lines, 'Họ và tên') ||
+        textByLabel(lines, 'Họ tên') ||
+        textByLabel(lines, 'Tên nhân viên') ||
+        findHeaderName(lines);
 
     return {
-        fullName: findHeaderName(lines),
+        fullName,
         monthYear,
         monthTotalIncome: monthIncomeFromYearTable(lines, monthYear) ?? undefined,
         incomeDay5,
@@ -311,7 +361,13 @@ export const parseHrmDay20Text = (text: string): SalarySlipDay20Data => {
     const bankName = textByLabel(lines, 'Ngân hàng');
 
     return {
-        fullName: textByLabel(lines, 'Chủ tài khoản') || findHeaderName(lines),
+        fullName:
+            textByLabel(lines, 'Chủ tài khoản') ||
+            textByLabel(lines, 'Chủ TK') ||
+            textByLabel(lines, 'Họ và tên') ||
+            textByLabel(lines, 'Họ tên') ||
+            textByLabel(lines, 'Tên nhân viên') ||
+            findHeaderName(lines),
         monthYear: findMonthYear(lines),
         monthTotalIncome,
         incomeDay20: bonusMain + bonusHot,
