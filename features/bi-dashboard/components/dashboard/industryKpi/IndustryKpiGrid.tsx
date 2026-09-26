@@ -80,7 +80,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
             {/* Header bar of KPI Section */}
             <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-200/70 dark:border-slate-800 flex-wrap">
                 <div className="flex items-center gap-2">
-                    <span className="text-[11px] sm:text-[12px] font-black uppercase text-slate-700 dark:text-slate-200 tracking-wider">
+                    <span className="text-[11px] sm:text-[12px] font-medium uppercase text-slate-700 dark:text-slate-300 tracking-wider">
                         CHỈ SỐ KPI NGÀNH HÀNG
                     </span>
                     <span className="text-[11px] font-bold px-1.5 py-0.2 rounded-xs bg-sky-100 dark:bg-sky-950/70 text-sky-700 dark:text-sky-300 border border-sky-300/40">
@@ -143,10 +143,11 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
 
             {/* 6-Column Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
-                {metricList.map((metric) => (
+                {metricList.map((metric, index) => (
                     <IndustryKpiCard
                         key={metric.id}
                         metric={metric}
+                        index={index}
                         isRealtime={isRealtime}
                         focusMetric={focusMetric}
                         onRemove={handleRemoveCard}
