@@ -316,20 +316,31 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {/* Tuỳ chọn: Sử dụng Target DTQĐ sau chỉnh làm target cho các thẻ KPI & bảng bên dưới */}
             {setUseAdjustedTarget && (
                 <label
-                    className={`inline-flex items-center gap-2 px-3.5 h-8 rounded-full text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border shadow-2xs ${
+                    className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 h-8 w-8 sm:w-auto px-0 sm:px-3.5 rounded-full text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border shadow-2xs shrink-0 ${
                         useAdjustedTarget
                             ? 'bg-sky-50/90 border-sky-300 text-sky-700 dark:bg-sky-950/60 dark:border-sky-700 dark:text-sky-300 font-semibold shadow-xs'
                             : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'
                     }`}
-                    title="Khi check: Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target Doanh thu) làm Target cho các thẻ KPI và bảng Doanh thu bên dưới"
+                    title="Target sau chỉnh: Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target Doanh thu) làm Target cho các thẻ KPI và bảng Doanh thu bên dưới"
                 >
                     <input
                         type="checkbox"
                         checked={!!useAdjustedTarget}
                         onChange={(e) => setUseAdjustedTarget(e.target.checked)}
-                        className="h-3.5 w-3.5 rounded-xs border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer accent-sky-600"
+                        className="sr-only sm:not-sr-only sm:h-3.5 sm:w-3.5 sm:rounded-xs sm:border-slate-300 sm:text-sky-600 sm:focus:ring-sky-500 sm:cursor-pointer sm:accent-sky-600"
                     />
-                    <span className="whitespace-nowrap">Target sau chỉnh</span>
+                    <span className="sm:hidden flex items-center justify-center pointer-events-none" aria-hidden="true">
+                        {useAdjustedTarget ? (
+                            <svg className="w-4 h-4 text-sky-600 dark:text-sky-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H4zm10.707 5.707a1 1 0 00-1.414-1.414L9 11.586 6.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l5-5z" clipRule="evenodd" />
+                            </svg>
+                        ) : (
+                            <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                <rect x="3" y="3" width="14" height="14" rx="2" />
+                            </svg>
+                        )}
+                    </span>
+                    <span className="hidden sm:inline whitespace-nowrap">Target sau chỉnh</span>
                 </label>
             )}
             {supermarketFilterDropdown}

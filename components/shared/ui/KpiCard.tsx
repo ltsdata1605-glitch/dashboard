@@ -128,7 +128,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             data-kpi-border={style.borderHex}
             data-kpi-top-border={style.topHex}
             data-kpi-top-color={!isGood ? 'rose' : iconColor}
-            className={`relative flex flex-col justify-between h-full border border-t-0 transition-all duration-300 group touch-feedback ${
+            className={`kpi-overview-card relative flex flex-col justify-between h-full border border-t-0 transition-all duration-300 group touch-feedback ${
                 !isGood
                     ? 'bg-rose-50/20 dark:bg-rose-950/15 border-rose-300 dark:border-rose-800/80 shadow-xs shadow-rose-500/5 hover:border-rose-400'
                     : `bg-white dark:bg-slate-900 ${style.border} border-t-0 ${style.borderHover}`
@@ -145,7 +145,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                         <div className={`${style.iconText} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
                             <Icon name={icon} size={3} />
                         </div>
-                        <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>{title}</h3>
+                        <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>{title}</h3>
                     </div>
                     {badge ? badge : (!isGood && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0 shadow-2xs">
@@ -155,13 +155,13 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 </div>
 
                 {/* Hàng 2: Giá trị chính (Value) */}
-                <div className="my-1.5 min-w-0">
+                <div className="kpi-overview-value my-1.5 min-w-0">
                     {children}
                 </div>
 
                 {/* Hàng 3: Thanh tiến độ + Mục tiêu / Tăng trưởng nếu có */}
                 {(clampedProgress !== undefined || trendLabel || trendValue) && (
-                    <div className="mt-auto pt-1.5 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
+                    <div className="kpi-overview-footer mt-auto pt-1.5 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
                         {clampedProgress !== undefined && (
                             <div className="flex items-center gap-1.5">
                                 <div className={`flex-1 h-[3px] ${style.progressBg} overflow-hidden`}>
@@ -190,17 +190,17 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             </div>
 
             {/* Layout đứng (vertical) cực gọn cho mobile (dưới lg) */}
-            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1.5 py-1.5 text-center h-full">
+            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1 sm:px-1.5 py-1.5 text-center h-full">
                 {/* Hàng 1: Icon */}
                 <div className={`flex items-center justify-center ${style.iconText} shrink-0 mb-0.5`}>
                     <Icon name={icon} size={3} />
                 </div>
                 
                 {/* Hàng 2: Title */}
-                <div className="flex items-center justify-center gap-1 w-full mb-0.5">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight truncate">{title}</h3>
+                <div className="flex items-center justify-center gap-0.5 sm:gap-1 w-full mb-0.5">
+                    <h3 className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold uppercase tracking-tight sm:tracking-wide text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>{title}</h3>
                     {!isGood && (
-                        <span className="px-1 py-0.2 rounded text-[8px] font-black uppercase bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">Chưa đạt</span>
+                        <span className="px-1 py-0.2 rounded text-[7.5px] xs:text-[8px] font-black uppercase bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">Chưa đạt</span>
                     )}
                 </div>
                 
@@ -211,11 +211,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 
                 {/* Hàng 4: Label phụ */}
                 {trendValue ? (
-                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
+                    <div className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (
-                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
+                    <div className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
                         {trendLabel}
                     </div>
                 ) : (

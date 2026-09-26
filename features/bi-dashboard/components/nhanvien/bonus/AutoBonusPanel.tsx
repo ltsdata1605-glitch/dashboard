@@ -134,7 +134,7 @@ export const AutoBonusPanel: React.FC<{
                 variant="unstyled" size="none"
                 disabled={isBusy}
                 onClick={() => setShowPicker(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 text-[11px] font-bold border border-sky-200 dark:border-sky-800 hover:bg-sky-100 transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100"
+                className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-md transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100 shrink-0"
             >
                 <span>⚡ Tự động</span>
             </Button>
@@ -143,7 +143,7 @@ export const AutoBonusPanel: React.FC<{
                     variant="unstyled" size="none"
                     onClick={resume}
                     title={resumeInfo.label}
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 text-[11px] font-bold border border-amber-300 dark:border-amber-700 hover:bg-amber-100 transition-all active:scale-95"
+                    className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-md transition-all active:scale-95 shrink-0"
                 >
                     <span>▶ Tiếp tục ({resumeInfo.remainingCount} tháng)</span>
                 </Button>

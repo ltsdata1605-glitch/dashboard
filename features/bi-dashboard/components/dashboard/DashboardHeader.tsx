@@ -130,13 +130,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 </div>
 
                 {/* Content Title + Inline Actions + Quote + TimeProgressBar */}
-                <div className="px-4 sm:px-5 py-3 sm:py-4">
+                <div className="px-3 sm:px-5 py-2.5 sm:py-4">
                     <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
-                            <h2 className="js-report-title text-lg sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5">
+                            <h2 className="js-report-title text-base sm:text-2xl font-normal uppercase text-slate-800 dark:text-white leading-normal py-0.5">
                                 {contentTitle}
                             </h2>
-                            <p className="text-[11px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-normal leading-normal">
+                            <p className="hidden sm:block text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-normal leading-normal whitespace-nowrap">
                                 {QUOTES[activeSubTab]}
                             </p>
                         </div>
@@ -153,13 +153,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             {toolbarSlot}
 
                             {/* Divider */}
-                            <div className="h-3.5 sm:h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />
+                            <div className="h-3.5 sm:h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
                             {/* Batch export */}
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
+                                variant="ghost" size="icon" className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
                                 title="Xuất tất cả ảnh"
                             >
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
@@ -170,7 +170,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
+                                    variant="ghost" size="icon" className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
                                     title="Xuất ảnh"
                                 >
                                     {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
@@ -178,7 +178,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             )}
                         </div>
                     </div>
-                    <TimeProgressBar className="mt-2.5" isRealtime={activeMainTab === 'realtime'} />
+
+                    {/* Dòng quote trên mobile: hiển thị trọn vẹn trên 1 dòng duy nhất */}
+                    <p
+                        className="sm:hidden text-[8.5px] xs:text-[9.5px] uppercase text-slate-400 dark:text-slate-500 mt-1 font-normal leading-normal whitespace-nowrap truncate tracking-tight"
+                        title={QUOTES[activeSubTab]}
+                    >
+                        {QUOTES[activeSubTab]}
+                    </p>
+
+                    <TimeProgressBar className="mt-2 sm:mt-2.5" isRealtime={activeMainTab === 'realtime'} />
                 </div>
 
                 {/* Children content (e.g. merged SummaryTableView) */}

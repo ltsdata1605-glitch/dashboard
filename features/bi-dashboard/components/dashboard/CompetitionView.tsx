@@ -264,16 +264,16 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     };
 
     const toolbarControls = (
-        <div id="competition-view-controls" className="flex items-center gap-0.5 sm:gap-1.5">
+        <div id="competition-view-controls" className="flex items-center gap-0.5 sm:gap-1">
             {/* Nút Sao chép Nhận xét thi đua (icon-only, sao chép trực tiếp không hiện modal) */}
             <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleCopyCommentary}
-                className={`h-8 w-8 transition-all rounded-lg flex items-center justify-center border shrink-0 ${
+                className={`h-7.5 w-7.5 sm:h-8 sm:w-8 transition-all rounded-lg flex items-center justify-center shrink-0 ${
                     copiedCommentary
-                        ? 'text-emerald-600 bg-emerald-50 border-emerald-300 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-800'
-                        : 'text-sky-600 bg-sky-50/80 hover:bg-sky-100 border-sky-200 dark:text-sky-300 dark:bg-sky-950/40 dark:border-sky-800'
+                        ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40'
+                        : 'text-sky-600 hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-slate-800'
                 }`}
                 title={copiedCommentary ? "Đã sao chép nhận xét!" : "Sao chép nhận xét thi đua (Zalo/Telegram)"}
                 aria-label="Sao chép nhận xét thi đua"
@@ -290,7 +290,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                className={`h-8 w-8 transition-colors rounded-lg shrink-0 ${
+                className={`h-7.5 w-7.5 sm:h-8 sm:w-8 transition-colors rounded-lg shrink-0 ${
                     groupingMode === 'configured'
                         ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -311,7 +311,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className={`relative h-8 w-8 transition-colors rounded-lg shrink-0 ${
+                    className={`relative h-7.5 w-7.5 sm:h-8 sm:w-8 transition-colors rounded-lg shrink-0 ${
                         isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
                             ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -320,7 +320,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 >
                     <FilterIcon className="h-4 w-4" />
                     {isProgramFiltered && (
-                        <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-sky-500 px-0.5 text-[11px] sm:text-[11px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
+                        <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-sky-500 px-0.5 text-[10px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                             {validSelectedPrograms.length}
                         </span>
                     )}
@@ -449,7 +449,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={handleOpenTargetThiDua}
-                className="h-8 w-8 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-lg shrink-0"
+                className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-lg shrink-0"
                 title="Cấu hình Thi đua"
             >
                 <Settings className="h-4 w-4" />

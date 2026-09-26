@@ -48,12 +48,12 @@ export const BonusDesktopRow = React.memo(({
             className={`border-l-[4px] transition-all cursor-pointer text-[13px] ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750'}`}
             onClick={() => onEmployeeClick(item as Employee)}
         >
-            <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-700/50">
-                <div className="flex items-center gap-2">
+            <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                     <MedalBadge rank={item.rank} />
                     <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item as Employee)} />
                     <div className="flex flex-col min-w-0">
-                        <span className={`text-[13px] font-bold whitespace-normal break-words tracking-tight ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>
+                        <span className={`text-[12px] sm:text-[13px] font-bold whitespace-nowrap tracking-tight ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>
                             {item.name}
                         </span>
                     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
 import { getBonusForEmployee } from '../../utils/bonusParser';
 import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
@@ -21,7 +21,6 @@ interface CompetitionCompareViewProps {
     supermarketName?: string;
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
-    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
 }
 
@@ -160,7 +159,6 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     selectedCompetitions,
     revenueRows,
     installmentRows,
-    banKemRows,
     bonusData
 }) => {
     const [empAId, setEmpAId] = useIndexedDBState<string | null>('global-compare-emp-a', null);
@@ -197,14 +195,13 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     }, [empAId, empBId, autoPairs, setEmpAId, setEmpBId]);
 
     const getEmpStats = (emp: Employee | null) => {
-        if (!emp) return { dtqd: 0, dtlk: 0, tg: 0, bk: 0, thuong: 0, dtRank: 0, tgRank: 0, bkRank: 0, compStats: { total: 0, dkhtDat: 0, noSale: 0 } };
+        if (!emp) return { dtqd: 0, dtlk: 0, tg: 0, thuong: 0, dtRank: 0, tgRank: 0, compStats: { total: 0, dkhtDat: 0, noSale: 0 } };
         
         const rev = revenueRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
         const inst = installmentRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
-        const bk = banKemRows?.find(r => r.type === 'employee' && isSameEmployee(r.originalName, emp.originalName));
         const bns = getBonusForEmployee(bonusData, emp.originalName, emp.name);
 
-        const getRank = (rows: (RevenueRow | InstallmentRow | CrossSellingRow)[], key: string) => {
+        const getRank = (rows: (RevenueRow | InstallmentRow)[], key: string) => {
             const empRows = (rows || []).filter(r => r.type === 'employee');
             const sorted = [...empRows].sort((a, b) => ((b as unknown as Record<string, unknown>)[key] as number || 0) - ((a as unknown as Record<string, unknown>)[key] as number || 0));
             const idx = sorted.findIndex(r => isSameEmployee(r.originalName, emp.originalName));
@@ -235,17 +232,15 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             dtqd: rev?.dtqd || 0,
             dtlk: rev?.dtlk || 0,
             tg: inst?.totalPercent || 0,
-            bk: bk?.pctBillBk || 0,
             thuong: bns ? (bns.tong || ((bns.erp || 0) + (bns.tNong || 0))) : 0,
             dtRank: getRank(revenueRows || [], 'dtlk'),
             tgRank: getRank(installmentRows || [], 'totalPercent'),
-            bkRank: getRank(banKemRows || [], 'pctBillBk'),
             compStats: { total, dkhtDat, dkhtNotDat, noSale }
         };
     };
 
-    const statsA = useMemo(() => getEmpStats(empA), [empA, revenueRows, installmentRows, banKemRows, bonusData, allCompetitionsByCriterion, selectedCompetitions, employeeDataMap, employeeCompetitionTargets]);
-    const statsB = useMemo(() => getEmpStats(empB), [empB, revenueRows, installmentRows, banKemRows, bonusData, allCompetitionsByCriterion, selectedCompetitions, employeeDataMap, employeeCompetitionTargets]);
+    const statsA = useMemo(() => getEmpStats(empA), [empA, revenueRows, installmentRows, bonusData, allCompetitionsByCriterion, selectedCompetitions, employeeDataMap, employeeCompetitionTargets]);
+    const statsB = useMemo(() => getEmpStats(empB), [empB, revenueRows, installmentRows, bonusData, allCompetitionsByCriterion, selectedCompetitions, employeeDataMap, employeeCompetitionTargets]);
 
     const compRows = useMemo(() => {
         if (!empA || !empB) return [];
@@ -434,7 +429,6 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <TugOfWar label="Thưởng Thu Nhập" valA={statsA.thuong} valB={statsB.thuong} formatter={fMoney.format} />
                         <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} />
                         <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} />
-                        <TugOfWar label="Bán Kèm" valA={statsA.bk} valB={statsB.bk} formatter={pct} />
                     </div>
 
                     {/* Ranks Strip */}

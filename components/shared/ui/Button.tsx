@@ -61,7 +61,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sm: 'h-8 min-h-11 sm:min-h-0 px-3 text-xs rounded-md',
       md: 'h-9 min-h-11 sm:min-h-0 px-4 text-sm rounded-md',
       lg: 'h-11 px-6 text-base rounded-md',
-      icon: 'h-9 w-9 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 rounded-md p-0',
+      icon: 'h-8 w-8 rounded-md p-0',
       none: '',
     };
 

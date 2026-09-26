@@ -7,7 +7,7 @@ import { FilterIcon, ChevronDownIcon, CameraIcon } from '../Icons';
 import { Layers } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
-import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString, isSameEmployee } from '../../utils/nhanVienHelpers';
 import { getDefaultGroupLabel, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import { getBonusForEmployee } from '../../utils/bonusParser';
@@ -54,7 +54,6 @@ interface IndividualCompetitionViewProps {
     supermarketName?: string;
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
-    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
     groupingMode?: 'default' | 'configured';
     setGroupingMode?: React.Dispatch<React.SetStateAction<'default' | 'configured'>>;
@@ -132,7 +131,6 @@ const EmployeeProfileCard: React.FC<{
     supermarketName?: string;
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
-    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
     groupedPerformanceData: GroupedPerformanceData;
     allEmployees?: Employee[];
@@ -142,7 +140,6 @@ const EmployeeProfileCard: React.FC<{
     supermarketName,
     revenueRows,
     installmentRows,
-    banKemRows,
     bonusData,
     groupedPerformanceData,
     allEmployees,
@@ -250,11 +247,6 @@ const EmployeeProfileCard: React.FC<{
         [installmentRows, selectedEmployee]
     );
 
-    const empBanKem = useMemo(
-        () => findEmployeeRow(banKemRows, selectedEmployee.originalName),
-        [banKemRows, selectedEmployee]
-    );
-
     const empBonus = useMemo(() => {
         if (!bonusData) return null;
         return getBonusForEmployee(bonusData, selectedEmployee.originalName, selectedEmployee.name);
@@ -264,8 +256,7 @@ const EmployeeProfileCard: React.FC<{
     const rankings = useMemo(() => ({
         dt: computeRank(revenueRows || [], 'dtlk', selectedEmployee.originalName),
         tg: computeRank(installmentRows || [], 'totalPercent', selectedEmployee.originalName),
-        bk: computeRank(banKemRows || [], 'pctBillBk', selectedEmployee.originalName),
-    }), [revenueRows, installmentRows, banKemRows, selectedEmployee]);
+    }), [revenueRows, installmentRows, selectedEmployee]);
 
     const compStats = useMemo(() => {
         const allItems: { name: string; completion: number; remaining: number; target: number; actual: number }[] = [];
@@ -389,16 +380,15 @@ const EmployeeProfileCard: React.FC<{
             {rankings.dt.total > 0 && (
                 <div className="flex items-center gap-4 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
-                    <div className="flex-1 grid grid-cols-3 gap-3">
+                    <div className="flex-1 grid grid-cols-2 gap-4 max-w-md">
                         <RankBadge rank={rankings.dt.rank} total={rankings.dt.total} label="DTQĐ" />
                         <RankBadge rank={rankings.tg.rank} total={rankings.tg.total} label="Trả chậm" />
-                        <RankBadge rank={rankings.bk.rank} total={rankings.bk.total} label="Bán kèm" />
                     </div>
                 </div>
             )}
 
             {/* KPI Grid with Micro Progress Bars */}
-            <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.15fr 0.8fr 0.8fr 1.25fr' }}>
+            <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.2fr 0.9fr 1.3fr' }}>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💰 DTQĐ</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
@@ -414,14 +404,6 @@ const EmployeeProfileCard: React.FC<{
                     <MicroBar value={empInstallment?.totalPercent || 0} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DT: <strong className="text-sky-700">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
-                    </div>
-                </div>
-                <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
-                    <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
-                    <MicroBar value={empBanKem?.pctBillBk || 0} />
-                    <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
-                        <span>SP: <strong className="text-sky-700">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
@@ -459,24 +441,29 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     supermarketName,
     revenueRows,
     installmentRows,
-    banKemRows,
     bonusData,
     groupingMode: propGroupingMode,
     setGroupingMode: propSetGroupingMode
 }, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
-    const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining'; direction: 'asc' | 'desc' } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining'; direction: 'asc' | 'desc' }>({ key: 'dkht', direction: 'desc' });
 
     const handleSort = (key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => {
         setSortConfig(current => {
             if (current && current.key === key) {
-                if (current.direction === 'desc') {
-                    return { key, direction: 'asc' };
-                }
-                return null;
+                return { key, direction: current.direction === 'desc' ? 'asc' : 'desc' };
             }
             return { key, direction: 'desc' };
         });
+    };
+
+    const renderSortIcon = (key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => {
+        if (sortConfig?.key !== key) return null;
+        return (
+            <span className="inline-block ml-0.5 text-sky-600 dark:text-sky-400 font-bold text-[10px]">
+                {sortConfig.direction === 'desc' ? '▼' : '▲'}
+            </span>
+        );
     };
 
     const [isBatchExporting, setIsBatchExporting] = useState(false);
@@ -484,7 +471,6 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [groupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
-    const [customOrder] = useIndexedDBState<Record<string, string[]>>('competition-custom-order', {});
     const [localGroupingMode, setLocalGroupingMode] = useIndexedDBState<'default' | 'configured'>('competition-grouping-mode-v2', 'configured');
     const groupingMode = propGroupingMode ?? localGroupingMode;
     const setGroupingMode = propSetGroupingMode ?? setLocalGroupingMode;
@@ -501,27 +487,21 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
         if (!selectedEmployee) return {};
         const { daysPassed, daysInMonth } = getIndividualMonthProgress();
 
-        const sortRows = (rows: CompetitionPerformanceItem[], groupKey: string) => {
+        const sortRows = (rows: CompetitionPerformanceItem[]) => {
             return [...rows].sort((a, b) => {
                 if (sortConfig) {
                     let cmp = 0;
                     if (sortConfig.key === 'name') cmp = a.name.localeCompare(b.name, 'vi');
                     else if (sortConfig.key === 'actual') cmp = a.actual - b.actual;
                     else if (sortConfig.key === 'target') cmp = a.target - b.target;
-                    else if (sortConfig.key === 'dkht') cmp = a.dkht - b.dkht;
+                    else if (sortConfig.key === 'dkht') {
+                        cmp = (a.dkht - b.dkht) || (a.actual - b.actual) || (a.target - b.target);
+                    }
                     else if (sortConfig.key === 'remaining') cmp = a.remaining - b.remaining;
-                    return sortConfig.direction === 'desc' ? -cmp : cmp;
+                    if (cmp !== 0) return sortConfig.direction === 'desc' ? -cmp : cmp;
                 }
-                const groupOrder = customOrder[groupKey];
-                if (groupOrder && groupOrder.length > 0) {
-                    const idxA = groupOrder.indexOf(a.originalTitle);
-                    const idxB = groupOrder.indexOf(b.originalTitle);
-                    if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-                    if (idxA !== -1) return -1;
-                    if (idxB !== -1) return 1;
-                }
-                // Mặc định như Hình 2: sắp xếp giảm dần theo %DKHT
-                return b.dkht - a.dkht;
+                // Bảng luôn được sắp xếp giảm dần theo cột %DKHT, phụ theo Thực hiện & Target
+                return (b.dkht - a.dkht) || (b.actual - a.actual) || (b.target - a.target);
             });
         };
 
@@ -541,7 +521,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 }).filter(d => d.target > 0 || d.actual > 0);
                 
                 if (rows.length > 0) {
-                    result[criterion] = sortRows(rows, criterion);
+                    result[criterion] = sortRows(rows);
                 }
             });
             return result;
@@ -583,11 +563,11 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
             const sortedGroups: GroupedPerformanceData = {};
             Object.keys(rawGroups).forEach(groupKey => {
-                sortedGroups[groupKey] = sortRows(rawGroups[groupKey], groupKey);
+                sortedGroups[groupKey] = sortRows(rawGroups[groupKey]);
             });
             return sortedGroups;
         }
-    }, [selectedEmployee, groupingMode, allCompetitionsByCriterion, selectedCompetitions, employeeCompetitionTargets, employeeDataMap, nameOverrides, customOrder, sortConfig, groupOverrides]);
+    }, [selectedEmployee, groupingMode, allCompetitionsByCriterion, selectedCompetitions, employeeCompetitionTargets, employeeDataMap, nameOverrides, sortConfig, groupOverrides]);
     
     const { showExportOptions } = useExportOptionsContext();
 
@@ -731,7 +711,6 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         supermarketName={supermarketName}
                         revenueRows={revenueRows}
                         installmentRows={installmentRows}
-                        banKemRows={banKemRows}
                         bonusData={bonusData}
                         groupedPerformanceData={groupedPerformanceData}
                         allEmployees={allEmployees}
@@ -744,34 +723,55 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                     <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
                                         <th className="text-center px-2 py-[5px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-10">#</th>
                                         <th
-                                            className="text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 whitespace-nowrap hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+                                            className={`text-left px-2 py-[5px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap transition-colors ${
+                                                sortConfig?.key === 'name'
+                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
+                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                            }`}
                                             onClick={() => handleSort('name')}
                                         >
-                                            NHÓM THI ĐUA
+                                            NHÓM THI ĐUA {renderSortIcon('name')}
                                         </th>
                                         <th
-                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                                sortConfig?.key === 'actual'
+                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
+                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                            }`}
                                             onClick={() => handleSort('actual')}
                                         >
-                                            LUỸ<br/>KẾ
+                                            LUỸ<br/>KẾ {renderSortIcon('actual')}
                                         </th>
                                         <th
-                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                                sortConfig?.key === 'target'
+                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
+                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                            }`}
                                             onClick={() => handleSort('target')}
                                         >
-                                            TAR
+                                            TAR {renderSortIcon('target')}
                                         </th>
                                         <th
-                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                                sortConfig?.key === 'dkht'
+                                                    ? 'bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-200 font-black'
+                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                            }`}
                                             onClick={() => handleSort('dkht')}
+                                            title="Sắp xếp theo %DKHT"
                                         >
-                                            %DKHT
+                                            %DKHT {renderSortIcon('dkht')}
                                         </th>
                                         <th
-                                            className="px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                                            className={`px-2 py-[5px] text-center whitespace-nowrap cursor-pointer transition-colors border-b border-slate-200 dark:border-slate-700 text-[13px] align-middle ${
+                                                sortConfig?.key === 'remaining'
+                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 font-bold'
+                                                    : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                            }`}
                                             onClick={() => handleSort('remaining')}
                                         >
-                                            C.LẠI
+                                            C.LẠI {renderSortIcon('remaining')}
                                         </th>
                                     </tr>
                                 </thead>

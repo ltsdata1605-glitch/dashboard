@@ -127,7 +127,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
     }
 
     return (
-        <div className="mb-4 bg-slate-50/60 dark:bg-slate-900/30 p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+        <div className="industry-kpi-container mb-4 bg-slate-50/60 dark:bg-slate-900/30 p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
             {/* Header bar of KPI Section */}
             <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-200/70 dark:border-slate-800 flex-wrap">
                 <div className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                     </span>
                 </div>
 
-                <div className="flex items-center gap-1 sm:gap-1.5">
+                <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export no-print">
                     {/* Nút chuyển đổi Số lượng / Doanh thu => Chọn tiêu chí nào thì số đó sẽ lớn hơn */}
                     <div className="inline-flex items-center h-8 p-0.5 rounded-full bg-slate-200/60 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700 shadow-2xs">
                         <button
@@ -193,7 +193,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
             </div>
 
             {/* 6-Column Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
+            <div className="industry-kpi-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
                 {metricList.map((metric, index) => (
                     <IndustryKpiCard
                         key={metric.id}

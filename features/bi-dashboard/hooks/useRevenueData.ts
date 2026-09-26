@@ -172,7 +172,6 @@ export const useRevenueData = ({
                 else if (sortConfig.key === 'pctDkht') { valA = a.pctDkht; valB = b.pctDkht; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
-                else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
                 else { valA = (a as unknown as Record<string, unknown>)[sortConfig.key]; valB = (b as unknown as Record<string, unknown>)[sortConfig.key]; }
                 const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;
@@ -245,7 +244,6 @@ export const useRevenueData = ({
                 else if (sortConfig.key === 'pctDkht') { valA = a.pctDkht; valB = b.pctDkht; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
-                else if (sortConfig.key === 'bankem') { valA = a.pctBillBk; valB = b.pctBillBk; }
                 else { valA = (a as unknown as Record<string, unknown>)[sortConfig.key]; valB = (b as unknown as Record<string, unknown>)[sortConfig.key]; }
                 const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;

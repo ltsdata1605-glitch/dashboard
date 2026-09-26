@@ -30,7 +30,7 @@ export interface ColorSettings {
     tragop: CriterionConfig;
     dtqd: CriterionConfig;
     dtthuc: CriterionConfig;
-    bankem: CriterionConfig;
+    bankem?: CriterionConfig;
 }
 
 export const DEFAULT_COLOR_SETTINGS: ColorSettings = {
@@ -39,7 +39,6 @@ export const DEFAULT_COLOR_SETTINGS: ColorSettings = {
     tragop: { good: { threshold: 45, color: '#059669' }, average: { threshold: 40, color: '#ea580c' }, bad: { color: '#dc2626' } },
     dtqd: { good: { threshold: 50, color: '#0284c7' }, average: { threshold: 20, color: '#ea580c' }, bad: { color: '#dc2626' } },
     dtthuc: { good: { threshold: 50, color: '#475569' }, average: { threshold: 20, color: '#ea580c' }, bad: { color: '#dc2626' } },
-    bankem: { good: { threshold: 20, color: '#059669' }, average: { threshold: 10, color: '#ea580c' }, bad: { color: '#dc2626' } },
 };
 
 /**
@@ -195,7 +194,6 @@ export const ColorSettingsModal: React.FC<{
             {renderRow("% Hoàn thành", "ht")}
             {renderRow("Hiệu quả quy đổi", "hqqd")}
             {renderRow("% Trả góp", "tragop")}
-            {renderRow("% Bán kèm", "bankem")}
             {renderRow("Doanh thu quy đổi", "dtqd", true)}
             {renderRow("Doanh thu thực", "dtthuc", true)}
         </Modal>

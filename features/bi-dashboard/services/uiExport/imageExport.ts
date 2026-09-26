@@ -537,9 +537,11 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 th.style.setProperty('text-align', 'center', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
             } else if (isNameHeader) {
-                // Cột Tên nhân viên / Nhóm thi đua / Danh mục: Độ rộng tối thiểu 190px, fit vừa vặn nội dung
+                // Cột Tên nhân viên / Nhóm thi đua / Siêu thị / Ngành hàng: vừa khít nội dung, không bè ngang
+                const isShortEntity = text.toUpperCase().includes('SIÊU THỊ') || text.toUpperCase().includes('NGÀNH') || text.toUpperCase().includes('DANH MỤC');
+                const minW = isShortEntity ? '120px' : '160px';
                 th.style.setProperty('width', 'auto', 'important');
-                th.style.setProperty('min-width', '190px', 'important');
+                th.style.setProperty('min-width', minW, 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
 
@@ -628,10 +630,13 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     td.style.setProperty('text-align', 'center', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
                 } else if (isNameCol) {
-                    // Cột Tên nhân viên / Nhóm thi đua / Bộ phận: Fix độ rộng tối thiểu 190px, vừa khít nội dung, không ngắt dòng
+                    // Cột Tên / Siêu thị / Ngành hàng: vừa khít nội dung, không ngắt dòng
+                    const colText = td.textContent?.trim() || '';
+                    const isShortEntity = isSttCol === false && (!colText.includes(' - ') || colText.length < 25);
+                    const minW = isShortEntity ? '120px' : '160px';
                     td.style.setProperty('white-space', 'nowrap', 'important');
                     td.style.setProperty('width', 'auto', 'important');
-                    td.style.setProperty('min-width', '190px', 'important');
+                    td.style.setProperty('min-width', minW, 'important');
                     td.style.setProperty('max-width', 'none', 'important');
 
                     // Các thẻ con bên trong cột tên (avatar, name span, wrapper)
@@ -643,7 +648,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     // Bọc thẻ span con chống ngắt dòng
                     if (!td.querySelector('.export-nowrap-wrapper')) {
                         const content = td.innerHTML;
-                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; width: max-content !important; min-width: 190px !important; line-height: 1.25 !important;">${content}</span>`;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; width: max-content !important; min-width: ${minW} !important; line-height: 1.25 !important;">${content}</span>`;
                     }
                 } else if (isProgressBarCol) {
                     // Cột có thanh tiến độ ProgressBar (%HT, %DKHT...): kích thước đồng bộ 105px với th
@@ -1079,6 +1084,114 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     });
 
     // ═══════════════════════════════════════════════════════════════════════
+    // THU GỌN LƯỚI THẺ KPI NGÀNH HÀNG KHI XUẤT ẢNH
+    // ═══════════════════════════════════════════════════════════════════════
+    clone.querySelectorAll<HTMLElement>('.industry-kpi-container').forEach((container) => {
+        container.style.setProperty('padding', '6px 8px', 'important');
+        container.style.setProperty('margin-bottom', '6px', 'important');
+    });
+
+    clone.querySelectorAll<HTMLElement>('.industry-kpi-grid').forEach((grid) => {
+        grid.style.setProperty('display', 'grid', 'important');
+        grid.style.setProperty('grid-template-columns', 'repeat(6, minmax(0, 1fr))', 'important');
+        grid.style.setProperty('gap', '4px', 'important');
+    });
+
+    clone.querySelectorAll<HTMLElement>('.industry-kpi-card').forEach((card) => {
+        card.style.setProperty('padding', '4px 6px', 'important');
+        card.style.setProperty('min-height', 'auto', 'important');
+
+        // Tiêu đề thẻ (tên ngành/nhóm hàng)
+        card.querySelectorAll<HTMLElement>('.industry-kpi-title').forEach((el) => {
+            el.style.setProperty('font-size', '9.5px', 'important');
+            el.style.setProperty('line-height', '1.15', 'important');
+            el.style.setProperty('margin-bottom', '2px', 'important');
+        });
+
+        // Số chính (Doanh thu hoặc Số lượng lớn hơn)
+        card.querySelectorAll<HTMLElement>('.industry-kpi-num').forEach((el) => {
+            el.style.setProperty('font-size', '13.5px', 'important');
+            el.style.setProperty('line-height', '1.1', 'important');
+        });
+
+        // Nhãn số chính (SL hoặc DTQĐ)
+        card.querySelectorAll<HTMLElement>('.industry-kpi-label').forEach((el) => {
+            el.style.setProperty('font-size', '8.5px', 'important');
+            el.style.setProperty('line-height', '1', 'important');
+        });
+
+        // Số phụ (Doanh thu hoặc Số lượng nhỏ hơn)
+        card.querySelectorAll<HTMLElement>('.industry-kpi-subnum').forEach((el) => {
+            el.style.setProperty('font-size', '10px', 'important');
+            el.style.setProperty('line-height', '1.1', 'important');
+        });
+
+        // Nhãn số phụ (SL: hoặc DTQĐ:)
+        card.querySelectorAll<HTMLElement>('.industry-kpi-sublabel').forEach((el) => {
+            el.style.setProperty('font-size', '8.5px', 'important');
+            el.style.setProperty('line-height', '1', 'important');
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // THU GỌN 8 THẺ KPI TỔNG QUAN ĐỈNH MÀN HÌNH KHI XUẤT ẢNH
+    // ═══════════════════════════════════════════════════════════════════════
+    clone.querySelectorAll<HTMLElement>('.kpi-overview-container').forEach((container) => {
+        container.style.setProperty('padding-left', '4px', 'important');
+        container.style.setProperty('padding-right', '4px', 'important');
+        container.style.setProperty('padding-top', '2px', 'important');
+        container.style.setProperty('padding-bottom', '2px', 'important');
+        container.style.setProperty('margin-bottom', '4px', 'important');
+    });
+
+    clone.querySelectorAll<HTMLElement>('.kpi-overview-grid').forEach((grid) => {
+        grid.style.setProperty('display', 'grid', 'important');
+        grid.style.setProperty('grid-template-columns', 'repeat(4, minmax(0, 1fr))', 'important');
+        grid.style.setProperty('gap', '4px', 'important');
+        grid.style.setProperty('margin-bottom', '4px', 'important');
+    });
+
+    clone.querySelectorAll<HTMLElement>('.kpi-overview-card, .premium-card-shadow').forEach((card) => {
+        // Thu gọn padding trong thẻ
+        card.querySelectorAll<HTMLElement>('.px-3\\.5, .py-2, [class*="px-3"], [class*="py-2"]').forEach((inner) => {
+            inner.style.setProperty('padding-left', '6px', 'important');
+            inner.style.setProperty('padding-right', '6px', 'important');
+            inner.style.setProperty('padding-top', '4px', 'important');
+            inner.style.setProperty('padding-bottom', '4px', 'important');
+        });
+
+        // Thu nhỏ con số chính (từ 30px-48px xuống 19px)
+        card.querySelectorAll<HTMLElement>('[class*="text-\\[26px\\]"], [class*="text-\\[24px\\]"], [class*="text-\\[30px\\]"], [class*="text-\\[34px\\]"], [class*="text-\\[38px\\]"], [class*="text-\\[42px\\]"], [class*="text-\\[48px\\]"], [class*="text-2xl"], [class*="text-3xl"], [class*="text-4xl"]').forEach((numEl) => {
+            numEl.style.setProperty('font-size', '19px', 'important');
+            numEl.style.setProperty('line-height', '1.15', 'important');
+        });
+
+        // Đơn vị (Tr, tỷ, %, SL)
+        card.querySelectorAll<HTMLElement>('[class*="text-\\[14px\\]"], [class*="text-\\[15px\\]"], [class*="text-\\[16px\\]"], [class*="text-\\[17px\\]"], [class*="text-\\[19px\\]"]').forEach((unitEl) => {
+            unitEl.style.setProperty('font-size', '11.5px', 'important');
+            unitEl.style.setProperty('line-height', '1.15', 'important');
+        });
+
+        // Tiêu đề thẻ (DT THỰC, DTQĐ, HQQĐ...)
+        card.querySelectorAll<HTMLElement>('h3, .kpi-overview-title').forEach((h3) => {
+            h3.style.setProperty('font-size', '10px', 'important');
+            h3.style.setProperty('line-height', '1.2', 'important');
+        });
+
+        // Icon thẻ
+        card.querySelectorAll<HTMLElement>('svg').forEach((svg) => {
+            svg.style.setProperty('width', '13px', 'important');
+            svg.style.setProperty('height', '13px', 'important');
+        });
+
+        // Subtext / Trend / Footer
+        card.querySelectorAll<HTMLElement>('.text-\\[11px\\], .text-xs, [class*="tracking-wide"], .kpi-overview-footer').forEach((subEl) => {
+            subEl.style.setProperty('font-size', '9px', 'important');
+            subEl.style.setProperty('line-height', '1.15', 'important');
+        });
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
     // KPI CARDS: ĐẢM BẢO VIỀN TẤT CẢ CÁC THẺ KPI CÓ MÀU CÙNG TÔNG VỚI VẠCH TOP NHƯNG NHẠT HƠN
     // ═══════════════════════════════════════════════════════════════════════
     const isDarkTheme = document.documentElement.classList.contains('dark');
@@ -1189,34 +1302,42 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const exportPadding = 4; // px on each side — must match the padding in htmlToImage style below
         const contentHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || rect.height);
         
-        // Đo chiều rộng chính xác nhất, kiểm tra cả các bảng bên trong clone để không bao giờ bị cắt cột
+        // Đo chiều rộng chính xác nhất theo nội dung thực tế của bảng và thẻ
         let maxTableWidth = 0;
-        clone.querySelectorAll('table').forEach((t) => {
-            const tableRect = t.getBoundingClientRect();
-            maxTableWidth = Math.max(maxTableWidth, t.scrollWidth || 0, t.offsetWidth || 0, Math.ceil(tableRect.width || 0));
+        const tables = clone.querySelectorAll('table');
+        tables.forEach((t) => {
+            const prevW = t.style.width;
+            t.style.setProperty('width', 'max-content', 'important');
+            const w = Math.ceil(t.getBoundingClientRect().width || t.scrollWidth || 0);
+            t.style.setProperty('width', prevW || '100%', 'important');
+            maxTableWidth = Math.max(maxTableWidth, w);
         });
 
-        const measuredWidth = Math.max(
-            Math.ceil(rect.width || 0),
-            clone.scrollWidth || 0,
-            clone.offsetWidth || 0,
-            maxTableWidth
-        );
-        // Thêm +4px đệm an toàn để tránh subpixel rounding hay border-collapse làm tràn lấn mất viền mép phải
-        const contentWidth = captureAsDisplayed ? element.clientWidth : (measuredWidth + 4);
+        // Bề rộng tối ưu vừa xem trên điện thoại:
+        // Với báo cáo thông thường (Tổng quan siêu thị ~620px, Chi tiết ngành hàng ~580px):
+        // Chọn bề rộng ~680px để các thẻ KPI trên đỉnh và lưới 6 cột hiển thị cân đối nhất,
+        // các cột dữ liệu không bị bè ngang thừa khoảng trắng, mở trên điện thoại đọc rõ mồn một.
+        // Với bảng nhiều cột (Thi Đua 30+ cột), tự động mở rộng theo maxTableWidth để không mất cột.
+        const optimalWidth = maxTableWidth > 0 
+            ? Math.max(680, maxTableWidth + 16) 
+            : Math.max(680, Math.min(Math.ceil(rect.width || 0), 1000));
+
+        const contentWidth = captureAsDisplayed 
+            ? element.clientWidth 
+            : (forcedWidth || optimalWidth);
 
         const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
         let finalHeight = contentHeight + exportPadding * 2;
 
-        // Đảm bảo clone và captureContainer không co nhỏ hơn finalWidth và không bị giới hạn max-width
+        // Đảm bảo clone và captureContainer có bề rộng tối ưu vừa xem trên điện thoại
         clone.style.setProperty('width', `${finalWidth}px`, 'important');
         clone.style.setProperty('min-width', `${finalWidth}px`, 'important');
-        clone.style.setProperty('max-width', 'none', 'important');
+        clone.style.setProperty('max-width', `${finalWidth}px`, 'important');
         clone.style.setProperty('overflow', 'visible', 'important');
         if (captureContainer) {
             captureContainer.style.setProperty('width', `${finalWidth}px`, 'important');
             captureContainer.style.setProperty('min-width', `${finalWidth}px`, 'important');
-            captureContainer.style.setProperty('max-width', 'none', 'important');
+            captureContainer.style.setProperty('max-width', `${finalWidth}px`, 'important');
         }
 
         // Đảm bảo tất cả các khối con (title bar, header, table container) phủ kín 100% finalWidth

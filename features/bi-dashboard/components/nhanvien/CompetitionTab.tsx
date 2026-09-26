@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { UsersIcon, XIcon, SpinnerIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
-import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, CrossSellingRow, BonusMetrics } from '../../types/nhanVienTypes';
+import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
 import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
 import CompetitionCompareView from './CompetitionCompareView';
@@ -53,7 +53,6 @@ interface CompetitionTabProps {
     activeDepartments: string[];
     revenueRows?: RevenueRow[];
     installmentRows?: InstallmentRow[];
-    banKemRows?: CrossSellingRow[];
     bonusData?: Record<string, BonusMetrics | null>;
     isActive?: boolean;
 }
@@ -85,7 +84,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     activeDepartments,
     revenueRows,
     installmentRows,
-    banKemRows,
     bonusData,
     isActive
 }) => {
@@ -813,7 +811,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 <div className="mt-2 text-center py-12"><UsersIcon className="h-16 w-16 text-slate-400 mx-auto" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
                             ) : (
                                 <div className="space-y-8" ref={groupViewRef}>
-                                    <div className="mb-6 text-center py-3 px-4 bg-sky-600 shadow-sm">
+                                    <div className="mb-6 text-center py-4 sm:py-5 px-6 bg-sky-600 shadow-sm">
                                         <h3 className="text-2xl font-black uppercase text-white leading-normal drop-shadow-sm">
                                             {exportTitleOverride || `NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`}
                                         </h3>
@@ -841,7 +839,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 supermarketName={supermarket || undefined}
                                 revenueRows={revenueRows}
                                 installmentRows={installmentRows}
-                                banKemRows={banKemRows}
                                 bonusData={bonusData}
                                 groupingMode={canhanGroupingMode}
                                 setGroupingMode={setCanhanGroupingMode}
@@ -961,7 +958,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 supermarketName={supermarket || undefined}
                                 revenueRows={revenueRows}
                                 installmentRows={installmentRows}
-                                banKemRows={banKemRows}
                                 bonusData={bonusData}
                             />
                         )}

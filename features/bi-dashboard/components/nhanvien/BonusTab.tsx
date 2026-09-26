@@ -130,10 +130,10 @@ export const BonusView: React.FC<{
             <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
                 <div className="flex gap-1.5 items-center">
                     <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => { setHrmWindowRef(window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank')); onBatchUpdate(); }}
-                        className="h-8 gap-1.5 px-2.5 text-xs bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100 active:scale-95"
+                        className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-md transition-all active:scale-95 shrink-0"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Thủ công</span>

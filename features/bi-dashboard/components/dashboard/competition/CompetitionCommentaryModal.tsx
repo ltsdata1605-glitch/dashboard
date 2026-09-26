@@ -134,10 +134,10 @@ export const CompetitionCommentaryModal: React.FC<CompetitionCommentaryModalProp
                     </div>
 
                     {/* Quick KPI stats */}
-                    <div className="mt-3.5 pt-3 border-t border-sky-100 grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        <div className="bg-white p-2 rounded-none border border-slate-200 text-center">
-                            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Tiến độ chung</span>
-                            <span className={`text-base font-black tabular-nums ${overallRate >= 100 ? 'text-emerald-600' : (overallRate >= 80 ? 'text-sky-600' : 'text-amber-600')}`}>
+                    <div className="mt-3.5 pt-3 border-t border-sky-100 grid grid-cols-4 gap-1.5 sm:gap-2">
+                        <div className="bg-white p-1.5 sm:p-2 rounded-none border border-slate-200 text-center">
+                            <span className="text-[9.5px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Tiến độ</span>
+                            <span className={`text-xs sm:text-base font-black tabular-nums ${overallRate >= 100 ? 'text-emerald-600' : (overallRate >= 80 ? 'text-sky-600' : 'text-amber-600')}`}>
                                 {overallRate}%
                             </span>
                         </div>
@@ -217,16 +217,16 @@ const GroupCommentaryCard: React.FC<{ group: GroupCommentary; isRealtime: boolea
             </div>
 
             {/* 4 Thống kê cốt lõi của nhóm: Thực hiện, Target, Còn lại, Ngành đạt */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-2.5 rounded-lg border border-slate-100 text-center mb-2.5">
+            <div className="grid grid-cols-4 gap-1 sm:gap-2 bg-slate-50 p-1.5 sm:p-2.5 rounded-lg border border-slate-100 text-center mb-2.5">
                 <div>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Thực hiện</span>
-                    <span className="text-xs font-extrabold text-slate-800 tabular-nums">
+                    <span className="text-[9px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">Thực hiện</span>
+                    <span className="text-[11px] sm:text-xs font-extrabold text-slate-800 tabular-nums">
                         {fmt(group.totalActual)}
                     </span>
                 </div>
                 <div>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Mục tiêu (TAR)</span>
-                    <span className="text-xs font-extrabold text-slate-600 tabular-nums">
+                    <span className="text-[9px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider block truncate">Target</span>
+                    <span className="text-[11px] sm:text-xs font-extrabold text-slate-600 tabular-nums">
                         {fmt(group.totalTarget)}
                     </span>
                 </div>

@@ -3,7 +3,7 @@ import { shortenSupermarketName, extractSupermarketList, extractAllSupermarketLi
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
-import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, CrossSellingRow, BonusComparePart, BonusCompareStore } from '../types/nhanVienTypes';
+import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, BonusComparePart, BonusCompareStore } from '../types/nhanVienTypes';
 import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
@@ -53,7 +53,6 @@ export function useNhanVienData(isActive?: boolean) {
         employeeRealtime: '',
         thiDua: '',
         traGop: '',
-        banKem: '',
         manualMapping: {} as ManualDeptMapping,
         bonusData: {} as Record<string, BonusMetrics | null>,
         // Nhãn kỳ hiện tại của bonusData — do lựa chọn Tự động (Hiện tại/Tháng/Năm/Khoảng
@@ -88,7 +87,6 @@ export function useNhanVienData(isActive?: boolean) {
                     employeeRealtime: '',
                     thiDua: '',
                     traGop: '',
-                    banKem: '',
                     manualMapping: {},
                     bonusData: {},
                     bonusPeriodLabel: null
@@ -104,7 +102,6 @@ export function useNhanVienData(isActive?: boolean) {
                     db.get(`config-${safeName}-danhsach`),
                     db.get(`config-${safeName}-thidua`),
                     db.get(`config-${safeName}-tragop`),
-                    db.get(`config-${safeName}-bankem`),
                     db.get(`manual-dept-mapping-${safeName}`),
                     db.get(`bonus-data-${safeName}`),
                     db.get(`targethero-${safeName}-departmentweights`),
@@ -116,19 +113,18 @@ export function useNhanVienData(isActive?: boolean) {
 
             if (!isMounted) return;
 
-            let combinedDS = '', combinedRealtime = '', combinedTD = '', combinedTG = '', combinedBK = '';
+            let combinedDS = '', combinedRealtime = '', combinedTD = '', combinedTG = '';
             let combinedMM: ManualDeptMapping = {};
             let combinedBonus: Record<string, BonusMetrics | null> = {};
             let combinedPeriodLabel: string | null = null;
             const allWeights: Record<string, number[]> = {};
 
             const combinedHidden: string[] = [];
-            results.forEach(([ds, td, tg, bk, mm, bonus, weights, hidden, periodLabel, empRt]) => {
+            results.forEach(([ds, td, tg, mm, bonus, weights, hidden, periodLabel, empRt]) => {
                 if (ds) combinedDS += (combinedDS ? '\n' : '') + ds;
                 if (empRt) combinedRealtime += (combinedRealtime ? '\n' : '') + empRt;
                 if (td) combinedTD += (combinedTD ? '\n' : '') + td;
                 if (tg) combinedTG += (combinedTG ? '\n' : '') + tg;
-                if (bk) combinedBK += (combinedBK ? '\n' : '') + bk;
                 if (mm) Object.assign(combinedMM, mm);
                 if (bonus) Object.assign(combinedBonus, bonus);
                 if (Array.isArray(hidden)) combinedHidden.push(...hidden);
@@ -205,7 +201,6 @@ export function useNhanVienData(isActive?: boolean) {
                 employeeRealtime: combinedRealtime,
                 thiDua: combinedTD,
                 traGop: combinedTG,
-                banKem: combinedBK,
                 manualMapping: combinedMM,
                 bonusData: combinedBonus,
                 bonusPeriodLabel: combinedPeriodLabel
@@ -450,32 +445,6 @@ export function useNhanVienData(isActive?: boolean) {
         return () => { isMounted = false; };
     }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
 
-    const [banKemRows, setBanKemRows] = useState<CrossSellingRow[]>([]);
-    useEffect(() => {
-        if (!aggregatedData.banKem || isActive === false) return;
-        let isMounted = true;
-        runWorkerTask('PARSE_CROSS_SELLING', { text: aggregatedData.banKem, employeeDepartmentMap }).then(rows => {
-            if (isMounted && rows) {
-                setBanKemRows(rows.filter((r: CrossSellingRow) => {
-                    if (r.type !== 'employee') return true;
-                    if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
-                    if (hasAnalysisEmployees) {
-                        return isEmployeeInAnalysis(r.originalName);
-                    }
-                    return true;
-                }));
-            }
-        }).catch(err => console.error('[useNhanVienData] Lỗi parse bán kèm:', err));
-        return () => { isMounted = false; };
-    }, [aggregatedData.banKem, employeeDepartmentMap, hiddenEmployeesSet, isActive, hasAnalysisEmployees, isEmployeeInAnalysis]);
-
-    const banKemMap = useMemo(() => {
-        if (isActive === false) return new Map<string, number>();
-        const map = new Map<string, number>();
-        banKemRows.forEach(row => { if (row.originalName) map.set(row.originalName, row.pctBillBk); });
-        return map;
-    }, [banKemRows, isActive]);
-
     const revenueRows = useMemo(() => {
         if (isActive === false) return [];
         const rows = parsedRevenueBase;
@@ -497,11 +466,9 @@ export function useNhanVienData(isActive?: boolean) {
 
         const mappedRows = rows.map(row => {
             if (row.type === 'employee' && row.originalName) {
-                const pctBillBk = banKemMap.get(row.originalName) || 0;
                 return { 
                     ...row, 
-                    department: getDeptForEmployee(row.originalName, row.department),
-                    pctBillBk: pctBillBk
+                    department: getDeptForEmployee(row.originalName, row.department)
                 };
             }
             return row;
@@ -512,20 +479,18 @@ export function useNhanVienData(isActive?: boolean) {
         currentDeptsInMap.forEach((deptName: string) => {
             const deptEmps = mappedRows.filter(r => r.type === 'employee' && r.department === deptName);
             if (deptEmps.length > 0) {
-                const deptBkRow = banKemRows.find(r => r.type === 'department' && r.originalName === deptName);
                 const origDeptRow = mappedRows.find(r => r.type === 'department' && r.name === deptName);
                 finalRows.push({ 
                     type: 'department', name: deptName, 
                     dtlk: deptEmps.reduce((s, e) => s + (e.dtlk || 0), 0), 
                     dtqd: deptEmps.reduce((s, e) => s + (e.dtqd || 0), 0), 
-                    hieuQuaQD: origDeptRow ? origDeptRow.hieuQuaQD : 0,
-                    pctBillBk: deptBkRow ? deptBkRow.pctBillBk : 0
+                    hieuQuaQD: origDeptRow ? origDeptRow.hieuQuaQD : 0
                 });
                 finalRows.push(...deptEmps);
             }
         });
         return finalRows;
-    }, [parsedRevenueBase, employeeDepartmentMap, banKemMap, banKemRows, isActive]);
+    }, [parsedRevenueBase, employeeDepartmentMap, isActive]);
 
     const realtimeRevenueRows = useMemo(() => {
         if (isActive === false || parsedRevenueRealtimeBase.length === 0) return [];
@@ -548,11 +513,9 @@ export function useNhanVienData(isActive?: boolean) {
 
         const mappedRows = rows.map(row => {
             if (row.type === 'employee' && row.originalName) {
-                const pctBillBk = banKemMap.get(row.originalName) || 0;
                 return { 
                     ...row, 
-                    department: getDeptForEmployee(row.originalName, row.department),
-                    pctBillBk: pctBillBk
+                    department: getDeptForEmployee(row.originalName, row.department)
                 };
             }
             return row;
@@ -563,20 +526,18 @@ export function useNhanVienData(isActive?: boolean) {
         currentDeptsInMap.forEach((deptName: string) => {
             const deptEmps = mappedRows.filter(r => r.type === 'employee' && r.department === deptName);
             if (deptEmps.length > 0) {
-                const deptBkRow = banKemRows.find(r => r.type === 'department' && r.originalName === deptName);
                 const origDeptRow = mappedRows.find(r => r.type === 'department' && r.name === deptName);
                 finalRows.push({ 
                     type: 'department', name: deptName, 
                     dtlk: deptEmps.reduce((s, e) => s + (e.dtlk || 0), 0), 
                     dtqd: deptEmps.reduce((s, e) => s + (e.dtqd || 0), 0), 
-                    hieuQuaQD: origDeptRow ? origDeptRow.hieuQuaQD : 0,
-                    pctBillBk: deptBkRow ? deptBkRow.pctBillBk : 0
+                    hieuQuaQD: origDeptRow ? origDeptRow.hieuQuaQD : 0
                 });
                 finalRows.push(...deptEmps);
             }
         });
         return finalRows;
-    }, [parsedRevenueRealtimeBase, employeeDepartmentMap, banKemMap, banKemRows, isActive]);
+    }, [parsedRevenueRealtimeBase, employeeDepartmentMap, isActive]);
 
     // Toàn bộ tên phòng ban thật sự có nhân viên (không lọc bớt) — dùng để "Tất cả" luôn đúng
     // nghĩa là TẤT CẢ. Trước đây effectiveActiveDepartments khi chọn "Tất cả" lại resolve về
@@ -920,8 +881,6 @@ export function useNhanVienData(isActive?: boolean) {
         aggregatedWeights: effectiveAggregatedWeights,
         employeeDepartmentMap,
         installmentRows,
-        banKemRows,
-        banKemMap,
         revenueRows,
         realtimeRevenueRows,
         employeeInstallmentMap,

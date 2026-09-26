@@ -240,9 +240,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                         isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                         onExport={async () => {
                             setIsHeaderExporting(true);
-                            // Export everything inside printableRef for both tabs
+                            const exportTarget = (activeSubTab === 'revenue' && activeSupermarket !== 'Tổng' && pageRef.current) ? pageRef : printableRef;
                             const subTabLabel = activeSubTab === 'competition' ? 'Thi Đua' : 'Doanh Thu';
-                            await handleExportPNG(printableRef, `${subTabLabel} ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`);
+                            await handleExportPNG(exportTarget, `${subTabLabel} ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`);
                             setIsHeaderExporting(false);
                         }}
                         isExporting={isHeaderExporting}

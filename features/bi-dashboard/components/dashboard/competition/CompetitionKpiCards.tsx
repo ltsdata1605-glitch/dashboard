@@ -114,7 +114,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
 
     const gridColsClass = units.length === 3
         ? 'grid-cols-3'
-        : 'grid-cols-2 sm:grid-cols-4';
+        : 'grid-cols-4';
 
     return (
         <div
@@ -126,23 +126,23 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                 return (
                     <div
                         key={u.key}
-                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-2 sm:px-2.5 py-1.5 sm:py-2 transition-all shadow-2xs hover:shadow-xs"
+                        className="relative flex flex-col justify-between bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 px-1 sm:px-2.5 py-1.5 sm:py-2 transition-all shadow-2xs hover:shadow-xs min-w-0"
                     >
                         {/* Vạch nhận diện 2.5px trên đỉnh mỗi thẻ riêng biệt */}
                         <div className={`absolute top-0 left-0 right-0 h-[2.5px] ${u.bar}`} />
 
-                        <div className="flex items-center justify-between gap-0.5 sm:gap-1">
-                            <span className="text-[9.5px] xs:text-[11px] sm:text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 truncate" title={u.label}>
+                        <div className="flex items-center justify-between gap-0.5 sm:gap-1 min-w-0">
+                            <span className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 truncate" title={u.label}>
                                 {u.label}
                             </span>
                             <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
                         </div>
 
-                        <div className={`text-[19px] xs:text-[21px] sm:text-[24px] md:text-[27px] lg:text-[30px] font-black tabular-nums leading-tight tracking-tight my-1 sm:my-1.5 ${u.tone}`}>
+                        <div className={`text-[14px] xs:text-[16px] sm:text-[24px] md:text-[27px] lg:text-[30px] font-black tabular-nums leading-tight tracking-tight my-0.5 sm:my-1.5 truncate ${u.tone}`} title={v.big}>
                             {v.big}
                         </div>
 
-                        <div className="flex items-center justify-between text-[11px] xs:text-[9.5px] sm:text-[10.5px] leading-tight text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center justify-between text-[8px] xs:text-[9px] sm:text-[10.5px] leading-tight text-slate-500 dark:text-slate-400 min-w-0">
                             <span className="truncate" title={v.sub}>{v.sub}</span>
                         </div>
 

@@ -1038,14 +1038,13 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const safeName = useMemo(() => supermarketName ? shortenSupermarketName(supermarketName) : '', [supermarketName]);
 
     const ids = useMemo(() => {
-        if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, bk: null, empRt: null };
+        if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, empRt: null };
         return {
             ds: `config-${safeName}-danhsach`,
             td: `config-${safeName}-thidua`,
             rt: `config-${safeName}-industry-realtime`,
             lk: `config-${safeName}-industry-luyke`,
             tg: `config-${safeName}-tragop`,
-            bk: `config-${safeName}-bankem`,
             empRt: `config-${safeName}-employee-realtime`,
         };
     }, [supermarketName, safeName]);
@@ -1059,7 +1058,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [industryRealtimeData, setIndustryRealtimeData] = useIndexedDBState(ids.rt, '');
     const [industryLuyKeData, setIndustryLuyKeData] = useIndexedDBState(ids.lk, '');
     const [traGopData, setTraGopData] = useIndexedDBState(ids.tg, '');
-    const [banKemData, setBanKemData] = useIndexedDBState(ids.bk, '');
 
     const [employeeRealtimeTs, setEmployeeRealtimeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.empRt}-ts` : null, null);
     const [danhSachTs, setDanhSachTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.ds}-ts` : null, null);
@@ -1067,7 +1065,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [industryRealtimeTs, setIndustryRealtimeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.rt}-ts` : null, null);
     const [industryLuyKeTs, setIndustryLuyKeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.lk}-ts` : null, null);
     const [traGopTs, setTraGopTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.tg}-ts` : null, null);
-    const [banKemTs, setBanKemTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.bk}-ts` : null, null);
 
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [analysisEmployees, setAnalysisEmployees] = useState<AnalysisEmployeesPayload | null>(null);

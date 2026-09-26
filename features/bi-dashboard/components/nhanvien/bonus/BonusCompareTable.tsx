@@ -224,11 +224,11 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                 className={`cursor-pointer transition-colors ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'}`}
                 onClick={() => onEmployeeClick(r.emp)}
             >
-                <td className="px-2 py-[3px] border-r border-slate-100 dark:border-slate-700/50">
-                    <div className="flex items-center gap-2 min-w-0">
+                <td className="px-2 py-[3px] border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 whitespace-nowrap">
                         <MedalBadge rank={rank} />
                         <AvatarDisplay employeeName={r.emp.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(r.emp)} />
-                        <span className={`text-[13px] font-bold truncate ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
+                        <span className={`text-[12px] sm:text-[13px] font-bold whitespace-nowrap ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
                     </div>
                 </td>
                 {criterionCells(r.cur?.erp ?? null, r.prev?.erp ?? null, r.dErp, GROUP_STYLE.erp.cur)}

@@ -169,7 +169,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onDragEnd={onDragEnd}
-            className={`group relative ${theme.cardBg} border ${
+            className={`industry-kpi-card group relative ${theme.cardBg} border ${
                 isDragOver
                     ? 'ring-2 ring-sky-500 border-sky-400 scale-[1.03] shadow-md z-10'
                     : theme.cardBorder
@@ -181,7 +181,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
             {/* Hàng trên: Chỉ hiển thị TÊN (metric.displayTitle) không in đậm và nút X khi hover */}
             <div className="flex items-center justify-between gap-1 mb-1">
                 <span
-                    className={`text-[11.5px] sm:text-[12px] font-medium uppercase truncate tracking-tight leading-none flex-1 min-w-0 ${theme.titleColor}`}
+                    className={`industry-kpi-title text-[11.5px] sm:text-[12px] font-medium uppercase truncate tracking-tight leading-none flex-1 min-w-0 ${theme.titleColor}`}
                 >
                     {metric.displayTitle}
                 </span>
@@ -197,7 +197,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             e.stopPropagation();
                             onRemove(metric.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity shrink-0 cursor-pointer"
+                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity shrink-0 cursor-pointer hide-on-export no-print"
                         title="Xóa thẻ này"
                     >
                         <X className="w-3 h-3" />
@@ -211,18 +211,18 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     <>
                         {/* Doanh thu LỚN HƠN */}
                         <div className="flex items-baseline gap-1 min-w-0">
-                            <span className={`text-[17px] sm:text-[19px] lg:text-[20px] font-semibold tracking-tight tabular-nums leading-none ${theme.primaryColor}`}>
+                            <span className={`industry-kpi-num text-[17px] sm:text-[19px] lg:text-[20px] font-semibold tracking-tight tabular-nums leading-none ${theme.primaryColor}`}>
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className={`text-[10px] font-medium uppercase leading-none ${theme.labelColor}`}>
+                            <span className={`industry-kpi-label text-[10px] font-medium uppercase leading-none ${theme.labelColor}`}>
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
 
                         {/* Số lượng NHỎ HƠN */}
                         <div className="flex items-baseline gap-0.5 shrink-0 text-right">
-                            <span className={`text-[10px] font-medium ${theme.labelColor}`}>SL:</span>
-                            <span className={`text-[11px] sm:text-[11.5px] font-medium tabular-nums ${theme.secondaryColor}`}>
+                            <span className={`industry-kpi-sublabel text-[10px] font-medium ${theme.labelColor}`}>SL:</span>
+                            <span className={`industry-kpi-subnum text-[11px] sm:text-[11.5px] font-medium tabular-nums ${theme.secondaryColor}`}>
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
                         </div>
@@ -231,20 +231,20 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     <>
                         {/* Số lượng LỚN HƠN */}
                         <div className="flex items-baseline gap-1 min-w-0">
-                            <span className={`text-[17px] sm:text-[19px] lg:text-[20px] font-semibold tracking-tight tabular-nums leading-none ${theme.primaryColor}`}>
+                            <span className={`industry-kpi-num text-[17px] sm:text-[19px] lg:text-[20px] font-semibold tracking-tight tabular-nums leading-none ${theme.primaryColor}`}>
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className={`text-[10px] font-medium uppercase leading-none ${theme.labelColor}`}>
+                            <span className={`industry-kpi-label text-[10px] font-medium uppercase leading-none ${theme.labelColor}`}>
                                 SL
                             </span>
                         </div>
 
                         {/* Doanh thu NHỎ HƠN */}
                         <div className="flex items-baseline gap-0.5 shrink-0 text-right">
-                            <span className={`text-[10px] font-medium ${theme.labelColor}`}>
+                            <span className={`industry-kpi-sublabel text-[10px] font-medium ${theme.labelColor}`}>
                                 {isRealtime ? 'DTQĐ:' : 'QĐ:'}
                             </span>
-                            <span className={`text-[11px] sm:text-[11.5px] font-medium tabular-nums ${theme.secondaryColor}`}>
+                            <span className={`industry-kpi-subnum text-[11px] sm:text-[11.5px] font-medium tabular-nums ${theme.secondaryColor}`}>
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
                         </div>
