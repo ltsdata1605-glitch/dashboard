@@ -223,7 +223,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={expandAll}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
                         title="Mở rộng tất cả"
                     >
                         <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
@@ -231,7 +231,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={collapseAll}
-                        className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${hasAnyExpanded ? 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
+                        className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors ${hasAnyExpanded ? 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
@@ -248,7 +248,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsFilterOpen(prev => !prev)}
-                    className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors relative ${
+                    className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors relative ${
                         (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0)
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
@@ -389,7 +389,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                    className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors ${
                         isColumnSelectorOpen
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'

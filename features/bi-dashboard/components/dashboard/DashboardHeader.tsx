@@ -160,7 +160,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg shrink-0"
+                                variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
                                 title="Xuất tất cả ảnh"
                             >
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
@@ -171,7 +171,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg shrink-0"
+                                    variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
                                     title="Xuất ảnh"
                                 >
                                     {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-5 w-5" />}

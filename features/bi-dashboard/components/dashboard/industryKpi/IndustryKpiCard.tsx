@@ -175,7 +175,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     : theme.cardBorder
             } ${
                 isDragging ? 'opacity-40 scale-95 shadow-none' : 'shadow-2xs hover:shadow-xs'
-            } transition-all duration-150 flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden cursor-grab active:cursor-grabbing select-none`}
+            } rounded-xl transition-all duration-150 flex flex-col justify-between p-2 sm:p-2.5 overflow-hidden cursor-grab active:cursor-grabbing select-none`}
             title={metric.parentName ? `${metric.displayTitle} (${metric.parentName}) — Kéo thả để sắp xếp` : `${metric.displayTitle} — Kéo thả để sắp xếp`}
         >
             {/* Hàng trên: Chỉ hiển thị TÊN (metric.displayTitle) không in đậm và nút X khi hover */}

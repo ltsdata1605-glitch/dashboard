@@ -207,7 +207,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors ${
                     hiddenSupermarkets.length > 0
                         ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
@@ -255,7 +255,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${
+                className={`h-8 w-8 rounded-full flex items-center justify-center transition-colors ${
                     isColumnSelectorOpen
                         ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
@@ -316,9 +316,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {/* Tuỳ chọn: Sử dụng Target DTQĐ sau chỉnh làm target cho các thẻ KPI & bảng bên dưới */}
             {setUseAdjustedTarget && (
                 <label
-                    className={`inline-flex items-center gap-1.5 px-2.5 h-8 rounded text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border ${
+                    className={`inline-flex items-center gap-2 px-3.5 h-8 rounded-full text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border shadow-2xs ${
                         useAdjustedTarget
-                            ? 'bg-sky-50 border-sky-300 text-sky-700 dark:bg-sky-950/50 dark:border-sky-700 dark:text-sky-300 font-bold shadow-xs'
+                            ? 'bg-sky-50/90 border-sky-300 text-sky-700 dark:bg-sky-950/60 dark:border-sky-700 dark:text-sky-300 font-semibold shadow-xs'
                             : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'
                     }`}
                     title="Khi check: Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target Doanh thu) làm Target cho các thẻ KPI và bảng Doanh thu bên dưới"
@@ -327,7 +327,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         type="checkbox"
                         checked={!!useAdjustedTarget}
                         onChange={(e) => setUseAdjustedTarget(e.target.checked)}
-                        className="h-3.5 w-3.5 rounded border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer accent-sky-600"
+                        className="h-3.5 w-3.5 rounded-xs border-slate-300 text-sky-600 focus:ring-sky-500 cursor-pointer accent-sky-600"
                     />
                     <span className="whitespace-nowrap">Target sau chỉnh</span>
                 </label>
