@@ -28,8 +28,26 @@ interface TaxHistoryModalProps {
     records: SavedTaxRecord[];
     onLoadRecord: (record: SavedTaxRecord) => void;
     onDeleteRecord: (id: number) => void;
+    onUpdateMonth?: (record: SavedTaxRecord, newMonthYear: string) => void;
+    onUpdateGroupMonth?: (records: SavedTaxRecord[], newMonthYear: string) => void;
     onClearAll: () => void;
 }
+
+const generateMonthOptions = (currentMonthYear?: string): string[] => {
+    const list: string[] = [];
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear + 1, currentYear, currentYear - 1];
+    for (const y of years) {
+        for (let m = 12; m >= 1; m--) {
+            const mm = m < 10 ? `0${m}` : `${m}`;
+            list.push(`${mm}/${y}`);
+        }
+    }
+    if (currentMonthYear && !list.includes(currentMonthYear)) {
+        list.unshift(currentMonthYear);
+    }
+    return list;
+};
 
 export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
     isOpen,
@@ -37,6 +55,8 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
     records,
     onLoadRecord,
     onDeleteRecord,
+    onUpdateMonth,
+    onUpdateGroupMonth,
     onClearAll,
 }) => {
     const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('all');
@@ -192,16 +212,39 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                         displayedGroups.map(group => (
                             <div key={group.key} className="space-y-2">
                                 {/* Dải tháng: dính trên để cuộn dài vẫn biết đang ở tháng nào */}
-                                <div className="sticky top-0 z-10 -mx-3 sm:-mx-4 px-3 sm:px-4 py-1.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2">
-                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
-                                        <CalendarDays size={12} className="text-sky-500" />
-                                        {group.label}
-                                        <span className="text-slate-400 font-semibold normal-case tracking-normal">
-                                            ({group.records.length} bản ghi)
+                                <div className="sticky top-0 z-10 -mx-3 sm:-mx-4 px-3 sm:px-4 py-1.5 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-2 flex-wrap">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                                            <CalendarDays size={12} className="text-sky-500" />
+                                            {group.label}
+                                            <span className="text-slate-400 font-semibold normal-case tracking-normal">
+                                                ({group.records.length} bản ghi)
+                                            </span>
                                         </span>
-                                    </span>
+                                        {onUpdateGroupMonth && (
+                                            <select
+                                                value={group.key}
+                                                onChange={(e) => {
+                                                    if (e.target.value !== group.key) {
+                                                        onUpdateGroupMonth(group.records, e.target.value);
+                                                    }
+                                                }}
+                                                title="Đổi tháng cho toàn bộ bản ghi trong nhóm này"
+                                                className="text-[9px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
+                                            >
+                                                <option value={group.key} disabled>
+                                                    Đổi tháng cả nhóm...
+                                                </option>
+                                                {generateMonthOptions(group.key).map((m) => (
+                                                    <option key={m} value={m}>
+                                                        Sang Tháng {m}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                                             Thuế:{' '}
                                             <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
                                                 {formatVnd(group.totalTax)}
@@ -229,11 +272,26 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                                 <span className="font-bold text-xs text-slate-800 dark:text-white truncate">
                                                     {rec.name}
                                                 </span>
-                                                {rec.monthYear && (
+                                                {onUpdateMonth ? (
+                                                    <select
+                                                        value={rec.monthYear || ''}
+                                                        onChange={(e) => {
+                                                            onUpdateMonth(rec, e.target.value);
+                                                        }}
+                                                        title="Bấm để đổi tháng của bản ghi này"
+                                                        className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
+                                                    >
+                                                        {generateMonthOptions(rec.monthYear).map((m) => (
+                                                            <option key={m} value={m}>
+                                                                Tháng {m}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                ) : rec.monthYear ? (
                                                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                                         {rec.monthYear.includes('/') ? `Tháng ${rec.monthYear}` : rec.monthYear}
                                                     </span>
-                                                )}
+                                                ) : null}
                                                 <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
                                                     {rec.taxLawVersion === '2026_law' ? 'Luật 2026' : 'Biểu thuế cũ'}
                                                 </span>

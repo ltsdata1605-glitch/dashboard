@@ -28,15 +28,35 @@ interface TaxHistorySidebarProps {
     selectedRecordId?: number | string | null;
     onSelectRecord: (record: SavedTaxRecord) => void;
     onDeleteRecord: (id: number) => void;
+    onUpdateMonth?: (record: SavedTaxRecord, newMonthYear: string) => void;
+    onUpdateGroupMonth?: (records: SavedTaxRecord[], newMonthYear: string) => void;
     onClearAll: () => void;
     onClose: () => void;
 }
+
+const generateMonthOptions = (currentMonthYear?: string): string[] => {
+    const list: string[] = [];
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear + 1, currentYear, currentYear - 1];
+    for (const y of years) {
+        for (let m = 12; m >= 1; m--) {
+            const mm = m < 10 ? `0${m}` : `${m}`;
+            list.push(`${mm}/${y}`);
+        }
+    }
+    if (currentMonthYear && !list.includes(currentMonthYear)) {
+        list.unshift(currentMonthYear);
+    }
+    return list;
+};
 
 export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
     records,
     selectedRecordId,
     onSelectRecord,
     onDeleteRecord,
+    onUpdateMonth,
+    onUpdateGroupMonth,
     onClearAll,
     onClose,
 }) => {
@@ -219,11 +239,36 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         <div key={group.key} className="space-y-1.5">
                             {/* Dải phân cách tháng */}
                             <div className="sticky top-0 z-10 -mx-2.5 sm:-mx-3 px-2.5 sm:px-3 py-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-1 text-[10px]">
-                                <span className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                    <CalendarDays size={11} className="text-sky-500" />
-                                    {group.label} ({group.records.length})
-                                </span>
-                                <span className="text-slate-500 dark:text-slate-400">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1 truncate">
+                                        <CalendarDays size={11} className="text-sky-500 shrink-0" />
+                                        {group.label} ({group.records.length})
+                                    </span>
+                                    {onUpdateGroupMonth && (
+                                        <select
+                                            value={group.key}
+                                            onClick={(e) => e.stopPropagation()}
+                                            onChange={(e) => {
+                                                e.stopPropagation();
+                                                if (e.target.value !== group.key) {
+                                                    onUpdateGroupMonth(group.records, e.target.value);
+                                                }
+                                            }}
+                                            title="Đổi tháng cho toàn bộ bản ghi trong nhóm này"
+                                            className="text-[9px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
+                                        >
+                                            <option value={group.key} disabled>
+                                                Đổi tháng cả nhóm...
+                                            </option>
+                                            {generateMonthOptions(group.key).map((m) => (
+                                                <option key={m} value={m}>
+                                                    Sang Tháng {m}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    )}
+                                </div>
+                                <span className="text-slate-500 dark:text-slate-400 shrink-0 font-mono">
                                     Thuế: <strong className="text-emerald-600 dark:text-emerald-400">{formatVnd(group.totalTax)}</strong>
                                 </span>
                             </div>
@@ -255,11 +300,28 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                         </span>
                                                     )}
 
-                                                    {rec.monthYear && (
+                                                    {onUpdateMonth ? (
+                                                        <select
+                                                            value={rec.monthYear || ''}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            onChange={(e) => {
+                                                                e.stopPropagation();
+                                                                onUpdateMonth(rec, e.target.value);
+                                                            }}
+                                                            title="Bấm để đổi tháng của bản ghi này"
+                                                            className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
+                                                        >
+                                                            {generateMonthOptions(rec.monthYear).map((m) => (
+                                                                <option key={m} value={m}>
+                                                                    T{m}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    ) : rec.monthYear ? (
                                                         <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                                             {rec.monthYear.includes('/') ? `T${rec.monthYear}` : rec.monthYear}
                                                         </span>
-                                                    )}
+                                                    ) : null}
 
                                                     {rec.syncedToCloud ? (
                                                         <span title="Đã đồng bộ Cloud" className="text-emerald-500">

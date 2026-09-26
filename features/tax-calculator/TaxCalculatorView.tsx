@@ -276,6 +276,37 @@ export const TaxCalculatorView: React.FC = () => {
     }
   };
 
+  const handleUpdateRecordMonth = async (record: SavedTaxRecord, newMonthYear: string) => {
+    try {
+      const recordKey = record.id || record.createdAt;
+      await taxSyncService.updateRecordMonth(recordKey, newMonthYear);
+      if (selectedRecordId === recordKey) {
+        setInput(prev => ({ ...prev, monthYear: newMonthYear }));
+      }
+      toast.success(`Đã đổi tháng ${record.name} sang T${newMonthYear}`);
+      await refreshHistory();
+    } catch (e) {
+      console.error('Lỗi khi đổi tháng bản ghi:', e);
+      toast.error('Không thể đổi tháng bản ghi');
+    }
+  };
+
+  const handleUpdateGroupMonth = async (records: SavedTaxRecord[], newMonthYear: string) => {
+    try {
+      const keys = records.map(r => r.id || r.createdAt);
+      await taxSyncService.updateRecordsMonth(keys, newMonthYear);
+      const isViewingRecordInGroup = records.some(r => (r.id || r.createdAt) === selectedRecordId);
+      if (isViewingRecordInGroup) {
+        setInput(prev => ({ ...prev, monthYear: newMonthYear }));
+      }
+      toast.success(`Đã chuyển toàn bộ ${records.length} bản ghi sang Tháng ${newMonthYear}`);
+      await refreshHistory();
+    } catch (e) {
+      console.error('Lỗi khi đổi tháng cả nhóm:', e);
+      toast.error('Không thể đổi tháng cả nhóm');
+    }
+  };
+
 
   const personalDeduction = PERSONAL_DEDUCTION_2026;
   const dependentDeduction = DEPENDENT_DEDUCTION_2026;
@@ -432,7 +463,14 @@ export const TaxCalculatorView: React.FC = () => {
               onExported={() => (isSaved ? undefined : handleSaveHistory({ silent: true }))}
               onOpenBracketModal={() => setShowBracketModal(true)}
               onNameChange={(name) => handleInputChange({ name })}
-              onMonthYearChange={(monthYear) => handleInputChange({ monthYear })}
+              onMonthYearChange={(monthYear) => {
+                handleInputChange({ monthYear });
+                if (selectedRecordId) {
+                  taxSyncService.updateRecordMonth(selectedRecordId, monthYear).then(() => {
+                    refreshHistory();
+                  }).catch(console.error);
+                }
+              }}
             />
 
             {(result.taxOnProxyAmount > 0 || result.netRefundToFriend > 0) && (
@@ -460,6 +498,8 @@ export const TaxCalculatorView: React.FC = () => {
               selectedRecordId={selectedRecordId}
               onSelectRecord={handleLoadRecord}
               onDeleteRecord={handleDeleteRecord}
+              onUpdateMonth={handleUpdateRecordMonth}
+              onUpdateGroupMonth={handleUpdateGroupMonth}
               onClearAll={handleClearAllHistory}
               onClose={() => setShowHistorySidebar(false)}
             />
@@ -481,6 +521,8 @@ export const TaxCalculatorView: React.FC = () => {
         records={historyList}
         onLoadRecord={handleLoadRecord}
         onDeleteRecord={handleDeleteRecord}
+        onUpdateMonth={handleUpdateRecordMonth}
+        onUpdateGroupMonth={handleUpdateGroupMonth}
         onClearAll={handleClearAllHistory}
       />
 

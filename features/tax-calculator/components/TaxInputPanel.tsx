@@ -194,7 +194,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     if (data.fullName) {
       updates.name = data.fullName;
     }
-    if (data.monthYear) {
+    if (data.monthYear && (!input.monthYear || isNewEmployee)) {
       updates.monthYear = data.monthYear;
     }
     if (data.bankAccount) {

@@ -133,6 +133,67 @@ export const taxSyncService = {
     },
 
     /**
+     * Cập nhật kỳ lương (tháng/năm) cho một bản ghi tính thuế đã lưu
+     */
+    async updateRecordMonth(idOrCreatedAt: number | string, newMonthYear: string): Promise<void> {
+        await taxIndexedDbService.updateMonth(idOrCreatedAt, newMonthYear);
+
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    const currentRecords: SavedTaxRecord[] = snap.data()?.records || [];
+                    const updated = currentRecords.map(r => {
+                        if (r.id === idOrCreatedAt || r.createdAt === idOrCreatedAt) {
+                            return { ...r, monthYear: newMonthYear };
+                        }
+                        return r;
+                    });
+                    await setDoc(docRef, {
+                        records: updated,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                }
+            } catch (err) {
+                console.error('[TaxSync] Lỗi cập nhật tháng trên Firestore:', err);
+            }
+        }
+    },
+
+    /**
+     * Cập nhật kỳ lương (tháng/năm) cho nhiều bản ghi cùng lúc
+     */
+    async updateRecordsMonth(idOrCreatedAts: (number | string)[], newMonthYear: string): Promise<void> {
+        await taxIndexedDbService.updateMonths(idOrCreatedAts, newMonthYear);
+
+        const user = auth.currentUser;
+        if (user) {
+            try {
+                const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    const currentRecords: SavedTaxRecord[] = snap.data()?.records || [];
+                    const keySet = new Set(idOrCreatedAts);
+                    const updated = currentRecords.map(r => {
+                        if (keySet.has(r.id as number) || keySet.has(r.createdAt)) {
+                            return { ...r, monthYear: newMonthYear };
+                        }
+                        return r;
+                    });
+                    await setDoc(docRef, {
+                        records: updated,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                }
+            } catch (err) {
+                console.error('[TaxSync] Lỗi cập nhật tháng hàng loạt trên Firestore:', err);
+            }
+        }
+    },
+
+    /**
      * Xóa toàn bộ lịch sử
      */
     async clearAll(): Promise<void> {

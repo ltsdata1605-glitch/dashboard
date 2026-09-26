@@ -80,6 +80,53 @@ export const taxIndexedDbService = {
         });
     },
 
+    async updateMonth(idOrCreatedAt: number | string, newMonthYear: string): Promise<void> {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.getAll();
+
+            req.onsuccess = () => {
+                const list: SavedTaxRecord[] = req.result || [];
+                const target = list.find(r => r.id === idOrCreatedAt || r.createdAt === idOrCreatedAt);
+                if (target) {
+                    target.monthYear = newMonthYear;
+                    store.put(target);
+                }
+                resolve();
+            };
+
+            req.onerror = () => reject(new Error('Lỗi cập nhật tháng trong IndexedDB'));
+        });
+    },
+
+    /**
+     * Cập nhật kỳ lương (tháng/năm) cho nhiều bản ghi cùng lúc
+     */
+    async updateMonths(idOrCreatedAts: (number | string)[], newMonthYear: string): Promise<void> {
+        const db = await getDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(STORE_NAME, 'readwrite');
+            const store = tx.objectStore(STORE_NAME);
+            const req = store.getAll();
+
+            req.onsuccess = () => {
+                const list: SavedTaxRecord[] = req.result || [];
+                const keySet = new Set(idOrCreatedAts);
+                list.forEach(r => {
+                    if (keySet.has(r.id as number) || keySet.has(r.createdAt)) {
+                        r.monthYear = newMonthYear;
+                        store.put(r);
+                    }
+                });
+                resolve();
+            };
+
+            req.onerror = () => reject(new Error('Lỗi cập nhật tháng hàng loạt trong IndexedDB'));
+        });
+    },
+
     async clearAll(): Promise<void> {
         const db = await getDB();
         return new Promise((resolve, reject) => {
