@@ -56,6 +56,11 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
             : DEFAULT_FILTER_NAMES
     );
     const [newCandidateName, setNewCandidateName] = useState<string>('');
+    const [previewSelectedName, setPreviewSelectedName] = useState<string>(() => {
+        return (config?.filterUserNames && config.filterUserNames.length > 0)
+            ? config.filterUserNames[config.filterUserNames.length - 1]
+            : '910 - ĐML_STR_STR - 99 Hùng Vương';
+    });
 
     // Gợi ý nhanh các user tương tác bot chưa có trong danh sách lọc
     const suggestedUsers = useMemo(() => {
@@ -70,41 +75,76 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
             setAutoApprove(config.autoApprove ?? true);
             if (config.filterUserNames && config.filterUserNames.length > 0) {
                 setFilterNames(config.filterUserNames);
+                if (!config.filterUserNames.includes(previewSelectedName)) {
+                    setPreviewSelectedName(config.filterUserNames[config.filterUserNames.length - 1]);
+                }
             }
         }
     }, [config]);
 
-    // Thêm một tên vào danh sách lọc
-    const handleAddName = () => {
+    // Thêm một tên vào danh sách lọc & TỰ ĐỘNG LƯU CLOUD
+    const handleAddName = async () => {
         const trimmed = newCandidateName.trim();
         if (!trimmed) return;
         if (filterNames.some(n => n.toLowerCase() === trimmed.toLowerCase())) {
             toast.error(`Tên "${trimmed}" đã có trong danh sách!`);
             return;
         }
-        setFilterNames(prev => [...prev, trimmed]);
+        const updated = [...filterNames, trimmed];
+        setFilterNames(updated);
         setNewCandidateName('');
-        toast.success(`Đã thêm "${trimmed}" vào danh sách lọc!`);
+        setPreviewSelectedName(trimmed);
+        setPreviewTab('filter');
+        const success = await onSaveConfig({
+            syntaxTemplate: syntax.trim() || DEFAULT_SYNTAX,
+            autoApprove,
+            filterUserNames: updated
+        });
+        if (success) {
+            toast.success(`⚡ Đã thêm & tự động lưu "${trimmed}" lên Bot Cloud!`);
+        }
     };
 
-    const handleAddDirectName = (name: string) => {
+    const handleAddDirectName = async (name: string) => {
         const trimmed = name.trim();
         if (!trimmed) return;
         if (filterNames.some(n => n.toLowerCase() === trimmed.toLowerCase())) {
             toast.error(`Tên "${trimmed}" đã có trong danh sách!`);
             return;
         }
-        setFilterNames(prev => [...prev, trimmed]);
-        toast.success(`Đã thêm "${trimmed}" vào danh sách lọc!`);
+        const updated = [...filterNames, trimmed];
+        setFilterNames(updated);
+        setPreviewSelectedName(trimmed);
+        setPreviewTab('filter');
+        const success = await onSaveConfig({
+            syntaxTemplate: syntax.trim() || DEFAULT_SYNTAX,
+            autoApprove,
+            filterUserNames: updated
+        });
+        if (success) {
+            toast.success(`⚡ Đã thêm & tự động lưu "${trimmed}" lên Bot Cloud!`);
+        }
     };
 
-    // Xoá một tên khỏi danh sách lọc
-    const handleRemoveName = (nameToRemove: string) => {
+    // Xoá một tên khỏi danh sách lọc & TỰ ĐỘNG LƯU CLOUD
+    const handleRemoveName = async (nameToRemove: string) => {
         if (filterNames.length <= 1) {
             toast.error('Cần giữ lại ít nhất 1 tên để Bot lọc mã!');
             return;
         }
-        setFilterNames(prev => prev.filter(n => n !== nameToRemove));
+        const updated = filterNames.filter(n => n !== nameToRemove);
+        setFilterNames(updated);
+        if (previewSelectedName === nameToRemove) {
+            setPreviewSelectedName(updated[updated.length - 1] || updated[0]);
+        }
+        const success = await onSaveConfig({
+            syntaxTemplate: syntax.trim() || DEFAULT_SYNTAX,
+            autoApprove,
+            filterUserNames: updated
+        });
+        if (success) {
+            toast.success(`Đã xoá "${nameToRemove}" & lưu cấu hình!`);
+        }
     };
 
     // Lưu toàn bộ cấu hình (Cú pháp + Tên người lọc)
@@ -177,22 +217,42 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             Danh sách tên người nhận hợp lệ:
                         </label>
                         <div className="flex flex-wrap gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-700 min-h-[44px]">
-                            {filterNames.map((name) => (
-                                <span
-                                    key={name}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 rounded-lg text-xs font-semibold shadow-2xs group"
-                                >
-                                    <span>👤 {name}</span>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveName(name)}
-                                        className="text-slate-400 hover:text-rose-500 transition-colors"
-                                        title={`Xoá "${name}"`}
+                            {filterNames.map((name) => {
+                                const isSelected = name === previewSelectedName;
+                                return (
+                                    <span
+                                        key={name}
+                                        onClick={() => {
+                                            setPreviewSelectedName(name);
+                                            setPreviewTab('filter');
+                                        }}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold shadow-2xs group cursor-pointer transition-all ${
+                                            isSelected
+                                                ? 'bg-emerald-600 text-white border border-emerald-600 ring-2 ring-emerald-400 font-bold'
+                                                : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+                                        }`}
+                                        title={`Bấm để xem mô phỏng thẻ của "${name}" trên iPhone`}
                                     >
-                                        <X size={13} />
-                                    </button>
-                                </span>
-                            ))}
+                                        <span>👤 {name}</span>
+                                        {isSelected && (
+                                            <span className="text-[9.5px] bg-white/25 px-1 rounded text-white font-normal">
+                                                iPhone
+                                            </span>
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveName(name);
+                                            }}
+                                            className={`${isSelected ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-rose-500'} transition-colors ml-0.5`}
+                                            title={`Xoá "${name}"`}
+                                        >
+                                            <X size={13} />
+                                        </button>
+                                    </span>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -532,6 +592,11 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                     issueMode={issueMode}
                     onIssueModeChange={setIssueMode}
                     filterNames={filterNames}
+                    selectedName={previewSelectedName}
+                    onSelectName={(name) => {
+                        setPreviewSelectedName(name);
+                        setPreviewTab('filter');
+                    }}
                 />
             </div>
 
@@ -543,15 +608,15 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                 isLoading={isInteractedLoading}
                 onRefresh={onRefreshInteracted}
                 currentFilterNames={filterNames}
-                onToggleName={(name) => {
+                onToggleName={async (name) => {
                     const trimmed = name.trim();
                     if (filterNames.some(n => n.toLowerCase() === trimmed.toLowerCase())) {
-                        handleRemoveName(trimmed);
+                        await handleRemoveName(trimmed);
                     } else {
-                        setFilterNames(prev => [...prev, trimmed]);
+                        await handleAddDirectName(trimmed);
                     }
                 }}
-                onBatchAddNames={(names) => {
+                onBatchAddNames={async (names) => {
                     const newNames: string[] = [];
                     for (const n of names) {
                         const trimmed = n.trim();
@@ -564,7 +629,16 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                         }
                     }
                     if (newNames.length > 0) {
-                        setFilterNames(prev => [...prev, ...newNames]);
+                        const updated = [...filterNames, ...newNames];
+                        setFilterNames(updated);
+                        setPreviewSelectedName(newNames[newNames.length - 1]);
+                        setPreviewTab('filter');
+                        await onSaveConfig({
+                            syntaxTemplate: syntax.trim() || DEFAULT_SYNTAX,
+                            autoApprove,
+                            filterUserNames: updated
+                        });
+                        toast.success(`⚡ Đã thêm & lưu ${newNames.length} tên lên Bot Cloud!`);
                     }
                 }}
             />

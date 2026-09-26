@@ -29,6 +29,8 @@ interface IPhoneChatPreviewProps {
     issueMode: 'event' | 'gvgs';
     onIssueModeChange: (mode: 'event' | 'gvgs') => void;
     filterNames?: string[];
+    selectedName?: string;
+    onSelectName?: (name: string) => void;
 }
 
 export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
@@ -38,14 +40,35 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
     onTkModeChange,
     issueMode,
     onIssueModeChange,
-    filterNames = []
+    filterNames = [],
+    selectedName,
+    onSelectName
 }) => {
-    const activeNames = filterNames && filterNames.length > 0 ? filterNames : ['STR_ Trường_21453-TC', 'STR_BOSS SƠN_21707'];
-    const firstName = activeNames[0] || 'Lê Trường Sơn';
-    const secondName = activeNames[1] || (activeNames.length === 1 ? activeNames[0] : 'STR_BOSS SƠN_21707');
+    const activeNames = filterNames && filterNames.length > 0 ? filterNames : ['910 - ĐML_STR_STR - 99 Hùng Vương', 'STR_ Trường_21453-TC', 'STR_BOSS SƠN_21707'];
+    
+    // Tên đang được chọn xem mô phỏng: ưu tiên selectedName nếu có, nếu không thì lấy tên cuối cùng vừa thêm hoặc tên đầu
+    const targetName = (selectedName && activeNames.includes(selectedName))
+        ? selectedName
+        : (activeNames[activeNames.length - 1] || activeNames[0]);
+    
+    const otherName = activeNames.find(n => n !== targetName) || (activeNames.length > 1 ? activeNames[0] : targetName);
+    const firstName = targetName;
+    const secondName = otherName;
     const displayTitle = activeNames.slice(0, 3).join(', ') + (activeNames.length > 3 ? '...' : '');
-    const matchedCount = activeNames.length === 1 ? 1 : 2;
-    const totalCount = matchedCount + 1;
+
+    // Phát hiện tên có phải là định dạng Kho (như 910 - ĐML_STR_STR - 99 Hùng Vương)
+    const isStoreFormat = /910|kho|đml|hùng vương|st\d+/i.test(targetName);
+    const mockCode1 = isStoreFormat ? '9HXG6OLCO9' : 'DMXXSP8QD5RNCQM';
+    const mockType1 = isStoreFormat ? 'ICT100' : 'Event';
+    const mockTitle1 = isStoreFormat ? 'PMH ICT100' : 'MÃ PMH EVENT';
+    const mockBadge1 = isStoreFormat ? 'PMH 0072' : 'PMH 1';
+    const mockProd1 = isStoreFormat ? '🛍️ PMH ICT100' : '🛍️ Bếp điện từ đôi Sunhouse SHB81272-MD';
+
+    const mockCode2 = isStoreFormat ? 'S1UGF8TW9Z' : '1P1GU5CAS5';
+    const mockType2 = isStoreFormat ? 'MM300' : 'MM300';
+    const mockTitle2 = isStoreFormat ? 'PMH MM300' : 'MÃ PMH MM300';
+    const mockBadge2 = isStoreFormat ? 'PMH 0073' : 'PMH 2';
+    const mockProd2 = isStoreFormat ? '🛍️ PMH MM300 (Phiếu mua hàng)' : '🛍️ PMH MM300 (Phiếu mua hàng)';
 
     // State copy mã coupon cho mô phỏng
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
@@ -229,17 +252,39 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                         {/* TAB 1: LỌC PMH (THẺ FLEX CARDS - MỖI MÃ 1 THẺ THEO HÌNH 2) */}
                         {previewTab === 'filter' && (
                             <>
+                                {/* Thanh chọn tên người nhận để xem trước mô phỏng */}
+                                <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar">
+                                    <span className="text-[9px] text-slate-400 shrink-0 font-medium">Lọc theo:</span>
+                                    {activeNames.map(name => {
+                                        const isSelected = name === targetName;
+                                        return (
+                                            <button
+                                                key={name}
+                                                type="button"
+                                                onClick={() => onSelectName?.(name)}
+                                                className={`px-2 py-0.5 rounded-full text-[9px] font-semibold whitespace-nowrap transition-all ${
+                                                    isSelected
+                                                        ? 'bg-emerald-600 text-white shadow-2xs scale-102 ring-1 ring-emerald-400 font-bold'
+                                                        : 'bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 border border-slate-200 dark:border-slate-700'
+                                                }`}
+                                            >
+                                                {isSelected ? '✓ ' : ''}{name}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
                                 <div className="flex justify-end">
                                     <div className="bg-[#06C755] text-white p-2.5 rounded-2xl rounded-tr-xs shadow-xs max-w-[88%] font-mono text-[10.5px] whitespace-pre-wrap leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-150">
 {`[Tin nhắn chuyển tiếp từ Nhóm]:
-${firstName}
-➜ PMH Event : DMXXSP8QD5RNCQM
-➜ PMH MM300 : 1P1GU5CAS5
+${targetName}
+➜ PMH ${mockType1} : ${mockCode1}
+➜ PMH ${mockType2} : ${mockCode2}
 ━━━━━━
 Nhân Viên Khác (Không trong DS lọc)
 ➜ PMH KG20IH10N : ABCD1234
 ━━━━━━
-${secondName}
+${otherName}
 ➜ PMH SHD4607 : VWQU13YUQX`}
                                         <div className="text-[8px] text-emerald-100 text-right mt-1">13:48 ✓✓</div>
                                     </div>
@@ -252,68 +297,57 @@ ${secondName}
                                     
                                     <div className="w-full max-w-[92%] space-y-2.5">
                                         <div className="text-[9.5px] font-medium text-emerald-700 dark:text-emerald-400 flex items-center justify-between px-1">
-                                            <span>🎯 ĐÃ LỌC {secondName !== firstName ? '3' : '2'} MÃ PMH (MỖI MÃ 1 THẺ):</span>
+                                            <span>🎯 ĐÃ LỌC {otherName !== targetName ? '3' : '2'} MÃ PMH (MỖI MÃ 1 THẺ):</span>
                                             <span className="text-[8.5px] text-slate-400">13:48</span>
                                         </div>
 
-                                        {/* Card 1: Bếp điện từ đôi Sunhouse (Giống 100% Hình 2) */}
+                                        {/* Card 1: Khớp chuẩn 100% Hình 2 */}
                                         <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
-                                            <div className="px-3 py-2 bg-[#06C755] text-white flex items-center justify-between shadow-2xs">
+                                            <div className="px-3 py-2 bg-[#0284C7] text-white flex items-center justify-between shadow-2xs">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-xs">🎁</span>
                                                     <span className="font-bold text-[11px] tracking-wide uppercase">
-                                                        MÃ PMH EVENT
+                                                        LỌC {mockTitle1}
                                                     </span>
                                                 </div>
-                                                <span className="text-[9px] font-bold bg-white text-[#06C755] px-2 py-0.5 rounded-md font-mono shadow-2xs">
-                                                    PMH 1
+                                                <span className="text-[9px] font-bold bg-white text-[#0284C7] px-2 py-0.5 rounded-md font-mono shadow-2xs">
+                                                    {mockBadge1}
                                                 </span>
                                             </div>
 
                                             <div className="p-3 space-y-2 text-xs">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
-                                                        <span>@{firstName}</span>
+                                                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px] break-all">
+                                                        <span>@{targetName}</span>
                                                     </div>
                                                 </div>
 
                                                 <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
                                                     <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
-                                                        🛍️ Bếp điện từ đôi Sunhouse SHB81272-MD
+                                                        {mockProd1}
                                                     </div>
                                                 </div>
 
                                                 <div className="flex justify-center pt-0.5">
                                                     <div
-                                                        onClick={() => handleCopyCode('DMXXSP8QD5RNCQM', 'Event', 1)}
-                                                        className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
-                                                            copiedCode === 'DMXXSP8QD5RNCQM'
-                                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
-                                                                : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
+                                                        onClick={() => handleCopyCode(mockCode1, mockType1, 1)}
+                                                        className={`w-full py-2 px-3 rounded-xl transition-all cursor-pointer select-none text-center flex items-center justify-center gap-1.5 font-bold text-xs ${
+                                                            copiedCode === mockCode1
+                                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                                : 'bg-[#06C755] hover:bg-[#05b34c] text-white shadow-xs'
                                                         }`}
-                                                        title="Nhấp vào khung để tự động copy mã DMXXSP8QD5RNCQM"
+                                                        title={`Nhấp vào khung để tự động copy mã ${mockCode1}`}
                                                     >
-                                                        <div className="text-[8.5px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                                                            <span>➔ PMH Event</span>
-                                                            <span className="text-[7.5px] text-slate-400 dark:text-slate-500">(chạm để copy)</span>
-                                                        </div>
-
-                                                        <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
-                                                            <span>DMXXSP8QD5RNCQM</span>
-                                                            <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
-                                                                {copiedCode === 'DMXXSP8QD5RNCQM' ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
-                                                            {copiedCode === 'DMXXSP8QD5RNCQM' ? (
-                                                                <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
-                                                                    <Check size={10} /> Đã copy mã!
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
-                                                            )}
-                                                        </div>
+                                                        {copiedCode === mockCode1 ? (
+                                                            <>
+                                                                <Check size={13} className="stroke-[3]" />
+                                                                <span>Đã copy {mockCode1}!</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span>➔ Chạm để copy</span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -321,62 +355,51 @@ ${secondName}
 
                                         {/* Card 2: PMH MM300 */}
                                         <div className="rounded-2xl rounded-tl-xs overflow-hidden shadow-md border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-slate-850">
-                                            <div className="px-3 py-2 bg-[#06C755] text-white flex items-center justify-between shadow-2xs">
+                                            <div className="px-3 py-2 bg-[#0284C7] text-white flex items-center justify-between shadow-2xs">
                                                 <div className="flex items-center gap-1.5">
                                                     <span className="text-xs">🎁</span>
                                                     <span className="font-bold text-[11px] tracking-wide uppercase">
-                                                        MÃ PMH MM300
+                                                        LỌC {mockTitle2}
                                                     </span>
                                                 </div>
-                                                <span className="text-[9px] font-bold bg-white text-[#06C755] px-2 py-0.5 rounded-md font-mono shadow-2xs">
-                                                    PMH 2
+                                                <span className="text-[9px] font-bold bg-white text-[#0284C7] px-2 py-0.5 rounded-md font-mono shadow-2xs">
+                                                    {mockBadge2}
                                                 </span>
                                             </div>
 
                                             <div className="p-3 space-y-2 text-xs">
                                                 <div className="flex items-center justify-between">
-                                                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
-                                                        <span>@{firstName}</span>
+                                                    <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px] break-all">
+                                                        <span>@{targetName}</span>
                                                     </div>
                                                 </div>
 
                                                 <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
                                                     <div className="font-semibold text-slate-800 dark:text-slate-200 text-[11px] line-clamp-1">
-                                                        🛍️ PMH MM300 (Phiếu mua hàng)
+                                                        {mockProd2}
                                                     </div>
                                                 </div>
 
                                                 <div className="flex justify-center pt-0.5">
                                                     <div
-                                                        onClick={() => handleCopyCode('1P1GU5CAS5', 'MM300', 2)}
-                                                        className={`group relative px-4 py-1.5 rounded-xl border-2 transition-all cursor-pointer select-none text-center inline-flex flex-col items-center ${
-                                                            copiedCode === '1P1GU5CAS5'
-                                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 ring-2 ring-emerald-400/40 scale-[0.99]'
-                                                                : 'border-emerald-500/80 hover:border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs'
+                                                        onClick={() => handleCopyCode(mockCode2, mockType2, 2)}
+                                                        className={`w-full py-2 px-3 rounded-xl transition-all cursor-pointer select-none text-center flex items-center justify-center gap-1.5 font-bold text-xs ${
+                                                            copiedCode === mockCode2
+                                                                ? 'bg-emerald-600 text-white shadow-sm'
+                                                                : 'bg-[#06C755] hover:bg-[#05b34c] text-white shadow-xs'
                                                         }`}
-                                                        title="Nhấp vào khung để tự động copy mã 1P1GU5CAS5"
+                                                        title={`Nhấp vào khung để tự động copy mã ${mockCode2}`}
                                                     >
-                                                        <div className="text-[8.5px] font-normal text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
-                                                            <span>➜ PMH MM300</span>
-                                                            <span className="text-[7.5px] text-slate-400 dark:text-slate-500">(chạm để copy)</span>
-                                                        </div>
-
-                                                        <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
-                                                            <span>1P1GU5CAS5</span>
-                                                            <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
-                                                                {copiedCode === '1P1GU5CAS5' ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
-                                                            {copiedCode === '1P1GU5CAS5' ? (
-                                                                <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
-                                                                    <Check size={10} /> Đã copy mã!
-                                                                </span>
-                                                            ) : (
-                                                                <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
-                                                            )}
-                                                        </div>
+                                                        {copiedCode === mockCode2 ? (
+                                                            <>
+                                                                <Check size={13} className="stroke-[3]" />
+                                                                <span>Đã copy {mockCode2}!</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span>➔ Chạm để copy</span>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

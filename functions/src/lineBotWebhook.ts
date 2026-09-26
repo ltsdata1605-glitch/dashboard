@@ -1493,11 +1493,20 @@ function parsePmhBlocks(text: string): string[] {
  */
 function isBlockBelongToUser(block: string, candidateNames: string[]): boolean {
     if (!block || !candidateNames || candidateNames.length === 0) return false;
-    const normalizedBlock = block.normalize('NFC').toLowerCase();
+
+    // Chuẩn hoá Unicode NFC, chữ thường, chuyển mọi dạng gạch ngang (–, —, −, ‐) về '-' và chuẩn hoá khoảng trắng
+    const cleanNorm = (s: string) => (s || '')
+        .normalize('NFC')
+        .toLowerCase()
+        .replace(/[\u2010-\u2015\u2212]/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const normalizedBlock = cleanNorm(block);
 
     for (const name of candidateNames) {
         if (!name || name.trim().length < 2) continue;
-        const normName = name.normalize('NFC').toLowerCase().trim();
+        const normName = cleanNorm(name);
         if (normalizedBlock.includes(normName)) {
             return true;
         }

@@ -256,13 +256,21 @@ export function parsePmhBlocks(text: string): string[] {
 export function isBlockBelongToUser(block: string, candidateNames: string[]): boolean {
     if (!block || !candidateNames || candidateNames.length === 0) return false;
 
-    const normalizedBlock = block.normalize('NFC').toLowerCase();
+    // Chuẩn hoá Unicode NFC, chữ thường, chuyển mọi dạng gạch ngang (–, —, −, ‐) về '-' và chuẩn hoá khoảng trắng
+    const cleanNorm = (s: string) => (s || '')
+        .normalize('NFC')
+        .toLowerCase()
+        .replace(/[\u2010-\u2015\u2212]/g, '-')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const normalizedBlock = cleanNorm(block);
 
     for (const name of candidateNames) {
         if (!name || name.trim().length < 2) continue;
-        const normName = name.normalize('NFC').toLowerCase().trim();
+        const normName = cleanNorm(name);
 
-        // Khớp tên nguyên cụm (ví dụ: "Lê Trường Sơn", "Sơn", "CTH-AN-33747-BOSS")
+        // Khớp tên nguyên cụm (ví dụ: "Lê Trường Sơn", "Sơn", "910 - ĐML_STR_STR - 99 Hùng Vương")
         if (normalizedBlock.includes(normName)) {
             return true;
         }
