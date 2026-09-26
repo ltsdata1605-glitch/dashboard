@@ -236,9 +236,29 @@
         }
 
         // Dự phòng: bot không gửi được (hết hạn mức push / lỗi mạng) → gửi tin thường thay người dùng (không trích dẫn được)
+        // Nhãn theo LOẠI thẻ — BẢN CHÉP của couponUsedLabel() trong functions/src/pmhSequence.ts
+        // (trang tĩnh không có bundler). Sửa bên kia thì sửa cả đây, nếu không 2 đường gửi ra 2 câu
+        // khác nhau cho cùng một việc.
+        /** 68 -> "0068" — khớp hệt huy hiệu in trên thẻ (formatPmhLabel ở pmhSequence.ts) */
+        function formatPmhLabel(n) {
+            const num = Number(n);
+            if (!Number.isFinite(num) || num <= 0) return String(n == null ? '' : n);
+            return String(Math.floor(num)).padStart(4, '0');
+        }
+
+        function couponUsedLabel(categoryLabel, index) {
+            const so = formatPmhLabel(index);
+            const cat = String(categoryLabel || '').toLowerCase();
+            if (cat.includes('event')) return `Coupon Event ${so}`;
+            if (cat.includes('giờ vàng') || cat.includes('gio vang') || cat.includes('gvgs') || /^gv\b/.test(cat)) {
+                return `Coupon GVGS ${so}`;
+            }
+            return `PMH ${so}`;
+        }
+
         async function sendFallbackMessage(displayName) {
-            const prefix = cardIndex ? `PMH ${cardIndex}` : 'Mã này';
-            const messageText = `👉 ${prefix} đã được sử dụng lúc ${getVietnamTime()}!\n↳ User: ${formatShortUserName(displayName)}`;
+            const prefix = cardIndex ? couponUsedLabel(couponType, cardIndex) : 'Mã này';
+            const messageText = `👉 ${prefix} sử dụng lúc ${getVietnamTime()}!\n↳ User: ${formatShortUserName(displayName)}`;
             try {
                 await initPromise;
                 await Promise.race([liff.sendMessages([{ type: 'text', text: messageText }]), timeout(1500)]);
