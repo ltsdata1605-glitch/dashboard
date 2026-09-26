@@ -121,8 +121,8 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
     // Copy mã ra clipboard đúng định dạng.
     await page.locator('#tnb-pmh-helper [data-act="copyma"]').click();
     const clip = await page.evaluate(() => (window as unknown as { __clip: string }).__clip);
-    expect(clip).toContain('322 - WC200 : MA322');
-    expect(clip).toContain('10011 - TL300 : MA10011');
+    expect(clip).toContain('322 - WC200 : PHC96180QP');
+    expect(clip).toContain('10011 - TL300 : Z2Y9X8W7V6');
   });
 
   test('thu gọn về nút nổi rồi mở lại', async ({ page }) => {
