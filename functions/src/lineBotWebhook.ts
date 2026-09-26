@@ -11,7 +11,7 @@ import { formatShortUserName } from './userName';
 import { isStrictPmhRequestForm } from './pmhForm';
 import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
 import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './groupFeatureHelper';
-import { allocatePmhSequence, formatPmhLabel } from './pmhSequence';
+import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText } from './pmhSequence';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -1914,7 +1914,7 @@ export const lineBotWebhook = onRequest(
                 let previousUser = '';
                 const toUpdate: FirebaseFirestore.DocumentReference[] = [];
                 // Thẻ lọc đầu tiên vừa chuyển USED có đủ quoteToken + chatId → bot gửi xác nhận trích dẫn thẻ đó
-                let quoteTarget: { bUid: string; chatId: string; quoteToken: string; cardIndex: number } | null = null;
+                let quoteTarget: { bUid: string; chatId: string; quoteToken: string; cardIndex: number; categoryLabel?: string } | null = null;
                 for (const scan of scans) {
                     for (const docItem of scan.docs) {
                         const d = docItem.data();
@@ -1925,7 +1925,7 @@ export const lineBotWebhook = onRequest(
                         }
                         toUpdate.push(docItem.ref);
                         if (scan.kind === 'filtered' && !quoteTarget && d.quoteToken && d.chatId) {
-                            quoteTarget = { bUid: scan.bUid, chatId: d.chatId, quoteToken: d.quoteToken, cardIndex: Number(d.cardIndex) || Number(req.body?.index || req.query.index) || 1 };
+                            quoteTarget = { bUid: scan.bUid, chatId: d.chatId, quoteToken: d.quoteToken, cardIndex: Number(d.cardIndex) || Number(req.body?.index || req.query.index) || 1, categoryLabel: d.categoryLabel || d.type || '' };
                         }
                     }
                 }
@@ -1944,7 +1944,13 @@ export const lineBotWebhook = onRequest(
                         }
                         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
                         // Tin xác nhận ghi tên gọn "Mã NV - Tên" (DMST-Nhân-107617SALE -> 107617 - Nhân); Firestore vẫn lưu usedBy đầy đủ.
-                        const text = `👉 PMH ${formatPmhLabel(quoteTarget!.cardIndex)} đã được sử dụng lúc ${timeStr}!\n↳ User: ${formatShortUserName(usedBy)}`;
+                        // Nội dung theo LOẠI thẻ: "PMH 68" / "Coupon Event 68" / "Coupon GVGS 68"
+                        const text = buildCouponUsedText({
+                            categoryLabel: quoteTarget!.categoryLabel,
+                            index: quoteTarget!.cardIndex,
+                            timeStr,
+                            userName: formatShortUserName(usedBy),
+                        });
                         return pushLineMessage(botToken, quoteTarget!.chatId, [{ type: 'text', text, quoteToken: quoteTarget!.quoteToken }]);
                     })().catch((e: any) => ({ ok: false, status: 0, error: e?.message || 'push-failed' }))
                     : Promise.resolve(null);
@@ -2321,9 +2327,16 @@ export const lineBotWebhook = onRequest(
                 }
 
                 // 1.8. Kiểm tra tin nhắn xác nhận sử dụng thẻ PMH từ LIFF
-                const isUsedConfirm = cleanText.includes('đã được') && cleanText.includes('sử dụng lúc');
+                // Nhận cả câu CŨ ("… đã được sử dụng lúc") lẫn câu MỚI theo loại thẻ
+                // ("👉 Coupon Event 68 sử dụng lúc …") — xem buildCouponUsedText ở pmhSequence.ts.
+                // Bỏ sót ở đây thì mã KHÔNG còn được đánh dấu USED nữa.
+                const isUsedConfirm = cleanText.includes('sử dụng lúc') && cleanText.includes('👉');
                 if (isUsedConfirm) {
-                    const cardMatch = cleanText.match(/👉\s*(?:PMH\s*(\d+)|mã\s*này)?/i);
+                    // Số thẻ là cụm số NGAY TRƯỚC "sử dụng lúc" — hợp cho "PMH 68",
+                    // "Coupon Event 68", "Coupon GVGS 68" và cả câu cũ "… 68 đã được sử dụng lúc".
+                    // KHÔNG được lấy "số đầu tiên sau 👉": câu "👉 Mã này sử dụng lúc 14:33" sẽ vớ
+                    // phải số GIỜ (14) và đánh dấu nhầm thẻ — test đã bắt đúng lỗi này.
+                    const cardMatch = cleanText.match(/👉[^\n]*?(\d+)\s*(?:đã\s*được\s*)?sử\s*dụng\s*lúc/i);
                     const matchedCardIndex = (cardMatch && cardMatch[1]) ? Number(cardMatch[1]) : undefined;
 
                     // Định dạng mới: "↳ User: [Tên]"

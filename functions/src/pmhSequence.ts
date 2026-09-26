@@ -42,3 +42,32 @@ export async function allocatePmhSequence(uid: string, count: number, now: Date 
         return 0;
     }
 }
+
+/**
+ * Nhãn gọi tên thẻ trong tin xác nhận sử dụng (chủ dự án chốt 2026-09-26) — khác nhau theo LOẠI:
+ *   - thẻ LỌC PMH      -> "PMH 68"
+ *   - thẻ Event        -> "Coupon Event 68"
+ *   - thẻ Giờ Vàng/GVGS-> "Coupon GVGS 68"
+ * Trước đây mọi loại đều ghi "PMH …" nên đọc trong nhóm không biết mã vừa dùng thuộc loại nào.
+ */
+export function couponUsedLabel(categoryLabel: string | undefined | null, index: number | string): string {
+    const so = String(index ?? '').trim();
+    const cat = String(categoryLabel || '').toLowerCase();
+    if (cat.includes('event')) return `Coupon Event ${so}`;
+    // "Giờ Vàng", "gv", "gvgs", "giờ vàng giá sốc" đều là một loại
+    if (cat.includes('giờ vàng') || cat.includes('gio vang') || cat.includes('gvgs') || /^gv\b/.test(cat)) {
+        return `Coupon GVGS ${so}`;
+    }
+    // Mặc định là thẻ lọc PMH (categoryLabel lúc này là loại phiếu: MM200, MM300…)
+    return `PMH ${so}`;
+}
+
+/** Câu xác nhận đầy đủ. Bot đẩy tin trích dẫn và trang LIFF (bản dự phòng) phải ra ĐÚNG một chuỗi. */
+export function buildCouponUsedText(params: {
+    categoryLabel?: string | null;
+    index: number | string;
+    timeStr: string;
+    userName: string;
+}): string {
+    return `👉 ${couponUsedLabel(params.categoryLabel, params.index)} sử dụng lúc ${params.timeStr}!\n↳ User: ${params.userName}`;
+}
