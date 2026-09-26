@@ -8,7 +8,7 @@ import {
 } from '../../../services/industryKpiCalc';
 import { IndustryTreeNode } from '../../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
-import { IndustryKpiCard } from './IndustryKpiCard';
+import { IndustryKpiCard, IndustryKpiFocusMetric } from './IndustryKpiCard';
 import { AddIndustryKpiModal } from './AddIndustryKpiModal';
 import { Plus, RotateCcw } from 'lucide-react';
 import { Button } from '../../../../../components/shared/ui/Button';
@@ -27,6 +27,11 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
     const [cards, setCards] = useIndexedDBState<IndustryKpiCardConfig[]>(
         'global-industry-kpi-cards-v1',
         DEFAULT_INDUSTRY_KPI_CARDS
+    );
+
+    const [focusMetric, setFocusMetric] = useIndexedDBState<IndustryKpiFocusMetric>(
+        'global-industry-kpi-focus-metric-v1',
+        'revenue'
     );
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -73,7 +78,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
     return (
         <div className="mb-4 bg-slate-50/70 dark:bg-slate-900/40 p-2.5 sm:p-3 border border-slate-200/80 dark:border-slate-800">
             {/* Header bar of KPI Section */}
-            <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-200/70 dark:border-slate-800">
+            <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-slate-200/70 dark:border-slate-800 flex-wrap">
                 <div className="flex items-center gap-2">
                     <span className="text-[11px] sm:text-[12px] font-black uppercase text-slate-700 dark:text-slate-200 tracking-wider">
                         CHỈ SỐ KPI NGÀNH HÀNG
@@ -83,7 +88,35 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                     </span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
+                    {/* Nút chuyển đổi Số lượng / Doanh thu => Chọn tiêu chí nào thì số đó sẽ lớn hơn */}
+                    <div className="inline-flex items-center p-0.5 rounded-md bg-slate-200/80 dark:bg-slate-800 border border-slate-300/70 dark:border-slate-700">
+                        <button
+                            type="button"
+                            onClick={() => setFocusMetric('revenue')}
+                            className={`px-2 py-0.5 text-[10.5px] font-bold rounded transition-all cursor-pointer ${
+                                focusMetric === 'revenue'
+                                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-2xs'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                            }`}
+                            title="Ưu tiên hiển thị Doanh thu QĐ số lớn hơn"
+                        >
+                            Doanh thu
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFocusMetric('quantity')}
+                            className={`px-2 py-0.5 text-[10.5px] font-bold rounded transition-all cursor-pointer ${
+                                focusMetric === 'quantity'
+                                    ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-2xs'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                            }`}
+                            title="Ưu tiên hiển thị Số lượng số lớn hơn"
+                        >
+                            Số lượng
+                        </button>
+                    </div>
+
                     <Button
                         type="button"
                         variant="unstyled"
@@ -115,6 +148,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         key={metric.id}
                         metric={metric}
                         isRealtime={isRealtime}
+                        focusMetric={focusMetric}
                         onRemove={handleRemoveCard}
                     />
                 ))}
@@ -123,11 +157,11 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsAddModalOpen(true)}
-                    className="flex flex-col items-center justify-center min-h-[72px] sm:min-h-[82px] border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 hover:border-sky-500 dark:hover:border-sky-500 bg-white/40 dark:bg-slate-900/30 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all p-2 group cursor-pointer"
+                    className="flex flex-col items-center justify-center min-h-[58px] sm:min-h-[62px] border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 hover:border-sky-500 dark:hover:border-sky-500 bg-white/40 dark:bg-slate-900/30 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all p-2 group cursor-pointer"
                     title="Bấm để tạo thêm thẻ KPI"
                 >
                     <Plus className="w-4 h-4 mb-0.5 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10.5px] font-bold uppercase tracking-tight">Thêm thẻ</span>
+                    <span className="text-[10px] font-bold uppercase tracking-tight">Thêm thẻ</span>
                 </button>
             </div>
 
