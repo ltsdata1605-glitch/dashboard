@@ -104,6 +104,7 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
     await setup(page);
 
     await page.locator('#tnb-pmh-helper .tph-input').fill(THREE_FORMS);
+    await page.locator('#tnb-pmh-helper .tph-per').fill('12');
     await page.locator('#tnb-pmh-helper .tph-gap').fill('0.5');
     await page.locator('#tnb-pmh-helper [data-act="go"]').click();
 

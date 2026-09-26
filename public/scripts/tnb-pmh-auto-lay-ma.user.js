@@ -29,7 +29,7 @@
   'use strict';
 
   const MAX_CHARS = 2800;        // ngưỡng an toàn dưới maxlength=3000 của ô chat
-  const DEFAULT_PER_MSG = 12;    // số form tối đa gộp vào 1 tin
+  const DEFAULT_PER_MSG = 1;     // mỗi tin chỉ gửi 1 form
   const DEFAULT_GAP_SEC = 2.0;   // giãn cách giữa 2 tin (giây)
   const PANEL_ID = 'tnb-pmh-helper';
 
