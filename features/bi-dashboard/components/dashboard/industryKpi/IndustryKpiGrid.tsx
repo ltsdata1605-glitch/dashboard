@@ -152,17 +152,6 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         onRemove={handleRemoveCard}
                     />
                 ))}
-
-                {/* Quick Add Card Slot */}
-                <button
-                    type="button"
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="flex flex-col items-center justify-center min-h-[58px] sm:min-h-[62px] border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 hover:border-sky-500 dark:hover:border-sky-500 bg-white/40 dark:bg-slate-900/30 hover:bg-sky-50/50 dark:hover:bg-sky-950/20 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-all p-2 group cursor-pointer"
-                    title="Bấm để tạo thêm thẻ KPI"
-                >
-                    <Plus className="w-4 h-4 mb-0.5 group-hover:scale-110 transition-transform" />
-                    <span className="text-[10px] font-bold uppercase tracking-tight">Thêm thẻ</span>
-                </button>
             </div>
 
             {/* Add Card Modal */}
