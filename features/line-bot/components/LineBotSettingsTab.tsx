@@ -12,7 +12,8 @@ import { Button } from '../../../components/shared/ui/Button';
 import { LineBotConfig, LineGroup } from '../types/lineBot.types';
 import { LineBotInfo } from '../services/lineMessagingService';
 import { LineBotStatusCard } from './LineBotStatusCard';
-import { Clock, Users } from 'lucide-react';
+import { Clock, Users, Building2, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface LineBotSettingsTabProps {
     config: LineBotConfig | null;
@@ -37,9 +38,12 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
     onSaveConfig,
     onOpenGuide
 }) => {
+    const { user, departmentId } = useAuth();
     const [token, setToken] = useState<string>(config?.channelAccessToken || '');
     const [secret, setSecret] = useState<string>(config?.channelSecret || '');
     const [liffId, setLiffId] = useState<string>(config?.liffId || '2011679071-BclvutpD');
+    const [deptId, setDeptId] = useState<string>(config?.departmentId || departmentId || '');
+    const [isWarehouseShared, setIsWarehouseShared] = useState<boolean>(config?.isWarehouseShared ?? true);
     const [autoApprove, setAutoApprove] = useState<boolean>(config?.autoApprove ?? true);
     const [approvalCmd, setApprovalCmd] = useState<string>(config?.approvalCommand || 'DUYỆT');
     const [scheduledGroupId, setScheduledGroupId] = useState<string>(config?.scheduledGroupId || '');
@@ -52,13 +56,15 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             setToken(config.channelAccessToken || '');
             setSecret(config.channelSecret || '');
             setLiffId(config.liffId || '2011679071-BclvutpD');
+            setDeptId(config.departmentId || departmentId || '');
+            setIsWarehouseShared(config.isWarehouseShared ?? true);
             setAutoApprove(config.autoApprove ?? true);
             setApprovalCmd(config.approvalCommand || 'DUYỆT');
             setScheduledGroupId(config.scheduledGroupId || '');
             setMorningReport(config.scheduledNotifications?.morningReport ?? true);
             setEveningReport(config.scheduledNotifications?.eveningReport ?? true);
         }
-    }, [config]);
+    }, [config, departmentId]);
 
     const handleCopyWebhook = () => {
         navigator.clipboard.writeText(personalWebhookUrl);
@@ -75,6 +81,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             autoApprove,
             approvalCommand: approvalCmd.trim() || 'DUYỆT',
             scheduledGroupId: scheduledGroupId.trim(),
+            departmentId: deptId.trim(),
+            isWarehouseShared,
             scheduledNotifications: {
                 morningReport,
                 eveningReport
@@ -93,6 +101,58 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 onOpenGuide={onOpenGuide}
                 onVerifyToken={onVerifyToken}
             />
+
+            {/* Google Account & Warehouse Linkage Card */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/90 via-sky-50/50 to-indigo-50/40 dark:from-sky-950/30 dark:via-sky-950/20 dark:to-indigo-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-xs space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-sky-600 text-white shadow-xs shrink-0">
+                            <Building2 size={20} />
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-white">
+                                    Liên Kết Tài Khoản Google & Mã Kho
+                                </h4>
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300">
+                                    Multi-Tenant
+                                </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                                Google User: <strong className="text-slate-700 dark:text-slate-300">{user?.email || 'Chưa đăng nhập'}</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-sky-200 dark:border-sky-800 shadow-2xs w-full sm:w-auto">
+                            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Mã Kho:</span>
+                            <input
+                                type="text"
+                                value={deptId}
+                                onChange={e => setDeptId(e.target.value)}
+                                placeholder="Ví dụ: 910"
+                                className="w-24 px-1.5 py-0.5 text-xs font-bold text-sky-600 dark:text-sky-400 bg-transparent border-0 focus:outline-none focus:ring-0 text-center font-mono"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-2 border-t border-sky-100 dark:border-sky-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        <input
+                            type="checkbox"
+                            checked={isWarehouseShared}
+                            onChange={e => setIsWarehouseShared(e.target.checked)}
+                            className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
+                        />
+                        <span>Cho phép các Quản lý cùng mã kho <strong>{deptId || 'này'}</strong> kế thừa và dùng chung Bot</span>
+                    </label>
+                    <span className="text-[10px] text-slate-400 italic">
+                        {isWarehouseShared ? '✓ Tài khoản cùng kho sẽ được dùng chung kho coupon & bot' : '🔒 Bot hoạt động riêng cho tài khoản này'}
+                    </span>
+                </div>
+            </div>
 
             {/* Webhook URL Box */}
             <div className="p-5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 space-y-2.5">

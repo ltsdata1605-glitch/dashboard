@@ -9,9 +9,9 @@ import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { lineMessagingService, LineBotInfo } from '../services/lineMessagingService';
 import { LineBotConfig } from '../types/lineBot.types';
 
-export function useLineBotConfig() {
-    const { user } = useAuth();
-    const userId = user?.uid || '';
+export function useLineBotConfig(overrideUserId?: string) {
+    const { user, departmentId } = useAuth();
+    const userId = overrideUserId || user?.uid || '';
 
     const [config, setConfig] = useState<LineBotConfig | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -99,10 +99,15 @@ export function useLineBotConfig() {
 
         setIsSaving(true);
         try {
+            const cleanDept = (updates.departmentId || config?.departmentId || departmentId || '').trim();
             const merged = {
                 ...(config || {}),
                 ...updates,
                 userId,
+                departmentId: cleanDept,
+                ownerEmail: config?.ownerEmail || user?.email || '',
+                ownerName: config?.ownerName || user?.displayName || '',
+                isWarehouseShared: updates.isWarehouseShared ?? config?.isWarehouseShared ?? true,
                 webhookUrl: personalWebhookUrl,
                 botName: botInfo?.displayName || updates.botName || config?.botName || '',
                 botBasicId: botInfo?.basicId || updates.botBasicId || config?.botBasicId || '',

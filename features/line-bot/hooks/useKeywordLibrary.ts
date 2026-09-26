@@ -8,9 +8,9 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { KeywordReply } from '../types/lineBot.types';
 
-export function useKeywordLibrary() {
+export function useKeywordLibrary(overrideUserId?: string) {
     const { user } = useAuth();
-    const userId = user?.uid || '';
+    const userId = overrideUserId || user?.uid || '';
 
     const [keywords, setKeywords] = useState<KeywordReply[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);

@@ -12,12 +12,14 @@ import {
     deleteDoc,
     writeBatch,
     query,
+    where,
     orderBy,
     limit
 } from 'firebase/firestore';
 import { db } from '../../../services/firebase';
 import {
     LineBotConfig,
+    WarehouseBotSummary,
     Coupon,
     BotSchedule,
     KeywordReply,
@@ -33,6 +35,46 @@ import { getVietnamTodayString } from './couponParser';
 const ROOT_COLLECTION = 'line_bots';
 
 export const lineBotFirestoreService = {
+    /**
+     * Tìm Bot LINE đã được tạo và chia sẻ trong cùng Mã Kho (departmentId)
+     */
+    async findWarehouseBot(departmentId: string): Promise<WarehouseBotSummary | null> {
+        const cleanDept = (departmentId || '').trim();
+        if (!cleanDept || cleanDept === 'ALL' || cleanDept === 'ALL (Super Admin)') return null;
+        try {
+            const q = query(
+                collection(db, ROOT_COLLECTION),
+                where('departmentId', '==', cleanDept),
+                where('active', '==', true),
+                limit(5)
+            );
+            const snap = await getDocs(q);
+            if (snap.empty) return null;
+            // Tìm bot có isWarehouseShared !== false và đã có channelAccessToken
+            const sharedDoc = snap.docs.find(d => {
+                const data = d.data();
+                return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
+            });
+            if (!sharedDoc) return null;
+            const data = sharedDoc.data();
+            return {
+                id: sharedDoc.id,
+                botName: data.botName || 'BOT LINE PMH',
+                botBasicId: data.botBasicId || '',
+                pictureUrl: data.pictureUrl,
+                departmentId: data.departmentId || cleanDept,
+                ownerEmail: data.ownerEmail,
+                ownerName: data.ownerName,
+                active: data.active ?? true,
+                autoApprove: data.autoApprove ?? true,
+                updatedAt: data.updatedAt || new Date().toISOString()
+            };
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi findWarehouseBot:', error);
+            return null;
+        }
+    },
+
     /**
      * Lấy cấu hình Bot của Quản lý
      */
@@ -61,6 +103,7 @@ export const lineBotFirestoreService = {
         const payload: Record<string, unknown> = {
             ...config,
             userId,
+            isWarehouseShared: config.isWarehouseShared ?? true,
             updatedAt: now
         };
         const snap = await getDoc(docRef);

@@ -11,10 +11,13 @@ import {
     ShieldAlert,
     CheckCircle2,
     XCircle,
-    ListFilter
+    ListFilter,
+    Building2,
+    User
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/shared/ui/Button';
+import { useBotScope } from './hooks/useBotScope';
 import { useLineBotConfig } from './hooks/useLineBotConfig';
 import { useCouponManager } from './hooks/useCouponManager';
 import { useScheduleManager } from './hooks/useScheduleManager';
@@ -41,18 +44,30 @@ export default function LineBotView() {
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const tabBarRef = useRef<HTMLDivElement>(null);
 
+    // Quản lý phạm vi Bot: Kế thừa Bot Kho hoặc Dùng Bot cá nhân riêng biệt
+    const botScopeHook = useBotScope();
+    const {
+        effectiveBotId,
+        scopeMode,
+        warehouseBot,
+        hasWarehouseBot,
+        isInheriting,
+        departmentId: currentDept,
+        switchScope
+    } = botScopeHook;
+
     // Mobile: 9 tab không vừa 1 màn — cuộn tab đang chọn vào tầm nhìn để người dùng luôn thấy mình đang ở đâu.
     useEffect(() => {
         const el = tabBarRef.current?.querySelector<HTMLElement>(`[data-tab-id="${activeSubTab}"]`);
         el?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
     }, [activeSubTab]);
 
-    // Hooks
-    const botConfigHook = useLineBotConfig();
-    const couponHook = useCouponManager();
-    const scheduleHook = useScheduleManager(botConfigHook.config?.channelAccessToken);
-    const keywordHook = useKeywordLibrary();
-    const adminHook = useAdminDeclaration();
+    // Hooks - được truyền effectiveBotId (tự động chuyển sang Bot kho hoặc Bot riêng)
+    const botConfigHook = useLineBotConfig(effectiveBotId);
+    const couponHook = useCouponManager(effectiveBotId);
+    const scheduleHook = useScheduleManager(botConfigHook.config?.channelAccessToken, effectiveBotId);
+    const keywordHook = useKeywordLibrary(effectiveBotId);
+    const adminHook = useAdminDeclaration(effectiveBotId);
 
     // 1. Chặn quyền nếu không phải Quản lý trở lên
     if (!isManagerOrAdmin) {
@@ -107,7 +122,7 @@ export default function LineBotView() {
                             </div>
                         )}
                         <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-wrap">
                                 <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                                     {botConfigHook.botInfo?.displayName || 'BOT LINE Quản Lý PMH'}
                                 </span>
@@ -121,6 +136,21 @@ export default function LineBotView() {
                                         <XCircle size={10} /> Chưa kết nối
                                     </span>
                                 )}
+
+                                {/* Badge phạm vi Bot */}
+                                {isInheriting ? (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bạn đang dùng chung Bot và kho mã do quản lý khác trong cùng kho tạo">
+                                        <Building2 size={10} /> Kho {currentDept} (Kế thừa)
+                                    </span>
+                                ) : scopeMode === 'warehouse' && currentDept ? (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/80 dark:border-sky-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bot đại diện chính của kho này">
+                                        <Building2 size={10} /> Kho {currentDept} (Bot kho)
+                                    </span>
+                                ) : (
+                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 whitespace-nowrap">
+                                        <User size={10} /> Bot Cá Nhân
+                                    </span>
+                                )}
                             </div>
                             <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
                                 {botConfigHook.botInfo?.basicId
@@ -129,7 +159,6 @@ export default function LineBotView() {
                             </p>
                         </div>
                     </div>
-
 
                     <div className="flex items-center gap-1.5 shrink-0">
                         <Button
@@ -145,6 +174,72 @@ export default function LineBotView() {
                         </Button>
                     </div>
                 </div>
+
+                {/* Warehouse Inheritance Banner / Scope Switcher */}
+                {currentDept && (
+                    <div className={`px-3 py-2 rounded-xl border text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 transition-all ${
+                        isInheriting
+                            ? 'bg-purple-50/90 dark:bg-purple-950/30 border-purple-200/80 dark:border-purple-800/60 text-purple-900 dark:text-purple-200 shadow-2xs'
+                            : scopeMode === 'warehouse' && hasWarehouseBot
+                            ? 'bg-sky-50/80 dark:bg-sky-950/30 border-sky-200/80 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
+                            : hasWarehouseBot
+                            ? 'bg-amber-50/90 dark:bg-amber-950/30 border-amber-200/80 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 shadow-2xs'
+                            : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300'
+                    }`}>
+                        <div className="flex items-center gap-2 min-w-0">
+                            {isInheriting ? (
+                                <Building2 size={16} className="text-purple-600 dark:text-purple-400 shrink-0" />
+                            ) : hasWarehouseBot && scopeMode === 'personal' ? (
+                                <Sparkles size={16} className="text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                            ) : (
+                                <Building2 size={16} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                            )}
+                            <div className="min-w-0 leading-snug">
+                                {isInheriting ? (
+                                    <p className="font-semibold truncate">
+                                        🏢 Đang <strong>kế thừa Bot Kho {currentDept}</strong> (do {warehouseBot?.ownerName || warehouseBot?.ownerEmail || 'Quản lý khác'} tạo). Đang dùng chung kho mã & cấu hình Bot.
+                                    </p>
+                                ) : scopeMode === 'warehouse' ? (
+                                    <p className="font-semibold truncate">
+                                        🏢 Bot LINE của <strong>Kho {currentDept}</strong> (Bạn là người khởi tạo). Các tài khoản cùng mã kho này sẽ tự động kế thừa và dùng chung.
+                                    </p>
+                                ) : hasWarehouseBot ? (
+                                    <p className="font-semibold truncate">
+                                        💡 Kho <strong>{currentDept}</strong> đã có sẵn Bot LINE "{warehouseBot?.botName}". Bạn có muốn dùng chung cùng các Quản lý khác không?
+                                    </p>
+                                ) : (
+                                    <p className="font-medium text-slate-500 dark:text-slate-400 truncate">
+                                        🏢 Mã kho tài khoản Google: <strong>Kho {currentDept}</strong>. Bot bạn cấu hình tại đây sẽ được chia sẻ cho các quản lý cùng kho.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        {hasWarehouseBot && (
+                            <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+                                {isInheriting ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => switchScope('personal')}
+                                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
+                                        title="Chuyển sang cấu hình Bot riêng biệt cho tài khoản này"
+                                    >
+                                        Tạo / Dùng Bot riêng
+                                    </button>
+                                ) : scopeMode === 'personal' ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => switchScope('warehouse')}
+                                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-xs"
+                                        title="Kế thừa và dùng chung Bot của kho"
+                                    >
+                                        Kế thừa Bot Kho {currentDept}
+                                    </button>
+                                ) : null}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Navigation Tabs — Phong cách Report BI, Sky palette, siêu mượt cho iPhone */}
                 <div className="relative">

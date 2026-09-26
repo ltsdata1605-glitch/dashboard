@@ -8,9 +8,9 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { LineAdmin, InteractedUser, AdminRole } from '../types/lineBot.types';
 
-export function useAdminDeclaration() {
+export function useAdminDeclaration(overrideUserId?: string) {
     const { user } = useAuth();
-    const userId = user?.uid || '';
+    const userId = overrideUserId || user?.uid || '';
 
     const [admins, setAdmins] = useState<LineAdmin[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);

@@ -9,9 +9,9 @@ import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { lineMessagingService } from '../services/lineMessagingService';
 import { BotSchedule, LineGroup } from '../types/lineBot.types';
 
-export function useScheduleManager(botToken?: string) {
+export function useScheduleManager(botToken?: string, overrideUserId?: string) {
     const { user } = useAuth();
-    const userId = user?.uid || '';
+    const userId = overrideUserId || user?.uid || '';
 
     const [schedules, setSchedules] = useState<BotSchedule[]>([]);
     const [groups, setGroups] = useState<LineGroup[]>([]);

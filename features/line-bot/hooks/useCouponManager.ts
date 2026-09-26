@@ -20,9 +20,9 @@ function removeVietnameseTones(str: string): string {
         .trim();
 }
 
-export function useCouponManager() {
+export function useCouponManager(overrideUserId?: string) {
     const { user } = useAuth();
-    const userId = user?.uid || '';
+    const userId = overrideUserId || user?.uid || '';
 
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);

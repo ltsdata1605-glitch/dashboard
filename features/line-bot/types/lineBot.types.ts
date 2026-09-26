@@ -154,7 +154,24 @@ export interface LineBotConfig {
         morningReport?: boolean; // Bật thông báo 6h00 sáng (chỉ gửi khi còn tồn coupon)
         eveningReport?: boolean; // Bật tổng kết 22h00 tối (tổng số phiếu & danh sách người dùng)
     };
+    departmentId?: string; // Mã kho liên kết (ví dụ "910", "21453")
+    ownerEmail?: string; // Email tài khoản Google người tạo bot
+    ownerName?: string; // Tên hiển thị người tạo bot
+    isWarehouseShared?: boolean; // Cho phép các tài khoản cùng mã kho kế thừa và dùng chung (mặc định: true)
     createdAt: string;
+    updatedAt: string;
+}
+
+export interface WarehouseBotSummary {
+    id: string; // botId (UID tài khoản tạo bot)
+    botName?: string;
+    botBasicId?: string;
+    pictureUrl?: string;
+    departmentId: string;
+    ownerEmail?: string;
+    ownerName?: string;
+    active: boolean;
+    autoApprove?: boolean;
     updatedAt: string;
 }
 
