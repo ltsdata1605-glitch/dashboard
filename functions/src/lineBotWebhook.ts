@@ -2753,11 +2753,19 @@ export const lineBotWebhook = onRequest(
                         const cData = chosenDoc.data();
                         const now = new Date().toISOString();
 
+                        // Số thứ tự CHẠY THEO THÁNG, DÙNG CHUNG một bộ đếm với thẻ "LỌC PMH"
+                        // (functions/src/pmhSequence.ts) — chủ dự án chốt 2026-09-26. Trước đây luồng
+                        // cấp mã từ kho không cấp số nên thẻ nào cũng hiện "PMH 0001", không gọi tên
+                        // được một thẻ cụ thể để đối chiếu.
+                        const seqStock = await allocatePmhSequence(uid, 1);
+
                         await chosenDoc.ref.update({
                             status: 'SENT',
                             orderId: claimCmd.orderId || '',
                             recipient: displayName,
                             recipientId: senderUserId,
+                            // Lưu lại để "csd" và xác nhận sử dụng (mark-used) gọi đúng số thẻ
+                            ...(seqStock > 0 ? { cardIndex: seqStock } : {}),
                             updatedAt: now
                         });
 
@@ -2771,6 +2779,7 @@ export const lineBotWebhook = onRequest(
                             categoryLabel: shortCat,
                             code: cData.code,
                             orderId: claimCmd.orderId,
+                            cardIndex: seqStock > 0 ? seqStock : undefined,
                             liffId: (config as any).liffId
                         });
 
@@ -2983,12 +2992,16 @@ export const lineBotWebhook = onRequest(
                     const cData = chosenDoc.data();
                     const now = new Date().toISOString();
 
+                    // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
+                    const seqApprove = await allocatePmhSequence(uid, 1);
+
                     await chosenDoc.ref.update({
                         status: 'SENT',
                         warehouse: pData.warehouse || '',
                         orderId: targetOrderId,
                         recipient: pData.managerName || 'Nhân viên',
                         recipientId: pData.senderUserId || senderUserId,
+                        ...(seqApprove > 0 ? { cardIndex: seqApprove } : {}),
                         updatedAt: now
                     });
 
@@ -3010,6 +3023,7 @@ export const lineBotWebhook = onRequest(
                         code: cData.code,
                         orderId: targetOrderId,
                         warehouse: pData.warehouse,
+                        cardIndex: seqApprove > 0 ? seqApprove : undefined,
                         liffId: (config as any).liffId
                     });
 
@@ -3292,6 +3306,8 @@ export const lineBotWebhook = onRequest(
                         const couponDoc = chosenDoc;
                         const cData = couponDoc.data();
                         const now = new Date().toISOString();
+                        // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
+                        const seqForm = await allocatePmhSequence(uid, 1);
 
                         await couponDoc.ref.update({
                             status: 'SENT',
@@ -3299,6 +3315,7 @@ export const lineBotWebhook = onRequest(
                             orderId: parsed.orderId,
                             recipient: displayName,
                             recipientId: senderUserId,
+                            ...(seqForm > 0 ? { cardIndex: seqForm } : {}),
                             updatedAt: now
                         });
 
@@ -3330,6 +3347,7 @@ export const lineBotWebhook = onRequest(
                             orderId: parsed.orderId,
                             warehouse: parsed.warehouse,
                             warningSuffix,
+                            cardIndex: seqForm > 0 ? seqForm : undefined,
                             liffId: (config as any).liffId
                         });
 
