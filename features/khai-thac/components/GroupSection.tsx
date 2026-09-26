@@ -75,7 +75,9 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                 title={meta.label}
                 right={
                     <Button variant="unstyled" size="none" onClick={() => onAddField(group)} title="Thêm mục mới"
-                        className="h-6 px-1.5 flex items-center gap-1 text-[11px] font-bold text-sky-700 hover:bg-sky-50 rounded">
+                        // Cao 24px là dưới xa mức chạm 44px của Apple — đây lại là nút dùng nhiều
+                        // nhất ở màn Báo cáo khai thác. Desktop giữ 24px cho gọn hàng tiêu đề.
+                        className="h-6 min-h-11 sm:min-h-0 px-1.5 flex items-center justify-center gap-1 text-[11px] font-bold text-sky-700 hover:bg-sky-50 rounded">
                         <Plus size={12} /> Thêm mục
                     </Button>
                 }

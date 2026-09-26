@@ -102,7 +102,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsSettingsOpen(true)}
-                            className="p-1.5 text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                            className="p-1.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
                             title="Cài đặt cấu hình"
                         >
                             <Icon name="share-2" size={4.5} />

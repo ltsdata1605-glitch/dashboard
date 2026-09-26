@@ -147,7 +147,7 @@ const FontSelector: React.FC = () => {
                 variant="unstyled" size="none"
                 ref={buttonRef}
                 onClick={toggleOpen}
-                className={`p-2.5 transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
+                className={`p-2.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
                 title={`Font hiện tại: ${currentFontLabel}`}
             >
                 <Icon name="type" size={4} />

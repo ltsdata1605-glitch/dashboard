@@ -203,7 +203,7 @@ export default function CouponConverterView() {
                                   <Button
                                       variant="unstyled" size="none"
                                       onClick={handlePasteClick}
-                                      className="h-8 px-2.5 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 border border-sky-100 dark:border-sky-800/50 rounded-lg"
+                                      className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 border border-sky-100 dark:border-sky-800/50 rounded-lg"
                                       title="Làm mới và chuẩn bị dán"
                                   >
                                       <Icon name="clipboard-paste" size={4} />
@@ -211,7 +211,7 @@ export default function CouponConverterView() {
                                   <Button
                                       variant="unstyled" size="none"
                                       onClick={handleClearContent}
-                                      className="h-8 px-2.5 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 rounded-lg"
+                                      className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 rounded-lg"
                                       title="Xóa nội dung, giữ tiêu đề"
                                   >
                                       <Icon name="trash-2" size={4} />
@@ -219,7 +219,7 @@ export default function CouponConverterView() {
                                   <Button
                                       variant="unstyled" size="none"
                                       onClick={handleClearAll}
-                                      className="h-8 px-2.5 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 rounded-lg"
+                                      className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 rounded-lg"
                                       title="Xóa toàn bộ"
                                   >
                                       <Icon name="trash-2" size={4} />

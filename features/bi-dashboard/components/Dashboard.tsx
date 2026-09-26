@@ -57,7 +57,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={onNavigate}
-                                className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded text-white bg-sky-600 hover:bg-sky-700 transition-colors"
+                                className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-11 text-sm font-bold rounded text-white bg-sky-600 hover:bg-sky-700 transition-colors"
                             >
                                 Cập nhật dữ liệu
                             </Button>
