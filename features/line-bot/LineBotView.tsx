@@ -88,7 +88,7 @@ export default function LineBotView() {
 
     return (
         <div className="w-full flex justify-center bg-slate-50/50 dark:bg-slate-900/60 min-h-full">
-            <div className="w-full max-w-7xl mx-auto p-2 sm:p-4 lg:p-6 space-y-2 sm:space-y-3.5 animate-in fade-in duration-150 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
+            <div className="w-full max-w-[960px] mx-auto p-2 sm:p-4 lg:p-6 space-y-2 sm:space-y-3.5 animate-in fade-in duration-150 pb-[calc(env(safe-area-inset-bottom)+5rem)]">
                 {/* Mini Status Bar — Tinh gọn chuẩn Report BI, không chiếm diện tích màn hình iPhone */}
                 <div className="flex flex-row items-center justify-between gap-2.5 bg-white dark:bg-slate-800/90 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
