@@ -580,20 +580,14 @@ export function createCouponCardBubble(params: {
             contents: [
                 {
                     type: 'text',
+                    // Bỏ nhãn "Đã cấp" bên phải (chủ dự án 2026-09-26): thẻ nào gửi ra cũng là đã
+                    // cấp nên chữ này không mang thông tin, chỉ chiếm chỗ của tên người nhận —
+                    // tên đang bị cắt "…" trên điện thoại. Bỏ đi thì tên chiếm trọn bề ngang.
                     text: `@${cleanName}`,
                     weight: 'bold',
                     size: 'xs',
                     color: '#0284C7',
-                    flex: 8
-                },
-                {
-                    type: 'text',
-                    text: 'Đã cấp',
-                    size: 'xxs',
-                    color: '#06C755',
-                    align: 'end',
-                    weight: 'bold',
-                    flex: 4
+                    wrap: true
                 }
             ]
         },

@@ -275,9 +275,6 @@ ${secondName}
                                                     <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
                                                         <span>@{firstName}</span>
                                                     </div>
-                                                    <span className="text-[10.5px] font-bold text-[#06C755]">
-                                                        Đã cấp
-                                                    </span>
                                                 </div>
 
                                                 <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -341,9 +338,6 @@ ${secondName}
                                                     <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
                                                         <span>@{firstName}</span>
                                                     </div>
-                                                    <span className="text-[10.5px] font-bold text-[#06C755]">
-                                                        Đã cấp
-                                                    </span>
                                                 </div>
 
                                                 <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
@@ -408,9 +402,6 @@ ${secondName}
                                                         <div className="font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-mono text-[11px]">
                                                             <span>@{secondName}</span>
                                                         </div>
-                                                        <span className="text-[10.5px] font-bold text-[#06C755]">
-                                                            Đã cấp
-                                                        </span>
                                                     </div>
 
                                                     <div className="bg-slate-50 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-100 dark:border-slate-800">
