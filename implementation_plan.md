@@ -5818,3 +5818,24 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
 3. Super Admin → Phân quyền → Hồ sơ Định danh → "Gắn kho dùng chung" → `910` → Lưu.
 4. Tải lại / mở xem file doanh số để đồng bộ dòng có "Mã kho tạo" = 910 lên khoData/910; Report BI
    cần bảng map tên siêu thị → 910 rồi dán lại Luỹ kế/Thi đua.
+
+---
+
+# Sửa 2 lỗi có sẵn ở Hồ sơ Định danh (2026-09-27, chủ dự án: "Xử lý 2 lỗi này")
+
+## Lỗi 1 — Quản lý "Đổi mã kho" báo thành công nhưng bị từ chối
+Nguyên nhân: `SettingsAccountTab` ghi thẳng `departmentId` bằng `updateDoc` — field bảo vệ, Rules
+chặn; `adminUpdateUser` cũng CỐ Ý cấm manager tự đổi Kho (tự cấp quyền xem dữ liệu siêu thị khác).
+Sửa: đi đúng luồng hợp lệ `requestAccess('manager', …)` → Admin duyệt lại (như nhân viên). Có
+ConfirmDialog nói rõ "tạm khoá quyền trong lúc chờ duyệt"; Kho không đổi thì không gửi.
+Kèm lỗi liên quan phát hiện khi đọc mã: `UserManagementView` khởi tạo ô vai trò của yêu cầu chờ
+duyệt bằng `role || requestedRole` — sau `requestAccess` thì `role = 'pending'` nên ô hiện "Chờ duyệt"
+và bấm Duyệt sẽ gửi `role: 'pending'` + `status: 'approved'` (được "duyệt" mà vẫn không có quyền).
+Sửa: yêu cầu chờ duyệt mặc định = `requestedRole`.
+
+## Lỗi 2 — "Xoá tất cả dữ liệu" không xoá báo cáo dùng chung như hộp xác nhận hứa
+Nguyên nhân: `resetAllDataAsNewUser(user)` đọc `user.departmentId` từ Firebase `User` (không có field
+này) → nhánh xoá `biData` không bao giờ chạy. Tính năng CÓ CHỦ ĐÍCH (commit 152830fd, hộp xác nhận
+cảnh báo đỏ). Sửa: truyền danh sách Kho tường minh — CHỈ quản lý, CHỈ đúng Kho của họ; admin/Super
+Admin KHÔNG BAO GIỜ xoá báo cáo dùng chung (Kho gắn thêm như 910 là Kho dùng chung, không phải Kho
+của mình). Hộp xác nhận nói đúng theo vai trò.
