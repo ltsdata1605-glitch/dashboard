@@ -5617,11 +5617,38 @@ trang trí cho đỡ chật. Sẽ soi tiếp 35 `<div>` ở đợt sau để ch�
 
 ## Việc CÒN LẠI
 
-- 🔴 **Tính thuế** — module hỏng nặng nhất (**17 nút <44px, 8 chỗ chữ <11px**) nhưng **toàn bộ 11
-  file đang bị phiên khác sửa dở** lúc rà soát, nên KHÔNG đụng. Làm ngay khi họ commit xong; test
-  `tests/e2e/mobile-iphone-6-module.spec.ts` đang tạm MIỄN module này — bỏ khỏi danh sách `MIEN`
-  khi làm xong.
+- ✅ ~~**Tính thuế**~~ — ĐÃ XONG 2026-09-27, xem mục "Đợt 2 — Tính thuế" ngay dưới. Đã bỏ khỏi `MIEN`.
+- 🔴 **Hồi quy nút icon toàn app** (phát hiện 2026-09-27): commit `c9240cdd` đổi `Button` `size="icon"`
+  từ `h-9 w-9 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0` → `h-8 w-8`, mất vùng chạm 44px trên mobile
+  của MỌI nút icon. Màn Báo cáo từ 0 → **61 nút 32px**, test 6 module đỏ ở đó. CHƯA sửa vì là thay
+  đổi có chủ đích của chủ dự án — cần chốt: trả `min-h-11 min-w-11 sm:min-h-0 sm:min-w-0` lại (giữ
+  `h-8 w-8` cho desktop) hay không.
 - Bảng nhiều cột: đã xác nhận **cuộn trong khung bảng**, không có bảng nào tràn ra ngoài trang ở cả
   6 module. Muốn bỏ hẳn cuộn ngang thì phải thiết kế lại dạng thẻ cho mobile — việc lớn, cần chốt.
 - 35 chỗ `<div>` bị ẩn trên mobile: soi từng cái xem có phải chức năng không.
 - Modal/popup: mới kiểm gián tiếp (không tràn ngang trang). Cần đợt đo riêng mở từng modal.
+
+
+## Đợt 2 — Tính thuế (2026-09-27)
+
+**Đo trước** (iPhone 15 393x852): **9 chỗ chữ 10px**, **17 nút <44px**; đầu trang gãy chữ (huy
+hiệu "Biểu 5 bậc (2026)" 3 dòng, mô tả 5 dòng) vì cụm 4 nút `shrink-0` ép cột tiêu đề; "Hướng dẫn"
+/ "Đặt lại" gãy 2 dòng.
+
+**Đã sửa** (chỉ `features/tax-calculator/`):
+- Toàn module `text-[9px]`/`text-[10px]` → `text-[11px]` (47 chỗ, gồm cả modal/trạng thái chưa hiện
+  lúc đo — sàn 11px của CLAUDE.md mục 2 áp mọi nơi).
+- 19 nút `<button>` thô / `<Button size="none">` thêm `min-h-11 sm:min-h-0` — cùng cách `Button.tsx`
+  làm: iPhone 44px, từ `sm:` trở lên giữ nguyên chiều cao cũ.
+- Đầu trang: `flex-wrap` để cụm nút xuống dòng khi hẹp; `whitespace-nowrap` cho 2 huy hiệu và các
+  nút "Hướng dẫn", "Đặt lại", "Bảo mật", "Xuất ảnh". Lưu ý "Xuất ảnh" trước đạt 44px CHỈ nhờ bị gãy
+  2 dòng — chống gãy thì phải thêm `min-h-11`, nếu không nó tụt xuống 28px.
+
+**Đo sau**: Tính thuế **0 chữ <11px, 0 nút <44px, không tràn ngang**; Coupon vẫn 0. Desktop 1440px
+chụp ảnh kiểm: bố cục giữ nguyên.
+
+**Việc tồn đọng khác phát hiện khi chạy `npm run check`** (có sẵn trên HEAD, không do đợt này):
+- `tests/unit/line-bot-group-features.test.ts` đỏ: nhóm chưa cấu hình giờ trả `pmhRelay: false`
+  (cờ mới) mà test vẫn mong "BẬT hết".
+- `lint:ratchet` đỏ vì màu ngoài palette ở `features/line-bot`, `IndustryKpiCard`, `tax-calculator`…
+  (kết quả y hệt trước/sau đợt này).

@@ -136,11 +136,11 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             <h3 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white truncate">
                                 Lịch Sử Tính Thuế
                             </h3>
-                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-indigo-500 text-white shrink-0">
+                            <span className="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-indigo-500 text-white shrink-0">
                                 {records.length}
                             </span>
                         </div>
-                        <p className="text-[10px] text-slate-400 truncate">
+                        <p className="text-[11px] text-slate-400 truncate">
                             Click dòng để khôi phục ngay
                         </p>
                     </div>
@@ -151,7 +151,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         type="button"
                         onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
                         title="Xuất file Excel danh sách hoàn thuế"
-                        className="p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                        className="min-h-11 sm:min-h-0 p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
                     >
                         <FileSpreadsheet size={16} />
                     </button>
@@ -159,7 +159,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         type="button"
                         onClick={onClose}
                         title="Thu gọn danh sách lịch sử"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+                        className="min-h-11 sm:min-h-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
                     >
                         <PanelRightClose size={16} />
                     </button>
@@ -238,7 +238,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                     displayedGroups.map(group => (
                         <div key={group.key} className="space-y-1.5">
                             {/* Dải phân cách tháng */}
-                            <div className="sticky top-0 z-10 -mx-2.5 sm:-mx-3 px-2.5 sm:px-3 py-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-1 text-[10px]">
+                            <div className="sticky top-0 z-10 -mx-2.5 sm:-mx-3 px-2.5 sm:px-3 py-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-1 text-[11px]">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                     <span className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1 truncate">
                                         <CalendarDays size={11} className="text-sky-500 shrink-0" />
@@ -255,7 +255,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                 }
                                             }}
                                             title="Đổi tháng cho toàn bộ bản ghi trong nhóm này"
-                                            className="text-[9px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
+                                            className="text-[11px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
                                         >
                                             <option value={group.key} disabled>
                                                 Đổi tháng cả nhóm...
@@ -294,7 +294,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                     </span>
 
                                                     {isSelected && (
-                                                        <span className="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-sky-500 text-white">
+                                                        <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-sky-500 text-white">
                                                             <CheckCircle2 size={9} />
                                                             <span>Đang xem</span>
                                                         </span>
@@ -309,7 +309,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                                 onUpdateMonth(rec, e.target.value);
                                                             }}
                                                             title="Bấm để đổi tháng của bản ghi này"
-                                                            className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
+                                                            className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
                                                         >
                                                             {generateMonthOptions(rec.monthYear).map((m) => (
                                                                 <option key={m} value={m}>
@@ -318,7 +318,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                             ))}
                                                         </select>
                                                     ) : rec.monthYear ? (
-                                                        <span className="text-[9px] font-bold px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                        <span className="text-[11px] font-bold px-1 py-0.2 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                                             {rec.monthYear.includes('/') ? `T${rec.monthYear}` : rec.monthYear}
                                                         </span>
                                                     ) : null}
@@ -335,7 +335,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                 </div>
 
                                                 {/* Tóm tắt tiền */}
-                                                <div className="text-[10px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 font-mono">
+                                                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-1 font-mono">
                                                     <span>Thu nhập: <strong className="text-slate-700 dark:text-slate-200 font-semibold">{formatVnd(rec.totalIncome)}</strong></span>
                                                     {rec.proxyAmount > 0 && (
                                                         <span>Nhận: <strong className="text-amber-600 dark:text-amber-400">{formatVnd(rec.proxyAmount)}</strong></span>
@@ -348,13 +348,13 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
 
                                                 {/* Chi tiết khoản nhận thay */}
                                                 {rec.proxyItemsDetail && (
-                                                    <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 italic" title={rec.proxyItemsDetail}>
+                                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1 italic" title={rec.proxyItemsDetail}>
                                                         <span className="font-semibold text-slate-600 dark:text-slate-300 not-italic">Khoán: </span>
                                                         {rec.proxyItemsDetail}
                                                     </div>
                                                 )}
 
-                                                <div className="text-[9px] text-slate-400 mt-1">
+                                                <div className="text-[11px] text-slate-400 mt-1">
                                                     {new Date(rec.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}{' '}
                                                     {new Date(rec.createdAt).toLocaleDateString('vi-VN')}
                                                 </div>
@@ -389,7 +389,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                     <button
                         type="button"
                         onClick={onClearAll}
-                        className="text-[10px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                        className="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                     >
                         <Trash2 size={11} />
                         <span>Xóa tất cả</span>
@@ -399,7 +399,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         <button
                             type="button"
                             onClick={() => handleCopyGoogleSheets(activeRecords, activeMonthLabel)}
-                            className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 cursor-pointer"
+                            className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 cursor-pointer"
                             title="Sao chép bảng cho Google Sheets"
                         >
                             {isCopied ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
@@ -408,7 +408,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         <button
                             type="button"
                             onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
-                            className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer"
                             title="Xuất file Excel (.xlsx)"
                         >
                             <Download size={11} />

@@ -42,7 +42,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                                 <h3 className="font-bold text-sm text-slate-800 dark:text-white">
                                     Biểu Thuế Thu Nhập Cá Nhân
                                 </h3>
-                                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
+                                <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
                                     <Sparkles size={10} /> 5 Bậc
                                 </span>
                             </div>
@@ -70,7 +70,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                 <div className="overflow-y-auto p-4 space-y-4">
                     <div className="rounded-xl border border-slate-200/80 dark:border-slate-700/80 overflow-hidden shadow-2xs">
                         <table className="w-full text-left text-xs border-collapse">
-                            <thead className="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                            <thead className="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
                                 <tr>
                                     <th className="py-2.5 px-3 w-12 text-center border-r border-slate-200/70 dark:border-slate-700/70">Bậc</th>
                                     <th className="py-2.5 px-3 border-r border-slate-200/70 dark:border-slate-700/70">Thu Nhập Tính Thuế / Tháng</th>
@@ -103,7 +103,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                                             <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800/60">
                                                 <div>{rangeStr}</div>
                                                 {detailWith && (
-                                                    <div className="text-[10px] text-rose-500 font-mono mt-0.5">
+                                                    <div className="text-[11px] text-rose-500 font-mono mt-0.5">
                                                         Thu nhập tính thuế bậc này: {formatVnd(detailWith.incomeInBracket)} &rarr; Thuế: {formatVnd(detailWith.taxInBracket)}
                                                     </div>
                                                 )}

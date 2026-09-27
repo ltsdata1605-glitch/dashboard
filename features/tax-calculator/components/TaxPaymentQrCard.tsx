@@ -63,7 +63,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                         <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white">
                             Mã QR Chuyển Khoản Nhanh
                         </h4>
-                        <p className="text-[10px] text-slate-400">Quét bằng app ngân hàng</p>
+                        <p className="text-[11px] text-slate-400">Quét bằng app ngân hàng</p>
                     </div>
                 </div>
 
@@ -102,7 +102,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => handleCopy(bankAccount, 'Số tài khoản')}
-                                    className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
+                                    className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
                                 >
                                     {copiedField === 'Số tài khoản' ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
                                     <span>Copy STK</span>
@@ -127,7 +127,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => handleCopy(qrDescription, 'Nội dung CK')}
-                                    className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
+                                    className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
                                 >
                                     {copiedField === 'Nội dung CK' ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
                                     <span>Copy nội dung</span>
@@ -147,7 +147,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                     <div className="p-2.5 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-xl border border-emerald-200/80 dark:border-emerald-800/60 space-y-1.5">
                         <div className="flex items-center justify-between gap-2">
                             <div>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Số tiền cần chuyển:</span>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 block">Số tiền cần chuyển:</span>
                                 <span
                                     data-testid="qr-transfer-amount"
                                     className="font-mono font-black text-sm text-emerald-700 dark:text-emerald-300"
@@ -169,7 +169,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                         {/* Giải thích: đây chính là tiền thuế bạn được nhận lại do nhận thay */}
                         <div className="flex items-start gap-1.5 pt-1.5 border-t border-emerald-200/70 dark:border-emerald-800/50">
                             <Info size={12} className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
-                            <p className="text-[10px] leading-relaxed text-slate-600 dark:text-slate-300">
+                            <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
                                 Đồng nghiệp quét mã này để trả lại phần thuế bạn đã nộp thay
                                 {proxyAmount && proxyAmount > 0 ? (
                                     <> cho khoản nhận thay <span className="font-semibold">{formatVnd(proxyAmount)}</span></>
@@ -196,7 +196,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                     loading="lazy"
                                 />
                             </div>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                 Quét bằng bất kỳ App Ngân hàng nào (VietQR NAPAS247)
                             </p>
                         </div>

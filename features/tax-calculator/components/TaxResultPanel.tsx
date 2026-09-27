@@ -228,7 +228,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <h3 className="font-bold text-sm text-slate-800 dark:text-slate-100">
                   Kết Quả Tính Thuế
                 </h3>
-                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">
+                <span className="text-[11px] font-bold px-1.5 py-0.2 rounded bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">
                   Biểu 5 bậc
                 </span>
               </div>
@@ -290,7 +290,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               ) : name ? (
                 <div className="group/name flex flex-col">
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 leading-none">
+                    <p className="text-[11px] uppercase tracking-wider text-slate-400 leading-none">
                       Phiếu của
                     </p>
                     {!maskIncomeForExport && (onNameChange || onMonthYearChange) && (
@@ -337,7 +337,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                       type="button"
                       onClick={() => setIsEditingName(true)}
                       data-html2canvas-ignore="true"
-                      className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold hover:underline cursor-pointer"
+                      className="min-h-11 sm:min-h-0 text-[11px] text-sky-600 dark:text-sky-400 font-semibold hover:underline cursor-pointer"
                     >
                       (Nhập tên / tháng)
                     </button>
@@ -352,7 +352,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               type="button"
               onClick={() => setHideSensitive(!hideSensitive)}
               title={hideSensitive ? 'Hiện số liệu' : 'Ẩn số tiền'}
-              className="p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700/50 rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer"
+              className="min-h-11 sm:min-h-0 whitespace-nowrap p-1.5 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700/50 rounded-lg text-xs flex items-center gap-1 transition-colors cursor-pointer"
             >
               {hideSensitive ? <EyeOff className="w-3.5 h-3.5 text-amber-500" /> : <Eye className="w-3.5 h-3.5" />}
               <span className="hidden sm:inline">{hideSensitive ? 'Đang ẩn' : 'Bảo mật'}</span>
@@ -363,7 +363,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               onClick={handleExportImage}
               disabled={isExporting}
               title="Xuất bảng tính thành file ảnh PNG"
-              className="px-2 py-1.5 text-xs font-medium bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/50 rounded-lg flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-60"
+              className="min-h-11 sm:min-h-0 whitespace-nowrap px-2 py-1.5 text-xs font-medium bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:text-sky-300 dark:hover:bg-sky-900/50 rounded-lg flex items-center gap-1 transition-colors cursor-pointer disabled:opacity-60"
             >
               {isExporting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600 dark:text-sky-400" />
@@ -380,7 +380,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
           <div className="bg-gradient-to-br from-emerald-500/10 via-sky-500/5 to-transparent dark:from-emerald-950/30 dark:via-sky-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded-xl p-3.5 mb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider bg-emerald-100/90 dark:bg-emerald-900/50 px-1.5 py-0.2 rounded mb-1">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider bg-emerald-100/90 dark:bg-emerald-900/50 px-1.5 py-0.2 rounded mb-1">
                   <CheckCircle2 className="w-3 h-3" />
                   Thuế nhận thay giữ lại
                 </span>
@@ -400,7 +400,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <div className="text-xl font-extrabold text-rose-600 dark:text-rose-400 tracking-tight">
                   {maskValue(formatVnd(netRefundToFriend))}
                 </div>
-                <span className="text-[10px] text-rose-400 dark:text-rose-400/80">
+                <span className="text-[11px] text-rose-400 dark:text-rose-400/80">
                   (Đã khấu trừ thuế phát sinh)
                 </span>
               </div>
@@ -421,7 +421,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider bg-slate-200/80 dark:bg-slate-800 px-1.5 py-0.2 rounded mb-1">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider bg-slate-200/80 dark:bg-slate-800 px-1.5 py-0.2 rounded mb-1">
                   Thuế TNCN cá nhân (Cả kỳ)
                 </span>
                 <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
@@ -440,7 +440,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 <div className="text-lg font-bold text-slate-800 dark:text-slate-100">
                   {maskValue(formatVnd(totalDeductions))}
                 </div>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[11px] text-slate-400">
                   (Bản thân + Người phụ thuộc + BH)
                 </span>
               </div>
@@ -494,7 +494,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
               type="button"
               onClick={onOpenBracketModal}
               data-html2canvas-ignore="true"
-              className="text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+              className="min-h-11 sm:min-h-0 text-xs font-medium text-sky-600 hover:text-sky-700 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
             >
               <span>Biểu thuế</span>
               <ArrowRight className="w-3 h-3" />
@@ -632,7 +632,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
         {/* Ghi chú chỉ xuất hiện trong ảnh: giải thích các dấu chấm thay cho số thu nhập */}
         {maskIncomeForExport && (
-          <div className="mb-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/60 text-[10px] text-slate-500 dark:text-slate-400">
+          <div className="mb-2 px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700/60 text-[11px] text-slate-500 dark:text-slate-400">
             Thông tin thu nhập đã được ẩn khi xuất ảnh.
           </div>
         )}

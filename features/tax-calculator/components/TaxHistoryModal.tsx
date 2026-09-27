@@ -230,7 +230,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                                     }
                                                 }}
                                                 title="Đổi tháng cho toàn bộ bản ghi trong nhóm này"
-                                                className="text-[9px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
+                                                className="text-[11px] font-semibold px-1 py-0.5 rounded bg-sky-50 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800 hover:border-sky-400 cursor-pointer focus:outline-none"
                                             >
                                                 <option value={group.key} disabled>
                                                     Đổi tháng cả nhóm...
@@ -254,7 +254,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                             type="button"
                                             onClick={() => handleExportExcel(group.records, group.label)}
                                             title={`Xuất riêng danh sách ${group.label} ra file Excel`}
-                                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:text-emerald-300 flex items-center gap-1 transition-colors cursor-pointer"
+                                            className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:text-emerald-300 flex items-center gap-1 transition-colors cursor-pointer"
                                         >
                                             <FileSpreadsheet size={11} />
                                             <span>Xuất Excel</span>
@@ -279,7 +279,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                                             onUpdateMonth(rec, e.target.value);
                                                         }}
                                                         title="Bấm để đổi tháng của bản ghi này"
-                                                        className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
+                                                        className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 hover:border-emerald-500 focus:outline-none cursor-pointer shadow-2xs"
                                                     >
                                                         {generateMonthOptions(rec.monthYear).map((m) => (
                                                             <option key={m} value={m}>
@@ -288,11 +288,11 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                                         ))}
                                                     </select>
                                                 ) : rec.monthYear ? (
-                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                                    <span className="text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                                                         {rec.monthYear.includes('/') ? `Tháng ${rec.monthYear}` : rec.monthYear}
                                                     </span>
                                                 ) : null}
-                                                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
+                                                <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">
                                                     {rec.taxLawVersion === '2026_law' ? 'Luật 2026' : 'Biểu thuế cũ'}
                                                 </span>
                                                 {rec.syncedToCloud ? (
@@ -321,7 +321,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                                     {rec.proxyItemsDetail}
                                                 </div>
                                             )}
-                                            <div className="text-[10px] text-slate-400 mt-1">
+                                            <div className="text-[11px] text-slate-400 mt-1">
                                                 {new Date(rec.createdAt).toLocaleString('vi-VN')}
                                             </div>
                                         </div>

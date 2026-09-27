@@ -21,7 +21,7 @@ const Step: React.FC<{ index: number; children: React.ReactNode }> = ({ index, c
 );
 
 const Kbd: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <kbd className="px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 font-mono text-[10px] font-bold text-slate-700 dark:text-slate-200">
+    <kbd className="px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 font-mono text-[11px] font-bold text-slate-700 dark:text-slate-200">
         {children}
     </kbd>
 );

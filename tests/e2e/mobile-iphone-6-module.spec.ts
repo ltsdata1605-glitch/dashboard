@@ -52,10 +52,11 @@ const DO = () => {
 };
 
 /**
- * NGƯỠNG: các module đã dọn xong phải giữ 0 vi phạm. `Tính thuế` đang do phiên khác sửa dở
- * (2026-09-26) nên tạm miễn — khi làm xong module đó thì bỏ khỏi danh sách MIỄN.
+ * NGƯỠNG: cả 6 module phải giữ 0 vi phạm. `Tính thuế` từng được tạm miễn (2026-09-26, lúc đó
+ * phiên khác đang sửa dở) — đã dọn xong 2026-09-27 nên danh sách miễn giờ rỗng. Chỉ thêm tên vào
+ * đây khi có lý do tạm thời, ghi rõ ngày và lý do.
  */
-const MIEN = new Set(['Tính thuế']);
+const MIEN = new Set<string>();
 
 test('6 module: không chữ dưới 11px, không nút dưới 44px, không tràn ngang trên iPhone', async ({ page }) => {
     test.setTimeout(300000);

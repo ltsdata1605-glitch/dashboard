@@ -317,7 +317,7 @@ export const TaxCalculatorView: React.FC = () => {
     }`}>
       {/* HEADER: Gọn gàng & Hiện đại */}
       <div className="bg-white dark:bg-slate-800/90 border-b sm:border border-slate-200 dark:border-slate-700/60 sm:rounded-2xl p-3.5 sm:p-4 mb-3 sm:mb-4 shadow-xs">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-sm">
               <Calculator className="w-4.5 h-4.5" />
@@ -327,7 +327,7 @@ export const TaxCalculatorView: React.FC = () => {
                 <h1 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                   Tính Thuế
                 </h1>
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 px-1.5 py-0.5 rounded-md">
+                <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 px-1.5 py-0.5 rounded-md">
                   <Sparkles className="w-2.5 h-2.5 text-sky-500" />
                   Biểu 5 bậc (2026)
                 </span>
@@ -335,7 +335,7 @@ export const TaxCalculatorView: React.FC = () => {
                 {/* Cloud sync status badge */}
                 <span
                   title={isCloudUser ? 'Đồng bộ Firebase Cloud' : 'Lưu trữ cục bộ'}
-                  className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md border ${
+                  className={`inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-medium px-1.5 py-0.5 rounded-md border ${
                     isCloudUser
                       ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800'
                       : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
@@ -366,7 +366,7 @@ export const TaxCalculatorView: React.FC = () => {
                     { icon: '📸', duration: 6000 }
                   );
                 }}
-                className="px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"
+                className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"
               >
                 <Camera className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                 <span className="hidden sm:inline">Nút Chụp ảnh</span>
@@ -392,7 +392,7 @@ export const TaxCalculatorView: React.FC = () => {
               type="button"
               onClick={() => setShowApiKeyModal(true)}
               title="API Key Gemini dự phòng"
-              className="px-2 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span className="hidden sm:inline">API Key</span>
@@ -401,7 +401,7 @@ export const TaxCalculatorView: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowBracketModal(true)}
-              className="px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              className="min-h-11 sm:min-h-0 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Info className="w-3.5 h-3.5 text-sky-500" />
               <span>Biểu thuế</span>
@@ -410,7 +410,7 @@ export const TaxCalculatorView: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowHistorySidebar((prev) => !prev)}
-              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 relative cursor-pointer ${
+              className={`min-h-11 sm:min-h-0 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 relative cursor-pointer ${
                 showHistorySidebar
                   ? 'bg-indigo-600 text-white shadow-2xs'
                   : 'text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60'
@@ -420,7 +420,7 @@ export const TaxCalculatorView: React.FC = () => {
               <History className={`w-3.5 h-3.5 ${showHistorySidebar ? 'text-white' : 'text-indigo-500'}`} />
               <span>Lịch sử</span>
               {historyList.length > 0 && (
-                <span className={`ml-0.5 px-1.5 py-0.2 text-[10px] font-bold rounded-full ${
+                <span className={`ml-0.5 px-1.5 py-0.2 text-[11px] font-bold rounded-full ${
                   showHistorySidebar ? 'bg-indigo-800 text-white' : 'bg-indigo-500 text-white'
                 }`}>
                   {historyList.length}
