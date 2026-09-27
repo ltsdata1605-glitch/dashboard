@@ -5652,3 +5652,58 @@ chụp ảnh kiểm: bố cục giữ nguyên.
   (cờ mới) mà test vẫn mong "BẬT hết".
 - `lint:ratchet` đỏ vì màu ngoài palette ở `features/line-bot`, `IndustryKpiCard`, `tax-calculator`…
   (kết quả y hệt trước/sau đợt này).
+
+---
+
+# Đợt 3 — Tối ưu iPhone TOÀN DỰ ÁN (bắt đầu 2026-09-27)
+
+## Yêu cầu (chủ dự án)
+Kiểm tra kỹ từng icon, modal, popup, bảng, menu, nút, cỡ chữ, module; dùng hoàn toàn thích hợp trên
+iPhone, không tràn ô, không chèn/lệch chữ. Dự án vừa là web app vừa dùng như mobile app.
+
+## Cách khảo sát
+Bộ đo tạm `tests/e2e/zz-audit-iphone-toan-du-an.spec.ts` (không commit vào bộ test chung): giả lập
+iPhone (cảm ứng, UA Safari iOS, DPR 3), đi 13 màn, tự bấm nút/tab để mở modal/popup/menu con
+(bỏ qua nút phá huỷ), đo ở mỗi trạng thái: chữ <11px, vùng chạm <44px, phần tử tràn khỏi màn,
+chữ bị cắt không có "…", chữ tràn khỏi ô, chữ chồng chữ, modal tràn, trang tràn ngang, cỡ icon.
+Phân tích và Report BI đo thêm lần có dữ liệu giả (nạp ở khung desktop rồi thu về iPhone).
+
+## Kết quả đo TRƯỚC (iPhone 15, 393px)
+| Màn | chữ <11px | chạm <44px | tràn màn hình | khác |
+|---|---|---|---|---|
+| Phân tích (có dữ liệu) | 1 | 1 | 0 | |
+| Report BI (có dữ liệu) | 14 (nhỏ nhất 7.5px) | 38 | 0 | 12 nhãn bị cắt "…", 12 chữ chồng (modal Target Thi đua) |
+| Check thưởng | 0 | 1 (iframe) | 0 | |
+| Báo cáo | 0 | 55 | 0 | |
+| Bot LINE | 61 | 45 | 13 (trang tràn 9px) | 6 chữ chồng (tab Cú pháp, Cấu hình Bot) |
+| In Sticker | 29* | 7 | 25 (thanh công cụ tràn 137px) | *phần lớn là khung xem trước mẫu in — KHÔNG sửa |
+| Phân ca | 5 (9px) | 6 | 0 | |
+| Rút gọn Coupon | 0 | 0 | 0 | |
+| Tính thuế | 0 | 15 (trong modal + nút icon) | 0 | |
+| So sánh giá | 0 | 5 | 0 | |
+| Phân quyền / Duyệt user | 5 | 18–20 | 0 | |
+| Giới thiệu | 0 | 0 | 0 | |
+
+Quét mã: 314 chỗ chữ <11px (nhỏ nhất 5px); 23 class `xs:` VÔ HIỆU (Tailwind v4 của dự án không
+định nghĩa breakpoint `xs`); `Button size="icon"` mất `min-h-11 min-w-11` từ `c9240cdd`;
+`pb-20` (80px) < thanh điều hướng dưới 56px + safe-area 34px → 10px cuối mỗi màn bị che;
+Modal dùng chung: nút đóng 22px, `max-h-[90vh]` (iOS: vh tính cả vùng thanh địa chỉ);
+~5 chức năng chỉ hiện khi hover (xoá lịch sử thuế, xoá thẻ KPI ngành, đổi ảnh đại diện ×3).
+
+## Kế hoạch sửa (theo thứ tự đòn bẩy)
+1. **Dùng chung** — `Button` icon 44px trên mobile (giữ `h-8 w-8` desktop); `Modal` nút đóng 44px,
+   `max-h-[90dvh]`, safe-area cho sheet đáy; `Input`/`Select` `min-h-11 sm:min-h-0`; `App.tsx` chừa
+   đáy = 56px + safe-area; token `--p-text-2xs` 10→11px.
+2. **Sàn chữ 11px toàn dự án** — thay mọi `text-[<11px]` → `text-[11px]`, gom class trùng. NGOẠI LỆ:
+   `IPhoneChatPreview.tsx` (khung mô phỏng điện thoại), khối "Xem thử Sticker Demo" trong
+   `ResultsDisplay.tsx` (sticker thu nhỏ minh hoạ), khung xem trước mẫu in. Xử lý tay: chữ trong lỗ
+   donut, dấu "●" trang trí, huy hiệu đếm số, nhãn trên biểu đồ.
+3. **Từng màn** — theo bảng trên: vùng chạm, tiêu đề dính mép, lưới 2 cột cắt chữ → 1 cột trên
+   mobile, thanh công cụ In Sticker tràn, chữ chồng ở Bot LINE và modal Target Thi đua, chức năng
+   chỉ hiện khi hover → luôn hiện trên cảm ứng.
+4. **Đo lại** cả 2 cỡ (393 và 375 iPhone SE) + ảnh chụp desktop kiểm không vỡ.
+
+Quyết định thiết kế: yêu cầu lần này ("hoàn toàn thích hợp trên iPhone") đè lên phần thu nhỏ chữ
+trên mobile của `c9240cdd`. Cỡ desktop mà commit đó chọn (`h-8 w-8`, lưới 4 cột KPI) GIỮ NGUYÊN.
+Chưa làm: PWA/"Thêm vào Màn hình chính" — đăng nhập Google của Firebase hay hỏng trong chế độ
+standalone của iOS, cần thử trên máy thật trước; để đợt riêng.
