@@ -8,7 +8,9 @@ import * as XLSX from 'xlsx';
 // Node như bản CJS cũ — phải gọi set_fs() tường minh trước khi dùng XLSX.writeFile() trong script
 // Node, nếu không sẽ ném "cannot save file". Chỉ cần cho script test này (chạy trong Node) — code
 // React trong app luôn chạy ở trình duyệt, dùng nhánh Blob/download có sẵn của thư viện, không cần.
-XLSX.set_fs(fs);
+// `set_fs` chỉ có từ xlsx 0.19 — bản 0.18.x (npm registry, dùng khi không tải được bản CDN của
+// package.json) tự dò `fs` như bản CJS cũ nên không cần. Gọi có điều kiện để helper chạy được cả 2.
+if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs);
 
 export const TEST_EMPLOYEE = '195025 - Nguyễn Thị Mỹ Linh';
 const TEST_KHO = '99999';

@@ -219,6 +219,28 @@ for (const m of CHI) {
                 await page.locator('.fixed.inset-0').getByText('Tệp Realtime (Xem nhanh)').first().click({ timeout: 15_000 });
                 await page.getByText(/Doanh Thu/i).first().waitFor({ timeout: 45_000 }).catch(() => {});
                 await page.waitForTimeout(2500);
+                // danh sách nhân viên (nuôi cả Phân tích lẫn tab Nhân viên của Report BI)
+                const dsNv = page.locator('input[type="file"][multiple]').nth(1);
+                if (await dsNv.count()) { await dsNv.setInputFiles('tests/fixtures/danh-sach-nhan-vien-nhieu-bo-phan.xlsx').catch(() => {}); await page.waitForTimeout(3000); }
+            } else if (m.tab === 'tools-tax') {
+                await page.goto('/?tab=tools-tax'); await page.waitForTimeout(2500);
+                await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+                const fs0 = await import('node:fs');
+                for (const [id, f] of [['paste-day5', 'hrm-luong-ngay5.txt'], ['paste-day20', 'hrm-thuong-ngay20.txt']] as const) {
+                    await page.evaluate(t => navigator.clipboard.writeText(t), fs0.readFileSync(`tests/fixtures/${f}`, 'utf8'));
+                    await page.getByTestId(id).click().catch(() => {});
+                    await page.waitForTimeout(1500);
+                }
+            } else if (m.tab === 'tools-phanca') {
+                await page.goto('/?tab=tools-phanca'); await page.waitForTimeout(3000);
+                await page.locator('input[type="file"][accept*="xlsx"]').first().setInputFiles('tests/fixtures/danh-sach-nhan-vien-nhieu-bo-phan.xlsx').catch(() => {});
+                await page.waitForTimeout(3000);
+            } else if (m.tab === 'reports') {
+                await page.goto('/?tab=reports'); await page.waitForTimeout(2500);
+                const tang = page.getByRole('button', { name: /^Tăng / });
+                const n = Math.min(await tang.count(), 12);
+                for (let i = 0; i < n; i++) await tang.nth(i).click().catch(() => {});
+                await page.waitForTimeout(800);
             } else if (m.tab === 'employees') {
                 await page.goto('/?tab=employees'); await page.waitForTimeout(2500);
                 await page.getByRole('button', { name: /Cập nhật/i }).first().click();
