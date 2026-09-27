@@ -122,7 +122,8 @@ export const CheckThuongView: React.FC = () => {
     // Inject parent's custom font into the iframe document
     const injectFontIntoIframe = useCallback((fontValue: string) => {
         const iframeDoc = iframeRef.current?.contentDocument;
-        if (!iframeDoc) return;
+        // iframe đang nạp dở: document tạm chưa có <head> → lần 'load' sau sẽ chèn lại.
+        if (!iframeDoc?.head) return;
 
         let styleEl = iframeDoc.getElementById('injected-global-font');
         if (!styleEl) {
@@ -148,7 +149,7 @@ export const CheckThuongView: React.FC = () => {
             // 1. Copy all parent styles (including Tailwind) to iframe so we don't need Tailwind CDN
             try {
                 const iframeDoc = iframe.contentDocument;
-                if (iframeDoc) {
+                if (iframeDoc?.head) {
                     const parentStyles = document.querySelectorAll('style, link[rel="stylesheet"]');
                     parentStyles.forEach(styleNode => {
                         iframeDoc.head.appendChild(styleNode.cloneNode(true));

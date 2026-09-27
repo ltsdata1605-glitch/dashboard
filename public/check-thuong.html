@@ -2019,7 +2019,7 @@
                                         <col class="col-thuong" style="width: 86px;">
                                     </colgroup>
                                     <thead>
-                                        <tr class="bg-slate-50/90 text-[10.5px] uppercase tracking-wider text-slate-500 font-extrabold border-b border-slate-200 select-none">
+                                        <tr class="bg-slate-50/90 text-[11px] uppercase tracking-wider text-slate-500 font-extrabold border-b border-slate-200 select-none">
                                             <th class="px-2.5 py-1.5 text-center col-nganh-hang">Ngành Hàng</th>
                                             <th class="px-1.5 py-1.5 text-center col-du-kien" style="width: 80px;">% D.Kiến</th>
                                             <th class="px-1.5 py-1.5 text-center col-vuot" style="width: 72px;">D.Kiến Vượt</th>
@@ -2784,7 +2784,7 @@
                     const captureArea = document.getElementById('summaryReportArea');
                     const titleElement = captureArea.querySelector('#summaryCard h2');
                     
-                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                     
                     captureElementAsImage(captureArea, `${storeName}_tong_hop.png`, {
                         onBeforeCapture: () => {
@@ -2858,7 +2858,7 @@
 
                 const exportAnalysisBtn = event.target.closest('#exportAnalysisImageButton');
                 if (exportAnalysisBtn) {
-                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                      captureWithStoreBanner(analysisSection, `${storeName}_phan_tich.png`);
                      return;
                 }
@@ -2957,7 +2957,7 @@
                                 noSale: 'nhom_no_sale'
                             };
                             const friendlyKey = keyNames[groupKey] || groupKey;
-                            const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                            const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                             const filename = `${storeName}_${friendlyKey}.png`;
                             if (groupKey === 'achieved100' || groupKey === 'notAchieved100') {
                                 captureElementAsImage(captureTarget, filename);
@@ -3152,7 +3152,7 @@
                         all: 'tat_ca_nhom'
                     };
                     const friendlyKey = keyNames[activeFilter] || activeFilter;
-                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                     const filename = `${storeName}_${friendlyKey}.png`;
                     const captureTarget = activeFilter === 'all' 
                         ? document.getElementById('detailsGrid') 
@@ -3174,7 +3174,7 @@
                     const exportAllFilteredImages = async () => {
                         const filterContainer = document.getElementById('filterContainer');
                         if (!filterContainer) return;
-                        const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                        const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                         const filtersToExport = [...filterContainer.querySelectorAll('.filter-btn')].map(btn => btn.dataset.filter).filter(f => f && f !== 'all');
                         
                         loadingOverlay.classList.remove('hidden');
