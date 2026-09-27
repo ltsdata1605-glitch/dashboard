@@ -5901,3 +5901,26 @@ trên hệ điều hành mobile iOS" (đã nạp đủ dữ liệu vào tài kho
 - `utils/dataUtils.ts`: hàm thuần `capPixelRatioForArea()`; 2 bộ xuất ảnh dùng khi là thiết bị mobile.
 - `features/bi-dashboard/components/DataUpdater.tsx` (+ SupermarketConfig): chữ hướng dẫn theo thiết bị cảm ứng.
 - Desktop: không đổi hành vi.
+
+## Kết quả (2026-09-27)
+Đã sửa (mỗi mục có test chứng minh ĐỎ với mã cũ, XANH với mã mới):
+- Xuất ảnh iOS: nút "Chia sẻ / Lưu ảnh" khi Safari từ chối share (Phân tích, Report BI, Check thưởng —
+  iframe nhờ trang cha qua postMessage cùng origin); revoke blob trễ 60s; nhận iPad; trần canvas 16 triệu px.
+  Test: `ios-xuat-anh-chia-se.spec.ts`, `ios-report-bi-check-thuong.spec.ts`, unit `ios-xuat-anh.test.ts`.
+- Phân tích treo mãi ở 95% khi không tải được cấu hình ngành hàng (máy mới / iOS xoá dữ liệu 7 ngày +
+  mạng chập chờn) → tự tải lại 1 lần, lỗi thì báo rõ. Test: `phan-tich-mat-mang-cau-hinh.spec.ts`.
+- **Check thưởng không bao giờ lưu được dữ liệu trên máy mới** (lỗi có sẵn, mọi trình duyệt): trang cha
+  mở `keyval-store` v1 không tạo store → DB rỗng vĩnh viễn. Nay tạo store + tự vá DB hỏng (cả trang cha
+  lẫn iframe). Test: `check-thuong-luu-du-lieu.spec.ts` (4 kịch bản).
+- Check thưởng mobile: thanh công cụ hàng riêng (từng đè logo, nút 24px, chữ ô nhập 11px); ẩn nút phiên
+  bản nổi đè bộ lọc; tiêu đề cột 10.5→11px; tên file ảnh bỏ "-_"; hết TypeError chèn phông vào iframe.
+- Report BI: ô dán dự phòng hướng dẫn "chạm giữ → Dán" trên màn cảm ứng; nút HUỶ 44px.
+
+Chưa làm được / cần chủ dự án:
+- Không đăng nhập được lts.data1605@gmail.com từ container → chưa test trên dữ liệu thật của tài khoản.
+- Không có WebKit → chưa chạy trên Safari thật; hành vi Safari được MÔ PHỎNG trong test.
+- Phân tích với dữ liệu: proxy mạng container chặn docs.google.com (403) ở lượt này → không chạy được
+  luồng có dữ liệu (lượt đo trước ở 375/393 đã đạt).
+- `features/sticker-event/services/uiService.ts` có cùng lỗi share iOS — ngoài phạm vi 3 module.
+- `hrmSlipTextParser.ts`/`taxHistoryGrouping.ts` (Tính thuế) dùng regex lookbehind `(?<!` — iOS < 16.4
+  không hỗ trợ, cả chunk Tính thuế sẽ lỗi cú pháp trên iPhone cũ.
