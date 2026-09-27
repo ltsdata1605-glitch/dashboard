@@ -492,15 +492,22 @@
                 const DB_NAME = 'keyval-store';
                 const STORE_NAME = 'keyval';
                 
-                const getIDB = () => {
-                    return new Promise((resolve, reject) => {
-                        const request = indexedDB.open(DB_NAME, 1);
-                        request.onupgradeneeded = () => {
-                            request.result.createObjectStore(STORE_NAME);
-                        };
-                        request.onsuccess = () => resolve(request.result);
-                        request.onerror = () => reject(request.error);
-                    });
+                // Mở KHÔNG ép version: trang cha (services/checkThuongIframeService.ts) có thể đã nâng
+                // version khi tự vá database bị tạo rỗng. Thiếu store 'keyval' thì tự vá tương tự.
+                const openIDB = (version) => new Promise((resolve, reject) => {
+                    const request = version ? indexedDB.open(DB_NAME, version) : indexedDB.open(DB_NAME);
+                    request.onupgradeneeded = () => {
+                        if (!request.result.objectStoreNames.contains(STORE_NAME)) request.result.createObjectStore(STORE_NAME);
+                    };
+                    request.onsuccess = () => { const db = request.result; db.onversionchange = () => db.close(); resolve(db); };
+                    request.onerror = () => reject(request.error);
+                });
+                const getIDB = async () => {
+                    const db = await openIDB();
+                    if (db.objectStoreNames.contains(STORE_NAME)) return db;
+                    const next = db.version + 1;
+                    db.close();
+                    return openIDB(next);
                 };
                 
                 window.idbKeyval = {
