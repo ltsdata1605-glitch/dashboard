@@ -1,4 +1,4 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense } from 'react';
 import { LayoutProvider, useLayout, useActiveTab } from './contexts/LayoutContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
@@ -13,7 +13,6 @@ import {
     Calendar,
     Ticket,
     Calculator,
-    ClipboardCheck,
     Settings,
     HelpCircle,
     Shield,

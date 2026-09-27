@@ -40,9 +40,8 @@
 | `functions/` (Cloud Functions) | 7 | 767 | Project TS riêng |
 | **Tổng mã ứng dụng** | **~379** | **~92.000** | |
 
-Ngoài ra có 2 dự án Node rời nằm trong repo, **không thuộc build Vite** và không có chủ sở hữu rõ
-ràng: `price-scraper-server/` (server scraping giá, `PriceComparisonView.tsx` gọi tới) và
-`telegram-agent/` (bot). Cả hai kéo theo `node_modules` riêng.
+Ngoài ra trước đây có dự án Node rời nằm trong repo, **không thuộc build Vite**:
+`price-scraper-server/` (server scraping giá, `PriceComparisonView.tsx` gọi tới).
 
 ### 1.2 Hiệu năng đo trên dữ liệu thật (dev server, sau khi đã đăng nhập)
 
@@ -262,7 +261,7 @@ thấy đã có xử lý. Hai điểm cần rà: **32 chỗ dùng index làm `ke
 |---|---|---|
 | Gom 4 bản `uiService`/`imageExport` về `services/export/` dùng chung | ~3.200 dòng → ~1.200 | Sửa một lần, hết lệch hành vi xuất ảnh giữa các module |
 | Tách 8 god file (>800 dòng) theo trách nhiệm | 8 file | Đọc/sửa được, giảm rủi ro mỗi lần đụng vào |
-| Quyết định số phận `price-scraper-server/`, `telegram-agent/` | 2 thư mục | Bớt nhầm lẫn, bớt bề mặt tấn công |
+| Quyết định số phận `price-scraper-server/` | 1 thư mục | Bớt nhầm lẫn, bớt bề mặt tấn công |
 | Xoá 3 `console.log`, 9 `catch {}` rỗng, 3 `@ts-ignore` | nhỏ | Không nuốt lỗi |
 | Thay 32 `key={index}` | 32 chỗ | Hết render sai khi sắp xếp |
 
@@ -331,9 +330,7 @@ Phần này là **nâng cấp năng lực**, chỉ nên bắt đầu sau khi ph�
 
 ### Giai đoạn 3 — Chia sẻ & vận hành
 
-- **Xuất báo cáo có lịch**: gửi định kỳ qua Telegram hoặc email. (Cập nhật 2026-09-09: thư mục
-  `telegram-agent/` đã được XOÁ ở Đợt 5 theo quyết định của user — nếu sau này làm mục này thì
-  dựng lại từ đầu, ưu tiên Cloud Functions đã có sẵn thay vì script chạy trên máy cá nhân.)
+- **Xuất báo cáo có lịch**: gửi định kỳ qua email/thông báo.
 - **Nhật ký truy cập dữ liệu**: ai xem gì, khi nào — cần cho dữ liệu doanh thu nhiều siêu thị.
 - **Phân quyền theo cấp**: hiện là admin/manager/employee theo Kho. Doanh nghiệp thật cần thêm cấp
   vùng/miền.

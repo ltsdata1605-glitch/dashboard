@@ -30,7 +30,7 @@ export function canShareFiles(): boolean {
     }
 }
 
-/** Share a blob via Web Share API (LINE, Zalo, Telegram, etc.) */
+/** Share a blob via Web Share API (LINE, Zalo, etc.) */
 export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
     try {
         // Tiêu đề khu vực ảnh được xuất: bỏ đuôi .png, gạch dưới -> khoảng trắng

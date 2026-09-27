@@ -12,7 +12,6 @@ import {
     Sticker,
     Settings,
     HelpCircle,
-    Shield,
     Printer,
     Calendar,
     FileText,

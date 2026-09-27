@@ -310,7 +310,7 @@ export function calculateCompetitionCommentary(
 }
 
 /**
- * Tạo bản tin văn bản Zalo / Telegram rút gọn, tinh tế kèm sticker sinh động để copy nhanh
+ * Tạo bản tin văn bản LINE / Zalo rút gọn, tinh tế kèm sticker sinh động để copy nhanh
  */
 export function generateZaloCommentaryMessage(data: SupermarketCompetitionCommentary): string {
     const fmt = (val: number) => new Intl.NumberFormat('vi-VN').format(Math.ceil(val));

@@ -1,45 +1,42 @@
-# Task Plan: Thẻ KPI các Ngành hàng (Industry & Sub-Industry KPI Cards)
+# Task Plan: Rà soát, dọn dẹp và tối ưu toàn bộ dự án
 
-## 1. Mục tiêu
-Tạo lưới các thẻ KPI cho Ngành hàng & Nhóm hàng trong mục "CHI TIẾT NGÀNH HÀNG":
-- Có nút `+` để người dùng thêm thẻ KPI (cho phép chọn Ngành hàng hoặc Nhóm hàng).
-- Thiết kế thẻ KPI nhỏ gọn, responsive Grid với 6 cột trên 1 hàng (trên màn hình lớn).
-- Danh sách 12 thẻ mặc định:
-  1. Smartphone
-  2. Laptop
-  3. Iphone
-  4. Đồng hồ thời trang
-  5. Sim data
-  6. Pin sạc dự phòng
-  7. Camera
-  8. Tai nghe
-  9. Tủ lạnh, đông, mát
-  10. Tivi
-  11. Máy giặt, sấy
-  12. Máy lạnh & máy nước nóng
-- Cho phép xóa thẻ (nút xóa/remove), khôi phục mặc định.
-- Lưu danh sách thẻ đã chọn vào IndexedDB để bảo toàn cấu hình khi tải lại trang.
+## 1. Mục tiêu & Phạm vi
+Thực hiện 4 nhiệm vụ trọng tâm:
+1. **Xoá file thừa**: Các file rác, file nháp, file backup cũ không dùng, file trùng lặp (ví dụ `bg_phieutgd.png` ở root).
+2. **Xoá code thừa, code cũ**: Các function/component/module chết, imports không còn sử dụng, dead exports.
+3. **Dọn dẹp & tối ưu hiệu năng**: Tối ưu tốc độ tải và chạy, bundle size, loại bỏ re-render thừa, tinh gọn code theo clean-code và react-best-practices.
+4. **Khắc phục triệt để lỗi icon không hiển thị**: Bổ sung đầy đủ các icon còn thiếu vào `ICON_MAP` (`lock`, `calendar-check`, `calendar-x`, `sliders-horizontal`, `line-chart`, `layout`, `grid`, `compass`, v.v.) và cơ chế fallback an toàn, không để xuất hiện ô xám/icon vỡ.
 
-## 2. Kiến trúc & Phân chia Component (Feature-Sliced Design)
-- `features/bi-dashboard/services/industryKpiCalc.ts`:
-  - Trích xuất số liệu cho một thẻ (SL, DT Thực, DTQĐ, %TT, %HT, Trả góp, % Trả góp) từ cây ngành hàng (`IndustryTreeNode[]`) hoặc bảng phẳng.
-  - Chuẩn hoá và đối soát tên (bỏ mã số, case-insensitive, không dấu).
-- `features/bi-dashboard/services/industryKpiCalc.test.ts`:
-  - Unit tests kiểm tra tính chính xác của việc trích xuất số liệu cho cả 12 thẻ mặc định và các ngành/nhóm hàng tùy chọn.
-- `features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiCard.tsx`:
-  - Component hiển thị thẻ KPI nhỏ gọn, sắc sảo.
-- `features/bi-dashboard/components/dashboard/industryKpi/AddIndustryKpiModal.tsx`:
-  - Modal chọn thêm Ngành hàng hoặc Nhóm hàng với ô tìm kiếm tiện lợi.
-- `features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiGrid.tsx`:
-  - Grid 6 cột hiển thị các thẻ KPI kèm nút `+` thêm thẻ và menu tuỳ chỉnh.
-- `features/bi-dashboard/components/dashboard/industryKpi/index.ts`:
-  - Public export API.
-- Tích hợp vào `IndustryView.tsx` phía trên bảng dữ liệu.
+---
 
-## 3. Các bước thực hiện
-- [x] Bước 1: Tạo `industryKpiCalc.ts` và viết unit test `industryKpiCalc.test.ts`.
-- [x] Bước 2: Chạy unit test để kiểm tra logic tính toán dữ liệu thẻ KPI.
-- [x] Bước 3: Tạo `IndustryKpiCard.tsx`, `AddIndustryKpiModal.tsx`, `IndustryKpiGrid.tsx`, và `index.ts`.
-- [x] Bước 4: Tích hợp `IndustryKpiGrid` vào `IndustryView.tsx`.
-- [x] Bước 5: Kiểm tra TypeScript `npx tsc --noEmit` và chạy targeted test suite (44/44 tests passed).
-- [x] Bước 6: Đánh giá visual và báo cáo kết quả kèm timestamp.
+## 2. Kế hoạch từng giai đoạn
+
+### Giai đoạn 1: Rà soát & Khắc phục triệt để lỗi Icon không hiển thị (Mục 4)
+- [x] Đã quét toàn bộ codebase tìm các icon bị thiếu:
+  - `lock` trong `PivotTable.tsx`
+  - `calendar-check`, `calendar-x` trong `HeadToHeadTab.tsx`
+  - `sliders-horizontal` trong `FilterSection.tsx`
+  - `line-chart`, `layout`, `grid`, `compass` trong `HeadToHeadConfigModal.tsx` và `CustomExploitationTabModal.tsx`
+- [x] Bổ sung các icon trên vào `components/common/Icon.tsx` (import tường minh từ `lucide-react` để giữ tree-shaking).
+- [x] Bổ sung cơ chế Fallback Component (HelpCircle) thay cho ô vuông xám `<span className="bg-slate-200">`.
+- [x] Kiểm tra lại tất cả các màn hình có sử dụng icon.
+
+### Giai đoạn 2: Quét và Xoá File thừa (Mục 1)
+- [x] Xoá file ngoài root: `bg_phieutgd.png` (bản sao 51KB ở root, file thật ở `public/frame/bg_phieutgd.png`).
+- [x] Xoá file log thừa: `firestore-debug.log`.
+- [x] Xoá modal chết mồ côi: `features/bi-dashboard/components/dashboard/competition/CompetitionCommentaryModal.tsx` (282 dòng không có caller).
+
+### Giai đoạn 3: Rà soát Code thừa & Code cũ không còn sử dụng (Mục 2)
+- [x] Xoá hằng số chết `SAMPLE_INPUT` (100 dòng text mẫu) trong `utils/couponSampleData.ts`.
+- [x] Xoá import thừa `lazy`, `ClipboardCheck` trong `App.tsx`.
+- [x] Xoá 8 icon import thừa trong `Sidebar.tsx` (`ChevronLeft`, `ChevronRight`, `Search`, `Bell`, `Moon`, `Sun`, `MessageSquare`, `X`).
+- [x] Xoá icon import thừa `Shield` trong `MobileBottomNav.tsx`.
+
+### Giai đoạn 4: Tối ưu hoá hiệu năng & dọn dẹp cấu trúc (Mục 3)
+- [x] Rà soát bundle: giữ nguyên tree-shaking icon map tường minh.
+- [x] Đã kiểm tra và xác nhận 0 `console.log` debug rác còn sót trong source code.
+- [x] Tối ưu hóa bundle và giảm re-render với React.memo cho views/navbars.
+
+### Giai đoạn 5: Kiểm tra xác minh (Verification & Testing)
+- [x] `npm run typecheck` đạt 0 lỗi (Exit code 0).
+- [x] Targeted vitest: 50/50 tests passed (260ms).

@@ -275,7 +275,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40'
                         : 'text-sky-600 hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-slate-800'
                 }`}
-                title={copiedCommentary ? "Đã sao chép nhận xét!" : "Sao chép nhận xét thi đua (Zalo/Telegram)"}
+                title={copiedCommentary ? "Đã sao chép nhận xét!" : "Sao chép nhận xét thi đua (LINE/Zalo)"}
                 aria-label="Sao chép nhận xét thi đua"
             >
                 {copiedCommentary ? (

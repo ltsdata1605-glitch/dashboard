@@ -87,7 +87,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                                 </div>
                                 <div className="text-left">
                                     <p className="font-extrabold text-slate-800 dark:text-white text-[13px]">Chia sẻ trực tiếp</p>
-                                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Gửi qua Zalo, Telegram...</p>
+                                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Gửi qua LINE, Zalo...</p>
                                 </div>
                             </div>
                             <div className="w-6 h-6 rounded-full bg-slate-200/50 dark:bg-slate-700 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 flex items-center justify-center transition-colors">
