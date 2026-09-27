@@ -220,14 +220,14 @@ export const CheckThuongView: React.FC = () => {
     };
 
     const renderSearchBar = (isMobile: boolean) => (
-        <div className={`flex items-center ${isMobile ? 'gap-1' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
+        <div className={`flex items-center ${isMobile ? 'gap-1.5 w-full' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
             {/* CỤM NÚT CHUYỂN TAB: TRA CỨU / TOP THƯỞNG */}
-            <div className="flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs">
+            <div className="flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs shrink-0">
                 <Button
                     variant="unstyled"
                     size="none"
                     onClick={() => setActiveSubTab('search')}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1 px-2.5 py-1 ${isMobile ? 'min-h-11' : ''} rounded-full text-xs font-bold transition-all ${
                         activeSubTab === 'search'
                             ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
@@ -247,7 +247,7 @@ export const CheckThuongView: React.FC = () => {
                             iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA' }, '*');
                         }
                     }}
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1 px-2.5 py-1 ${isMobile ? 'min-h-11' : ''} rounded-full text-xs font-bold transition-all ${
                         activeSubTab === 'leaderboard'
                             ? 'bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 shadow-xs font-black'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
@@ -262,30 +262,30 @@ export const CheckThuongView: React.FC = () => {
             {/* CỤM Ô NHẬP MÃ KHO (KHI Ở TAB TRA CỨU) */}
             {activeSubTab === 'search' && (
                 <>
-                    <div className={isMobile ? 'flex items-center gap-1' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                    <div className={isMobile ? 'flex items-center gap-1 flex-1 min-w-0' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
                         <input
                             type="text"
                             placeholder="Kho 1"
-                            className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-20 px-2.5 py-1 text-xs text-center'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                            className={`${isMobile ? 'w-0 flex-1 min-w-0 h-11 px-2 text-sm text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full' : 'w-20 px-2.5 py-1 text-xs text-center'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
                             value={codes.code1}
                             onChange={(e) => handleCodeChange('code1', e.target.value)}
                         />
                         <input
                             type="text"
                             placeholder="Kho 2"
-                            className={`${isMobile ? 'w-14 px-2 py-1 text-[11px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full shadow-sm' : 'w-20 px-2.5 py-1 text-xs text-center border-l border-slate-100 dark:border-slate-700'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                            className={`${isMobile ? 'w-0 flex-1 min-w-0 h-11 px-2 text-sm text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full' : 'w-20 px-2.5 py-1 text-xs text-center border-l border-slate-100 dark:border-slate-700'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
                             value={codes.code2}
                             onChange={(e) => handleCodeChange('code2', e.target.value)}
                         />
                     </div>
-                    <div className={isMobile ? 'flex items-center gap-0.5' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                    <div className={isMobile ? 'flex items-center gap-1 shrink-0' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => {
                                 setCodes(prev => ({ ...prev, code2: '' }));
                                 iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
                             }}
-                            className={`${isMobile ? 'w-6 h-6 rounded-full' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
+                            className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
                             title="Xoá mã kho đang so sánh"
                         >
                             <Icon name="rotate-ccw" size={3} />
@@ -293,7 +293,7 @@ export const CheckThuongView: React.FC = () => {
                         <Button
                             variant="unstyled" size="none"
                             onClick={handleChangeFile}
-                            className={`${isMobile ? 'w-6 h-6 rounded-full ml-0.5' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
+                            className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
                             title="Tải file khác"
                         >
                             <Icon name="upload" size={3} />
@@ -304,11 +304,11 @@ export const CheckThuongView: React.FC = () => {
 
             {/* KHI Ở TAB TOP THƯỞNG: NÚT ĐỔI FILE */}
             {activeSubTab === 'leaderboard' && (
-                <div className={isMobile ? 'flex items-center' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                <div className={isMobile ? 'flex items-center ml-auto' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
                     <Button
                         variant="unstyled" size="none"
                         onClick={handleChangeFile}
-                        className={`${isMobile ? 'px-2 py-1 rounded-full' : 'px-2.5 py-1'} flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-xs font-bold`}
+                        className={`${isMobile ? 'min-h-11 px-3 rounded-full' : 'px-2.5 py-1'} flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-xs font-bold`}
                         title="Tải file khác"
                     >
                         <Icon name="upload" size={3} />
@@ -325,9 +325,13 @@ export const CheckThuongView: React.FC = () => {
                 renderSearchBar(false),
                 document.getElementById('global-header-actions')!
             )}
-            {mounted && activeTab === 'check-thuong' && hasData && document.getElementById('mobile-topbar-actions') && createPortal(
-                renderSearchBar(true),
-                document.getElementById('mobile-topbar-actions')!
+            {/* Mobile: thanh công cụ nằm HÀNG RIÊNG dưới thanh trên cùng. Trước đây portal vào
+                #mobile-topbar-actions — ở iPhone (390px) cụm Tra cứu/Top thưởng + 2 ô Kho + 2 nút rộng
+                hơn chỗ trống nên đè lên logo, nút chỉ 24px, chữ ô nhập 11px. */}
+            {hasData && (
+                <div className="lg:hidden shrink-0 px-3 py-1 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                    {renderSearchBar(true)}
+                </div>
             )}
 
             {/* TAB 1: GIAO DIỆN TRA CỨU & SO SÁNH (IFRAME) */}
