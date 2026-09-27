@@ -3,6 +3,7 @@ import { db, auth } from './firebase';
 import { getSetting, touchLastModified } from './dbService';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
+import { parseKhoList } from '../utils/dataUtils';
 
 // Nhóm ngành hàng "groups" của productConfig có thể ở dạng Set (runtime) hoặc string[] (đã phục hồi từ JSON)
 type ProductConfigGroups = Record<string, Set<string> | string[]>;
@@ -611,12 +612,13 @@ export const purgeAllUserCloudData = async (uid: string): Promise<void> => {
 };
 
 /**
- * Xoá các báo cáo Report BI dùng chung của kho (biData) nếu người dùng có mã kho.
+ * Xoá các báo cáo Report BI dùng chung (biData) của ĐÚNG các Kho được truyền vào. Nhận danh sách
+ * tường minh (không tự tách departmentId) để người gọi quyết định Kho nào được phép xoá — xem
+ * resetAllDataAsNewUser. Vẫn lọc nhãn "ALL (Super Admin)" phòng thủ (không phải Kho thật).
  */
-export const purgeUserBiDataReports = async (departmentId?: string): Promise<void> => {
-    if (!departmentId) return;
+export const purgeUserBiDataReports = async (khoList: string[]): Promise<void> => {
     const { doc: firestoreDoc, deleteDoc } = await import('firebase/firestore');
-    const khos = String(departmentId).split(',').map(k => k.trim()).filter(Boolean);
+    const khos = parseKhoList(khoList.join(','));
     for (const kho of khos) {
         try {
             await deleteDoc(firestoreDoc(db, 'biData', kho, 'reports', 'summaryLuyKe'));

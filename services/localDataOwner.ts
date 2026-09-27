@@ -152,7 +152,15 @@ export const clearAllLocalAppData = async (): Promise<void> => {
  * Xoá sạch toàn bộ dữ liệu trên thiết bị và cloud để đưa người dùng về trạng thái như mới hoàn toàn.
  * Giữ lại phiên đăng nhập tài khoản.
  */
-export const resetAllDataAsNewUser = async (user?: any): Promise<void> => {
+export const resetAllDataAsNewUser = async (
+    user?: any,
+    opts?: {
+        /** Kho bị xoá kèm báo cáo Luỹ kế & Thi đua DÙNG CHUNG (biData). Rỗng = không xoá gì dùng chung.
+         *  Người gọi quyết định (SettingsAccountTab: chỉ quản lý, chỉ Kho của họ). Trước 2026-09-27
+         *  hàm tự đọc `user.departmentId` — Firebase `User` không có field đó nên nhánh này chết. */
+        khoXoaBaoCaoChung?: string[];
+    },
+): Promise<void> => {
     // 0. Chặn toàn bộ tiến trình đồng bộ ngầm hoặc ghi đè từ Cloud Sync / DB hooks
     if (typeof window !== 'undefined') {
         (window as any).__ycx_is_resetting_all_data = true;
@@ -163,8 +171,8 @@ export const resetAllDataAsNewUser = async (user?: any): Promise<void> => {
         try {
             const { purgeAllUserCloudData, purgeUserBiDataReports } = await import('./firestoreService');
             await purgeAllUserCloudData(user.uid);
-            if (user.departmentId) {
-                await purgeUserBiDataReports(user.departmentId);
+            if (opts?.khoXoaBaoCaoChung?.length) {
+                await purgeUserBiDataReports(opts.khoXoaBaoCaoChung);
             }
         } catch (e) {
             console.warn('[resetAllDataAsNewUser] Lỗi khi xoá dữ liệu cloud Firestore:', e);

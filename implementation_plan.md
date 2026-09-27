@@ -5839,3 +5839,18 @@ này) → nhánh xoá `biData` không bao giờ chạy. Tính năng CÓ CHỦ Đ
 cảnh báo đỏ). Sửa: truyền danh sách Kho tường minh — CHỈ quản lý, CHỈ đúng Kho của họ; admin/Super
 Admin KHÔNG BAO GIỜ xoá báo cáo dùng chung (Kho gắn thêm như 910 là Kho dùng chung, không phải Kho
 của mình). Hộp xác nhận nói đúng theo vai trò.
+
+## Đã sửa (2026-09-27)
+- Lỗi 1: `SettingsAccountTab` — quản lý đổi Kho → `requestAccess('manager', …)` sau ConfirmDialog; Kho
+  không đổi thì không gửi; banner trong form nói đúng "tạm khoá quyền Quản lý cho đến khi Admin duyệt".
+- Lỗi đi kèm: `UserManagementView` — yêu cầu chờ duyệt mặc định vai trò = `requestedRole`; bấm Duyệt
+  khi vai trò vẫn là "Chờ duyệt" → báo lỗi, không gửi.
+- Lỗi 2: `resetAllDataAsNewUser(user, { khoXoaBaoCaoChung })` — người gọi truyền Kho tường minh
+  (chỉ quản lý, chỉ Kho của họ; admin/Super Admin = []); `purgeUserBiDataReports(khoList)` nhận danh
+  sách + lọc nhãn "ALL…"; hộp xác nhận nói đúng theo vai trò (admin: "được giữ nguyên").
+- Test: `tests/unit/reset-du-lieu-bao-cao-chung.test.ts` (3 — chạy hàm THẬT, mock Firestore; 2/3 đỏ
+  với mã cũ); `tests/e2e/super-admin-kho-dung-chung.spec.ts` +4 (quản lý gửi yêu cầu có xác nhận; hộp
+  xoá của quản lý vs Super Admin; màn duyệt mặc định "Quản Lý" — ĐÃ CHỨNG MINH đỏ với mã cũ:
+  Expected "manager", Received "pending").
+- Lưu ý hành vi MỚI có chủ đích: quản lý bấm "Xoá tất cả dữ liệu" giờ THẬT SỰ xoá báo cáo Luỹ kế &
+  Thi đua dùng chung của Kho mình — đúng như hộp xác nhận (commit 152830fd) vẫn cảnh báo đỏ từ trước.

@@ -5,6 +5,7 @@ import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import UserManagementView from '../UserManagementView';
 import { formatCleanDisplayName, parseKhoList } from '../../../utils/dataUtils';
 
@@ -29,12 +30,19 @@ export const SettingsAccountTab: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
+    const [isConfirmDoiKhoOpen, setIsConfirmDoiKhoOpen] = useState(false);
+
+    // "Xoá tất cả dữ liệu" xoá kèm báo cáo Luỹ kế & Thi đua DÙNG CHUNG của Kho — CHỈ khi là quản lý,
+    // CHỈ đúng Kho của họ. Admin / Super Admin KHÔNG BAO GIỜ xoá: Kho gắn thêm của Super Admin (vd 910)
+    // là Kho dùng chung với người khác, không phải Kho của mình. (Trước 2026-09-27 nhánh này không
+    // bao giờ chạy — xem implementation_plan.md "Sửa 2 lỗi có sẵn ở Hồ sơ Định danh".)
+    const khoXoaBaoCaoChung = userRole === 'manager' ? parseKhoList(departmentId) : [];
 
     const handleConfirmResetData = async () => {
         try {
             setIsResetting(true);
             const { resetAllDataAsNewUser } = await import('../../../services/localDataOwner');
-            await resetAllDataAsNewUser(user);
+            await resetAllDataAsNewUser(user, { khoXoaBaoCaoChung });
             toast.success("Đã xoá toàn bộ dữ liệu! Đang tải lại ứng dụng...", { duration: 3000 });
             setIsResetModalOpen(false);
             setTimeout(() => {
@@ -64,6 +72,22 @@ export const SettingsAccountTab: React.FC = () => {
         if (deptErr) return;
         if (userRole === 'employee' && !stagedEmployee.trim()) return toast.error("Tên nhân viên không được bỏ trống");
 
+        if (userRole === 'manager') {
+            // Quản lý KHÔNG tự đổi Kho ngay được (tự cấp quyền xem dữ liệu siêu thị khác) — đổi Kho là
+            // gửi yêu cầu để Admin duyệt lại, tài khoản tạm khoá quyền trong lúc chờ → hỏi trước.
+            const sapXep = (d: string | null | undefined) => parseKhoList(d).sort().join(',');
+            if (sapXep(stagedDept) === sapXep(departmentId)) {
+                setIsEditingProfile(false);
+                toast('Mã Kho không thay đổi.');
+                return;
+            }
+            setIsConfirmDoiKhoOpen(true);
+            return;
+        }
+        await luuHoSo();
+    };
+
+    const luuHoSo = async () => {
         try {
             setIsSaving(true);
             if (userRole === 'admin') {
@@ -79,14 +103,11 @@ export const SettingsAccountTab: React.FC = () => {
                     ? `Đã gắn Kho dùng chung: ${khos.join(', ')}`
                     : 'Đã bỏ Kho dùng chung — chỉ còn quyền Super Admin');
             } else if (userRole === 'manager') {
-                const { doc, updateDoc } = await import('firebase/firestore');
-                const { db } = await import('../../../services/firebase');
-                const userRef = doc(db, 'users', user!.uid);
-                await updateDoc(userRef, {
-                    departmentId: stagedDept,
-                    employeeName: stagedEmployee || ''
-                });
-                toast.success("Cấu hình Kho đã được Cập Nhật Thành Công!");
+                // Trước đây ghi thẳng departmentId bằng updateDoc: field bảo vệ nên Firestore Rules
+                // từ chối, nhưng giao diện vẫn báo "thành công". Đi đúng luồng hợp lệ như nhân viên.
+                await requestAccess('manager', parseKhoList(stagedDept).join(','), employeeName || '');
+                setIsConfirmDoiKhoOpen(false);
+                toast.success("Đã gửi yêu cầu đổi Mã Kho — chờ Admin duyệt.");
             } else {
                 await requestAccess(
                     'employee',
@@ -273,15 +294,17 @@ export const SettingsAccountTab: React.FC = () => {
                                 </div>
                             )}
                             <div className={`md:col-span-2 text-xs font-bold px-4 py-2 flex items-center gap-2 rounded-md ${
-                                userRole === 'manager' || userRole === 'admin'
+                                userRole === 'admin'
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
                             }`}>
-                                <Icon name={userRole === 'manager' || userRole === 'admin' ? 'check-circle' : 'alert-triangle'} size={4} />
+                                <Icon name={userRole === 'admin' ? 'check-circle' : 'alert-triangle'} size={4} />
                                 {isSuperAdmin
                                     ? 'Áp dụng ngay: đọc/ghi được dữ liệu dùng chung (Phân tích, Report BI) của các Kho này — vẫn giữ toàn quyền Super Admin'
-                                    : userRole === 'manager' || userRole === 'admin'
+                                    : userRole === 'admin'
                                     ? 'Áp dụng ngay lập tức không cần duyệt'
+                                    : userRole === 'manager'
+                                    ? 'Gửi yêu cầu đổi Kho — tạm khoá quyền Quản lý cho đến khi Admin duyệt'
                                     : 'Gửi yêu cầu, tạm khóa quyền cho đến duyệt'}
                             </div>
                         </div>
@@ -324,6 +347,20 @@ export const SettingsAccountTab: React.FC = () => {
                 document.getElementById('mobile-topbar-actions')!
             )}
 
+            <ConfirmDialog
+                isOpen={isConfirmDoiKhoOpen}
+                onClose={() => setIsConfirmDoiKhoOpen(false)}
+                onConfirm={luuHoSo}
+                isLoading={isSaving}
+                variant="warning"
+                title="Gửi yêu cầu đổi Mã Kho?"
+                confirmText="Gửi yêu cầu"
+                message={<>
+                    Đổi sang Kho <strong>{parseKhoList(stagedDept).join(', ')}</strong> cần <strong>Admin duyệt lại</strong>.
+                    Trong lúc chờ, tài khoản <strong>tạm khoá quyền Quản lý</strong> (không xem được dữ liệu).
+                </>}
+            />
+
             {/* Modal xác nhận xoá toàn bộ dữ liệu như người dùng mới */}
             {isResetModalOpen && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
@@ -343,7 +380,12 @@ export const SettingsAccountTab: React.FC = () => {
                                 Hành động này sẽ <strong>xoá sạch toàn bộ dữ liệu cục bộ</strong> đã lưu trên thiết bị (Doanh thu, Phân ca, Báo cáo khai thác, Lịch sử tính thuế, Cấu hình siêu thị, Dữ liệu tạm...).
                             </p>
                             <p>
-                                Và <strong>xoá luôn trên cloud</strong>: dữ liệu riêng của tài khoản bạn, <strong className="text-rose-600 dark:text-rose-400">kèm báo cáo Luỹ kế &amp; Thi đua dùng chung của siêu thị{departmentId ? ` ${departmentId}` : ''}</strong> — mọi người cùng Kho sẽ mất các báo cáo đó và <strong>không khôi phục lại được</strong>.
+                                Và <strong>xoá luôn trên cloud</strong>: dữ liệu riêng của tài khoản bạn
+                                {khoXoaBaoCaoChung.length > 0 ? (
+                                    <>, <strong className="text-rose-600 dark:text-rose-400">kèm báo cáo Luỹ kế &amp; Thi đua dùng chung của Kho {khoXoaBaoCaoChung.join(', ')}</strong> — mọi người cùng Kho sẽ mất các báo cáo đó và <strong>không khôi phục lại được</strong>.</>
+                                ) : (
+                                    <>. Báo cáo dùng chung của các Kho <strong>được giữ nguyên</strong>{userRole === 'admin' ? ' (tài khoản Admin không xoá dữ liệu dùng chung của Kho)' : ''}.</>
+                                )}
                             </p>
                             <p className="text-slate-500 dark:text-slate-400">
                                 Ứng dụng sẽ trở về trạng thái ban đầu như một <strong>người dùng mới hoàn toàn</strong>. Tài khoản đăng nhập của bạn vẫn được giữ nguyên.

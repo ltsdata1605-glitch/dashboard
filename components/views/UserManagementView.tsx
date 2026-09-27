@@ -402,7 +402,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 }
                 newDept[docData.id] = docData.departmentId || '';
                 newNames[docData.id] = docData.employeeName || '';
-                newRoles[docData.id] = docData.role || docData.requestedRole || 'pending';
+                // Yêu cầu chờ duyệt: role đang là 'pending' (requestAccess hạ xuống) → mặc định ô vai trò
+                // = vai trò người đó XIN. Trước đây lấy role trước nên ô hiện "Chờ duyệt", bấm Duyệt là
+                // gửi role 'pending' + status 'approved' — "được duyệt" mà vẫn không có quyền (vd quản
+                // lý gửi yêu cầu đổi Kho bị khoá luôn).
+                newRoles[docData.id] = (docData.role && docData.role !== 'pending' ? docData.role : docData.requestedRole) || 'pending';
             });
 
             setExpiryDates(newExpiry);
@@ -522,6 +526,13 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             setActionLoadingId(requestId);
             if (isApproved) {
                 const targetRole = (editRoles[requestId] as AdminRole | undefined) || 'employee';
+                if ((targetRole as string) === 'pending') {
+                    // "Duyệt" mà vai trò vẫn là "Chờ duyệt" = gửi role pending + status approved:
+                    // người dùng được duyệt nhưng vẫn không có quyền gì. Bắt chọn vai trò trước.
+                    toast.error('Chọn vai trò (Nhân Viên / Quản Lý / Admin) trước khi bấm Duyệt.');
+                    setActionLoadingId(null);
+                    return;
+                }
 
                 let expiresAtIso: string | null = null;
                 if (customExpiresAt !== undefined) {
