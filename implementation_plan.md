@@ -5707,3 +5707,40 @@ Quyết định thiết kế: yêu cầu lần này ("hoàn toàn thích hợp t
 trên mobile của `c9240cdd`. Cỡ desktop mà commit đó chọn (`h-8 w-8`, lưới 4 cột KPI) GIỮ NGUYÊN.
 Chưa làm: PWA/"Thêm vào Màn hình chính" — đăng nhập Google của Firebase hay hỏng trong chế độ
 standalone của iOS, cần thử trên máy thật trước; để đợt riêng.
+
+## Kết quả đợt 3 (2026-09-27)
+
+### Đo SAU (bộ đo tự động, iPhone 15 393px + iPhone SE 375px, có/không dữ liệu giả)
+| Màn | chữ <11px | chạm <44px | tràn ngang trang |
+|---|---|---|---|
+| Phân tích, Check thưởng, Phân ca, Coupon, So sánh giá, Giới thiệu | 0 | 0 | không |
+| Report BI (có dữ liệu) | 0 | xem ghi chú ① | không |
+| Báo cáo | 0 | 0 (nút −/+ giữ 28×32, vùng chạm vô hình 44×44) | không |
+| Bot LINE | 0 (*) | 0 | không (trước: 7–9px; iPhone SE 8px) |
+| In Sticker | 0 (*) | 0 | không (trước: **140px**, chuông thông báo nằm ngoài màn) |
+| Tính thuế, Phân quyền, Duyệt user | 0 | 0 | không |
+
+(*) trừ ngoại lệ có chủ đích: khung mô phỏng iPhone của Bot LINE, trang xem trước mẫu in sticker.
+"Chữ rút gọn (…)" còn lại đều là tên/email dài có `title` đầy đủ, hoặc "Bảo hiểm Khác (Tr)" ở Báo
+cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
+
+### Bài học kỹ thuật (đọc trước khi sửa giao diện mobile)
+- **`table-fixed` bỏ qua `minWidth` của cột** → cột không có `width` bị bóp → chữ đè cột bên cạnh.
+  `DataTable` giờ tự đặt `min-width` bảng = tổng độ rộng cột.
+- **Vùng chạm vô hình bằng `::after` bị CẮT nếu tổ tiên có `overflow` khác `visible`** — kể cả
+  `overflow-x-auto` (kéo theo `overflow-y:auto`) và `truncate`. Phần tử `truncate` → dùng
+  `py-3.5 -my-3.5` thay vì `::after`. Luôn kiểm chứng bằng `elementFromPoint`, không chỉ đo kích thước.
+- **`styles.css` bật `scroll-behavior: smooth`** → `scrollIntoView()` trong test là KHÔNG đồng bộ;
+  dùng `behavior: 'instant'` rồi mới đo.
+- **`xs:` không tồn tại** trong Tailwind v4 của dự án (không khai `--breakpoint-xs`). `hidden xs:inline`
+  = ẩn vĩnh viễn: chữ "Quét" ở `sticker-event/SearchBar.tsx`, một huy hiệu ở `TaxInputPanel.tsx:939`
+  CHƯA TỪNG hiện — giữ nguyên hành vi, cần chủ dự án quyết có cho hiện không.
+- `leading-none` chỉ dùng cho chữ 1 dòng — chữ gãy 2 dòng sẽ dính chồng (đã gặp ở 4 tab Nhân viên).
+- `shrink-0` trên thanh cuộn ngang = thanh không bao giờ co → tràn trang ở máy hẹp (Bot LINE @375).
+
+### Tồn đọng (không thuộc đợt này)
+- `tests/e2e/helpers/seed.ts → pasteIntoTile()` lỗi thời (ô dán giờ đọc clipboard, không mở textarea)
+  → `bi-competition*.spec.ts` đỏ **cả trên bản trước khi sửa**. Cách sửa: ghi clipboard rồi bấm `h4`
+  (xem hàm `dan()` trong bộ đo `zz-audit-iphone-toan-du-an.spec.ts`).
+- `tests/unit/line-bot-group-features.test.ts` đỏ sẵn (cờ `pmhRelay` mới).
+- PWA / "Thêm vào Màn hình chính": chưa làm (rủi ro đăng nhập Google trong chế độ standalone iOS).

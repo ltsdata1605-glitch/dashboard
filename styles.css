@@ -267,11 +267,20 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Reduce Recharts label size */
+  /* Chữ trên biểu đồ (Recharts) trên mobile — trước ép 9px, dưới sàn 11px (CLAUDE.md mục 2);
+     màn siêu thị/điện thoại đọc không nổi. */
   .recharts-label,
   .recharts-text {
-    font-size: 9px !important;
+    font-size: 11px !important;
   }
+}
+
+/* Modal đang mở → hạ thanh trên + thanh điều hướng dưới của mobile xuống DƯỚI lớp modal.
+   Hai thanh là z-[100] / z-[190], modal dùng chung + modal tự dựng là z-50/z-60 → trước đây thanh
+   ĐÈ lên đầu và chân modal cao (đo trên iPhone SE: nút "Tiếp theo" của Hướng dẫn Bot LINE bị cắt).
+   Không nâng z-index modal vì các menu thả xuống portal ra body (z thấp) sẽ chìm dưới modal. */
+body:has([data-modal-overlay]) .mobile-chrome {
+  z-index: 0 !important;
 }
 
 /* iOS rubber-band scroll fix */

@@ -442,7 +442,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-0.5"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-0.5 after:absolute after:-inset-3.5 after:content-[''] sm:after:hidden"
                             >
                                 ✕
                             </button>
@@ -450,7 +450,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     </div>
 
                     {/* Quick Segmented Tabs Lọc Trạng Thái Nhanh (Vuốt ngang mượt mà trên iPhone, không dùng select xấu) */}
-                    <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-lg border border-slate-200/70 dark:border-slate-700/70 shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
+                    <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-lg border border-slate-200/70 dark:border-slate-700/70 min-w-0 max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
                         <button
                             type="button"
                             onClick={() => setStatusFilter('ALL')}
@@ -745,7 +745,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
             {/* Modal xác nhận xoá toàn bộ kho mã */}
             {isConfirmDeleteAllOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+                <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
                     <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-in zoom-in-95 duration-150">
                         <div className="flex items-center gap-3.5 text-rose-600 dark:text-rose-400">
                             <div className="p-3 bg-rose-100 dark:bg-rose-950/60 rounded-2xl shrink-0">

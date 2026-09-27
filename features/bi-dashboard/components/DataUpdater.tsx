@@ -802,7 +802,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             <Button
                                                 variant="unstyled" size="none"
                                                 onClick={() => setActiveSupermarket(sm)}
-                                                className={`shrink-0 pl-3 pr-2 py-1.5 rounded-md text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
+                                                className={`min-h-11 sm:min-h-0 shrink-0 pl-3 pr-2 py-1.5 rounded-md text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
                                                     activeSupermarket === sm
                                                         ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
                                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
@@ -836,7 +836,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => setIsAddingSupermarket(true)}
-                                    className="shrink-0 px-3 py-1.5 rounded-md text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1 transition-all"
+                                    className="min-h-11 sm:min-h-0 shrink-0 px-3 py-1.5 rounded-md text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1 transition-all"
                                     title="Thêm siêu thị mới để cấu hình và dán dữ liệu"
                                 >
                                     <PlusIcon className="w-3.5 h-3.5" />

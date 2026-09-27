@@ -43,16 +43,16 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
     if (!mounted || activeTab !== 'tools-print-sticker' || !portalTarget) return null;
 
     // Lớp cuộn ngang TRONG SUỐT (iPhone): thanh 4 chế độ + chỉnh cỡ chữ rộng ~470px, thanh trên
-    // chỉ còn ~250px. overflow-x:auto kéo theo overflow-y:auto nên py-2.5 -my-2.5 chừa chỗ cho
-    // vùng chạm ::after của các nút (nới dọc 10px) khỏi bị cắt, mà không làm thanh cao thêm.
+    // chỉ còn ~250px → phần dư vuốt ngang trong lớp này thay vì đẩy cả trang tràn ngang 140px.
+    // Các nút là <Button> dùng chung nên đã tự cao 44px trên mobile (min-h-11), không cần nới thêm.
     return createPortal(
-        <div className="max-w-[calc(100vw-140px)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden py-2.5 -my-2.5 lg:max-w-none lg:overflow-visible lg:py-0 lg:my-0">
+        <div className="max-w-[calc(100vw-140px)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:max-w-none lg:overflow-visible">
         <div className="flex items-center gap-0.5 lg:gap-1 bg-white/60 dark:bg-slate-900/60 p-1 lg:p-1.5 rounded-full w-max lg:w-auto border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">
             <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-0.5 lg:p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
                 <Button
                     variant="ghost"
                     onClick={onSelectGiaSoc}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] lg:after:hidden text-[11px] lg:text-[13px] transition-all ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
                         stickerMode === 'sticker' && stickerType === 'gia_soc'
                             ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -64,7 +64,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                 <Button
                     variant="ghost"
                     onClick={onSelectGioVang}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] lg:after:hidden text-[11px] lg:text-[13px] transition-all ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
                         stickerMode === 'sticker' && stickerType === 'gio_vang'
                             ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -76,7 +76,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                 <Button
                     variant="ghost"
                     onClick={onSelectDraw}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] lg:after:hidden text-[11px] lg:text-[13px] transition-all ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
                         stickerMode === 'sticker' && stickerType === 'draw'
                             ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -88,7 +88,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                 <Button
                     variant="ghost"
                     onClick={onSelectEvent}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap relative after:absolute after:-inset-y-2.5 after:inset-x-0 after:content-[''] lg:after:hidden text-[11px] lg:text-[13px] transition-all ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
                         stickerMode === 'event'
                             ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -109,7 +109,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                             variant="ghost"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onDecreaseFontSize}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] lg:after:hidden hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
                             title="Giảm size"
                         >
                             -
@@ -121,7 +121,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                             variant="ghost"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onIncreaseFontSize}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] lg:after:hidden hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
                             title="Tăng size"
                         >
                             +

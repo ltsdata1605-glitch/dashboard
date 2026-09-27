@@ -383,7 +383,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                     <Button
                         variant="unstyled" size="none"
                         onClick={requestUploadYcx}
-                        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors"
+                        className="min-h-11 sm:min-h-0 shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors"
                         title="Mở hộp chọn file YCX (giống nút File YCX ở chức năng Phân Tích)"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
@@ -417,7 +417,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     closeConfirm();
                                 }
                             });
-                        }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                        }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                             <ResetIcon className="h-4 w-4" />
                         </Button>
                     </div>
@@ -452,10 +452,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                         closeConfirm();
                                     }
                                 });
-                            }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                            }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                                 <ResetIcon className="h-4 w-4" />
                             </Button>
-                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Chỉnh sửa bộ phận">
+                            <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Chỉnh sửa bộ phận">
                                 <PencilIcon className="h-4 w-4" />
                             </Button>
                         </div>

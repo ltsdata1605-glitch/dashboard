@@ -213,7 +213,7 @@ const GroupCombobox: React.FC<{
                         if (!isOpen) updatePosition();
                         setIsOpen(prev => !prev);
                     }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded after:absolute after:-inset-[11px] after:content-[''] sm:after:hidden"
                     title="Xem tất cả các nhóm có sẵn"
                 >
                     <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-sky-600' : ''}`} viewBox="0 0 20 20" fill="currentColor">
@@ -296,7 +296,7 @@ const GroupCombobox: React.FC<{
                                                     onDeleteGroup(group);
                                                     if (value === group) { onChange(''); onCommit?.(''); }
                                                 }}
-                                                className="p-0.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded transition-colors"
+                                                className="p-4 -m-3.5 sm:p-0.5 sm:m-0 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded transition-colors"
                                                 title={`Xoá nhóm "${group}" khỏi danh sách`}
                                             >
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -696,7 +696,7 @@ const CompetitionTarget: React.FC<{
                                 closeConfirm();
                             }
                         });
-                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Reset">
+                    }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Reset">
                         <ResetIcon className="h-4 w-4" />
                     </Button>
                 </div>
@@ -1184,7 +1184,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     return (
         <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-700/60 mb-2 overflow-x-auto scrollbar-hide">
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-slate-200 dark:border-slate-700/60 mb-2">
                 <Tabs
                         items={[
                             { id: 'data', label: 'Dữ liệu' },
@@ -1194,14 +1194,14 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         activeId={activeTab}
                         onChange={(id) => setActiveTab(id as ConfigTab)}
                         variant="underline"
-                        className="border-b-0"
+                        className="border-b-0 shrink-0 max-w-full overflow-x-auto scrollbar-hide"
                     />
-                    <div className="shrink-0 flex items-center pr-1 pb-1">
+                    <div className="shrink-0 flex items-center pr-1 pb-1 ml-auto">
                         <a
                             ref={bookmarkletRef}
                             href={AUTO_CLICK_BOOKMARKLET_CODE}
                             draggable
-                            className="group relative inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-sky-600 to-emerald-600 hover:from-emerald-500 hover:via-sky-500 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm shadow-emerald-600/25 hover:shadow-md hover:shadow-emerald-600/40 border border-emerald-400/40 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-[1.03] active:scale-[0.98]"
+                            className="min-h-11 sm:min-h-0 group relative inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-sky-600 to-emerald-600 hover:from-emerald-500 hover:via-sky-500 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm shadow-emerald-600/25 hover:shadow-md hover:shadow-emerald-600/40 border border-emerald-400/40 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-[1.03] active:scale-[0.98]"
                             title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();

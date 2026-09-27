@@ -94,7 +94,9 @@ export function Modal({
   return ReactDOM.createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className={cn(
+        // data-modal-overlay: styles.css dùng nó để hạ thanh trên + thanh điều hướng dưới của
+        // mobile xuống DƯỚI modal khi modal mở (trước đây 2 thanh z-100/z-190 đè lên modal z-50).
+        <div data-modal-overlay="" className={cn(
           "fixed inset-0 flex justify-center",
           isBottom ? "items-end sm:items-center p-0 sm:p-6" : "items-center p-3 sm:p-6",
           zIndex

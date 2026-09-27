@@ -52,7 +52,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
             <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
                 {/* Header */}
                 <div className="px-4 py-3 bg-sky-600 dark:bg-sky-700 text-white flex items-center justify-between">
