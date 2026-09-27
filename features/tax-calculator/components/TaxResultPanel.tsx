@@ -12,6 +12,8 @@ import {
   Check,
   X,
   CalendarDays,
+  AlertCircle,
+  Info,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { exportElementAsImage } from '../../../services/uiService';
@@ -405,14 +407,24 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-sky-500/10 via-indigo-500/5 to-transparent dark:from-sky-950/30 dark:via-indigo-950/20 border border-sky-200 dark:border-sky-800/40 rounded-xl p-3.5 mb-3">
+          <div className="bg-slate-50/90 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 mb-3">
+            {/* Header phân định rõ: Không phát sinh nhận thay */}
+            <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-slate-200/70 dark:border-slate-800">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                Khoản nhận thay: <span className="font-semibold text-slate-700 dark:text-slate-300">Không có</span>
+              </span>
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shadow-2xs">
+                Thuế nhận thay: 0 đ
+              </span>
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
               <div>
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider bg-sky-100/90 dark:bg-sky-900/50 px-1.5 py-0.2 rounded mb-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Thuế TNCN trong kỳ
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider bg-slate-200/80 dark:bg-slate-800 px-1.5 py-0.2 rounded mb-1">
+                  Thuế TNCN cá nhân (Cả kỳ)
                 </span>
-                <div className="text-2xl font-extrabold text-sky-600 dark:text-sky-400 tracking-tight">
+                <div className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight">
                   {maskValue(formatVnd(totalTaxWithProxy))}
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -423,7 +435,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 </p>
               </div>
 
-              <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-sky-200/60 dark:border-sky-800/30">
+              <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200/60 dark:border-slate-800/30">
                 <span className="text-[11px] text-slate-500">Tổng giảm trừ:</span>
                 <div className="text-lg font-bold text-slate-800 dark:text-slate-100">
                   {maskValue(formatVnd(totalDeductions))}
@@ -432,6 +444,14 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                   (Bản thân + Người phụ thuộc + BH)
                 </span>
               </div>
+            </div>
+
+            {/* Dòng cảnh báo chống hiểu lầm */}
+            <div className="mt-2.5 pt-2 border-t border-slate-200/70 dark:border-slate-800/50 flex items-start gap-1.5 text-[11px] text-amber-800 dark:text-amber-300 bg-amber-50/80 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/80 dark:border-amber-900/50 leading-relaxed">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <span>
+                <strong>Lưu ý:</strong> Bạn <strong>không có khoản nhận thay thưởng/khoán</strong> trong kỳ này. Số tiền <strong>{maskValue(formatVnd(totalTaxWithProxy))}</strong> là Thuế TNCN cá nhân bạn phải nộp theo bảng lương (<strong>KHÔNG PHẢI</strong> tiền được hoàn thuế nhận thay).
+              </span>
             </div>
           </div>
         )}
@@ -541,7 +561,9 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
 
             {/* Tiền thuế TNCN */}
             <div className={`grid ${hasProxy ? 'grid-cols-3' : 'grid-cols-2'} px-3 py-2 bg-slate-50/80 dark:bg-slate-900/30 font-semibold`}>
-              <div className="text-slate-700 dark:text-slate-200">4. Thuế TNCN Đợt 2</div>
+              <div className="text-slate-700 dark:text-slate-200">
+                {hasProxy ? '4. Thuế TNCN Đợt 2' : '4. Thuế TNCN cá nhân Đợt 2'}
+              </div>
               <div className="text-right text-rose-600 dark:text-rose-400">
                 {maskValue(formatVnd(totalTaxWithProxy))}
               </div>
@@ -551,6 +573,16 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Thuế nhận thay (nếu không có nhận thay) */}
+            {!hasProxy && (
+              <div className="grid grid-cols-2 px-3 py-2 bg-slate-50/50 dark:bg-slate-900/30 text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800">
+                <div>5. Thuế nhận thay phát sinh</div>
+                <div className="text-right font-medium text-slate-600 dark:text-slate-300">
+                  0 đ (Không có nhận thay)
+                </div>
+              </div>
+            )}
 
             {/* Chênh lệch thuế (nếu có nhận thay) */}
             {hasProxy && (
