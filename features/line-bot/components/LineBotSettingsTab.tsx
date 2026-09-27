@@ -184,7 +184,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             e.stopPropagation();
                             handleCopyWebhook();
                         }}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] sm:after:hidden transition-all shadow-xs ${
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
                             copiedUrl
                                 ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                 : 'bg-sky-100 dark:bg-sky-900/60 hover:bg-sky-200 dark:hover:bg-sky-800 text-sky-700 dark:text-sky-300'

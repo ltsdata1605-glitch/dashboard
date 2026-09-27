@@ -104,12 +104,12 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     <span className="text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400 whitespace-nowrap">
                         {stickerType === 'draw' ? `${getDrawActiveFieldLabel()}:` : `${getActiveFieldLabel()}:`}
                     </span>
-                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
+                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-sm h-[22px] lg:h-[26px]">
                         <Button
                             variant="ghost"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onDecreaseFontSize}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-full w-auto px-2.5 lg:px-2 flex items-center justify-center relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] lg:after:hidden hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] lg:after:hidden hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
                             title="Giảm size"
                         >
                             -
@@ -121,7 +121,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                             variant="ghost"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onIncreaseFontSize}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-full w-auto px-2.5 lg:px-2 flex items-center justify-center relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] lg:after:hidden hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center relative after:absolute after:-inset-y-3 after:inset-x-0 after:content-[''] lg:after:hidden hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
                             title="Tăng size"
                         >
                             +
