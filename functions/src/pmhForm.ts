@@ -19,6 +19,17 @@ export function isStrictPmhRequestForm(text: string): boolean {
     const headerProduct = header.match(/^\[\s*(?:đăng\s*ký\s*pmh|pmh)\s*\]\s*(.+)$/i)?.[1]?.trim() || '';
     const hasType = headerProduct.length > 0
         || lines.slice(1).some(l => /^(?:loại(?:\s*pmh)?|mệnh\s*giá)\s*[:：]\s*\S/i.test(l.normalize('NFC')));
-    const hasOrder = lines.slice(1).some(l => /^(?:mđh|mdh|mã\s*đh|mã\s*đơn\s*hàng|đơn\s*hàng)(?:\s*áp\s*dụng)?\s*[:：]\s*[A-Za-z0-9_-]{4,25}\s*$/i.test(l.normalize('NFC')));
+    const rest = lines.slice(1);
+    const hasOrder = rest.some((l, i) => {
+        const n = l.normalize('NFC');
+        // MĐH + giá trị trên cùng dòng
+        if (/^(?:mđh|mdh|mã\s*đh|mã\s*đơn\s*hàng|đơn\s*hàng)(?:\s*áp\s*dụng)?\s*[:：]\s*[A-Za-z0-9_-]{4,25}\s*$/i.test(n)) return true;
+        // MĐH trên 1 dòng, giá trị rơi xuống dòng dưới
+        if (/^(?:mđh|mdh|mã\s*đh|mã\s*đơn\s*hàng|đơn\s*hàng)(?:\s*áp\s*dụng)?\s*[:：]?\s*$/i.test(n)) {
+            const next = rest[i + 1]?.trim() || '';
+            return /^[A-Za-z0-9_-]{4,25}$/.test(next);
+        }
+        return false;
+    });
     return hasType && hasOrder;
 }

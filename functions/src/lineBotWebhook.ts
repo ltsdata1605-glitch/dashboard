@@ -12,6 +12,7 @@ import { isStrictPmhRequestForm } from './pmhForm';
 import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
 import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './groupFeatureHelper';
 import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText, couponKind } from './pmhSequence';
+import { enqueuePmhRelay } from './pmhRelay';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -3213,6 +3214,25 @@ export const lineBotWebhook = onRequest(
                             }
                         ]);
                     }
+                    continue;
+                }
+                // PMH Relay: nếu nhóm bật pmhRelay, gửi form sang admintnb.com qua userscript
+                const isPmhForm = isStrictPmhRequestForm(cleanText);
+                if (isPmhForm && allow('pmhRelay')) {
+                    const userProfile = await getLineUserProfile(token, senderUserId, groupId);
+                    await enqueuePmhRelay({
+                        ownerUid: uid,
+                        form: cleanText,
+                        groupId: groupId || '',
+                        senderName: userProfile?.displayName || 'Bạn',
+                        quoteToken: event.message?.quoteToken,
+                    });
+                    await replyLineMessage(token, replyToken!, [{
+
+                        type: 'text',
+                        text: '⏳ Đang gửi lấy mã PMH từ admintnb...',
+                        quoteToken: event.message?.quoteToken,
+                    }]);
                     continue;
                 }
 

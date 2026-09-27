@@ -11,6 +11,8 @@
 import { db } from './firebaseAdmin';
 
 export interface GroupFeatures {
+    pmhRelay: boolean;
+
     /** Lọc PMH khi chuyển tiếp danh sách + lệnh "csd". */
     filterCoupon: boolean;
     /** Cấp mã PMH: form xin PMH, lệnh e{n}/gv{n}, số trần. */
@@ -27,6 +29,7 @@ export interface GroupFeatures {
 export type GroupFeatureKey = keyof GroupFeatures;
 
 const DEFAULT_FEATURES: GroupFeatures = {
+    pmhRelay: false,
     filterCoupon: true,
     issueCoupon: true,
     syntax_tk: true,

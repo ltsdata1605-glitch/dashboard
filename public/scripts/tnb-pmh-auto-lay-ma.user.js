@@ -9,6 +9,7 @@
 // @grant        GM_setClipboard
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @connect      asia-southeast1-dashboa-7e20b.cloudfunctions.net
 // @updateURL    https://dashboard.pro.vn/scripts/tnb-pmh-auto-lay-ma.user.js
 // @downloadURL  https://dashboard.pro.vn/scripts/tnb-pmh-auto-lay-ma.user.js
 // ==/UserScript==
@@ -32,6 +33,11 @@
   const DEFAULT_PER_MSG = 1;     // mỗi tin chỉ gửi 1 form
   const DEFAULT_GAP_SEC = 2.0;   // giãn cách giữa 2 tin (giây)
   const PANEL_ID = 'tnb-pmh-helper';
+  // ---- Bot LINE relay ----
+  const CF_BASE = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net';
+  const POLL_URL = CF_BASE + '/pmhRelayPoll';
+  const COMPLETE_URL = CF_BASE + '/pmhRelayComplete';
+  const BOT_POLL_INTERVAL = 5000;
 
   // ------------------------------------------------------------------ tiện ích
   const $ = (sel, root) => (root || document).querySelector(sel);
@@ -39,7 +45,7 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const norm = (s) => (s || '').replace(/\r\n/g, '\n').replace(/\u00a0/g, ' ');
   const gmGet = (k, d) => { try { return GM_getValue(k, d); } catch (e) { return d; } };
-  const gmSet = (k, v) => { try { GM_setValue(k, v); } catch (e) {} };
+  const gmSet = (k, v) => { try { GM_setValue(k, v); } catch (e) { } };
 
   function setReactValue(el, value) {
     const proto = el.tagName === 'TEXTAREA'
@@ -73,8 +79,8 @@
         GM_setClipboard(text, { type: 'text', mimetype: 'text/plain' });
         return true;
       }
-    } catch (e) {}
-    try { navigator.clipboard.writeText(text); return true; } catch (e) {}
+    } catch (e) { }
+    try { navigator.clipboard.writeText(text); return true; } catch (e) { }
     return false;
   }
 
@@ -179,6 +185,150 @@
     }
     return changed;
   }
+  // ----------------------------------------------------------- BOT LINE RELAY
+  const bot = {
+    active: false,
+    timer: null,
+    token: gmGet('tnb_relay_token', ''),
+    pending: new Map(),   // docId -> { form, khos, submitted, results, errors, submittedAt }
+    log: [],
+  };
+
+  function botLog(msg) {
+    const t = new Date().toLocaleTimeString('vi-VN');
+    bot.log.unshift('[' + t + '] ' + msg);
+    if (bot.log.length > 50) bot.log.length = 50;
+    renderBotLog();
+  }
+
+  function renderBotLog() {
+    const el = $('.tph-botlog');
+    if (!el) return;
+    el.textContent = bot.log.slice(0, 8).join('\n');
+  }
+
+  async function botPoll() {
+    if (!bot.active || !bot.token) return;
+    try {
+      const resp = await fetch(POLL_URL, {
+        headers: { 'Authorization': 'Bearer ' + bot.token },
+      });
+      if (!resp.ok) { botLog('⚠️ Poll lỗi HTTP ' + resp.status); return; }
+      const data = await resp.json();
+      const items = data.items || [];
+      if (!items.length) return;
+      botLog('📥 Nhận ' + items.length + ' form từ LINE');
+      for (const item of items) {
+        if (bot.pending.has(item.id)) continue;
+        const khos = extractKhos(splitForms(item.form));
+        bot.pending.set(item.id, {
+          form: item.form, khos: khos, submitted: false,
+          results: [], errors: [], submittedAt: 0,
+        });
+      }
+      // Gửi từng form chưa gửi
+      for (const [id, item] of bot.pending) {
+        if (item.submitted) continue;
+        await botSubmitForm(id, item);
+        await sleep(2000);
+      }
+    } catch (e) {
+      botLog('⚠️ Poll lỗi: ' + (e.message || e));
+    }
+  }
+
+  async function botSubmitForm(id, item) {
+    const input = findInput();
+    if (!input) { botLog('⚠️ Không thấy ô nhập liệu'); return; }
+    setReactValue(input, item.form);
+    await sleep(140);
+    const btn = findSendButton();
+    if (btn && !btn.disabled) btn.click();
+    else pressEnter(input);
+    item.submitted = true;
+    item.submittedAt = Date.now();
+    botLog('📨 Gửi form kho ' + [...item.khos].join(','));
+  }
+
+  function botCheckResponses() {
+    for (const [id, item] of bot.pending) {
+      if (!item.submitted) continue;
+      // Tìm kết quả trong state.results (đã được MutationObserver gom)
+      for (const r of state.results.values()) {
+        if (item.khos.has(r.kho)) {
+          const key = r.kho + '|' + r.loai + '|' + r.ma;
+          if (!item.results.find(function (x) { return x.kho === r.kho && x.ma === r.ma; })) {
+            item.results.push(r);
+          }
+        }
+      }
+      for (const e of state.errors) {
+        if (item.khos.has(e.kho)) {
+          if (!item.errors.find(function (x) { return x.kho === e.kho && x.err === e.err; })) {
+            item.errors.push(e);
+          }
+        }
+      }
+      // Có kết quả → gửi về
+      if (item.results.length > 0 || item.errors.length > 0) {
+        botPostResult(id, item);
+      }
+      // Timeout 5 phút
+      if (item.submittedAt && Date.now() - item.submittedAt > 300000 && item.results.length === 0) {
+        botPostResult(id, { ...item, errors: [{ kho: [...item.khos].join(','), err: 'Hết thời gian chờ (5 phút)' }] });
+      }
+    }
+  }
+
+  async function botPostResult(id, item) {
+    bot.pending.delete(id);
+    try {
+      await fetch(COMPLETE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + bot.token,
+        },
+        body: JSON.stringify({
+          id: id,
+          codes: item.results.map(function (r) { return { kho: r.kho, type: r.loai, code: r.ma }; }),
+          errors: item.errors.map(function (e) { return e.kho + ': ' + e.err; }),
+        }),
+      });
+      var maCount = item.results.length;
+      botLog('✅ Trả ' + maCount + ' mã về LINE (kho ' + [...item.khos].join(',') + ')');
+    } catch (e) {
+      botLog('⚠️ Gửi kết quả lỗi: ' + (e.message || e));
+    }
+  }
+
+  function botStart() {
+    if (bot.active) return;
+    bot.token = gmGet('tnb_relay_token', '');
+    if (!bot.token) { botLog('⚠️ Chưa nhập Relay Token'); return; }
+    bot.active = true;
+    gmSet('tnb_bot_active', true);
+    botLog('🤖 Bot đã BẬT — poll mỗi ' + (BOT_POLL_INTERVAL / 1000) + 's');
+    bot.timer = setInterval(function () {
+      botPoll();
+      botCheckResponses();
+    }, BOT_POLL_INTERVAL);
+    botPoll();
+    renderBotToggle();
+  }
+
+  function botStop() {
+    bot.active = false;
+    gmSet('tnb_bot_active', false);
+    if (bot.timer) { clearInterval(bot.timer); bot.timer = null; }
+    botLog('⏹ Bot đã TẮT');
+    renderBotToggle();
+  }
+
+  function renderBotToggle() {
+    var el = $('.tph-bot-status');
+    if (el) el.textContent = bot.active ? '🟢 Đang chạy' : '⚪ Tắt';
+  }
 
   // ------------------------------------------------------------------- gửi loạt
   async function startSend(rawText, perMsg, gapMs, setStatus) {
@@ -262,6 +412,23 @@
       '<div class="tph-hd"><b>TNB PMH · Lấy mã hàng loạt</b>',
       '<button data-act="min" title="Thu gọn">–</button></div>',
       '<div class="tph-body">',
+      // ---- Bot mode UI ----
+      '<div style="border:1px solid #0ea5e9;border-radius:6px;padding:8px;margin-bottom:8px;background:#f0f9ff;">',
+      '<div class="tph-row" style="margin:0;">',
+      '<b style="font-size:12px;">🤖 Chế độ Bot LINE</b>',
+      '<span class="tph-bot-status" style="font-size:11px;">⚪ Tắt</span>',
+      '<button class="tph-btn" data-act="bottoggle" style="padding:4px 10px;font-size:11px;background:#0ea5e9;color:#fff;">Bật</button>',
+      '</div>',
+      '<div class="tph-row" style="margin:4px 0 0;">',
+      '<label style="font-size:11px;">Token:</label>',
+      '<input class="tph-relay-token" type="password" placeholder="Relay token" ',
+      'value="' + esc(gmGet('tnb_relay_token', '')) + '" ',
+      'style="flex:1;padding:4px;border:1px solid #cbd5e1;border-radius:4px;font-size:11px;">',
+      '</div>',
+      '<pre class="tph-botlog" style="font-size:10px;color:#475569;margin:4px 0 0;max-height:80px;overflow:auto;white-space:pre-wrap;line-height:1.3;"></pre>',
+      '</div>',
+      // ---- End bot mode UI ----
+
       '<div class="tph-hint" style="font-size:12px;color:#475569;margin-bottom:6px;">',
       'Dán nhiều form PMH (mỗi form bắt đầu bằng "FORM MẪU LẤY PMH"). Script tự gộp &lt; 3000 ký tự/tin rồi gửi lần lượt.</div>',
       '<textarea class="tph-input" placeholder="Dán danh sách form vào đây…\nVí dụ:\nFORM MẪU LẤY PMH\nLoại PMH: WC200\nMã Kho Áp Dụng: 322\nMĐH áp dụng: 00322SO...\n\nFORM MẪU LẤY PMH\nLoại PMH: MM700\n..."></textarea>',
@@ -311,8 +478,14 @@
         state.results.clear(); state.errors = []; state.seenRows.clear();
         renderResults();
         setStatus('Đã xoá kết quả (không ảnh hưởng tin đã gửi).');
+      } else if (act === 'bottoggle') {
+        var tokenInput = $('.tph-relay-token', wrap);
+        if (tokenInput) { bot.token = tokenInput.value.trim(); gmSet('tnb_relay_token', bot.token); }
+        if (bot.active) botStop(); else botStart();
+        e.target.textContent = bot.active ? 'Tắt' : 'Bật';
       }
     });
+
     renderResults();
   }
 
@@ -378,6 +551,12 @@
     ensurePanel();
     scanExisting();
     renderResults();
+    // Auto-start bot mode nếu đã bật trước đó
+    if (gmGet('tnb_bot_active', false) && gmGet('tnb_relay_token', '')) {
+      setTimeout(botStart, 2000);
+    }
+
+
 
     const msgObserver = new MutationObserver(() => {
       if (scanExisting()) renderResults();
