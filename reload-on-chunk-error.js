@@ -4,7 +4,8 @@
 // nhất mà CSP được thiết kế để chặn.
 window.addEventListener('vite:preloadError', function (event) {
     console.warn('Vite preload error detected, reloading page...', event);
-    event.preventDefault();
+    // KHÔNG gọi event.preventDefault(): nếu gọi, Vite sẽ triệt tiêu lỗi và resolve promise về undefined,
+    // khiến React.lazy văng lỗi "Cannot read properties of undefined (reading 'default')".
     const now = Date.now();
     const lastReload = sessionStorage.getItem('last_module_import_reload');
     if (!lastReload || now - Number(lastReload) > 10000) {
