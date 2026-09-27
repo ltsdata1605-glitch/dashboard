@@ -5730,6 +5730,9 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
   (cả khung bao quanh bấm được để sao chép); "chữ chồng" trong modal Hướng dẫn ở iPhone SE = phần
   thân modal đang cuộn phía dưới chân modal (bị khung cuộn che — đúng thiết kế); đốm trang trí mờ
   của lớp phủ xử lý dữ liệu (position fixed, không tạo cuộn ngang).
+- Vòng đo có dữ liệu giả (sau commit 443ee6f7): tiêu đề thanh trên cùng bị xén dấu ở 375px (lỗi do
+  đợt này, đã sửa d4554cec). Modal "Cấu Hình Nhập Nhân Viên" (Phân ca) bị báo "chữ chồng" = dòng bảng
+  đang cuộn dưới chân modal — xem ảnh, KHÔNG phải lỗi; placeholder ô Tên siêu thị chỉ mất phần "...".
 - Phát hiện thêm ở vòng này và ĐÃ SỬA: modal nằm DƯỚI thanh trên/thanh dưới (z-50 < z-100/z-190)
   → modal cao bị cắt chân (`body:has([data-modal-overlay]) .mobile-chrome`); chữ biểu đồ Recharts
   bị `styles.css` ép 9px trên mobile → 11px.
@@ -5756,6 +5759,10 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
   = ẩn vĩnh viễn: chữ "Quét" ở `sticker-event/SearchBar.tsx`, một huy hiệu ở `TaxInputPanel.tsx:939`
   CHƯA TỪNG hiện — giữ nguyên hành vi, cần chủ dự án quyết có cho hiện không.
 - `leading-none` chỉ dùng cho chữ 1 dòng — chữ gãy 2 dòng sẽ dính chồng (đã gặp ở 4 tab Nhân viên).
+- `leading-none` + `truncate` (= `overflow:hidden`) **xén dấu tiếng Việt**: khung cao đúng cỡ chữ
+  (14px) nhưng "Phân", "Quyền" cao 17px. Đã gặp ở tiêu đề thanh trên cùng (App.tsx) do chính đợt này
+  thêm `truncate` — sửa bằng `leading-tight`, kiểm bằng ảnh phóng 3x (commit d4554cec). Lưu ý khi đo:
+  `scrollHeight` của phần tử `truncate` luôn hơn `clientHeight` 1px do làm tròn — chỉ lệch ≥2px mới là xén.
 - `shrink-0` trên thanh cuộn ngang = thanh không bao giờ co → tràn trang ở máy hẹp (Bot LINE @375).
 - Modal/lớp phủ mới: gắn `data-modal-overlay` (chỉ khi ĐANG MỞ) để 2 thanh điều hướng mobile tự hạ
   xuống dưới. Đừng nâng z-index modal lên trên 190 — menu thả xuống portal ra body sẽ chìm.
