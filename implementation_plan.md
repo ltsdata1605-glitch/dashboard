@@ -5766,3 +5766,27 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
   (xem hàm `dan()` trong bộ đo `zz-audit-iphone-toan-du-an.spec.ts`).
 - `tests/unit/line-bot-group-features.test.ts` đỏ sẵn (cờ `pmhRelay` mới).
 - PWA / "Thêm vào Màn hình chính": chưa làm (rủi ro đăng nhập Google trong chế độ standalone iOS).
+
+---
+
+# Super Admin được gắn thêm Mã Kho thật để dùng chung dữ liệu (2026-09-27)
+
+## Vấn đề (chủ dự án báo: "Không nhập được mã kho cho Super Admin")
+- `functions/src/session.ts → resolveSession` GHI ĐÈ `departmentId = 'ALL (Super Admin)'` cho
+  `lts.truongson@gmail.com` ở MỌI lần đăng nhập → sửa kiểu gì cũng mất.
+- `SettingsAccountTab.tsx` ẩn nút "Đổi mã kho" với admin.
+- "ALL (Super Admin)" không phải Kho thật → `myKhos()` (firestore.rules) không chứa Kho nào →
+  Super Admin KHÔNG đọc/ghi được `khoData/{maKho}` và `biData/{maKho}`: dữ liệu Super Admin tải
+  lên không bao giờ được chia sẻ sang Kho nào (vd tài khoản test Kho 910).
+
+## Thiết kế
+- Super Admin giữ NHÃN "ALL (Super Admin)" (nhận diện, không đổi hành vi hiện có) + danh sách Kho
+  thật đi kèm, lưu dạng `ALL (Super Admin),910`. Rules KHÔNG cần sửa: `myKhos()` tách theo dấu phẩy.
+- `functions/src/superAdminDept.ts` (module thuần, có unit test): chuẩn hoá chuỗi — luôn có nhãn
+  đứng đầu, giữ Kho thật, bỏ trùng/rỗng/"ALL". `resolveSession` dùng hàm này thay vì ghi đè cứng.
+- Client: `utils/dataUtils.ts → parseKhoList()` bỏ nhãn "ALL…" khi tách danh sách Kho (dùng ở
+  `services/khoDataService.ts`, `features/bi-dashboard/hooks/useReportBiAuth.ts`).
+- UI Hồ sơ Định danh: admin có nút "Đổi mã kho"; Super Admin nhập Kho dùng chung (vd `910`), lưu qua
+  Cloud Function `adminUpdateUser` (tự sửa chính mình — đã cho phép với admin), rồi làm mới token.
+- CẦN DEPLOY Cloud Functions (`npm run deploy:functions`) — nếu không, `resolveSession` bản cũ vẫn
+  ghi đè ở lần đăng nhập kế tiếp.
