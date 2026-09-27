@@ -5,6 +5,8 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../common/Icon';
 import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
+import { offerShareRetry } from '../shared/ui/ShareRetryToast';
+import { downloadBlob } from '../../services/uiService';
 import { getCheckThuongDataFromIframeDb } from '../../services/checkThuongIframeService';
 import { CheckThuongLeaderboardView } from '../../features/check-thuong';
 
@@ -69,6 +71,18 @@ export const CheckThuongView: React.FC = () => {
                         });
                     }
                 }
+            } else if (e.data?.type === 'CHECK_THUONG_SHARE_RETRY') {
+                // Chỉ nhận từ đúng iframe Check Thưởng của mình (cùng origin) — trang lạ không được
+                // tự bật bảng chia sẻ với file tuỳ ý.
+                if (e.source !== iframeRef.current?.contentWindow || e.origin !== window.location.origin) return;
+                if (!(e.data.blob instanceof Blob)) return;
+                const blob: Blob = e.data.blob;
+                const filename = String(e.data.filename || 'Check_thuong.png');
+                const ten = filename.replace(/\.png$/i, '').replace(/_/g, ' ');
+                offerShareRetry(
+                    { files: [new File([blob], filename, { type: 'image/png' })], title: ten, text: ten },
+                    () => downloadBlob(blob, filename, true),
+                );
             } else if (e.data?.type === 'CHECK_THUONG_SAVE_ERROR') {
                 console.error('[CheckThuong] Lưu dữ liệu trong iframe thất bại:', e.data.message);
                 toast.error('Không lưu được thay đổi Check Thưởng (bộ nhớ tạm bảng tra cứu). Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-iframe-save-failed', duration: 6000 });

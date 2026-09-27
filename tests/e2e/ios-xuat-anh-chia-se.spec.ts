@@ -67,7 +67,8 @@ test('tải file (vd Excel): KHÔNG thu hồi blob URL ngay — Safari iOS đọ
     await giaLapSafari(page);
     await page.goto('/?tab=analysis');
     const soLanThuHoi = await page.evaluate(async () => {
-        const mod = await import(/* @vite-ignore */ '/services/uiService.ts') as { downloadBlob: (b: Blob, f: string) => void };
+        const modPath = '/services/uiService.ts'; // biến: để TypeScript không cố phân giải đường dẫn dev server
+        const mod = await import(/* @vite-ignore */ modPath) as { downloadBlob: (b: Blob, f: string) => void };
         mod.downloadBlob(new Blob(['a,b'], { type: 'text/csv' }), 'x.csv');
         await new Promise(r => setTimeout(r, 500));
         return (window as unknown as { __revoke: number }).__revoke;

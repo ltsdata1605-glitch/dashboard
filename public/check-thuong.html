@@ -2366,11 +2366,15 @@
             // lại bản JS thuần tương đương. Chỉ dùng cho xuất ẢNH ĐƠN LẺ — các nút "xuất tất cả"
             // vẫn tải file bình thường vì share sheet cần bấm xác nhận từng ảnh, không hợp vòng lặp.
             async function shareOrDownloadDataUrl(dataUrl, filename) {
-                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+                // iPadOS 13+ báo UA "Macintosh" — nhận qua màn cảm ứng.
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                    || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+                    || window.innerWidth < 768;
                 if (isMobile && navigator.share && navigator.canShare) {
+                    let blob = null;
                     try {
                         const res = await fetch(dataUrl);
-                        const blob = await res.blob();
+                        blob = await res.blob();
                         const file = new File([blob], filename, { type: 'image/png' });
                         const displayName = filename.replace(/\.png$/i, '').replace(/_/g, ' ');
                         const shareData = { files: [file], title: displayName, text: displayName };
@@ -2380,6 +2384,12 @@
                         }
                     } catch (err) {
                         if (err && err.name === 'AbortError') return; // Người dùng bấm huỷ share — không phải lỗi
+                        // Safari iOS chỉ cho share ~1s sau lượt chạm; dựng ảnh lâu hơn → NotAllowedError.
+                        // Nhờ trang cha hiện nút "Chia sẻ / Lưu ảnh" (chạm lại = thao tác mới hợp lệ).
+                        if (err && err.name === 'NotAllowedError' && blob && window.parent !== window) {
+                            window.parent.postMessage({ type: 'CHECK_THUONG_SHARE_RETRY', blob, filename }, location.origin);
+                            return;
+                        }
                         console.error('Lỗi khi chia sẻ:', err);
                         // rơi xuống tải file bình thường bên dưới
                     }
