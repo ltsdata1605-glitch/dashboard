@@ -34,7 +34,7 @@ const Legend: React.FC<LegendProps> = ({
             {targets && (
                 <div className={`mb-4 relative ${onboardingStep === 4 ? 'ring-2 ring-rose-500 animate-pulse' : ''}`}>
                     {onboardingStep === 4 && (
-                         <div className="absolute top-full left-1/4 transform -translate-x-1/2 mt-2 w-56 bg-rose-600 text-white text-[10px] py-2 px-3 shadow-xl z-50 text-center font-medium">
+                         <div className="absolute top-full left-1/4 transform -translate-x-1/2 mt-2 w-56 bg-rose-600 text-white text-[11px] py-2 px-3 shadow-xl z-50 text-center font-medium">
                             <div className="font-bold mb-0.5">Bước 4: Cấu hình</div>
                             Bấm vào các nút bên dưới để cấu hình số lượng người cần thiết cho từng vị trí đặc biệt.
                             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-1 w-2.5 h-2.5 bg-rose-600 rotate-45"></div>
@@ -104,7 +104,7 @@ const Legend: React.FC<LegendProps> = ({
                                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                 ) : (
-                                    <span className="text-[10px] font-bold bg-rose-600 text-white px-1.5 py-px uppercase">≤ 3h</span>
+                                    <span className="text-[11px] font-bold bg-rose-600 text-white px-1.5 py-px uppercase">≤ 3h</span>
                                 )}
                             </div>
                         )}

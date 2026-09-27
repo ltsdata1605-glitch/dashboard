@@ -97,7 +97,7 @@ export const SettingsAccountTab: React.FC = () => {
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsResetModalOpen(true)}
-                        className="px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95"
+                        className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95"
                         title="Xoá tất cả dữ liệu cục bộ và đưa về trạng thái như người dùng mới hoàn toàn"
                     >
                         <Icon name="trash-2" size={3.5} />
@@ -290,7 +290,7 @@ export const SettingsAccountTab: React.FC = () => {
                     variant="unstyled"
                     size="none"
                     onClick={logout}
-                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
+                    className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
                     title="Đăng xuất tài khoản"
                 >
                     <Icon name="log-out" size={3.5} />

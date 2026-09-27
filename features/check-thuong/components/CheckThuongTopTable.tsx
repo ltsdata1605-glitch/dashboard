@@ -231,7 +231,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                     return (
                                                         <span 
                                                             style={b.style}
-                                                            className={`inline-block px-2 py-0.5 text-[10px] font-black uppercase rounded-md border shadow-2xs ${b.className}`}
+                                                            className={`inline-block px-2 py-0.5 text-[11px] font-black uppercase rounded-md border shadow-2xs ${b.className}`}
                                                         >
                                                             {store.channel}
                                                         </span>
@@ -362,13 +362,13 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                                         className="flex items-center justify-between p-2 rounded-none bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-700/70 text-xs hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors"
                                                                     >
                                                                         <div className="flex items-center gap-1.5 min-w-0 mr-2">
-                                                                            <span className="w-4 h-4 rounded-none bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-black flex items-center justify-center shrink-0">
+                                                                            <span className="w-4 h-4 rounded-none bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-black flex items-center justify-center shrink-0">
                                                                                 {idx + 1}
                                                                             </span>
                                                                             <span className="font-semibold text-slate-700 dark:text-slate-200 truncate" title={item.category}>
                                                                                 {item.category}
                                                                             </span>
-                                                                            <span className="text-[10px] font-bold text-slate-400 shrink-0">
+                                                                            <span className="text-[11px] font-bold text-slate-400 shrink-0">
                                                                                 ({item.percent}%)
                                                                             </span>
                                                                         </div>

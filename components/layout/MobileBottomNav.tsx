@@ -87,7 +87,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => setIsMoreOpen(false)}
-                                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="min-h-11 min-w-11 flex items-center justify-center p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
                                     <X size={20} />
                                 </Button>

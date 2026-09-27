@@ -60,7 +60,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
               {result.msp}
             </span>
             {result.selected && (
-              <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60 sm:hidden">
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60 sm:hidden">
                 Đã chọn ({result.quantity} tem)
               </span>
             )}
@@ -83,7 +83,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
               )}
             </div>
             {result.giaGoc && (
-              <p className="text-[11px] sm:text-[11px] text-slate-400 line-through tabular-nums mt-0.5">{result.giaGoc}</p>
+              <p className="text-[11px] text-slate-400 line-through tabular-nums mt-0.5">{result.giaGoc}</p>
             )}
           </div>
 
@@ -92,7 +92,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
             <p className="text-xs sm:text-sm font-bold text-sky-600 leading-none tabular-nums">
               {formatCurrency(result.tongThuong)}
             </p>
-            <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] text-slate-400 mt-0.5">
               <span className="text-emerald-600 tabular-nums">ERP: {formatCurrency(result.thuongERP)}</span>
               <span className="mx-0.5">|</span>
               <span className="text-rose-500 tabular-nums">Nóng: {formatCurrency(result.thuongNong)}</span>
@@ -104,7 +104,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
       {/* Promotion */}
       {result.khuyenMai && result.khuyenMai.trim() && (
         <div className="flex items-center gap-1.5 mt-1.5 bg-amber-50/60 p-1 rounded-md border border-amber-100">
-          <span className="shrink-0 text-[9px] font-bold text-amber-700 bg-amber-100/80 border border-amber-200 px-1.5 py-0.5 rounded">KM</span>
+          <span className="shrink-0 text-[11px] font-bold text-amber-700 bg-amber-100/80 border border-amber-200 px-1.5 py-0.5 rounded">KM</span>
           <p className="text-[11px] font-medium text-slate-700 line-clamp-1" title={result.khuyenMai}>
             {result.khuyenMai}
           </p>

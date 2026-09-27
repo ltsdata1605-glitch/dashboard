@@ -49,7 +49,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                             <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
                                 Tệp Realtime (Xem nhanh)
                             </h4>
-                            <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                 Phân tích nhanh tức thời, hữu ích để xem nhanh số liệu. Không lưu vào cơ sở dữ liệu lịch sử.
                             </p>
                         </div>
@@ -67,7 +67,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                             <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-sky-700 dark:group-hover:text-sky-400">
                                 Lũy kế / Quá khứ
                             </h4>
-                            <p className="text-[10.5px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                 Đặt tên gợi nhớ và lưu trữ dài hạn vào kho dữ liệu để tự động gộp báo cáo lũy kế.
                             </p>
                         </div>

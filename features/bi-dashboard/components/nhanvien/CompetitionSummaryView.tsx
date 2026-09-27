@@ -531,7 +531,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                         title="Chọn cột hiển thị"
                     >
                         <FilterIcon className="h-4 w-4" />
@@ -578,7 +578,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsEditingName(true)}
-                    className="h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     title="Đổi tên bảng"
                 >
                     <PencilIcon className="h-4 w-4" />
@@ -590,7 +590,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
+                    className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
                     title="Xóa bảng"
                 >
                     <TrashIcon className="h-4 w-4" />
@@ -631,7 +631,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="h-8 w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
+                    className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
                 >
                     {isExportingByGroup ? (
                         <SpinnerIcon className="h-4 w-4 animate-spin text-sky-700" />
@@ -646,7 +646,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`h-8 w-8 p-1.5 rounded-lg flex items-center justify-center transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 rounded-lg flex items-center justify-center transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <HashIcon className="h-4 w-4" /> : <PercentIcon className="h-4 w-4" />}

@@ -197,7 +197,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             e.stopPropagation();
                             onRemove(metric.id);
                         }}
-                        className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity shrink-0 cursor-pointer hide-on-export no-print"
+                        className="lg:opacity-0 lg:group-hover:opacity-100 focus:opacity-100 p-0.5 relative after:absolute after:-inset-3 after:content-[''] lg:after:hidden text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-opacity shrink-0 cursor-pointer hide-on-export no-print"
                         title="Xóa thẻ này"
                     >
                         <X className="w-3 h-3" />
@@ -214,14 +214,14 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className={`industry-kpi-num text-[17px] sm:text-[19px] lg:text-[20px] font-semibold tracking-tight tabular-nums leading-none ${theme.primaryColor}`}>
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className={`industry-kpi-label text-[10px] font-medium uppercase leading-none ${theme.labelColor}`}>
+                            <span className={`industry-kpi-label text-[11px] font-medium uppercase leading-none ${theme.labelColor}`}>
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
 
                         {/* Số lượng NHỎ HƠN */}
                         <div className="flex items-baseline gap-0.5 shrink-0 text-right">
-                            <span className={`industry-kpi-sublabel text-[10px] font-medium ${theme.labelColor}`}>SL:</span>
+                            <span className={`industry-kpi-sublabel text-[11px] font-medium ${theme.labelColor}`}>SL:</span>
                             <span className={`industry-kpi-subnum text-[11px] sm:text-[11.5px] font-medium tabular-nums ${theme.secondaryColor}`}>
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
@@ -234,14 +234,14 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className={`industry-kpi-num text-[17px] sm:text-[19px] lg:text-[20px] font-semibold tracking-tight tabular-nums leading-none ${theme.primaryColor}`}>
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className={`industry-kpi-label text-[10px] font-medium uppercase leading-none ${theme.labelColor}`}>
+                            <span className={`industry-kpi-label text-[11px] font-medium uppercase leading-none ${theme.labelColor}`}>
                                 SL
                             </span>
                         </div>
 
                         {/* Doanh thu NHỎ HƠN */}
                         <div className="flex items-baseline gap-0.5 shrink-0 text-right">
-                            <span className={`industry-kpi-sublabel text-[10px] font-medium ${theme.labelColor}`}>
+                            <span className={`industry-kpi-sublabel text-[11px] font-medium ${theme.labelColor}`}>
                                 {isRealtime ? 'DTQĐ:' : 'QĐ:'}
                             </span>
                             <span className={`industry-kpi-subnum text-[11px] sm:text-[11.5px] font-medium tabular-nums ${theme.secondaryColor}`}>

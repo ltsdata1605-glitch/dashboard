@@ -274,9 +274,13 @@ function AppContent() {
                                 <div className="w-8 h-8 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 rounded-xl flex items-center justify-center shadow-md shadow-sky-300/30 dark:shadow-sky-900/30">
                                     {getTabIcon()}
                                 </div>
-                                <div className="flex flex-col items-start">
-                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>
-                                    <span id="mobile-topbar-subtitle" className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
+                                {/* In Sticker gửi thanh 4 chế độ + chỉnh cỡ chữ (~470px) lên thanh này; iPhone chỉ
+                                    có ~370px → trang từng tràn ngang 140px, chuông thông báo nằm NGOÀI màn hình.
+                                    Riêng màn đó ẩn chữ tiêu đề dưới 440px (nút quay lại + icon vẫn còn) để 4 nút
+                                    chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
+                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[440px]:flex' : 'flex'} flex-col items-start`}>
+                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none whitespace-nowrap">{titleData.main} {titleData.highlight}</span>
+                                    <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
                                 </div>
                             </>
                         );
@@ -285,7 +289,7 @@ function AppContent() {
                                 variant="unstyled" size="none"
                                 onClick={() => setActiveTab('analysis')}
                                 title="Về Dashboard"
-                                className="flex items-center gap-2.5 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
+                                className="min-h-11 shrink-0 flex items-center gap-2.5 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
                             >
                                 <ChevronLeft size={18} className="text-slate-400 dark:text-slate-500 -mr-1.5" />
                                 {brandIconAndTitle}
@@ -294,8 +298,8 @@ function AppContent() {
                             <div className="flex items-center gap-2.5">{brandIconAndTitle}</div>
                         );
                     })()}
-                    <div className="flex items-center gap-0.5">
-                        <div id="mobile-topbar-actions" className="flex items-center"></div>
+                    <div className="flex items-center gap-0.5 min-w-0">
+                        <div id="mobile-topbar-actions" className="flex items-center min-w-0"></div>
                         <NotificationDropdown />
                     </div>
                 </div>
@@ -324,8 +328,11 @@ function AppContent() {
                         khoảng chừa riêng (StickerEventApp.tsx dùng pb-[124px] khớp đúng thanh công
                         cụ nội bộ của nó). Giữ nguyên pb-20 sẽ để lại 80px trống thừa vô nghĩa ngay
                         trên thanh công cụ riêng đó — đúng là dải trống/vệt user báo cáo (xác nhận
-                        qua DevTools: pb-20 hiện trên khung bọc ngoài dù thanh chính đã ẩn). */}
-                    <div className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-20 lg:pb-0'} flex flex-col`}>
+                        qua DevTools: pb-20 hiện trên khung bọc ngoài dù thanh chính đã ẩn).
+                        SỬA 2026-09-27: 80px cố định KHÔNG đủ trên iPhone có Face ID — thanh cao 56px
+                        + vùng thanh Home (safe-area 34px) = 90px, nên 10px cuối mọi màn bị che.
+                        Chừa đúng 56px + safe-area + 8px thở. */}
+                    <div className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-[calc(64px+env(safe-area-inset-bottom,0px))] lg:pb-0'} flex flex-col`}>
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">

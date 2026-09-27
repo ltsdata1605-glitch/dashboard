@@ -96,7 +96,7 @@ export function Modal({
       {isOpen && (
         <div className={cn(
           "fixed inset-0 flex justify-center",
-          isBottom ? "items-end sm:items-center p-0 sm:p-6" : "items-center p-4 sm:p-6",
+          isBottom ? "items-end sm:items-center p-0 sm:p-6" : "items-center p-3 sm:p-6",
           zIndex
         )}>
           {/* Backdrop */}
@@ -116,7 +116,11 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.2, type: 'spring', bounce: 0.25 }}
             className={cn(
-              "relative w-full bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden",
+              // `dvh` chứ không `vh`: trên Safari iOS `90vh` tính cả phần màn hình nằm dưới thanh địa chỉ
+              // → đáy modal (nút Lưu/Huỷ ở footer) bị che khi thanh địa chỉ đang hiện.
+              "relative w-full bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90dvh] overflow-hidden",
+              // Sheet dính đáy màn hình: chừa vùng thanh Home của iPhone cho footer.
+              isBottom && "pb-[env(safe-area-inset-bottom,0px)] sm:pb-0",
               roundedClass,
               maxWidthClasses[maxWidth]
             )}
@@ -143,10 +147,10 @@ export function Modal({
                       variant="unstyled"
                       size="none"
                       onClick={onClose}
-                      className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
+                      // Nút đóng từng chỉ 22px trên iPhone (icon 14px + p-1) — nhỏ nhất trong mọi modal.
+                      className="min-h-11 min-w-11 -mr-2 sm:min-h-0 sm:min-w-0 sm:mr-0 p-1 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                     >
-                      <Icon name="x" size={3.5} className="sm:hidden" />
-                      <Icon name="x" size={4.5} className="hidden sm:block" />
+                      <Icon name="x" size={4.5} />
                     </Button>
                   )}
                 </div>

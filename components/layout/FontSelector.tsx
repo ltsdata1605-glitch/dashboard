@@ -174,7 +174,7 @@ const FontSelector: React.FC = () => {
                                     variant="unstyled" size="none"
                                     key={font.value}
                                     onClick={() => handleSelectFont(font.value)}
-                                    className={`justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
+                                    className={`min-h-11 sm:min-h-0 justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
                                         ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400'
                                         : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                         }`}

@@ -157,7 +157,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 <td className="col-total border-r border-slate-300 text-sm text-sky-700">
                     {Math.round(avgSpecial)}
                     {targets.targetSpecialHours && (
-                        <div className="text-[10px] font-bold opacity-50">Target: {Math.round(targets.targetSpecialHours)}</div>
+                        <div className="text-[11px] font-bold opacity-50">Target: {Math.round(targets.targetSpecialHours)}</div>
                     )}
                 </td>
                 <td className="col-total border-r border-slate-300 text-sm text-slate-500">{Math.round(avgNormal)}</td>
@@ -239,7 +239,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                         onClick={() => onDayClick?.(i + 1)}
                         title="Click để xem thống kê ngày này"
                     >
-                        <div className="text-[10px] font-medium opacity-80 leading-none mb-1">{["CN", "T2", "T3", "T4", "T5", "T6", "T7"][date.getDay()]}</div>
+                        <div className="text-[11px] font-medium opacity-80 leading-none mb-1">{["CN", "T2", "T3", "T4", "T5", "T6", "T7"][date.getDay()]}</div>
                         <div className="text-lg leading-none">{String(date.getDate()).padStart(2, '0')}</div>
                     </th>
                 );

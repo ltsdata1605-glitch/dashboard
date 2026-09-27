@@ -57,7 +57,7 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
                     <Icon name={icon} size={3} className={`transition-colors sm:hidden ${classes.iconColor}`}/>
                     <Icon name={icon} size={3.5} className={`transition-colors hidden sm:block ${classes.iconColor}`}/>
                 </div>
-                <span className={`font-medium text-[11px] xs:text-[11px] sm:text-xs transition-colors ${classes.textColor}`}>{label}</span>
+                <span className={`font-medium text-[11px] sm:text-xs transition-colors ${classes.textColor}`}>{label}</span>
             </div>
             <div className="relative">
                 <input id={`switch-${label}`} type="checkbox" className="sr-only" checked={isActive} onChange={onToggle} />
@@ -425,7 +425,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                         variant="unstyled" size="none"
                                         key={range}
                                         onClick={() => handleDateRangeClick(range)}
-                                        className={`h-9 text-[11px] xs:text-[11px] sm:text-xs font-medium rounded-md transition-all border flex items-center justify-center text-center px-0.5 ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
+                                        className={`h-9 text-[11px] sm:text-xs font-medium rounded-md transition-all border flex items-center justify-center text-center px-0.5 ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-sky-300'}`}
                                     >
                                         {label}
                                     </Button>

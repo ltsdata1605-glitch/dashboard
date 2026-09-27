@@ -329,7 +329,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             {/* Khung <main> của Report BI cố ý `p-0` trên điện thoại để BẢNG dùng hết bề ngang
                 (BiWrapper.tsx), nhưng hàng tiêu đề ăn theo thì chữ "NHÂN VIÊN" dính sát mép máy,
                 trên iPhone trông như bị cắt. Hàng này là chữ + nút nên phải có lề riêng. */}
-            <div className={`relative z-50 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
+            <div className={`relative z-50 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
@@ -339,7 +339,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         </div>
                     </div>
                 </div>
-                <div className="flex flex-none justify-end">
+                <div className="flex flex-none justify-end ml-auto">
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung, phân cách bằng đường kẻ — đúng chuẩn nhóm nút components/layout/Header.tsx.
                         BUG FIX: KHÔNG dùng overflow-hidden ở đây — panel dropdown của MultiSelectDropdown định vị
                         absolute và xổ xuống NGOÀI khung pill (top-[calc(100%+8px)]), nên overflow-hidden của pill

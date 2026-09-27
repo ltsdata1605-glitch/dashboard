@@ -131,9 +131,9 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
             className={`bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-700' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700'} border`}
           >
             <Filter className="w-3.5 h-3.5" />
-            <span className="uppercase tracking-wider text-[10.5px]">Bộ lọc</span>
+            <span className="uppercase tracking-wider text-[11px]">Bộ lọc</span>
             {activeFilterCount > 0 && (
-              <span className="bg-sky-600 text-white text-[9px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
+              <span className="bg-sky-600 text-white text-[11px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
                 {activeFilterCount}
               </span>
             )}

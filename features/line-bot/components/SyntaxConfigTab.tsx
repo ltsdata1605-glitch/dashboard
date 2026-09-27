@@ -185,7 +185,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 Cấu Hình Tên Người Để Lọc PMH
                             </h3>
                             {previewTab === 'filter' && (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/90 px-2 py-0.5 rounded-full border border-emerald-300/60 animate-in fade-in">
+                                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-950/90 px-2 py-0.5 rounded-full border border-emerald-300/60 animate-in fade-in">
                                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     <span>Đang xem trên iPhone</span>
                                 </span>
@@ -201,7 +201,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 <Users size={14} />
                                 <span>Chọn từ tương tác Bot ({interactedUsers.length})</span>
                             </Button>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/50">
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/50">
                                 {filterNames.length} tên đang kích hoạt
                             </span>
                         </div>
@@ -235,7 +235,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     >
                                         <span>👤 {name}</span>
                                         {isSelected && (
-                                            <span className="text-[9.5px] bg-white/25 px-1 rounded text-white font-normal">
+                                            <span className="text-[11px] bg-white/25 px-1 rounded text-white font-normal">
                                                 iPhone
                                             </span>
                                         )}
@@ -245,7 +245,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                                 e.stopPropagation();
                                                 handleRemoveName(name);
                                             }}
-                                            className={`${isSelected ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-rose-500'} transition-colors ml-0.5`}
+                                            className={`relative after:absolute after:-inset-4 after:content-[''] ${isSelected ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-rose-500'} transition-colors ml-0.5`}
                                             title={`Xoá "${name}"`}
                                         >
                                             <X size={13} />
@@ -273,7 +273,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     }
                                 }}
                                 placeholder="Nhập tên người nhận (ví dụ: Lê Sơn, Boss)..."
-                                className="flex-1 p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="flex-1 min-w-0 p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             />
                             <Button
                                 variant="secondary"
@@ -305,7 +305,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setIsSelectUserModalOpen(true)}
-                                        className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[10px]"
+                                        className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[11px]"
                                     >
                                         Xem tất cả &rarr;
                                     </button>
@@ -321,7 +321,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                         >
                                             <Plus size={11} className="text-slate-400 group-hover:text-emerald-600" />
                                             <span className="truncate max-w-[130px] font-semibold">{u.displayName}</span>
-                                            <span className="text-[9px] text-slate-400">
+                                            <span className="text-[11px] text-slate-400">
                                                 {u.lastInteractionType === 'GROUP' ? '(Nhóm)' : '(1-1)'}
                                             </span>
                                         </button>
@@ -355,7 +355,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 Cú Pháp Tra Cứu Tồn Kho &amp; Nhận Mã (Lệnh &quot;tk&quot; Mới)
                             </h3>
                         </div>
-                        <span className="text-[10px] text-slate-400 italic">Click vào ô để xem trước trên iPhone</span>
+                        <span className="text-[11px] text-slate-400 italic">Click vào ô để xem trước trên iPhone</span>
                     </div>
 
                     <div className="space-y-3">
@@ -377,7 +377,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 </span>
                                 <div className="flex items-center gap-1.5">
                                     {previewTab === 'tk' && tkMode === 'all' && (
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300/60 animate-in fade-in">
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300/60 animate-in fade-in">
                                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                             <span>Đang xem trên iPhone</span>
                                         </span>
@@ -391,7 +391,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                 Bot hiển thị danh sách tất cả các sản phẩm đang có mã khả dụng, kèm số lượng và hướng dẫn lấy mã trực tiếp.
                             </p>
-                            <div className="text-[10px] text-slate-400 font-mono">
+                            <div className="text-[11px] text-slate-400 font-mono">
                                 Lệnh tương đương: <code>thống kê</code>, <code>tk all</code>
                             </div>
                         </div>
@@ -415,7 +415,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     </span>
                                     <div className="flex items-center gap-1.5">
                                         {previewTab === 'tk' && tkMode === 'event' && (
-                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300/60 animate-in fade-in">
+                                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300/60 animate-in fade-in">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                 <span>Đang xem trên iPhone</span>
                                             </span>
@@ -429,7 +429,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                     Bot lọc riêng danh sách Event. Cú pháp nhận mã: gõ <strong>e + STT [MĐH]</strong> (ví dụ: <code>e1 12345678</code> hoặc <code>e4</code>).
                                 </p>
-                                <div className="text-[10px] text-slate-400 font-mono">
+                                <div className="text-[11px] text-slate-400 font-mono">
                                     Lệnh tương đương: <code>tk e</code>
                                 </div>
                             </div>
@@ -452,7 +452,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                     </span>
                                     <div className="flex items-center gap-1.5">
                                         {previewTab === 'tk' && tkMode === 'gvgs' && (
-                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-300/60 animate-in fade-in">
+                                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-100 dark:bg-sky-950/80 px-2 py-0.5 rounded-full border border-sky-300/60 animate-in fade-in">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
                                                 <span>Đang xem trên iPhone</span>
                                             </span>
@@ -466,7 +466,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                     Bot lọc riêng danh sách Giờ Vàng. Cú pháp nhận mã: gõ <strong>gv + STT [MĐH]</strong> (ví dụ: <code>gv2 87654321</code> hoặc <code>gv1</code>).
                                 </p>
-                                <div className="text-[10px] text-slate-400 font-mono">
+                                <div className="text-[11px] text-slate-400 font-mono">
                                     Lệnh tương đương: <code>tk gv</code>
                                 </div>
                             </div>
@@ -492,7 +492,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             setPreviewTab('issue');
                                             setIssueMode('event');
                                         }}
-                                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold transition-all ${
+                                        className={`min-h-11 sm:min-h-0 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold transition-all ${
                                             previewTab === 'issue' && issueMode === 'event'
                                                 ? 'bg-emerald-600 text-white shadow-xs'
                                                 : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60 hover:bg-emerald-200'
@@ -508,7 +508,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             setPreviewTab('issue');
                                             setIssueMode('gvgs');
                                         }}
-                                        className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold transition-all ${
+                                        className={`min-h-11 sm:min-h-0 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono font-bold transition-all ${
                                             previewTab === 'issue' && issueMode === 'gvgs'
                                                 ? 'bg-sky-600 text-white shadow-xs'
                                                 : 'bg-sky-100 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-300/60 hover:bg-sky-200'
@@ -520,7 +520,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     {previewTab === 'issue' && (
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300/60 animate-in fade-in">
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300/60 animate-in fade-in">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                             <span>Đang xem trên iPhone</span>
                                         </span>
@@ -561,7 +561,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     {previewTab === 'hd' && (
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300/60 animate-in fade-in">
+                                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-full border border-amber-300/60 animate-in fade-in">
                                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                             <span>Đang xem trên iPhone</span>
                                         </span>
@@ -571,7 +571,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             </div>
                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                                 <span>Cú Pháp &quot;hd&quot; &amp; Huỷ Mã PMH (Mới)</span>
-                                <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-900/50 px-1.5 py-0.2 rounded">Tự Động 24/7</span>
+                                <span className="text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-900/50 px-1.5 py-0.2 rounded">Tự Động 24/7</span>
                             </h4>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                 Gõ <strong>hd</strong> (hoặc <em>help, hướng dẫn</em>) để Bot xuất sổ tay đầy đủ: kiểm tra tồn kho (<code>tk</code>, <code>tk event</code>, <code>tk gvgs</code>), nhận mã siêu tốc, và cú pháp <strong>huy [mã]</strong> để hoàn trả PMH về kho khi khách đổi ý.

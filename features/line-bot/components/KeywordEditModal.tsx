@@ -94,7 +94,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                         <Sparkles size={16} className="text-emerald-500" />
                         <span>{keyword?.id ? 'Chỉnh Sửa Từ Khoá' : 'Thêm Từ Khoá Tự Động'}</span>
                     </h3>
-                    <Button variant="ghost" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
+                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                         <X size={18} />
                     </Button>
                 </div>

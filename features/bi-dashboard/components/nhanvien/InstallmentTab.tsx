@@ -395,7 +395,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                 <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
                     {cardTitle}
                 </h2>
-                <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-1">
                     {cardSubtitle}
                 </div>
             </div>
@@ -425,7 +425,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         size="icon"
                         onClick={() => setHidePercent(v => !v)}
                         title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'}
-                        className={`h-8 w-8 text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400'}`}
+                        className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400'}`}
                     >
                         <span className={hidePercent ? 'line-through' : ''}>%</span>
                     </Button>
@@ -435,7 +435,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="h-8 w-8 text-sky-700 dark:text-sky-400"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>
@@ -446,7 +446,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="h-8 w-8 text-slate-400"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400"
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
                     </Button>

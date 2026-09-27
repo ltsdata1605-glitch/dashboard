@@ -48,7 +48,7 @@ const Controls: React.FC<ControlsProps> = ({
   const controlHighlightClass = (step: number) => 
     onboardingStep === step ? 'ring-2 ring-rose-500 animate-pulse z-10 relative' : '';
   const tooltip = (step: number, title: string, content: string) => onboardingStep === step && (
-    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-52 bg-rose-600 text-white text-[10px] py-2 px-3 shadow-xl z-50 text-center font-medium">
+    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-52 bg-rose-600 text-white text-[11px] py-2 px-3 shadow-xl z-50 text-center font-medium">
         <div className="font-bold mb-0.5">{title}</div>
         {content}
         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-1 w-2.5 h-2.5 bg-rose-600 rotate-45"></div>
@@ -65,7 +65,7 @@ const Controls: React.FC<ControlsProps> = ({
           {tooltip(3, 'Bước 3: Thời gian', 'Chọn Tháng/Năm, ngày bắt đầu và số ngày.')}
 
           <div className="flex flex-col">
-            <label htmlFor="cfgMonth" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgMonth" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Tháng / Năm
             </label>
             <Input
@@ -79,7 +79,7 @@ const Controls: React.FC<ControlsProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="cfgStartDay" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgStartDay" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Bắt đầu
             </label>
             <Input
@@ -95,7 +95,7 @@ const Controls: React.FC<ControlsProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="cfgDuration" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgDuration" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Số ngày
             </label>
             <Input
@@ -117,7 +117,7 @@ const Controls: React.FC<ControlsProps> = ({
       {/* Store & Department selectors */}
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col">
-          <label htmlFor="cfgSupermarket" className="text-[9px] font-bold text-sky-500 mb-1 uppercase tracking-wider">
+          <label htmlFor="cfgSupermarket" className="text-[11px] font-bold text-sky-500 mb-1 uppercase tracking-wider">
             Siêu thị
           </label>
           <Select
@@ -137,7 +137,7 @@ const Controls: React.FC<ControlsProps> = ({
         </div>
 
         <div className="flex flex-col">
-            <label htmlFor="cfgDepartment" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgDepartment" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Bộ phận
             </label>
             <Select

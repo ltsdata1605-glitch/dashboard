@@ -237,7 +237,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             }`}
                         >
                             <span>Tất cả</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'ALL' ? 'bg-emerald-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.all}
@@ -410,7 +410,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                             )}
                                             {/* Badge kênh */}
                                             <div
-                                                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center text-[8px] text-white ${
+                                                className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center text-[11px] text-white ${
                                                     user.lastInteractionType === 'GROUP'
                                                         ? 'bg-emerald-500'
                                                         : 'bg-sky-500'
@@ -428,7 +428,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                     {user.displayName}
                                                 </h4>
                                                 {inFilter && (
-                                                    <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60">
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60">
                                                         <Check size={10} />
                                                         <span>Đang lọc</span>
                                                     </span>
@@ -449,7 +449,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                 )}
 
                                                 <span>•</span>
-                                                <span className="font-mono text-[10px]">{formatTime(user.lastInteractedAt)}</span>
+                                                <span className="font-mono text-[11px]">{formatTime(user.lastInteractedAt)}</span>
                                             </div>
 
                                             {user.lastMessage && (

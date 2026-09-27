@@ -205,7 +205,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                                 <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">
                                     Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao
                                 </h2>
-                                <span className="px-1.5 py-0.2 text-[9px] font-black uppercase tracking-wider rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
+                                <span className="px-1.5 py-0.2 text-[11px] font-black uppercase tracking-wider rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/80 dark:text-amber-200 border border-amber-300 dark:border-amber-700">
                                     Realtime
                                 </span>
                             </div>

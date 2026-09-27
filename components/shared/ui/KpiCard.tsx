@@ -148,7 +148,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                         <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>{title}</h3>
                     </div>
                     {badge ? badge : (!isGood && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0 shadow-2xs">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0 shadow-2xs">
                             Chưa đạt
                         </span>
                     ))}
@@ -191,17 +191,21 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
 
             {/* Layout đứng (vertical) cực gọn cho mobile (dưới lg) */}
             <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1 sm:px-1.5 py-1.5 text-center h-full">
-                {/* Hàng 1: Icon */}
-                <div className={`flex items-center justify-center ${style.iconText} shrink-0 mb-0.5`}>
-                    <Icon name={icon} size={3} />
+                {/* Hàng 1: Icon — hoặc huy hiệu "Chưa đạt" THẾ CHỖ icon (2026-09-27).
+                    Trước đây huy hiệu nằm chung hàng với tiêu đề ở cỡ 7.5px; lên sàn 11px thì thẻ
+                    rộng ~85px (lưới 4 cột trên iPhone) không chứa nổi cả hai → tiêu đề bị cắt
+                    "HQ…", "TRẢ …". Icon chỉ để trang trí nên nhường chỗ cho thông tin trạng thái. */}
+                <div className={`flex items-center justify-center ${style.iconText} shrink-0 mb-0.5 min-h-4`}>
+                    {isGood ? (
+                        <Icon name={icon} size={3} />
+                    ) : (
+                        <span className="px-1 rounded text-[11px] leading-4 font-black uppercase whitespace-nowrap bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">Chưa đạt</span>
+                    )}
                 </div>
                 
                 {/* Hàng 2: Title */}
-                <div className="flex items-center justify-center gap-0.5 sm:gap-1 w-full mb-0.5">
-                    <h3 className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold uppercase tracking-tight sm:tracking-wide text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>{title}</h3>
-                    {!isGood && (
-                        <span className="px-1 py-0.2 rounded text-[7.5px] xs:text-[8px] font-black uppercase bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0">Chưa đạt</span>
-                    )}
+                <div className="flex items-center justify-center w-full mb-0.5 min-w-0">
+                    <h3 className="text-[11px] font-bold uppercase tracking-tight sm:tracking-wide text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>{title}</h3>
                 </div>
                 
                 {/* Hàng 3: Value */}
@@ -211,11 +215,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                 
                 {/* Hàng 4: Label phụ */}
                 {trendValue ? (
-                    <div className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
+                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (
-                    <div className="text-[9.5px] xs:text-[10px] sm:text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
+                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
                         {trendLabel}
                     </div>
                 ) : (

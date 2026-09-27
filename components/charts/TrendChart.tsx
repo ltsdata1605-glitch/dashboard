@@ -331,7 +331,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                             position="top" 
                             offset={12}
                             fill={textColor} 
-                            fontSize={10} 
+                            fontSize={11} 
                             fontWeight="bold"
                             formatter={(val: number) => trendState.metric === 'quantity' ? formatQuantity(val) : formatCurrency(val)}
                         />
@@ -358,7 +358,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                         position="top" 
                         offset={8}
                         fill={textColor} 
-                        fontSize={10} 
+                        fontSize={11} 
                         fontWeight="bold"
                         formatter={(val: number) => trendState.metric === 'quantity' ? formatQuantity(val) : formatCurrency(val)}
                     />
@@ -430,7 +430,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               <div className="flex flex-row items-center gap-1 sm:gap-1.5 flex-nowrap sm:flex-wrap">
                   <Select
                       fullWidth={false}
-                      className="text-[11px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[70px] sm:w-[95px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
+                      className="text-[11px] font-bold text-sky-700 dark:text-sky-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[70px] sm:w-[95px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
                       value={calendarFilters.month}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
                   >
@@ -456,7 +456,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   </div>
                   <Select
                       fullWidth={false}
-                      className="text-[11px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[82px] sm:w-[120px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
+                      className="text-[11px] font-bold text-rose-700 dark:text-rose-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[82px] sm:w-[120px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
                       value={calendarFilters.metric}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
                   >
@@ -480,7 +480,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   title="Chọn khoảng thời gian"
               >
                   <Icon name="clock" size={4} />
-                  <span className="absolute -top-0.5 -right-0.5 text-[7px] font-black text-sky-700 dark:text-sky-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
+                  <span className="absolute -top-0.5 -right-0.5 text-[11px] font-black text-sky-700 dark:text-sky-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
                       {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'N' : trendState.view === 'weekly' ? 'T' : 'Th'}
                   </span>
               </Button>

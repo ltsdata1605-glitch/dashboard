@@ -61,11 +61,11 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                 <div className="min-w-0">
                     <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                         <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">Lịch Hẹn Thông Báo</h3>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 border border-sky-200/80 shrink-0">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 border border-sky-200/80 shrink-0">
                             <Users size={11} /> {groups.length} nhóm
                         </span>
                     </div>
-                    <p className="text-[10px] sm:text-xs text-slate-500 truncate hidden sm:block">Tự động phát thông báo tới các nhóm chat theo giờ định sẵn.</p>
+                    <p className="text-[11px] sm:text-xs text-slate-500 truncate hidden sm:block">Tự động phát thông báo tới các nhóm chat theo giờ định sẵn.</p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                     <Button
@@ -125,16 +125,16 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                             <h4 className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm truncate">{sched.name}</h4>
-                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 font-mono">
+                                            <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 font-mono">
                                                 {sched.time}
                                             </span>
                                             {sched.repeatType === 'ONCE' && (
-                                                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
+                                                <span className="px-1.5 py-0.5 rounded text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
                                                     1 Lần
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
                                             <Calendar size={11} className="text-slate-400 shrink-0" />
                                             <span className="truncate">{getRepeatLabel()}</span>
                                             <span className="text-slate-300 dark:text-slate-600">•</span>
@@ -159,7 +159,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                     {sched.messageTemplate}
                                 </div>
 
-                                <div className="flex items-center justify-between pt-1 text-[10px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
                                     <span className="truncate">Gần nhất: {sched.lastRunAt ? new Date(sched.lastRunAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Chưa chạy'}</span>
 
                                     <div className="flex items-center gap-0.5 shrink-0">

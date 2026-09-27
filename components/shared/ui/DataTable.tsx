@@ -158,6 +158,19 @@ export function DataTable<T>({
     onSort(col.id, newDirection);
   }, [sortColumn, sortDirection, onSort]);
 
+  // `table-fixed` BỎ QUA `minWidth` của cột: cột không có `width` chỉ nhận phần còn thừa sau các
+  // cột cố định. Trên iPhone (393px) bảng Target Thi đua (4 cột ~100px + cột tên minWidth 180px)
+  // bóp cột tên còn ~60px → tên chương trình đè lên cột "Gốc". Đặt bề rộng tối thiểu của bảng =
+  // tổng độ rộng các cột để bảng CUỘN NGANG trong khung thay vì bóp cột.
+  const fixedMinWidth = React.useMemo(() => {
+    if (!fixedLayout) return undefined;
+    const total = columns.reduce((sum, col) => {
+      const px = parseFloat(col.width || col.minWidth || '');
+      return sum + ((col.width || col.minWidth || '').endsWith('px') && !isNaN(px) ? px : 0);
+    }, 0);
+    return total > 0 ? `${total}px` : undefined;
+  }, [columns, fixedLayout]);
+
   const cellPadding = compact ? 'px-2 py-1.5' : 'px-3 py-2.5';
   const headerPadding = compact ? 'px-2 py-1.5' : 'px-3 py-2';
 
@@ -171,7 +184,7 @@ export function DataTable<T>({
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
       <div className={overflowVisible ? 'overflow-visible' : 'overflow-x-auto custom-scrollbar'}>
-        <table className={cn('w-full border-collapse', fixedLayout && 'table-fixed', tableClassName)}>
+        <table className={cn('w-full border-collapse', fixedLayout && 'table-fixed', tableClassName)} style={fixedMinWidth ? { minWidth: fixedMinWidth } : undefined}>
           <thead>
             {/* Group Headers */}
             {hasGroups && (

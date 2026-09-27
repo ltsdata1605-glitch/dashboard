@@ -109,13 +109,13 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
     // Responsive sizing based on mode
     // compact takes priority (used in 2-column grid for both draft + saved)
     // isDraft only enlarges when compact is false (full-width mode)
-    const dayNumSize  = compact  ? 'text-[11px] md:text-[11px]'
+    const dayNumSize  = compact  ? 'text-[11px]'
                       : isDraft  ? 'text-[16px] md:text-[20px] lg:text-[24px]'
                       :            'text-[12px] md:text-[14px]';
 
-    const lunarSize   = compact  ? 'text-[7px] md:text-[11px]'
+    const lunarSize   = compact  ? 'text-[11px]'
                       : isDraft  ? 'text-[12px] md:text-[14px]'
-                      :            'text-[11px] md:text-[11px]';
+                      :            'text-[11px]';
 
     // Revenue / % value size MUST be larger than day number size and completely symmetrical
     const valueSize   = compact  ? 'text-[13px] md:text-[14px] lg:text-[15px] xl:text-[17px]'
@@ -186,7 +186,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                     {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((day, idx) => {
                         const isWeekend = idx >= 5;
                         return (
-                            <div key={day} className={`${compact ? 'py-0.5 text-[11px] md:text-[11px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-amber-700 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
+                            <div key={day} className={`${compact ? 'py-0.5 text-[11px]' : 'py-2 px-1 text-[11px] md:text-[12px]'} text-center font-extrabold rounded-lg tracking-wide uppercase ${isWeekend ? 'text-amber-700 bg-amber-100/50 dark:bg-amber-900/20 dark:text-amber-400' : 'text-slate-500 bg-slate-100 dark:bg-slate-800/80 dark:text-slate-400'}`}>
                                 {compact ? day : (idx === 0 ? 'THỨ HAI' : idx === 1 ? 'THỨ BA' : idx === 2 ? 'THỨ TƯ' : idx === 3 ? 'THỨ NĂM' : idx === 4 ? 'THỨ SÁU' : idx === 5 ? 'THỨ BẢY' : 'CHỦ NHẬT')}
                             </div>
                         );
@@ -265,7 +265,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                                 {/* Bottom Row: Bar & Holiday */}
                                 <div className="flex flex-col items-center justify-end w-full mt-auto">
                                     {dayData.holidayName && (
-                                        <span className={`font-bold text-rose-500 dark:text-rose-400 whitespace-nowrap overflow-hidden text-ellipsis mb-0.5 ${compact ? 'text-[11px] max-w-[40px]' : 'text-[11px] md:text-[11px] max-w-[80px]'}`} title={dayData.holidayName}>
+                                        <span className={`font-bold text-rose-500 dark:text-rose-400 whitespace-nowrap overflow-hidden text-ellipsis mb-0.5 ${compact ? 'text-[11px] max-w-[40px]' : 'text-[11px] max-w-[80px]'}`} title={dayData.holidayName}>
                                             {dayData.holidayName}
                                         </span>
                                     )}

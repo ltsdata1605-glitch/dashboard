@@ -496,7 +496,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                     onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
                 >
-                    Font <span className="text-[7px] opacity-75">▼</span>
+                    Font <span className="text-[11px] opacity-75">▼</span>
                 </Button>
                 
                 {activeMenu === 'font' && (
@@ -564,7 +564,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                             (e.target as HTMLInputElement).blur();
                         }
                     }}
-                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
+                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[11px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
                     title="Kích thước cqw (gõ số hoặc dùng +/-)"
                 />
                 <Button
@@ -580,7 +580,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
 
             {/* Line Height controls: ↕ - [value] + */}
             <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
-                <span className="text-[9px] text-slate-400 font-bold select-none" title="Khoảng cách dòng">↕</span>
+                <span className="text-[11px] text-slate-400 font-bold select-none" title="Khoảng cách dòng">↕</span>
                 <Button
                     variant="ghost"
                     onMouseDown={(e) => e.preventDefault()}
@@ -603,7 +603,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                             (e.target as HTMLInputElement).blur();
                         }
                     }}
-                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
+                    className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[11px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
                     title="Khoảng cách dòng (gõ số hoặc dùng +/-)"
                 />
                 <Button

@@ -174,7 +174,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                         <Clock size={16} className="text-emerald-500" />
                         <span>{schedule?.id ? 'Chỉnh Sửa Lịch Hẹn' : 'Tạo Lịch Hẹn Thông Báo'}</span>
                     </h3>
-                    <Button variant="ghost" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
+                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
                         <X size={18} />
                     </Button>
                 </div>
@@ -189,7 +189,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Ví dụ: Báo cáo tồn kho sáng 6h..."
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
                             required
                         />
                     </div>
@@ -203,7 +203,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 type="time"
                                 value={time}
                                 onChange={e => setTime(e.target.value)}
-                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono"
+                                className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono"
                                 required
                             />
                         </div>
@@ -215,7 +215,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             <select
                                 value={active ? '1' : '0'}
                                 onChange={e => setActive(e.target.value === '1')}
-                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold"
+                                className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold"
                             >
                                 <option value="1">Đang bật (Hoạt động)</option>
                                 <option value="0">Tạm tắt</option>
@@ -232,7 +232,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                         <select
                             value={repeatType}
                             onChange={e => handleRepeatTypeChange(e.target.value as ScheduleRepeatType)}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-purple-500/20"
+                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-purple-500/20"
                         >
                             <option value="DAILY">Hàng ngày (Mỗi ngày)</option>
                             <option value="CUSTOM">Tùy chọn thứ trong tuần (Nhiều thứ)</option>
@@ -253,7 +253,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 value={specificDate}
                                 min={new Date().toISOString().slice(0, 10)}
                                 onChange={e => setSpecificDate(e.target.value)}
-                                className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold font-mono"
+                                className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold font-mono"
                                 required
                             />
                             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
@@ -267,17 +267,17 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                     Ngày phát thông báo trong tuần
                                 </label>
                                 {repeatType === 'DAILY' && (
-                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
                                         ✓ Phát đều đặn mỗi ngày
                                     </span>
                                 )}
                                 {repeatType === 'WEEKDAYS' && (
-                                    <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold">
+                                    <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
                                         ✓ Thứ 2 đến Thứ 6
                                     </span>
                                 )}
                                 {repeatType === 'CUSTOM' && (
-                                    <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold">
+                                    <span className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
                                         Tùy chọn: {days.length} ngày
                                     </span>
                                 )}
@@ -311,7 +311,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                         <select
                             value={targetType}
                             onChange={e => setTargetType(e.target.value as any)}
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold mb-2"
+                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold mb-2"
                         >
                             <option value="ALL_GROUPS">Tất cả các nhóm (Broadcast)</option>
                             <option value="SPECIFIC_GROUPS">Chọn nhóm cụ thể</option>
@@ -362,7 +362,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                                     className="rounded text-emerald-600"
                                                 />
                                                 <span className="font-medium">{g.groupName || g.groupId}</span>
-                                                {g.groupName && <span className="text-[10px] text-slate-400 font-mono">({g.groupId.slice(0, 10)}...)</span>}
+                                                {g.groupName && <span className="text-[11px] text-slate-400 font-mono">({g.groupId.slice(0, 10)}...)</span>}
                                             </label>
                                         ))}
                                     </div>
@@ -431,14 +431,14 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => insertVariable('{date}')}
-                                    className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-sky-600 rounded hover:bg-slate-200"
+                                    className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[11px] font-mono text-sky-600 rounded hover:bg-slate-200"
                                 >
                                     + {`{date}`}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => insertVariable('{ton_kho}')}
-                                    className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono text-emerald-600 rounded hover:bg-slate-200"
+                                    className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[11px] font-mono text-emerald-600 rounded hover:bg-slate-200"
                                 >
                                     + {`{ton_kho}`}
                                 </button>
@@ -449,7 +449,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             value={messageTemplate}
                             onChange={e => setMessageTemplate(e.target.value)}
                             placeholder="Nhập nội dung thông báo..."
-                            className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
+                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs"
                             required
                         />
                     </div>

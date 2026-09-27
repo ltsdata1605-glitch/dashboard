@@ -26,6 +26,7 @@ import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { uploadSummaryLuyKeIfManager, uploadCompetitionLuyKeIfManager } from '../services/biDataService';
 import { fetchSupermarketMap, clearSupermarketMap } from '../services/biSupermarketMapService';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
+import { MOBILE_GUTTER, TOUCH_TARGET } from '../utils/mobileUi';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
@@ -233,7 +234,7 @@ const StatusTile: React.FC<{
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3 pr-20 group-hover/tile:pr-28 transition-all duration-150">
+                    <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <UploadIcon className="h-4 w-4" />}
@@ -268,7 +269,7 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onOpenLinkModal();
                             }}
-                            className="opacity-0 group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
+                            className={`${TOUCH_TARGET} flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95`}
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
@@ -288,7 +289,7 @@ const StatusTile: React.FC<{
                                     onOpenLinkModal?.();
                                 }
                             }}
-                            className="p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95"
+                            className={`${TOUCH_TARGET} flex items-center justify-center p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95`}
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
@@ -304,7 +305,7 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onClear(title);
                             }}
-                            className="p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95"
+                            className={`${TOUCH_TARGET} flex items-center justify-center p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95`}
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
@@ -571,20 +572,20 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     return (
         <div className="space-y-4 sm:space-y-6 relative pb-20">
             {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
-            <div className="relative z-20 mb-4 flex flex-row items-center justify-between gap-3 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full">
+            <div className={`relative z-20 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>
-                <div className="flex flex-none justify-end gap-2">
+                <div className="flex flex-none justify-end gap-2 ml-auto">
                     <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <Button
                             variant="unstyled"
                             size="none"
                             onClick={() => setIsConfirmingClear(true)}
                             title="Xoá tất cả dữ liệu"
-                            className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
+                            className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
                         >
                             <TrashIcon className="h-4 w-4 text-rose-500" />
                             <span className="uppercase text-[11px] sm:text-xs tracking-wider">LÀM MỚI TẤT CẢ</span>
@@ -617,7 +618,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     href="https://baocao.dienmayxanh.com/dashboard/revenue-consolidated"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 transition-colors group"
+                                    className="min-h-11 sm:min-h-0 text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 transition-colors group"
                                     title="Mở Báo cáo Doanh thu hợp nhất"
                                 >
                                     <div className="w-2 h-2 bg-sky-500 rounded-sm group-hover:scale-110 transition-transform"></div>
@@ -625,7 +626,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     <span className="text-[11px] text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">↗</span>
                                 </a>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={summaryRealtimeTs}
@@ -701,7 +702,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     href="https://baocao.dienmayxanh.com/dashboard/thi-dua"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors group"
+                                    className="min-h-11 sm:min-h-0 text-xs sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors group"
                                     title="Mở Báo cáo Thi đua"
                                 >
                                     <div className="w-2 h-2 bg-emerald-500 rounded-sm group-hover:scale-110 transition-transform"></div>
@@ -709,7 +710,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     <span className="text-[11px] text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">↗</span>
                                 </a>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={competitionRealtimeTs}
@@ -863,7 +864,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setIsAddingSupermarket(true)}
-                            className="mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+                            className="min-h-11 sm:min-h-0 mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                         >
                             <PlusIcon className="w-4 h-4" />
                             <span>+ Thêm siêu thị thủ công</span>

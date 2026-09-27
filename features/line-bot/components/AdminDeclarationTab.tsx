@@ -138,7 +138,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         <Users size={14} className="text-sky-600 dark:text-sky-400" />
                         <span>Chọn từ tương tác BOT</span>
                         {interactedUsers.length > 0 && (
-                            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-sky-600 text-white">
+                            <span className="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-sky-600 text-white">
                                 {interactedUsers.length}
                             </span>
                         )}
@@ -155,7 +155,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             value={name}
                             onChange={e => setName(e.target.value)}
                             placeholder="Ví dụ: Sơn (QL K910)"
-                            className="w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="min-h-11 sm:min-h-0 w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-sky-500"
                             required
                         />
                     </div>
@@ -168,7 +168,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setIsSelectModalOpen(true)}
-                                className="text-[10px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
+                                className="min-h-11 sm:min-h-0 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
                                 title="Chọn người từ lịch sử tương tác của BOT"
                             >
                                 <Users size={11} />
@@ -180,7 +180,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             value={lineUserId}
                             onChange={e => setLineUserId(e.target.value)}
                             placeholder="U272dcb226f9..."
-                            className="w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="min-h-11 sm:min-h-0 w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono focus:outline-none focus:ring-1 focus:ring-sky-500"
                             required
                         />
                     </div>
@@ -192,7 +192,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         <select
                             value={role}
                             onChange={e => setRole(e.target.value as AdminRole)}
-                            className="w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500"
+                            className="min-h-11 sm:min-h-0 w-full p-2 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-sky-500"
                         >
                             <option value="APPROVER">Duyệt cấp mã (Lệnh DUYỆT)</option>
                             <option value="SUPER_ADMIN">Toàn quyền (Quản trị cao nhất)</option>
@@ -220,14 +220,14 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                     <span className="text-xs font-bold text-slate-800 dark:text-white">
                         Danh Sách Admin Được Cấp Quyền ({admins.length})
                     </span>
-                    <Button variant="ghost" onClick={onRefresh} className="p-1 text-slate-400 rounded-lg hover:text-sky-600" title="Làm mới">
+                    <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1 text-slate-400 rounded-lg hover:text-sky-600" title="Làm mới">
                         <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                 </div>
 
                 <div className="overflow-x-auto max-h-[calc(100vh-320px)] [scrollbar-width:thin]">
                     <table className="w-full text-left text-xs border-collapse">
-                        <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs border-b border-slate-200/90 dark:border-slate-700/90 text-slate-500 dark:text-slate-400 font-bold uppercase text-[10px] tracking-wider shadow-2xs">
+                        <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs border-b border-slate-200/90 dark:border-slate-700/90 text-slate-500 dark:text-slate-400 font-bold uppercase text-[11px] tracking-wider shadow-2xs">
                             <tr>
                                 <th className="py-2.5 px-3 pl-4 border-r border-slate-200/70 dark:border-slate-700/70">Tên Admin</th>
                                 <th className="py-2.5 px-3 border-r border-slate-200/70 dark:border-slate-700/70">LINE User ID</th>
@@ -249,7 +249,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                         <td className="py-2 px-3 pl-4 font-bold text-slate-900 dark:text-white border-r border-slate-100 dark:border-slate-800/60">{a.name}</td>
                                         <td className="py-2 px-3 font-mono text-[11px] text-slate-600 dark:text-slate-300 select-all border-r border-slate-100 dark:border-slate-800/60">{a.lineUserId}</td>
                                         <td className="py-2 px-3 text-center border-r border-slate-100 dark:border-slate-800/60">
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                            <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                                                 a.role === 'SUPER_ADMIN'
                                                     ? 'bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300'
                                                     : a.role === 'APPROVER'

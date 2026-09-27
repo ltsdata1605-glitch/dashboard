@@ -151,7 +151,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         type="button"
                         onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
                         title="Xuất file Excel danh sách hoàn thuế"
-                        className="min-h-11 sm:min-h-0 p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
+                        className="min-w-11 sm:min-w-0 min-h-11 sm:min-h-0 p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
                     >
                         <FileSpreadsheet size={16} />
                     </button>
@@ -159,7 +159,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         type="button"
                         onClick={onClose}
                         title="Thu gọn danh sách lịch sử"
-                        className="min-h-11 sm:min-h-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
+                        className="min-w-11 sm:min-w-0 min-h-11 sm:min-h-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
                     >
                         <PanelRightClose size={16} />
                     </button>
@@ -369,7 +369,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                         onDeleteRecord(rec.id!);
                                                     }}
                                                     title="Xóa bản ghi này"
-                                                    className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
+                                                    className="lg:opacity-0 lg:group-hover:opacity-100 p-1 rounded-md relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
                                                 >
                                                     <Trash2 size={13} />
                                                 </button>

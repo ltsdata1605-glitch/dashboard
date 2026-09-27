@@ -24,7 +24,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={!onLeftIconClick}
             className={cn(
               "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
-              onLeftIconClick ? "cursor-pointer hover:text-sky-500 transition-colors" : "cursor-default"
+              onLeftIconClick ? "cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden" : "cursor-default"
             )}
           >
             <Icon name={leftIcon} size={4.5} />
@@ -34,7 +34,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={cn(
-            "flex h-9 w-full rounded-md border bg-white px-3 py-2 text-sm font-normal transition-colors",
+            "flex h-9 min-h-11 sm:min-h-0 w-full rounded-md border bg-white px-3 py-2 text-sm font-normal transition-colors",
             "border-slate-300 text-slate-900 placeholder:text-slate-400",
             "focus-visible:outline-none focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500",
             "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100",
@@ -55,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             disabled={!onRightIconClick}
             className={cn(
               "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
-              onRightIconClick ? "cursor-pointer hover:text-sky-500 transition-colors" : "cursor-default"
+              onRightIconClick ? "cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden" : "cursor-default"
             )}
           >
             <Icon name={rightIcon} size={4.5} />

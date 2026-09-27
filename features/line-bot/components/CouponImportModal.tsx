@@ -309,7 +309,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                         <Upload size={18} className="text-emerald-500" />
                         <span>Nạp Mã PMH & Quản Lý Lần Nạp</span>
                     </h3>
-                    <Button variant="ghost" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
+                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
                         <X size={18} />
                     </Button>
                 </div>
@@ -357,7 +357,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             key={t}
                                             type="button"
                                             onClick={() => handleTypeChange(t)}
-                                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                                            className={`min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
                                                 selectedType === t
                                                     ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-bold'
                                                     : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
@@ -378,7 +378,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             }
                                         }}
                                         placeholder="Nhập tên loại (ví dụ: PMH 50K, PMH Tri Ân)..."
-                                        className="mt-2 w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500"
+                                        className="min-h-11 sm:min-h-0 mt-2 w-full p-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500"
                                     />
                                 )}
                             </div>

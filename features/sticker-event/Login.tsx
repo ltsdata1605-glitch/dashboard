@@ -403,7 +403,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Vai trò</label>
               <div className="flex gap-4">
-              <label className="flex items-center cursor-pointer text-sm font-medium">
+              <label className="flex items-center cursor-pointer text-sm font-medium min-h-11 sm:min-h-0">
                   <input
                   type="radio"
                   value="staff"
@@ -413,7 +413,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   />
                   Nhân viên
               </label>
-              <label className="flex items-center cursor-pointer text-sm font-medium">
+              <label className="flex items-center cursor-pointer text-sm font-medium min-h-11 sm:min-h-0">
                   <input
                   type="radio"
                   value="admin"

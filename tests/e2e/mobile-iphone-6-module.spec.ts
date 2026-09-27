@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 
-/** 6 module chủ dự án yêu cầu rà soát */
+/** 6 module chủ dự án yêu cầu rà soát (2026-09-26) + 7 màn còn lại của đợt tối ưu iPhone toàn
+ *  dự án (2026-09-27) — tên file giữ nguyên để không phá lịch sử/đường dẫn đã dẫn chiếu. */
 const MODULE: { ten: string; tab: string; cho?: RegExp }[] = [
     { ten: 'Phân tích', tab: 'analysis' },
     { ten: 'Report BI', tab: 'employees' },
@@ -8,6 +9,13 @@ const MODULE: { ten: string; tab: string; cho?: RegExp }[] = [
     { ten: 'Báo cáo', tab: 'reports' },
     { ten: 'Rút gọn Coupon', tab: 'tools-coupon' },
     { ten: 'Tính thuế', tab: 'tools-tax' },
+    { ten: 'Bot LINE', tab: 'tools-line-bot' },
+    { ten: 'In Sticker', tab: 'tools-print-sticker' },
+    { ten: 'Phân ca', tab: 'tools-phanca' },
+    { ten: 'So sánh giá', tab: 'tools-price-compare' },
+    { ten: 'Phân quyền', tab: 'settings' },
+    { ten: 'Duyệt user', tab: 'approval' },
+    { ten: 'Giới thiệu', tab: 'help' },
 ];
 
 async function batDemo(page: Page) {
@@ -19,13 +27,23 @@ async function batDemo(page: Page) {
 
 /** Đo trong MỘT khung (trang chính hoặc iframe) */
 const DO = () => {
-    const nhin = (el: Element) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+    // Ngoại lệ có chủ đích: khung mô phỏng iPhone (Bot LINE) và trang xem trước mẫu in sticker —
+    // bản thu nhỏ của thứ thật, đổi cỡ chữ ở đó là sai bản in / sai mô phỏng.
+    const ngoaiLe = (el: Element) => !!el.closest('.sticker-container, .active-preview-page, [class*="rounded-[50px]"]');
+    const nhin = (el: Element) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.right > 0 && !ngoaiLe(el); };
+    // Vùng chạm thật = khung nút ∪ ::after (các nút giữ nguyên hình, nới vùng chạm vô hình bằng ::after)
+    const cham = (el: Element) => {
+        const r = el.getBoundingClientRect(); const af = getComputedStyle(el, '::after');
+        if (af.content === 'none' || af.position !== 'absolute') return { w: r.width, h: r.height };
+        const px = (v: string) => (v === 'auto' ? 0 : parseFloat(v) || 0);
+        return { w: Math.max(r.width, r.width - px(af.left) - px(af.right)), h: Math.max(r.height, r.height - px(af.top) - px(af.bottom)) };
+    };
     const chuNho = Array.from(document.querySelectorAll('*'))
         .filter(el => nhin(el) && el.children.length === 0 && !!el.textContent?.trim()
             && parseFloat(getComputedStyle(el).fontSize) < 11)
         .map(el => Math.round(parseFloat(getComputedStyle(el).fontSize)));
     const nutNho = Array.from(document.querySelectorAll('button, a[role="button"], [role="tab"]'))
-        .filter(el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.height < 44; })
+        .filter(el => nhin(el) && !(el as HTMLButtonElement).disabled && cham(el).h < 44)
         .map(el => `${(el.textContent || '').trim().slice(0, 12) || el.getAttribute('title') || '[icon]'}:${Math.round(el.getBoundingClientRect().height)}:${el.className.toString().slice(0, 60)}`);
     // Bảng: có khung cuộn ngang riêng hay tự tràn ra ngoài trang?
     const bang = Array.from(document.querySelectorAll('table')).map(t => {
@@ -58,7 +76,7 @@ const DO = () => {
  */
 const MIEN = new Set<string>();
 
-test('6 module: không chữ dưới 11px, không nút dưới 44px, không tràn ngang trên iPhone', async ({ page }) => {
+test('13 màn: không chữ dưới 11px, không nút dưới 44px, không tràn ngang trên iPhone', async ({ page }) => {
     test.setTimeout(300000);
     await page.setViewportSize({ width: 393, height: 852 });
     await batDemo(page);

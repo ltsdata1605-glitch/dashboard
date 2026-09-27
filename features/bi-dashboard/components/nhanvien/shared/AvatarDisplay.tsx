@@ -144,7 +144,7 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
             <Button
                 variant="unstyled" size="none"
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity no-print border border-slate-200"
+                className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity after:absolute after:-inset-2 after:content-[''] lg:after:hidden no-print border border-slate-200"
             >
                 <UploadIcon className="h-2 w-2 text-sky-600" />
             </Button>

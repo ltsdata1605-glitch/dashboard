@@ -380,10 +380,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             maxWidth="4xl"
             footer={view === 'picker' ? (
                 <div className="flex items-center justify-between">
-                    <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
+                    <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="min-h-11 sm:min-h-0 py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
                         <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
                     </Button>
-                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[11px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
+                    <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="min-h-11 sm:min-h-0 py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[11px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
                         Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
                     </Button>
                 </div>

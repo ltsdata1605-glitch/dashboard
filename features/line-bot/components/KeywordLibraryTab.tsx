@@ -43,7 +43,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                     <p className="text-xs text-slate-500">Tự động nhận diện câu hỏi thường gặp và phản hồi lập tức kèm ảnh.</p>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={onRefresh} className="p-1.5 text-slate-500 rounded-xl" title="Làm mới">
+                    <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 text-slate-500 rounded-xl" title="Làm mới">
                         <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                     <Button
@@ -79,7 +79,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                         <span className="font-bold text-slate-900 dark:text-white text-sm bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-lg">
                                             "{kw.keyword}"
                                         </span>
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                        <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                                             kw.matchType === 'EXACT'
                                                 ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400'
                                                 : 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400'

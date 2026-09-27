@@ -163,7 +163,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                             <div className="flex items-center gap-1.5">
                                 <span
                                     style={theme.badgeStyle}
-                                    className={`px-2 py-0.5 text-[10px] font-black uppercase rounded-none border shadow-2xs ${theme.badge}`}
+                                    className={`px-2 py-0.5 text-[11px] font-black uppercase rounded-none border shadow-2xs ${theme.badge}`}
                                 >
                                     {channel}
                                 </span>
@@ -190,7 +190,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                         <div className="w-full overflow-hidden flex-1">
                             <table className="w-full table-fixed border-collapse">
                                 <thead>
-                                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">
+                                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[11px] uppercase font-bold text-slate-400 dark:text-slate-500">
                                         <th className="py-1.5 px-1.5 text-center w-7">#</th>
                                         <th className="py-1.5 px-2 text-left">Siêu Thị</th>
                                         <th className="py-1.5 px-2 text-right w-14">Thưởng</th>
@@ -223,12 +223,12 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                                     title={`[${store.storeCode}] ${store.storeName}`}
                                                 >
                                                     {/* HẠNG */}
-                                                    <td className={`py-1 px-1.5 text-center text-[10.5px] ${rankColor}`}>
+                                                    <td className={`py-1 px-1.5 text-center text-[11px] ${rankColor}`}>
                                                         #{rank}
                                                     </td>
 
                                                     {/* TÊN SIÊU THỊ */}
-                                                    <td className="py-1 px-2 text-slate-700 dark:text-slate-200 font-medium truncate text-[10.5px] group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                                                    <td className="py-1 px-2 text-slate-700 dark:text-slate-200 font-medium truncate text-[11px] group-hover:text-sky-600 dark:group-hover:text-sky-400">
                                                         {store.storeName}
                                                     </td>
 
@@ -248,7 +248,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                         </div>
 
                         {/* FOOTER CARD */}
-                        <div className="px-3 py-1.5 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+                        <div className="px-3 py-1.5 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
                             <span>{channelStores.length} siêu thị</span>
                             <button
                                 type="button"

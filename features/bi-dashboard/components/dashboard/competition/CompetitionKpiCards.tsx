@@ -132,7 +132,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                         <div className={`absolute top-0 left-0 right-0 h-[2.5px] ${u.bar}`} />
 
                         <div className="flex items-center justify-between gap-0.5 sm:gap-1 min-w-0">
-                            <span className="text-[8.5px] xs:text-[9.5px] sm:text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 truncate" title={u.label}>
+                            <span className="text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 truncate" title={u.label}>
                                 {u.label}
                             </span>
                             <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
@@ -142,7 +142,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                             {v.big}
                         </div>
 
-                        <div className="flex items-center justify-between text-[8px] xs:text-[9px] sm:text-[10.5px] leading-tight text-slate-500 dark:text-slate-400 min-w-0">
+                        <div className="flex items-center justify-between text-[11px] leading-tight text-slate-500 dark:text-slate-400 min-w-0">
                             <span className="truncate" title={v.sub}>{v.sub}</span>
                         </div>
 

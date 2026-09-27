@@ -94,9 +94,11 @@ const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtCh
                 </PieChart>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <span className="text-[15px] font-black text-white leading-none drop-shadow-md">{datPct}%</span>
-                    <span className="text-[6px] font-bold text-white/80 uppercase leading-tight drop-shadow-sm mt-0.5">Đạt 100%</span>
                 </div>
             </div>
+            {/* Nhãn "Đạt 100%" từng nằm TRONG lỗ donut 44px ở cỡ 6px — không đọc nổi trên điện thoại.
+                Lỗ donut không chứa được chữ 11px nên đưa xuống dưới. */}
+            <p className="text-[11px] text-white/80 font-bold uppercase leading-tight">Đạt 100%</p>
             <p className="text-[11px] text-white/70 font-bold">{stats.total} nhóm</p>
         </div>
     );
@@ -460,7 +462,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     const renderSortIcon = (key: 'name' | 'actual' | 'target' | 'dkht' | 'remaining') => {
         if (sortConfig?.key !== key) return null;
         return (
-            <span className="inline-block ml-0.5 text-sky-600 dark:text-sky-400 font-bold text-[10px]">
+            <span className="inline-block ml-0.5 text-sky-600 dark:text-sky-400 font-bold text-[11px]">
                 {sortConfig.direction === 'desc' ? '▼' : '▲'}
             </span>
         );

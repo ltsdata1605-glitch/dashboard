@@ -61,7 +61,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sm: 'h-8 min-h-11 sm:min-h-0 px-3 text-xs rounded-md',
       md: 'h-9 min-h-11 sm:min-h-0 px-4 text-sm rounded-md',
       lg: 'h-11 px-6 text-base rounded-md',
-      icon: 'h-8 w-8 rounded-md p-0',
+      // `c9240cdd` (2026-09-26) hạ nút icon về `h-8 w-8` cho gọn trên desktop nhưng làm rơi luôn
+      // `min-h-11 min-w-11` → mọi nút icon trên iPhone còn 28–32px (Báo cáo: 55 nút). Giữ đúng
+      // cỡ desktop đó, chỉ trả lại vùng chạm 44px dưới `sm:`.
+      icon: 'h-8 w-8 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 rounded-md p-0',
       none: '',
     };
 

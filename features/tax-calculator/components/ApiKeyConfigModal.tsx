@@ -77,7 +77,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                             <p className="text-[11px] text-slate-400">Dùng để trích xuất ảnh phiếu lương trực tiếp</p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="none" onClick={onClose} className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <X size={16} />
                     </Button>
                 </div>
@@ -112,7 +112,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                                 href="https://aistudio.google.com/app/apikey"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="font-bold underline inline-flex items-center gap-0.5"
+                                className="relative after:absolute after:-inset-y-4 after:inset-x-0 after:content-[''] sm:after:hidden font-bold underline inline-flex items-center gap-0.5"
                             >
                                 <span>Google AI Studio</span>
                                 <ExternalLink size={10} />
@@ -129,7 +129,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                         type="button"
                         onClick={handleTestKey}
                         disabled={isChecking}
-                        className="px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                        className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                     >
                         {isChecking ? 'Đang kiểm tra...' : 'Kiểm tra key'}
                     </button>

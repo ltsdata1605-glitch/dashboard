@@ -518,7 +518,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                       <div key={staff.id} className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-sky-300 dark:hover:border-sky-700 hover:bg-sky-50/30 dark:hover:bg-sky-900/10 transition-all flex justify-between items-center group shadow-sm">
                           <div>
                               <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{staff.name.split(' - ')[1] || staff.name}</p>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase">{staff.department}</p>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold uppercase">{staff.department}</p>
                               <p className="text-xs mt-1 text-slate-600 dark:text-slate-400">Ca hiện tại: <span className="font-black text-sky-600 dark:text-sky-400">{staff.schedule[info.dayIndex]?.role || 'Trống'}</span></p>
                           </div>
                           <Button
@@ -545,7 +545,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
               )}
           </div>
 
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium italic text-center">
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium italic text-center">
               * Lưu ý: Thao tác hoán đổi sẽ tráo đổi trực tiếp ca của hai người.
           </p>
       </div>

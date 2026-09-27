@@ -134,7 +134,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                             </p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="none" onClick={onClose} className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                         <X size={16} />
                     </Button>
                 </div>

@@ -49,13 +49,13 @@ const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange
             <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                 {onDelete && (
                     <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
-                        className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600">
+                        className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600 relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden">
                         <Trash2 size={12} />
                     </Button>
                 )}
                 <Input type="number" inputMode="decimal" min="0" step="0.1" placeholder="0" fullWidth={false} aria-label={label}
                     value={value} onChange={e => onChange(e.target.value)} onKeyDown={blockNonNumericKeys}
-                    className="h-8 lg:h-6 w-16 sm:w-[88px] lg:w-20 rounded px-2 text-base sm:text-[13px] tabular-nums text-right" />
+                    className="h-8 min-h-0 lg:h-6 w-16 sm:w-[88px] lg:w-20 rounded px-2 text-base sm:text-[13px] tabular-nums text-right" />
             </div>
         </div>
     );

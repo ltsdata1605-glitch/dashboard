@@ -221,7 +221,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             }`}
                         >
                             <span>Tất cả</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'ALL' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.all}
@@ -238,7 +238,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                         >
                             <Sparkles size={13} />
                             <span>Chưa là Admin</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'NON_ADMIN' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.nonAdmin}
@@ -255,7 +255,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                         >
                             <MessageSquare size={13} />
                             <span>Từ Nhóm LINE</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'GROUP' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.group}
@@ -272,7 +272,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                         >
                             <MessageCircle size={13} />
                             <span>Nhắn riêng 1-1</span>
-                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                            <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'DIRECT' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.direct}
@@ -342,7 +342,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
 
                                             {/* Online / Channel Icon Indicator */}
                                             <div
-                                                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-[9px] text-white ${
+                                                className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-[11px] text-white ${
                                                     user.lastInteractionType === 'GROUP' ? 'bg-sky-500' : 'bg-emerald-500'
                                                 }`}
                                                 title={user.lastInteractionType === 'GROUP' ? 'Tương tác trong nhóm' : 'Nhắn tin trực tiếp'}
@@ -364,7 +364,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
 
                                                 {/* Source Badge */}
                                                 <span
-                                                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold flex items-center gap-1 ${
+                                                    className={`px-2 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1 ${
                                                         user.lastInteractionType === 'GROUP'
                                                             ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/40'
                                                             : 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
@@ -403,7 +403,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                             </div>
 
                                             {/* Last message snippet & time */}
-                                            <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-slate-500">
+                                            <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500">
                                                 {user.lastMessage && (
                                                     <span className="truncate max-w-[220px] italic text-slate-600 dark:text-slate-400">
                                                         “{user.lastMessage}”

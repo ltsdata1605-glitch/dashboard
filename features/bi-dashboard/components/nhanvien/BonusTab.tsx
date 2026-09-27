@@ -121,7 +121,7 @@ export const BonusView: React.FC<{
                 <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
                     {cardTitle}
                 </h2>
-                <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-none mt-1">
+                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-1">
                     {cardSubtitle}
                 </div>
             </div>
@@ -146,7 +146,7 @@ export const BonusView: React.FC<{
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="h-8 w-8 text-sky-700 dark:text-sky-400"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
                         {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
                     </Button>

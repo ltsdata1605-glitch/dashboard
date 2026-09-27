@@ -29,7 +29,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                     onClick(e as any); 
                 } 
             } : undefined}
-            className={cn("px-2 py-1.5 lg:px-4 lg:py-2.5 flex flex-row justify-between items-center gap-1.5 lg:gap-2 border-b border-slate-100 dark:border-slate-800", className)} 
+            className={cn("px-2 py-1.5 lg:px-4 lg:py-2.5 flex flex-row flex-wrap justify-between items-center gap-1.5 lg:gap-2 border-b border-slate-100 dark:border-slate-800", className)} 
             style={{ borderImage: 'linear-gradient(to right, rgba(99,102,241,0.15), rgba(14,165,233,0.1), transparent) 1' }}
         >
             <div className="flex items-center gap-1.5 lg:gap-3 min-w-0">
@@ -44,7 +44,10 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                     {subtitle && <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{subtitle}</div>}
                 </div>
             </div>
-            {children && <div className="flex items-center gap-0.5 lg:gap-2 shrink-0">{children}</div>}
+            {/* flex-wrap ở hàng ngoài + max-w-full ở đây: khi tiêu đề và cụm nút không đủ chỗ chung một
+                hàng (iPhone), cụm nút xuống hàng riêng thay vì bóp tiêu đề thành "CẤU HÌNH SIÊU THỊ & …";
+                max-w-full giữ cụm nút không vượt khung để thanh cuộn ngang bên trong (nếu có) còn chạy. */}
+            {children && <div className="flex items-center gap-0.5 lg:gap-2 shrink-0 max-w-full ml-auto">{children}</div>}
         </div>
     );
 };

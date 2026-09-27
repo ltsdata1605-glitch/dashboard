@@ -90,16 +90,16 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     // Format display text or tags
     const renderContent = () => {
         const labelText = variant === 'compact' ? label : label;
-        if (selected.length === 0) return <span className="text-slate-500 font-normal text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
+        if (selected.length === 0) return <span className="text-slate-500 font-normal text-[11px] sm:text-xs whitespace-nowrap">{label}</span>;
         
         if (selected.length === allUniqueOptions.length) {
-            return <span className="text-sky-700 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">
+            return <span className="text-sky-700 dark:text-sky-400 font-medium text-[11px] sm:text-xs whitespace-nowrap">
                 {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
             </span>;
         }
         
         if (variant === 'compact') {
-            return <span className="text-sky-700 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{label}</span>;
+            return <span className="text-sky-700 dark:text-sky-400 font-medium text-[11px] sm:text-xs whitespace-nowrap">{label}</span>;
         }
 
         if (selected.length <= 2) {
@@ -114,7 +114,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             );
         }
         
-        return <span className="text-sky-700 dark:text-sky-400 font-medium text-[9.5px] sm:text-xs whitespace-nowrap">{selected.length} {label}</span>;
+        return <span className="text-sky-700 dark:text-sky-400 font-medium text-[11px] sm:text-xs whitespace-nowrap">{selected.length} {label}</span>;
     };
 
     const isFiltered = selected.length > 0 && selected.length < allUniqueOptions.length;
@@ -159,7 +159,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     </div>
                     <div className="flex items-center gap-1.5 ml-1 sm:ml-2">
                         {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
-                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-sky-600 text-white text-[11px] sm:text-[11px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
+                            <div className="w-4.5 h-4.5 sm:w-4 sm:h-4 rounded-full bg-sky-600 text-white text-[11px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200 shrink-0">
                                 {selected.length}
                             </div>
                         )}
@@ -228,7 +228,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             </div>
                             <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 group-hover:text-sky-700 transition-colors">Tất cả {label}</span>
                         </label>
-                        <span className="text-[11px] sm:text-[11px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
+                        <span className="text-[11px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
                     </div>
 
                     {/* Options List */}

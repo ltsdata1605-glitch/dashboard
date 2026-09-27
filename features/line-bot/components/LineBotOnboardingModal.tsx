@@ -51,7 +51,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         href="https://developers.line.biz/console/"
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
+                        className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
                     >
                         <span>Mở LINE Developers Console</span>
                         <ExternalLink size={15} />
@@ -155,7 +155,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                             <p className="text-xs text-slate-500 dark:text-slate-400">Bước {currentStep} / {steps.length}: {currentData.title}</p>
                         </div>
                     </div>
-                    <Button variant="ghost" onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
+                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
                         <X size={18} />
                     </Button>
                 </div>
@@ -206,7 +206,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                             <button
                                 key={s.step}
                                 onClick={() => setCurrentStep(s.step)}
-                                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                                className={`relative after:absolute after:-inset-[17px] after:content-[''] w-2.5 h-2.5 rounded-full transition-all ${
                                     s.step === currentStep ? 'bg-emerald-500 w-6' : 'bg-slate-200 dark:bg-slate-700'
                                 }`}
                             />

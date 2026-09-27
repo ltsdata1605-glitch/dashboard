@@ -706,7 +706,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
-                    <Button variant="unstyled" size="none" onClick={() => fetchRequests(true)} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
+                    <Button variant="unstyled" size="none" onClick={() => fetchRequests(true)} disabled={isLoading} className="min-h-11 sm:min-h-0 h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
                         <Icon name="refresh-ccw" size={3.5} className={isLoading ? 'animate-spin' : ''} /> Làm Mới
                     </Button>
                 </div>
@@ -735,7 +735,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <option value="dept">Mã Kho</option>
                                 <option value="logins">Truy cập</option>
                             </Select>
-                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                 <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
                             </Button>
                         </div>
@@ -822,10 +822,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {listMode === 'pending' ? (
                                                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
                                                             <Icon name="x" size={3.5} />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors flex items-center gap-1">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors flex items-center gap-1">
                                                             <Icon name="check" size={3.5} /> Duyệt
                                                         </Button>
                                                     </div>
@@ -836,7 +836,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             size="none"
                                                             onClick={() => handleOpenExtendModal(req)}
                                                             disabled={actionLoadingId === req.id}
-                                                            className="h-8 px-2.5 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-semibold active:scale-95"
+                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-semibold active:scale-95"
                                                             title="Gia hạn quyền truy cập"
                                                         >
                                                             {actionLoadingId === req.id ? (
@@ -851,7 +851,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             size="none"
                                                             onClick={() => setConfirmRevokeUser(req)}
                                                             disabled={actionLoadingId === req.id}
-                                                            className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
+                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
                                                             title="Thu hồi"
                                                         >
                                                             <Icon name="user-minus" size={3.5} />
@@ -869,7 +869,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             size="none"
                                                             onClick={() => handleOpenExtendModal(req)}
                                                             disabled={actionLoadingId === req.id}
-                                                            className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-medium active:scale-95"
+                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-medium active:scale-95"
                                                             title="Gia hạn / Đổi thời hạn"
                                                         >
                                                             <Icon name="calendar-clock" size={3.5} className="text-emerald-600 dark:text-emerald-400" />
@@ -880,7 +880,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             size="none"
                                                             onClick={() => setConfirmRevokeUser(req)}
                                                             disabled={actionLoadingId === req.id}
-                                                            className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
+                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
                                                             title="Thu hồi"
                                                         >
                                                             <Icon name="user-minus" size={3.5} />
@@ -928,7 +928,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">NGÀY HẾT HẠN</span>
                                                     {expiryDates[req.id] ? (
-                                                        <span className={`text-[10px] font-bold ${
+                                                        <span className={`text-[11px] font-bold ${
                                                             new Date(expiryDates[req.id]).getTime() < Date.now() 
                                                                 ? 'text-rose-500 font-semibold' 
                                                                 : 'text-emerald-600 dark:text-emerald-400'
@@ -941,7 +941,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             })()}
                                                         </span>
                                                     ) : (
-                                                        <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">
+                                                        <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                                             (Vô hạn)
                                                         </span>
                                                     )}
@@ -960,10 +960,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             onChange={e => handleInlineDaysChange(req.id, e.target.value)}
                                                             className="h-7 w-[56px] text-xs font-bold px-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-slate-700 dark:text-slate-200 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 text-center shadow-sm placeholder:text-slate-400 placeholder:font-normal"
                                                         />
-                                                        <span className="text-[10px] text-slate-400 ml-1 font-medium select-none">ngày</span>
+                                                        <span className="text-[11px] text-slate-400 ml-1 font-medium select-none">ngày</span>
                                                     </div>
 
-                                                    <span className="text-[10px] font-semibold text-slate-400 select-none">hoặc</span>
+                                                    <span className="text-[11px] font-semibold text-slate-400 select-none">hoặc</span>
 
                                                     {/* Chọn ngày kết thúc trên lịch */}
                                                     <Input
@@ -1042,7 +1042,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         variant="unstyled"
                                         size="none"
                                         onClick={() => handleQuickPreset(p.days)}
-                                        className={`py-1.5 text-xs font-semibold rounded-lg border transition-all ${
+                                        className={`min-h-11 sm:min-h-0 py-1.5 text-xs font-semibold rounded-lg border transition-all ${
                                             !isUnlimited && extendDays === p.days
                                                 ? 'bg-sky-600 text-white border-sky-600 shadow-sm font-bold'
                                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300 hover:bg-sky-50 dark:hover:bg-slate-700'
@@ -1057,7 +1057,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     variant="unstyled"
                                     size="none"
                                     onClick={handleToggleUnlimited}
-                                    className={`w-full py-2 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
+                                    className={`min-h-11 sm:min-h-0 w-full py-2 text-xs font-bold rounded-lg border flex items-center justify-center gap-1.5 transition-all ${
                                         isUnlimited
                                             ? 'bg-slate-600 text-white border-slate-600 shadow-sm'
                                             : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-950/30'

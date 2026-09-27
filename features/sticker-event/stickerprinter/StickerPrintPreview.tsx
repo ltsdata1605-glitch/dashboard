@@ -355,7 +355,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             </div>
             {stickerType === 'draw' && totalDrawPages > 1 && (
                 <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/40 no-print">
-                    <span className="text-[10px] lg:text-[11px] font-bold text-slate-500 mr-1.5 uppercase">
+                    <span className="text-[11px] font-bold text-slate-500 mr-1.5 uppercase">
                         Trang xem trước:
                     </span>
                     <div className="flex items-center gap-1">
@@ -371,10 +371,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             if (totalDrawPages > 5) {
                                 if (idx !== 0 && idx !== totalDrawPages - 1 && Math.abs(idx - activeDrawPage) > 1) {
                                     if (idx === 1 && activeDrawPage > 2) {
-                                        return <span key={idx} className="text-[10px] text-slate-400">...</span>;
+                                        return <span key={idx} className="text-[11px] text-slate-400">...</span>;
                                     }
                                     if (idx === totalDrawPages - 2 && activeDrawPage < totalDrawPages - 3) {
-                                        return <span key={idx} className="text-[10px] text-slate-400">...</span>;
+                                        return <span key={idx} className="text-[11px] text-slate-400">...</span>;
                                     }
                                     return null;
                                 }

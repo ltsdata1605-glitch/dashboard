@@ -211,7 +211,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             setLocalTotalTickets(4000);
                                             restoreHistory(DEFAULT_DRAW_HISTORY_ENTRY);
                                         }}
-                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-lg hover:bg-rose-100/70 dark:hover:bg-rose-900/50 hover:text-rose-800 dark:hover:text-rose-200 transition-all shadow-xs active:scale-95 cursor-pointer"
+                                        className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-lg hover:bg-rose-100/70 dark:hover:bg-rose-900/50 hover:text-rose-800 dark:hover:text-rose-200 transition-all shadow-xs active:scale-95 cursor-pointer"
                                         title="Khôi phục toàn bộ phiếu và cấu hình về mẫu mặc định"
                                     >
                                         <RotateCcw size={12} className="stroke-[2.2]" />
@@ -221,7 +221,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1">
-                                        <label className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                             Số bắt đầu
                                         </label>
                                         <Input
@@ -233,7 +233,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                        <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                             Số lượng cần in
                                         </label>
                                         <Input
@@ -246,21 +246,21 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     </div>
                                 </div>
 
-                                <label className="flex items-center gap-2 cursor-pointer select-none py-1">
+                                <label className="flex items-center gap-2 cursor-pointer select-none py-1 min-h-11 sm:min-h-0">
                                     <input 
                                         type="checkbox"
                                         checked={drawAutoIncrement}
                                         onChange={(e) => setDrawAutoIncrement(e.target.checked)}
                                         className="w-4 h-4 rounded text-rose-600 border-slate-300 dark:border-slate-700 focus:ring-rose-500 bg-white dark:bg-slate-900"
                                     />
-                                    <span className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
                                         Tự động nhảy số liên tục
                                     </span>
                                 </label>
 
                                 {/* Chọn nền in */}
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                    <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                         Nền in
                                     </label>
                                     <div className="flex gap-2">
@@ -269,7 +269,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             variant="unstyled"
                                             size="none"
                                             onClick={() => setBgImage('/frame/bg_phieu.png')}
-                                            className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border-2 ${
+                                            className={`flex-1 min-h-11 sm:min-h-0 py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all border-2 ${
                                                 bgImage === '/frame/bg_phieu.png'
                                                     ? 'bg-sky-600 text-white border-sky-600 shadow-md'
                                                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300'
@@ -282,7 +282,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             variant="unstyled"
                                             size="none"
                                             onClick={() => setBgImage('/frame/bg_phieutgd.png')}
-                                            className={`flex-1 py-1.5 px-3 rounded-lg text-[10px] lg:text-[11px] font-bold transition-all border-2 ${
+                                            className={`flex-1 min-h-11 sm:min-h-0 py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all border-2 ${
                                                 bgImage === '/frame/bg_phieutgd.png'
                                                     ? 'bg-sky-600 text-white border-sky-600 shadow-md'
                                                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300'
@@ -293,7 +293,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     </div>
                                 </div>
 
-                                <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[10px] lg:text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                                <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
                                     <span className="font-bold text-sky-600 dark:text-sky-400">Gợi ý in:</span> {localTotalTickets} phiếu rút thăm sẽ được in trên <span className="font-bold text-slate-800 dark:text-white">{Math.ceil(localTotalTickets / 4)} trang A4</span> (mỗi trang 4 phiếu). Các số thứ tự sẽ tự động điền từ <span className="font-bold text-slate-800 dark:text-white">{localStartNumber}</span> đến <span className="font-bold text-slate-800 dark:text-white">{localStartNumber + localTotalTickets - 1}</span>.
                                 </div>
                             </div>
@@ -317,7 +317,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
 
                                 {/* Import from template */}
                                 <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
-                                    <p className="text-[10px] lg:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                                    <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
                                         <FileSpreadsheet size={12} />
                                         Nhập từ File Mẫu
                                     </p>
@@ -325,12 +325,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <Button
                                             variant="ghost"
                                             onClick={downloadTemplate}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm"
                                         >
                                             <Download size={10} />
                                             Tải File Mẫu
                                         </Button>
-                                        <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
+                                        <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm">
                                             <Upload size={10} />
                                             Nhập File Mẫu
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
@@ -340,17 +340,17 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
 
                                 {/* Import price file from ERP */}
                                 <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
-                                    <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
+                                    <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
                                         <Package size={12} />
                                         Nhập file in giá từ ERP
                                     </p>
                                     <div className="grid grid-cols-1 gap-2">
-                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
+                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm text-center">
                                             <Upload size={10} />
                                             Máy Lọc Nước (Mẫu in 99)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
                                         </label>
-                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
+                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm text-center">
                                             <Upload size={10} />
                                             Điện Tử/Lạnh (Mẫu in 97)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'appliance')} className="hidden" />
@@ -366,9 +366,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                 Danh sách in ({selectedCount}/{batchItems.length})
                                             </h4>
                                             <div className="flex gap-2">
-                                                <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-sky-600 hover:text-sky-700 font-bold uppercase">Chọn hết</Button>
-                                                <Button variant="ghost" onClick={() => toggleAllSelection(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</Button>
-                                                <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-rose-500 hover:text-rose-600 font-bold uppercase">Xóa</Button>
+                                                <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] text-sky-600 hover:text-sky-700 font-bold uppercase">Chọn hết</Button>
+                                                <Button variant="ghost" onClick={() => toggleAllSelection(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</Button>
+                                                <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] text-rose-500 hover:text-rose-600 font-bold uppercase">Xóa</Button>
                                             </div>
                                         </div>
                                         <Input 
@@ -412,7 +412,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             
                             <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-3">
                                 <div className="space-y-1.5">
-                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400">CẤU HÌNH IN CHROME (CTRL + P):</p>
+                                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">CẤU HÌNH IN CHROME (CTRL + P):</p>
                                     <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
                                         <li className="flex items-center gap-1.5">
                                             <span className="w-1 h-1 rounded-full bg-sky-500 shrink-0" />
@@ -494,10 +494,10 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 >
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate flex items-center gap-1.5">
-                                            {isDefault && <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded">📌 Mặc định</span>}
+                                            {isDefault && <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded">📌 Mặc định</span>}
                                             {entry.label}
                                         </p>
-                                        <div className="flex gap-1.5 mt-1 text-[10px] text-slate-400">
+                                        <div className="flex gap-1.5 mt-1 text-[11px] text-slate-400">
                                             {!isDefault && (
                                                 <>
                                                     <span>{new Date(entry.timestamp).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>

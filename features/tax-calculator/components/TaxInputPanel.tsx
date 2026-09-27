@@ -556,7 +556,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Mở trang HRM tương ứng"
-                    className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer no-underline"
+                    className="py-3.5 -my-3.5 sm:py-0 sm:my-0 text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer no-underline"
                   >
                     1. Lương ngày 5
                   </a>
@@ -567,7 +567,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Mở HRM Chi tiết lương (Đợt 1)"
-                  className="p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors shrink-0"
+                  className="relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors shrink-0"
                 >
                   <ExternalLink className="w-3 h-3" />
                 </a>
@@ -677,7 +677,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Mở trang HRM tương ứng"
-                    className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer no-underline"
+                    className="py-3.5 -my-3.5 sm:py-0 sm:my-0 text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer no-underline"
                   >
                     2. Thưởng ngày 20
                   </a>
@@ -688,7 +688,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Mở HRM Xem chi tiết thưởng (Đợt 2)"
-                  className="p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors shrink-0"
+                  className="relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors shrink-0"
                 >
                   <ExternalLink className="w-3 h-3" />
                 </a>
@@ -854,7 +854,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 />
                 <button
                   type="submit"
-                  className="sm:col-span-3 px-2.5 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                  className="min-h-11 sm:min-h-0 sm:col-span-3 px-2.5 py-1.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                 >
                   Thêm mục
                 </button>

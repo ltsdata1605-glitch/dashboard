@@ -195,7 +195,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         const x = Number(cx ?? 0) + r * Math.cos(-(midAngle ?? 0) * RADIAN);
         const y = Number(cy ?? 0) + r * Math.sin(-(midAngle ?? 0) * RADIAN);
         return (
-            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={800}>
+            <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={800}>
                 {`${((percent ?? 0) * 100).toFixed(0)}%`}
             </text>
         );
@@ -232,7 +232,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         <div className="flex items-center gap-3">
                             <span>{getTitle('card')}</span>
                             {drilldownPath.length > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>}
-                            <nav className="flex items-center text-[11px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
+                            <nav className="flex items-center text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
                                 {drilldownPath.length > 0 && (
                                     <Button
                                         variant="unstyled" size="none"
@@ -360,7 +360,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                     {formatQuantity(quantity)} SP
                                                 </span>
                                             </div>
-                                            <span className={`text-[7px] font-black px-1 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter shrink-0 lg:hidden`}>
+                                            <span className={`text-[11px] font-black px-1 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter shrink-0 lg:hidden`}>
                                                 {pct.toFixed(1)}%
                                             </span>
                                             {isDrillable && (
@@ -466,7 +466,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 >
                                                     <div className="flex items-center min-w-0 mr-1">
                                                         <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 mr-1" style={{ background: COLORS[idx % COLORS.length] }} />
-                                                        <span className="text-[9.5px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
+                                                        <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
                                                     </div>
                                                     <span className="text-[11px] font-black text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1">{pct}%</span>
                                                 </div>

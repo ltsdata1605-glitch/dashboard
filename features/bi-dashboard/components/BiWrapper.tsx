@@ -128,7 +128,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 @media (max-width: 768px) {
                     /* THANG CHỮ TRÊN ĐIỆN THOẠI — SÀN 11px.
                        Bản cũ ("High-Density Typography") ép NHỎ HƠN cả cỡ tác giả viết:
-                       text-[11px] -> 9px, text-[10px] -> 8px, text-xs -> 9px. Tức là quy tắc
+                       text-[11px] -> 9px, text-[11px] -> 8px, text-xs -> 9px. Tức là quy tắc
                        "cỡ chữ nhỏ nhất là 11px" của CLAUDE.md mục 2 bị phá ĐÚNG ở chế độ điện
                        thoại — nơi chữ khó đọc nhất. Đo thật trên iPhone 15 (2026-09-26): 71 chỗ
                        chữ dưới 11px, nhỏ nhất 8px.

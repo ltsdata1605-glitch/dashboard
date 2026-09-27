@@ -286,7 +286,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         )}
 
         <div className="mb-3 flex items-center gap-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 p-2 rounded-md">
-            <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Chọn bộ phận:</label>
+            <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest whitespace-nowrap">Chọn bộ phận:</label>
             <select
                 value={selectedDept}
                 onChange={(e) => setSelectedDept(e.target.value)}
@@ -301,7 +301,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         {previewStats && (
             <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden">
                 <div className="bg-slate-50 dark:bg-slate-800/80 p-2 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                    <h3 className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Xem trước số lượng (Trung bình/ngày)</h3>
+                    <h3 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Xem trước số lượng (Trung bình/ngày)</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-center text-xs border-collapse">
@@ -319,7 +319,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                         </thead>
                         <tbody>
                             <tr className="border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
-                                <td className="p-1.5 font-bold text-sky-600 dark:text-sky-400 text-left text-[10px] uppercase tracking-widest">Khung Giờ</td>
+                                <td className="p-1.5 font-bold text-sky-600 dark:text-sky-400 text-left text-[11px] uppercase tracking-widest">Khung Giờ</td>
                                 {['1', '2', '3', '4', '5', '6'].map(slot => (
                                     <td key={slot} className="p-1">
                                         <div className="flex flex-col items-center gap-0.5">
@@ -327,13 +327,13 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                                 type="time"
                                                 value={shiftDefinitions[slot]?.startTime || ''}
                                                 onChange={(e) => onShiftDefinitionsUpdate({ ...shiftDefinitions, [slot]: { ...shiftDefinitions[slot], startTime: e.target.value } })}
-                                                className="w-[60px] text-[9px] font-mono font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-0.5 text-center focus:border-sky-500 outline-none"
+                                                className="w-[60px] text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-0.5 text-center focus:border-sky-500 outline-none"
                                             />
                                             <input
                                                 type="time"
                                                 value={shiftDefinitions[slot]?.endTime || ''}
                                                 onChange={(e) => onShiftDefinitionsUpdate({ ...shiftDefinitions, [slot]: { ...shiftDefinitions[slot], endTime: e.target.value } })}
-                                                className="w-[60px] text-[9px] font-mono font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-0.5 text-center focus:border-sky-500 outline-none"
+                                                className="w-[60px] text-[11px] font-mono font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded p-0.5 text-center focus:border-sky-500 outline-none"
                                             />
                                         </div>
                                     </td>
@@ -343,7 +343,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                             <tr className="relative border-b border-slate-100 dark:border-slate-700">
                                 {onboardingStep === 1 && (
                                     <td colSpan={8} className="absolute inset-0 ring-2 ring-rose-500 pointer-events-none">
-                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-48 bg-rose-600 text-white text-[10px] font-bold py-1 px-2 shadow-lg z-50 text-center rounded">
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-48 bg-rose-600 text-white text-[11px] font-bold py-1 px-2 shadow-lg z-50 text-center rounded">
                                             Bước 1: Nhập số lượng yêu cầu.
                                             <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-1 w-2 h-2 bg-rose-600 rotate-45"></div>
                                         </div>
@@ -413,7 +413,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
           </div>
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
-              <div className="grid grid-cols-12 gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 py-2 pr-8">
+              <div className="grid grid-cols-12 gap-1 text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 py-2 pr-8">
                   <div className="col-span-1 text-center">STT</div>
                   {SHIFTS.map(s => <div key={s} className="col-span-1 text-center">Ca {s}</div>)}
                   <div className="col-span-2 text-center border-l border-slate-200 dark:border-slate-700">Mã Ca</div>
@@ -464,7 +464,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
 
            <div className="relative mt-3">
                 {onboardingStep === 2 && (
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-48 bg-rose-600 text-white text-[10px] font-bold py-1 px-2 shadow-lg z-50 text-center rounded">
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 w-48 bg-rose-600 text-white text-[11px] font-bold py-1 px-2 shadow-lg z-50 text-center rounded">
                         Bước 2: Thêm chu kỳ xoay ca.
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-2 h-2 bg-rose-600 rotate-45"></div>
                     </div>

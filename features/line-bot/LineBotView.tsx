@@ -127,32 +127,32 @@ export default function LineBotView() {
                                     {botConfigHook.botInfo?.displayName || 'BOT LINE Quản Lý PMH'}
                                 </span>
                                 {botConfigHook.botInfo ? (
-                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap">
+                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap">
                                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                         Online
                                     </span>
                                 ) : (
-                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 flex items-center gap-1 shrink-0 whitespace-nowrap">
+                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 flex items-center gap-1 shrink-0 whitespace-nowrap">
                                         <XCircle size={10} /> Chưa kết nối
                                     </span>
                                 )}
 
                                 {/* Badge phạm vi Bot */}
                                 {isInheriting ? (
-                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bạn đang dùng chung Bot và kho mã do quản lý khác trong cùng kho tạo">
+                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bạn đang dùng chung Bot và kho mã do quản lý khác trong cùng kho tạo">
                                         <Building2 size={10} /> Kho {currentDept} (Kế thừa)
                                     </span>
                                 ) : scopeMode === 'warehouse' && currentDept ? (
-                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/80 dark:border-sky-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bot đại diện chính của kho này">
+                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/80 dark:border-sky-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bot đại diện chính của kho này">
                                         <Building2 size={10} /> Kho {currentDept} (Bot kho)
                                     </span>
                                 ) : (
-                                    <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 whitespace-nowrap">
+                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 whitespace-nowrap">
                                         <User size={10} /> Bot Cá Nhân
                                     </span>
                                 )}
                             </div>
-                            <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug sm:truncate">
                                 {botConfigHook.botInfo?.basicId
                                     ? `ID: ${botConfigHook.botInfo.basicId} • Cấp phát mã & Tự động hoá`
                                     : 'Hệ thống cấp phát mã PMH tự động và trợ lý thông báo qua LINE'}
@@ -167,7 +167,7 @@ export default function LineBotView() {
                             onClick={() => setIsOnboardingOpen(true)}
                             aria-label="Hướng dẫn tạo Bot"
                             title="Hướng dẫn tạo Bot"
-                            className="flex items-center gap-1.5 h-7.5 px-2.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-lg border border-sky-200/80 dark:border-sky-800/80 shadow-2xs transition-all active:scale-95"
+                            className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-lg border border-sky-200/80 dark:border-sky-800/80 shadow-2xs transition-all active:scale-95"
                         >
                             <HelpCircle size={13} className="text-sky-600 dark:text-sky-400" />
                             <span className="hidden sm:inline">Hướng dẫn tạo Bot</span>
@@ -196,19 +196,19 @@ export default function LineBotView() {
                             )}
                             <div className="min-w-0 leading-snug">
                                 {isInheriting ? (
-                                    <p className="font-semibold truncate">
+                                    <p className="font-semibold sm:truncate">
                                         🏢 Đang <strong>kế thừa Bot Kho {currentDept}</strong> (do {warehouseBot?.ownerName || warehouseBot?.ownerEmail || 'Quản lý khác'} tạo). Đang dùng chung kho mã & cấu hình Bot.
                                     </p>
                                 ) : scopeMode === 'warehouse' ? (
-                                    <p className="font-semibold truncate">
+                                    <p className="font-semibold sm:truncate">
                                         🏢 Bot LINE của <strong>Kho {currentDept}</strong> (Bạn là người khởi tạo). Các tài khoản cùng mã kho này sẽ tự động kế thừa và dùng chung.
                                     </p>
                                 ) : hasWarehouseBot ? (
-                                    <p className="font-semibold truncate">
+                                    <p className="font-semibold sm:truncate">
                                         💡 Kho <strong>{currentDept}</strong> đã có sẵn Bot LINE "{warehouseBot?.botName}". Bạn có muốn dùng chung cùng các Quản lý khác không?
                                     </p>
                                 ) : (
-                                    <p className="font-medium text-slate-500 dark:text-slate-400 truncate">
+                                    <p className="font-medium text-slate-500 dark:text-slate-400 sm:truncate">
                                         🏢 Mã kho tài khoản Google: <strong>Kho {currentDept}</strong>. Bot bạn cấu hình tại đây sẽ được chia sẻ cho các quản lý cùng kho.
                                     </p>
                                 )}
@@ -221,7 +221,7 @@ export default function LineBotView() {
                                     <button
                                         type="button"
                                         onClick={() => switchScope('personal')}
-                                        className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
+                                        className="min-h-11 sm:min-h-0 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
                                         title="Chuyển sang cấu hình Bot riêng biệt cho tài khoản này"
                                     >
                                         Tạo / Dùng Bot riêng
@@ -230,7 +230,7 @@ export default function LineBotView() {
                                     <button
                                         type="button"
                                         onClick={() => switchScope('warehouse')}
-                                        className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-xs"
+                                        className="min-h-11 sm:min-h-0 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-xs"
                                         title="Kế thừa và dùng chung Bot của kho"
                                     >
                                         Kế thừa Bot Kho {currentDept}
@@ -256,7 +256,7 @@ export default function LineBotView() {
                                 type="button"
                                 data-tab-id={tab.id}
                                 onClick={() => setActiveSubTab(tab.id)}
-                                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all shrink-0 snap-start active:scale-95 cursor-pointer ${
+                                className={`min-h-11 sm:min-h-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all shrink-0 snap-start active:scale-95 cursor-pointer ${
                                     isActive
                                         ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs font-bold ring-1 ring-slate-200/60 dark:ring-slate-600'
                                         : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/40'

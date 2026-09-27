@@ -102,7 +102,7 @@
   --p-font-mono:  'Fira Code', ui-monospace, monospace;
   --p-font-display: 'UTM Avo', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
 
-  --p-text-2xs:  10px;
+  --p-text-2xs:  11px; /* sàn chữ 11px (CLAUDE.md mục 2) — trước là 10px */
   --p-text-xs:   12px;
   --p-text-sm:   14px;
   --p-text-base: 16px;
@@ -155,7 +155,7 @@
 
   /* ─── SEMANTIC TYPOGRAPHY TOKENS ─── */
   /* Chuẩn hóa type scale cho toàn bộ dự án — thay thế arbitrary font-size */
-  --text-caption:      var(--p-text-2xs);    /* 10px — tiny labels, footnotes */
+  --text-caption:      var(--p-text-2xs);    /* 11px — tiny labels, footnotes */
   --text-overline:     11px;                 /* 11px — table headers, section labels */
   --text-label:        var(--p-text-xs);     /* 12px — badges, tags, small labels */
   --text-body-sm:      13px;                 /* 13px — compact body text, sub-labels */

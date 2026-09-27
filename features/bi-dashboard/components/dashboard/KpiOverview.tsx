@@ -245,7 +245,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                         {currentDtqdTarget > 0 && (
                             <span
                                 title={`Doanh thu còn lại (Thực hiện - Target): ${dtqdRemaining >= 0 ? '+' : '-'}${dtqdRemainingFormatted.full}`}
-                                className={`text-[9.5px] xs:text-[10.5px] sm:text-[12px] lg:text-[13px] xl:text-[14px] font-bold tabular-nums shrink-0 ${
+                                className={`text-[11px] sm:text-[12px] lg:text-[13px] xl:text-[14px] font-bold tabular-nums shrink-0 ${
                                     dtqdRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
                                 }`}
                             >
@@ -269,7 +269,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                             {Math.ceil(hqqd)}%
                         </span>
                         {!hqqdIsGood && currentQuyDoiTarget > 0 && (
-                            <span className="text-[10px] xs:text-[11px] sm:text-[13px] lg:text-[14px] xl:text-[16px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
+                            <span className="text-[11px] sm:text-[13px] lg:text-[14px] xl:text-[16px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
                                 (-{Math.max(0, currentQuyDoiTarget - Math.ceil(hqqd))}%)
                             </span>
                         )}
@@ -290,7 +290,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                             {Math.round(tyTrongTraGop)}%
                         </span>
                         {!traGopIsGood && currentTraGopTarget > 0 && (
-                            <span className="text-[10px] xs:text-[11px] sm:text-[13px] lg:text-[14px] xl:text-[16px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
+                            <span className="text-[11px] sm:text-[13px] lg:text-[14px] xl:text-[16px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
                                 (-{Math.max(0, currentTraGopTarget - Math.round(tyTrongTraGop))}%)
                             </span>
                         )}

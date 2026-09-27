@@ -114,7 +114,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                                 <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-white">
                                     Liên Kết Tài Khoản Google & Mã Kho
                                 </h4>
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300">
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300">
                                     Multi-Tenant
                                 </span>
                             </div>
@@ -144,11 +144,11 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             type="checkbox"
                             checked={isWarehouseShared}
                             onChange={e => setIsWarehouseShared(e.target.checked)}
-                            className="w-4 h-4 rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
+                            className="min-h-11 sm:min-h-0 w-4 h-4 rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
                         />
                         <span>Cho phép các Quản lý cùng mã kho <strong>{deptId || 'này'}</strong> kế thừa và dùng chung Bot</span>
                     </label>
-                    <span className="text-[10px] text-slate-400 italic">
+                    <span className="text-[11px] text-slate-400 italic">
                         {isWarehouseShared ? '✓ Tài khoản cùng kho sẽ được dùng chung kho coupon & bot' : '🔒 Bot hoạt động riêng cho tài khoản này'}
                     </span>
                 </div>
@@ -161,7 +161,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         href="https://manager.line.biz/account/@428gkuok/setting/messaging-api"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1.5 transition-colors group"
+                        className="min-h-11 sm:min-h-0 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1.5 transition-colors group"
                         title="Mở cài đặt Messaging API trên LINE Official Account Manager (@428gkuok)"
                     >
                         <span>Webhook URL Cá Nhân Hoá (Dán vào LINE Developers Console)</span>
@@ -184,7 +184,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             e.stopPropagation();
                             handleCopyWebhook();
                         }}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 after:absolute after:-inset-y-2 after:inset-x-0 after:content-[''] sm:after:hidden transition-all shadow-xs ${
                             copiedUrl
                                 ? 'bg-emerald-600 text-white shadow-emerald-500/20'
                                 : 'bg-sky-100 dark:bg-sky-900/60 hover:bg-sky-200 dark:hover:bg-sky-800 text-sky-700 dark:text-sky-300'
@@ -214,7 +214,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             href="https://developers.line.biz/console/channel/2011672044/messaging-api"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline inline-flex items-center gap-1.5 transition-colors group"
+                            className="min-h-11 sm:min-h-0 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline inline-flex items-center gap-1.5 transition-colors group"
                             title="Mở tab Messaging API trên LINE Developers Console để lấy Token"
                         >
                             <span>Channel Access Token (Dài hạn)</span>
@@ -225,7 +225,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             href="https://developers.line.biz/console/channel/2011672044/messaging-api"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                            className="min-h-11 sm:min-h-0 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
                         >
                             <span>Mở LINE Developers</span>
                             <ExternalLink size={10} />
@@ -246,7 +246,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             href="https://developers.line.biz/console/channel/2011672044/basics"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline inline-flex items-center gap-1.5 transition-colors group"
+                            className="min-h-11 sm:min-h-0 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline inline-flex items-center gap-1.5 transition-colors group"
                             title="Mở tab Basic settings trên LINE Developers Console để lấy Channel Secret"
                         >
                             <span>Channel Secret</span>
@@ -258,7 +258,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                                 href="https://developers.line.biz/console/channel/2011672044/basics"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+                                className="min-h-11 sm:min-h-0 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
                                 title="Lấy Channel Secret tại Basic settings"
                             >
                                 <span>LINE Developers (Basics)</span>
@@ -269,7 +269,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                                 href="https://manager.line.biz/account/@428gkuok/setting"
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
+                                className="min-h-11 sm:min-h-0 text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline inline-flex items-center gap-1"
                                 title="Mở Cài đặt trên LINE Official Account Manager"
                             >
                                 <span>LINE Manager (@428gkuok)</span>
@@ -290,7 +290,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <div className="flex items-center justify-between mb-1.5">
                         <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                             <span>LINE LIFF ID (Tự động 1-Chạm Copy & Gửi phản hồi)</span>
-                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300/40">1-Touch LIFF</span>
+                            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-300/40">1-Touch LIFF</span>
                         </label>
                     </div>
                     <input
@@ -320,7 +320,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             Khi nhân viên gửi đúng cú pháp form xin mã PMH, Bot sẽ tự động kiểm tra kho và phát mã ngay mà không cần Quản lý gõ lệnh duyệt.
                         </span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <label className="relative inline-flex items-center cursor-pointer ml-4 py-2.5 -my-2.5 sm:py-0 sm:my-0">
                         <input
                             type="checkbox"
                             checked={autoApprove}
@@ -357,7 +357,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         <Clock size={16} className="text-amber-500" />
                         <span>Thông Báo & Báo Cáo Định Kỳ (6h00 & 22h00)</span>
                     </h4>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         Chỉ gửi vào Nhóm
                     </span>
                 </div>
@@ -375,7 +375,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <select
                         value={scheduledGroupId}
                         onChange={e => setScheduledGroupId(e.target.value)}
-                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     >
                         <option value="">-- Chưa chọn nhóm (Tắt gửi định kỳ) --</option>
                         {groups && groups.length > 0 ? (
@@ -388,7 +388,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             <option value="" disabled>Chưa có nhóm LINE nào (Mời bot vào nhóm trước)</option>
                         )}
                     </select>
-                    <span className="text-[10.5px] text-slate-400 block mt-1">
+                    <span className="text-[11px] text-slate-400 block mt-1">
                         💡 Để xuất hiện nhóm trong danh sách này, hãy mời Bot vào nhóm LINE của bạn và nhắn 1 tin bất kỳ.
                     </span>
                 </div>
@@ -398,13 +398,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-800 dark:text-white">🌅 06h00 Sáng: Báo cáo tồn kho ("tk")</span>
-                            <span className="text-[9px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-mono">Tự ngắt nếu 0 mã</span>
+                            <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-mono">Tự ngắt nếu 0 mã</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                             Chỉ gửi khi trong kho còn tồn coupon (UNUSED). Nếu kho hết sạch mã, Bot tự động giữ im lặng để không làm phiền nhóm.
                         </span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <label className="relative inline-flex items-center cursor-pointer ml-4 py-2.5 -my-2.5 sm:py-0 sm:my-0">
                         <input
                             type="checkbox"
                             checked={morningReport}
@@ -420,13 +420,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-800 dark:text-white">🌙 22h00 Tối: Tổng kết coupon đã dùng hôm nay</span>
-                            <span className="text-[9px] font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.2 rounded font-mono">Dạng Thẻ Flex</span>
+                            <span className="text-[11px] font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.2 rounded font-mono">Dạng Thẻ Flex</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                             Gửi Thẻ Flex tổng kết: Tổng số lượng phiếu PMH đã dùng hôm nay kèm danh sách chi tiết các bạn đã sử dụng.
                         </span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <label className="relative inline-flex items-center cursor-pointer ml-4 py-2.5 -my-2.5 sm:py-0 sm:my-0">
                         <input
                             type="checkbox"
                             checked={eveningReport}

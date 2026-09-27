@@ -390,7 +390,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
           <Button
             variant="unstyled" size="none"
             onClick={checkServerHealth}
-            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
+            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             title="Kiểm tra kết nối server"
           >
             <RefreshCw className="w-4 h-4 text-slate-500" />
@@ -447,7 +447,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
             <select 
               value={mainSite}
               onChange={(e) => setMainSite(e.target.value)}
-              className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+              className="min-h-11 sm:min-h-0 mt-1 w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
             >
               {sites.map(s => (
                 <option key={s.key} value={s.key}>{s.name} — {s.url}</option>
@@ -464,7 +464,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               {sites.filter(s => s.key !== mainSite).map(site => (
                 <label 
                   key={site.key}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition ${
+                  className={`min-h-11 sm:min-h-0 flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition ${
                     site.enabled 
                       ? 'border-sky-200 bg-sky-50/50 dark:border-sky-800 dark:bg-sky-900/20' 
                       : 'border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/50'

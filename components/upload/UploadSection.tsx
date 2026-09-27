@@ -56,7 +56,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         />
                     </div>
                     <div className="text-right">
-                        <Button variant="unstyled" size="none" onClick={() => setIsSettingsOpen(false)} className="text-[12px] font-bold text-sky-700 dark:text-sky-400 hover:underline">Hoàn tất</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setIsSettingsOpen(false)} className="min-h-11 sm:min-h-0 px-2 -mr-2 sm:px-0 sm:mr-0 text-[12px] font-bold text-sky-700 dark:text-sky-400 hover:underline">Hoàn tất</Button>
                     </div>
                 </div>
             ) : (

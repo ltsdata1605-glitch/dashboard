@@ -270,7 +270,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                     type="button"
                     onClick={handleSaveName}
                     title="Lưu"
-                    className="p-1 rounded bg-sky-500 text-white hover:bg-sky-600 transition-colors cursor-pointer"
+                    className="p-1 rounded relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden bg-sky-500 text-white hover:bg-sky-600 transition-colors cursor-pointer"
                   >
                     <Check className="w-3 h-3" />
                   </button>
@@ -282,7 +282,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                       setIsEditingName(false);
                     }}
                     title="Huỷ"
-                    className="p-1 rounded bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition-colors cursor-pointer"
+                    className="p-1 rounded relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 transition-colors cursor-pointer"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -299,7 +299,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
                         onClick={() => setIsEditingName(true)}
                         data-html2canvas-ignore="true"
                         title="Đổi tên / tháng phiếu"
-                        className="opacity-0 group-hover/name:opacity-100 hover:text-sky-600 dark:hover:text-sky-400 text-slate-400 transition-opacity p-0.5 cursor-pointer"
+                        className="lg:opacity-0 lg:group-hover/name:opacity-100 relative after:absolute after:-inset-3 after:content-[''] lg:after:hidden hover:text-sky-600 dark:hover:text-sky-400 text-slate-400 transition-opacity p-0.5 cursor-pointer"
                       >
                         <Pencil className="w-2.5 h-2.5" />
                       </button>

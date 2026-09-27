@@ -140,7 +140,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><X size={12} /></Button>
                                     </div>
                                     <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
-                                    <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
+                                    <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[11px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
                                     <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-sky-600 rotate-45 border-l border-t border-sky-500" />
                                 </div>
                             )}
@@ -188,7 +188,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 placeholder="% Giảm"
                                 value={discountThreshold}
                                 onChange={(e) => handleDiscountThresholdChange(e.target.value)}
-                                className="!w-12 !h-7 text-center px-1 text-[10px] rounded-lg font-bold border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
+                                className="!w-12 !h-7 text-center px-1 text-[11px] rounded-lg font-bold border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
                                 title="Nhập % giảm tối thiểu"
                                 fullWidth={false}
                             />
@@ -221,7 +221,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                             <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><X size={12} /></Button>
                                         </div>
                                         <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
-                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
+                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[11px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
                                         <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-sky-600 rotate-45 border-l border-t border-sky-500" />
                                     </div>
                                 )}
@@ -370,7 +370,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         <p className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">
                                             {cleanDisplayLabel(page.label)}
                                         </p>
-                                        <div className="flex gap-2 mt-0.5 text-[10px]">
+                                        <div className="flex gap-2 mt-0.5 text-[11px]">
                                             {(() => {
                                                 const { newPrice, percent } = resolvePagePrices(page, priceSource);
                                                 return (
@@ -420,7 +420,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 <div key={list.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{list.name}</p>
-                                        <div className="flex gap-2 mt-0.5 text-[10px] text-slate-400">
+                                        <div className="flex gap-2 mt-0.5 text-[11px] text-slate-400">
                                             <span>{new Date(list.timestamp).toLocaleDateString('vi-VN')}</span>
                                             <span>•</span>
                                             <span>{list.pages.length} trang</span>
@@ -430,7 +430,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         <Button
                                             variant="ghost"
                                             onClick={() => loadSavedList(list)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[10px] font-bold"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[11px] font-bold"
                                             title="Tải danh sách"
                                         >
                                             <RotateCcw size={13} />

@@ -123,13 +123,13 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                             <button
                                                 type="button"
                                                 onClick={() => props.onSetIsEditingEmployeeName(true)}
-                                                className="text-[10px] font-medium text-sky-600 dark:text-sky-400 hover:underline shrink-0"
+                                                className="text-[11px] font-medium text-sky-600 dark:text-sky-400 hover:underline shrink-0"
                                                 title="Đổi tên người in"
                                             >
                                                 Sửa
                                             </button>
                                         </div>
-                                        <span className="text-[10px] text-slate-400 font-medium block leading-tight">
+                                        <span className="text-[11px] text-slate-400 font-medium block leading-tight">
                                             {isAdmin ? 'Quản trị viên' : 'Nhân viên in ấn'}
                                         </span>
                                     </div>
@@ -149,7 +149,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             )}
                         </div>
                         {isEmployeeNameEmpty && (
-                            <p className="text-[10.5px] text-rose-500 mt-1 font-medium">* Bắt buộc nhập tên trước khi in ấn</p>
+                            <p className="text-[11px] text-rose-500 mt-1 font-medium">* Bắt buộc nhập tên trước khi in ấn</p>
                         )}
                     </div>
 
@@ -182,7 +182,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                     {isAdmin && (
                         <div className="bg-slate-50/70 dark:bg-slate-850/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-[10.5px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                                     <Cloud className="h-3 w-3 text-sky-500" />
                                     Dữ liệu nguồn
                                 </span>
@@ -195,7 +195,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         title="Mở báo cáo tồn kho MWG để tải file"
                                     >
                                         <span>Lấy File Tồn Kho</span>
-                                        <span className="text-[10px]">&nearr;</span>
+                                        <span className="text-[11px]">&nearr;</span>
                                     </a>
                                     <Button
                                         variant="unstyled"
@@ -234,7 +234,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <span className="text-xs font-bold block leading-tight truncate">Tồn Kho</span>
-                                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight truncate mt-0.5">
+                                            <span className="text-[11px] text-slate-400 dark:text-slate-500 block leading-tight truncate mt-0.5">
                                                 {props.inventoryUploadTimestamp ? props.inventoryUploadTimestamp.toLocaleTimeString('vi-VN') : 'Chưa tải'}
                                             </span>
                                         </div>
@@ -266,7 +266,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <span className="text-xs font-bold block leading-tight truncate">Bảng Giá</span>
-                                            <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-tight truncate mt-0.5">
+                                            <span className="text-[11px] text-slate-400 dark:text-slate-500 block leading-tight truncate mt-0.5">
                                                 {props.uploadTimestamp ? props.uploadTimestamp.toLocaleTimeString('vi-VN') : 'Chưa tải'}
                                             </span>
                                         </div>
@@ -311,7 +311,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 <ShieldAlert className="h-3.5 w-3.5" />
                                 Hướng dẫn Quản lý
                             </h3>
-                            <div className="space-y-1 text-[10.5px] leading-relaxed text-sky-800 dark:text-sky-300">
+                            <div className="space-y-1 text-[11px] leading-relaxed text-sky-800 dark:text-sky-300">
                                 <p><strong>B1:</strong> Bấm <span className="text-rose-600 dark:text-rose-400 font-bold">&quot;Lấy file tồn kho&quot;</span> &gt; Chọn nhóm ĐGD, DCNB, Phụ Kiện &gt; Tải file.</p>
                                 <p><strong>B2:</strong> Tải file vào <strong>&quot;Tồn Kho&quot;</strong> &gt; Nhận file mẫu tự động.</p>
                                 <p><strong>B3:</strong> Vào ERP &gt; In giá &gt; Mẫu in 81 &gt; Xuất Data-only(*.xlsx) &gt; Tải vào <strong>&quot;Bảng Giá&quot;</strong>.</p>
@@ -323,14 +323,14 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                     {!props.isLoading && (
                         <div className="bg-slate-50/70 dark:bg-slate-850/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-[10.5px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+                                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">
                                     Thao tác danh sách
                                 </span>
                                 <Button
                                     variant="unstyled"
                                     onClick={props.onSaveUserState}
                                     disabled={props.displayedProducts.length === 0}
-                                    className="flex items-center gap-1 text-[10.5px] font-bold text-sky-700 dark:text-sky-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-lg hover:border-sky-300 transition-colors disabled:opacity-40 shadow-2xs"
+                                    className="flex items-center gap-1 text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-lg hover:border-sky-300 transition-colors disabled:opacity-40 shadow-2xs"
                                     title="Đồng bộ danh sách hiện tại lên Cloud"
                                 >
                                     <Cloud className="w-3 h-3 text-sky-500" />

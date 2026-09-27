@@ -691,8 +691,8 @@ const App: React.FC = () => {
             {!isIndividualExport && isExportingImage && (
                 <div className="py-8 flex justify-end">
                     <div className="text-center w-56 border-t-2 border-slate-200 pt-4">
-                        <p className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-10">Quản Lý Duyệt</p>
-                        <p className="font-semibold text-slate-400 text-[9px] italic">(Ký và ghi rõ họ tên)</p>
+                        <p className="font-bold text-slate-800 uppercase text-[11px] tracking-wider mb-10">Quản Lý Duyệt</p>
+                        <p className="font-semibold text-slate-400 text-[11px] italic">(Ký và ghi rõ họ tên)</p>
                     </div>
                 </div>
             )}

@@ -170,13 +170,13 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     {c.productName}
                 </span>
                 {c.syntax && (
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate mt-0.5" title={c.syntax}>
+                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono block truncate mt-0.5" title={c.syntax}>
                         {c.syntax}
                     </span>
                 )}
             </div>
         ) : c.syntax ? (
-            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block truncate max-w-[220px] lg:max-w-[360px]" title={c.syntax}>
+            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono block truncate max-w-[220px] lg:max-w-[360px]" title={c.syntax}>
                 {c.syntax}
             </span>
         ) : (
@@ -186,7 +186,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     );
     const renderType = (c: Coupon) => (
         <>
-        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
+        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
             {c.type}
         </span>
         </>
@@ -195,7 +195,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         <>
         {c.expiryDate ? (
             <span
-                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold font-mono ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold font-mono ${
                     c.expiryDate === todayVN
                         ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700'
                         : c.expiryDate < todayVN
@@ -212,30 +212,30 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 <span>{formatDisplayDate(c.expiryDate)}</span>
             </span>
         ) : (
-            <span className="text-slate-400 dark:text-slate-500 text-[10px]">Vô thời hạn</span>
+            <span className="text-slate-400 dark:text-slate-500 text-[11px]">Vô thời hạn</span>
         )}
         </>
     );
     const renderStatus = (c: Coupon) => (
         <>
         {c.status === 'UNUSED' || !c.status ? (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
                 <CheckCircle2 size={10} />
                 Chưa dùng
             </span>
         ) : c.status === 'SENT' ? (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400">
                 <Clock size={10} />
                 Đã phát
             </span>
         ) : (
             <div className="leading-tight">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400" title={c.revokeReason || 'Đã thu hồi về kho'}>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400" title={c.revokeReason || 'Đã thu hồi về kho'}>
                     <RotateCcw size={10} />
                     Đã thu hồi
                 </span>
                 {c.revokeReason && (
-                    <span className="text-[9px] text-amber-600 dark:text-amber-400/80 block mt-0.5 truncate max-w-[110px]" title={c.revokeReason}>
+                    <span className="text-[11px] text-amber-600 dark:text-amber-400/80 block mt-0.5 truncate max-w-[110px]" title={c.revokeReason}>
                         {c.revokeReason}
                     </span>
                 )}
@@ -248,7 +248,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         {c.recipient ? (
             <div className="leading-tight">
                 <span className="font-semibold text-slate-800 dark:text-white text-xs">{c.recipient}</span>
-                {c.recipientId && <span className="text-slate-400 block font-mono text-[9px] truncate max-w-[90px]" title={c.recipientId}>ID: {c.recipientId}</span>}
+                {c.recipientId && <span className="text-slate-400 block font-mono text-[11px] truncate max-w-[90px]" title={c.recipientId}>ID: {c.recipientId}</span>}
             </div>
         ) : (
             <span className="text-slate-300 dark:text-slate-600">—</span>
@@ -320,14 +320,14 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400 truncate pr-1">Tổng Mã Trong Kho</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400 truncate pr-1">Tổng Mã Trong Kho</span>
                         <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-lg shrink-0">
                             <Ticket size={13} className="sm:size-3.5" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
                         <p className="text-base sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stockSummary.total}</p>
-                        <span className="hidden lg:inline-block text-[10px] text-slate-400 font-semibold truncate">Kho toàn bộ PMH</span>
+                        <span className="hidden lg:inline-block text-[11px] text-slate-400 font-semibold truncate">Kho toàn bộ PMH</span>
                     </div>
                 </button>
 
@@ -341,14 +341,14 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400 truncate pr-1">Chưa Dùng (Khả dụng)</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400 truncate pr-1">Chưa Dùng (Khả dụng)</span>
                         <div className="p-1 sm:p-1.5 bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
                             <CheckCircle2 size={13} className="sm:size-3.5" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
                         <p className="text-base sm:text-xl lg:text-2xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">{stockSummary.unused}</p>
-                        <span className="hidden lg:inline-block text-[10px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">
+                        <span className="hidden lg:inline-block text-[11px] text-emerald-600/80 dark:text-emerald-400/80 font-bold">
                             {stockSummary.total ? `${Math.round((stockSummary.unused / stockSummary.total) * 100)}% tổng kho` : '0%'}
                         </span>
                     </div>
@@ -364,14 +364,14 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400 truncate pr-1">Đã Phát Thành Công</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400 truncate pr-1">Đã Phát Thành Công</span>
                         <div className="p-1 sm:p-1.5 bg-sky-100/80 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
                             <Clock size={13} className="sm:size-3.5" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
                         <p className="text-base sm:text-xl lg:text-2xl font-black text-sky-600 dark:text-sky-400 tabular-nums tracking-tight">{stockSummary.sent}</p>
-                        <span className="hidden lg:inline-block text-[10px] text-sky-600/80 dark:text-sky-400/80 font-bold">
+                        <span className="hidden lg:inline-block text-[11px] text-sky-600/80 dark:text-sky-400/80 font-bold">
                             {stockSummary.total ? `${Math.round((stockSummary.sent / stockSummary.total) * 100)}% đã cấp` : '0%'}
                         </span>
                     </div>
@@ -387,14 +387,14 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[10px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400 truncate pr-1">Đã Thu Hồi Về Kho</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400 truncate pr-1">Đã Thu Hồi Về Kho</span>
                         <div className="p-1 sm:p-1.5 bg-amber-100/80 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
                             <RotateCcw size={13} className="sm:size-3.5" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
                         <p className="text-base sm:text-xl lg:text-2xl font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{stockSummary.revoked}</p>
-                        <span className="hidden lg:inline-block text-[10px] text-amber-600/80 dark:text-amber-400/80 font-bold">
+                        <span className="hidden lg:inline-block text-[11px] text-amber-600/80 dark:text-amber-400/80 font-bold">
                             {stockSummary.total ? `${Math.round((stockSummary.revoked / stockSummary.total) * 100)}% hoàn kho` : '0%'}
                         </span>
                     </div>
@@ -417,7 +417,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
                     <span className="text-[11px] font-semibold text-slate-400 shrink-0">Tồn theo loại:</span>
                     {stockSummary.breakdown.map(b => (
-                        <div key={b.type} className="px-2 py-0.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200/80 dark:border-slate-700 text-[10px] sm:text-[11px] text-slate-700 dark:text-slate-300 shrink-0 shadow-2xs">
+                        <div key={b.type} className="px-2 py-0.5 bg-white dark:bg-slate-800 rounded-md border border-slate-200/80 dark:border-slate-700 text-[11px] text-slate-700 dark:text-slate-300 shrink-0 shadow-2xs">
                             <span className="font-bold text-slate-900 dark:text-white">{b.type}: </span>
                             <span className="text-emerald-600 dark:text-emerald-400 font-bold">{b.unused} còn</span>
                             <span className="text-slate-400"> / {b.total}</span>
@@ -454,7 +454,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <button
                             type="button"
                             onClick={() => setStatusFilter('ALL')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'ALL'
                                     ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs font-bold'
                                     : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
@@ -465,7 +465,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <button
                             type="button"
                             onClick={() => setStatusFilter('UNUSED')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
                                 statusFilter === 'UNUSED'
                                     ? 'bg-emerald-600 text-white shadow-2xs font-bold'
                                     : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
@@ -477,7 +477,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <button
                             type="button"
                             onClick={() => setStatusFilter('SENT')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
                                 statusFilter === 'SENT'
                                     ? 'bg-sky-600 text-white shadow-2xs font-bold'
                                     : 'text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40'
@@ -489,7 +489,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         <button
                             type="button"
                             onClick={() => setStatusFilter('REVOKED')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
                                 statusFilter === 'REVOKED'
                                     ? 'bg-amber-600 text-white shadow-2xs font-bold'
                                     : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
@@ -516,7 +516,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onRefresh}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg shrink-0 transition-colors active:scale-95"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg shrink-0 transition-colors active:scale-95"
                         title="Làm mới"
                     >
                         <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
@@ -529,7 +529,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         variant="ghost"
                         onClick={() => setIsConfirmDeleteAllOpen(true)}
                         disabled={coupons.length === 0 || isDeletingAll}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 rounded-lg transition-colors disabled:opacity-40 shrink-0 cursor-pointer active:scale-95"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 rounded-lg transition-colors disabled:opacity-40 shrink-0 cursor-pointer active:scale-95"
                         title={`Xoá tất cả (${coupons.length}) mã trong kho`}
                     >
                         <Trash2 size={14} className={isDeletingAll ? 'animate-spin' : ''} />
@@ -538,7 +538,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <Button
                         variant="ghost"
                         onClick={onExportExcel}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors shrink-0 cursor-pointer active:scale-95"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors shrink-0 cursor-pointer active:scale-95"
                         title="Xuất danh sách ra file Excel"
                     >
                         <Download size={14} />
@@ -574,7 +574,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                 <div key={c.id} className={`px-2.5 py-2 space-y-1 transition-colors ${c.status === 'REVOKED' ? 'bg-amber-50/20 dark:bg-amber-950/10' : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/50'}`}>
                                     <div className="flex items-center justify-between gap-1.5">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="w-4.5 shrink-0 text-center text-[10px] font-mono text-slate-400 font-bold">{startIndex + idx + 1}</span>
+                                            <span className="w-4.5 shrink-0 text-center text-[11px] font-mono text-slate-400 font-bold">{startIndex + idx + 1}</span>
                                             {renderCopyButton(c, true)}
                                             <div className="flex items-center gap-1 shrink-0">
                                                 {renderType(c)}
@@ -589,7 +589,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                         {renderProduct(c)}
                                     </div>
                                     {(c.expiryDate || c.recipient || c.copiedAt) && (
-                                        <div className="pl-6 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[10px] text-slate-500 dark:text-slate-400">
+                                        <div className="pl-6 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                                             {c.expiryDate && <span>{renderExpiry(c)}</span>}
                                             {c.recipient && <span className="truncate max-w-[140px]">👤 <b className="text-slate-700 dark:text-slate-300">{c.recipient}</b></span>}
                                             {c.copiedAt && <span>{renderCopiedAt(c)}</span>}
@@ -605,7 +605,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 <div className="hidden md:block overflow-x-auto max-h-[calc(100vh-270px)] min-h-[300px] [scrollbar-width:thin]">
                     <table className="w-full text-left text-xs border-collapse">
                         <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs border-b border-slate-200/90 dark:border-slate-700/90 shadow-2xs">
-                            <tr className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                            <tr className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
                                 <th className="py-2 pl-3 pr-2 w-10 text-center border-r border-slate-200/70 dark:border-slate-700/70">#</th>
                                 <th className="py-2 px-2 text-center whitespace-nowrap w-32 border-r border-slate-200/70 dark:border-slate-700/70">Mã Coupon</th>
                                 <th className="py-2 px-2.5 min-w-[200px] border-r border-slate-200/70 dark:border-slate-700/70">Sản Phẩm</th>
@@ -639,7 +639,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                                 : 'odd:bg-white even:bg-slate-50/40 dark:odd:bg-slate-800/90 dark:even:bg-slate-800/50 hover:bg-sky-50/70 dark:hover:bg-sky-950/30'
                                         }`}
                                     >
-                                        <td className="py-1.5 pl-3 pr-2 text-center text-slate-400 font-mono text-[10px] w-10 font-bold bg-slate-50/30 dark:bg-slate-800/30 border-r border-slate-100 dark:border-slate-800/60">
+                                        <td className="py-1.5 pl-3 pr-2 text-center text-slate-400 font-mono text-[11px] w-10 font-bold bg-slate-50/30 dark:bg-slate-800/30 border-r border-slate-100 dark:border-slate-800/60">
                                             {startIndex + idx + 1}
                                         </td>
                                         <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
@@ -660,7 +660,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                         <td className="py-1.5 px-2 text-left text-slate-600 dark:text-slate-300 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderRecipient(c)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-center text-[10px] font-mono whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
+                                        <td className="py-1.5 px-2 text-center text-[11px] font-mono whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderCopiedAt(c)}
                                         </td>
                                         <td className="py-1.5 pr-3 pl-2 text-right whitespace-nowrap">

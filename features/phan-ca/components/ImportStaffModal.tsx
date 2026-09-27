@@ -90,7 +90,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
       <p className="text-slate-500 dark:text-slate-400 font-medium text-xs -mt-2 mb-4">Xác nhận thông tin siêu thị và giới tính nhân viên để hệ thống phân ca chính xác.</p>
 
       <div className="mb-4 p-4 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 rounded-md">
-        <label className="block text-[10px] font-black text-sky-600 dark:text-sky-400 mb-1.5 uppercase tracking-widest">Tên Siêu Thị <span className="text-rose-500">*</span></label>
+        <label className="block text-[11px] font-black text-sky-600 dark:text-sky-400 mb-1.5 uppercase tracking-widest">Tên Siêu Thị <span className="text-rose-500">*</span></label>
         <Input
           type="text"
           error={showError ? 'Vui lòng nhập tên siêu thị!' : undefined}
@@ -114,7 +114,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
       <div className="flex flex-col bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
         <div className="p-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
           <span className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Danh sách nhân viên ({staffList.length})</span>
-          <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 font-black uppercase rounded">Vui lòng kiểm tra lại giới tính</span>
+          <span className="text-[11px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-1 font-black uppercase rounded">Vui lòng kiểm tra lại giới tính</span>
         </div>
 
         <table className="w-full text-sm border-collapse">
@@ -135,14 +135,14 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
                     <Button
                       variant="ghost"
                       onClick={() => handleGenderChange(staff.id, 'Nam')}
-                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[10px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nam' ? 'bg-sky-600 text-white border-sky-600' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[11px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nam' ? 'bg-sky-600 text-white border-sky-600' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
                     >
                       NAM
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={() => handleGenderChange(staff.id, 'Nu')}
-                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[10px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[11px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
                     >
                       NỮ
                     </Button>

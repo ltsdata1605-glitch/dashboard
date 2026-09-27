@@ -176,9 +176,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
                     <table className="w-full border-collapse compact-export-table competition-list-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider border-l-[3px] border-l-slate-200 dark:border-l-slate-700">
-                                    <th className="text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-7 sm:w-8 text-[11px] sm:text-[11px]">#</th>
+                                    <th className="text-center px-0.5 sm:px-1 py-[4px] border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 w-7 sm:w-8 text-[11px]">#</th>
                                     <th
-                                        className="text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[10.5px] sm:text-[11px] font-black uppercase leading-tight hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
+                                        className="text-left px-1.5 sm:px-2 py-[4px] cursor-pointer border-r border-slate-200 dark:border-slate-700 border-b border-slate-200 dark:border-slate-700 align-middle bg-slate-50 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 text-[11px] font-black uppercase leading-tight hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors"
                                         onClick={() => handleSort(-1)}
                                     >
                                         NHÓM THI ĐUA
@@ -264,7 +264,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({
 
                                             return (
                                                 <tr key={program.name} className={`border-l-[3px] ${stripeClass} hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-700`}>
-                                                    <td className="px-0.5 sm:px-1 py-[3px] text-center text-[10.5px] sm:text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
+                                                    <td className="px-0.5 sm:px-1 py-[3px] text-center text-[11px] sm:text-[13px] text-slate-500 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
                                                     <td className="px-1.5 sm:px-2 py-[3px] text-[11px] sm:text-[13px] font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 break-words leading-tight uppercase tracking-tight">
                                                         {shortenName(program.name, nameOverrides)}
                                                     </td>

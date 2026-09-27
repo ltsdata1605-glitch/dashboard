@@ -20,6 +20,11 @@ interface CounterRowProps {
  * nút đếm thu về 28px ngang (cao 32px vẫn đủ chạm) — đo ở 390px thì tên dài nhất "Quạt điều hoà"
  * vừa khít; máy 360px vẫn cắt vài tên, chấp nhận (kèm `title`). Từ `sm` có icon, nút rộng 36px;
  * desktop dòng 34px / nút 24px theo mật độ ca trực.
+ *
+ * VÙNG CHẠM (2026-09-27): nút `size="icon"` dùng chung được trả lại `min-w-11` (44px) cho iPhone —
+ * ở đây GHI ĐÈ về `min-w-0 min-h-0` để giữ đúng bố cục 1 dòng đã chốt ở trên (44px làm tên bị cắt
+ * "Sạc dự phòng", "Máy lọc nước"…), rồi nới vùng chạm VÔ HÌNH bằng `::after` ra 44×44: dòng cao
+ * 44px sẵn, ô số giữa rộng 20px đủ cho 2 vùng chạm lấn 8px mỗi bên mà không chạm nhau.
  */
 export const CounterRow: React.FC<CounterRowProps> = ({ icon, label, value, onChange, onDelete }) => {
     const active = value > 0;
@@ -36,19 +41,19 @@ export const CounterRow: React.FC<CounterRowProps> = ({ icon, label, value, onCh
             <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                 {onDelete && (
                     <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
-                        className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600">
+                        className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600 relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden">
                         <Trash2 size={12} />
                     </Button>
                 )}
                 <Button variant="secondary" size="icon" onClick={() => onChange(Math.max(0, value - 1))} aria-label={`Giảm ${label}`}
-                    className="h-8 w-7 sm:w-9 lg:h-6 lg:w-6 rounded">
+                    className="h-8 w-7 min-h-0 min-w-0 sm:w-9 lg:h-6 lg:w-6 rounded relative after:absolute after:-inset-x-2 after:-inset-y-1.5 after:content-[''] lg:after:hidden">
                     <Minus size={12} />
                 </Button>
                 <span className={`w-5 sm:w-6 text-center text-[13px] tabular-nums font-semibold ${active ? 'text-sky-700' : 'text-slate-400'}`} data-testid={`count-${label}`}>
                     {value}
                 </span>
                 <Button variant="secondary" size="icon" onClick={() => onChange(value + 1)} aria-label={`Tăng ${label}`}
-                    className="h-8 w-7 sm:w-9 lg:h-6 lg:w-6 rounded">
+                    className="h-8 w-7 min-h-0 min-w-0 sm:w-9 lg:h-6 lg:w-6 rounded relative after:absolute after:-inset-x-2 after:-inset-y-1.5 after:content-[''] lg:after:hidden">
                     <Plus size={12} />
                 </Button>
             </div>

@@ -173,7 +173,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={handleResetDefault}
-                        className="h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all active:scale-95"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all active:scale-95"
                         title="Khôi phục 12 thẻ mặc định"
                     >
                         <RotateCcw className="w-4 h-4" />

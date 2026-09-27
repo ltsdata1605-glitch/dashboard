@@ -120,7 +120,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
             <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5">
                 <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
                     <div>
-                        <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 block font-semibold truncate">Tổng Mã Lọc</span>
+                        <span className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 block font-semibold truncate">Tổng Mã Lọc</span>
                         <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stats.total}</span>
                     </div>
                     <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
@@ -130,10 +130,10 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
 
                 <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
                     <div>
-                        <span className="text-[10px] sm:text-xs text-emerald-600 dark:text-emerald-400 block font-semibold truncate">Đã Sử Dụng</span>
+                        <span className="text-[11px] sm:text-xs text-emerald-600 dark:text-emerald-400 block font-semibold truncate">Đã Sử Dụng</span>
                         <div className="flex items-baseline gap-1">
                             <span className="text-base sm:text-xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">{stats.used}</span>
-                            <span className="text-[9px] sm:text-[10px] text-slate-400 font-mono">
+                            <span className="text-[11px] text-slate-400 font-mono">
                                 ({stats.total > 0 ? Math.round((stats.used / stats.total) * 100) : 0}%)
                             </span>
                         </div>
@@ -145,7 +145,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
 
                 <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex items-center justify-between">
                     <div>
-                        <span className="text-[10px] sm:text-xs text-amber-600 dark:text-amber-400 block font-semibold truncate">Chưa Sử Dụng</span>
+                        <span className="text-[11px] sm:text-xs text-amber-600 dark:text-amber-400 block font-semibold truncate">Chưa Sử Dụng</span>
                         <span className="text-base sm:text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{stats.unused}</span>
                     </div>
                     <div className="p-1 sm:p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
@@ -181,7 +181,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                     <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-lg border border-slate-200/70 dark:border-slate-700/70 shrink-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
                         <button
                             onClick={() => setStatusFilter('ALL')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'ALL'
                                     ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs font-bold'
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
@@ -191,7 +191,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         </button>
                         <button
                             onClick={() => setStatusFilter('UNUSED')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'UNUSED'
                                     ? 'bg-amber-600 text-white shadow-2xs font-bold'
                                     : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
@@ -201,7 +201,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         </button>
                         <button
                             onClick={() => setStatusFilter('USED')}
-                            className={`px-2 py-1 rounded-md text-[10px] sm:text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
+                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
                                 statusFilter === 'USED'
                                     ? 'bg-emerald-600 text-white shadow-2xs font-bold'
                                     : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
@@ -216,7 +216,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         size="none"
                         onClick={loadData}
                         disabled={isLoading}
-                        className="h-8 w-8 p-0 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
+                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
                         title="Làm mới danh sách"
                     >
                         <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
@@ -278,7 +278,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                     <div key={item.id} className="px-2.5 py-2 space-y-1 hover:bg-slate-50/60 dark:hover:bg-slate-800/50 transition-colors">
                                         <div className="flex items-center justify-between gap-1.5">
                                             <div className="flex items-center gap-1.5 min-w-0">
-                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                                                <span className="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                                                     PMH {item.cardIndex || idx + 1}
                                                 </span>
                                                 <button
@@ -296,11 +296,11 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                 </button>
                                             </div>
                                             {isUsed ? (
-                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
+                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
                                                     <CheckCircle2 size={10} /> ĐÃ DÙNG
                                                 </span>
                                             ) : (
-                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
+                                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
                                                     <Clock size={10} /> CHƯA DÙNG
                                                 </span>
                                             )}
@@ -318,7 +318,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                         </div>
 
                                         {(isUsed || item.orderId) && (
-                                            <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-0.5">
+                                            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
                                                 <span>{item.orderId ? `MĐH: ${item.orderId}` : ''}</span>
                                                 {isUsed && (
                                                     <span>👤 {item.usedBy || 'Ai đó'} • {timeStr}</span>
@@ -333,7 +333,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         {/* DESKTOP VIEW (≥ md): Bảng chuẩn Report BI cho Laptop */}
                         <div className="hidden md:block overflow-x-auto max-h-[calc(100vh-270px)] min-h-[300px] [scrollbar-width:thin]">
                             <table className="w-full text-left text-xs border-collapse">
-                                <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200/90 dark:border-slate-700/90 uppercase tracking-wider text-[10px] shadow-2xs">
+                                <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200/90 dark:border-slate-700/90 uppercase tracking-wider text-[11px] shadow-2xs">
                                     <tr>
                                         <th className="py-2 pl-3 pr-2 w-16 text-center border-r border-slate-200/70 dark:border-slate-700/70">Thẻ</th>
                                         <th className="py-2 px-2 w-32 text-center whitespace-nowrap border-r border-slate-200/70 dark:border-slate-700/70">Mã Coupon</th>
@@ -364,7 +364,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                         return (
                                             <tr key={item.id} className="odd:bg-white even:bg-slate-50/40 dark:odd:bg-slate-800/90 dark:even:bg-slate-800/50 hover:bg-sky-50/70 dark:hover:bg-sky-950/30 transition-colors border-b border-slate-100 dark:border-slate-800/70">
                                                 <td className="py-1.5 pl-3 pr-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
-                                                    <span className="inline-block whitespace-nowrap px-1.5 py-0.5 rounded font-bold text-[10px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono">
+                                                    <span className="inline-block whitespace-nowrap px-1.5 py-0.5 rounded font-bold text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono">
                                                         PMH {item.cardIndex || idx + 1}
                                                     </span>
                                                 </td>
@@ -397,7 +397,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                         {item.productName || item.categoryLabel || 'PMH'}
                                                     </span>
                                                     {item.orderId && (
-                                                        <span className="text-[10px] text-slate-400 font-mono">MĐH: {item.orderId}</span>
+                                                        <span className="text-[11px] text-slate-400 font-mono">MĐH: {item.orderId}</span>
                                                     )}
                                                 </td>
                                                 <td className="py-1.5 px-2 font-medium text-sky-600 dark:text-sky-400 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
@@ -405,11 +405,11 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                 </td>
                                                 <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     {isUsed ? (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
                                                             <CheckCircle2 size={10} /> ĐÃ SỬ DỤNG
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
+                                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
                                                             <Clock size={10} /> CHƯA DÙNG
                                                         </span>
                                                     )}
@@ -423,7 +423,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                         <span className="text-slate-400 italic text-[11px]">Chưa có</span>
                                                     )}
                                                 </td>
-                                                <td className="py-1.5 pr-3 pl-2 text-center text-slate-500 dark:text-slate-400 font-mono text-[10px] whitespace-nowrap">
+                                                <td className="py-1.5 pr-3 pl-2 text-center text-slate-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
                                                     {timeStr}
                                                 </td>
                                             </tr>
