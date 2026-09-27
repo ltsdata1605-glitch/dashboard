@@ -5869,3 +5869,35 @@ của mình). Hộp xác nhận nói đúng theo vai trò.
   Expected "manager", Received "pending").
 - Lưu ý hành vi MỚI có chủ đích: quản lý bấm "Xoá tất cả dữ liệu" giờ THẬT SỰ xoá báo cáo Luỹ kế &
   Thi đua dùng chung của Kho mình — đúng như hộp xác nhận (commit 152830fd) vẫn cảnh báo đỏ từ trước.
+
+---
+
+# Phân tích, Report BI, Check thưởng trên iOS (iPhone/iPad Safari) — 2026-09-27
+
+## Yêu cầu (chủ dự án)
+"Hãy giúp tôi test và chuẩn hoá chức năng Phân tích, Report BI, Check thưởng tối ưu và hoạt động tốt
+trên hệ điều hành mobile iOS" (đã nạp đủ dữ liệu vào tài khoản lts.data1605@gmail.com).
+
+## Giới hạn môi trường (nói rõ)
+- Container không đăng nhập được tài khoản Google đó (cần mật khẩu/2FA) → test bằng Chế độ Dùng Thử
+  + dữ liệu mẫu giống thật (helpers/salesFixture, helpers/seed, fixtures HRM/danh sách NV).
+- Máy chỉ có Chromium (không có WebKit) → giả lập iPhone (UA iOS, isMobile, hasTouch) + soi code theo
+  các hành vi RIÊNG của Safari iOS mà Chromium không tái hiện được.
+
+## Phát hiện (soi code)
+1. Xuất ảnh → `navigator.share` sau khi dựng ảnh vài giây: Safari iOS chỉ cho share trong ~1s sau
+   thao tác chạm → `NotAllowedError` → rơi xuống "tải file" thay vì bảng chia sẻ (Lưu ảnh/LINE/Zalo).
+2. `downloadBlob` thu hồi blob URL NGAY sau `click()` — Safari iOS đọc blob không đồng bộ → tải hỏng.
+3. iPadOS 13+ báo UA "Macintosh" → không được coi là mobile (không share, scale desktop).
+4. Không giới hạn diện tích canvas: iOS trần ~16,7 triệu px → bảng rộng × scale 1.5 vượt trần → ảnh
+   trắng / toBlob null.
+5. Report BI: Safari từ chối đọc clipboard → ô dự phòng ghi "Nhấn Ctrl + V" — iPhone không có.
+
+## Kế hoạch sửa
+- `components/shared/ui/ShareRetryToast.tsx` (mới, dùng chung được theo quy tắc cách ly): thông báo có
+  nút "Chia sẻ / Lưu ảnh" gọi lại `navigator.share` bằng thao tác chạm mới.
+- `services/uiService.ts` + `features/bi-dashboard/services/uiExport/blobUtils.ts`: bắt NotAllowedError
+  → ShareRetryToast; revoke URL sau 60s; nhận iPad.
+- `utils/dataUtils.ts`: hàm thuần `capPixelRatioForArea()`; 2 bộ xuất ảnh dùng khi là thiết bị mobile.
+- `features/bi-dashboard/components/DataUpdater.tsx` (+ SupermarketConfig): chữ hướng dẫn theo thiết bị cảm ứng.
+- Desktop: không đổi hành vi.
