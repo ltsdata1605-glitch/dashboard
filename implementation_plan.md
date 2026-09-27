@@ -5790,3 +5790,31 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
   Cloud Function `adminUpdateUser` (tự sửa chính mình — đã cho phép với admin), rồi làm mới token.
 - CẦN DEPLOY Cloud Functions (`npm run deploy:functions`) — nếu không, `resolveSession` bản cũ vẫn
   ghi đè ở lần đăng nhập kế tiếp.
+
+## Đã làm (2026-09-27)
+- `functions/src/superAdminDept.ts` (mới) + `session.ts`: resolveSession GIỮ Kho gắn thêm của Super Admin.
+- `utils/dataUtils.ts → parseKhoList()`; dùng ở `services/khoDataService.ts` (tải/đồng bộ khoData)
+  và `features/bi-dashboard/hooks/useReportBiAuth.ts` (Report BI dùng chung).
+- `SettingsAccountTab.tsx`: admin có nút sửa; Super Admin "Gắn kho dùng chung" — lưu qua
+  `adminUpdateUser` (tự sửa chính mình) + làm mới token. Bố cục thẻ Hồ sơ trên iPhone: nút xuống hàng
+  riêng, dòng thông tin tự xuống dòng (trước: nút tràn khỏi thẻ, chữ gãy vụn).
+- Kèm theo (cùng màn, iPhone): tiêu đề thanh trên rút gọn "…" thay vì chèn vào nút "Đăng Xuất"
+  (App.tsx); ô sắp xếp "Ngày ĐK" không còn bị bóp thành "N" (UserManagementView.tsx).
+- Test: `tests/unit/super-admin-kho.test.ts` (9 test: chuẩn hoá, giữ Kho, mô phỏng myKhos() của Rules,
+  parseKhoList); `tests/e2e/super-admin-kho-dung-chung.spec.ts` (stub auth + chặn request
+  adminUpdateUser: gửi đúng `ALL (Super Admin),910`, làm mới token, để trống → về nhãn).
+
+## Kiểm tra sẵn có phát hiện khi làm (KHÔNG sửa, cần chủ dự án quyết)
+- Nhánh "Quản lý tự đổi mã kho" ở `SettingsAccountTab.tsx` ghi thẳng `departmentId` bằng `updateDoc`
+  — Firestore Rules chặn field này (protectedKeys) và `adminUpdateUser` cũng cấm manager tự đổi Kho
+  → nút báo "Cập nhật thành công" nhưng thực tế bị từ chối (permission-denied).
+- `resetAllDataAsNewUser(user)` truyền Firebase `User` (không có `departmentId`) nên nhánh xoá
+  `biData` của Kho KHÔNG BAO GIỜ chạy — nếu ai đó "sửa" cho chạy, Super Admin có Kho gắn thêm sẽ
+  xoá luôn báo cáo dùng chung của Kho đó khi bấm "Xoá tất cả dữ liệu".
+
+## Triển khai
+1. `npm run deploy:functions` (bắt buộc TRƯỚC — resolveSession cũ vẫn ghi đè khi đăng nhập lại).
+2. Đưa frontend lên như thường lệ.
+3. Super Admin → Phân quyền → Hồ sơ Định danh → "Gắn kho dùng chung" → `910` → Lưu.
+4. Tải lại / mở xem file doanh số để đồng bộ dòng có "Mã kho tạo" = 910 lên khoData/910; Report BI
+   cần bảng map tên siêu thị → 910 rồi dán lại Luỹ kế/Thi đua.

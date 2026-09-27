@@ -24,7 +24,7 @@ import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
 import { cleanRow, chunkData, BATCH_GROUP_SIZE } from './cloudDataService';
 import * as dbService from './dbService';
-import { getRowValue } from '../utils/dataUtils';
+import { getRowValue, parseKhoList } from '../utils/dataUtils';
 import { COL } from '../constants';
 
 export interface KhoSalesFileMeta {
@@ -274,7 +274,7 @@ export async function syncDataToKhoIfManager(
 ): Promise<void> {
     if (!user || (userRole !== 'admin' && userRole !== 'manager')) return;
 
-    const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
+    const allowedKhos = parseKhoList(departmentId);
     if (allowedKhos.length === 0) return;
 
     const rowsByKho = new Map<string, DataRow[]>();
@@ -355,7 +355,7 @@ async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; sna
  * hình loading kéo dài không cần thiết (mục 39 implementation_plan.md).
  */
 export async function fetchAllowedKhoData(departmentId: string | undefined): Promise<{ data: DataRow[]; snapshot: string }> {
-    const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
+    const allowedKhos = parseKhoList(departmentId);
     if (allowedKhos.length === 0) return { data: [], snapshot: '' };
 
     const results = await Promise.all(allowedKhos.map(maKho => fetchKhoDataCached(maKho)));

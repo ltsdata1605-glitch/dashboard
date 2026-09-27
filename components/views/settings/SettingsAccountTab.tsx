@@ -6,7 +6,7 @@ import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
 import UserManagementView from '../UserManagementView';
-import { formatCleanDisplayName } from '../../../utils/dataUtils';
+import { formatCleanDisplayName, parseKhoList } from '../../../utils/dataUtils';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
@@ -17,8 +17,13 @@ export const SettingsAccountTab: React.FC = () => {
         setMounted(true);
     }, []);
 
+    // Super Admin mang nhãn "ALL (Super Admin)" kèm các Kho thật gắn thêm (vd "ALL (Super Admin),910",
+    // xem functions/src/superAdminDept.ts). Ô sửa chỉ hiện/nhận các Kho thật — nhãn giữ tự động.
+    const isSuperAdmin = userRole === 'admin' && (departmentId || '').startsWith('ALL (Super Admin)');
+    const khoDeSua = (dept: string | undefined | null) => (isSuperAdmin ? parseKhoList(dept).join(', ') : (dept || ''));
+
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const [stagedDept, setStagedDept] = useState(departmentId || '');
+    const [stagedDept, setStagedDept] = useState(khoDeSua(departmentId));
     const [stagedEmployee, setStagedEmployee] = useState(employeeName || '');
     const [deptError, setDeptError] = useState<string>('');
     const [isSaving, setIsSaving] = useState(false);
@@ -53,14 +58,27 @@ export const SettingsAccountTab: React.FC = () => {
     };
 
     const handleSaveProfile = async () => {
-        const deptErr = validateDept(stagedDept);
+        // Super Admin được để trống (= chỉ còn nhãn, không dùng chung Kho nào — như trước 2026-09-27)
+        const deptErr = isSuperAdmin && !stagedDept.trim() ? '' : validateDept(stagedDept);
         setDeptError(deptErr);
         if (deptErr) return;
         if (userRole === 'employee' && !stagedEmployee.trim()) return toast.error("Tên nhân viên không được bỏ trống");
 
         try {
             setIsSaving(true);
-            if (userRole === 'manager') {
+            if (userRole === 'admin') {
+                // Admin tự sửa Kho của CHÍNH MÌNH qua Cloud Function (departmentId là field bảo vệ,
+                // Rules chặn ghi thẳng từ client). adminUpdateUser đặt lại custom claims → làm mới
+                // token để Rules (myKhos) nhận Kho mới ngay, không phải đăng xuất.
+                const { adminUpdateUser } = await import('../../../services/adminUserService');
+                const khos = parseKhoList(stagedDept);
+                const newDept = isSuperAdmin ? ['ALL (Super Admin)', ...khos].join(',') : khos.join(',');
+                await adminUpdateUser({ targetUid: user!.uid, departmentId: newDept });
+                await user!.getIdToken(true);
+                toast.success(khos.length
+                    ? `Đã gắn Kho dùng chung: ${khos.join(', ')}`
+                    : 'Đã bỏ Kho dùng chung — chỉ còn quyền Super Admin');
+            } else if (userRole === 'manager') {
                 const { doc, updateDoc } = await import('firebase/firestore');
                 const { db } = await import('../../../services/firebase');
                 const userRef = doc(db, 'users', user!.uid);
@@ -107,10 +125,12 @@ export const SettingsAccountTab: React.FC = () => {
 
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
                     {/* Header: Avatar + Name/Email/Role + Action Button */}
-                    <div className={`flex items-start justify-between gap-4 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
-                        <div className="flex items-start gap-4 sm:gap-6 flex-1">
+                    {/* iPhone: nút sửa xuống hàng riêng (trước nằm chung hàng → tràn khỏi thẻ, dòng thông tin
+                        bị ép thành cột hẹp, chữ gãy vụn). Từ sm: trở lên giữ bố cục 1 hàng như cũ. */}
+                    <div className={`flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
+                        <div className="flex items-start gap-3 sm:gap-6 flex-1 min-w-0">
                             {/* Avatar */}
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
+                            <div className="w-16 h-16 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
@@ -138,23 +158,28 @@ export const SettingsAccountTab: React.FC = () => {
                                 {/* Info Line - Tất cả thông tin nằm trên 1 dòng, ngăn cách bởi | */}
                                 {!isEditingProfile && (
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300 pt-0.5">
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
                                             <Icon name="map-pin" size={3.5} className="text-rose-500 shrink-0" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Mã Kho:</span>
-                                            <span className="font-bold text-slate-800 dark:text-white font-mono">{departmentId || 'Chưa đăng ký'}</span>
+                                            <span className="font-bold text-slate-800 dark:text-white font-mono">{isSuperAdmin ? 'ALL (Super Admin)' : (departmentId || 'Chưa đăng ký')}</span>
+                                            {isSuperAdmin && (
+                                                <span className="font-medium text-slate-500 dark:text-slate-400">
+                                                    · Kho dùng chung: <strong className="font-mono text-sky-700 dark:text-sky-400">{parseKhoList(departmentId).join(', ') || 'chưa gắn'}</strong>
+                                                </span>
+                                            )}
                                         </div>
 
-                                        <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
                                             <Icon name="user-check" size={3.5} className="text-rose-500 shrink-0" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Tên NV:</span>
                                             <span className="font-bold text-amber-700 dark:text-amber-400 italic">{employeeName || 'N/A'}</span>
                                         </div>
 
-                                        <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
                                             <Icon name="shield" size={3.5} className="text-rose-500 shrink-0" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Chức năng:</span>
                                             <span className="font-bold text-slate-800 dark:text-white">
@@ -162,9 +187,9 @@ export const SettingsAccountTab: React.FC = () => {
                                             </span>
                                         </div>
 
-                                        <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
                                             <Icon name="calendar" size={3.5} className="text-rose-500 shrink-0" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Hạn:</span>
                                             <span className="font-bold text-emerald-700 dark:text-emerald-400">
@@ -176,16 +201,15 @@ export const SettingsAccountTab: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Action Button */}
-                        {userRole !== 'admin' && (
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                        {/* Action Button — admin cũng sửa được (Super Admin: gắn Kho dùng chung) */}
+                            <div className="flex items-center justify-end gap-2 flex-shrink-0">
                                 {isEditingProfile && (
                                     <Button
                                         variant="secondary"
                                         size="sm"
                                         onClick={() => {
                                             setIsEditingProfile(false);
-                                            setStagedDept(departmentId || '');
+                                            setStagedDept(khoDeSua(departmentId));
                                             setStagedEmployee(employeeName || '');
                                             setDeptError('');
                                         }}
@@ -204,23 +228,22 @@ export const SettingsAccountTab: React.FC = () => {
                                     }`}
                                 >
                                     <Icon name={isEditingProfile ? 'save' : 'edit-3'} size={4} />
-                                    {isEditingProfile ? 'Lưu' : 'Đổi mã kho'}
+                                    {isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
                                 </Button>
                             </div>
-                        )}
                     </div>
 
                     {/* Editing Form */}
                     {isEditingProfile && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-sky-100 dark:border-sky-900/50 rounded-lg mb-6">
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> MÃ KHO ĐĂNG KÝ</label>
+                                <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> {isSuperAdmin ? 'KHO DÙNG CHUNG (thêm vào quyền Super Admin)' : 'MÃ KHO ĐĂNG KÝ'}</label>
                                 <input
                                     type="text"
                                     value={stagedDept}
                                     onChange={e => {
                                         setStagedDept(e.target.value);
-                                        setDeptError(validateDept(e.target.value));
+                                        setDeptError(isSuperAdmin && !e.target.value.trim() ? '' : validateDept(e.target.value));
                                     }}
                                     onKeyDown={e => {
                                         if (e.key === 'Enter' && !deptError && !isSaving) {
@@ -250,12 +273,14 @@ export const SettingsAccountTab: React.FC = () => {
                                 </div>
                             )}
                             <div className={`md:col-span-2 text-xs font-bold px-4 py-2 flex items-center gap-2 rounded-md ${
-                                userRole === 'manager'
+                                userRole === 'manager' || userRole === 'admin'
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
                             }`}>
-                                <Icon name={userRole === 'manager' ? 'check-circle' : 'alert-triangle'} size={4} />
-                                {userRole === 'manager'
+                                <Icon name={userRole === 'manager' || userRole === 'admin' ? 'check-circle' : 'alert-triangle'} size={4} />
+                                {isSuperAdmin
+                                    ? 'Áp dụng ngay: đọc/ghi được dữ liệu dùng chung (Phân tích, Report BI) của các Kho này — vẫn giữ toàn quyền Super Admin'
+                                    : userRole === 'manager' || userRole === 'admin'
                                     ? 'Áp dụng ngay lập tức không cần duyệt'
                                     : 'Gửi yêu cầu, tạm khóa quyền cho đến duyệt'}
                             </div>
@@ -290,7 +315,7 @@ export const SettingsAccountTab: React.FC = () => {
                     variant="unstyled"
                     size="none"
                     onClick={logout}
-                    className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
+                    className="min-h-11 sm:min-h-0 shrink-0 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
                     title="Đăng xuất tài khoản"
                 >
                     <Icon name="log-out" size={3.5} />

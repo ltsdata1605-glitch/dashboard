@@ -278,8 +278,9 @@ function AppContent() {
                                     có ~370px → trang từng tràn ngang 140px, chuông thông báo nằm NGOÀI màn hình.
                                     Riêng màn đó ẩn chữ tiêu đề dưới 440px (nút quay lại + icon vẫn còn) để 4 nút
                                     chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
-                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[440px]:flex' : 'flex'} flex-col items-start`}>
-                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none whitespace-nowrap">{titleData.main} {titleData.highlight}</span>
+                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[440px]:flex' : 'flex'} flex-col items-start min-w-0`}>
+                                    {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone */}
+                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none truncate max-w-full">{titleData.main} {titleData.highlight}</span>
                                     <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
                                 </div>
                             </>
@@ -295,10 +296,10 @@ function AppContent() {
                                 {brandIconAndTitle}
                             </Button>
                         ) : (
-                            <div className="flex items-center gap-2.5">{brandIconAndTitle}</div>
+                            <div className="flex items-center gap-2.5 min-w-0">{brandIconAndTitle}</div>
                         );
                     })()}
-                    <div className="flex items-center gap-0.5 min-w-0">
+                    <div className="flex items-center gap-0.5 shrink-0">
                         <div id="mobile-topbar-actions" className="flex items-center min-w-0"></div>
                         <NotificationDropdown />
                     </div>

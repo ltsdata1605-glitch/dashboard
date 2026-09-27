@@ -7,20 +7,18 @@
  */
 
 import { useAuth } from '../../../contexts/AuthContext';
+import { parseKhoList } from '../../../utils/dataUtils';
 
 export const useReportBiAuth = () => {
     const { user, userRole, departmentId, employeeName } = useAuth();
 
-    const allowedKhos = (departmentId || '')
-        .split(',')
-        .map(k => k.trim())
-        .filter(Boolean);
+    const allowedKhos = parseKhoList(departmentId);
 
     // Manager chỉ được dán dữ liệu cho ĐÚNG (các) Kho của mình — không phải mọi Kho trong hệ
-    // thống. Admin cũng vậy (kể cả Super Admin có departmentId = "ALL (Super Admin)" thì
-    // allowedKhos rỗng — Super Admin chưa cần dán dữ liệu Report BI dùng chung, chỉ cần quản
-    // lý bảng map qua biSupermarketMapService.ts, việc đó check isAdmin() riêng ở Firestore
-    // Rules, không phụ thuộc allowedKhos).
+    // thống. Admin cũng vậy. Super Admin mang nhãn "ALL (Super Admin)" (không phải Kho) kèm các
+    // Kho thật gắn thêm, vd "ALL (Super Admin),910" → allowedKhos = ["910"]; chỉ có mỗi nhãn thì
+    // allowedKhos rỗng như trước (vẫn quản lý được bảng map qua biSupermarketMapService.ts —
+    // Firestore Rules check isAdmin() riêng, không phụ thuộc allowedKhos). Sửa 2026-09-27.
     const canManageSharedBiData = (userRole === 'admin' || userRole === 'manager') && allowedKhos.length > 0;
     const isAdmin = userRole === 'admin';
 

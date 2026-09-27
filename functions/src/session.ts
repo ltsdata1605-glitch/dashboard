@@ -3,6 +3,7 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, auth } from './firebaseAdmin';
 import { notifyAdminsAndManagers } from './notifications';
+import { normalizeSuperAdminDept } from './superAdminDept';
 
 // Chỉ tồn tại phía server — không còn hardcode trong bundle client (xem
 // contexts/AuthContext.tsx bản cũ, dòng ~94).
@@ -51,7 +52,7 @@ export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
     const isSuperAdmin = email === SUPER_ADMIN_EMAIL;
     role = isSuperAdmin ? 'admin' : 'pending';
     status = isSuperAdmin ? 'approved' : 'new';
-    departmentId = isSuperAdmin ? 'ALL (Super Admin)' : null;
+    departmentId = isSuperAdmin ? normalizeSuperAdminDept(null) : null;
 
     writePromise = userRef.set({
       uid,
@@ -79,10 +80,13 @@ export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
     };
 
     if (email === SUPER_ADMIN_EMAIL) {
-      // Tự sửa lại nếu ai đó lỡ hạ quyền — port nguyên vẹn logic cũ.
+      // Tự sửa lại nếu ai đó lỡ hạ quyền — port nguyên vẹn logic cũ. RIÊNG departmentId: KHÔNG
+      // ghi đè cứng thành nhãn nữa mà GIỮ các Kho thật Super Admin đã gắn thêm (vd "910") —
+      // xem superAdminDept.ts. Ghi đè cứng từng khiến Super Admin không bao giờ dùng chung
+      // được dữ liệu Kho với tài khoản khác.
       role = 'admin';
       status = 'approved';
-      departmentId = 'ALL (Super Admin)';
+      departmentId = normalizeSuperAdminDept(departmentId);
       updates.role = role;
       updates.status = status;
       updates.departmentId = departmentId;

@@ -699,6 +699,19 @@ export function unwrapProductConfigProxies(config: ProductConfig): ProductConfig
 
 export const EMPTY_UNIQUE_FILTER_OPTIONS = { kho: [] as string[], trangThai: [] as string[], nguoiTao: [] as string[], department: [] as string[], hangSX: [] as string[] };
 
+/**
+ * Tách `departmentId` thành danh sách Mã Kho THẬT (bỏ khoảng trắng, rỗng, và nhãn "ALL" /
+ * "ALL (Super Admin)"). Super Admin mang nhãn đó KÈM các Kho thật gắn thêm, vd
+ * "ALL (Super Admin),910" (functions/src/superAdminDept.ts) — nhãn không phải Kho nên không được
+ * lọt vào danh sách đọc/ghi khoData/biData (Rules sẽ từ chối, làm hỏng cả lượt tải).
+ */
+export function parseKhoList(departmentId: string | null | undefined): string[] {
+    return (departmentId || '')
+        .split(',')
+        .map(k => k.trim())
+        .filter(k => k && k !== 'ALL' && k !== 'ALL (Super Admin)');
+}
+
 export interface RbacParams {
     isDemoMode: boolean;
     userRole: string | null | undefined;
