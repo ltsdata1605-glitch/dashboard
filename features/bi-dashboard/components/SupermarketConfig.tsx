@@ -30,6 +30,15 @@ import { parseDepartments, parseSimpleDepartments, parseCompetitions, parseBaseT
 import { validateThiDuaData } from '../utils/nhanVienHelpers';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
 
+/**
+ * Chữ hướng dẫn ô dán dự phòng (khi trình duyệt không cho tự đọc Clipboard — hay gặp ở Safari iOS
+ * nếu người dùng không bấm bong bóng "Dán"). Màn cảm ứng không có Ctrl+V: hướng dẫn chạm giữ.
+ */
+const pasteHint = (placeholder?: string) =>
+    typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches
+        ? `${placeholder || 'Dán dữ liệu...'} Chạm vào đây, giữ tay rồi chọn "Dán".`
+        : placeholder || 'Nhấn Ctrl + V...';
+
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };
 export type ConfigTab = 'data' | 'revenueTarget' | 'competitionTarget';
@@ -470,7 +479,7 @@ const StatusTile: React.FC<{
                         <textarea
                             autoFocus
                             className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
-                            placeholder={placeholder || 'Nhấn Ctrl + V...'}
+                            placeholder={pasteHint(placeholder)}
                             onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');
                                 setIsPasting(false);
@@ -486,7 +495,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="min-h-11 sm:min-h-0 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">

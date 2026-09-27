@@ -1,5 +1,6 @@
 import { ExportMode, downloadBlob, shareBlob } from './blobUtils';
 import { fixOklchColors } from './colorUtils';
+import { capPixelRatioForArea, isMobileLikeDevice } from '../../../../utils/dataUtils';
 
 const waitForImages = (element: HTMLElement): Promise<void[]> => {
     const images = Array.from(element.querySelectorAll('img'));
@@ -25,7 +26,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 // any: được gọi từ 13+ file khác nhau trong features/bi-dashboard với các field options khác nhau;
 // siết kiểu ở đây sẽ kéo theo sửa hàng loạt file gọi nó — để lại cho đợt sau khi xử lý các file đó.
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}): Promise<Blob | null> {
-    const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const isMobileDevice = isMobileLikeDevice();
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
     const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
 
@@ -1373,6 +1374,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (finalHeight * scale > 32000) {
             finalScale = Math.max(1, 32000 / finalHeight);
             console.warn(`Cảnh báo: Ảnh quá dài (${finalHeight}px). Tự động giảm tỉ lệ xuống ${finalScale.toFixed(2)} để tránh lỗi trình duyệt.`);
+        }
+        // Safari iOS trả ảnh TRẮNG (không báo lỗi) khi canvas vượt ~16,7 triệu px — bảng rộng × scale
+        // 1.5 dễ vượt. Chỉ áp trên thiết bị di động; desktop giữ nguyên độ nét.
+        if (isMobileDevice) {
+            const capped = capPixelRatioForArea(finalWidth, finalHeight, finalScale);
+            if (capped < finalScale) {
+                console.warn(`Ảnh ${finalWidth}×${finalHeight}px vượt trần canvas iOS — giảm tỉ lệ ${finalScale.toFixed(2)} → ${capped.toFixed(2)}.`);
+                finalScale = capped;
+            }
         }
 
         const isDark = document.documentElement.classList.contains('dark');
