@@ -1020,6 +1020,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         uncollectedOrders: DataRow[];
     }[]>([]);
 
+    const configRetryRef = useRef<Promise<void> | null>(null);
+
     // Central Data Processing
     useEffect(() => {
         if (appState === 'loading') return;
@@ -1032,7 +1034,30 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             }
             return;
         }
-        if (!productConfig) return;
+        if (!productConfig) {
+            // Chưa có cấu hình ngành hàng: lần đầu dùng trên máy mới, hoặc Safari iOS đã tự xoá dữ
+            // liệu web (không mở app 7 ngày) mà lúc khởi động mạng chập chờn. Trước đây effect chỉ
+            // `return` → màn hình treo mãi ở 95% "Đang gộp…". Nay tự tải lại 1 lần; vẫn lỗi thì
+            // báo rõ và quay về màn tải tệp (dữ liệu đã lưu trên máy, tải lại tệp là chạy).
+            if (appState === 'processing' && !configRetryRef.current) {
+                configRetryRef.current = (async () => {
+                    try {
+                        const config = await loadConfigFromSheet(configUrl, () => {});
+                        dbService.saveProductConfig(config, configUrl).catch(console.error);
+                        setProductConfig(config);
+                    } catch (e) {
+                        console.error('[useDataManagement] Tải lại cấu hình thất bại:', e);
+                        const msg = 'Không tải được cấu hình ngành hàng — kiểm tra kết nối mạng rồi thử lại.';
+                        setStatus({ message: msg, type: 'error', progress: 0 });
+                        toast.error(msg, { id: 'config-load-failed', duration: 8000 });
+                        setAppState('upload');
+                    } finally {
+                        configRetryRef.current = null;
+                    }
+                })();
+            }
+            return;
+        }
         // Mục 65b: chờ Worker xác nhận đã cache ĐÚNG rbacData cho generation hiện tại (effect
         // SET_DATA ở trên) trước khi gửi PROCESS — tránh PROCESS chạy trên dữ liệu RBAC cũ/sai
         // nếu originalData vừa đổi lần nữa (vd Kho-sync) trong lúc round-trip SET_DATA còn dở.
@@ -1060,7 +1085,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
             });
         }
-    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData, computedUnshippedOrders, computedUncollectedOrders]);
+    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState, setProductConfig, configUrl, workerCachedGeneration, computedBaseFilteredData, computedWarehouseFilteredData, computedFilteredValidSalesData, computedUnshippedOrders, computedUncollectedOrders]);
 
     // Mục 65c: availableWeeks/availableMonths trước đây là 2 useMemo ĐỘC LẬP, TRÙNG LẶP ở
     // FilterBar.tsx (tuần+tháng) và FilterSection.tsx (chỉ tháng) — mỗi cái tự quét lại TOÀN BỘ
