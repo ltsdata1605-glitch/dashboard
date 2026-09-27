@@ -465,7 +465,7 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
             <div className="divide-y divide-amber-100 dark:divide-amber-900/40 text-xs">
               {proxyItems.map(item => (
                 <div key={item.id} className="flex items-center justify-between gap-3 px-3 py-1.5">
-                  <span className="text-slate-600 dark:text-slate-300 min-w-0 truncate">{item.name}</span>
+                  <span title={item.name} className="text-slate-600 dark:text-slate-300 min-w-0 sm:truncate">{item.name}</span>
                   <span className="font-mono font-semibold text-slate-800 dark:text-slate-100 shrink-0">
                     {formatVnd(item.amount)}
                   </span>

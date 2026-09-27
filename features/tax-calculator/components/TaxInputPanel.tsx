@@ -567,7 +567,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Mở HRM Chi tiết lương (Đợt 1)"
-                  className="relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors shrink-0"
+                  className="hidden sm:block relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors shrink-0"
                 >
                   <ExternalLink className="w-3 h-3" />
                 </a>
@@ -688,7 +688,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Mở HRM Xem chi tiết thưởng (Đợt 2)"
-                  className="relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors shrink-0"
+                  className="hidden sm:block relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors shrink-0"
                 >
                   <ExternalLink className="w-3 h-3" />
                 </a>
@@ -918,7 +918,9 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                         : 'bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/60 text-slate-700 dark:text-slate-300'
                     }`}
                   >
-                    <div className="flex items-center gap-2 truncate min-w-0">
+                    {/* Mobile: tên khoản XUỐNG DÒNG thay vì cắt "…" — ở 375px hai khoản "Thưởng nóng NV ST
+                        T08.2026 - Thưởng cá nhân" và "- Chia theo quỹ" từng hiện giống hệt nhau. Desktop giữ 1 dòng. */}
+                    <div className="flex items-center gap-2 min-w-0 sm:truncate">
                       <div
                         className={`w-4 h-4 rounded flex items-center justify-center transition-colors shrink-0 ${
                           isChecked
@@ -929,7 +931,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                         {isChecked && <Check className="w-3 h-3 stroke-[3]" />}
                       </div>
 
-                      <span className={`text-xs truncate ${isChecked ? 'font-bold text-rose-950 dark:text-rose-100' : 'font-medium'}`}>
+                      <span title={item.name} className={`text-xs min-w-0 leading-snug sm:truncate ${isChecked ? 'font-bold text-rose-950 dark:text-rose-100' : 'font-medium'}`}>
                         {item.name}
                       </span>
                     </div>

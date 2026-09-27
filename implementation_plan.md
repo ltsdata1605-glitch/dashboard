@@ -5733,6 +5733,14 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
 - Vòng đo có dữ liệu giả (sau commit 443ee6f7): tiêu đề thanh trên cùng bị xén dấu ở 375px (lỗi do
   đợt này, đã sửa d4554cec). Modal "Cấu Hình Nhập Nhân Viên" (Phân ca) bị báo "chữ chồng" = dòng bảng
   đang cuộn dưới chân modal — xem ảnh, KHÔNG phải lỗi; placeholder ô Tên siêu thị chỉ mất phần "...".
+- Tính thuế có dữ liệu HRM thật mẫu @375: tên khoản thưởng cắt "…" → 2 khoản "Thưởng nóng NV ST
+  T08.2026 - …" hiện GIỐNG HỆT nhau; tiêu đề thẻ "1. Lương ngà…" / "2. Thưởng ng…". ĐÃ SỬA: mobile
+  cho tên khoản xuống dòng (desktop giữ 1 dòng + `title`), ẩn icon mở HRM trên mobile (trùng link với
+  chính tiêu đề). Test mới `tax-iphone-khong-cat-chu.spec.ts` (đã chứng minh đỏ khi gỡ bản sửa: 7 chữ
+  bị cắt). Bộ khảo sát bấm-hết-nút KHÔNG chạy xong màn này khi có dữ liệu (quá 15 phút: mỗi lần trang
+  đổi nó dán lại cả 2 đợt HRM) — đo bằng test nhắm thẳng thay vì bộ khảo sát.
+- Còn trên DESKTOP (không đổi trong đợt này): ở 1280px thẻ "2. Thưởng ngày 20" vẫn bị cắt 1 dòng
+  (khung 3 cột hẹp) — có `title`, chưa sửa vì ngoài phạm vi iPhone.
 - Phát hiện thêm ở vòng này và ĐÃ SỬA: modal nằm DƯỚI thanh trên/thanh dưới (z-50 < z-100/z-190)
   → modal cao bị cắt chân (`body:has([data-modal-overlay]) .mobile-chrome`); chữ biểu đồ Recharts
   bị `styles.css` ép 9px trên mobile → 11px.
