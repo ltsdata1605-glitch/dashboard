@@ -279,8 +279,10 @@ function AppContent() {
                                     Riêng màn đó ẩn chữ tiêu đề dưới 440px (nút quay lại + icon vẫn còn) để 4 nút
                                     chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
                                 <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[440px]:flex' : 'flex'} flex-col items-start min-w-0`}>
-                                    {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone */}
-                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none truncate max-w-full">{titleData.main} {titleData.highlight}</span>
+                                    {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone.
+                                        leading-tight chứ KHÔNG leading-none: truncate = overflow:hidden, khung cao đúng 14px
+                                        sẽ xén dấu tiếng Việt (Phân, Báo cáo, Tích… cao 17px) — đo được ở iPhone SE. */}
+                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-tight truncate max-w-full">{titleData.main} {titleData.highlight}</span>
                                     <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
                                 </div>
                             </>
