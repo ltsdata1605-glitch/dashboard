@@ -5724,6 +5724,26 @@ standalone của iOS, cần thử trên máy thật trước; để đợt riên
 "Chữ rút gọn (…)" còn lại đều là tên/email dài có `title` đầy đủ, hoặc "Bảo hiểm Khác (Tr)" ở Báo
 cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
 
+### Vòng kiểm chứng cuối (sau commit a2e8897a) — cả 13 màn × 393px + 375px, có/không dữ liệu
+- **0 màn tràn ngang, 0 chữ <11px, 0 vùng chạm <44px** ngoài các mục đã giải thích dưới đây.
+- Còn lại, KHÔNG phải lỗi: nhãn "iPhone 16 Pro • Live" (khung mô phỏng); nút "Sao chép" Bot LINE
+  (cả khung bao quanh bấm được để sao chép); "chữ chồng" trong modal Hướng dẫn ở iPhone SE = phần
+  thân modal đang cuộn phía dưới chân modal (bị khung cuộn che — đúng thiết kế); đốm trang trí mờ
+  của lớp phủ xử lý dữ liệu (position fixed, không tạo cuộn ngang).
+- Phát hiện thêm ở vòng này và ĐÃ SỬA: modal nằm DƯỚI thanh trên/thanh dưới (z-50 < z-100/z-190)
+  → modal cao bị cắt chân (`body:has([data-modal-overlay]) .mobile-chrome`); chữ biểu đồ Recharts
+  bị `styles.css` ép 9px trên mobile → 11px.
+- Desktop 1440px: so pixel trước/sau 10 màn — Báo cáo, Tính thuế, Check thưởng trùng 100%; các màn
+  khác chỉ khác do chữ 10→11px, bố cục giữ nguyên.
+- Test: `mobile-iphone-6-module.spec.ts` (mở rộng 13 màn) ĐẠT; khai-thac, bi-mobile-iphone,
+  tax-paste-hrm, tax-api-key-fallback, smoke ĐẠT. `npm run check`: typecheck/eslint/build đạt,
+  lint-ratchet TRÙNG KHỚP từng dòng với trước khi sửa; unit đỏ 1 (có sẵn).
+- 4 e2e đỏ **cả trên bản trước khi sửa** (không do đợt này): `tax-qr-and-export` ×2 (chờ câu chữ cũ
+  "Quét mã để hoàn lại tiền thuế nhận thay"; `getByRole('button', {name: /Lịch sử/})` khớp 2 nút),
+  `sticker-nut-va-quet-ma` ×2 (tự khởi động Chromium bản máy này không có — lỗi môi trường).
+- Bộ khảo sát giữ lại trong repo: `tests/e2e/audit-iphone-toan-du-an.spec.ts` (chạy bằng
+  `AUDIT_IPHONE=1`, xem đầu file).
+
 ### Bài học kỹ thuật (đọc trước khi sửa giao diện mobile)
 - **`table-fixed` bỏ qua `minWidth` của cột** → cột không có `width` bị bóp → chữ đè cột bên cạnh.
   `DataTable` giờ tự đặt `min-width` bảng = tổng độ rộng cột.
@@ -5737,6 +5757,8 @@ cáo — cắt bớt có chủ đích đã ghi trong `GroupSection.tsx`.
   CHƯA TỪNG hiện — giữ nguyên hành vi, cần chủ dự án quyết có cho hiện không.
 - `leading-none` chỉ dùng cho chữ 1 dòng — chữ gãy 2 dòng sẽ dính chồng (đã gặp ở 4 tab Nhân viên).
 - `shrink-0` trên thanh cuộn ngang = thanh không bao giờ co → tràn trang ở máy hẹp (Bot LINE @375).
+- Modal/lớp phủ mới: gắn `data-modal-overlay` (chỉ khi ĐANG MỞ) để 2 thanh điều hướng mobile tự hạ
+  xuống dưới. Đừng nâng z-index modal lên trên 190 — menu thả xuống portal ra body sẽ chìm.
 
 ### Tồn đọng (không thuộc đợt này)
 - `tests/e2e/helpers/seed.ts → pasteIntoTile()` lỗi thời (ô dán giờ đọc clipboard, không mở textarea)
