@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { InventoryItem } from './types';
+import { InventoryItem, Product } from './types';
 import MultiSelectDropdown from './MultiSelectDropdown';
+import SearchBar from './SearchBar';
 import { ArrowUpDown, Filter, ImageDown } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
 
@@ -24,6 +25,15 @@ interface InventoryToolbarProps {
   sortDirection?: SortDirection;
   onSortChange?: (field: SortField, direction: SortDirection) => void;
   onExportImage?: () => void;
+
+  // Tích hợp Tìm kiếm sản phẩm trực tiếp trên thanh lọc
+  searchQuery?: string;
+  onSearchChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onOpenScanner?: () => void;
+  searchDisabled?: boolean;
+  suggestions?: Product[];
+  onSuggestionClick?: (product: Product) => void;
+  showNoResults?: boolean;
 }
 
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
@@ -48,6 +58,13 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
   sortDirection = 'desc',
   onSortChange,
   onExportImage,
+  searchQuery,
+  onSearchChange,
+  onOpenScanner,
+  searchDisabled,
+  suggestions,
+  onSuggestionClick,
+  showNoResults,
 }) => {
   const [showFilters, setShowFilters] = useState(false);
 
@@ -70,7 +87,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
     return count;
   }, [filters]);
 
-  if (inventory.length === 0) return null;
+  if (inventory.length === 0 && !onSearchChange) return null;
 
   const handleSortFieldChange = (field: SortField) => {
     if (!onSortChange) return;
@@ -84,44 +101,70 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
   return (
     <div className="space-y-1.5">
       {/* Main row */}
-      <div className="flex items-center gap-2 flex-wrap bg-slate-50/80 border border-slate-200 rounded-lg px-2.5 py-1.5">
-        {/* BỘ LỌC toggle button */}
-        <Button
-          variant="ghost"
-          onClick={() => setShowFilters(!showFilters)}
-          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-sky-100 text-sky-700' : 'bg-white text-slate-500 hover:bg-slate-100'} border border-slate-200`}
-        >
-          <Filter className="w-3 h-3" />
-          <span className="uppercase tracking-wider text-[10px]">Bộ lọc</span>
-          {activeFilterCount > 0 && (
-            <span className="bg-sky-600 text-white text-[9px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
+      <div className="flex items-center gap-2 flex-wrap bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl px-2.5 py-1.5 shadow-2xs">
+        {/* 1. Ô tìm kiếm sản phẩm (Được chuyển lên thanh lọc theo yêu cầu) */}
+        {onSearchChange && (
+          <div className="w-full sm:w-72 md:w-80 lg:w-84 xl:w-96 shrink-0">
+            <SearchBar
+              searchQuery={searchQuery || ''}
+              onSearchChange={onSearchChange}
+              onIconClick={onOpenScanner || (() => {})}
+              disabled={!!searchDisabled}
+              suggestions={suggestions || []}
+              onSuggestionClick={onSuggestionClick || (() => {})}
+              showNoResults={!!showNoResults}
+              hideTitle={true}
+              compact={true}
+            />
+          </div>
+        )}
 
-        <div className="h-4 w-px bg-slate-300/60 shrink-0" />
+        {onSearchChange && inventory.length > 0 && (
+          <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 shrink-0 hidden sm:block" />
+        )}
 
-        {/* Tồn kho checkbox */}
-        <label className="flex items-center gap-1 cursor-pointer shrink-0">
-          <input 
-            type="checkbox" 
-            checked={useInventoryQuantity}
-            onChange={(e) => onUseInventoryQuantityChange(e.target.checked)}
-            className="rounded border-slate-300 text-sky-600 focus:ring-sky-500 w-3 h-3"
-          />
-          <span className="text-[11px] font-medium text-slate-600">Tồn kho</span>
-        </label>
+        {/* 2. Nút BỘ LỌC toggle button */}
+        {inventory.length > 0 && (
+          <Button
+            variant="ghost"
+            onClick={() => setShowFilters(!showFilters)}
+            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-700' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700'} border`}
+          >
+            <Filter className="w-3.5 h-3.5" />
+            <span className="uppercase tracking-wider text-[10.5px]">Bộ lọc</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-sky-600 text-white text-[9px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+        )}
 
-        <div className="h-4 w-px bg-slate-300/60 shrink-0" />
+        {/* 3. Tồn kho checkbox */}
+        {inventory.length > 0 && (
+          <>
+            <div className="h-4 w-px bg-slate-300/60 dark:bg-slate-700 shrink-0" />
+            <label className="flex items-center gap-1.5 cursor-pointer shrink-0 px-1 py-1">
+              <input 
+                type="checkbox" 
+                checked={useInventoryQuantity}
+                onChange={(e) => onUseInventoryQuantityChange(e.target.checked)}
+                className="rounded border-slate-300 dark:border-slate-600 text-sky-600 focus:ring-sky-500 w-3.5 h-3.5"
+              />
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Tồn kho</span>
+            </label>
+          </>
+        )}
 
-        {/* Sort controls */}
+        <div className="h-4 w-px bg-slate-300/60 dark:bg-slate-700 shrink-0" />
+
+        {/* 4. Sort controls */}
         <div className="flex items-center gap-1 shrink-0">
-          <ArrowUpDown className="w-3 h-3 text-slate-400" />
+          <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
           <select
             value={sortField}
             onChange={(e) => handleSortFieldChange(e.target.value as SortField)}
-            className="text-[11px] font-medium text-slate-700 bg-white border border-slate-200 rounded px-1.5 py-1 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 cursor-pointer"
+            className="text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-2 h-8 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 cursor-pointer"
           >
             {SORT_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -131,7 +174,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
             <Button
               variant="ghost"
               onClick={() => onSortChange?.(sortField, sortDirection === 'asc' ? 'desc' : 'asc')}
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-5 h-5 rounded bg-slate-200 hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors text-[10px] font-bold"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-8 p-0 text-inherit flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors text-xs font-bold border border-slate-200 dark:border-slate-700"
               title={sortDirection === 'asc' ? 'Tăng dần' : 'Giảm dần'}
             >
               {sortDirection === 'asc' ? '↑' : '↓'}
@@ -142,27 +185,27 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* Export image button */}
-        {onExportImage && (
-          <Button
-            variant="ghost"
-            onClick={onExportImage}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
-            title="Xuất danh sách thành ảnh PNG"
-          >
-            <ImageDown className="w-3.5 h-3.5" />
-            Xuất ảnh
-          </Button>
-        )}
-
-        {/* Clear button */}
+        {/* 5. Nút Clear bộ lọc */}
         {(activeFilterCount > 0 || sortField !== 'none') && (
           <Button
             variant="ghost"
             onClick={() => { onClearFilters(); onSortChange?.('none', 'desc'); setShowFilters(false); }}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] text-rose-500 hover:text-rose-700 font-medium shrink-0"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs text-rose-500 hover:text-rose-700 font-medium shrink-0 px-1 py-1"
           >
-            Xóa
+            Xóa lọc
+          </Button>
+        )}
+
+        {/* 6. Export image button */}
+        {onExportImage && (
+          <Button
+            variant="ghost"
+            onClick={onExportImage}
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition-colors"
+            title="Xuất danh sách thành ảnh PNG"
+          >
+            <ImageDown className="w-3.5 h-3.5" />
+            <span>Xuất ảnh</span>
           </Button>
         )}
       </div>

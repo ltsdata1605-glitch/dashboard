@@ -153,22 +153,6 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                         )}
                     </div>
 
-                    {/* 2. TÌM KIẾM SẢN PHẨM (ĐẶT Ở VỊ TRÍ THUẬN TIỆN NHẤT) */}
-                    {!props.isMobile && (
-                        <div className={`${isEmployeeNameEmpty && !isAdmin ? "opacity-50 pointer-events-none grayscale" : ""}`}>
-                            <SearchBar
-                                searchQuery={props.searchQuery}
-                                onSearchChange={props.onSearchChange}
-                                onIconClick={props.onOpenScanner}
-                                disabled={props.isLoading || (isEmployeeNameEmpty && !isAdmin)}
-                                suggestions={props.suggestions}
-                                onSuggestionClick={props.onSuggestionClick}
-                                showNoResults={props.showNoResults}
-                                isMobile={false}
-                            />
-                        </div>
-                    )}
-
                     {/* 3. NHÓM HÀNH ĐỘNG IN ẤN CHÍNH (LUÔN NỔI BẬT & DỄ THAO TÁC) */}
                     {!props.isLoading && (
                         <div className="bg-gradient-to-b from-sky-50/60 to-slate-50/60 dark:from-sky-950/20 dark:to-slate-900/40 p-2.5 rounded-xl border border-sky-100 dark:border-sky-900/40 space-y-1.5 shadow-2xs">

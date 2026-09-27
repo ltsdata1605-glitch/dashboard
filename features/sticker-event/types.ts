@@ -10,6 +10,7 @@ export interface Product {
   ngayIn: string; // AI
   selected: boolean;
   quantity: number;
+  tonKho?: number | string;
 }
 
 // Khi lưu danh sách, chỉ lưu msp+quantity để tiết kiệm dung lượng Firestore (xem

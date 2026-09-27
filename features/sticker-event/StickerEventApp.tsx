@@ -28,6 +28,7 @@ import UserGuideModal from './UserGuideModal';
 import { Info, Printer, FolderOpen } from 'lucide-react';
 import { auth } from './firebase';
 import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from './services/uiService';
+import { exportProductsInBatches } from './services/batchImageExportService';
 
 // Custom Hooks
 import { useStickerEventAuth } from './hooks/useStickerEventAuth';
@@ -680,29 +681,29 @@ export default function App(): React.JSX.Element {
                   sortField={sortField}
                   sortDirection={sortDirection}
                   onSortChange={handleSortChange}
+                  searchQuery={searchQuery}
+                  onSearchChange={handleSearchInputChange}
+                  onOpenScanner={() => setIsScannerOpen(true)}
+                  searchDisabled={isLoading || (!employeeName && userData?.role !== 'admin')}
+                  suggestions={suggestions}
+                  onSuggestionClick={handleSuggestionClick}
+                  showNoResults={showNoResults}
                   onExportImage={async () => {
-                    const target = productListRef.current;
-                    if (!target || target.children.length === 0) {
+                    if (!sortedProducts || sortedProducts.length === 0) {
                       showAlert('Không có sản phẩm nào để xuất ảnh.', 'Thông báo');
                       return;
                     }
                     try {
-                      showExportOverlay('Đang xuất ảnh danh sách sản phẩm...');
-                      const filename = `Danh Sách Sản Phẩm - ${new Date().toISOString().slice(0,10)}.png`;
-                      const blob = await exportElementAsImage(target, filename, {
-                        elementsToHide: ['.hide-on-export'],
-                        scale: 2,
-                        captureAsDisplayed: true
+                      const res = await exportProductsInBatches(sortedProducts, {
+                        chunkSize: 50,
+                        storeId: userData?.storeId,
                       });
-                      hideExportOverlay();
-                      if (blob) {
-                        downloadBlob(blob, filename);
-                      } else {
-                        showAlert('Không thể xuất ảnh. Vui lòng thử lại.', 'Lỗi');
-                      }
+                      showAlert(
+                        `Đã xuất thành công ${res.batchCount} file ảnh (${res.exportedCount} sản phẩm, mỗi ảnh tối đa 50 dòng)!`,
+                        'Xuất ảnh thành công'
+                      );
                     } catch (err) {
                       console.error('Export image error:', err);
-                      hideExportOverlay();
                       showAlert('Không thể xuất ảnh. Vui lòng thử lại.', 'Lỗi');
                     }
                   }}

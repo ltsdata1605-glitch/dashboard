@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TNB PMH - Tự động lấy mã hàng loạt
 // @namespace    dashboard-ycx
-// @version      1.0
+// @version      1.3
 // @description  Dán danh sách form PMH → tự gộp theo giới hạn 3000 ký tự của ô chat và gửi lần lượt vào phòng admintnb, tự gom mã trả về thành bảng copy nhanh. Chạy trong phiên đăng nhập của CHÍNH BẠN, không gửi dữ liệu ra máy chủ nào khác.
 // @author       Dashboard YCX
 // @match        https://admintnb.com/room-pmh*
@@ -9,21 +9,22 @@
 // @grant        GM_setClipboard
 // @grant        GM_setValue
 // @grant        GM_getValue
+// @grant        GM_xmlhttpRequest
 // @connect      asia-southeast1-dashboa-7e20b.cloudfunctions.net
 // @updateURL    https://dashboard.pro.vn/scripts/tnb-pmh-auto-lay-ma.user.js
 // @downloadURL  https://dashboard.pro.vn/scripts/tnb-pmh-auto-lay-ma.user.js
 // ==/UserScript==
 
 /*
- * BẢN 1.0 — MÔ HÌNH AN TOÀN: TỰ ĐỘNG HOÁ THAO TÁC CỦA CHÍNH NGƯỜI DÙNG.
- * - Script CHỈ chạy trong tab admintnb.com đã đăng nhập của bạn. Nó làm đúng việc bạn vẫn làm tay:
- *   điền nội dung vào ô "Nhập Nội Dung..." (textarea.tnb-pmh-input) rồi bấm nút GỬI.
- * - KHÔNG có máy chủ trung gian, KHÔNG đọc/gửi mã bảo mật ra ngoài, KHÔNG gọi API ẩn. Toàn bộ dữ
- *   liệu ở lại trong trình duyệt của bạn — giống hệt userscript MWG mà dự án đã dùng.
- * - Ô chat giới hạn 3000 ký tự/tin. Script tự gộp nhiều form vào 1 tin cho tới sát ngưỡng an toàn
- *   (2800 ký tự / tối đa N form), gửi lần lượt có giãn cách để không làm nghẽn phòng chung.
- * - Mã trả về (bong bóng bot ➜ PMH <Loại> : <Mã>) được gom tự động thành bảng, lọc theo đúng Mã
- *   Kho bạn vừa gửi, có nút Copy bảng / Copy mã.
+ * CHANGELOG:
+ * - v1.3 (2026-09-27):
+ *   + Thêm bộ lọc "Kho của tôi" (ví dụ: 910) trực tiếp trên giao diện để chỉ lọc và hiển thị riêng mã của siêu thị mình, ẩn hoàn toàn mã của các siêu thị khác trong phòng chung.
+ * - v1.2 (2026-09-27):
+ *   + Trích xuất tiêu đề đầy đủ của kho (ví dụ: 910 - ĐML_STR_STR - 99 Hùng Vương) để phản hồi định dạng chuẩn về LINE.
+ * - v1.1 (2026-09-27):
+ *   + Giảm BOT_POLL_INTERVAL từ 5s xuống 2s để gom và gửi form tức thì, trả mã về LINE trong thời hạn hiệu lực của replyToken (miễn phí, không bị tính vào hạn mức push 429).
+ *   + Cải thiện hiển thị chi tiết nguyên nhân khi LINE push/reply bị lỗi thay vì thông báo "không rõ".
+ * - v1.0: Phiên bản khởi tạo tự động lấy mã hàng loạt và relay bot LINE.
  */
 
 (function () {
@@ -37,7 +38,7 @@
   const CF_BASE = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net';
   const POLL_URL = CF_BASE + '/pmhRelayPoll';
   const COMPLETE_URL = CF_BASE + '/pmhRelayComplete';
-  const BOT_POLL_INTERVAL = 5000;
+  const BOT_POLL_INTERVAL = 2000;
 
   // ------------------------------------------------------------------ tiện ích
   const $ = (sel, root) => (root || document).querySelector(sel);
@@ -46,6 +47,24 @@
   const norm = (s) => (s || '').replace(/\r\n/g, '\n').replace(/\u00a0/g, ' ');
   const gmGet = (k, d) => { try { return GM_getValue(k, d); } catch (e) { return d; } };
   const gmSet = (k, v) => { try { GM_setValue(k, v); } catch (e) { } };
+
+  function gmFetch(url, opts) {
+    opts = opts || {};
+    return new Promise(function (resolve, reject) {
+      GM_xmlhttpRequest({
+        method: opts.method || 'GET',
+        url: url,
+        headers: opts.headers || {},
+        data: opts.body || undefined,
+        responseType: 'json',
+        onload: function (r) {
+          resolve({ ok: r.status >= 200 && r.status < 300, status: r.status, json: function () { return Promise.resolve(r.response); } });
+        },
+        onerror: function (e) { reject(new Error('Network error')); },
+        ontimeout: function () { reject(new Error('Timeout')); },
+      });
+    });
+  }
 
   function setReactValue(el, value) {
     const proto = el.tagName === 'TEXTAREA'
@@ -137,14 +156,15 @@
     for (const b of blocks) {
       const lines = b.split('\n').map((s) => s.trim()).filter(Boolean);
       if (!lines.length) continue;
-      let kho = '', ten = '';
+      let kho = '', ten = '', fullStore = lines[0] || '';
       const mStore = (lines[0] || '').match(/^(\d{2,7})\s*-\s*(.+)$/);
       if (mStore) { kho = mStore[1]; ten = mStore[2]; }
+      else { kho = lines[0] || ''; }
       const resLine = lines.find((l) => l.includes('➜')) || '';
       const mOk = resLine.match(/➜\s*PMH\s+(\S+)\s*:\s*([A-Za-z0-9]{4,})/);
       const mErr = resLine.match(/➜\s*❌\s*(.+)$/);
-      if (mOk) out.push({ kho, ten, loai: mOk[1], ma: mOk[2], err: '' });
-      else if (mErr) out.push({ kho, ten, loai: '', ma: '', err: mErr[1].trim() });
+      if (mOk) out.push({ kho, ten, fullStore, loai: mOk[1], ma: mOk[2], err: '' });
+      else if (mErr) out.push({ kho, ten, fullStore, loai: '', ma: '', err: mErr[1].trim() });
     }
     return out;
   }
@@ -207,23 +227,37 @@
     el.textContent = bot.log.slice(0, 8).join('\n');
   }
 
+  var pollCount = 0;
+
   async function botPoll() {
     if (!bot.active || !bot.token) return;
     try {
-      const resp = await fetch(POLL_URL, {
+      const resp = await gmFetch(POLL_URL, {
         headers: { 'Authorization': 'Bearer ' + bot.token },
       });
+      pollCount++;
       if (!resp.ok) { botLog('⚠️ Poll lỗi HTTP ' + resp.status); return; }
       const data = await resp.json();
       const items = data.items || [];
-      if (!items.length) return;
+      if (!items.length) {
+        if (pollCount % 12 === 0) botLog('💓 Poll OK — chờ form (đã poll ' + pollCount + ' lần)');
+        return;
+      }
       botLog('📥 Nhận ' + items.length + ' form từ LINE');
       for (const item of items) {
         if (bot.pending.has(item.id)) continue;
         const khos = extractKhos(splitForms(item.form));
+        for (const k of khos) state.sentKhos.add(k);
+        if (!gmGet('tnb_my_kho', '') && khos.length > 0) {
+          gmSet('tnb_my_kho', [...khos].join(','));
+          const inputKho = $('.tph-my-kho');
+          if (inputKho) inputKho.value = [...khos].join(',');
+        }
         bot.pending.set(item.id, {
           form: item.form, khos: khos, submitted: false,
           results: [], errors: [], submittedAt: 0,
+          seenBefore: new Set(state.results.keys()),
+          errCountBefore: state.errors.length,
         });
       }
       // Gửi từng form chưa gửi
@@ -253,16 +287,17 @@
   function botCheckResponses() {
     for (const [id, item] of bot.pending) {
       if (!item.submitted) continue;
-      // Tìm kết quả trong state.results (đã được MutationObserver gom)
-      for (const r of state.results.values()) {
-        if (item.khos.has(r.kho)) {
-          const key = r.kho + '|' + r.loai + '|' + r.ma;
+      // Chỉ lấy mã MỚI xuất hiện SAU khi gửi form (snapshot trước gửi đã lưu)
+      for (const [key, r] of state.results) {
+        if (item.khos.has(r.kho) && !item.seenBefore.has(key)) {
           if (!item.results.find(function (x) { return x.kho === r.kho && x.ma === r.ma; })) {
             item.results.push(r);
           }
         }
       }
-      for (const e of state.errors) {
+      for (var ei = 0; ei < state.errors.length; ei++) {
+        var e = state.errors[ei];
+        if (ei < item.errCountBefore) continue;
         if (item.khos.has(e.kho)) {
           if (!item.errors.find(function (x) { return x.kho === e.kho && x.err === e.err; })) {
             item.errors.push(e);
@@ -283,7 +318,7 @@
   async function botPostResult(id, item) {
     bot.pending.delete(id);
     try {
-      await fetch(COMPLETE_URL, {
+      var resp = await gmFetch(COMPLETE_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -291,12 +326,26 @@
         },
         body: JSON.stringify({
           id: id,
-          codes: item.results.map(function (r) { return { kho: r.kho, type: r.loai, code: r.ma }; }),
-          errors: item.errors.map(function (e) { return e.kho + ': ' + e.err; }),
+          codes: item.results.map(function (r) {
+            return {
+              kho: r.kho,
+              ten: r.ten || '',
+              storeHeader: r.fullStore || (r.ten ? r.kho + ' - ' + r.ten : r.kho),
+              type: r.loai,
+              code: r.ma
+            };
+          }),
+          errors: item.errors.map(function (e) { return (e.fullStore || e.kho) + ': ' + e.err; }),
         }),
       });
+      var data = await resp.json();
       var maCount = item.results.length;
-      botLog('✅ Trả ' + maCount + ' mã về LINE (kho ' + [...item.khos].join(',') + ')');
+      if (data && data.pushed) {
+        var methodText = data.method === 'reply' ? ' [miễn phí qua replyToken]' : '';
+        botLog('✅ Trả ' + maCount + ' mã về LINE OK' + methodText + ' (kho ' + [...item.khos].join(',') + ')');
+      } else {
+        botLog('⚠️ Trả ' + maCount + ' mã nhưng LINE gửi thất bại: ' + (data && data.reason || 'không rõ'));
+      }
     } catch (e) {
       botLog('⚠️ Gửi kết quả lỗi: ' + (e.message || e));
     }
@@ -440,6 +489,13 @@
       '<button class="tph-btn tph-go" data-act="go">▶ Chạy lấy mã</button>',
       '<button class="tph-btn tph-stop" data-act="stop">⏹</button>',
       '</div>',
+      '<div class="tph-row" style="margin:4px 0 6px;background:#f8fafc;padding:6px 8px;border-radius:6px;border:1px solid #e2e8f0;">',
+      '<label style="font-size:11px;font-weight:700;color:#0369a1;white-space:nowrap;">🏢 Kho của tôi:</label>',
+      '<input class="tph-my-kho" type="text" placeholder="Ví dụ: 910" ',
+      'value="' + esc(gmGet('tnb_my_kho', '')) + '" ',
+      'style="flex:1;padding:3px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11px;font-weight:700;color:#0f172a;" ',
+      'title="Chỉ hiển thị và copy mã thuộc mã kho này (để trống: xem tất cả)">',
+      '</div>',
       '<div class="tph-status">Sẵn sàng. Hãy đăng nhập Mã Bảo Mật vào phòng trước khi gửi.</div>',
       '<div class="tph-res"></div>',
       '</div>',
@@ -486,6 +542,13 @@
       }
     });
 
+    wrap.addEventListener('input', (e) => {
+      if (e.target && e.target.classList.contains('tph-my-kho')) {
+        gmSet('tnb_my_kho', e.target.value.trim());
+        renderResults();
+      }
+    });
+
     renderResults();
   }
 
@@ -500,32 +563,46 @@
 
   function visibleResults() {
     const all = Array.from(state.results.values());
-    if (state.showAll || state.sentKhos.size === 0) return all;
+    if (state.showAll) return all;
+    const myKho = (gmGet('tnb_my_kho', '') || '').trim();
+    if (myKho) {
+      const myKhoList = myKho.split(/[\s,;|]+/).filter(Boolean);
+      return all.filter((r) => myKhoList.includes(r.kho));
+    }
+    if (state.sentKhos.size === 0) return all;
     return all.filter((r) => state.sentKhos.has(r.kho));
   }
 
   function renderResults() {
     const box = $('.tph-res');
     if (!box) return;
+    const myKho = (gmGet('tnb_my_kho', '') || '').trim();
+    const myKhoList = myKho ? myKho.split(/[\s,;|]+/).filter(Boolean) : null;
     const rows = visibleResults();
-    const errs = state.showAll || state.sentKhos.size === 0
+    const errs = state.showAll
       ? state.errors
-      : state.errors.filter((e) => state.sentKhos.has(e.kho));
+      : (myKhoList
+          ? state.errors.filter((e) => myKhoList.includes(e.kho))
+          : (state.sentKhos.size === 0 ? state.errors : state.errors.filter((e) => state.sentKhos.has(e.kho))));
     const parts = [];
+    const countTitle = myKho && !state.showAll
+      ? 'Kho ' + esc(myKho) + ': ' + rows.length + ' mã'
+      : 'Mã nhận: ' + rows.length;
     parts.push('<div class="tph-row" style="justify-content:space-between;">' +
-      '<span style="font-weight:600;">Mã nhận: ' + rows.length + (errs.length ? ' · lỗi: ' + errs.length : '') + '</span>' +
+      '<span style="font-weight:700;color:' + (myKho && !state.showAll ? '#0284c7' : '#0f172a') + ';">' + countTitle + (errs.length ? ' · lỗi: ' + errs.length : '') + '</span>' +
       '<span><label style="cursor:pointer;"><input type="checkbox" data-act="toggleall"' +
       (state.showAll ? ' checked' : '') + '> tất cả kho</label></span></div>');
     if (rows.length) {
       parts.push('<div class="tph-row"><button class="tph-btn tph-ghost" data-act="copyma">Copy mã</button>' +
         '<button class="tph-btn tph-ghost" data-act="copytable">Copy bảng</button>' +
         '<button class="tph-btn tph-ghost" data-act="clearres">Xoá</button></div>');
-      parts.push('<table><tbody>');
+      parts.push('<div style="font-size:12px;line-height:1.6;font-family:ui-monospace,Menlo,monospace;">');
       for (const r of rows) {
-        parts.push('<tr><td>' + esc(r.kho) + '</td><td>' + esc(r.loai) +
-          '</td><td class="ma">' + esc(r.ma) + '</td></tr>');
+        parts.push('<div style="padding:2px 0;border-bottom:1px solid #f1f5f9;">' +
+          esc(r.kho) + ' - ' + esc(r.ten) +
+          '<br><span style="color:#0f766e;font-weight:700;">➜ PMH ' + esc(r.loai) + ' : ' + esc(r.ma) + '</span></div>');
       }
-      parts.push('</tbody></table>');
+      parts.push('</div>');
     } else {
       parts.push('<div style="font-size:12px;color:#94a3b8;">Chưa có mã. Gửi form rồi chờ admin duyệt.</div>');
     }

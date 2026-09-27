@@ -14,6 +14,8 @@
 import { onRequest } from 'firebase-functions/v2/https';
 import { db } from './firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { createFilteredPmhFlexMessages } from './pmhFlexCard';
+import { allocatePmhSequence } from './pmhSequence';
 
 const REGION = 'asia-southeast1';
 const QUEUE_COL = 'pmh_relay_queue';
@@ -24,14 +26,19 @@ interface RelayQueueDoc {
     groupId: string;
     senderName: string;
     quoteToken?: string;
+    replyToken?: string;
     status: 'pending' | 'processing' | 'done' | 'error';
     result?: {
-        codes: Array<{ kho: string; type: string; code: string }>;
+        codes: Array<{ kho: string; ten?: string; storeHeader?: string; type: string; code: string }>;
         errors: string[];
     };
     createdAt: FirebaseFirestore.Timestamp;
     updatedAt: FirebaseFirestore.Timestamp;
 }
+
+const KNOWN_STORE_NAMES: Record<string, string> = {
+    '910': 'ĐML_STR_STR - 99 Hùng Vương',
+};
 
 async function resolveToken(authHeader: string | undefined): Promise<string | null> {
     if (!authHeader?.startsWith('Bearer ')) return null;
@@ -88,7 +95,7 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
 
     const { id, codes, errors } = req.body as {
         id: string;
-        codes: Array<{ kho: string; type: string; code: string }>;
+        codes: Array<{ kho: string; ten?: string; storeHeader?: string; type: string; code: string }>;
         errors: string[];
     };
     if (!id) { res.status(400).json({ error: 'missing-id' }); return; }
@@ -106,43 +113,98 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
         updatedAt: FieldValue.serverTimestamp(),
     });
 
-    // Gửi LINE push message
+    // Gửi LINE message (Ưu tiên dạng Thẻ Flex Message chuẩn giao diện)
     const botDoc = await db.collection('line_bots').doc(uid).get();
-    const token = botDoc.data()?.channelAccessToken;
+    const botData = botDoc.data();
+    const token = botData?.channelAccessToken;
+    const liffId = botData?.liffId || '2011679071-BclvutpD';
     if (!token || !data.groupId) {
         res.json({ ok: true, pushed: false, reason: 'no-token-or-group' });
         return;
     }
 
+    console.info(`[pmhRelayComplete] docId=${id}, codes=${(codes||[]).length}, errors=${(errors||[]).length}, groupId=${data.groupId}`);
     const codeList = (codes || []);
     const errList = (errors || []);
-    const lines: string[] = [];
 
+    // 1. Tạo tin nhắn dạng Thẻ Flex Message Card
+    let messages: any[] = [];
     if (codeList.length > 0) {
-        lines.push(`✅ Đã lấy ${codeList.length} mã PMH:`);
-        for (const c of codeList) {
-            lines.push(`${c.kho} - ${c.type} : ${c.code}`);
+        const startSeq = await allocatePmhSequence(uid, codeList.length, new Date(), 'pmh');
+        const matchedItems = codeList.map((c, idx) => {
+            let storeTitle = c.storeHeader || (c.ten ? `${c.kho} - ${c.ten}` : '');
+            if (!storeTitle) {
+                const knownName = KNOWN_STORE_NAMES[c.kho];
+                storeTitle = knownName ? `${c.kho} - ${knownName}` : `${c.kho}`;
+            }
+            return {
+                recipient: storeTitle,
+                productName: `PMH ${c.type.toUpperCase()}`,
+                categoryLabel: c.type.toUpperCase(),
+                code: c.code,
+                cardIndex: (startSeq && startSeq > 0) ? startSeq + idx : (idx + 1),
+            };
+        });
+        messages = createFilteredPmhFlexMessages(matchedItems, liffId);
+    }
+
+    if (errList.length > 0) {
+        messages.push({
+            type: 'text',
+            text: `❌ Lỗi (${errList.length}):\n` + errList.map(e => `• ${e}`).join('\n')
+        });
+    }
+
+    if (messages.length === 0) {
+        messages.push({
+            type: 'text',
+            text: '⚠️ Không nhận được mã nào từ admintnb.'
+        });
+    }
+
+    // Chuẩn bị sẵn fallback text nếu gửi thẻ Flex Message gặp lỗi
+    const fallbackLines: string[] = [];
+    for (const c of codeList) {
+        let storeTitle = c.storeHeader || (c.ten ? `${c.kho} - ${c.ten}` : '');
+        if (!storeTitle) {
+            const knownName = KNOWN_STORE_NAMES[c.kho];
+            storeTitle = knownName ? `${c.kho} - ${knownName}` : `${c.kho}`;
         }
+        fallbackLines.push(storeTitle);
+        fallbackLines.push(`➜ PMH ${c.type} : ${c.code}`);
     }
     if (errList.length > 0) {
-        lines.push('');
-        lines.push(`❌ Lỗi (${errList.length}):`);
-        for (const e of errList) {
-            lines.push(`• ${e}`);
-        }
+        if (fallbackLines.length > 0) fallbackLines.push('');
+        fallbackLines.push(`❌ Lỗi (${errList.length}):\n` + errList.map(e => `• ${e}`).join('\n'));
     }
-    if (lines.length === 0) {
-        lines.push('⚠️ Không nhận được mã nào từ admintnb.');
-    }
-
-    const replyText = lines.join('\n');
-    const messages: any[] = [{
-        type: 'text',
-        text: replyText,
-        ...(data.quoteToken ? { quoteToken: data.quoteToken } : {}),
-    }];
+    const fallbackText = fallbackLines.join('\n');
 
     try {
+        // 1. Ưu tiên cao nhất: Dùng replyToken nếu có (Miễn phí 100%, không bao giờ bị trừ quota push 429)
+        if (data.replyToken) {
+            console.info(`[pmhRelayComplete] Attempting FREE reply via replyToken for docId=${id}`);
+            const replyRes = await fetch('https://api.line.me/v2/bot/message/reply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    replyToken: data.replyToken,
+                    messages,
+                }),
+            });
+            if (replyRes.ok) {
+                console.info(`[pmhRelayComplete] Reply SUCCESS via replyToken! docId=${id}`);
+                res.json({ ok: true, pushed: true, method: 'reply' });
+                return;
+            }
+            const replyErr = await replyRes.text();
+            console.warn(`[pmhRelayComplete] replyToken failed (likely expired > 1m): ${replyRes.status} ${replyErr}. Falling back to push.`);
+        }
+
+        // 2. Fallback: Dùng push message nếu không có replyToken hoặc replyToken đã hết hạn
+        console.info(`[pmhRelayComplete] Pushing to LINE, groupId=${data.groupId}`);
         const pushRes = await fetch('https://api.line.me/v2/bot/message/push', {
             method: 'POST',
             headers: {
@@ -152,8 +214,10 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
             body: JSON.stringify({ to: data.groupId, messages }),
         });
         if (!pushRes.ok) {
-            // Retry without quoteToken
-            if (data.quoteToken) {
+            const errBody = await pushRes.text();
+            console.warn(`[pmhRelayComplete] Push failed: ${pushRes.status} ${errBody}`);
+            // Retry with text format
+            if (fallbackText) {
                 const retry = await fetch('https://api.line.me/v2/bot/message/push', {
                     method: 'POST',
                     headers: {
@@ -162,14 +226,27 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
                     },
                     body: JSON.stringify({
                         to: data.groupId,
-                        messages: [{ type: 'text', text: replyText }],
+                        messages: [{ type: 'text', text: fallbackText }],
                     }),
                 });
-                res.json({ ok: true, pushed: retry.ok });
+                if (retry.ok) {
+                    res.json({ ok: true, pushed: true, method: 'push-text-retry' });
+                    return;
+                }
+                const retryErr = await retry.text();
+                const reason = (retryErr.includes('monthly limit') || retry.status === 429)
+                    ? 'Tài khoản LINE Bot hết hạn mức tin nhắn tháng (429: You have reached your monthly limit)'
+                    : retryErr;
+                res.json({ ok: true, pushed: false, reason });
                 return;
             }
+            const reason = (errBody.includes('monthly limit') || pushRes.status === 429)
+                ? 'Tài khoản LINE Bot hết hạn mức tin nhắn tháng (429: You have reached your monthly limit)'
+                : errBody;
+            res.json({ ok: true, pushed: false, reason });
+            return;
         }
-        res.json({ ok: true, pushed: pushRes.ok });
+        res.json({ ok: true, pushed: true, method: 'push' });
     } catch (e: any) {
         console.error('[pmhRelayComplete] Push error:', e);
         res.json({ ok: true, pushed: false, reason: e?.message });
@@ -185,6 +262,7 @@ export async function enqueuePmhRelay(params: {
     groupId: string;
     senderName: string;
     quoteToken?: string;
+    replyToken?: string;
 }): Promise<string> {
     const docRef = await db.collection(QUEUE_COL).add({
         ownerUid: params.ownerUid,
@@ -192,6 +270,7 @@ export async function enqueuePmhRelay(params: {
         groupId: params.groupId,
         senderName: params.senderName,
         quoteToken: params.quoteToken || null,
+        replyToken: params.replyToken || null,
         status: 'pending',
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
