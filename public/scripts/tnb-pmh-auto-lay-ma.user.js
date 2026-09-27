@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TNB PMH - Tự động lấy mã hàng loạt
 // @namespace    dashboard-ycx
-// @version      1.3
+// @version      1.5
 // @description  Dán danh sách form PMH → tự gộp theo giới hạn 3000 ký tự của ô chat và gửi lần lượt vào phòng admintnb, tự gom mã trả về thành bảng copy nhanh. Chạy trong phiên đăng nhập của CHÍNH BẠN, không gửi dữ liệu ra máy chủ nào khác.
 // @author       Dashboard YCX
 // @match        https://admintnb.com/room-pmh*
@@ -17,6 +17,11 @@
 
 /*
  * CHANGELOG:
+ * - v1.5 (2026-09-27):
+ *   + Sắp xếp danh sách mã theo thứ tự mới nhất nằm trên cùng (đảo ngược thứ tự hiển thị để các mã vừa được cấp xuất hiện ngay đầu danh sách).
+ * - v1.4 (2026-09-27):
+ *   + Bổ sung bộ lọc "Loại PMH" (ví dụ: WC200, TL300, ML200...) hỗ trợ gõ tên loại hoặc bấm chọn nhanh qua các thẻ (quick pills) đếm số lượng mã thực tế.
+ *   + Hỗ trợ lọc kết hợp giữa "Kho của tôi" và "Loại PMH", tự động cập nhật số lượng mã hiển thị và chức năng Copy mã / Copy bảng.
  * - v1.3 (2026-09-27):
  *   + Thêm bộ lọc "Kho của tôi" (ví dụ: 910) trực tiếp trên giao diện để chỉ lọc và hiển thị riêng mã của siêu thị mình, ẩn hoàn toàn mã của các siêu thị khác trong phòng chung.
  * - v1.2 (2026-09-27):
@@ -444,6 +449,10 @@
       '#' + PANEL_ID + ' .tph-res table{width:100%;border-collapse:collapse;font-size:12px;}',
       '#' + PANEL_ID + ' .tph-res td{padding:2px 4px;border-bottom:1px solid #f1f5f9;vertical-align:top;}',
       '#' + PANEL_ID + ' .tph-res .ma{font-family:ui-monospace,Menlo,monospace;font-weight:700;color:#0f766e;}',
+      '#' + PANEL_ID + ' .tph-pill{padding:2px 7px;font-size:10px;font-weight:700;border-radius:12px;border:1px solid #bae6fd;',
+      'background:#f0f9ff;color:#0369a1;cursor:pointer;transition:all .15s;user-select:none;line-height:1.3;}',
+      '#' + PANEL_ID + ' .tph-pill:hover{background:#e0f2fe;border-color:#38bdf8;}',
+      '#' + PANEL_ID + ' .tph-pill.is-active{background:#0284c7;color:#fff;border-color:#0284c7;box-shadow:0 1px 3px rgba(2,132,199,.3);}',
       '#' + PANEL_ID + ' .tph-err{color:#b91c1c;font-size:12px;margin-top:6px;white-space:pre-wrap;}',
       '#' + PANEL_ID + '.tph-min .tph-body{display:none;}',
       '#tnb-pmh-fab{position:fixed;top:12px;right:12px;z-index:2147483000;background:#0f2f5f;color:#fff;',
@@ -489,12 +498,22 @@
       '<button class="tph-btn tph-go" data-act="go">▶ Chạy lấy mã</button>',
       '<button class="tph-btn tph-stop" data-act="stop">⏹</button>',
       '</div>',
-      '<div class="tph-row" style="margin:4px 0 6px;background:#f8fafc;padding:6px 8px;border-radius:6px;border:1px solid #e2e8f0;">',
-      '<label style="font-size:11px;font-weight:700;color:#0369a1;white-space:nowrap;">🏢 Kho của tôi:</label>',
-      '<input class="tph-my-kho" type="text" placeholder="Ví dụ: 910" ',
+      '<div style="margin:4px 0 6px;background:#f8fafc;padding:6px 8px;border-radius:6px;border:1px solid #e2e8f0;display:flex;flex-direction:column;gap:5px;">',
+      '<div style="display:flex;align-items:center;gap:6px;">',
+      '<label style="font-size:11px;font-weight:700;color:#0369a1;white-space:nowrap;width:74px;">🏢 Kho:</label>',
+      '<input class="tph-my-kho" type="text" placeholder="Ví dụ: 910 (trống: xem hết)" ',
       'value="' + esc(gmGet('tnb_my_kho', '')) + '" ',
       'style="flex:1;padding:3px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11px;font-weight:700;color:#0f172a;" ',
       'title="Chỉ hiển thị và copy mã thuộc mã kho này (để trống: xem tất cả)">',
+      '</div>',
+      '<div style="display:flex;align-items:center;gap:6px;">',
+      '<label style="font-size:11px;font-weight:700;color:#0369a1;white-space:nowrap;width:74px;">🏷️ Loại PMH:</label>',
+      '<input class="tph-filter-loai" type="text" placeholder="Ví dụ: WC200, TL300..." ',
+      'value="' + esc(gmGet('tnb_filter_loai', '')) + '" ',
+      'style="flex:1;padding:3px 6px;border:1px solid #cbd5e1;border-radius:4px;font-size:11px;font-weight:700;color:#0f172a;" ',
+      'title="Lọc theo loại PMH (gõ tên loại hoặc bấm chọn thẻ nhanh bên dưới)">',
+      '</div>',
+      '<div class="tph-loai-pills-box" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;"></div>',
       '</div>',
       '<div class="tph-status">Sẵn sàng. Hãy đăng nhập Mã Bảo Mật vào phòng trước khi gửi.</div>',
       '<div class="tph-res"></div>',
@@ -505,6 +524,17 @@
     const setStatus = (s) => { const el = $('.tph-status', wrap); if (el) el.textContent = s; };
 
     wrap.addEventListener('click', (e) => {
+      const pill = e.target && e.target.closest && e.target.closest('.tph-pill');
+      if (pill) {
+        const loai = pill.getAttribute('data-loai') || '';
+        const curLoai = gmGet('tnb_filter_loai', '');
+        const nextLoai = (curLoai.toUpperCase() === loai.toUpperCase()) ? '' : loai;
+        gmSet('tnb_filter_loai', nextLoai);
+        const inputLoai = $('.tph-filter-loai', wrap);
+        if (inputLoai) inputLoai.value = nextLoai;
+        renderResults();
+        return;
+      }
       const act = e.target && e.target.getAttribute && e.target.getAttribute('data-act');
       if (!act) return;
       if (act === 'min') {
@@ -547,6 +577,10 @@
         gmSet('tnb_my_kho', e.target.value.trim());
         renderResults();
       }
+      if (e.target && e.target.classList.contains('tph-filter-loai')) {
+        gmSet('tnb_filter_loai', e.target.value.trim());
+        renderResults();
+      }
     });
 
     renderResults();
@@ -562,15 +596,27 @@
   }
 
   function visibleResults() {
-    const all = Array.from(state.results.values());
-    if (state.showAll) return all;
-    const myKho = (gmGet('tnb_my_kho', '') || '').trim();
-    if (myKho) {
-      const myKhoList = myKho.split(/[\s,;|]+/).filter(Boolean);
-      return all.filter((r) => myKhoList.includes(r.kho));
+    // Đảo ngược để các mã mới nhận luôn nằm ở trên cùng
+    const all = Array.from(state.results.values()).reverse();
+    let list = all;
+    if (!state.showAll) {
+      const myKho = (gmGet('tnb_my_kho', '') || '').trim();
+      if (myKho) {
+        const myKhoList = myKho.split(/[\s,;|]+/).filter(Boolean);
+        list = list.filter((r) => myKhoList.includes(r.kho));
+      } else if (state.sentKhos.size > 0) {
+        list = list.filter((r) => state.sentKhos.has(r.kho));
+      }
     }
-    if (state.sentKhos.size === 0) return all;
-    return all.filter((r) => state.sentKhos.has(r.kho));
+    const filterLoai = (gmGet('tnb_filter_loai', '') || '').trim().toUpperCase();
+    if (filterLoai) {
+      const loaiList = filterLoai.split(/[\s,;|]+/).map((s) => s.trim().toUpperCase()).filter(Boolean);
+      list = list.filter((r) => {
+        const rLoai = (r.loai || '').toUpperCase();
+        return loaiList.some((target) => rLoai === target || rLoai.includes(target));
+      });
+    }
+    return list;
   }
 
   function renderResults() {
@@ -578,18 +624,56 @@
     if (!box) return;
     const myKho = (gmGet('tnb_my_kho', '') || '').trim();
     const myKhoList = myKho ? myKho.split(/[\s,;|]+/).filter(Boolean) : null;
+    const curFilterLoai = (gmGet('tnb_filter_loai', '') || '').trim();
     const rows = visibleResults();
-    const errs = state.showAll
+
+    // Cập nhật các thẻ chọn nhanh (quick pills) theo danh sách mã hiện tại
+    const pillsBox = $('.tph-loai-pills-box');
+    if (pillsBox) {
+      const allResults = Array.from(state.results.values());
+      const baseResults = state.showAll
+        ? allResults
+        : (myKhoList
+            ? allResults.filter((r) => myKhoList.includes(r.kho))
+            : (state.sentKhos.size === 0 ? allResults : allResults.filter((r) => state.sentKhos.has(r.kho))));
+
+      const counts = {};
+      for (const r of baseResults) {
+        if (r.loai) counts[r.loai] = (counts[r.loai] || 0) + 1;
+      }
+      const types = Object.keys(counts).sort();
+      if (types.length > 0) {
+        let pillsHtml = '<button type="button" class="tph-pill' + (!curFilterLoai ? ' is-active' : '') + '" data-loai="">Tất cả (' + baseResults.length + ')</button>';
+        for (const t of types) {
+          const isActive = curFilterLoai.toUpperCase() === t.toUpperCase();
+          pillsHtml += '<button type="button" class="tph-pill' + (isActive ? ' is-active' : '') + '" data-loai="' + esc(t) + '">' + esc(t) + ' (' + counts[t] + ')</button>';
+        }
+        pillsBox.innerHTML = pillsHtml;
+        pillsBox.style.display = 'flex';
+      } else {
+        pillsBox.innerHTML = '';
+        pillsBox.style.display = 'none';
+      }
+    }
+
+    const rawErrs = state.showAll
       ? state.errors
       : (myKhoList
           ? state.errors.filter((e) => myKhoList.includes(e.kho))
           : (state.sentKhos.size === 0 ? state.errors : state.errors.filter((e) => state.sentKhos.has(e.kho))));
+    const errs = rawErrs.slice().reverse();
+
     const parts = [];
-    const countTitle = myKho && !state.showAll
-      ? 'Kho ' + esc(myKho) + ': ' + rows.length + ' mã'
+    const countDetails = [];
+    if (myKho && !state.showAll) countDetails.push('Kho ' + esc(myKho));
+    if (curFilterLoai) countDetails.push('Loại ' + esc(curFilterLoai));
+    const countTitle = countDetails.length > 0
+      ? countDetails.join(' · ') + ': ' + rows.length + ' mã'
       : 'Mã nhận: ' + rows.length;
+
+    const isFiltered = (myKho && !state.showAll) || Boolean(curFilterLoai);
     parts.push('<div class="tph-row" style="justify-content:space-between;">' +
-      '<span style="font-weight:700;color:' + (myKho && !state.showAll ? '#0284c7' : '#0f172a') + ';">' + countTitle + (errs.length ? ' · lỗi: ' + errs.length : '') + '</span>' +
+      '<span style="font-weight:700;color:' + (isFiltered ? '#0284c7' : '#0f172a') + ';">' + countTitle + (errs.length ? ' · lỗi: ' + errs.length : '') + '</span>' +
       '<span><label style="cursor:pointer;"><input type="checkbox" data-act="toggleall"' +
       (state.showAll ? ' checked' : '') + '> tất cả kho</label></span></div>');
     if (rows.length) {

@@ -7,14 +7,17 @@ import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
 import { Button } from '../../../components/shared/ui/Button';
+import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
 import type { ConfigTab } from './SupermarketConfig';
+import { lazyWithRetry } from '../../../utils/lazyWithRetry';
 
-// Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
-const Dashboard = lazy(() => import('./Dashboard'));
-const NhanVien = lazy(() => import('./NhanVien'));
-const DataUpdater = lazy(() => import('./DataUpdater'));
+// Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
+import Dashboard from './Dashboard';
+// Các sub-view phụ tải lười an toàn với lazyWithRetry
+const NhanVien = lazyWithRetry(() => import('./NhanVien'), 'BiNhanVien');
+const DataUpdater = lazyWithRetry(() => import('./DataUpdater'), 'BiDataUpdater');
 
 const getTabColorClasses = (color: string, isActive: boolean) => {
     if (!isActive) return 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800/50';
@@ -256,29 +259,31 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 giữa thanh tiêu đề app và tiêu đề "SIÊU THỊ" — chủ dự án yêu cầu bỏ 2026-09-21). Từng view
                 con đã có `pt-2` ở hàng tiêu đề riêng. Đổi khung này thì đổi cả 2 nơi kia cho khớp. */}
             <main className="p-0 sm:px-4 sm:pb-4 lg:px-8 lg:pb-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
-                <Suspense fallback={<TabSpinner />}>
-                    {/* Dashboard view */}
-                    {mountedViews.has('dashboard') && (
-                        <div className={activeView === 'dashboard' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <Dashboard onNavigateToUpdater={handleNavigateToUpdater} isActive={isActive && activeView === 'dashboard'} />
-                        </div>
-                    )}
+                <ErrorBoundary name="Báo cáo BI">
+                    <Suspense fallback={<TabSpinner />}>
+                        {/* Dashboard view */}
+                        {mountedViews.has('dashboard') && (
+                            <div className={activeView === 'dashboard' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
+                                <Dashboard onNavigateToUpdater={handleNavigateToUpdater} isActive={isActive && activeView === 'dashboard'} />
+                            </div>
+                        )}
 
-                    {/* Employee view */}
-                    {mountedViews.has('employee') && (
-                        <div className={activeView === 'employee' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <NhanVien isActive={isActive && activeView === 'employee'} />
-                        </div>
-                    )}
+                        {/* Employee view */}
+                        {mountedViews.has('employee') && (
+                            <div className={activeView === 'employee' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
+                                <NhanVien isActive={isActive && activeView === 'employee'} />
+                            </div>
+                        )}
 
-                    {/* Data Updater view */}
-                    {mountedViews.has('updater') && (
-                        <div className={activeView === 'updater' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <DataUpdater onNavigateToDashboard={handleNavigateToDashboard} />
-                        </div>
-                    )}
+                        {/* Data Updater view */}
+                        {mountedViews.has('updater') && (
+                            <div className={activeView === 'updater' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
+                                <DataUpdater onNavigateToDashboard={handleNavigateToDashboard} />
+                            </div>
+                        )}
 
-                </Suspense>
+                    </Suspense>
+                </ErrorBoundary>
             </main>
 
         </div>

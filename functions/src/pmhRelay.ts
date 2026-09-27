@@ -127,11 +127,49 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
     const codeList = (codes || []);
     const errList = (errors || []);
 
+const makeFilteredDocId = (item: { code: string; recipient: string }) =>
+    `${item.code}_${item.recipient}`.replace(/[^a-zA-Z0-9_-]/g, '_');
+
+async function saveQuoteTokens(
+    uid: string,
+    items: Array<{ code: string; recipient: string }>,
+    sentMessages: Array<{ id: string; quoteToken?: string }> | undefined,
+    chatId: string
+) {
+    if (!sentMessages || sentMessages.length === 0 || items.length === 0 || !chatId) return;
+    try {
+        const qBatch = db.batch();
+        items.forEach((item, fIdx) => {
+            const quoteToken = sentMessages[Math.floor(fIdx / 10)]?.quoteToken;
+            if (!quoteToken) return;
+            const docId = makeFilteredDocId(item);
+            qBatch.update(db.collection('line_bots').doc(uid).collection('filtered_coupons').doc(docId), {
+                quoteToken,
+                chatId,
+                chatType: 'group'
+            });
+        });
+        await qBatch.commit();
+        console.info(`[pmhRelayComplete] Saved quoteTokens for ${items.length} codes`);
+    } catch (err) {
+        console.warn('[pmhRelayComplete] Error saving quoteTokens:', err);
+    }
+}
+
     // 1. Tạo tin nhắn dạng Thẻ Flex Message Card
     let messages: any[] = [];
+    let matchedItems: Array<{
+        recipient: string;
+        productName: string;
+        categoryLabel: string;
+        code: string;
+        orderId?: string;
+        cardIndex: number;
+    }> = [];
+
     if (codeList.length > 0) {
         const startSeq = await allocatePmhSequence(uid, codeList.length, new Date(), 'pmh');
-        const matchedItems = codeList.map((c, idx) => {
+        matchedItems = codeList.map((c, idx) => {
             let storeTitle = c.storeHeader || (c.ten ? `${c.kho} - ${c.ten}` : '');
             if (!storeTitle) {
                 const knownName = KNOWN_STORE_NAMES[c.kho];
@@ -142,10 +180,39 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
                 productName: `PMH ${c.type.toUpperCase()}`,
                 categoryLabel: c.type.toUpperCase(),
                 code: c.code,
+                orderId: (c as any).orderId || undefined,
                 cardIndex: (startSeq && startSeq > 0) ? startSeq + idx : (idx + 1),
             };
         });
         messages = createFilteredPmhFlexMessages(matchedItems, liffId);
+
+        // Lưu vào kho filtered_coupons (kho CSD) để hỗ trợ lệnh "csd" và ghi nhận lịch sử LIFF khi bấm copy
+        try {
+            const fBatch = db.batch();
+            const fNow = new Date().toISOString();
+            matchedItems.forEach((item) => {
+                const docId = makeFilteredDocId(item);
+                const docRef = db.collection('line_bots').doc(uid).collection('filtered_coupons').doc(docId);
+                fBatch.set(docRef, {
+                    id: docId,
+                    code: item.code,
+                    productName: item.productName,
+                    categoryLabel: item.categoryLabel,
+                    recipient: item.recipient,
+                    orderId: item.orderId || null,
+                    cardIndex: item.cardIndex,
+                    status: 'UNUSED',
+                    filteredAt: fNow,
+                    chatId: data.groupId || null,
+                    chatType: 'group',
+                    source: 'admintnb'
+                }, { merge: true });
+            });
+            await fBatch.commit();
+            console.info(`[pmhRelayComplete] Saved ${matchedItems.length} codes to filtered_coupons for uid=${uid}`);
+        } catch (err) {
+            console.warn('[pmhRelayComplete] Error saving to filtered_coupons:', err);
+        }
     }
 
     if (errList.length > 0) {
@@ -196,6 +263,11 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
             });
             if (replyRes.ok) {
                 console.info(`[pmhRelayComplete] Reply SUCCESS via replyToken! docId=${id}`);
+                const replyJson = await replyRes.json().catch(() => ({})) as any;
+                const sentMessages = Array.isArray(replyJson?.sentMessages) ? replyJson.sentMessages : [];
+                if (data.groupId) {
+                    await saveQuoteTokens(uid, matchedItems, sentMessages, data.groupId);
+                }
                 res.json({ ok: true, pushed: true, method: 'reply' });
                 return;
             }
@@ -245,6 +317,11 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
                 : errBody;
             res.json({ ok: true, pushed: false, reason });
             return;
+        }
+        const pushJson = await pushRes.json().catch(() => ({})) as any;
+        const sentMessages = Array.isArray(pushJson?.sentMessages) ? pushJson.sentMessages : [];
+        if (data.groupId) {
+            await saveQuoteTokens(uid, matchedItems, sentMessages, data.groupId);
         }
         res.json({ ok: true, pushed: true, method: 'push' });
     } catch (e: any) {

@@ -119,11 +119,12 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
     const userRows = await page.locator('.tnb-pmh-messages .tnb-pmh-row.is-user').count();
     expect(userRows).toBe(1);
 
-    // Copy mã ra clipboard đúng định dạng.
+    // Copy mã ra clipboard đúng định dạng (mã mới nhất ở trên cùng).
     await page.locator('#tnb-pmh-helper [data-act="copyma"]').click();
     const clip = await page.evaluate(() => (window as unknown as { __clip: string }).__clip);
     expect(clip).toContain('322 - WC200 : PHC96180QP');
     expect(clip).toContain('10011 - TL300 : Z2Y9X8W7V6');
+    expect(clip.indexOf('10011 - TL300 : Z2Y9X8W7V6')).toBeLessThan(clip.indexOf('322 - WC200 : PHC96180QP'));
   });
 
   test('thu gọn về nút nổi rồi mở lại', async ({ page }) => {
@@ -133,5 +134,47 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
     await expect(page.locator('#tnb-pmh-fab')).toBeVisible();
     await page.locator('#tnb-pmh-fab').click();
     await expect(page.locator('#tnb-pmh-helper')).toBeVisible();
+  });
+
+  test('bộ lọc Loại PMH (nhập chữ & bấm thẻ chọn nhanh pill) → lọc chính xác hiển thị và clipboard', async ({ page }) => {
+    await setup(page);
+
+    await page.locator('#tnb-pmh-helper .tph-input').fill(THREE_FORMS);
+    await page.locator('#tnb-pmh-helper .tph-per').fill('12');
+    await page.locator('#tnb-pmh-helper .tph-gap').fill('0.5');
+    await page.locator('#tnb-pmh-helper [data-act="go"]').click();
+
+    const res = page.locator('#tnb-pmh-helper .tph-res');
+    await expect(res).toContainText('Mã nhận: 3');
+
+    // Kiểm tra xuất hiện các thẻ chọn nhanh (quick pills)
+    const pillWc200 = page.locator('#tnb-pmh-helper .tph-pill[data-loai="WC200"]');
+    const pillTl300 = page.locator('#tnb-pmh-helper .tph-pill[data-loai="TL300"]');
+    await expect(pillWc200).toBeVisible();
+    await expect(pillWc200).toContainText('WC200 (1)');
+    await expect(pillTl300).toContainText('TL300 (1)');
+
+    // Bấm chọn thẻ WC200 → chỉ hiển thị 1 mã WC200
+    await pillWc200.click();
+    await expect(pillWc200).toHaveClass(/is-active/);
+    await expect(res).toContainText('Loại WC200: 1 mã');
+    await expect(res).toContainText('PHC96180QP');
+    await expect(res).not.toContainText('ABCDE12345');
+    await expect(res).not.toContainText('Z2Y9X8W7V6');
+
+    // Copy mã khi đang lọc WC200
+    await page.locator('#tnb-pmh-helper [data-act="copyma"]').click();
+    let clip = await page.evaluate(() => (window as unknown as { __clip: string }).__clip);
+    expect(clip).toBe('322 - WC200 : PHC96180QP');
+
+    // Thử nhập trực tiếp vào ô input Loại PMH: TL300
+    await page.locator('#tnb-pmh-helper .tph-filter-loai').fill('TL300');
+    await expect(res).toContainText('Loại TL300: 1 mã');
+    await expect(res).toContainText('Z2Y9X8W7V6');
+    await expect(res).not.toContainText('PHC96180QP');
+
+    // Bấm Tất cả để xoá lọc
+    await page.locator('#tnb-pmh-helper .tph-pill[data-loai=""]').click();
+    await expect(res).toContainText('Mã nhận: 3');
   });
 });

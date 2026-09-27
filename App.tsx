@@ -23,22 +23,23 @@ import {
     Bot,
     FileText
 } from 'lucide-react';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-const DashboardView = lazy(() => import('./components/views/DashboardView'));
-const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'));
-const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'));
-const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
-const SettingsView = lazy(() => import('./components/views/SettingsView'));
-const AboutView = lazy(() => import('./components/views/AboutView'));
-const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
-const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
-const PriceComparisonView = lazy(() => import('./components/views/PriceComparisonView'));
-const LineBotView = lazy(() => import('./features/line-bot/LineBotView'));
-const KhaiThacView = lazy(() => import('./features/khai-thac/KhaiThacView'));
-const TaxCalculatorView = lazy(() => import('./features/tax-calculator/TaxCalculatorView'));
+const DashboardView = lazyWithRetry(() => import('./components/views/DashboardView'), 'DashboardView');
+const CheckThuongView = lazyWithRetry(() => import('./components/views/CheckThuongView'), 'CheckThuongView');
+const ExternalToolView = lazyWithRetry(() => import('./components/views/ExternalToolView'), 'ExternalToolView');
+const UserManagementView = lazyWithRetry(() => import('./components/views/UserManagementView'), 'UserManagementView');
+const SettingsView = lazyWithRetry(() => import('./components/views/SettingsView'), 'SettingsView');
+const AboutView = lazyWithRetry(() => import('./components/views/AboutView'), 'AboutView');
+const StickerPrinterView = lazyWithRetry(() => import('./features/sticker-event/StickerPrinterView'), 'StickerPrinterView');
+const PhanCaView = lazyWithRetry(() => import('./features/phan-ca/PhanCaView'), 'PhanCaView');
+const PriceComparisonView = lazyWithRetry(() => import('./components/views/PriceComparisonView'), 'PriceComparisonView');
+const LineBotView = lazyWithRetry(() => import('./features/line-bot/LineBotView'), 'LineBotView');
+const KhaiThacView = lazyWithRetry(() => import('./features/khai-thac/KhaiThacView'), 'KhaiThacView');
+const TaxCalculatorView = lazyWithRetry(() => import('./features/tax-calculator/TaxCalculatorView'), 'TaxCalculatorView');
 
 // BI Module Wrapper
-const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
+const BiWrapper = lazyWithRetry(() => import('./features/bi-dashboard/components/BiWrapper'), 'BiWrapper');
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SyncProvider } from './contexts/SyncContext';

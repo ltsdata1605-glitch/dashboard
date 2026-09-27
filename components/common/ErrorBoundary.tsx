@@ -35,7 +35,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
       errMsg.includes('failed to fetch dynamically imported module') || 
       errMsg.includes('importing a module script failed') ||
       errMsg.includes('error loading dynamically imported module') ||
-      errMsg.includes('chunkloaderror')
+      errMsg.includes('chunkloaderror') ||
+      errMsg.includes("reading 'default'") ||
+      errMsg.includes('reading "default"') ||
+      errMsg.includes('failed to load or has no default export')
     ) {
       const now = Date.now();
       const lastReload = sessionStorage.getItem('last_module_import_reload');
@@ -57,7 +60,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
         errMsg.includes('failed to fetch dynamically imported module') || 
         errMsg.includes('importing a module script failed') ||
         errMsg.includes('error loading dynamically imported module') ||
-        errMsg.includes('chunkloaderror');
+        errMsg.includes('chunkloaderror') ||
+        errMsg.includes("reading 'default'") ||
+        errMsg.includes('reading "default"') ||
+        errMsg.includes('failed to load or has no default export');
 
       return (
         <div className="p-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
