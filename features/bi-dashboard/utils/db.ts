@@ -8,6 +8,7 @@
 
 import { getDb } from '../services/dbService';
 import { isSupermarketMatch } from './dashboardHelpers';
+import { isLightSyncKey } from '../../../utils/localDbScope';
 
 const SETTINGS_STORE = 'settings';
 
@@ -109,7 +110,8 @@ export const set = async (key: BIKey, value: unknown, source?: string): Promise<
     store.put(value, prefixed);
     
     const now = Date.now();
-    store.put(now, 'localSettingsLastModified');
+    // Chỉ khoá đồng bộ nhẹ mới đóng mốc chung (utils/localDbScope.ts → isLightSyncKey); mốc riêng từng khoá giữ nguyên.
+    if (isLightSyncKey(prefixed)) store.put(now, 'localSettingsLastModified');
     store.put(now, `lastModified_${prefixed}`);
 
     transaction.oncomplete = () => {
@@ -144,7 +146,8 @@ export const setMany = async (items: { key: BIKey; value: unknown }[], source?: 
       store.put(item.value, prefixed);
       store.put(now, `lastModified_${prefixed}`);
     });
-    store.put(now, 'localSettingsLastModified');
+    // Chỉ khoá đồng bộ nhẹ mới đóng mốc chung (utils/localDbScope.ts → isLightSyncKey); mốc riêng từng khoá giữ nguyên.
+    if (items.some(item => isLightSyncKey(prefixKey(item.key)))) store.put(now, 'localSettingsLastModified');
 
     transaction.oncomplete = () => {
       // Bắn event tổng hợp

@@ -106,9 +106,20 @@ export function normalizeAnalysisEmployees(
  */
 export async function saveAnalysisEmployees(
     rawEmployees: Array<{ name: string; department?: string }>,
-    supermarket?: string
+    supermarket?: string,
+    /** Nút "Đồng bộ Report BI" bấm tay: luôn ghi + đẩy lên, kể cả khi danh sách không đổi. */
+    batBuoc = false
 ): Promise<AnalysisEmployeesPayload> {
     const cleanList = normalizeAnalysisEmployees(rawEmployees, supermarket);
+
+    // Danh sách KHÔNG đổi so với bản đang lưu → không ghi gì. Hàm này chạy sau MỖI lần xử lý dữ liệu
+    // Phân tích (mỗi lần đổi bộ lọc); trước đây mỗi lần như vậy = 2 lượt ghi IndexedDB + 1 setDoc thẳng
+    // lên Firestore + 2 lượt đẩy khoá nặng, dù nội dung y hệt (đo trên dữ liệu thật 2026-09-28).
+    const dangLuu = await getSetting<AnalysisEmployeesPayload>(ANALYSIS_EMPLOYEES_KEY).catch(() => null);
+    if (!batBuoc && dangLuu && dangLuu.supermarket === supermarket && JSON.stringify(dangLuu.employees) === JSON.stringify(cleanList)) {
+        return dangLuu;
+    }
+
     const payload: AnalysisEmployeesPayload = {
         updatedAt: Date.now(),
         supermarket,

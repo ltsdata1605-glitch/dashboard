@@ -10,6 +10,7 @@ import {
     SETTINGS_STORE as SCOPED_SETTINGS_STORE,
     biHubDbName,
     ensureBiHubDbReady,
+    isLightSyncKey,
 } from '../../../utils/localDbScope';
 
 // Tên database KHÔNG còn cố định: mỗi tài khoản một database riêng, xem utils/localDbScope.ts.
@@ -127,7 +128,8 @@ export async function saveSetting(key: string, value: unknown, source?: string):
                 store.put(value, key);
                 if (key !== 'localSettingsLastModified' && !key.startsWith('lastModified_')) {
                     const now = Date.now();
-                    store.put(now, 'localSettingsLastModified');
+                    // Chỉ khoá đồng bộ nhẹ mới đóng mốc chung (utils/localDbScope.ts → isLightSyncKey); mốc riêng từng khoá giữ nguyên.
+                    if (isLightSyncKey(key)) store.put(now, 'localSettingsLastModified');
                     store.put(now, `lastModified_${key}`);
                 }
                 tx.oncomplete = () => {

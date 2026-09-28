@@ -272,3 +272,133 @@ export const markCleanSlateMigrated = async (uid?: string | null): Promise<void>
         console.warn('[LocalDbScope] markCleanSlateMigrated error:', e);
     }
 };
+
+// ---------------------------------------------------------------------------------------------
+// PHÂN LOẠI KHOÁ của settings store — dùng CHUNG cho mọi nơi ghi vào database này (2026-09-28).
+//
+// `localSettingsLastModified` là mốc để so với doc cấu hình nhẹ trên Cloud (ai mới hơn thì thắng).
+// Trước đây MỌI lượt ghi đều đóng mốc này — cả cached_*, dữ liệu BI, khoá nặng, lượt di trú — nên nó
+// gần như luôn "mới hơn Cloud": máy không bao giờ nhận thay đổi cấu hình từ máy khác, và máy mới đẩy
+// cấu hình mặc định đè lên Cloud (đo trên dữ liệu thật). Nay CHỈ khoá thuộc bộ đồng bộ nhẹ
+// (isLightSyncKey) mới đóng mốc này. 4 nơi đóng dấu (services/dbService/core.ts, bi-dashboard
+// services/dbService.ts + utils/db.ts, sticker-event services/dbService.ts) và hooks/useCloudSync
+// (quyết định khoá nào được đẩy lên) phải dùng đúng các hàm dưới đây — lệch nhau là hỏng âm thầm.
+
+export const HEAVY_SYNC_KEYS = new Set([
+    'productConfig',
+    'departmentMap',
+    'customTabs',
+    'headToHeadTables',
+    'customCalendars',
+    'crossSellingConfig',
+    'industryAnalysisCustomTabs',
+    'topSellerAnalysisHistory',
+    'checkthuong_data',
+    'originalDepartmentMap',
+    'customExploitationTabs',
+    'efficiencyExploitationTabs',
+    'analysis-employees-list'
+]);
+
+export const isHeavySyncKey = (key: string): boolean => {
+    if (HEAVY_SYNC_KEYS.has(key)) return true;
+    if (key === 'checkthuong_data') return true;
+    if (key.startsWith('bi_')) {
+        const unprefixed = key.substring(3);
+        if (
+            HEAVY_SYNC_KEYS.has(unprefixed) ||
+            unprefixed.startsWith('summary-') ||
+            unprefixed.startsWith('competition-') ||
+            unprefixed.startsWith('config-') ||
+            unprefixed.startsWith('comptarget-') ||
+            unprefixed.startsWith('targethero-') ||
+            unprefixed.startsWith('manual-dept-mapping-') ||
+            unprefixed.startsWith('hidden-employees-') ||
+            unprefixed.startsWith('custom-') ||
+            unprefixed.startsWith('bonus-') ||
+            unprefixed.startsWith('snapshot-') ||
+            unprefixed.startsWith('avatar-') ||
+            unprefixed === 'last-updates-list' ||
+            unprefixed === 'nhanvien-summary-tables-v1' ||
+            unprefixed === 'ai-assistant-history'
+        ) {
+            return true;
+        }
+    }
+    return false;
+};
+
+/** Trạng thái giao diện riêng từng máy (tab đang mở, bộ lọc đang chọn…) — không đồng bộ. */
+export const isLocalOnlyKey = (key: string): boolean => {
+    const k = key.startsWith('bi_') ? key.slice(3) : key;
+    return (
+        k === 'nhanvien-active-tab' ||
+        k === 'nhanvien-active-competition-tab' ||
+        k === 'dashboard-main-tab' ||
+        k === 'dashboard-sub-tab' ||
+        k === 'main-active-view' ||
+        k === 'dashboard-active-supermarket' ||
+        k === 'nhanvien-active-supermarkets' ||
+        k === 'nhanvien-active-depts-multi' ||
+        k === 'global-selected-competitions' ||
+        k === 'nhanvien-active-version' ||
+        k.startsWith('active-')
+    );
+};
+
+/** So 2 giá trị lưu trong settings (có thể chứa Set/Map). Không so được → coi là KHÁC (an toàn: vẫn lưu). */
+export const giongNhau = (a: unknown, b: unknown): boolean => {
+    if (a === b) return true;
+    try {
+        // Bỏ qua THỨ TỰ khoá: Firestore trả map với khoá đã xếp a→z, còn component ghi theo thứ tự tạo —
+        // so thẳng JSON thì bản vừa kéo về luôn "khác" bản component lưu lại (đo thật: summaryTableConfig).
+        const chuan = (_k: string, v: unknown): unknown => {
+            if (v instanceof Set) return { __set: Array.from(v) };
+            if (v instanceof Map) return { __map: Array.from(v.entries()) };
+            if (v && typeof v === 'object' && !Array.isArray(v)) {
+                return Object.fromEntries(Object.keys(v as object).sort().map(k => [k, (v as Record<string, unknown>)[k]]));
+            }
+            return v;
+        };
+        return JSON.stringify(a, chuan) === JSON.stringify(b, chuan);
+    } catch {
+        return false;
+    }
+};
+
+/** Bộ đệm dữ liệu Kho dùng chung — riêng từng máy, tái tạo được; không phải cấu hình người dùng. */
+const LIGHT_SYNC_EXCLUDED_PREFIXES = ['khoDataCache_', 'khoDataAppliedSnapshot::'];
+
+/** Khoá lớn / tạm / riêng module — KHÔNG nằm trong doc cấu hình nhẹ (vượt 1MB, hoặc không nên đồng bộ). */
+const LIGHT_SYNC_EXCLUDED = new Set([
+    'productConfig',
+    'departmentMap',
+    'localSettingsLastModified',
+    'topSellerAnalysisHistory',
+    'customTabs',
+    'headToHeadTables',
+    'customCalendars',
+    'crossSellingConfig',
+    'industryAnalysisCustomTabs',
+    'summary-realtime',
+    'summary-luy-ke',
+    'competition-realtime',
+    'competition-luy-ke',
+    'last-updates-list',
+    'stickerPrinterState',
+    'stickerPrintHistory',
+    'stickerSavedLists',
+    'salesFilesRegistry',
+    'analysis-employees-list',
+]);
+
+/** Khoá thuộc doc cấu hình nhẹ users/{uid}/setting/configuration (settingsStoreBackup). */
+export const isLightSyncKey = (key: string): boolean =>
+    !LIGHT_SYNC_EXCLUDED.has(key) &&
+    !isHeavySyncKey(key) &&
+    !isLocalOnlyKey(key) &&
+    !key.startsWith('cached_') &&
+    !key.startsWith('lastModified_') &&
+    !key.startsWith('summary-') &&
+    !key.startsWith('competition-') &&
+    !LIGHT_SYNC_EXCLUDED_PREFIXES.some(p => key.startsWith(p));

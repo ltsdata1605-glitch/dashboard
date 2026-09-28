@@ -18,7 +18,8 @@ export const chanGhiCloud = async (page: Page) => {
     await page.context().route(/firestore\.googleapis\.com\/.*Firestore\/Write\//, route => {
         // Ghi lại document định ghi (nằm trong thân form-urlencoded của WebChannel).
         const than = decodeURIComponent((route.request().postData() || '').replace(/\+/g, ' '));
-        const docs = [...new Set([...than.matchAll(/databases\/[^/]+\/documents\/([^"]+)"/g)].map(m => m[1]))];
+        // Tên document nằm trong JSON lồng (dấu nháy có thể đã escape \") — không in thân request: có token.
+        const docs = [...new Set([...than.matchAll(/databases\/[^/]+\/documents\/([^"\\]+)/g)].map(m => m[1]))];
         const khoa = [...new Set([...than.matchAll(/"settingsStoreBackup"\s*:\s*\{\s*"mapValue"\s*:\s*\{\s*"fields"\s*:\s*\{(.*)/g)].map(m => [...m[1].matchAll(/"([^"]+)"\s*:\s*\{\s*"(?:mapValue|stringValue|booleanValue|integerValue|arrayValue|nullValue|doubleValue)"/g)].slice(0, 12).map(x => x[1]).join('|')))];
         biChan.push(`Firestore/Write${docs.length ? ' ' + docs.join(',') : ''}${khoa.length && khoa[0] ? ' [' + khoa.join(';') + ']' : ''}`);
         return route.abort();

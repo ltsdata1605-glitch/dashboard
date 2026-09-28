@@ -1,4 +1,4 @@
-import { BI_HUB_DB_VERSION, biHubDbName, ensureBiHubDbReady } from '../../../utils/localDbScope';
+import { BI_HUB_DB_VERSION, biHubDbName, ensureBiHubDbReady, isLightSyncKey } from '../../../utils/localDbScope';
 
 // Script di chuyển dữ liệu từ ClusterDataDB (cũ) sang BI_HUB_DATABASE_V2 (mới)
 // Chạy một lần tự động khi khởi động app. Sau khi migrate xong, ghi cờ để không chạy lại.
@@ -113,7 +113,8 @@ export async function migrateClusterDataToMain(): Promise<void> {
 
             // Đánh cờ hoàn tất
             writeStore.put(true, MIGRATION_FLAG_KEY);
-            writeStore.put(Date.now(), 'localSettingsLastModified');
+            // Mốc cấu hình nhẹ chỉ khi thật sự chép khoá đồng bộ nhẹ (utils/localDbScope.ts → isLightSyncKey).
+            if (writesToMake.some(w => isLightSyncKey(w.key))) writeStore.put(Date.now(), 'localSettingsLastModified');
 
             await new Promise<void>((resolve, reject) => {
                 writeTx.oncomplete = () => resolve();
@@ -250,7 +251,8 @@ export async function migrateOldAvatars(): Promise<void> {
                 writeStore.put(write.value, write.key);
                 writeStore.put(now, `lastModified_${write.key}`);
             }
-            writeStore.put(now, 'localSettingsLastModified');
+            // Mốc cấu hình nhẹ chỉ khi thật sự chép khoá đồng bộ nhẹ (utils/localDbScope.ts → isLightSyncKey).
+            if (writesToMake.some(w => isLightSyncKey(w.key))) writeStore.put(now, 'localSettingsLastModified');
             
             await new Promise<void>((resolve, reject) => {
                 writeTx.oncomplete = () => resolve();
