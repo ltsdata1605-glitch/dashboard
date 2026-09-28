@@ -7,7 +7,7 @@ import { existsSync, readFileSync } from 'node:fs';
  * cho `FIREBASE_TEST_UID`, ghi ra file và trỏ `E2E_CUSTOM_TOKEN_FILE` tới đó. Token hết hạn sau 1 giờ.
  *
  * CHỈ ĐỌC: `chanGhiCloud()` chặn mọi lượt ghi Firestore từ trình duyệt (kênh WebChannel
- * `Firestore/Write`) và mọi Cloud Function trừ `resolveSession` — hàm bắt buộc để vào app, nó chỉ
+ * `Firestore/Write`) và mọi Cloud Function trừ `resolveSession` và `listManagedUsers` (chỉ đọc) — hàm bắt buộc để vào app, nó chỉ
  * cập nhật `lastLogin`/`loginCount` như mọi lần đăng nhập bình thường.
  */
 export const customTokenFile = () => process.env.E2E_CUSTOM_TOKEN_FILE || '';
@@ -21,7 +21,8 @@ export const chanGhiCloud = async (page: Page) => {
     });
     await page.context().route(/cloudfunctions\.net\/|\.run\.app\//, route => {
         const ten = new URL(route.request().url()).pathname.split('/').filter(Boolean).pop() || '';
-        if (ten === 'resolveSession') return route.continue();
+        // resolveSession: bắt buộc để vào app. listManagedUsers: chỉ đọc danh sách user cùng Kho.
+        if (ten === 'resolveSession' || ten === 'listManagedUsers') return route.continue();
         biChan.push(`fn:${ten}`);
         return route.abort();
     });
