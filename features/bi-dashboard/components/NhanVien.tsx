@@ -346,8 +346,10 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         (dù chỉ để bo tròn góc 2 nút) sẽ cắt mất panel, làm dropdown "mở" trong state nhưng không
                         hiện gì để bấm chọn được (user báo cáo thật). */}
                     <div className={`flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm ${TOUCH_TARGET}`}>
+                        {/* `w-auto`: mặc định `w-full` trên điện thoại khiến 2 nút chia ĐỀU khung (~95px mỗi nút)
+                            → "Tân Hiệp" bị cắt "Tân…" trong khi nút "All" thừa chỗ (iPhone, 2026-09-28). */}
                         <MultiSelectDropdown
-                            className="border-r border-slate-200 dark:border-slate-700"
+                            className="w-auto border-r border-slate-200 dark:border-slate-700"
                             triggerClassName="rounded-l-full"
                             icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
@@ -363,6 +365,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                             onToggleOption={toggleSupermarket}
                         />
                         <MultiSelectDropdown
+                            className="w-auto"
                             triggerClassName="rounded-r-full"
                             icon={<ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
                             triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}

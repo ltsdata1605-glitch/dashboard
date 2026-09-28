@@ -34,14 +34,21 @@ const DO = () => {
         const e = el as HTMLElement;
         return e.scrollWidth > e.clientWidth + 1 && cs.overflowX !== 'visible' && cs.textOverflow !== 'ellipsis' && cs.overflowX !== 'auto' && cs.overflowX !== 'scroll';
     }).map(el => `"${(el.textContent || '').trim().slice(0, 24)}" ${(el as HTMLElement).clientWidth}/${(el as HTMLElement).scrollWidth}`);
+    // Rút gọn bằng "…" (text-overflow: ellipsis) — không sai về kỹ thuật nhưng người dùng mất chữ;
+    // liệt kê ra để soi, không coi là lỗi cứng (tên nhân viên dài trong ô hẹp là chấp nhận được).
+    const rutGon = Array.from(document.querySelectorAll<HTMLElement>('body *')).filter(e => {
+        if (!nhin(e) || !e.textContent?.trim()) return false;
+        const cs = getComputedStyle(e);
+        return cs.textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth + 1;
+    }).map(e => `"${(e.textContent || '').trim().slice(0, 24)}"`);
     const el = document.documentElement;
-    return { tranNgang: el.scrollWidth - el.clientWidth, chuNho: [...new Set(chuNho)].slice(0, 10), biCat: [...new Set(biCat)].slice(0, 12) };
+    return { tranNgang: el.scrollWidth - el.clientWidth, chuNho: [...new Set(chuNho)].slice(0, 10), biCat: [...new Set(biCat)].slice(0, 12), rutGon: [...new Set(rutGon)].slice(0, 15) };
 };
 
 const ketQua: Record<string, unknown> = {};
 const THU_MUC = process.env.E2E_SHOT_DIR || 'test-results';
 /** Chụp màn hiện tại. App cuộn trong một khung riêng (không cuộn trang) nên `fullPage` không thấy
- *  phần dưới — chụp lần lượt từng "trang" của khung cuộn lớn nhất, tối đa 5 ảnh. */
+ *  phần dưới — chụp lần lượt từng "trang" của khung cuộn lớn nhất, tối đa 8 ảnh. */
 const chup = async (page: Page, ten: string) => {
     await page.waitForTimeout(1200);
     const r = await page.evaluate(DO);
@@ -52,10 +59,12 @@ const chup = async (page: Page, ten: string) => {
             const ov = getComputedStyle(e).overflowY;
             return (ov === 'auto' || ov === 'scroll') && e.scrollHeight > e.clientHeight + 20 && e.clientHeight > 300;
         }).sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight);
-        const k = ds[0] || document.scrollingElement as HTMLElement;
+        // Trang tự cuộn (laptop) thì cuộn trang; không thì khung cuộn lớn nhất (điện thoại).
+        const trang = document.scrollingElement as HTMLElement;
+        const k = trang.scrollHeight > innerHeight + 20 ? trang : (ds[0] || trang);
         (window as unknown as { __khung: HTMLElement }).__khung = k;
         k.scrollTop = 0;
-        return Math.min(5, Math.ceil(k.scrollHeight / k.clientHeight));
+        return Math.min(8, Math.ceil(k.scrollHeight / (k.clientHeight - 60)));
     });
     for (let i = 0; i < soTrang; i++) {
         await page.evaluate(i => { const k = (window as unknown as { __khung: HTMLElement }).__khung; k.scrollTop = i * (k.clientHeight - 60); }, i);
@@ -77,7 +86,7 @@ test('tour Report BI + Phân tích trên dữ liệu thật', async ({ page }) =
     const loiJs: string[] = [];
     const loiConsole: string[] = [];
     page.on('pageerror', e => loiJs.push(e.message));
-    page.on('console', m => { if (m.type() === 'error') loiConsole.push(m.text().slice(0, 160)); });
+    page.on('console', m => { if (m.type() === 'error' || /not found in ICON_MAP/.test(m.text())) loiConsole.push(m.text().slice(0, 160)); });
     const biChan = await chanGhiCloud(page);
     await dangNhapBangToken(page);
     await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
@@ -110,10 +119,77 @@ test('tour Report BI + Phân tích trên dữ liệu thật', async ({ page }) =
         if (n) { lanTrong = 0; moc.push(`${i + 1}s:${(await lop.first().innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 40)}`); } else lanTrong++;
     }
     console.log(`[${VP}] Lớp xử lý Phân tích: ${lanTrong >= 4 ? `hết sau ~${Math.round((Date.now() - t0) / 1000) - 4}s` : 'VẪN CÒN sau 90s'} | ${moc.filter((_, i) => i % 3 === 0).join(' · ')}`);
+    // Khung xương (animate-pulse) còn = các khối chưa vẽ xong; đo lúc đó thì bỏ sót lỗi của chúng.
+    for (let i = 0; i < 30 && await page.locator('.animate-pulse').filter({ visible: true }).count(); i++) await page.waitForTimeout(1000);
+    await page.waitForTimeout(6000); // cấu hình ngành hàng về muộn → số liệu còn tính lại vài giây
     await chup(page, 'phantich');
 
     console.log('LOI_JS', JSON.stringify(loiJs));
     console.log('LOI_CONSOLE', JSON.stringify([...new Set(loiConsole)].slice(0, 20)));
     console.log('BI_CHAN', JSON.stringify([...new Set(biChan)]));
     expect(loiJs).toEqual([]);
+});
+
+/** Lớp nổi (modal/dropdown) có nằm trọn trong khung nhìn không — cắt mép là không bấm được nút đóng. */
+const DO_LOP_NOI = () => {
+    const ds = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"], [role="listbox"], [role="menu"], .fixed, [class*="z-50"], [class*="z-[60"]'))
+        .filter(e => { const r = e.getBoundingClientRect(); return r.width > 40 && r.height > 40 && getComputedStyle(e).visibility !== 'hidden' && getComputedStyle(e).display !== 'none'; });
+    return ds.map(e => { const r = e.getBoundingClientRect(); return { lop: (e.className || '').toString().slice(0, 40), trai: Math.round(r.left), phai: Math.round(innerWidth - r.right), tren: Math.round(r.top), duoi: Math.round(innerHeight - r.bottom) }; })
+        .filter(x => x.trai < -1 || x.phai < -1 || x.tren < -1);
+};
+
+test('tương tác: popup, modal, tab con (chỉ đọc)', async ({ page }) => {
+    test.setTimeout(420_000);
+    const loiJs: string[] = [];
+    const iconThieu = new Set<string>();
+    page.on('pageerror', e => loiJs.push(e.message));
+    page.on('console', m => { const k = m.text().match(/Icon "([^"]+)" not found/); if (k) iconThieu.add(k[1]); });
+    await chanGhiCloud(page);
+    await dangNhapBangToken(page);
+    await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+    await page.waitForTimeout(4000); // để resolveSession xong trước khi chuyển trang
+
+    const mo = async (ten: string, hanhDong: () => Promise<unknown>) => {
+        try { await hanhDong(); } catch (e) { console.log(`  (bỏ qua ${ten}: ${(e as Error).message.split('\n')[0]})`); return; }
+        await page.waitForTimeout(1500);
+        const lech = await page.evaluate(DO_LOP_NOI);
+        if (lech.length) console.log(`[${VP}:${ten}] LỚP NỔI LỆCH ${JSON.stringify(lech)}`);
+        await chup(page, ten);
+    };
+    const nut = (ten: string | RegExp) => page.getByRole('button', { name: ten }).filter({ visible: true }).first();
+    const chu = (ten: string | RegExp) => page.getByText(ten).filter({ visible: true }).first();
+
+    // ---- Phân tích
+    await page.goto('/?tab=analysis');
+    for (let i = 0; i < 30 && await page.locator('.animate-pulse').filter({ visible: true }).count(); i++) await page.waitForTimeout(1000);
+    await page.waitForTimeout(5000);
+    await mo('pt-qua-han', () => chu(/Xem chi tiết & Cập nhật nhanh/).click({ timeout: 5000 }));
+    await page.keyboard.press('Escape'); await page.waitForTimeout(800);
+    await mo('pt-chua-thu', () => chu(/^Xem danh sách$/).click({ timeout: 5000 }));
+    await page.keyboard.press('Escape'); await page.waitForTimeout(800);
+    await mo('pt-nganh-drill', () => chu(/^Phụ kiện$/i).click({ timeout: 5000 }));
+    for (const tab of ['Hiệu Suất', 'Khai Thác', '7 Ngày']) {
+        await mo(`pt-nv-${tab.replace(/\s+/g, '').toLowerCase()}`, async () => { const b = nut(new RegExp(`^${tab}$`, 'i')); await b.scrollIntoViewIfNeeded({ timeout: 5000 }); await b.click({ timeout: 5000 }); });
+    }
+
+    // ---- Report BI
+    await page.goto('/?tab=employees');
+    await page.waitForTimeout(6000);
+    await nut(/^Siêu thị$/).click().catch(() => {});
+    await page.waitForTimeout(1500);
+    await mo('bi-chon-cum', () => nut(/CỤM/).click({ timeout: 5000 }));
+    await page.keyboard.press('Escape'); await page.mouse.click(5, 300); await page.waitForTimeout(800);
+    await mo('bi-luyke', async () => { await nut(/^Realtime$/).click({ timeout: 5000 }); await page.waitForTimeout(800); const lk = chu(/^Luỹ kế$/); if (await lk.isVisible().catch(() => false)) await lk.click(); });
+    await page.keyboard.press('Escape'); await page.waitForTimeout(800);
+    await nut(/^Nhân viên$/).click().catch(() => {});
+    await page.waitForTimeout(2500);
+    await nut(/^Thi đua$/).click().catch(() => {});
+    await page.waitForTimeout(1500);
+    for (const tab of ['Tổng', 'Tuỳ chỉnh', 'Cá nhân', 'So sánh']) {
+        await mo(`bi-nv-thidua-${tab.replace(/\s+/g, '').toLowerCase()}`, () => nut(new RegExp(`^${tab}$`)).click({ timeout: 5000 }));
+    }
+    console.log('LOI_JS', JSON.stringify(loiJs));
+    console.log('ICON_THIEU', JSON.stringify([...iconThieu]));
+    expect(loiJs).toEqual([]);
+    expect([...iconThieu]).toEqual([]);
 });

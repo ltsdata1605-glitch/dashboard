@@ -21,7 +21,7 @@ interface UncollectedOrdersModalProps {
 // Icons for each industry group
 const industryIcons: { [key: string]: string } = {
     'Smartphone': 'smartphone', 'Laptop': 'laptop', 'Tablet': 'tablet',
-    'Phụ kiện': 'headphones', 'Gia dụng': 'sofa', 'Wearable': 'watch',
+    'Phụ kiện': 'headphones', 'Gia dụng': 'plug-zap', /* 'sofa' không có trong components/common/Icon → hiện dấu ? (2026-09-28) */ 'Wearable': 'watch',
     'CE': 'tv', 'Bảo hiểm': 'shield-check', 'Sim': 'smartphone-nfc',
     'Máy lọc nước': 'droplets', 'Vieon': 'film', 'IT': 'printer', 'Office & Virus': 'file-key-2',
     'Khác': 'package'
@@ -534,7 +534,7 @@ Link: ${url}`;
     };
 
     const controls = (
-        <div className="flex items-center gap-1 lg:gap-2 hide-on-export">
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 lg:gap-2 hide-on-export">
             <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn chưa thu" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
                 <Icon name="clipboard-list" size={4} />
             </Button>
@@ -572,7 +572,7 @@ Link: ${url}`;
                     <div className="space-y-4">
                         <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
                             <h4 className="font-black text-base sm:text-2xl text-sky-800 dark:text-sky-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA THU</h4>
-                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{/* tối đa 4 cột — xem UnshippedOrdersModal (2026-09-28) */}
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUncollectedRevenue > 0 ? (item.revenue / totalUncollectedRevenue * 100) : 0;
                                     const color = industryColors[item.name] || 'slate';

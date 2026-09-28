@@ -358,7 +358,7 @@ const RevenueView: React.FC<{
                             }`}
                         >
                             <ClockIcon className={`h-3.5 w-3.5 ${prevMonthRaw && isShowPrevMonth ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
-                            <span className="hidden sm:inline">Cùng kỳ</span>
+                            <span>Cùng kỳ</span>{/* hiện cả trên điện thoại: nút chỉ có icon đồng hồ không ai đoán được (2026-09-28) */}
                             {prevMonthRaw && (
                                 <span
                                     role="button"

@@ -345,7 +345,9 @@
                      ~200 dòng nội dung versionHistory không ai mở được. Đặt cùng hàng với 3 badge tin
                      cậy phía trên (nơi duy nhất luôn hiện trước khi tải file, không đụng tới UI phức
                      tạp hơn ở màn hình đã có dữ liệu). -->
-                <button id="versionInfo" type="button" class="version-info-trigger flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer">
+                <!-- min-height 44px: vùng chạm tối thiểu trên iPhone (test mobile-iphone-6-module) — khi hàng này còn
+                     tràn ngoài màn hình thì nút không bị đo; xuống dòng vừa màn hình rồi thì phải đủ 44px. -->
+                <button id="versionInfo" type="button" style="min-height:44px" class="version-info-trigger flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                     <span class="text-[10px] font-semibold">Phiên bản V10.6</span>
                 </button>

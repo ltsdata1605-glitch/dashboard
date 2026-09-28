@@ -411,7 +411,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         className={`h-8 gap-1.5 px-2.5 text-xs ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">Cùng kỳ</span>
+                        <span>Cùng kỳ</span>{/* hiện cả trên điện thoại: nút chỉ có icon đồng hồ không ai đoán được (2026-09-28) */}
                         {prevMonthRaw && (
                             <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800">
                                 <XIcon className="h-3.5 w-3.5" />

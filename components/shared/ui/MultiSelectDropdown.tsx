@@ -249,11 +249,15 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         >
           <div className="flex items-center gap-1 sm:gap-2 min-w-0">
             {icon}
-            <span className="truncate text-left max-w-[80px] sm:max-w-[160px]">{triggerLabel}</span>
+            {/* 104px trên điện thoại: 80px cũ cắt cả tên siêu thị ngắn "Tân Hiệp" thành "Tân…"
+                (Report BI › Nhân viên trên iPhone, dữ liệu thật 2026-09-28). */}
+            <span className="truncate text-left max-w-[104px] sm:max-w-[160px]">{triggerLabel}</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-1.5 sm:ml-2">
+            {/* Điện thoại: ẩn số đếm khi chỉ chọn ≤1 — nhãn đã ghi đúng tên đang chọn, số "1" chỉ
+                chiếm chỗ khiến chính cái tên bị cắt "Tân…" (iPhone, dữ liệu thật 2026-09-28). */}
             {typeof count === 'number' && (
-              <span className="text-[11px] sm:text-[11px] font-black text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5">{count}</span>
+              <span className={cn('text-[11px] sm:text-[11px] font-black text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5', count <= 1 && 'hidden sm:inline')}>{count}</span>
             )}
             <ChevronDown size={14} className={cn('text-slate-400 transition-transform duration-200 sm:w-4 sm:h-4 w-3.5 h-3.5', isOpen && 'rotate-180')} />
           </div>

@@ -1239,7 +1239,9 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
                                 Siêu thị ngành hàng
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            {/* iPhone (2026-09-28, dữ liệu thật): 2 cột ở 390px chỉ còn ~170px/thẻ → 3 nút
+                                sửa/liên kết/xoá đè lên tên và giờ cập nhật. Dưới 640px xếp 1 cột. */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
                                     linkUrl={getTileLink('industry-realtime', customLinks, supermarketName)}
@@ -1294,7 +1296,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     DOANH THU NHÂN VIÊN
                                 </h3>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="REALTIME" lastUpdated={employeeRealtimeTs} value={employeeRealtimeData} placeholder="Dán dữ liệu Realtime..." error={errors.employeeRealtime}
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-realtime', customLinks, supermarketName)}
@@ -1357,7 +1359,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-2 h-2 bg-rose-500 rounded-sm"></div>
                                 THI ĐUA & TRẢ CHẬM
                             </h3>
-                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="THI ĐUA" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua..." error={errors.thiDua} 
                                     icon={<SparklesIcon className="h-4 w-4" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-thidua', customLinks, supermarketName)}

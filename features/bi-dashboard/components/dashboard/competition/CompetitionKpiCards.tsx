@@ -29,6 +29,7 @@ const UNITS = [
     {
         key: 'bonus',
         label: 'Tổng thưởng',
+        labelNgan: 'Thưởng',
         tone: 'text-sky-700 dark:text-sky-400',
         bar: 'bg-sky-500',
         barBg: 'bg-sky-100 dark:bg-sky-950/40',
@@ -37,6 +38,7 @@ const UNITS = [
     {
         key: 'over',
         label: '% Nhóm đạt ≥100%',
+        labelNgan: 'Đạt ≥100%',
         tone: 'text-emerald-700 dark:text-emerald-400',
         bar: 'bg-emerald-500',
         barBg: 'bg-emerald-100 dark:bg-emerald-950/40',
@@ -45,6 +47,7 @@ const UNITS = [
     {
         key: 'under',
         label: '% Nhóm chưa đạt',
+        labelNgan: 'Chưa đạt',
         tone: 'text-rose-700 dark:text-rose-400',
         bar: 'bg-rose-500',
         barBg: 'bg-rose-100 dark:bg-rose-950/40',
@@ -53,6 +56,7 @@ const UNITS = [
     {
         key: 'zero',
         label: 'Nhóm kết quả 0%',
+        labelNgan: 'KQ 0%',
         tone: 'text-slate-700 dark:text-slate-300',
         bar: 'bg-slate-400 dark:bg-slate-500',
         barBg: 'bg-slate-100 dark:bg-slate-800',
@@ -96,19 +100,19 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
     const valueOf = (key: typeof UNITS[number]['key']) => {
         switch (key) {
             case 'over':
-                return { big: `${Math.round(stats.pctOver100)}%`, sub: `Đạt ${stats.countOver100}/${stats.total} nhóm`, pct: stats.pctOver100 };
+                return { big: `${Math.round(stats.pctOver100)}%`, sub: `Đạt ${stats.countOver100}/${stats.total} nhóm`, subNgan: `${stats.countOver100}/${stats.total} nhóm`, pct: stats.pctOver100 };
             case 'under':
-                return { big: `${Math.round(stats.pctUnder100)}%`, sub: `Chưa đạt ${stats.countUnder100}/${stats.total} nhóm`, pct: stats.pctUnder100 };
+                return { big: `${Math.round(stats.pctUnder100)}%`, sub: `Chưa đạt ${stats.countUnder100}/${stats.total} nhóm`, subNgan: `${stats.countUnder100}/${stats.total} nhóm`, pct: stats.pctUnder100 };
             case 'bonus': {
                 const b = bonusStats!;
                 const pct = b.countMatched > 0 ? (b.countActual / b.countMatched) * 100 : 0;
                 const sub = b.projected > 0
                     ? `${b.countActual}/${b.countMatched} nhóm · D.kiến +${formatBonusShort(b.projected)}`
                     : `${b.countActual}/${b.countMatched} nhóm có thưởng`;
-                return { big: formatBonusShort(b.actual), sub, pct };
+                return { big: formatBonusShort(b.actual), sub, subNgan: `${b.countActual}/${b.countMatched} nhóm`, pct };
             }
             default:
-                return { big: `${stats.countZero}`, sub: `${Math.round(stats.pctZero)}% tổng nhóm`, pct: stats.pctZero };
+                return { big: `${stats.countZero}`, sub: `${Math.round(stats.pctZero)}% tổng nhóm`, subNgan: `${Math.round(stats.pctZero)}% nhóm`, pct: stats.pctZero };
         }
     };
 
@@ -132,8 +136,11 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                         <div className={`absolute top-0 left-0 right-0 h-[2.5px] ${u.bar}`} />
 
                         <div className="flex items-center justify-between gap-0.5 sm:gap-1 min-w-0">
+                            {/* Điện thoại (<640px): nhãn NGẮN — ô chỉ rộng ~120px, nhãn đầy đủ bị cắt thành
+                                "% NHÓM ĐẠT ≥10…" (đo trên iPhone với dữ liệu thật, 2026-09-28). */}
                             <span className="text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 truncate" title={u.label}>
-                                {u.label}
+                                <span className="sm:hidden">{u.labelNgan}</span>
+                                <span className="hidden sm:inline">{u.label}</span>
                             </span>
                             <span className={`w-1.5 h-1.5 rounded-full ${u.dot} shrink-0`} />
                         </div>
@@ -143,7 +150,10 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                         </div>
 
                         <div className="flex items-center justify-between text-[11px] leading-tight text-slate-500 dark:text-slate-400 min-w-0">
-                            <span className="truncate" title={v.sub}>{v.sub}</span>
+                            <span className="truncate" title={v.sub}>
+                                <span className="sm:hidden">{v.subNgan}</span>
+                                <span className="hidden sm:inline">{v.sub}</span>
+                            </span>
                         </div>
 
                         {/* Vạch tiến độ */}

@@ -5954,3 +5954,54 @@ Chưa làm (bị chặn quyền chạy thêm trên production, chờ chủ dự 
 - Chạy lại để xác nhận lớp "Đang xử lý bộ lọc" ở Phân tích có tắt; xuất ảnh/chia sẻ trên bảng thật
   (kiểm trần canvas 16 triệu px với bảng thật).
 - `tests/unit/line-bot-group-features.test.ts` và `lint:ratchet` ĐỎ SẴN trên nhánh (không do đợt này).
+
+## Đợt 3 — Phân tích + Report BI "hoàn hảo trên laptop và mobile" (2026-09-28, dữ liệu thật Kho 910)
+Chủ dự án duyệt: mỗi lượt test gọi `resolveSession` (ghi lastLogin/loginCount) là chấp nhận được.
+Cách đo: `tests/e2e/du-lieu-that-tour.spec.ts` — 2 test (đi hết màn con; mở popup/modal/tab con),
+`E2E_VP=laptop` (1366×768) hoặc `iphone` (390×844). Mỗi màn: tràn ngang, chữ < 11px, chữ bị cắt
+không dấu "…", chữ rút gọn "…", lớp nổi lệch khung, lỗi JS, icon thiếu. Ảnh ra `E2E_SHOT_DIR`.
+
+### Lỗi đã sửa (mỗi mục đo lại trên dữ liệu thật sau khi sửa)
+Đồng bộ (mất cấu hình trên máy mới / iPhone bị Safari xoá dữ liệu 7 ngày):
+- `localSettingsLastModified` bị MỌI saveSetting đóng dấu "bây giờ" → máy mới luôn "mới hơn Cloud" →
+  không bao giờ nhận cấu hình nhẹ từ Cloud, còn đẩy bản mặc định đè lên. Đo trước: 10+ khoá
+  (industryVisibleGroups, modernPositions, printSettings, bi_supermarket-map-…) không về máy. Sửa:
+  `decideLightSync()` (services/heavySyncPolicy.ts) — máy CHƯA TỪNG kéo (dấu `cached_lightCloudPulled_v1`)
+  thì Cloud thắng; đọc Cloud LỖI thì không làm gì (trước đây coi như Cloud trống rồi đẩy đè).
+  Đo sau: 0 khoá thiếu. Unit: `tests/unit/light-sync-policy.test.ts` (7 ca, có ca tái hiện mã cũ).
+Report BI:
+- Cập nhật (iPhone): lưới 2 cột ~170px/thẻ → 3 nút sửa/liên kết/xoá đè tên + giờ → 1 cột dưới 640px.
+- Thi đua Siêu thị (iPhone): thẻ tóm tắt cắt "% NHÓM ĐẠT ≥10…" → nhãn ngắn trên điện thoại.
+- Nhân viên (iPhone): ô chọn siêu thị "Tân…" — 2 nút lọc `w-full` chia đều khung → `w-auto`; ẩn số
+  đếm "1" thừa trên điện thoại; nút "Cùng kỳ" (Doanh thu, Trả chậm) hiện chữ thay vì chỉ icon đồng hồ.
+Phân tích:
+- Thẻ KPI (laptop 1366): tiêu đề cắt "DT …", "CH …" vì huy hiệu "CHƯA ĐẠT" → huy hiệu thu thành chấm
+  đỏ khi thẻ hẹp (container query, ngưỡng theo độ dài tiêu đề; BI đủ chỗ vẫn hiện chữ).
+- Tỷ trọng ngành hàng: ô iPhone nhồi 6 thứ 1 hàng ("PH…", "2..") → 2 dòng; tên ô laptop 2 dòng
+  ("SMARTPHO…"); chú thích biểu đồ 1 cột khi hẹp ("Smar…").
+- Modal Chi tiết đơn hàng / Chưa thu (iPhone): nút ĐÓNG bị đẩy ra ngoài màn hình, tiêu đề 1 chữ/dòng →
+  `Modal` dùng chung: hàng 1 tiêu đề + ✕, hàng 2 nút (xuống dòng); laptop: lưới 6→4 cột ("Gia d…");
+  icon `sofa` không tồn tại → dấu "?" → `plug-zap`.
+- Xu hướng doanh thu (iPhone): nhãn "CA" đè icon đồng hồ → nhãn nằm cạnh, ghi đủ Ca/Ngày/Tuần/Tháng.
+- Dòng phụ "LỌC THEO KHO: TẤT CẢ | T…" (SectionHeader, SummaryTableHeader) → 2 dòng trên điện thoại.
+Chung: CSP thiếu `https://www.google.com` → GA4 báo "Refused to connect" mọi lần mở app.
+Hồi quy tự gây ra ở đợt 2 và đã sửa: nút "Phiên bản" Check thưởng sau khi xuống dòng vào màn hình
+chỉ cao 17px → `mobile-iphone-6-module.spec.ts` đỏ → min-height 44px.
+
+### Kiểm chứng
+- Tour dữ liệu thật 2 khung × 2 test: xanh; 0 lỗi JS, 0 icon thiếu, 0 tràn, 0 chữ < 11px.
+- e2e sẵn có (dữ liệu mẫu) 18 test: ios-report-bi-check-thuong, ios-xuat-anh-chia-se,
+  mobile-iphone-6-module, bi-mobile-iphone, phan-tich-mat-mang-cau-hinh, check-thuong-luu-du-lieu,
+  smoke, bi-competition — xanh.
+- `npm run check`: typecheck/eslint(0 lỗi)/build xanh; ĐỎ SẴN (không do đợt này, đã đối chiếu trên
+  commit gốc): `tests/unit/line-bot-group-features.test.ts` và `lint:ratchet` (Bot LINE, Tính thuế,
+  IndustryKpiCard…).
+
+### Còn lại (chưa sửa, ghi để làm tiếp)
+- Máy mới: 5–10 giây đầu Phân tích hiện số TẠM (DTQĐ 788, quá hạn 21) trước khi cấu hình ngành hàng
+  về và tính lại (772, 15). Không sai sau cùng nhưng người dùng có thể chụp nhầm lúc đó.
+- Máy mới: khoá nặng vừa tải về (customTabs, customExploitationTabs…) bị đẩy ngược lên ngay (cùng nội
+  dung — đã đối chiếu, KHÔNG mất dữ liệu) → tốn lượt ghi (default DB là STANDARD, không bị trần cứng).
+- Tận gốc lỗi đồng bộ nhẹ: chỉ nên đóng dấu `localSettingsLastModified` cho khoá thuộc bộ đồng bộ
+  nhẹ (hiện ~80 nơi gọi saveSetting) — đổi hàm lõi, rủi ro cao, làm đợt riêng.
+- Tên nhân viên ở cột ghim bảng 7 Ngày (iPhone) rút gọn "…" — đúng chuẩn cột ghim, giữ nguyên.

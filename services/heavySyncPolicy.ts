@@ -98,3 +98,34 @@ export const isCloudNewer = (
     localValueExists: boolean,
     localTimeMs: number
 ): boolean => !localValueExists || cloudTimeMs > localTimeMs;
+
+// ---------------------------------------------------------------------------------------------
+// CẤU HÌNH NHẸ (doc users/{uid}/setting/configuration) — lúc mở app, lấy về hay đẩy lên?
+//
+// Lỗi đo được trên dữ liệu thật (2026-09-28): `localSettingsLastModified` bị đóng dấu "bây giờ"
+// bởi MỌI lượt saveSetting (cả cached_*, dữ liệu BI, lượt di trú lúc khởi động…), nên trên máy MỚI
+// (hoặc iPhone bị Safari xoá dữ liệu sau 7 ngày) nó luôn "mới hơn" Cloud → app bỏ qua bản sao lưu
+// trên Cloud và đẩy cấu hình mặc định của máy lên đè. Đo thật: 10+ khoá (industryVisibleGroups,
+// modernPositions, printSettings, bi_supermarket-map-…) không bao giờ về máy mới.
+// Quy tắc: máy CHƯA TỪNG kéo cấu hình nhẹ của tài khoản này về thì Cloud luôn thắng.
+export const LIGHT_CLOUD_PULLED_KEY = 'cached_lightCloudPulled_v1';
+
+export type LightSyncAction = 'pull' | 'push' | 'none';
+
+export const decideLightSync = (p: {
+    /** Đọc Cloud lỗi (mạng/quyền) — KHÔNG được hiểu là "Cloud trống" rồi đẩy đè lên. */
+    cloudReadFailed?: boolean;
+    /** Đọc được và có doc cấu hình trên Cloud. */
+    hasCloudDoc: boolean;
+    hasBackup: boolean;
+    cloudLastMod: number;
+    localLastMod: number;
+    /** Máy này đã từng kéo cấu hình nhẹ của tài khoản về chưa. */
+    pulledBefore: boolean;
+}): LightSyncAction => {
+    if (p.cloudReadFailed) return 'none';
+    if (!p.hasCloudDoc) return 'push';
+    if (!p.pulledBefore) return p.hasBackup ? 'pull' : 'none';
+    if (p.cloudLastMod < p.localLastMod) return 'push';
+    return p.hasBackup ? 'pull' : 'none';
+};
