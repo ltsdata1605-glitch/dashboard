@@ -6005,3 +6005,36 @@ chỉ cao 17px → `mobile-iphone-6-module.spec.ts` đỏ → min-height 44px.
 - Tận gốc lỗi đồng bộ nhẹ: chỉ nên đóng dấu `localSettingsLastModified` cho khoá thuộc bộ đồng bộ
   nhẹ (hiện ~80 nơi gọi saveSetting) — đổi hàm lõi, rủi ro cao, làm đợt riêng.
 - Tên nhân viên ở cột ghim bảng 7 Ngày (iPhone) rút gọn "…" — đúng chuẩn cột ghim, giữ nguyên.
+
+## Đợt 4 — xử lý các mục "Còn lại" của Đợt 3 (2026-09-28) — KẾ HOẠCH (trước khi sửa)
+Chủ dự án: "Hãy chỉnh sửa tất cả các mục đã ghi vào implementation_plan.md, Đợt 3".
+
+Điều tra thêm trên dữ liệu thật (chỉ đọc) làm đổi hiểu biết về 2 mục:
+1. "Số tạm 5–10 giây" KHÔNG phải chờ tải — là MẤT DỮ LIỆU khi lưu cấu hình lên Cloud. So sánh
+   productConfig bản Firestore với bản tải từ Sheet (sắp khoá, bỏ thứ tự): 10/12 trường giống hệt,
+   riêng `revenueEligibleHTX` (835 mục) và `nonRevenueEligibleHTX` (1062 mục) trên Cloud là `{}` —
+   Firestore không lưu được `Set`, code chỉ đổi `groups` sang mảng. Máy mới lấy bản Cloud (để khỏi tải
+   workbook) → bộ lọc hình thức xuất rỗng → DTQĐ 788 thay vì 772, quá hạn 21 thay vì 15 cho tới khi
+   lượt kiểm tra Sheet ngầm (~12s) tải lại. Mạng tới Sheet lỗi = số sai nằm luôn.
+2. "Khoá nặng đẩy ngược" có gốc ở `hooks/useEmployeeAnalysisLogic.ts`: effect lưu CẢ 4 khoá mỗi khi
+   state đổi, kể cả lúc vừa nạp từ đĩa/Cloud → mỗi lần mở app đẩy 4 khoá lên. Nguy hiểm hơn: trên máy
+   mới, preset/mảng rỗng được lưu với dấu "bây giờ" TRƯỚC khi đối chiếu Cloud → nhánh khoá nặng coi
+   local mới hơn và ĐẨY ĐÈ tab tuỳ chỉnh của người dùng (cùng lớp lỗi cấu hình nhẹ đã sửa ở Đợt 3).
+
+Thiết kế:
+- `services/productConfigSerialization.ts` (mới, hàm thuần): `toCloudProductConfig` (mọi Set → mảng),
+  `fromCloudProductConfig` (mảng → Set cho `groups`, `revenueEligibleHTX`, `nonRevenueEligibleHTX`),
+  `isProductConfigComplete` (có groups VÀ có ít nhất 1 tập HTX). Dùng ở cả 4 chỗ đang tự đổi riêng
+  `groups` (firestoreService ×3, useCloudSync). Bản Cloud đã hỏng (HTX rỗng) → coi là KHÔNG dùng được:
+  máy mới tải Sheet, không lấy về đè bản local đầy đủ; lượt lưu kế tiếp tự sửa doc trên Cloud.
+- Khoá nặng trên máy chưa từng kéo (`cached_lightCloudPulled_v1`): Cloud thắng, như cấu hình nhẹ.
+- `useEmployeeAnalysisLogic`: chỉ lưu khoá có giá trị KHÁC bản đã biết trên đĩa (ghi nhớ JSON lúc nạp
+  và lúc nhận từ Cloud); khoá chưa từng có trên đĩa thì không lưu giá trị mặc định.
+- Gốc lỗi đồng bộ nhẹ: `localSettingsLastModified` chỉ đóng dấu cho khoá THUỘC bộ đồng bộ nhẹ. Gom
+  phân loại khoá (HEAVY_SYNC_KEYS, isHeavySyncKey, isLocalOnlyKey, danh sách loại trừ đang chép 2 lần
+  trong useCloudSync) về `utils/localDbScope.ts` — nơi đã được phép dùng chung cho cả 3 khu vực mở
+  BI_HUB_DATABASE_V2 (4 nơi đóng dấu: services/dbService/core.ts, bi-dashboard dbService + utils/db.ts,
+  sticker-event dbService). firestoreService re-export để không đổi API.
+- Cột ghim tên nhân viên (bảng 7 Ngày, iPhone): xem lại, sửa nếu có cách không vi phạm chuẩn cột ghim.
+- 2 mục ĐỎ SẴN (unit Bot LINE, lint:ratchet): tìm nguyên nhân; sửa nếu là lỗi thật, không nới test.
+Kiểm chứng: unit cho từng hàm thuần (tái hiện lỗi cũ), tour dữ liệu thật 2 khung, e2e sẵn có.
