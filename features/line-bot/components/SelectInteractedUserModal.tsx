@@ -150,7 +150,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-purple-500/20">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
                             <Users size={20} />
                         </div>
                         <div>
@@ -158,7 +158,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">
                                     Chọn Admin Từ Tương Tác LINE
                                 </h3>
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">
                                     {counts.all} người
                                 </span>
                             </div>
@@ -198,7 +198,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Tìm kiếm theo Tên, LINE User ID, Nhóm LINE..."
-                            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all outline-none"
+                            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none"
                         />
                         {searchTerm && (
                             <button
@@ -216,13 +216,13 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             onClick={() => setChannelFilter('ALL')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'ALL'
-                                    ? 'bg-purple-600 text-white shadow-sm'
+                                    ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
                             <span>Tất cả</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                                channelFilter === 'ALL' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                channelFilter === 'ALL' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.all}
                             </span>
@@ -232,14 +232,14 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             onClick={() => setChannelFilter('NON_ADMIN')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'NON_ADMIN'
-                                    ? 'bg-purple-600 text-white shadow-sm'
+                                    ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
                             <Sparkles size={13} />
                             <span>Chưa là Admin</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                                channelFilter === 'NON_ADMIN' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                channelFilter === 'NON_ADMIN' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.nonAdmin}
                             </span>
@@ -249,14 +249,14 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             onClick={() => setChannelFilter('GROUP')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'GROUP'
-                                    ? 'bg-purple-600 text-white shadow-sm'
+                                    ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
                             <MessageSquare size={13} />
                             <span>Từ Nhóm LINE</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                                channelFilter === 'GROUP' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                channelFilter === 'GROUP' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.group}
                             </span>
@@ -266,14 +266,14 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             onClick={() => setChannelFilter('DIRECT')}
                             className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap ${
                                 channelFilter === 'DIRECT'
-                                    ? 'bg-purple-600 text-white shadow-sm'
+                                    ? 'bg-sky-600 text-white shadow-sm'
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
                             <MessageCircle size={13} />
                             <span>Nhắn riêng 1-1</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                                channelFilter === 'DIRECT' ? 'bg-purple-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                channelFilter === 'DIRECT' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
                             }`}>
                                 {counts.direct}
                             </span>
@@ -285,12 +285,12 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
                     {isLoading ? (
                         <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                            <RefreshCw size={24} className="animate-spin text-purple-500" />
+                            <RefreshCw size={24} className="animate-spin text-sky-500" />
                             <span className="text-xs">Đang nạp danh sách người dùng tương tác...</span>
                         </div>
                     ) : filteredUsers.length === 0 ? (
                         <div className="py-12 px-4 text-center space-y-3">
-                            <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-500 flex items-center justify-center mx-auto">
+                            <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-500 flex items-center justify-center mx-auto">
                                 <Users size={24} />
                             </div>
                             <div>
@@ -317,7 +317,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                     className={`p-3.5 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
                                         isExisting
                                             ? 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200/60 dark:border-slate-800/60 opacity-90'
-                                            : 'bg-white dark:bg-slate-800/80 border-slate-200/90 dark:border-slate-700/80 hover:border-purple-300 dark:hover:border-purple-600 shadow-sm hover:shadow'
+                                            : 'bg-white dark:bg-slate-800/80 border-slate-200/90 dark:border-slate-700/80 hover:border-sky-300 dark:hover:border-sky-600 shadow-sm hover:shadow'
                                     }`}
                                 >
                                     {/* Left info: Avatar & Details */}
@@ -335,7 +335,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     }}
                                                 />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-sky-600 to-sky-500 text-white font-bold text-xs flex items-center justify-center shadow-sm">
                                                     {getInitials(user.displayName)}
                                                 </div>
                                             )}
@@ -391,7 +391,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                 <span className="truncate select-all">{user.lineUserId}</span>
                                                 <button
                                                     onClick={() => handleCopy(user.lineUserId)}
-                                                    className="text-slate-400 hover:text-purple-600 p-0.5 rounded transition-colors"
+                                                    className="text-slate-400 hover:text-sky-600 p-0.5 rounded transition-colors"
                                                     title="Sao chép LINE User ID"
                                                 >
                                                     {copiedId === user.lineUserId ? (
@@ -442,7 +442,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     onChange={e =>
                                                         handleRoleChange(user.lineUserId, e.target.value as AdminRole)
                                                     }
-                                                    className="py-1.5 px-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none focus:ring-1 focus:ring-purple-500"
+                                                    className="py-1.5 px-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 outline-none focus:ring-1 focus:ring-sky-500"
                                                 >
                                                     <option value="APPROVER">Duyệt cấp mã</option>
                                                     <option value="SUPER_ADMIN">Toàn quyền</option>

@@ -550,7 +550,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                         </span>
                                                     )}
                                                     {batch.sent > 0 && (
-                                                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400">
+                                                        <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400">
                                                             {batch.sent} đã cấp
                                                         </span>
                                                     )}

@@ -660,15 +660,15 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               errorDay20
                 ? 'bg-rose-50/60 dark:bg-rose-950/20 border-rose-300 dark:border-rose-800/80'
                 : input.hasDay20Slip
-                ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-300 dark:border-indigo-800'
-                : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-indigo-300'
+                ? 'bg-sky-50/40 dark:bg-sky-950/20 border-sky-300 dark:border-sky-800'
+                : 'bg-slate-50/60 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700/60 hover:border-sky-300'
             }`}
           >
             <div>
               <div className="flex items-center justify-between gap-1 mb-1.5">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 ${
-                    input.hasDay20Slip ? 'bg-indigo-600 text-white' : 'bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600'
+                    input.hasDay20Slip ? 'bg-sky-600 text-white' : 'bg-sky-100 dark:bg-sky-950/50 text-sky-600'
                   }`}>
                     <Gift className="w-3.5 h-3.5" />
                   </div>
@@ -677,7 +677,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     target="_blank"
                     rel="noopener noreferrer"
                     title="Mở trang HRM tương ứng"
-                    className="py-3.5 -my-3.5 sm:py-0 sm:my-0 text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline cursor-pointer no-underline"
+                    className="py-3.5 -my-3.5 sm:py-0 sm:my-0 text-xs font-bold text-slate-800 dark:text-slate-100 truncate hover:text-sky-600 dark:hover:text-sky-400 hover:underline cursor-pointer no-underline"
                   >
                     2. Thưởng ngày 20
                   </a>
@@ -688,7 +688,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Mở HRM Xem chi tiết thưởng (Đợt 2)"
-                  className="hidden sm:block relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors shrink-0"
+                  className="hidden sm:block relative after:absolute after:-inset-3 after:content-[''] sm:after:hidden p-1 rounded-md text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 transition-colors shrink-0"
                 >
                   <ExternalLink className="w-3 h-3" />
                 </a>
@@ -723,7 +723,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 className={`min-h-11 sm:min-h-0 w-full flex items-center justify-center gap-1 py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
                   input.hasDay20Slip
                     ? 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50'
-                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs'
+                    : 'bg-sky-600 hover:bg-sky-700 text-white shadow-xs'
                 }`}
               >
                 <ClipboardPaste className="w-3.5 h-3.5" />
@@ -745,7 +745,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                     if (e.target.value.trim().length > 200) processDay20Text(e.target.value);
                   }}
                   placeholder="Bấm Ctrl+V để dán nội dung trang HRM vào đây..."
-                  className="w-full h-16 p-1.5 text-[11px] font-mono rounded-md border border-indigo-300 dark:border-indigo-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full h-16 p-1.5 text-[11px] font-mono rounded-md border border-sky-300 dark:border-sky-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500"
                 />
               )}
 
@@ -754,7 +754,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 className={`w-full flex items-center justify-center gap-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors ${
                   uploadingSlot === 'day20'
                     ? 'text-slate-400 cursor-not-allowed'
-                    : 'text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30'
+                    : 'text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30'
                 }`}
               >
                 {uploadingSlot === 'day20' ? (
@@ -823,7 +823,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAddCustomBonus(!showAddCustomBonus)}
-                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 dark:text-indigo-300 bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-800 rounded-md hover:bg-indigo-50 cursor-pointer whitespace-nowrap"
+                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 rounded-md hover:bg-sky-50 cursor-pointer whitespace-nowrap"
               >
                 + Thêm
               </button>
@@ -882,8 +882,8 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   onClick={() => setBonusFilter('main')}
                   className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                     bonusFilter === 'main'
-                      ? 'bg-indigo-600 text-white shadow-2xs'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-indigo-50'
+                      ? 'bg-sky-600 text-white shadow-2xs'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-sky-50'
                   }`}
                 >
                   💼 Chính ({mainBonusItems.length})

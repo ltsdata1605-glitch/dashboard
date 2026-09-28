@@ -128,7 +128,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
             {/* Header Sidebar */}
             <div className="p-3 sm:p-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2 bg-slate-50/70 dark:bg-slate-800/80">
                 <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                    <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <History size={15} />
                     </div>
                     <div className="min-w-0">
@@ -136,7 +136,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             <h3 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white truncate">
                                 Lịch Sử Tính Thuế
                             </h3>
-                            <span className="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-indigo-500 text-white shrink-0">
+                            <span className="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-sky-500 text-white shrink-0">
                                 {records.length}
                             </span>
                         </div>

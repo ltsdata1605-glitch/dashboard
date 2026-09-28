@@ -139,7 +139,7 @@ export default function LineBotView() {
 
                                 {/* Badge phạm vi Bot */}
                                 {isInheriting ? (
-                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/80 dark:border-purple-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bạn đang dùng chung Bot và kho mã do quản lý khác trong cùng kho tạo">
+                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/80 dark:border-sky-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bạn đang dùng chung Bot và kho mã do quản lý khác trong cùng kho tạo">
                                         <Building2 size={10} /> Kho {currentDept} (Kế thừa)
                                     </span>
                                 ) : scopeMode === 'warehouse' && currentDept ? (
@@ -179,7 +179,7 @@ export default function LineBotView() {
                 {currentDept && (
                     <div className={`px-3 py-2 rounded-xl border text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 transition-all ${
                         isInheriting
-                            ? 'bg-purple-50/90 dark:bg-purple-950/30 border-purple-200/80 dark:border-purple-800/60 text-purple-900 dark:text-purple-200 shadow-2xs'
+                            ? 'bg-sky-50/90 dark:bg-sky-950/30 border-sky-200/80 dark:border-sky-800/60 text-sky-900 dark:text-sky-200 shadow-2xs'
                             : scopeMode === 'warehouse' && hasWarehouseBot
                             ? 'bg-sky-50/80 dark:bg-sky-950/30 border-sky-200/80 dark:border-sky-800/60 text-sky-900 dark:text-sky-200'
                             : hasWarehouseBot
@@ -188,7 +188,7 @@ export default function LineBotView() {
                     }`}>
                         <div className="flex items-center gap-2 min-w-0">
                             {isInheriting ? (
-                                <Building2 size={16} className="text-purple-600 dark:text-purple-400 shrink-0" />
+                                <Building2 size={16} className="text-sky-600 dark:text-sky-400 shrink-0" />
                             ) : hasWarehouseBot && scopeMode === 'personal' ? (
                                 <Sparkles size={16} className="text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
                             ) : (
@@ -221,7 +221,7 @@ export default function LineBotView() {
                                     <button
                                         type="button"
                                         onClick={() => switchScope('personal')}
-                                        className="min-h-11 sm:min-h-0 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
+                                        className="min-h-11 sm:min-h-0 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 text-sky-700 dark:text-sky-300 text-[11px] font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors cursor-pointer"
                                         title="Chuyển sang cấu hình Bot riêng biệt cho tài khoản này"
                                     >
                                         Tạo / Dùng Bot riêng

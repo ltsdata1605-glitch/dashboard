@@ -82,7 +82,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                         <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
                                             kw.matchType === 'EXACT'
                                                 ? 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400'
-                                                : 'bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-400'
+                                                : 'bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-400'
                                         }`}>
                                             {kw.matchType === 'EXACT' ? 'Khớp chính xác' : 'Khớp chứa'}
                                         </span>

@@ -226,13 +226,13 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                     {/* Chu Kỳ Lặp */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-                            <Repeat size={13} className="text-purple-600 dark:text-purple-400" />
+                            <Repeat size={13} className="text-sky-600 dark:text-sky-400" />
                             <span>Chu Kỳ Lặp</span>
                         </label>
                         <select
                             value={repeatType}
                             onChange={e => handleRepeatTypeChange(e.target.value as ScheduleRepeatType)}
-                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-purple-500/20"
+                            className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-sky-500/20"
                         >
                             <option value="DAILY">Hàng ngày (Mỗi ngày)</option>
                             <option value="CUSTOM">Tùy chọn thứ trong tuần (Nhiều thứ)</option>
@@ -277,7 +277,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                     </span>
                                 )}
                                 {repeatType === 'CUSTOM' && (
-                                    <span className="text-[11px] text-purple-600 dark:text-purple-400 font-semibold">
+                                    <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
                                         Tùy chọn: {days.length} ngày
                                     </span>
                                 )}

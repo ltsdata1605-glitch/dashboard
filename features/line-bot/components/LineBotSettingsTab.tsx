@@ -103,7 +103,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             />
 
             {/* Google Account & Warehouse Linkage Card */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/90 via-sky-50/50 to-indigo-50/40 dark:from-sky-950/30 dark:via-sky-950/20 dark:to-indigo-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-xs space-y-3">
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-sky-50/90 via-sky-50/50 to-sky-50/40 dark:from-sky-950/30 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/80 dark:border-sky-800/60 shadow-xs space-y-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-xl bg-sky-600 text-white shadow-xs shrink-0">
@@ -420,7 +420,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-800 dark:text-white">🌙 22h00 Tối: Tổng kết coupon đã dùng hôm nay</span>
-                            <span className="text-[11px] font-semibold bg-indigo-100 text-indigo-700 px-1.5 py-0.2 rounded font-mono">Dạng Thẻ Flex</span>
+                            <span className="text-[11px] font-semibold bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded font-mono">Dạng Thẻ Flex</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                             Gửi Thẻ Flex tổng kết: Tổng số lượng phiếu PMH đã dùng hôm nay kèm danh sách chi tiết các bạn đã sử dụng.

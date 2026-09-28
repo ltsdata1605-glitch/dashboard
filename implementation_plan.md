@@ -6038,3 +6038,40 @@ Thiết kế:
 - Cột ghim tên nhân viên (bảng 7 Ngày, iPhone): xem lại, sửa nếu có cách không vi phạm chuẩn cột ghim.
 - 2 mục ĐỎ SẴN (unit Bot LINE, lint:ratchet): tìm nguyên nhân; sửa nếu là lỗi thật, không nới test.
 Kiểm chứng: unit cho từng hàm thuần (tái hiện lỗi cũ), tour dữ liệu thật 2 khung, e2e sẵn có.
+
+## Đợt 4 — KẾT QUẢ (2026-09-28)
+Đã xử lý toàn bộ mục "Còn lại" của Đợt 3 + 2 mục đỏ sẵn. Kiểm chứng trên dữ liệu thật (máy mới,
+Kho 910, chỉ đọc) sau mỗi bước.
+
+1. Số tạm 5–10s → gốc là MẤT DỮ LIỆU qua Cloud (Set → `{}`), đã sửa:
+   `services/productConfigSerialization.ts` dùng ở mọi đường ghi/đọc; bản Cloud hỏng bị bỏ qua.
+   Đo: số ĐẦU TIÊN hiện ra (giây ~7) đã là 772 / 15 — không còn 788 / 21. Lượt lưu kế tiếp sửa doc
+   Cloud. Unit: `tests/unit/product-config-serialization.test.ts` (có ca tái hiện mã cũ).
+2. Khoá nặng đẩy ngược → `useEmployeeAnalysisLogic` chỉ lưu khoá thật sự đổi, không lưu preset trên
+   máy mới (trước đây preset mang dấu "bây giờ" có thể ĐÈ tab tuỳ chỉnh trên Cloud). Thêm:
+   `saveAnalysisEmployees` bỏ qua khi danh sách không đổi (trước: mỗi lần đổi bộ lọc = 1 setDoc +
+   2 lượt đẩy); nút "Đồng bộ Report BI" bấm tay vẫn luôn đẩy. Đo: 4 khoá tab không còn bị đẩy.
+3. Gốc đồng bộ nhẹ → phân loại khoá gom về `utils/localDbScope.ts` (`isLightSyncKey`,
+   `isHeavySyncKey`, `isLocalOnlyKey`, `giongNhau`); 8 chỗ đóng mốc `localSettingsLastModified` chỉ
+   đóng cho khoá đồng bộ nhẹ; lưu lại giá trị KHÔNG đổi (so bỏ qua thứ tự khoá — Firestore trả map
+   đã xếp a→z) thì không đóng mốc, không đẩy; bộ đệm Kho (`khoDataCache_`, `khoDataAppliedSnapshot::`)
+   không còn bị coi là cấu hình. `useCloudSync`: máy chưa kéo lần đầu thì KHÔNG đẩy cấu hình nhẹ
+   (trước: mặc định lưu ở giây 1–3 bị đẩy đè Cloud trước khi kéo về ở giây ~6); listener cấp app tự
+   kéo lần đầu (không phụ thuộc có mở tab Phân tích). Đo: sau khi mở app, mốc local = đúng mốc Cloud
+   (1790560192917), không có lượt đẩy cấu hình nhẹ nào. Unit: `light-sync-keys.test.ts`.
+4. Cột ghim bảng 7 Ngày (iPhone): tên / mã 2 dòng — hết "…", cột vẫn hẹp.
+5. Đỏ sẵn: unit Bot LINE — test cũ chưa biết cờ `pmhRelay` (commit ecaf529 cố ý mặc định TẮT) → cập
+   nhật test theo đúng thiết kế. lint:ratchet — 21 file dùng màu ngoài bảng/indigo mới lọt vào →
+   đổi về 5 họ semantic (IndustryKpiCard: dải "5 họ × 2 tầng", giữ 3 màu đầu); tím/indigo → sky
+   theo đúng hướng Đợt 6. `npm run check` XANH HOÀN TOÀN (890 unit).
+
+Rủi ro đã cân nhắc:
+- Máy đang dùng, lần mở đầu sau khi nâng cấp chưa có dấu "đã kéo" → listener lấy cấu hình nhẹ từ
+  Cloud về (Cloud thắng). Sửa đổi cấu hình nhẹ CHƯA kịp đẩy lên trước đó (hiếm: bình thường đẩy sau
+  2 giây) sẽ mất 1 lần. Chấp nhận để đổi lấy việc máy mới không bao giờ đè Cloud.
+- Trước lần kéo đầu, thay đổi người dùng làm trong vài giây đầu không được đẩy (lượt đổi kế tiếp sẽ đẩy).
+
+e2e sẵn có: 49/55 xanh. 6 test đỏ (doi-tai-khoan-don-du-lieu, indexeddb-rieng-theo-tai-khoan,
+tax-qr-and-export ×2, sticker-nut-va-quet-ma, sticker-firestore-write-rate) — ĐÃ ĐỎ Y HỆT trên commit
+trước Đợt 4 (chạy bằng worktree riêng để đối chiếu), không thuộc Phân tích/Report BI; chưa sửa.
+Tour dữ liệu thật 2 khung × 2 test: xanh, 0 chữ bị rút gọn ở mọi màn, 0 lỗi JS, 0 icon thiếu.

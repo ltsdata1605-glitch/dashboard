@@ -112,7 +112,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-600 to-blue-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
+                                    <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-sky-600 to-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs">
                                         {props.employeeName.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -161,7 +161,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 size="none"
                                 onClick={props.onPrintSelected}
                                 disabled={selectedCount === 0}
-                                className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white shadow-xs transition-all disabled:opacity-40"
+                                className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white shadow-xs transition-all disabled:opacity-40"
                             >
                                 <PrintIcon className="h-4 w-4" />
                                 <span>In đã chọn ({selectedCount})</span>

@@ -377,7 +377,7 @@ const RevenueView: React.FC<{
                                             setIsShowPrevMonth(true);
                                         }
                                     }}
-                                    className="ml-0.5 p-0.5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
+                                    className="ml-0.5 p-0.5 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
                                 >
                                     <XIcon className="h-3.5 w-3.5" />
                                 </span>

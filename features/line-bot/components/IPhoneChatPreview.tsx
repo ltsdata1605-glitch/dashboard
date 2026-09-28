@@ -130,7 +130,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                         <div className="h-[24px] w-24 bg-black rounded-full flex items-center justify-between px-2.5 shadow-md shadow-black/40 ring-1 ring-white/10">
                             {/* Camera lens with glare */}
                             <div className="w-2.5 h-2.5 rounded-full bg-slate-950 flex items-center justify-center ring-1 ring-slate-800">
-                                <div className="w-1 h-1 rounded-full bg-indigo-900/80" />
+                                <div className="w-1 h-1 rounded-full bg-sky-900/80" />
                             </div>
                             {/* Proximity Sensor */}
                             <div className="w-1.5 h-1.5 rounded-full bg-slate-900" />
@@ -228,7 +228,7 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 onClick={() => onTabChange('hd')}
                                 className={`py-1 rounded-lg font-bold transition-all text-center ${
                                     previewTab === 'hd'
-                                        ? 'bg-white dark:bg-slate-700 text-purple-600 dark:text-purple-400 shadow-xs'
+                                        ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                             >
@@ -747,7 +747,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                     </div>
                                     <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-2">
                                         <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
-                                            <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1 font-sans">
+                                            <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-sans">
                                                 <BookOpen size={12} />
                                                 <span>HƯỚNG DẪN SỬ DỤNG BOT PMH</span>
                                             </span>
@@ -805,7 +805,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
 
                                         <div className="text-[9px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                                             <span>⚡ Lệnh trợ giúp tức thì</span>
-                                            <span className="text-purple-600 dark:text-purple-400 font-semibold font-mono">Gõ &quot;hd&quot;</span>
+                                            <span className="text-sky-600 dark:text-sky-400 font-semibold font-mono">Gõ &quot;hd&quot;</span>
                                         </div>
                                     </div>
                                 </div>
