@@ -5924,3 +5924,33 @@ Chưa làm được / cần chủ dự án:
 - `features/sticker-event/services/uiService.ts` có cùng lỗi share iOS — ngoài phạm vi 3 module.
 - `hrmSlipTextParser.ts`/`taxHistoryGrouping.ts` (Tính thuế) dùng regex lookbehind `(?<!` — iOS < 16.4
   không hỗ trợ, cả chunk Tính thuế sẽ lỗi cú pháp trên iPhone cũ.
+
+## Đợt 2 — test trên DỮ LIỆU THẬT (2026-09-28, "Cách B": custom token)
+Cách làm: service account test (biến môi trường container, KHÔNG vào repo) ký custom token cho
+`FIREBASE_TEST_UID` → đổi ra đúng lts.data1605@gmail.com, role `manager`, Kho `910`. Trình duyệt
+đăng nhập bằng `signInWithCustomToken` trên chính instance `auth` của app
+(`tests/e2e/helpers/customTokenLogin.ts`); spec `tests/e2e/ios-du-lieu-that.spec.ts` (tự bỏ qua nếu
+không có `E2E_CUSTOM_TOKEN_FILE`). Chạy trong container cần thêm `PW_CHROMIUM=/opt/pw-browsers/chromium`
+và nạp CA proxy vào NSS (`certutil -A -d sql:$HOME/.pki/nssdb …`) — không tắt kiểm tra TLS.
+
+Chỉ đọc: chặn kênh `Firestore/Write` và mọi Cloud Function trừ `resolveSession`. Lượt chạy duy nhất
+(1 lần đăng nhập) ghi lên cloud đúng 1 thứ không tránh được: `resolveSession` cập nhật
+`lastLogin`/`loginCount` + đặt lại custom claims cùng giá trị — như mọi lần đăng nhập thường.
+
+Kết quả trên iPhone 390×844 (UA iOS, cảm ứng, DPR 3), dữ liệu thật Kho 910:
+- Phân tích: nạp dữ liệu thật (DTQĐ 772, bảng theo kho, xu hướng doanh thu); không tràn ngang, không
+  chữ < 11px, bảng nằm trong khung cuộn. Tại giây 12 vẫn còn lớp "Đang xử lý bộ lọc" — chưa xác nhận
+  nó tắt lúc nào (xem "chưa làm").
+- Report BI: Realtime Cụm (Tân Hiệp, Thạnh An) đủ số; không tràn, không chữ nhỏ.
+- Check thưởng: không có dữ liệu cloud (xử lý file cục bộ, đúng thiết kế). **Lỗi:** hàng "Local
+  Processing · Instant Speed · Smart UI · Phiên bản" không xuống dòng → mục đầu lệch -3px ra ngoài
+  mép trái, mục cuối tràn tới 393px, nhãn phiên bản bị bẻ 3 dòng. **Đã sửa** (`flex-wrap`,
+  `whitespace-nowrap`) — đo lại: 4 mục trong 51…311px, mỗi mục 1 dòng.
+- 0 lỗi JS. Lượt ghi bị chặn khi CHỈ XEM: 2 lượt ghi logic có chủ đích
+  (`hooks/useSystemTraffic.ts`: đếm lượt truy cập `_system/stats`, ping `users/{uid}.lastActive`) +
+  SDK tự thử lại sau khi bị chặn → 17 request; không phải lỗi.
+
+Chưa làm (bị chặn quyền chạy thêm trên production, chờ chủ dự án quyết):
+- Chạy lại để xác nhận lớp "Đang xử lý bộ lọc" ở Phân tích có tắt; xuất ảnh/chia sẻ trên bảng thật
+  (kiểm trần canvas 16 triệu px với bảng thật).
+- `tests/unit/line-bot-group-features.test.ts` và `lint:ratchet` ĐỎ SẴN trên nhánh (không do đợt này).

@@ -39,7 +39,8 @@ export const dangNhapBangToken = async (page: Page) => {
         const src = await (await fetch('/services/firebase.ts')).text();
         const depUrl = src.match(/from\s+["']([^"']*firebase_auth[^"']*)["']/)?.[1];
         if (!depUrl) throw new Error('Không tìm thấy import firebase/auth trong services/firebase.ts');
-        const fb = await import(/* @vite-ignore */ '/services/firebase.ts') as { auth: unknown };
+        const duongDanApp = '/services/firebase.ts'; // biến → tsc không đòi phân giải đường dẫn trình duyệt
+        const fb = await import(/* @vite-ignore */ duongDanApp) as { auth: unknown };
         const fa = await import(/* @vite-ignore */ depUrl) as { signInWithCustomToken: (a: unknown, t: string) => Promise<unknown> };
         await fa.signInWithCustomToken(fb.auth, t);
     }, token);
