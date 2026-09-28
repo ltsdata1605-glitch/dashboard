@@ -6096,3 +6096,22 @@ Cả 6 đã đỏ trước Đợt 4 (đối chiếu bằng worktree). Nguyên nh
   d08adb5; bỏ kiểm tra nhãn, giữ kiểm tra nút không bị thanh dưới che + chữ ≥ 11px.
 - `sticker-firestore-write-rate` — LỖI TEST: `innerText()` không timeout chờ 141s (trace) khi KHÔNG có
   thông báo lỗi → hết ngân sách 180s. Đặt timeout 3s.
+
+### Đợt 5 (tiếp) — chạy TOÀN BỘ e2e lộ thêm 8 test đỏ (2026-09-28)
+Đối chiếu trên commit trước phiên (6b8f2b6, worktree riêng): 7/8 đỏ y hệt từ trước; `phan-quyen-3-tab`
+xanh ở bản gốc nhưng đỏ 1 lần khi chạy cả bộ → chạy riêng 5/5 xanh; dưới tải CPU cả bản gốc lẫn bản
+mới cùng đỏ 1/3 (hết giờ bấm nút) → nhạy với tải máy, không phải hồi quy.
+- `click-plus-auto-toggle` (4 test) — 2 lỗi trong mã bookmarklet Auto Click+ (Report BI):
+  (1) DO ĐỢT 4 GÂY RA: script đổi màu cho ratchet đổi cả chuỗi so khớp class của TRANG MWG trong
+  bookmarklet (`border-gray-200`→slate, `bg-blue-50`→sky…) → bookmarklet nhận sai trạng thái nút trên
+  site đó. Đã trả dòng đó về nguyên gốc; ratchet thêm quy tắc bỏ qua dòng `` `javascript: `` (cùng lý
+  do với quy tắc bookmarklet mã hoá URL đã có). (2) CÓ SẴN: `\t\r\n` trong template literal thành ký
+  tự thật → regex lỗi cú pháp khi eval; qua URL javascript: trình duyệt bỏ tab/xuống dòng nên regex
+  chỉ còn gộp dấu cách. Escape lại `\\t\\r\\n`. 9/9 xanh.
+- `bi-bonus-compare` — TEST CŨ: bảng so sánh mặc định xem theo bộ phận (commit c9240cd) có thêm dòng
+  nhóm; test chỉ lấy dòng nhân viên, giữ nguyên mọi con số kiểm (C.Tâm +2.944, chân bảng −1.848).
+- `iframe-tabs-csp` › Hoàn thuế — TEST CŨ: tab Tính thuế giờ chạy ngay trong app (TaxCalculatorView),
+  không còn iframe *.run.app nào trong code; test kiểm hiện trạng (render trong app, 0 khung bị chặn).
+- `sticker-toc-do-quet-ma` › 5 giây — MÔI TRƯỜNG: Chromium Linux (container, GitHub Actions) không có
+  BarcodeDetector; test đo đúng đường quét nhanh dùng API đó → bỏ qua CÓ GHI CHÚ khi không có API,
+  giữ nguyên ngưỡng 5s ở nơi có API.

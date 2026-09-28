@@ -88,10 +88,16 @@ const INDIGO_ALIAS_PATTERN = new RegExp(
  * 2. Dòng chứa chuỗi mã hoá URL (`%20`, `%28`...) — gặp ở SupermarketConfig.tsx, là code
  *    bookmarklet chèn vào WEBSITE KHÁC (baocao.dienmayxanh.com), phải dùng class của site đó.
  *
- * Lọc theo DÒNG chứ không loại cả file, để phần còn lại của 2 file này vẫn được kiểm tra.
+ * 3. Dòng mã bookmarklet dạng template literal `javascript:...` (2026-09-28) — cùng lý do mục 2
+ *    nhưng không mã hoá URL: AutoClickGuideModal.tsx so khớp class `border-gray-200`, `bg-blue-50`…
+ *    của TRANG MWG để biết nút đang bật/tắt. Lượt dọn màu Đợt 4 từng đổi chúng sang slate/sky →
+ *    bookmarklet không còn nhận ra đúng trạng thái nút trên site đó.
+ *
+ * Lọc theo DÒNG chứ không loại cả file, để phần còn lại của các file này vẫn được kiểm tra.
  */
 function isNotOurTailwindClass(line) {
   if (/%[0-9A-Fa-f]{2}/.test(line)) return true;              // chuỗi mã hoá URL
+  if (/`javascript:/.test(line)) return true;                 // mã bookmarklet chạy trên site khác
   if (/^\s*\.[\w-]+\s*(,\s*\.[\w-]+\s*)*\{/.test(line)) return true; // định nghĩa CSS tự viết
   return false;
 }
