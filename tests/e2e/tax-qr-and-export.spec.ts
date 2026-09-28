@@ -213,10 +213,11 @@ test('nút "Nút Chụp ảnh" kéo thả được lên thanh dấu trang + có 
 test('xuất ảnh xong: tự lưu vào lịch sử và lịch sử gom nhóm theo tháng', async ({ page }) => {
     await openTaxWithBothSlips(page);
 
-    // Chưa xuất ảnh -> lịch sử trống
-    await page.getByRole('button', { name: /Lịch sử/i }).click();
-    await expect(page.getByText(/Chưa có bản ghi tính thuế nào/)).toBeVisible();
-    await page.getByRole('button', { name: /^Đóng$/ }).click();
+    // Lịch sử là THANH BÊN PHẢI mở sẵn trên desktop (thay cho hộp thoại cũ phải bấm "Lịch sử" rồi
+    // "Đóng" — test cũ viết theo hộp thoại nên đỏ từ khi đổi thiết kế; cập nhật 2026-09-28).
+    const lichSu = page.locator('aside').filter({ hasText: 'Lịch Sử Tính Thuế' });
+    await expect(lichSu).toBeVisible();
+    await expect(lichSu.getByText('Chưa có bản ghi nào')).toBeVisible();
 
     const downloadPromise = page.waitForEvent('download', { timeout: 30_000 });
     await page.getByRole('button', { name: /Xuất ảnh/i }).click();
@@ -229,13 +230,11 @@ test('xuất ảnh xong: tự lưu vào lịch sử và lịch sử gom nhóm th
     await download2;
     await page.waitForTimeout(1000);
 
-    await page.getByRole('button', { name: /Lịch sử/i }).click();
-    await expect(page.getByText(/Lịch Sử Tính Thuế \(1\)/)).toBeVisible();
-    // Bản ghi vừa lưu nằm dưới dải tháng lương của phiếu (08/2026)
-    await expect(page.getByText('Tháng 8/2026')).toBeVisible();
-    await expect(page.getByText('(1 bản ghi)')).toBeVisible();
-    await expect(page.getByText('TRƯƠNG HOÀNG PHÚC').last()).toBeVisible();
-    const groupLine = await page.getByText('Tháng 8/2026').locator('xpath=../..').innerText();
+    // Đúng 1 bản ghi (số đếm cạnh tiêu đề), nằm dưới dải tháng lương của phiếu (08/2026)
+    await expect(lichSu.getByText('Lịch Sử Tính Thuế').locator('xpath=..')).toContainText('1');
+    await expect(lichSu.getByText(/Tháng 8\/2026 \(1\)/).first()).toBeVisible();
+    await expect(lichSu.getByText('TRƯƠNG HOÀNG PHÚC').first()).toBeVisible();
+    const groupLine = await lichSu.getByText(/Tháng 8\/2026 \(1\)/).first().innerText();
     console.log('DẢI THÁNG TRONG LỊCH SỬ:', groupLine.replace(/\n/g, ' | '));
     await page.screenshot({ path: 'test-results/tax-history-grouped.png' });
 });

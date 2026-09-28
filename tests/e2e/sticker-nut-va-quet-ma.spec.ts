@@ -91,16 +91,17 @@ test('máy quét có đèn pin, nhập mã tay và nằm TRÊN thanh điều hư
     await expect(page.getByText(/Đã tìm thấy: 2001238/)).toBeVisible();
 });
 
-test('bảng điều khiển: nút gom theo nhóm việc, nhãn thanh dưới không nhỏ hơn 11px', async ({ page }) => {
+test('bảng điều khiển: nút chính không bị thanh dưới che, nhãn thanh dưới không nhỏ hơn 11px', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await moInSticker(page);
 
     await page.getByRole('button', { name: /Công cụ/i }).first().click();
     await page.waitForTimeout(1000);
 
-    // Nhóm việc phải hiện thành nhãn, không còn là một lưới nút đều nhau
-    await expect(page.getByText('Danh sách', { exact: true })).toBeVisible();
-    await expect(page.getByText(/Dữ liệu & cài đặt/i)).toBeVisible();
+    // Nhãn nhóm việc ("Danh sách", "Dữ liệu & cài đặt") đã được CHỦ DỰ ÁN gỡ có chủ ý ở commit d08adb5
+    // "tinh gọn giao diện In Sticker" — test cũ còn đòi nên đỏ từ đó (cập nhật 2026-09-28). Giữ các
+    // kiểm tra còn giá trị với giao diện mới: bảng điều khiển mở được, nút chính không bị che, chữ ≥ 11px.
+    await expect(page.getByRole('button', { name: /In tất cả/i }).first()).toBeVisible();
 
     // Nút cuối cùng không được bị thanh điều hướng che khi đã cuộn tới đáy
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));

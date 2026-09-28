@@ -6075,3 +6075,24 @@ e2e sẵn có: 49/55 xanh. 6 test đỏ (doi-tai-khoan-don-du-lieu, indexeddb-ri
 tax-qr-and-export ×2, sticker-nut-va-quet-ma, sticker-firestore-write-rate) — ĐÃ ĐỎ Y HỆT trên commit
 trước Đợt 4 (chạy bằng worktree riêng để đối chiếu), không thuộc Phân tích/Report BI; chưa sửa.
 Tour dữ liệu thật 2 khung × 2 test: xanh, 0 chữ bị rút gọn ở mọi màn, 0 lỗi JS, 0 icon thiếu.
+
+## Đợt 5 — 6 test e2e đỏ sẵn (2026-09-28)
+Cả 6 đã đỏ trước Đợt 4 (đối chiếu bằng worktree). Nguyên nhân và cách xử lý:
+- `doi-tai-khoan-don-du-lieu` — LỖI APP: dọn dữ liệu khi đổi tài khoản xoá MỌI khoá localStorage trừ
+  Firebase (điều kiện bị nới ở commit 98047f7), đụng cả dữ liệu không phải của app. Sửa: liệt kê đủ
+  khoá của app (thêm `CUSTOM_GEMINI_API_KEY`, `tax_`, `hasSeenSticker`, `summaryTableExpandedIds`,
+  `analysis_`) và chỉ dọn chúng; test thêm kiểm tra khoá Gemini của người cũ bị xoá.
+- `indexeddb-rieng-theo-tai-khoan` — LỖI APP: khi đổi tài khoản, hàm dọn liệt kê và xoá MỌI IndexedDB
+  kể cả database riêng `BI_HUB_DATABASE_V2__<uid>` của người khác và của chính tài khoản đang vào →
+  người cũ quay lại mất sạch dữ liệu (trái CLAUDE.md mục 1.2). Sửa: không bao giờ dọn database riêng
+  của người khác; đổi tài khoản chỉ dọn kho dùng chung (`xoaDbRiengHienTai: false`). Đăng xuất và
+  "Xoá tất cả dữ liệu" vẫn dọn database của chính tài khoản đó như cũ.
+- `tax-qr-and-export` › tên file — MÔI TRƯỜNG: máy locale POSIX làm Chromium bỏ tên file có dấu
+  ("download"). Tái hiện tối thiểu: không dấu → giữ tên; có dấu → "download"; LC_ALL=C.UTF-8 → giữ
+  tên. playwright.config.ts đặt locale UTF-8 cho trình duyệt; app giữ tên file tiếng Việt.
+- `tax-qr-and-export` › lịch sử — TEST CŨ: lịch sử đã thành thanh bên phải mở sẵn (thay hộp thoại);
+  viết lại theo thanh bên, giữ đủ 4 hành vi (trống → tự lưu → không trùng → gom theo tháng).
+- `sticker-nut-va-quet-ma` › bảng điều khiển — TEST CŨ: nhãn nhóm bị chủ dự án gỡ có chủ ý ở commit
+  d08adb5; bỏ kiểm tra nhãn, giữ kiểm tra nút không bị thanh dưới che + chữ ≥ 11px.
+- `sticker-firestore-write-rate` — LỖI TEST: `innerText()` không timeout chờ 141s (trace) khi KHÔNG có
+  thông báo lỗi → hết ngân sách 180s. Đặt timeout 3s.

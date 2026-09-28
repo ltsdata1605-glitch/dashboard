@@ -35,7 +35,16 @@ export default defineConfig({
         video: 'off',
     },
     projects: [
-        { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+        {
+            name: 'chromium',
+            use: {
+                ...devices['Desktop Chrome'],
+                // Locale UTF-8 cho trình duyệt: máy chạy locale POSIX (container cloud) thì Chromium bỏ tên
+                // file tải về có dấu tiếng Việt → "download" (đo 2026-09-28: "Bang_Tinh_Thue_TRƯƠNG…png").
+                // Máy người dùng / GitHub Actions vốn UTF-8 nên không đổi gì ở đó.
+                launchOptions: { env: { ...process.env, LC_ALL: process.env.LC_ALL || 'C.UTF-8' } },
+            },
+        },
     ],
     webServer: process.env.E2E_BASE_URL ? undefined : {
         command: 'npm run dev',
