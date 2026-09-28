@@ -49,28 +49,34 @@ const doc = (page: Page) => page.evaluate(() => (window as unknown as { __goi: s
 
 test('bấm qua lại 3 tab: mỗi tab tốn đúng 1 lượt gọi, không có lượt thừa', async ({ page }) => {
     test.setTimeout(120000);
+    // Chờ theo ĐIỀU KIỆN thay vì ngủ cố định rồi kiểm (2026-09-28): chạy cả bộ e2e trên máy bận, test
+    // từng đỏ vì 4s/1,5s/2s cố định chưa đủ cho app kịp vẽ / kịp gọi — không phải vì gọi thừa.
+    // Điều kiện kiểm giữ NGUYÊN: đúng 1 lượt mỗi tab, bấm qua lại không thêm lượt nào.
+    const choDung = (mongDoi: string[]) => expect.poll(() => doc(page), { timeout: 20000 }).toEqual(mongDoi);
     await moApp(page);
     await page.goto('/?tab=analysis');
-    await page.waitForTimeout(4000);
-    await page.getByTitle('Phân Quyền & Duyệt Yêu Cầu').first().click();
+    const nutPhanQuyen = page.getByTitle('Phân Quyền & Duyệt Yêu Cầu').first();
+    await nutPhanQuyen.waitFor({ state: 'visible', timeout: 60000 });
+    await nutPhanQuyen.click();
     await page.getByRole('button', { name: /Chờ duyệt/i }).first().waitFor({ state: 'visible', timeout: 20000 });
-    await page.waitForTimeout(1500);
-    expect(await doc(page)).toEqual(['pending']);
+    await choDung(['pending']);
 
     await page.getByRole('button', { name: /Hoạt động/i }).first().click();
-    await page.waitForTimeout(2000);
-    expect(await doc(page)).toEqual(['pending', 'active']);
+    await choDung(['pending', 'active']);
 
     // Trước bản sửa, bước này thêm CẢ 'expired' lẫn 'active' (lượt 'active' là thừa)
     await page.getByRole('button', { name: /Hết hạn/i }).first().click();
+    await choDung(['pending', 'active', 'expired']);
+    // Chứng minh KHÔNG có lượt thừa cần thời gian: lượt 'active' thừa (nếu có) bắn ngay sau 'expired'.
     await page.waitForTimeout(2000);
     expect(await doc(page)).toEqual(['pending', 'active', 'expired']);
 
     // Bấm qua lại trong vòng 60s: không được gọi thêm lượt nào
     for (const tab of ['Chờ duyệt', 'Hoạt động', 'Hết hạn']) {
         await page.getByRole('button', { name: new RegExp(tab, 'i') }).first().click();
-        await page.waitForTimeout(1200);
+        await page.waitForTimeout(1500);
     }
+    await page.waitForTimeout(1500);
     const cuoi = await doc(page);
     console.log('TỔNG LƯỢT GỌI sau khi bấm qua lại cả 3 tab:', JSON.stringify(cuoi));
     expect(cuoi).toEqual(['pending', 'active', 'expired']);

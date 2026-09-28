@@ -6115,3 +6115,8 @@ mới cùng đỏ 1/3 (hết giờ bấm nút) → nhạy với tải máy, khô
 - `sticker-toc-do-quet-ma` › 5 giây — MÔI TRƯỜNG: Chromium Linux (container, GitHub Actions) không có
   BarcodeDetector; test đo đúng đường quét nhanh dùng API đó → bỏ qua CÓ GHI CHÚ khi không có API,
   giữ nguyên ngưỡng 5s ở nơi có API.
+- `phan-quyen-3-tab` — TEST CHỜ CỐ ĐỊNH: 4s/1,5s/2s rồi kiểm ngay; máy bận thì app chưa kịp vẽ/gọi.
+  Đổi sang chờ theo điều kiện (`expect.poll`), điều kiện kiểm GIỮ NGUYÊN. Kiểm chứng: 3/3 xanh; và
+  thử đột biến (tắt bộ đệm services/managedUsersCache.ts = đúng lỗi cũ) → test ĐỎ (+1 lượt gọi thừa)
+  → test vẫn bắt được lỗi thật. Code đã hoàn nguyên.
+Kết thúc Đợt 5: toàn bộ e2e 99 xanh / 0 đỏ / 38 bỏ qua (có ghi lý do); npm run check xanh.
