@@ -39,12 +39,30 @@ const DO = () => {
 };
 
 const ketQua: Record<string, unknown> = {};
+const THU_MUC = process.env.E2E_SHOT_DIR || 'test-results';
+/** Chụp màn hiện tại. App cuộn trong một khung riêng (không cuộn trang) nên `fullPage` không thấy
+ *  phần dưới — chụp lần lượt từng "trang" của khung cuộn lớn nhất, tối đa 5 ảnh. */
 const chup = async (page: Page, ten: string) => {
     await page.waitForTimeout(1200);
     const r = await page.evaluate(DO);
     ketQua[ten] = r;
-    await page.screenshot({ path: `${process.env.E2E_SHOT_DIR || 'test-results'}/tour-${VP}-${ten}.png`, fullPage: true });
     console.log(`[${VP}:${ten}] ${JSON.stringify(r)}`);
+    const soTrang = await page.evaluate(() => {
+        const ds = Array.from(document.querySelectorAll<HTMLElement>('*')).filter(e => {
+            const ov = getComputedStyle(e).overflowY;
+            return (ov === 'auto' || ov === 'scroll') && e.scrollHeight > e.clientHeight + 20 && e.clientHeight > 300;
+        }).sort((a, b) => b.clientWidth * b.clientHeight - a.clientWidth * a.clientHeight);
+        const k = ds[0] || document.scrollingElement as HTMLElement;
+        (window as unknown as { __khung: HTMLElement }).__khung = k;
+        k.scrollTop = 0;
+        return Math.min(5, Math.ceil(k.scrollHeight / k.clientHeight));
+    });
+    for (let i = 0; i < soTrang; i++) {
+        await page.evaluate(i => { const k = (window as unknown as { __khung: HTMLElement }).__khung; k.scrollTop = i * (k.clientHeight - 60); }, i);
+        await page.waitForTimeout(500);
+        await page.screenshot({ path: `${THU_MUC}/tour-${VP}-${ten}-${i + 1}.png` });
+    }
+    await page.evaluate(() => { (window as unknown as { __khung: HTMLElement }).__khung.scrollTop = 0; });
 };
 const bam = async (page: Page, ten: string | RegExp, cho = 1500) => {
     const nut = page.getByRole('button', { name: ten }).filter({ visible: true }).first();
@@ -80,13 +98,18 @@ test('tour Report BI + Phân tích trên dữ liệu thật', async ({ page }) =
     await bam(page, /^Cập nhật$/, 2500);
     await chup(page, 'bi-capnhat');
 
-    // ---- Phân tích: đo cả thời gian lớp "Đang xử lý bộ lọc" tồn tại
+    // ---- Phân tích: đo thời gian tới khi HẾT mọi lớp xử lý (lọc / nạp dữ liệu / AI engine)
     const t0 = Date.now();
     await page.goto('/?tab=analysis');
-    const lop = page.getByText(/Đang xử lý bộ lọc/i);
-    let conLop = true;
-    for (let i = 0; i < 60 && conLop; i++) { await page.waitForTimeout(1000); conLop = await lop.isVisible().catch(() => false); if (i < 3) conLop = true; }
-    console.log(`[${VP}] Lớp "Đang xử lý bộ lọc": ${conLop ? 'VẪN CÒN sau 60s' : `tắt sau ~${Math.round((Date.now() - t0) / 1000)}s`}`);
+    const lop = page.getByText(/Đang xử lý bộ lọc|AI ENGINE PROCESSING|Nạp dữ liệu|Đang tải/i).filter({ visible: true });
+    let lanTrong = 0;
+    const moc: string[] = [];
+    for (let i = 0; i < 90 && lanTrong < 4; i++) {
+        await page.waitForTimeout(1000);
+        const n = await lop.count();
+        if (n) { lanTrong = 0; moc.push(`${i + 1}s:${(await lop.first().innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 40)}`); } else lanTrong++;
+    }
+    console.log(`[${VP}] Lớp xử lý Phân tích: ${lanTrong >= 4 ? `hết sau ~${Math.round((Date.now() - t0) / 1000) - 4}s` : 'VẪN CÒN sau 90s'} | ${moc.filter((_, i) => i % 3 === 0).join(' · ')}`);
     await chup(page, 'phantich');
 
     console.log('LOI_JS', JSON.stringify(loiJs));
