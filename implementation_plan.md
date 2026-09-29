@@ -6287,3 +6287,9 @@ Kiểm tra: typecheck ✅ · eslint 0 lỗi/143 cảnh báo (không đổi) · u
 - A05–A08, A10: gom hệ xuất ảnh (Phân ca, Sticker, Khai thác, Check thưởng iframe) về vòng đời chung,
   giữ PNG riêng; pixel budget theo iOS 17.
 - Hiệu năng với 200.000 dòng/100MB: đo thời gian nạp + bộ nhớ trên dữ liệu giả cùng cỡ trước khi tối ưu.
+
+### E2E toàn bộ sau Đợt 2 (config gốc dự án, 26 phút)
+108 xanh · 16 đỏ · 38 bỏ qua. **Cả 16 đỏ đều đỏ y hệt trên `origin/main`** (đã đối chiếu ở Đợt 1):
+`phan-tich-performance-modal` (5), `pivot-table` (5), `system-traffic-stats`, `tax-qr-and-export`
+› xuất ảnh, `tnb-pmh-userscript` (2), `iframe-tabs-csp` › xlsx CDN, `auth-fresh-login-no-flash`.
+Mọi test mới của Đợt 1 + Đợt 2 xanh.
