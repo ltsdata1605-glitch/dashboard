@@ -32,7 +32,17 @@ export const APP_DATABASES = [
 ];
 
 /** Tiền tố khoá localStorage của app — dọn kèm để không còn vết của tài khoản cũ */
-const LOCAL_STORAGE_PREFIXES = ['ycx', 'YCX', 'TAX_CALCULATOR', 'bi_', 'BI_', 'checkthuong', 'sticker'];
+const LOCAL_STORAGE_PREFIXES = [
+    'ycx', 'YCX', 'TAX_CALCULATOR', 'bi_', 'BI_', 'checkthuong', 'sticker',
+    // Khoá của app KHÔNG theo tiền tố trên (liệt kê 2026-09-28 bằng grep localStorage.setItem). Trước
+    // đây để bắt được chúng, điều kiện dọn bị nới thành "mọi khoá trừ Firebase" — xoá luôn dữ liệu
+    // của trang/tiện ích khác cùng origin (test doi-tai-khoan-don-du-lieu đỏ từ đó).
+    'CUSTOM_GEMINI_API_KEY',        // khoá Gemini riêng người dùng (Tính thuế) — BẮT BUỘC dọn khi đổi tài khoản
+    'tax_',                         // tax_show_history_sidebar
+    'hasSeenSticker',               // hasSeenStickerDiscountTooltip
+    'summaryTableExpandedIds',
+    'analysis_',                    // analysis_alert_rules
+];
 
 export const getLocalDataOwner = (): string | null => {
     try {
@@ -109,15 +119,23 @@ const clearDatabase = (name: string): Promise<void> =>
     });
 
 /** Dọn toàn bộ dữ liệu cục bộ của app (IndexedDB + localStorage của app) */
-export const clearAllLocalAppData = async (): Promise<void> => {
+export const clearAllLocalAppData = async (opts?: {
+    /** Xoá cả database RIÊNG của tài khoản đang hoạt động (mặc định: có — đăng xuất, "Xoá tất cả dữ
+     *  liệu"). Đổi tài khoản thì KHÔNG: database riêng là của chính tài khoản đó (CLAUDE.md mục 1.2). */
+    xoaDbRiengHienTai?: boolean;
+}): Promise<void> => {
     const userDb = biHubDbName();
-    const dbsToClear = Array.from(new Set([...APP_DATABASES, userDb]));
+    const dbsToClear = Array.from(new Set(opts?.xoaDbRiengHienTai === false ? APP_DATABASES : [...APP_DATABASES, userDb]));
+    // Database riêng theo tài khoản (`BI_HUB_DATABASE_V2__<uid>`) của NGƯỜI KHÁC không bao giờ bị dọn khi
+    // liệt kê: người cũ quay lại máy phải còn dữ liệu (test indexeddb-rieng-theo-tai-khoan đỏ vì dòng
+    // liệt kê "mọi database" xoá luôn chúng).
+    const laDbRiengTheoTaiKhoan = (name: string) => name.startsWith(`${LEGACY_BI_HUB_DB_NAME}__`);
 
     if (typeof indexedDB !== 'undefined' && typeof indexedDB.databases === 'function') {
         try {
             const dbs = await indexedDB.databases();
             dbs.forEach(d => {
-                if (d.name && d.name !== 'firebaseLocalStorageDb' && !dbsToClear.includes(d.name)) {
+                if (d.name && d.name !== 'firebaseLocalStorageDb' && !laDbRiengTheoTaiKhoan(d.name) && !dbsToClear.includes(d.name)) {
                     dbsToClear.push(d.name);
                 }
             });
@@ -132,7 +150,7 @@ export const clearAllLocalAppData = async (): Promise<void> => {
         const keys: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            if (key && (LOCAL_STORAGE_PREFIXES.some(p => key.startsWith(p)) || (!key.startsWith('firebase:authUser') && !key.startsWith('firebase:host')))) {
+            if (key && LOCAL_STORAGE_PREFIXES.some(p => key.startsWith(p))) {
                 keys.push(key);
             }
         }
@@ -226,7 +244,8 @@ export const ensureLocalDataBelongsTo = async (uid: string): Promise<boolean> =>
     setActiveLocalUid(uid, { inheritLegacyData: !owner || owner === uid });
 
     if (owner && owner !== uid) {
-        await clearAllLocalAppData();
+        // Chỉ dọn kho DÙNG CHUNG; database riêng của tài khoản này (nếu từng dùng máy) giữ nguyên.
+        await clearAllLocalAppData({ xoaDbRiengHienTai: false });
         setLocalDataOwner(uid);
         return true;
     }

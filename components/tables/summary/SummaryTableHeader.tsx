@@ -74,7 +74,8 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     {displayDescription}
                                 </p>
                             )}
-                            <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                            {/* Điện thoại: tối đa 2 dòng — cắt 1 dòng thì mất hẳn khoảng thời gian (2026-09-28). */}
+                            <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider line-clamp-2 leading-tight lg:truncate lg:leading-none mt-0.5">
                                 {reportSubTitle ? `${reportSubTitle} | ` : ''}{filterState.dateRange !== 'all'
                                     ? `Từ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} đến ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}`
                                     : 'TẤT CẢ THỜI GIAN'}

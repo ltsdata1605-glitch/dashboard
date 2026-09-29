@@ -351,13 +351,13 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                             <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} lg:hidden`}>
                                                 <Icon name={icon} size={3} />
                                             </div>
-                                            <div className="flex items-center gap-1 min-w-0 flex-1 lg:hidden">
-                                                <span className={`text-[11px] font-extrabold uppercase tracking-wide ${iClass.text} truncate`} title={name}>{name}</span>
-                                                <span className="text-[11px] font-black text-slate-800 dark:text-white truncate">
-                                                    {formatCurrency(revenue)}
-                                                </span>
-                                                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
-                                                    {formatQuantity(quantity)} SP
+                                            {/* 2 dòng (tên / doanh thu · SL) thay vì 1 hàng: ô rộng ~170px trên iPhone mà
+                                                nhồi 6 thứ vào một hàng thì tên ra "PH…", doanh thu ra "2.." (dữ liệu thật 2026-09-28). */}
+                                            <div className="flex flex-col min-w-0 flex-1 leading-tight lg:hidden">
+                                                <span className={`text-[11px] font-extrabold uppercase tracking-wide ${iClass.text} line-clamp-2 break-words`} title={name}>{name}</span>
+                                                <span className="flex items-baseline gap-1 min-w-0 text-[11px]">
+                                                    <span className="font-black text-slate-800 dark:text-white whitespace-nowrap">{formatCurrency(revenue)}</span>
+                                                    <span className="text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap truncate">{formatQuantity(quantity)} SP</span>
                                                 </span>
                                             </div>
                                             <span className={`text-[11px] font-black px-1 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter shrink-0 lg:hidden`}>
@@ -377,7 +377,9 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 </span>
                                             </div>
                                             <div className="hidden lg:block min-w-0">
-                                                <div className={`text-[11px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 w-full`} title={name}>{name}</div>
+                                                {/* Tối đa 2 dòng thay vì cắt 1 dòng: ô chỉ ~90px ở laptop 1366px nên "SMARTPHONE",
+                                                    "MÁY LỌC NƯỚC" bị cắt thành "SMARTPHO…" (đo trên dữ liệu thật 2026-09-28). */}
+                                                <div className={`text-[11px] font-extrabold uppercase tracking-wide leading-tight ${iClass.text} line-clamp-2 break-words mb-0.5 w-full`} title={name}>{name}</div>
                                                 <div className="text-[11px] font-black tracking-wider leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
@@ -453,7 +455,10 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     </div>
 
                                     {/* Cột phải: Chú thích (Legend) */}
-                                    <div className="w-[55%] sm:w-[52%] grid grid-cols-2 gap-x-2.5 gap-y-1 overflow-y-auto no-scrollbar max-h-[150px] sm:max-h-[180px] lg:max-h-[200px] pr-1">
+                                    {/* Chú thích: 2 cột chỉ khi đủ rộng (≥340px) — hẹp hơn thì mỗi cột ~60px, tên ngành bị
+                                        cắt "Smar…", "Đồng…", "Máy l…" (laptop 1366px và iPhone, 2026-09-28). */}
+                                    <div className="w-[55%] sm:w-[52%] @container">
+                                    <div className="grid grid-cols-1 @min-[340px]:grid-cols-2 gap-x-2.5 gap-y-1 overflow-y-auto no-scrollbar max-h-[240px] lg:max-h-[260px] pr-1">
                                         {pieChartData.map((item, idx) => {
                                             const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                             const val = metricToDisplay === 'revenue' ? item.revenue : item.quantity;
@@ -472,6 +477,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 </div>
                                             );
                                         })}
+                                    </div>
                                     </div>
                                 </div>
                             ) : (

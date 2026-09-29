@@ -5925,6 +5925,201 @@ Chưa làm được / cần chủ dự án:
 - `hrmSlipTextParser.ts`/`taxHistoryGrouping.ts` (Tính thuế) dùng regex lookbehind `(?<!` — iOS < 16.4
   không hỗ trợ, cả chunk Tính thuế sẽ lỗi cú pháp trên iPhone cũ.
 
+## Đợt 2 — test trên DỮ LIỆU THẬT (2026-09-28, "Cách B": custom token)
+Cách làm: service account test (biến môi trường container, KHÔNG vào repo) ký custom token cho
+`FIREBASE_TEST_UID` → đổi ra đúng lts.data1605@gmail.com, role `manager`, Kho `910`. Trình duyệt
+đăng nhập bằng `signInWithCustomToken` trên chính instance `auth` của app
+(`tests/e2e/helpers/customTokenLogin.ts`); spec `tests/e2e/ios-du-lieu-that.spec.ts` (tự bỏ qua nếu
+không có `E2E_CUSTOM_TOKEN_FILE`). Chạy trong container cần thêm `PW_CHROMIUM=/opt/pw-browsers/chromium`
+và nạp CA proxy vào NSS (`certutil -A -d sql:$HOME/.pki/nssdb …`) — không tắt kiểm tra TLS.
+
+Chỉ đọc: chặn kênh `Firestore/Write` và mọi Cloud Function trừ `resolveSession`. Lượt chạy duy nhất
+(1 lần đăng nhập) ghi lên cloud đúng 1 thứ không tránh được: `resolveSession` cập nhật
+`lastLogin`/`loginCount` + đặt lại custom claims cùng giá trị — như mọi lần đăng nhập thường.
+
+Kết quả trên iPhone 390×844 (UA iOS, cảm ứng, DPR 3), dữ liệu thật Kho 910:
+- Phân tích: nạp dữ liệu thật (DTQĐ 772, bảng theo kho, xu hướng doanh thu); không tràn ngang, không
+  chữ < 11px, bảng nằm trong khung cuộn. Tại giây 12 vẫn còn lớp "Đang xử lý bộ lọc" — chưa xác nhận
+  nó tắt lúc nào (xem "chưa làm").
+- Report BI: Realtime Cụm (Tân Hiệp, Thạnh An) đủ số; không tràn, không chữ nhỏ.
+- Check thưởng: không có dữ liệu cloud (xử lý file cục bộ, đúng thiết kế). **Lỗi:** hàng "Local
+  Processing · Instant Speed · Smart UI · Phiên bản" không xuống dòng → mục đầu lệch -3px ra ngoài
+  mép trái, mục cuối tràn tới 393px, nhãn phiên bản bị bẻ 3 dòng. **Đã sửa** (`flex-wrap`,
+  `whitespace-nowrap`) — đo lại: 4 mục trong 51…311px, mỗi mục 1 dòng.
+- 0 lỗi JS. Lượt ghi bị chặn khi CHỈ XEM: 2 lượt ghi logic có chủ đích
+  (`hooks/useSystemTraffic.ts`: đếm lượt truy cập `_system/stats`, ping `users/{uid}.lastActive`) +
+  SDK tự thử lại sau khi bị chặn → 17 request; không phải lỗi.
+
+Chưa làm (bị chặn quyền chạy thêm trên production, chờ chủ dự án quyết):
+- Chạy lại để xác nhận lớp "Đang xử lý bộ lọc" ở Phân tích có tắt; xuất ảnh/chia sẻ trên bảng thật
+  (kiểm trần canvas 16 triệu px với bảng thật).
+- `tests/unit/line-bot-group-features.test.ts` và `lint:ratchet` ĐỎ SẴN trên nhánh (không do đợt này).
+
+## Đợt 3 — Phân tích + Report BI "hoàn hảo trên laptop và mobile" (2026-09-28, dữ liệu thật Kho 910)
+Chủ dự án duyệt: mỗi lượt test gọi `resolveSession` (ghi lastLogin/loginCount) là chấp nhận được.
+Cách đo: `tests/e2e/du-lieu-that-tour.spec.ts` — 2 test (đi hết màn con; mở popup/modal/tab con),
+`E2E_VP=laptop` (1366×768) hoặc `iphone` (390×844). Mỗi màn: tràn ngang, chữ < 11px, chữ bị cắt
+không dấu "…", chữ rút gọn "…", lớp nổi lệch khung, lỗi JS, icon thiếu. Ảnh ra `E2E_SHOT_DIR`.
+
+### Lỗi đã sửa (mỗi mục đo lại trên dữ liệu thật sau khi sửa)
+Đồng bộ (mất cấu hình trên máy mới / iPhone bị Safari xoá dữ liệu 7 ngày):
+- `localSettingsLastModified` bị MỌI saveSetting đóng dấu "bây giờ" → máy mới luôn "mới hơn Cloud" →
+  không bao giờ nhận cấu hình nhẹ từ Cloud, còn đẩy bản mặc định đè lên. Đo trước: 10+ khoá
+  (industryVisibleGroups, modernPositions, printSettings, bi_supermarket-map-…) không về máy. Sửa:
+  `decideLightSync()` (services/heavySyncPolicy.ts) — máy CHƯA TỪNG kéo (dấu `cached_lightCloudPulled_v1`)
+  thì Cloud thắng; đọc Cloud LỖI thì không làm gì (trước đây coi như Cloud trống rồi đẩy đè).
+  Đo sau: 0 khoá thiếu. Unit: `tests/unit/light-sync-policy.test.ts` (7 ca, có ca tái hiện mã cũ).
+Report BI:
+- Cập nhật (iPhone): lưới 2 cột ~170px/thẻ → 3 nút sửa/liên kết/xoá đè tên + giờ → 1 cột dưới 640px.
+- Thi đua Siêu thị (iPhone): thẻ tóm tắt cắt "% NHÓM ĐẠT ≥10…" → nhãn ngắn trên điện thoại.
+- Nhân viên (iPhone): ô chọn siêu thị "Tân…" — 2 nút lọc `w-full` chia đều khung → `w-auto`; ẩn số
+  đếm "1" thừa trên điện thoại; nút "Cùng kỳ" (Doanh thu, Trả chậm) hiện chữ thay vì chỉ icon đồng hồ.
+Phân tích:
+- Thẻ KPI (laptop 1366): tiêu đề cắt "DT …", "CH …" vì huy hiệu "CHƯA ĐẠT" → huy hiệu thu thành chấm
+  đỏ khi thẻ hẹp (container query, ngưỡng theo độ dài tiêu đề; BI đủ chỗ vẫn hiện chữ).
+- Tỷ trọng ngành hàng: ô iPhone nhồi 6 thứ 1 hàng ("PH…", "2..") → 2 dòng; tên ô laptop 2 dòng
+  ("SMARTPHO…"); chú thích biểu đồ 1 cột khi hẹp ("Smar…").
+- Modal Chi tiết đơn hàng / Chưa thu (iPhone): nút ĐÓNG bị đẩy ra ngoài màn hình, tiêu đề 1 chữ/dòng →
+  `Modal` dùng chung: hàng 1 tiêu đề + ✕, hàng 2 nút (xuống dòng); laptop: lưới 6→4 cột ("Gia d…");
+  icon `sofa` không tồn tại → dấu "?" → `plug-zap`.
+- Xu hướng doanh thu (iPhone): nhãn "CA" đè icon đồng hồ → nhãn nằm cạnh, ghi đủ Ca/Ngày/Tuần/Tháng.
+- Dòng phụ "LỌC THEO KHO: TẤT CẢ | T…" (SectionHeader, SummaryTableHeader) → 2 dòng trên điện thoại.
+Chung: CSP thiếu `https://www.google.com` → GA4 báo "Refused to connect" mọi lần mở app.
+Hồi quy tự gây ra ở đợt 2 và đã sửa: nút "Phiên bản" Check thưởng sau khi xuống dòng vào màn hình
+chỉ cao 17px → `mobile-iphone-6-module.spec.ts` đỏ → min-height 44px.
+
+### Kiểm chứng
+- Tour dữ liệu thật 2 khung × 2 test: xanh; 0 lỗi JS, 0 icon thiếu, 0 tràn, 0 chữ < 11px.
+- e2e sẵn có (dữ liệu mẫu) 18 test: ios-report-bi-check-thuong, ios-xuat-anh-chia-se,
+  mobile-iphone-6-module, bi-mobile-iphone, phan-tich-mat-mang-cau-hinh, check-thuong-luu-du-lieu,
+  smoke, bi-competition — xanh.
+- `npm run check`: typecheck/eslint(0 lỗi)/build xanh; ĐỎ SẴN (không do đợt này, đã đối chiếu trên
+  commit gốc): `tests/unit/line-bot-group-features.test.ts` và `lint:ratchet` (Bot LINE, Tính thuế,
+  IndustryKpiCard…).
+
+### Còn lại (chưa sửa, ghi để làm tiếp)
+- Máy mới: 5–10 giây đầu Phân tích hiện số TẠM (DTQĐ 788, quá hạn 21) trước khi cấu hình ngành hàng
+  về và tính lại (772, 15). Không sai sau cùng nhưng người dùng có thể chụp nhầm lúc đó.
+- Máy mới: khoá nặng vừa tải về (customTabs, customExploitationTabs…) bị đẩy ngược lên ngay (cùng nội
+  dung — đã đối chiếu, KHÔNG mất dữ liệu) → tốn lượt ghi (default DB là STANDARD, không bị trần cứng).
+- Tận gốc lỗi đồng bộ nhẹ: chỉ nên đóng dấu `localSettingsLastModified` cho khoá thuộc bộ đồng bộ
+  nhẹ (hiện ~80 nơi gọi saveSetting) — đổi hàm lõi, rủi ro cao, làm đợt riêng.
+- Tên nhân viên ở cột ghim bảng 7 Ngày (iPhone) rút gọn "…" — đúng chuẩn cột ghim, giữ nguyên.
+
+## Đợt 4 — xử lý các mục "Còn lại" của Đợt 3 (2026-09-28) — KẾ HOẠCH (trước khi sửa)
+Chủ dự án: "Hãy chỉnh sửa tất cả các mục đã ghi vào implementation_plan.md, Đợt 3".
+
+Điều tra thêm trên dữ liệu thật (chỉ đọc) làm đổi hiểu biết về 2 mục:
+1. "Số tạm 5–10 giây" KHÔNG phải chờ tải — là MẤT DỮ LIỆU khi lưu cấu hình lên Cloud. So sánh
+   productConfig bản Firestore với bản tải từ Sheet (sắp khoá, bỏ thứ tự): 10/12 trường giống hệt,
+   riêng `revenueEligibleHTX` (835 mục) và `nonRevenueEligibleHTX` (1062 mục) trên Cloud là `{}` —
+   Firestore không lưu được `Set`, code chỉ đổi `groups` sang mảng. Máy mới lấy bản Cloud (để khỏi tải
+   workbook) → bộ lọc hình thức xuất rỗng → DTQĐ 788 thay vì 772, quá hạn 21 thay vì 15 cho tới khi
+   lượt kiểm tra Sheet ngầm (~12s) tải lại. Mạng tới Sheet lỗi = số sai nằm luôn.
+2. "Khoá nặng đẩy ngược" có gốc ở `hooks/useEmployeeAnalysisLogic.ts`: effect lưu CẢ 4 khoá mỗi khi
+   state đổi, kể cả lúc vừa nạp từ đĩa/Cloud → mỗi lần mở app đẩy 4 khoá lên. Nguy hiểm hơn: trên máy
+   mới, preset/mảng rỗng được lưu với dấu "bây giờ" TRƯỚC khi đối chiếu Cloud → nhánh khoá nặng coi
+   local mới hơn và ĐẨY ĐÈ tab tuỳ chỉnh của người dùng (cùng lớp lỗi cấu hình nhẹ đã sửa ở Đợt 3).
+
+Thiết kế:
+- `services/productConfigSerialization.ts` (mới, hàm thuần): `toCloudProductConfig` (mọi Set → mảng),
+  `fromCloudProductConfig` (mảng → Set cho `groups`, `revenueEligibleHTX`, `nonRevenueEligibleHTX`),
+  `isProductConfigComplete` (có groups VÀ có ít nhất 1 tập HTX). Dùng ở cả 4 chỗ đang tự đổi riêng
+  `groups` (firestoreService ×3, useCloudSync). Bản Cloud đã hỏng (HTX rỗng) → coi là KHÔNG dùng được:
+  máy mới tải Sheet, không lấy về đè bản local đầy đủ; lượt lưu kế tiếp tự sửa doc trên Cloud.
+- Khoá nặng trên máy chưa từng kéo (`cached_lightCloudPulled_v1`): Cloud thắng, như cấu hình nhẹ.
+- `useEmployeeAnalysisLogic`: chỉ lưu khoá có giá trị KHÁC bản đã biết trên đĩa (ghi nhớ JSON lúc nạp
+  và lúc nhận từ Cloud); khoá chưa từng có trên đĩa thì không lưu giá trị mặc định.
+- Gốc lỗi đồng bộ nhẹ: `localSettingsLastModified` chỉ đóng dấu cho khoá THUỘC bộ đồng bộ nhẹ. Gom
+  phân loại khoá (HEAVY_SYNC_KEYS, isHeavySyncKey, isLocalOnlyKey, danh sách loại trừ đang chép 2 lần
+  trong useCloudSync) về `utils/localDbScope.ts` — nơi đã được phép dùng chung cho cả 3 khu vực mở
+  BI_HUB_DATABASE_V2 (4 nơi đóng dấu: services/dbService/core.ts, bi-dashboard dbService + utils/db.ts,
+  sticker-event dbService). firestoreService re-export để không đổi API.
+- Cột ghim tên nhân viên (bảng 7 Ngày, iPhone): xem lại, sửa nếu có cách không vi phạm chuẩn cột ghim.
+- 2 mục ĐỎ SẴN (unit Bot LINE, lint:ratchet): tìm nguyên nhân; sửa nếu là lỗi thật, không nới test.
+Kiểm chứng: unit cho từng hàm thuần (tái hiện lỗi cũ), tour dữ liệu thật 2 khung, e2e sẵn có.
+
+## Đợt 4 — KẾT QUẢ (2026-09-28)
+Đã xử lý toàn bộ mục "Còn lại" của Đợt 3 + 2 mục đỏ sẵn. Kiểm chứng trên dữ liệu thật (máy mới,
+Kho 910, chỉ đọc) sau mỗi bước.
+
+1. Số tạm 5–10s → gốc là MẤT DỮ LIỆU qua Cloud (Set → `{}`), đã sửa:
+   `services/productConfigSerialization.ts` dùng ở mọi đường ghi/đọc; bản Cloud hỏng bị bỏ qua.
+   Đo: số ĐẦU TIÊN hiện ra (giây ~7) đã là 772 / 15 — không còn 788 / 21. Lượt lưu kế tiếp sửa doc
+   Cloud. Unit: `tests/unit/product-config-serialization.test.ts` (có ca tái hiện mã cũ).
+2. Khoá nặng đẩy ngược → `useEmployeeAnalysisLogic` chỉ lưu khoá thật sự đổi, không lưu preset trên
+   máy mới (trước đây preset mang dấu "bây giờ" có thể ĐÈ tab tuỳ chỉnh trên Cloud). Thêm:
+   `saveAnalysisEmployees` bỏ qua khi danh sách không đổi (trước: mỗi lần đổi bộ lọc = 1 setDoc +
+   2 lượt đẩy); nút "Đồng bộ Report BI" bấm tay vẫn luôn đẩy. Đo: 4 khoá tab không còn bị đẩy.
+3. Gốc đồng bộ nhẹ → phân loại khoá gom về `utils/localDbScope.ts` (`isLightSyncKey`,
+   `isHeavySyncKey`, `isLocalOnlyKey`, `giongNhau`); 8 chỗ đóng mốc `localSettingsLastModified` chỉ
+   đóng cho khoá đồng bộ nhẹ; lưu lại giá trị KHÔNG đổi (so bỏ qua thứ tự khoá — Firestore trả map
+   đã xếp a→z) thì không đóng mốc, không đẩy; bộ đệm Kho (`khoDataCache_`, `khoDataAppliedSnapshot::`)
+   không còn bị coi là cấu hình. `useCloudSync`: máy chưa kéo lần đầu thì KHÔNG đẩy cấu hình nhẹ
+   (trước: mặc định lưu ở giây 1–3 bị đẩy đè Cloud trước khi kéo về ở giây ~6); listener cấp app tự
+   kéo lần đầu (không phụ thuộc có mở tab Phân tích). Đo: sau khi mở app, mốc local = đúng mốc Cloud
+   (1790560192917), không có lượt đẩy cấu hình nhẹ nào. Unit: `light-sync-keys.test.ts`.
+4. Cột ghim bảng 7 Ngày (iPhone): tên / mã 2 dòng — hết "…", cột vẫn hẹp.
+5. Đỏ sẵn: unit Bot LINE — test cũ chưa biết cờ `pmhRelay` (commit ecaf529 cố ý mặc định TẮT) → cập
+   nhật test theo đúng thiết kế. lint:ratchet — 21 file dùng màu ngoài bảng/indigo mới lọt vào →
+   đổi về 5 họ semantic (IndustryKpiCard: dải "5 họ × 2 tầng", giữ 3 màu đầu); tím/indigo → sky
+   theo đúng hướng Đợt 6. `npm run check` XANH HOÀN TOÀN (890 unit).
+
+Rủi ro đã cân nhắc:
+- Máy đang dùng, lần mở đầu sau khi nâng cấp chưa có dấu "đã kéo" → listener lấy cấu hình nhẹ từ
+  Cloud về (Cloud thắng). Sửa đổi cấu hình nhẹ CHƯA kịp đẩy lên trước đó (hiếm: bình thường đẩy sau
+  2 giây) sẽ mất 1 lần. Chấp nhận để đổi lấy việc máy mới không bao giờ đè Cloud.
+- Trước lần kéo đầu, thay đổi người dùng làm trong vài giây đầu không được đẩy (lượt đổi kế tiếp sẽ đẩy).
+
+e2e sẵn có: 49/55 xanh. 6 test đỏ (doi-tai-khoan-don-du-lieu, indexeddb-rieng-theo-tai-khoan,
+tax-qr-and-export ×2, sticker-nut-va-quet-ma, sticker-firestore-write-rate) — ĐÃ ĐỎ Y HỆT trên commit
+trước Đợt 4 (chạy bằng worktree riêng để đối chiếu), không thuộc Phân tích/Report BI; chưa sửa.
+Tour dữ liệu thật 2 khung × 2 test: xanh, 0 chữ bị rút gọn ở mọi màn, 0 lỗi JS, 0 icon thiếu.
+
+## Đợt 5 — 6 test e2e đỏ sẵn (2026-09-28)
+Cả 6 đã đỏ trước Đợt 4 (đối chiếu bằng worktree). Nguyên nhân và cách xử lý:
+- `doi-tai-khoan-don-du-lieu` — LỖI APP: dọn dữ liệu khi đổi tài khoản xoá MỌI khoá localStorage trừ
+  Firebase (điều kiện bị nới ở commit 98047f7), đụng cả dữ liệu không phải của app. Sửa: liệt kê đủ
+  khoá của app (thêm `CUSTOM_GEMINI_API_KEY`, `tax_`, `hasSeenSticker`, `summaryTableExpandedIds`,
+  `analysis_`) và chỉ dọn chúng; test thêm kiểm tra khoá Gemini của người cũ bị xoá.
+- `indexeddb-rieng-theo-tai-khoan` — LỖI APP: khi đổi tài khoản, hàm dọn liệt kê và xoá MỌI IndexedDB
+  kể cả database riêng `BI_HUB_DATABASE_V2__<uid>` của người khác và của chính tài khoản đang vào →
+  người cũ quay lại mất sạch dữ liệu (trái CLAUDE.md mục 1.2). Sửa: không bao giờ dọn database riêng
+  của người khác; đổi tài khoản chỉ dọn kho dùng chung (`xoaDbRiengHienTai: false`). Đăng xuất và
+  "Xoá tất cả dữ liệu" vẫn dọn database của chính tài khoản đó như cũ.
+- `tax-qr-and-export` › tên file — MÔI TRƯỜNG: máy locale POSIX làm Chromium bỏ tên file có dấu
+  ("download"). Tái hiện tối thiểu: không dấu → giữ tên; có dấu → "download"; LC_ALL=C.UTF-8 → giữ
+  tên. playwright.config.ts đặt locale UTF-8 cho trình duyệt; app giữ tên file tiếng Việt.
+- `tax-qr-and-export` › lịch sử — TEST CŨ: lịch sử đã thành thanh bên phải mở sẵn (thay hộp thoại);
+  viết lại theo thanh bên, giữ đủ 4 hành vi (trống → tự lưu → không trùng → gom theo tháng).
+- `sticker-nut-va-quet-ma` › bảng điều khiển — TEST CŨ: nhãn nhóm bị chủ dự án gỡ có chủ ý ở commit
+  d08adb5; bỏ kiểm tra nhãn, giữ kiểm tra nút không bị thanh dưới che + chữ ≥ 11px.
+- `sticker-firestore-write-rate` — LỖI TEST: `innerText()` không timeout chờ 141s (trace) khi KHÔNG có
+  thông báo lỗi → hết ngân sách 180s. Đặt timeout 3s.
+
+### Đợt 5 (tiếp) — chạy TOÀN BỘ e2e lộ thêm 8 test đỏ (2026-09-28)
+Đối chiếu trên commit trước phiên (6b8f2b6, worktree riêng): 7/8 đỏ y hệt từ trước; `phan-quyen-3-tab`
+xanh ở bản gốc nhưng đỏ 1 lần khi chạy cả bộ → chạy riêng 5/5 xanh; dưới tải CPU cả bản gốc lẫn bản
+mới cùng đỏ 1/3 (hết giờ bấm nút) → nhạy với tải máy, không phải hồi quy.
+- `click-plus-auto-toggle` (4 test) — 2 lỗi trong mã bookmarklet Auto Click+ (Report BI):
+  (1) DO ĐỢT 4 GÂY RA: script đổi màu cho ratchet đổi cả chuỗi so khớp class của TRANG MWG trong
+  bookmarklet (`border-gray-200`→slate, `bg-blue-50`→sky…) → bookmarklet nhận sai trạng thái nút trên
+  site đó. Đã trả dòng đó về nguyên gốc; ratchet thêm quy tắc bỏ qua dòng `` `javascript: `` (cùng lý
+  do với quy tắc bookmarklet mã hoá URL đã có). (2) CÓ SẴN: `\t\r\n` trong template literal thành ký
+  tự thật → regex lỗi cú pháp khi eval; qua URL javascript: trình duyệt bỏ tab/xuống dòng nên regex
+  chỉ còn gộp dấu cách. Escape lại `\\t\\r\\n`. 9/9 xanh.
+- `bi-bonus-compare` — TEST CŨ: bảng so sánh mặc định xem theo bộ phận (commit c9240cd) có thêm dòng
+  nhóm; test chỉ lấy dòng nhân viên, giữ nguyên mọi con số kiểm (C.Tâm +2.944, chân bảng −1.848).
+- `iframe-tabs-csp` › Hoàn thuế — TEST CŨ: tab Tính thuế giờ chạy ngay trong app (TaxCalculatorView),
+  không còn iframe *.run.app nào trong code; test kiểm hiện trạng (render trong app, 0 khung bị chặn).
+- `sticker-toc-do-quet-ma` › 5 giây — MÔI TRƯỜNG: Chromium Linux (container, GitHub Actions) không có
+  BarcodeDetector; test đo đúng đường quét nhanh dùng API đó → bỏ qua CÓ GHI CHÚ khi không có API,
+  giữ nguyên ngưỡng 5s ở nơi có API.
+- `phan-quyen-3-tab` — TEST CHỜ CỐ ĐỊNH: 4s/1,5s/2s rồi kiểm ngay; máy bận thì app chưa kịp vẽ/gọi.
+  Đổi sang chờ theo điều kiện (`expect.poll`), điều kiện kiểm GIỮ NGUYÊN. Kiểm chứng: 3/3 xanh; và
+  thử đột biến (tắt bộ đệm services/managedUsersCache.ts = đúng lỗi cũ) → test ĐỎ (+1 lượt gọi thừa)
+  → test vẫn bắt được lỗi thật. Code đã hoàn nguyên.
+Kết thúc Đợt 5: toàn bộ e2e 99 xanh / 0 đỏ / 38 bỏ qua (có ghi lý do); npm run check xanh.
 ---
 
 # Nâng cấp theo audit tĩnh AUDIT_YCX.md — Đợt 1: sửa nền tảng (2026-09-29)

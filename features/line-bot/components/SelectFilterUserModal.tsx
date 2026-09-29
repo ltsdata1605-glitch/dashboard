@@ -166,7 +166,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
                             <Users size={20} />
                         </div>
                         <div>
@@ -404,7 +404,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                     className="w-10 h-10 rounded-2xl object-cover ring-2 ring-slate-100 dark:ring-slate-800 shadow-2xs"
                                                 />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs">
+                                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-2xs">
                                                     {getInitials(user.displayName)}
                                                 </div>
                                             )}

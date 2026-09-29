@@ -85,7 +85,9 @@ test('In Sticker mount được và không ghi Firestore dồn dập khi thao t�
     // thông điệp tiếng Việt rõ ràng chứ KHÔNG còn "Lỗi kết nối (functions/internal): INTERNAL" —
     // xem withQuotaMessage() trong functions/src/stickerEvent.ts.
     const errorBanner = page.locator('text=/Lỗi|hạn mức|INTERNAL/i').first();
-    const errorText = await errorBanner.innerText().catch(() => '');
+    // timeout 3s: KHÔNG có thông báo lỗi (trường hợp tốt) thì innerText() mặc định chờ vô hạn — trace
+    // 2026-09-28 đo được 141s ở đúng dòng này, ăn hết ngân sách 180s của test nên test luôn đỏ.
+    const errorText = await errorBanner.innerText({ timeout: 3000 }).catch(() => '');
     console.log(`[KẾT QUẢ] thông báo lỗi đăng nhập = "${errorText.replace(/\s+/g, ' ').trim()}"`);
     console.log(`[KẾT QUẢ] module sticker đã mount = ${stickerMounted}`);
 

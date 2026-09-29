@@ -4,6 +4,7 @@ import { getSetting, touchLastModified } from './dbService';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
 import { parseKhoList } from '../utils/dataUtils';
+import { toCloudProductConfig, fromCloudProductConfig } from './productConfigSerialization';
 
 // Nhóm ngành hàng "groups" của productConfig có thể ở dạng Set (runtime) hoặc string[] (đã phục hồi từ JSON)
 type ProductConfigGroups = Record<string, Set<string> | string[]>;
@@ -16,16 +17,9 @@ export const syncToCloud = async (
 
     // Deep clone to safely convert Set objects to Arrays for Firebase compatibility
     const safePayload: Record<string, unknown> = { ...payload };
-    const payloadProductConfig = safePayload.productConfig as { groups?: ProductConfigGroups } | undefined;
-    if (payloadProductConfig && payloadProductConfig.groups) {
-        const clonedGroups: { [key: string]: string[] } = {};
-        for (const [key, value] of Object.entries(payloadProductConfig.groups)) {
-            clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as string[]);
-        }
-        safePayload.productConfig = {
-            ...payloadProductConfig,
-            groups: clonedGroups
-        };
+    // MỌI Set (groups + 2 tập hình thức xuất) → mảng: xem services/productConfigSerialization.ts.
+    if (safePayload.productConfig && typeof safePayload.productConfig === 'object') {
+        safePayload.productConfig = toCloudProductConfig(safePayload.productConfig as object);
     }
 
     const userRef = doc(db, 'users', user.uid);
@@ -57,12 +51,7 @@ export const fetchFromCloud = async (user: User) => {
     if (snap.exists()) {
         const data = snap.data();
         if (data.productConfig && data.productConfig.groups) {
-            // Rehydrate arrays back to Sets
-            const restoredGroups: { [key: string]: Set<string> } = {};
-            for (const [key, value] of Object.entries(data.productConfig.groups)) {
-                restoredGroups[key] = new Set(value as string[]);
-            }
-            data.productConfig.groups = restoredGroups;
+            data.productConfig = fromCloudProductConfig(data.productConfig);
         }
         return data;
     }
@@ -98,16 +87,9 @@ export const shareCloudConfig = async (
     if (!user) throw new Error("Chưa đăng nhập, không thể chia sẻ.");
 
     const safePayload: Record<string, unknown> = { ...payload };
-    const payloadProductConfig = safePayload.productConfig as { groups?: ProductConfigGroups } | undefined;
-    if (payloadProductConfig && payloadProductConfig.groups) {
-        const clonedGroups: { [key: string]: string[] } = {};
-        for (const [key, value] of Object.entries(payloadProductConfig.groups)) {
-            clonedGroups[key] = value instanceof Set ? Array.from(value) : (value as string[]);
-        }
-        safePayload.productConfig = {
-            ...payloadProductConfig,
-            groups: clonedGroups
-        };
+    // MỌI Set (groups + 2 tập hình thức xuất) → mảng: xem services/productConfigSerialization.ts.
+    if (safePayload.productConfig && typeof safePayload.productConfig === 'object') {
+        safePayload.productConfig = toCloudProductConfig(safePayload.productConfig as object);
     }
 
     const cleanPayload: Record<string, unknown> = {};
@@ -221,49 +203,10 @@ export const fetchScheduleFromCloud = async (user: User, key: string) => {
 // module này (xem BUG FIX cached_dept_id/cached_emp_name ở StickerEventApp.tsx). Bỏ hẳn
 // khỏi HEAVY_SYNC_KEYS — đã thêm vào excludedKeys ở CẢ 2 nơi trong hooks/useCloudSync.ts
 // (giống cách 'stickerPrinterState'/'stickerPrintHistory' đã được loại trừ đúng).
-export const HEAVY_SYNC_KEYS = new Set([
-    'productConfig',
-    'departmentMap',
-    'customTabs',
-    'headToHeadTables',
-    'customCalendars',
-    'crossSellingConfig',
-    'industryAnalysisCustomTabs',
-    'topSellerAnalysisHistory',
-    'checkthuong_data',
-    'originalDepartmentMap',
-    'customExploitationTabs',
-    'efficiencyExploitationTabs',
-    'analysis-employees-list'
-]);
-
-export const isHeavySyncKey = (key: string): boolean => {
-    if (HEAVY_SYNC_KEYS.has(key)) return true;
-    if (key === 'checkthuong_data') return true;
-    if (key.startsWith('bi_')) {
-        const unprefixed = key.substring(3);
-        if (
-            HEAVY_SYNC_KEYS.has(unprefixed) ||
-            unprefixed.startsWith('summary-') ||
-            unprefixed.startsWith('competition-') ||
-            unprefixed.startsWith('config-') ||
-            unprefixed.startsWith('comptarget-') ||
-            unprefixed.startsWith('targethero-') ||
-            unprefixed.startsWith('manual-dept-mapping-') ||
-            unprefixed.startsWith('hidden-employees-') ||
-            unprefixed.startsWith('custom-') ||
-            unprefixed.startsWith('bonus-') ||
-            unprefixed.startsWith('snapshot-') ||
-            unprefixed.startsWith('avatar-') ||
-            unprefixed === 'last-updates-list' ||
-            unprefixed === 'nhanvien-summary-tables-v1' ||
-            unprefixed === 'ai-assistant-history'
-        ) {
-            return true;
-        }
-    }
-    return false;
-};
+// HEAVY_SYNC_KEYS / isHeavySyncKey đã chuyển sang utils/localDbScope.ts (2026-09-28) để cả 3 khu vực
+// cùng mở BI_HUB_DATABASE_V2 dùng CHUNG một cách phân loại khoá khi đóng dấu thời gian — xem
+// isLightSyncKey ở đó. Re-export để không đổi API cho nơi đang import từ đây.
+export { HEAVY_SYNC_KEYS, isHeavySyncKey } from '../utils/localDbScope';
 
 // Firestore CẤM mảng lồng mảng trực tiếp (vd competitionData của check-thuong.html — tạo bằng
 // XLSX.utils.sheet_to_json(sheet, {header: 1}) nên là row[][], không phải row đối tượng) — setDoc
@@ -367,17 +310,8 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
     let safeValue = value;
     const valueWithConfig = value as { config?: { groups?: ProductConfigGroups } } | undefined;
     if (key === 'productConfig' && valueWithConfig && valueWithConfig.config && valueWithConfig.config.groups) {
-        const clonedGroups: { [key: string]: string[] } = {};
-        for (const [gKey, gVal] of Object.entries(valueWithConfig.config.groups)) {
-            clonedGroups[gKey] = gVal instanceof Set ? Array.from(gVal) : (gVal as string[]);
-        }
-        safeValue = {
-            ...valueWithConfig,
-            config: {
-                ...valueWithConfig.config,
-                groups: clonedGroups
-            }
-        };
+        // Đổi MỌI Set (không chỉ groups) — xem services/productConfigSerialization.ts.
+        safeValue = { ...valueWithConfig, config: toCloudProductConfig(valueWithConfig.config) };
     }
 
     const cleanValue = JSON.parse(JSON.stringify(safeValue, (k, v) => v === undefined ? null : v));
@@ -532,12 +466,7 @@ export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<st
 
         const valWithConfig = val as { config?: { groups?: ProductConfigGroups } } | undefined;
         if (key === 'productConfig' && valWithConfig && valWithConfig.config && valWithConfig.config.groups) {
-            const restoredGroups: { [key: string]: Set<string> } = {};
-            for (const [gKey, gVal] of Object.entries(valWithConfig.config.groups)) {
-                restoredGroups[gKey] = new Set(gVal as string[]);
-            }
-            valWithConfig.config.groups = restoredGroups;
-            val = valWithConfig;
+            val = { ...valWithConfig, config: fromCloudProductConfig(valWithConfig.config) };
         }
         settings[key] = {
             value: val,
@@ -563,13 +492,8 @@ export const fetchProductConfigFromCloud = async (user: User): Promise<{ config:
     const wrapper = data.value as { config?: { groups?: ProductConfigGroups }; url?: string };
     if (!wrapper.config || !wrapper.config.groups) return null;
 
-    const restoredGroups: { [key: string]: Set<string> } = {};
-    for (const [gKey, gVal] of Object.entries(wrapper.config.groups)) {
-        restoredGroups[gKey] = new Set(gVal as unknown as string[]);
-    }
-
     return {
-        config: { ...wrapper.config, groups: restoredGroups } as ProductConfig,
+        config: fromCloudProductConfig(wrapper.config),
         url: wrapper.url
     };
 };

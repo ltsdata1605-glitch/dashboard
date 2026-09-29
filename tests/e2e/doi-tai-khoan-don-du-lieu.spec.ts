@@ -62,6 +62,7 @@ test('đổi tài khoản: dữ liệu cục bộ của tài khoản trước b�
         localStorage.setItem('ycx-something-old', 'dữ liệu cũ');
         localStorage.setItem('TAX_CALCULATOR_INPUTS_V4', '{"name":"Người cũ"}');
         localStorage.setItem('khong-phai-cua-app', 'giữ nguyên');
+        localStorage.setItem('CUSTOM_GEMINI_API_KEY', 'khoa-rieng-nguoi-cu');
 
         // Tài khoản cũ sở hữu dữ liệu
         mod.setLocalDataOwner('uid-nguoi-cu');
@@ -78,6 +79,7 @@ test('đổi tài khoản: dữ liệu cục bộ của tài khoản trước b�
             lsYcx: localStorage.getItem('ycx-something-old'),
             lsTax: localStorage.getItem('TAX_CALCULATOR_INPUTS_V4'),
             lsOther: localStorage.getItem('khong-phai-cua-app'),
+            lsGemini: localStorage.getItem('CUSTOM_GEMINI_API_KEY'),
             owner: mod.getLocalDataOwner(),
         };
     });
@@ -90,6 +92,7 @@ test('đổi tài khoản: dữ liệu cục bộ của tài khoản trước b�
     expect(result.lsYcx).toBeNull();
     expect(result.lsTax).toBeNull();
     expect(result.lsOther).toBe('giữ nguyên'); // không đụng vào khoá ngoài app
+    expect(result.lsGemini).toBeNull();        // khoá Gemini riêng của người cũ KHÔNG được sót lại
     expect(result.owner).toBe('uid-nguoi-moi');
 });
 

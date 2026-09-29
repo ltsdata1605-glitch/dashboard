@@ -247,8 +247,12 @@ export function Modal({
           >
             {/* Header */}
             {showHeader && (
-              <div className="flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/20">
-                <div>
+              // Điện thoại: hàng 1 = tiêu đề + nút đóng, hàng 2 = `controls` (tự xuống dòng). Trước đây tất
+              // cả nằm 1 hàng không xuống dòng: modal "Chi tiết đơn hàng" (6 nút) đẩy nút ĐÓNG ra ngoài
+              // màn hình iPhone và ép tiêu đề thành cột 1 chữ/dòng (dữ liệu thật 2026-09-28). Xuống dòng
+              // thay vì cuộn ngang vì khung cuộn sẽ cắt mất menu thả xuống nằm trong `controls`.
+              <div className="flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-2 gap-y-2 bg-slate-50/50 dark:bg-slate-900/20">
+                <div className="order-1 min-w-0 flex-1">
                   {subTitle && (
                     <p className="text-[11px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
                   )}
@@ -258,22 +262,24 @@ export function Modal({
                     </h3>
                   )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  {controls}
-                  {!hideCloseButton && (
-                    <Button
-                      type="button"
-                      variant="unstyled"
-                      size="none"
-                      onClick={onClose}
-                      aria-label="Đóng"
-                      // Nút đóng từng chỉ 22px trên iPhone (icon 14px + p-1) — nhỏ nhất trong mọi modal.
-                      className="min-h-11 min-w-11 -mr-2 sm:min-h-0 sm:min-w-0 sm:mr-0 p-1 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
-                    >
-                      <Icon name="x" size={4.5} />
-                    </Button>
-                  )}
-                </div>
+                {controls && (
+                  <div className="order-3 sm:order-2 w-full sm:w-auto flex flex-wrap sm:flex-nowrap items-center gap-2 sm:shrink-0">
+                    {controls}
+                  </div>
+                )}
+                {!hideCloseButton && (
+                  <Button
+                    type="button"
+                    variant="unstyled"
+                    size="none"
+                    onClick={onClose}
+                    aria-label="Đóng"
+                    // Nút đóng từng chỉ 22px trên iPhone (icon 14px + p-1) — nhỏ nhất trong mọi modal.
+                    className="order-2 sm:order-3 shrink-0 min-h-11 min-w-11 -mr-2 sm:min-h-0 sm:min-w-0 sm:mr-0 p-1 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
+                  >
+                    <Icon name="x" size={4.5} />
+                  </Button>
+                )}
               </div>
             )}
 

@@ -94,6 +94,10 @@ COLOR_STYLES.red = COLOR_STYLES.rose;
 COLOR_STYLES.purple = COLOR_STYLES.slate;
 COLOR_STYLES.orange = COLOR_STYLES.amber;
 
+// Class TĨNH (Tailwind chỉ sinh CSS cho chuỗi xuất hiện nguyên văn): ngưỡng 140/170/200px.
+const BADGE_CHU = ['@min-[140px]:inline-flex', '@min-[170px]:inline-flex', '@min-[200px]:inline-flex'];
+const BADGE_CHAM = ['@min-[140px]:hidden', '@min-[170px]:hidden', '@min-[200px]:hidden'];
+
 export interface KpiCardProps {
     icon: string;
     iconColor: string;
@@ -120,6 +124,8 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
     // Khi không đạt (isGood === false): chuyển style sang cảnh báo rose/đỏ
     const style = !isGood ? COLOR_STYLES['rose'] : normalStyle;
     const clampedProgress = progressPercent !== undefined ? Math.min(Math.max(progressPercent, 0), 100) : undefined;
+    // Bề rộng hàng tiêu đề cần để chứa icon + tiêu đề + chữ "CHƯA ĐẠT" (~7.5px/ký tự ở 11px đậm hoa).
+    const nguong = title.length <= 5 ? 0 : title.length <= 8 ? 1 : 2;
 
     return (
         <div
@@ -140,7 +146,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             {/* Layout cho desktop (lg trở lên) */}
             <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2">
                 {/* Hàng 1: Icon + Title + Badge cảnh báo nếu chưa đạt */}
-                <div className="flex items-center justify-between gap-1 min-w-0">
+                {/* `@container`: huy hiệu "Chưa đạt" chỉ hiện CHỮ khi hàng đủ rộng cho cả tiêu đề (ngưỡng
+                    theo độ dài tiêu đề, xem BADGE_CHU/BADGE_CHAM); hẹp hơn thì thu thành chấm đỏ. Đo trên laptop 1366px với dữ liệu thật (2026-09-28): lưới 5 cột
+                    chỉ còn ~142px/hàng → tiêu đề bị cắt "DT …", "CH …" để nhường chỗ cho huy hiệu.
+                    Mặc định là chấm (thư viện xuất ảnh không hiểu container query vẫn ra đúng nghĩa). */}
+                <div className="@container flex items-center justify-between gap-1 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                         <div className={`${style.iconText} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
                             <Icon name={icon} size={3} />
@@ -148,9 +158,12 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                         <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>{title}</h3>
                     </div>
                     {badge ? badge : (!isGood && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300 border border-rose-200 dark:border-rose-800 shrink-0 shadow-2xs">
-                            Chưa đạt
-                        </span>
+                        <>
+                            <span className={`hidden ${BADGE_CHU[nguong]} items-center px-1.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200 shrink-0 shadow-2xs`}>
+                                Chưa đạt
+                            </span>
+                            <span className={`${BADGE_CHAM[nguong]} w-2 h-2 rounded-full bg-rose-600 shrink-0`} role="img" aria-label="Chưa đạt" title="Chưa đạt" />
+                        </>
                     ))}
                 </div>
 

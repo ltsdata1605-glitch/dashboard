@@ -128,7 +128,11 @@ test.describe('Report BI › Thưởng — menu chế độ xem + So sánh cùng
         // Kỳ của H.Tại/CK ghi ở chú thích dưới bảng.
         await expect(page.getByText(/H\.Tại = 01→21\/9 · CK \(cùng kỳ tháng trước\) = 01→21\/8/)).toBeVisible();
 
-        const rowTexts = await table.locator('tbody tr').allInnerTexts();
+        // Chế độ mặc định là XEM THEO BỘ PHẬN (commit c9240cd): tbody có thêm dòng tiêu đề nhóm
+        // ("BP ĐIỆN MÁY (3 NHÂN VIÊN)" — 1 ô gộp 11 cột) và dòng "Tổng <bộ phận>" khi có >1 bộ phận.
+        // Chỉ lấy dòng NHÂN VIÊN (cập nhật 2026-09-28; test cũ viết trước khi có nhóm nên đỏ từ đó).
+        const rowTexts = (await table.locator('tbody tr').allInnerTexts())
+            .filter(t => !/\(\d+ nhân viên\)\s*$/i.test(t.replace(/\s+/g, ' ').trim()) && !/^tổng /i.test(t.trim()));
         console.log('DÒNG:', JSON.stringify(rowTexts.map(t => t.replace(/\s+/g, ' ').trim())));
         // Sort mặc định Δ Tổng giảm dần: Tâm (+2.944) trước Hương (−4.792); Nhân thiếu kỳ trước -> cuối.
         // Tên hiển thị đã rút gọn (formatEmployeeName): "Chí Tâm" -> "C.Tâm".

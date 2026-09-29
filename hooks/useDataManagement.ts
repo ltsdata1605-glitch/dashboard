@@ -3,6 +3,8 @@ import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppSta
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
+import { isProductConfigComplete } from '../services/productConfigSerialization';
+import { isLightSyncKey } from '../utils/localDbScope';
 import { computeBaseAndPeriodData, deriveWarehouseFilteredData, isXuatMatch } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL } from '../constants';
@@ -168,7 +170,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
                             const cloudConfigEntry = await fetchProductConfigFromCloud(user);
                             const cloudConfig = cloudConfigEntry?.config;
-                            if (cloudConfig && cloudConfig.groups && Object.keys(cloudConfig.groups).length > 0 && cloudConfigEntry?.url === configUrl) {
+                            // isProductConfigComplete: bản Cloud lưu trước 2026-09-28 mất 2 tập hình thức xuất (Set
+                            // → `{}`), tính ra số SAI — gặp bản đó thì tải thẳng từ Sheet.
+                            if (cloudConfig && isProductConfigComplete(cloudConfig) && cloudConfigEntry?.url === configUrl) {
                                 config = cloudConfig;
                                 dbService.saveProductConfig(config, configUrl).catch(console.error);
                                 loadedFromFirestore = true;
@@ -277,14 +281,18 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     // 2a. Settings sync (existing firestoreService)
                     import('../services/firestoreService').then(async ({ fetchFromCloud, fetchHeavySettingsFromCloud, syncHeavySettingToCloudQueued, HEAVY_SYNC_KEYS, isHeavySyncKey }) => {
                         try {
+                            let loiTaiCauHinhNhe = false;
                             const [cloudData, heavyCloudData] = await Promise.all([
-                                fetchFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nhẹ:", err); return null; }),
+                                fetchFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nhẹ:", err); loiTaiCauHinhNhe = true; return null; }),
                                 fetchHeavySettingsFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nặng:", err); return {}; })
                             ]);
 
-                            // 1. Đồng bộ cấu hình nhẹ
+                            // 1. Đồng bộ cấu hình nhẹ — quyết định ở services/heavySyncPolicy.ts
+                            // (decideLightSync): máy chưa từng kéo cấu hình của tài khoản thì Cloud thắng.
                             let forcePushLight = false;
-                            if (cloudData) {
+                            {
+                                const { decideLightSync, LIGHT_CLOUD_PULLED_KEY } = await import('../services/heavySyncPolicy');
+                                const pulledBefore = !!(await dbService.getSetting<boolean>(LIGHT_CLOUD_PULLED_KEY));
                                 const localLastMod = await dbService.getSetting<number>('localSettingsLastModified') || 0;
                                 // BUG FIX: `cloudData.lastSync` không bao giờ tồn tại — fetchFromCloud() đọc doc
                                 // users/{uid}/setting/configuration (có field `updatedAt`), trong khi `lastSync`
@@ -292,25 +300,27 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                 // đúng field, `new Date(...)` cũng không parse được Firestore Timestamp object
                                 // (cần .toMillis()) — 2 lỗi cộng dồn khiến cloudLastMod LUÔN = 0, mọi thiết bị có
                                 // localLastMod > 0 (đã từng đổi setting) đều force-push đè cấu hình cloud mới hơn.
-                                const cloudLastMod = cloudData.updatedAt?.toMillis ? cloudData.updatedAt.toMillis() : 0;
+                                const cloudLastMod = cloudData?.updatedAt?.toMillis ? cloudData.updatedAt.toMillis() : 0;
+                                const backup = cloudData?.settingsStoreBackup;
+                                const hanhDong = decideLightSync({ cloudReadFailed: loiTaiCauHinhNhe, hasCloudDoc: !!cloudData, hasBackup: !!backup, cloudLastMod, localLastMod, pulledBefore });
 
-                                if (cloudLastMod < localLastMod) {
+                                if (hanhDong === 'push') {
                                     console.warn('[Cloud Sync] Cấu hình nhẹ local mới hơn Cloud. Đang chuẩn bị đồng bộ lên...');
                                     forcePushLight = true;
-                                } else if (cloudData.settingsStoreBackup) {
-                                    const backup = cloudData.settingsStoreBackup;
-                                    Object.entries(backup).forEach(([k, v]) => {
-                                        if (!isHeavySyncKey(k) && k !== 'salesFilesRegistry') {
-                                            dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error);
-                                        }
-                                    });
+                                } else if (hanhDong === 'pull' && backup) {
+                                    if (!pulledBefore) console.warn('[Cloud Sync] Máy mới với tài khoản này — lấy cấu hình nhẹ từ Cloud về.');
+                                    await Promise.all(Object.entries(backup).map(([k, v]) =>
+                                        isLightSyncKey(k) /* bỏ khoá nặng, bộ đệm Kho, trạng thái riêng máy */
+                                            ? dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error)
+                                            : undefined));
                                     if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
                                     if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
                                     if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
                                     if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
                                 }
-                            } else {
-                                forcePushLight = true;
+                                // Đánh dấu khi ĐÃ đọc được Cloud (có doc hoặc chắc chắn chưa có); lỗi mạng → lần sau
+                                // thử lại. Khoá `cached_` nên không kích hoạt đồng bộ và không bị đẩy lên Cloud.
+                                if (!loiTaiCauHinhNhe && !pulledBefore) await dbService.saveSetting(LIGHT_CLOUD_PULLED_KEY, true);
                             }
 
                             // 2. Đồng bộ từng cấu hình nặng độc lập theo dấu thời gian
@@ -336,7 +346,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                 const cloudItem = heavyCloudData[key];
                                 const cloudTime = cloudItem?.updatedAt || 0;
 
-                                if (cloudItem && (localValue === null || cloudTime > localTime)) {
+                                // Bản productConfig trên Cloud bị hỏng (lỗi lưu Set cũ) thì không lấy về, để bản đầy
+                                // đủ trên máy được đẩy lên sửa lại (nhánh "local mới hơn" bên dưới).
+                                const cloudHong = key === 'productConfig' && !!cloudItem
+                                    && !isProductConfigComplete((cloudItem.value as { config?: ProductConfig } | undefined)?.config);
+                                if (cloudItem && !cloudHong && (localValue === null || cloudTime > localTime)) {
                                     console.warn(`[Cloud Sync] Cloud có bản cập nhật mới cho khóa nặng "${key}" (${cloudTime} > ${localTime}). Đang tải xuống...`);
                                     if (cloudItem && cloudItem.value !== undefined) await dbService.saveSettingFromCloud(key, cloudItem.value, cloudTime || Date.now());
                                     

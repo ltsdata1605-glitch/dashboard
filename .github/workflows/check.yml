@@ -37,6 +37,13 @@ jobs:
       - name: Cài dependency
         run: npm ci
 
+      # tests/unit/line-bot-group-features.test.ts import thẳng functions/src/groupFeatureHelper.ts →
+      # typecheck ở gốc kéo theo functions/src/firebaseAdmin.ts, cần gói `firebase-admin` chỉ có trong
+      # functions/node_modules. Thiếu bước này Typecheck đỏ "Cannot find module 'firebase-admin/app'"
+      # dù máy dev xanh (máy dev đã cài functions) — đo 2026-09-29, run 36504883600.
+      - name: Cài dependency functions (test đơn vị import functions/src)
+        run: npm ci --prefix functions
+
       # 4 bước dưới đây ĐANG XANH tại thời điểm thêm file này — chạy riêng từng bước (không gộp
       # `npm run check`) để log chỉ đúng bước nào đỏ, khỏi phải đọc ngược cả output.
       - name: Typecheck

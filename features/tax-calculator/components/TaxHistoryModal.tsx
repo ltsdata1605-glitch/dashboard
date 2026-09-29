@@ -172,7 +172,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
 
                 {/* Thanh công cụ Xuất Excel & Google Sheets cho thủ quỹ */}
                 {records.length > 0 && (
-                    <div className="px-3.5 py-2 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border-b border-emerald-100 dark:border-emerald-800/60 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="px-3.5 py-2 bg-gradient-to-r from-emerald-50 to-emerald-50 dark:from-emerald-950/40 dark:to-emerald-950/40 border-b border-emerald-100 dark:border-emerald-800/60 flex items-center justify-between gap-2 flex-wrap">
                         <div className="flex items-center gap-1.5 text-xs text-emerald-900 dark:text-emerald-200 font-semibold">
                             <FileSpreadsheet size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                             <span className="truncate">Thủ quỹ hoàn thuế:</span>

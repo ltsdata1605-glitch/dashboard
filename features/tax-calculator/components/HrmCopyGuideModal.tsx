@@ -74,14 +74,14 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
             </div>
 
             {/* Đợt 2 */}
-            <div className="p-3 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-950/20">
+            <div className="p-3 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-sky-50/50 dark:bg-sky-950/20">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                    <h4 className="text-xs font-bold text-indigo-800 dark:text-indigo-300">2. Thưởng ngày 20</h4>
+                    <h4 className="text-xs font-bold text-sky-800 dark:text-sky-300">2. Thưởng ngày 20</h4>
                     <a
                         href={HRM_DAY20_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="relative after:absolute after:-inset-y-4 after:inset-x-0 after:content-[''] sm:after:hidden text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                        className="relative after:absolute after:-inset-y-4 after:inset-x-0 after:content-[''] sm:after:hidden text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1"
                         aria-label="Mở trang Xem chi tiết thưởng"
                     >
                         Mở trang Xem chi tiết thưởng
@@ -93,7 +93,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         Mở HRM › <strong>Xem chi tiết thưởng</strong>, chọn đúng <strong>tháng</strong>.
                     </Step>
                     <Step index={2}>
-                        Bấm mũi tên <MousePointerClick className="w-3 h-3 inline text-indigo-500" /> ở{' '}
+                        Bấm mũi tên <MousePointerClick className="w-3 h-3 inline text-sky-500" /> ở{' '}
                         <strong>Thưởng nóng</strong> và <strong>Thưởng chính</strong> để <strong>mở rộng</strong> danh
                         sách — có mở ra thì app mới lấy được từng khoản thưởng.
                     </Step>

@@ -472,7 +472,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               <Button
                   variant="unstyled" size="none"
                   onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen }))}
-                  className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-md transition-colors relative ${
+                  className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-md transition-colors relative flex items-center gap-1 ${
                       trendState._filterOpen
                       ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                       : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -480,8 +480,10 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   title="Chọn khoảng thời gian"
               >
                   <Icon name="clock" size={4} />
-                  <span className="absolute -top-0.5 -right-0.5 text-[11px] font-black text-sky-700 dark:text-sky-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
-                      {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'N' : trendState.view === 'weekly' ? 'T' : 'Th'}
+                  {/* Nhãn NẰM CẠNH icon, ghi đủ chữ. Bản cũ là nhãn "absolute" đè góc icon — ở sàn chữ 11px
+                      nó che nửa đồng hồ, và "N/T/Th" không ai đoán được (iPhone, dữ liệu thật 2026-09-28). */}
+                  <span className="text-[11px] font-black text-sky-700 dark:text-sky-400 leading-none uppercase whitespace-nowrap">
+                      {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'Ngày' : trendState.view === 'weekly' ? 'Tuần' : 'Tháng'}
                   </span>
               </Button>
               {trendState._filterOpen && (

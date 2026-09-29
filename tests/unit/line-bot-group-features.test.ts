@@ -34,9 +34,12 @@ beforeEach(() => {
 });
 
 describe('getGroupFeatures', () => {
-    it('nhóm chưa cấu hình -> BẬT hết (giữ hành vi cũ)', async () => {
+    it('nhóm chưa cấu hình -> BẬT hết tính năng cũ; riêng pmhRelay mặc định TẮT', async () => {
+        // pmhRelay (cầu nối PMH qua admintnb.com) thêm ở commit ecaf529 với chủ ý "mặc định TẮT" —
+        // nhóm phải bật riêng. Test cũ viết trước khi có cờ này nên đỏ từ đó (2026-09-28 cập nhật).
         const f = await getGroupFeatures('uid1', 'G1');
         expect(f).toEqual({
+            pmhRelay: false,
             filterCoupon: true, issueCoupon: true, syntax_tk: true, syntax_cancel: true,
             syntax_search: true, keywordReply: true, autoReply: true,
         });

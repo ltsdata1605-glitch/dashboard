@@ -4,6 +4,8 @@ import {
     SETTINGS_STORE as SCOPED_SETTINGS_STORE,
     biHubDbName,
     ensureBiHubDbReady,
+    isLightSyncKey,
+    giongNhau,
 } from '../../utils/localDbScope';
 
 const DB_VERSION = BI_HUB_DB_VERSION;
@@ -130,18 +132,35 @@ async function saveSettingInternal(key: string, value: unknown, source: string |
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
-                store.put(value, key);
-                if (key !== 'localSettingsLastModified' && !key.startsWith('lastModified_')) {
-                    const now = Date.now();
-                    store.put(now, 'localSettingsLastModified');
-                    store.put(now, `lastModified_${key}`);
+                const dongDau = () => {
+                    if (key !== 'localSettingsLastModified' && !key.startsWith('lastModified_')) {
+                        const now = Date.now();
+                        // Chỉ khoá đồng bộ nhẹ mới đóng mốc chung (utils/localDbScope.ts → isLightSyncKey); mốc riêng từng khoá giữ nguyên.
+                        if (isLightSyncKey(key)) store.put(now, 'localSettingsLastModified');
+                        store.put(now, `lastModified_${key}`);
+                    }
+                };
+                // Khoá đồng bộ nhẹ lưu LẠI đúng giá trị đang có (component ghi lại state vừa nạp lúc mở app —
+                // đo thật: kpiCardConfig, summaryTableConfig, dashboard_global_filters_v2…) thì KHÔNG đóng mốc
+                // và báo `unchanged` để useCloudSync không đẩy cả bộ cấu hình của máy này đè lên Cloud.
+                let khongDoi = false;
+                if (isLightSyncKey(key)) {
+                    const cu = store.get(key);
+                    cu.onsuccess = () => {
+                        khongDoi = cu.result !== undefined && giongNhau(cu.result, value);
+                        store.put(value, key);
+                        if (!khongDoi) dongDau();
+                    };
+                } else {
+                    store.put(value, key);
+                    dongDau();
                 }
                 tx.oncomplete = () => {
                     if (active) {
                         active = false;
                         clearTimeout(timeoutId);
                         if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key, source } }));
+                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key, source, unchanged: khongDoi } }));
                             if (key.startsWith('bi_')) {
                                 const originalKey = key.slice(3);
                                 window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey, source } }));
@@ -216,7 +235,8 @@ export async function saveSettingFromCloud(key: string, value: unknown, updatedA
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
                 store.put(value, key);
-                store.put(updatedAt, 'localSettingsLastModified');
+                // Khoá nặng từ Cloud không được kéo mốc cấu hình nhẹ theo (xem isLightSyncKey).
+                if (isLightSyncKey(key)) store.put(updatedAt, 'localSettingsLastModified');
                 if (!key.startsWith('lastModified_')) {
                     store.put(updatedAt, `lastModified_${key}`);
                 }

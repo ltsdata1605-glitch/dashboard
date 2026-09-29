@@ -1,33 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQueued, isHeavyKeyInFlight, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
-import { getAllSettings, getSetting, saveSettingFromCloud } from '../services/dbService';
+import { getAllSettings, getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import toast from 'react-hot-toast';
 import { getErrorMessage, getErrorCode } from '../utils/dataUtils';
 // Các lớp chặn của đường "lấy khoá nặng từ Cloud về" đã tách ra module thuần để test được.
 // ĐỌC comment đầu services/heavySyncPolicy.ts trước khi sửa: đây là chỗ đã sinh 3 bug user báo.
-import { considerCloudDoc, isCloudNewer } from '../services/heavySyncPolicy';
+import { considerCloudDoc, isCloudNewer, LIGHT_CLOUD_PULLED_KEY } from '../services/heavySyncPolicy';
+import { fromCloudProductConfig, isProductConfigComplete } from '../services/productConfigSerialization';
+import { isLightSyncKey } from '../utils/localDbScope';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
-const isLocalOnlyKey = (key: string): boolean => {
-    const k = key.startsWith('bi_') ? key.slice(3) : key;
-    return (
-        k === 'nhanvien-active-tab' ||
-        k === 'nhanvien-active-competition-tab' ||
-        k === 'dashboard-main-tab' ||
-        k === 'dashboard-sub-tab' ||
-        k === 'main-active-view' ||
-        k === 'dashboard-active-supermarket' ||
-        k === 'nhanvien-active-supermarkets' ||
-        k === 'nhanvien-active-depts-multi' ||
-        k === 'global-selected-competitions' ||
-        k === 'nhanvien-active-version' ||
-        k.startsWith('active-')
-    );
-};
+// isLocalOnlyKey / isLightSyncKey: utils/localDbScope.ts (dùng chung với nơi đóng dấu thời gian).
 
 export const useCloudSync = () => {
     const { user, isDemoMode } = useAuth();
@@ -68,6 +55,15 @@ export const useCloudSync = () => {
 
     const forceSync = useCallback(async () => {
         if (!user || isDemoMode || (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data)) return;
+        // Máy CHƯA kéo cấu hình nhẹ của tài khoản về lần nào: KHÔNG đẩy lên. Những gì có trên máy lúc này
+        // chỉ là giá trị mặc định vừa lưu lúc khởi động — đẩy lên là đè cấu hình thật trên Cloud (đo thật
+        // 2026-09-28: sidebar_collapsed, dashboard_global_filters_v2 lưu ở giây 1–3, kéo về ở giây ~6).
+        // Lần kéo đầu do listener cấu hình bên dưới (hoặc useDataManagement) làm rồi đặt dấu.
+        if (!(await getSetting<boolean>(LIGHT_CLOUD_PULLED_KEY))) {
+            console.info('[Cloud Sync] Hoãn đẩy cấu hình nhẹ: máy chưa kéo cấu hình của tài khoản về lần nào.');
+            hasUnsavedChanges.current = false;
+            return;
+        }
         setSyncState('syncing');
         setLastError(null);
         clearSyncTimeout();
@@ -75,43 +71,13 @@ export const useCloudSync = () => {
         try {
             const allSettings = await getAllSettings();
             
-            // Lọc bỏ các key dữ liệu lớn hoặc cache/tạm thời để tránh vượt quá giới hạn 1MB của Firestore
-            const excludedKeys = new Set([
-                'productConfig',
-                'departmentMap',
-                'localSettingsLastModified',
-                'topSellerAnalysisHistory',
-                'customTabs',
-                'headToHeadTables',
-                'customCalendars',
-                'crossSellingConfig',
-                'industryAnalysisCustomTabs',
-                'summary-realtime',
-                'summary-luy-ke',
-                'competition-realtime',
-                'competition-luy-ke',
-                'last-updates-list',
-                'stickerPrinterState',
-                'stickerPrintHistory',
-                'stickerSavedLists',
-                'salesFilesRegistry',
-                'analysis-employees-list'
-            ]);
+            // Chỉ khoá thuộc bộ đồng bộ nhẹ (loại khoá lớn/tạm/riêng máy — giới hạn 1MB của Firestore).
             const settingsToSync: Record<string, unknown> = {};
             for (const key of Object.keys(allSettings)) {
-                if (
-                    !excludedKeys.has(key) && 
-                    !isHeavySyncKey(key) &&
-                    !isLocalOnlyKey(key) &&
-                    !key.startsWith('cached_') && 
-                    !key.startsWith('lastModified_') &&
-                    !key.startsWith('summary-') && 
-                    !key.startsWith('competition-')
-                ) {
-                    settingsToSync[key] = allSettings[key];
-                }
+                if (isLightSyncKey(key)) settingsToSync[key] = allSettings[key];
             }
 
+            console.info(`[Cloud Sync] Đẩy cấu hình nhẹ lên Cloud (${Object.keys(settingsToSync).length} khoá).`);
             await syncToCloud(user, {
                 settingsStoreBackup: settingsToSync
             });
@@ -162,7 +128,30 @@ export const useCloudSync = () => {
             const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
             unsubConfig = onSnapshot(configRef, async (snapshot) => {
                 if (typeof window !== 'undefined' && (window as any).__ycx_is_resetting_all_data) return;
-                if (!snapshot.exists() || snapshot.metadata.hasPendingWrites) return;
+                if (snapshot.metadata.hasPendingWrites) return;
+
+                // Lần kéo ĐẦU TIÊN trên máy này: Cloud thắng bất kể dấu thời gian / thay đổi đang chờ (đó
+                // chỉ là mặc định lúc khởi động — xem forceSync). Làm ở đây (listener cấp app) để không phụ
+                // thuộc người dùng có mở tab Phân tích (nơi useDataManagement cũng làm việc này) hay không.
+                if (!(await getSetting<boolean>(LIGHT_CLOUD_PULLED_KEY))) {
+                    const dauTien = snapshot.exists() ? snapshot.data() : undefined;
+                    const moc = dauTien?.updatedAt?.toMillis ? dauTien.updatedAt.toMillis() : 0;
+                    const saoLuu = dauTien?.settingsStoreBackup as Record<string, unknown> | undefined;
+                    if (saoLuu) {
+                        console.warn('[Cloud Sync] Máy mới với tài khoản này — lấy cấu hình nhẹ từ Cloud về (listener).');
+                        for (const [k, v] of Object.entries(saoLuu)) {
+                            if (isLightSyncKey(k)) await saveSettingFromCloud(k, v, moc);
+                        }
+                    }
+                    await saveSetting(LIGHT_CLOUD_PULLED_KEY, true);
+                    hasUnsavedChanges.current = false;
+                    if (debounceSyncTimeoutRef.current) {
+                        clearTimeout(debounceSyncTimeoutRef.current);
+                        debounceSyncTimeoutRef.current = null;
+                    }
+                    return;
+                }
+                if (!snapshot.exists()) return;
                 
                 // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
                 if (hasUnsavedChanges.current) {
@@ -183,7 +172,7 @@ export const useCloudSync = () => {
                     const backup = data.settingsStoreBackup;
                     if (backup) {
                         for (const [k, v] of Object.entries(backup)) {
-                            if (!isHeavySyncKey(k) && !isLocalOnlyKey(k) && k !== 'salesFilesRegistry') {
+                            if (isLightSyncKey(k)) { // bỏ khoá nặng, bộ đệm Kho, trạng thái riêng máy
                                 await saveSettingFromCloud(k, v, cloudLastMod);
                             }
                         }
@@ -256,11 +245,13 @@ export const useCloudSync = () => {
                                 val = restoreNestedArraysFromFirestore(data.value) as typeof data.value;
                             }
                             if (key === 'productConfig' && val && val.config && val.config.groups) {
-                                const restoredGroups: { [key: string]: Set<string> } = {};
-                                for (const [gKey, gVal] of Object.entries(val.config.groups)) {
-                                    restoredGroups[gKey] = new Set(gVal as string[]);
+                                val = { ...val, config: fromCloudProductConfig(val.config) };
+                                // Bản Cloud đã hỏng (2 tập hình thức xuất rỗng — lỗi lưu Set cũ): KHÔNG lấy về
+                                // đè bản đầy đủ trên máy. Xem services/productConfigSerialization.ts.
+                                if (!isProductConfigComplete(val.config)) {
+                                    console.warn('[Cloud Sync] Bỏ qua productConfig trên Cloud: thiếu tập hình thức xuất (bản lưu cũ bị hỏng).');
+                                    continue;
                                 }
-                                val.config.groups = restoredGroups;
                             }
                             
                             await saveSettingFromCloud(key, val, cloudTime || Date.now());
@@ -284,8 +275,10 @@ export const useCloudSync = () => {
         }, 2000);
 
         // 2. Setup local change handlers
-        const handleSettingChanged = (e: CustomEvent<{ key: string; source?: string }>) => {
+        const handleSettingChanged = (e: CustomEvent<{ key: string; source?: string; unchanged?: boolean }>) => {
             const key = e.detail?.key;
+            // Lưu lại đúng giá trị đang có (services/dbService/core.ts) — không có gì để đẩy lên.
+            if (e.detail?.unchanged) return;
 
             // Nếu là khóa nặng, kích hoạt đồng bộ riêng biệt qua subcollection
             if (key && isHeavySyncKey(key)) {
@@ -307,37 +300,8 @@ export const useCloudSync = () => {
                 return;
             }
 
-            // Bỏ qua các key dữ liệu lớn hoặc cache/tạm thời để tránh kích hoạt đồng bộ liên tục
-            const excludedKeys = new Set([
-                'productConfig',
-                'departmentMap',
-                'localSettingsLastModified',
-                'topSellerAnalysisHistory',
-                'customTabs',
-                'headToHeadTables',
-                'customCalendars',
-                'crossSellingConfig',
-                'industryAnalysisCustomTabs',
-                'summary-realtime',
-                'summary-luy-ke',
-                'competition-realtime',
-                'competition-luy-ke',
-                'last-updates-list',
-                'stickerPrinterState',
-                'stickerPrintHistory',
-                'stickerSavedLists',
-                'salesFilesRegistry'
-            ]);
-            if (
-                key && (
-                    excludedKeys.has(key) || 
-                    isHeavySyncKey(key) ||
-                    isLocalOnlyKey(key) ||
-                    key.startsWith('cached_') || 
-                    key.startsWith('summary-') || 
-                    key.startsWith('competition-')
-                )
-            ) {
+            // Bỏ qua khoá không thuộc bộ đồng bộ nhẹ (lớn/tạm/riêng máy) để tránh đồng bộ liên tục.
+            if (key && !isLightSyncKey(key)) {
                 return;
             }
 

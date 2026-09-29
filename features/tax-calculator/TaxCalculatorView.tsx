@@ -319,7 +319,7 @@ export const TaxCalculatorView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800/90 border-b sm:border border-slate-200 dark:border-slate-700/60 sm:rounded-2xl p-3.5 sm:p-4 mb-3 sm:mb-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white flex items-center justify-center shadow-sm">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-sm">
               <Calculator className="w-4.5 h-4.5" />
             </div>
             <div>
@@ -412,16 +412,16 @@ export const TaxCalculatorView: React.FC = () => {
               onClick={() => setShowHistorySidebar((prev) => !prev)}
               className={`min-h-11 sm:min-h-0 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 relative cursor-pointer ${
                 showHistorySidebar
-                  ? 'bg-indigo-600 text-white shadow-2xs'
+                  ? 'bg-sky-600 text-white shadow-2xs'
                   : 'text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60'
               }`}
               title={showHistorySidebar ? 'Thu gọn danh sách lịch sử bên phải' : 'Mở danh sách lịch sử bên phải'}
             >
-              <History className={`w-3.5 h-3.5 ${showHistorySidebar ? 'text-white' : 'text-indigo-500'}`} />
+              <History className={`w-3.5 h-3.5 ${showHistorySidebar ? 'text-white' : 'text-sky-500'}`} />
               <span>Lịch sử</span>
               {historyList.length > 0 && (
                 <span className={`ml-0.5 px-1.5 py-0.2 text-[11px] font-bold rounded-full ${
-                  showHistorySidebar ? 'bg-indigo-800 text-white' : 'bg-indigo-500 text-white'
+                  showHistorySidebar ? 'bg-sky-800 text-white' : 'bg-sky-500 text-white'
                 }`}>
                   {historyList.length}
                 </span>

@@ -108,15 +108,15 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
     return (
         <div className="space-y-6 w-full">
             {/* Guide box */}
-            <div className="p-4 bg-purple-50/70 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/40 rounded-2xl space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
+            <div className="p-4 bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 rounded-2xl space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300">
                     <HelpCircle size={15} />
                     <span>Cách lấy LINE User ID của Quản lý / Admin</span>
                 </div>
                 <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1 pl-1">
                     <p>1. Thêm bạn (Add Friend) với Bot LINE của bạn trên ứng dụng điện thoại.</p>
                     <p>2. Nhắn tin riêng cho Bot chữ <strong>admin</strong> hoặc <strong>id</strong>.</p>
-                    <p>3. Bot sẽ lập tức trả về chuỗi LINE User ID cá nhân dạng: <code className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-purple-600 font-bold">U272dcb226f96e4e17e561b19ba8ab...</code></p>
+                    <p>3. Bot sẽ lập tức trả về chuỗi LINE User ID cá nhân dạng: <code className="bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono text-sky-600 font-bold">U272dcb226f96e4e17e561b19ba8ab...</code></p>
                     <p>4. Copy chuỗi đó dán vào ô bên dưới để cấp quyền điều khiển cho Admin.</p>
                 </div>
             </div>

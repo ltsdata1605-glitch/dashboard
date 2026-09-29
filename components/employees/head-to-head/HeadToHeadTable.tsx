@@ -197,7 +197,18 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                                                     <RankBadge rank={rowIndex} />
                                                 </td>
                                                 <td className="px-2 py-1 text-left sticky left-8 bg-inherit z-10 border-r border-slate-200 dark:border-slate-700">
-                                                    <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate max-w-[80px] sm:max-w-[120px] block">{abbreviateName(row.name)}</span>
+                                                    {/* Điện thoại: 2 dòng (tên / mã) thay vì cắt "107617 - A.Nh…" — cột ghim chỉ ~80px (iPhone, dữ liệu thật 2026-09-28). */}
+                                                    {(() => {
+                                                        const ten = abbreviateName(row.name);
+                                                        const tach = ten.indexOf(' - ');
+                                                        return tach > 0 ? (
+                                                            <span className="sm:hidden block leading-tight" title={ten}>
+                                                                <span className="block text-[11px] font-bold text-slate-700 dark:text-slate-200 truncate max-w-[80px]">{ten.slice(tach + 3)}</span>
+                                                                <span className="block text-[11px] font-medium text-slate-400 tabular-nums">{ten.slice(0, tach)}</span>
+                                                            </span>
+                                                        ) : null;
+                                                    })()}
+                                                    <span className={`text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate max-w-[80px] sm:max-w-[120px] ${abbreviateName(row.name).includes(' - ') ? 'hidden sm:block' : 'block'}`}>{abbreviateName(row.name)}</span>
                                                 </td>
                                                 {processedData.dateHeaders.map(date => {
                                                     const dateKey = toLocalISOString(date);

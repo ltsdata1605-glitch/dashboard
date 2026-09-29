@@ -41,6 +41,12 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     const [efficiencyExploitationTabs, setEfficiencyExploitationTabs] = useState<CustomExploitationTabConfig[]>([]);
     const [isInitialTabsLoaded, setIsInitialTabsLoaded] = useState(false);
     const isHydratedRef = useRef(false);
+    // JSON của giá trị ĐANG CÓ trên đĩa cho từng khoá (ghi lúc nạp, lúc nhận từ Cloud, lúc tự lưu).
+    // Effect lưu chỉ ghi khoá KHÁC bản này. Trước đây effect ghi cả 4 khoá mỗi khi state đổi — kể cả
+    // lúc vừa nạp — nên mỗi lần mở app đẩy 4 khoá nặng lên Cloud; trên máy mới còn lưu preset/mảng
+    // rỗng mang dấu "bây giờ" rồi đẩy ĐÈ tab tuỳ chỉnh trên Cloud (đo trên dữ liệu thật 2026-09-28).
+    const trenDiaRef = useRef<Record<string, string>>({});
+    const ghiNhanTrenDia = (key: string, value: unknown) => { trenDiaRef.current[key] = JSON.stringify(value); };
     
     // Modal state management
     const [modalState, setModalState] = useState<ModalState>({type: null});
@@ -53,12 +59,14 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         const loadData = async () => {
             const savedTabs = await getCustomTabs();
             if (!isMounted) return;
+            ghiNhanTrenDia('customTabs', savedTabs ?? []);
             if (savedTabs) {
                 const migratedTabs = savedTabs.map(tab => ({ ...tab, icon: tab.icon || 'bar-chart-3' }));
                 setCustomTabs(migratedTabs);
             }
             const savedIndustryTabs = await getIndustryAnalysisCustomTabs();
             if (!isMounted) return;
+            ghiNhanTrenDia('industryAnalysisCustomTabs', savedIndustryTabs ?? []);
             if (savedIndustryTabs) {
                 setIndustryAnalysisTabs(savedIndustryTabs);
             }
@@ -109,13 +117,25 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                         columns: spChinhCols
                     };
                 }
-                await saveSetting('customExploitationTabs', finalExploitationTabs, 'local-employee-analysis');
+                // Máy chưa từng có khoá này (máy mới) thì KHÔNG lưu preset: để trống cho bản trên Cloud
+                // về (preset lưu với dấu "bây giờ" sẽ được coi là mới hơn và đẩy đè tab của người dùng).
+                if (savedExploitationTabs) {
+                    await saveSetting('customExploitationTabs', finalExploitationTabs, 'local-employee-analysis');
+                    ghiNhanTrenDia('customExploitationTabs', finalExploitationTabs);
+                }
                 await saveSetting('presetTabsMigratedV25', true);
             }
 
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
+            if (!savedExploitationTabs) {
+                // Chưa có trên đĩa: preset chỉ để HIỂN THỊ, không tự lưu (xem trên).
+                ghiNhanTrenDia('customExploitationTabs', finalExploitationTabs.length > 0 ? finalExploitationTabs : []);
+            } else if (!('customExploitationTabs' in trenDiaRef.current)) {
+                ghiNhanTrenDia('customExploitationTabs', savedExploitationTabs);
+            }
+            ghiNhanTrenDia('efficiencyExploitationTabs', savedEfficiencyTabs ?? []);
             
             if (savedEfficiencyTabs) {
                 setEfficiencyExploitationTabs(savedEfficiencyTabs);
@@ -137,8 +157,6 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         };
     }, []);
 
-    const isUpdatingFromCloudRef = useRef(false);
-
     // Lắng nghe sự thay đổi của IndexedDB (từ đồng bộ đám mây) để cập nhật nóng vào UI, tránh cache cũ
     useEffect(() => {
         const handleSettingChanged = async (e: CustomEvent<{ key: string; source?: string }>) => {
@@ -151,48 +169,28 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 const savedTabs = await getCustomTabs();
                 if (savedTabs) {
                     const migratedTabs = savedTabs.map(tab => ({ ...tab, icon: tab.icon || 'bar-chart-3' }));
-                    setCustomTabs(prev => {
-                        if (JSON.stringify(prev) !== JSON.stringify(migratedTabs)) {
-                            isUpdatingFromCloudRef.current = true;
-                            return migratedTabs;
-                        }
-                        return prev;
-                    });
+                    ghiNhanTrenDia('customTabs', migratedTabs);
+                    setCustomTabs(prev => JSON.stringify(prev) !== JSON.stringify(migratedTabs) ? migratedTabs : prev);
                 }
             } else if (changedKey === 'industryAnalysisCustomTabs') {
                 const savedIndustryTabs = await getIndustryAnalysisCustomTabs();
                 if (savedIndustryTabs) {
-                    setIndustryAnalysisTabs(prev => {
-                        if (JSON.stringify(prev) !== JSON.stringify(savedIndustryTabs)) {
-                            isUpdatingFromCloudRef.current = true;
-                            return savedIndustryTabs;
-                        }
-                        return prev;
-                    });
+                    ghiNhanTrenDia('industryAnalysisCustomTabs', savedIndustryTabs);
+                    setIndustryAnalysisTabs(prev => JSON.stringify(prev) !== JSON.stringify(savedIndustryTabs) ? savedIndustryTabs : prev);
                 }
             } else if (changedKey === 'customExploitationTabs') {
                 const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
                 if (savedExploitationTabs) {
                     const filteredExploitationTabs = savedExploitationTabs.filter(tab => !tab.id.startsWith('preset_'));
                     const normalizedTabs = filteredExploitationTabs.map(normalizeExploitationTabColumns);
-                    setCustomExploitationTabs(prev => {
-                        if (JSON.stringify(prev) !== JSON.stringify(normalizedTabs)) {
-                            isUpdatingFromCloudRef.current = true;
-                            return normalizedTabs;
-                        }
-                        return prev;
-                    });
+                    ghiNhanTrenDia('customExploitationTabs', normalizedTabs);
+                    setCustomExploitationTabs(prev => JSON.stringify(prev) !== JSON.stringify(normalizedTabs) ? normalizedTabs : prev);
                 }
             } else if (changedKey === 'efficiencyExploitationTabs') {
                 const savedEfficiencyTabs = await getSetting<CustomExploitationTabConfig[]>('efficiencyExploitationTabs');
                 if (savedEfficiencyTabs) {
-                    setEfficiencyExploitationTabs(prev => {
-                        if (JSON.stringify(prev) !== JSON.stringify(savedEfficiencyTabs)) {
-                            isUpdatingFromCloudRef.current = true;
-                            return savedEfficiencyTabs;
-                        }
-                        return prev;
-                    });
+                    ghiNhanTrenDia('efficiencyExploitationTabs', savedEfficiencyTabs);
+                    setEfficiencyExploitationTabs(prev => JSON.stringify(prev) !== JSON.stringify(savedEfficiencyTabs) ? savedEfficiencyTabs : prev);
                 }
             }
         };
@@ -208,15 +206,18 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     // Save tabs to DB on change
     useEffect(() => {
         if (isInitialTabsLoaded && isHydratedRef.current) {
-            if (isUpdatingFromCloudRef.current) {
-                // Reset cờ hiệu và bỏ qua việc ghi đè lên IndexedDB để tránh lặp vô tận
-                isUpdatingFromCloudRef.current = false;
-                return;
-            }
-            saveCustomTabs(customTabs, 'local-employee-analysis');
-            saveIndustryAnalysisCustomTabs(industryAnalysisTabs, 'local-employee-analysis');
-            saveSetting('customExploitationTabs', customExploitationTabs, 'local-employee-analysis');
-            saveSetting('efficiencyExploitationTabs', efficiencyExploitationTabs, 'local-employee-analysis');
+            // Chỉ lưu khoá thật sự KHÁC bản trên đĩa (xem trenDiaRef) — không vọng lại giá trị vừa nạp
+            // hay vừa nhận từ Cloud.
+            const luuNeuDoi = (key: string, value: unknown, luu: () => unknown) => {
+                const json = JSON.stringify(value);
+                if (trenDiaRef.current[key] === json) return;
+                trenDiaRef.current[key] = json;
+                luu();
+            };
+            luuNeuDoi('customTabs', customTabs, () => saveCustomTabs(customTabs, 'local-employee-analysis'));
+            luuNeuDoi('industryAnalysisCustomTabs', industryAnalysisTabs, () => saveIndustryAnalysisCustomTabs(industryAnalysisTabs, 'local-employee-analysis'));
+            luuNeuDoi('customExploitationTabs', customExploitationTabs, () => saveSetting('customExploitationTabs', customExploitationTabs, 'local-employee-analysis'));
+            luuNeuDoi('efficiencyExploitationTabs', efficiencyExploitationTabs, () => saveSetting('efficiencyExploitationTabs', efficiencyExploitationTabs, 'local-employee-analysis'));
         }
     }, [customTabs, industryAnalysisTabs, customExploitationTabs, efficiencyExploitationTabs, isInitialTabsLoaded]);
 

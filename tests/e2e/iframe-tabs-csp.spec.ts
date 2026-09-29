@@ -60,23 +60,19 @@ test.describe('Tab dùng iframe không bị CSP chặn', () => {
         await expect(frame!.locator('body')).toContainText(/Tra cứu thưởng/i, { timeout: 15_000 });
     });
 
-    test('Hoàn thuế nạp được iframe ra Cloud Run (*.run.app)', async ({ page }) => {
+    test('Tính thuế chạy NGAY TRONG app (không còn iframe Cloud Run), không khung nào bị CSP chặn', async ({ page }) => {
+        // Tab 'tools-tax' từng nhúng iframe ra Cloud Run (*.run.app); nay App.tsx render thẳng
+        // <TaxCalculatorView /> và trong code không còn chỗ nào nạp *.run.app — test cũ chờ thẻ iframe
+        // đó nên đỏ từ khi đổi (cập nhật 2026-09-28). Kiểm đúng hiện trạng thay vì thứ đã bị gỡ.
         await page.goto('/?tab=tools-tax');
         await activateDemoMode(page);
 
-        // ĐÂY LÀ CHỖ ĐỎ TRÊN CI (2026-09-18). Bản cũ ngủ đúng 4000ms rồi chụp `page.frames()` ngay,
-        // trong khi `ExternalToolView` là React.lazy (App.tsx) — iframe chỉ có sau khi chunk tải
-        // xong. Máy dev kịp trong 4s, runner GitHub thì không: annotation của lượt chạy đỏ cho thấy
-        // chỉ có ĐÚNG MỘT frame (trang chính), KHÔNG phải `chrome-error` — tức không hề bị CSP chặn,
-        // cũng không phải mất mạng (test xlsx tải CDN ngay bên dưới vẫn XANH trên cùng lượt đó).
-        await expect(page.locator('iframe[src*="run.app"]'),
-            'không render thẻ iframe Cloud Run').toBeAttached({ timeout: 30_000 });
-        await waitForFrameToSettle(page, 'run.app');
-
+        await expect(page.getByTestId('tax-result-panel')).toBeVisible({ timeout: 30_000 });
+        await expect(page.locator('iframe[src*="run.app"]')).toHaveCount(0);
         const urls = page.frames().map(f => f.url());
-        expect(urls.some(u => u.startsWith('chrome-error')), `iframe bị chặn — kiểm tra frame-src trong index.html. URLs: ${JSON.stringify(urls)}`).toBe(false);
-        expect(urls.some(u => u.includes('run.app')), `không thấy iframe Cloud Run. URLs: ${JSON.stringify(urls)}`).toBe(true);
+        expect(urls.some(u => u.startsWith('chrome-error')), `có khung bị chặn. URLs: ${JSON.stringify(urls)}`).toBe(false);
     });
+
 
     /**
      * Check Thưởng là app vanilla độc lập, nạp thư viện qua CDN nên KHÔNG đi qua npm —
