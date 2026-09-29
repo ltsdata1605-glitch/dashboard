@@ -6252,3 +6252,38 @@ node_modules): server sau tối ưu lại dependency đè cache server trước 
   cột hiển thị (A18), kích thước Modal đơn điệu (A13, cần rà 67 nơi gọi), worker BI reset (A27),
   huỷ requestIdleCallback (A28).
 
+
+---
+
+# Nâng cấp theo audit — Đợt 2 (2026-09-29)
+
+## Quyết định của chủ dự án (trả lời 5 câu hỏi)
+1. Báo cáo khai thác: **lưu cục bộ trên máy ở IndexedDB, không cần cloud**.
+2. Phạm vi: **tất cả module**.
+3. Nhận diện: **giữ Sky/Slate + UTM Avo + giao diện sáng**.
+4. Xuất ảnh hàng loạt: **nhiều ảnh PNG riêng** (giữ như hiện tại).
+5. iOS thấp nhất **17** (→ regex lookbehind của Tính thuế an toàn, hỗ trợ từ 16.4). Dữ liệu lớn nhất
+   **200.000 dòng (~100MB), 40 NV, 5 kho** → batch NV tối đa ~40 ảnh, batch Kho 6 ảnh.
+
+## Đã làm (mỗi mục có test đỏ trên mã cũ → xanh trên mã mới, Chromium)
+| Mục | File | Thay đổi | Test (mã cũ → mới) |
+|---|---|---|---|
+| A01 | `utils/localDbScope.ts`, `features/khai-thac/services/khaiThacDb.ts`, `services/localDataOwner.ts`, CLAUDE.md §1.2 | Kho `YCX_KHAI_THAC_DB__<uid>`; chép kho cũ về chủ máy 1 lần (cả khi đăng xuất trước khi mở tab Báo cáo); đăng xuất/đổi tài khoản không xoá; chỉ "Xoá tất cả dữ liệu" xoá kho của chính người bấm | `khai-thac-giu-du-lieu-theo-tai-khoan` 3 đỏ → 4/4 xanh |
+| A25 | `App.tsx` | Tab ẩn (vẫn mount) mang `inert` | `ui-dung-chung-dot-2` A25 |
+| A16 | `components/shared/ui/Button.tsx` | Viền focus chỉ khi dùng bàn phím (`focus-visible`; Tailwind 4 cần `outline-solid`) | A16 |
+| A18/A19 | `components/shared/ui/DataTable.tsx` | stickyHeader có hiệu lực thật; colSpan nhóm theo cột đang hiện trên mobile; sắp xếp bằng phím + `aria-sort` | 3 test |
+| A15 | `components/shared/ui/Dropdown.tsx` | aria-haspopup/expanded; ↑↓ Home End; Escape đóng menu, trả focus, KHÔNG đóng Modal chứa nó | A15 |
+| — | 8 modal `hideHeader` | Có tên cho trình đọc màn hình (`ariaLabel`) | — |
+| A27 | `features/bi-dashboard/hooks/useWorker.ts` | Worker crash → tạo mới; postMessage ném lỗi → dọn Map; hạn chờ 60s | `bi-worker-phuc-hoi` 2 đỏ → 3/3 |
+| A28 | `App.tsx` | Huỷ requestIdleCallback khi đổi tab | (đọc code) |
+
+Kiểm tra: typecheck ✅ · eslint 0 lỗi/143 cảnh báo (không đổi) · unit 906 ✅ · build ✅ · ratchet ✅.
+
+## Chưa làm / đề xuất đợt 3
+- A13 kích thước Modal không đơn điệu (`2xl`=672px < `lg`=720px < `4xl`=896px < `xl`=960px) — 63 nơi
+  gọi; đổi là đổi giao diện → cần ảnh chụp trước/sau từng modal.
+- A14: `Tooltip` dùng chung không có nơi dùng; app dựa vào 514 thuộc tính `title=` (không hiện trên
+  cảm ứng). Hướng: nút chỉ-có-icon cần `aria-label` + nhãn chữ trên mobile ở chỗ quan trọng.
+- A05–A08, A10: gom hệ xuất ảnh (Phân ca, Sticker, Khai thác, Check thưởng iframe) về vòng đời chung,
+  giữ PNG riêng; pixel budget theo iOS 17.
+- Hiệu năng với 200.000 dòng/100MB: đo thời gian nạp + bộ nhớ trên dữ liệu giả cùng cỡ trước khi tối ưu.
