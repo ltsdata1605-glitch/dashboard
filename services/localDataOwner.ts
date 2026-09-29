@@ -14,7 +14,7 @@
  * nguyên. Các kho còn lại vẫn dùng chung nên vẫn phải dọn khi đổi tài khoản.
  */
 
-import { LEGACY_BI_HUB_DB_NAME, setActiveLocalUid, biHubDbName } from '../utils/localDbScope';
+import { LEGACY_BI_HUB_DB_NAME, KHAI_THAC_LEGACY_DB_NAME, setActiveLocalUid, biHubDbName, khaiThacDbName, isPerAccountDbName } from '../utils/localDbScope';
 
 const OWNER_KEY = 'ycx-local-data-owner-uid';
 
@@ -25,7 +25,7 @@ export const APP_DATABASES = [
     LEGACY_BI_HUB_DB_NAME, // kho dùng chung cũ + kho tạm lúc chưa đăng nhập
     'ClusterDataDB',       // Dữ liệu cụm / FormDataStore cũ
     'ScheduleAppDB',       // Phân ca
-    'YCX_KHAI_THAC_DB',    // Báo cáo khai thác
+    KHAI_THAC_LEGACY_DB_NAME, // Báo cáo khai thác — kho dùng chung CŨ (lúc chưa đăng nhập); kho thật nằm ở YCX_KHAI_THAC_DB__<uid>
     'ProductSearchDB',     // In Sticker - tra cứu sản phẩm
     'TaxCalculatorDB',     // Tính thuế
     'keyval-store',        // Check thưởng (iframe)
@@ -123,13 +123,39 @@ export const clearAllLocalAppData = async (opts?: {
     /** Xoá cả database RIÊNG của tài khoản đang hoạt động (mặc định: có — đăng xuất, "Xoá tất cả dữ
      *  liệu"). Đổi tài khoản thì KHÔNG: database riêng là của chính tài khoản đó (CLAUDE.md mục 1.2). */
     xoaDbRiengHienTai?: boolean;
+    /** Xoá cả kho Báo cáo khai thác RIÊNG của tài khoản đang hoạt động. Mặc định KHÔNG: kho đó chỉ
+     *  có trên máy (không có bản cloud) — chủ dự án chốt 2026-09-29 giữ lại qua đăng xuất (audit A01).
+     *  Chỉ "Xoá tất cả dữ liệu (Người dùng mới)" mới bật. */
+    xoaKhaiThacRiengHienTai?: boolean;
 }): Promise<void> => {
     const userDb = biHubDbName();
     const dbsToClear = Array.from(new Set(opts?.xoaDbRiengHienTai === false ? APP_DATABASES : [...APP_DATABASES, userDb]));
-    // Database riêng theo tài khoản (`BI_HUB_DATABASE_V2__<uid>`) của NGƯỜI KHÁC không bao giờ bị dọn khi
-    // liệt kê: người cũ quay lại máy phải còn dữ liệu (test indexeddb-rieng-theo-tai-khoan đỏ vì dòng
-    // liệt kê "mọi database" xoá luôn chúng).
-    const laDbRiengTheoTaiKhoan = (name: string) => name.startsWith(`${LEGACY_BI_HUB_DB_NAME}__`);
+    if (opts?.xoaKhaiThacRiengHienTai) {
+        const khaiThacDb = khaiThacDbName();
+        if (!dbsToClear.includes(khaiThacDb)) dbsToClear.push(khaiThacDb);
+    }
+    // Database riêng theo tài khoản (`BI_HUB_DATABASE_V2__<uid>`, `YCX_KHAI_THAC_DB__<uid>`) của NGƯỜI
+    // KHÁC không bao giờ bị dọn khi liệt kê: người cũ quay lại máy phải còn dữ liệu (test
+    // indexeddb-rieng-theo-tai-khoan đỏ vì dòng liệt kê "mọi database" xoá luôn chúng).
+    const laDbRiengTheoTaiKhoan = isPerAccountDbName;
+    /** Kho KHÔNG được dọn ở lượt này (kể cả khi bước liệt kê bên dưới gặp lại nó). */
+    const giuLai = new Set<string>();
+
+    // Kho Báo cáo khai thác dùng chung CŨ có thể còn dữ liệu của chủ máy (chưa mở tab Báo cáo kể từ
+    // bản cập nhật tách theo tài khoản). Chuyển nó vào kho riêng của chủ TRƯỚC khi dọn — đây là dữ
+    // liệu chỉ có trên máy, dọn mất là mất hẳn. Chuyển hụt thì KHÔNG dọn kho cũ (thà để lại còn hơn mất).
+    if (!opts?.xoaKhaiThacRiengHienTai) {
+        const owner = getLocalDataOwner();
+        if (owner) {
+            try {
+                const { migrateKhaiThacLegacyInto } = await import('../features/khai-thac/services/khaiThacDb');
+                await migrateKhaiThacLegacyInto(owner);
+            } catch (err) {
+                console.warn('[localDataOwner] Không chuyển được Báo cáo khai thác sang kho riêng — giữ nguyên kho cũ:', err);
+                giuLai.add(KHAI_THAC_LEGACY_DB_NAME);
+            }
+        }
+    }
 
     if (typeof indexedDB !== 'undefined' && typeof indexedDB.databases === 'function') {
         try {
@@ -144,7 +170,7 @@ export const clearAllLocalAppData = async (opts?: {
         }
     }
 
-    await Promise.all(dbsToClear.map(clearDatabase));
+    await Promise.all(dbsToClear.filter(name => !giuLai.has(name)).map(clearDatabase));
 
     try {
         const keys: string[] = [];
@@ -197,8 +223,9 @@ export const resetAllDataAsNewUser = async (
         }
     }
 
-    // 2. Dọn sạch toàn bộ cơ sở dữ liệu cục bộ IndexedDB + localStorage + sessionStorage
-    await clearAllLocalAppData();
+    // 2. Dọn sạch toàn bộ cơ sở dữ liệu cục bộ IndexedDB + localStorage + sessionStorage — kể cả kho
+    //    Báo cáo khai thác riêng của tài khoản này (đăng xuất thì giữ, nút này thì xoá: "như mới").
+    await clearAllLocalAppData({ xoaKhaiThacRiengHienTai: true });
 
     // 3. Đánh dấu cấm kế thừa dữ liệu cũ (đặt MIGRATED_MARKER rỗng vào DB riêng của user)
     try {

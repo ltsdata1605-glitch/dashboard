@@ -163,9 +163,16 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   thành 2 bản (đã gặp thật, xem chú thích "module duplication" ở `contexts/AuthContext.tsx`) thì 2
   bản vẫn phải thấy chung một uid. Test `tests/e2e/indexeddb-rieng-theo-tai-khoan.spec.ts` từng đỏ
   đúng vì chuyện này.
-- Các kho còn lại (`ScheduleAppDB`, `TaxCalculatorDB`, `ProductSearchDB`, `YCX_KHAI_THAC_DB`,
-  `keyval-store`) VẪN dùng chung → vẫn bị **xoá sạch khi đổi tài khoản** (`clearAllLocalAppData`).
-  Thêm kho mới mà quên khai vào `APP_DATABASES` là để lại dữ liệu người cũ ở khu đó.
+- **Báo cáo khai thác** (bổ sung 2026-09-29, chủ dự án chốt "lưu cục bộ IndexedDB, không cần cloud"):
+  kho `YCX_KHAI_THAC_DB__<uid>` (`utils/localDbScope.ts → khaiThacDbName()`). Kho này KHÔNG có bản
+  cloud nên **đăng xuất/đổi tài khoản KHÔNG xoá nó**; chỉ nút "Xoá tất cả dữ liệu" xoá kho của chính
+  người bấm. Kho dùng chung cũ `YCX_KHAI_THAC_DB` được chuyển về chủ máy trước khi bị dọn.
+  Mọi kho riêng theo tài khoản phải được `isPerAccountDbName()` nhận ra — nếu không, bước liệt kê
+  database của `clearAllLocalAppData` sẽ xoá chúng.
+- Các kho còn lại (`ScheduleAppDB`, `TaxCalculatorDB`, `ProductSearchDB`, `keyval-store`) VẪN dùng
+  chung → vẫn bị **xoá sạch khi đổi tài khoản** (`clearAllLocalAppData`) — đều có bản trên cloud hoặc
+  nhập lại được. Thêm kho mới mà quên khai vào `APP_DATABASES` là để lại dữ liệu người cũ ở khu đó;
+  thêm kho CHỈ-CÓ-TRÊN-MÁY thì phải tách theo tài khoản như Báo cáo khai thác, không được xoá.
 
 ---
 

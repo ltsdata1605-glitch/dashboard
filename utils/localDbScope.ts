@@ -95,6 +95,29 @@ export const biHubDbName = (): string => {
     return uid ? `${LEGACY_BI_HUB_DB_NAME}__${slugifyUid(uid)}` : LEGACY_BI_HUB_DB_NAME;
 };
 
+// ───────────────────────── Báo cáo khai thác: kho CHỈ có trên máy, tách theo tài khoản (2026-09-29) ─────────────────────────
+// Chủ dự án chốt 2026-09-29 (audit A01): "Lưu cục bộ trên máy ở IndexedDB, không cần cloud". Kho này
+// KHÔNG có bản trên cloud → không được xoá khi đăng xuất như các kho bộ đệm. Tách theo uid giống
+// BI_HUB_DATABASE_V2 để người khác đăng nhập trên cùng máy không thấy khách hàng/SĐT của người trước.
+
+export const KHAI_THAC_LEGACY_DB_NAME = 'YCX_KHAI_THAC_DB';
+
+/** Tên kho Báo cáo khai thác của tài khoản đang đăng nhập (chưa đăng nhập → kho dùng chung cũ). */
+export const khaiThacDbName = (): string => {
+    const uid = getActiveLocalUid();
+    return uid ? khaiThacDbNameFor(uid) : KHAI_THAC_LEGACY_DB_NAME;
+};
+
+/** Tên kho Báo cáo khai thác của một uid cụ thể (vd chủ cũ của máy, khi người khác đăng nhập). */
+export const khaiThacDbNameFor = (uid: string): string => `${KHAI_THAC_LEGACY_DB_NAME}__${slugifyUid(uid)}`;
+
+/** Database RIÊNG của một tài khoản (của bất kỳ ai) — dọn dữ liệu khi đăng xuất/đổi tài khoản không được đụng tới. */
+export const isPerAccountDbName = (name: string): boolean =>
+    name.startsWith(`${LEGACY_BI_HUB_DB_NAME}__`) || name.startsWith(`${KHAI_THAC_LEGACY_DB_NAME}__`);
+
+/** Tài khoản này có được thừa kế dữ liệu của kho dùng chung cũ không (xem setActiveLocalUid). */
+export const mayInheritLegacyData = (uid: string): boolean => state().inherit.get(uid) !== false;
+
 // ───────────────────────── Chép dữ liệu cũ sang database riêng (chạy 1 lần cho mỗi tài khoản) ─────────────────────────
 
 /**
