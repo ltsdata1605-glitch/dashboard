@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TNB PMH - Tự động lấy mã hàng loạt
 // @namespace    dashboard-ycx
-// @version      1.5
+// @version      1.6
 // @description  Dán danh sách form PMH → tự gộp theo giới hạn 3000 ký tự của ô chat và gửi lần lượt vào phòng admintnb, tự gom mã trả về thành bảng copy nhanh. Chạy trong phiên đăng nhập của CHÍNH BẠN, không gửi dữ liệu ra máy chủ nào khác.
 // @author       Dashboard YCX
 // @match        https://admintnb.com/room-pmh*
@@ -17,6 +17,8 @@
 
 /*
  * CHANGELOG:
+ * - v1.6 (2026-09-29):
+ *   + Thêm bộ lọc "Hôm nay / Tất cả" — mặc định chỉ hiển thị mã nhận trong ngày hôm nay, bấm toggle để xem toàn bộ lịch sử phiên.
  * - v1.5 (2026-09-27):
  *   + Sắp xếp danh sách mã theo thứ tự mới nhất nằm trên cùng (đảo ngược thứ tự hiển thị để các mã vừa được cấp xuất hiện ngay đầu danh sách).
  * - v1.4 (2026-09-27):
@@ -183,6 +185,7 @@
     errors: [],           // {kho,ten,err}
     seenRows: new Set(),  // data-id đã xử lý (chống trùng)
     showAll: false,
+    todayOnly: true,
   };
 
   function ingestBotRow(row) {
@@ -194,8 +197,9 @@
     for (const r of parseBotBubble(txt)) {
       if (r.ma) {
         const key = r.kho + '|' + r.loai + '|' + r.ma;
-        if (!state.results.has(key)) { state.results.set(key, r); changed = true; }
+        if (!state.results.has(key)) { r.ts = Date.now(); state.results.set(key, r); changed = true; }
       } else if (r.err) {
+        r.ts = Date.now();
         state.errors.push(r);
         changed = true;
       }
@@ -557,6 +561,9 @@
         const rows = visibleResults();
         const txt = rows.map((r) => r.kho + ' - ' + r.loai + ' : ' + r.ma).join('\n');
         setStatus(copy(txt) ? 'Đã copy ' + rows.length + ' mã.' : 'Không copy được.');
+      } else if (act === 'toggletoday') {
+        state.todayOnly = !state.todayOnly;
+        renderResults();
       } else if (act === 'toggleall') {
         state.showAll = !state.showAll;
         renderResults();
@@ -595,10 +602,19 @@
     document.body.appendChild(b);
   }
 
+  function todayStart() {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+
   function visibleResults() {
-    // Đảo ngược để các mã mới nhận luôn nằm ở trên cùng
     const all = Array.from(state.results.values()).reverse();
     let list = all;
+    if (state.todayOnly) {
+      const ts0 = todayStart();
+      list = list.filter((r) => (r.ts || 0) >= ts0);
+    }
     if (!state.showAll) {
       const myKho = (gmGet('tnb_my_kho', '') || '').trim();
       if (myKho) {
@@ -630,7 +646,11 @@
     // Cập nhật các thẻ chọn nhanh (quick pills) theo danh sách mã hiện tại
     const pillsBox = $('.tph-loai-pills-box');
     if (pillsBox) {
-      const allResults = Array.from(state.results.values());
+      let allResults = Array.from(state.results.values());
+      if (state.todayOnly) {
+        const ts0 = todayStart();
+        allResults = allResults.filter((r) => (r.ts || 0) >= ts0);
+      }
       const baseResults = state.showAll
         ? allResults
         : (myKhoList
@@ -656,26 +676,36 @@
       }
     }
 
+    let baseErrs = state.errors;
+    if (state.todayOnly) {
+      const ts0 = todayStart();
+      baseErrs = baseErrs.filter((e) => (e.ts || 0) >= ts0);
+    }
     const rawErrs = state.showAll
-      ? state.errors
+      ? baseErrs
       : (myKhoList
-          ? state.errors.filter((e) => myKhoList.includes(e.kho))
-          : (state.sentKhos.size === 0 ? state.errors : state.errors.filter((e) => state.sentKhos.has(e.kho))));
+          ? baseErrs.filter((e) => myKhoList.includes(e.kho))
+          : (state.sentKhos.size === 0 ? baseErrs : baseErrs.filter((e) => state.sentKhos.has(e.kho))));
     const errs = rawErrs.slice().reverse();
 
     const parts = [];
     const countDetails = [];
+    if (state.todayOnly) countDetails.push('Hôm nay');
     if (myKho && !state.showAll) countDetails.push('Kho ' + esc(myKho));
     if (curFilterLoai) countDetails.push('Loại ' + esc(curFilterLoai));
     const countTitle = countDetails.length > 0
       ? countDetails.join(' · ') + ': ' + rows.length + ' mã'
       : 'Mã nhận: ' + rows.length;
 
-    const isFiltered = (myKho && !state.showAll) || Boolean(curFilterLoai);
-    parts.push('<div class="tph-row" style="justify-content:space-between;">' +
-      '<span style="font-weight:700;color:' + (isFiltered ? '#0284c7' : '#0f172a') + ';">' + countTitle + (errs.length ? ' · lỗi: ' + errs.length : '') + '</span>' +
-      '<span><label style="cursor:pointer;"><input type="checkbox" data-act="toggleall"' +
-      (state.showAll ? ' checked' : '') + '> tất cả kho</label></span></div>');
+    const isFiltered = (myKho && !state.showAll) || Boolean(curFilterLoai) || state.todayOnly;
+    parts.push('<div class="tph-row" style="justify-content:space-between;gap:4px;">' +
+      '<span style="font-weight:700;color:' + (isFiltered ? '#0284c7' : '#0f172a') + ';flex:1;">' + countTitle + (errs.length ? ' · lỗi: ' + errs.length : '') + '</span>' +
+      '<span style="display:flex;gap:8px;align-items:center;font-size:11px;">' +
+      '<label style="cursor:pointer;white-space:nowrap;"><input type="checkbox" data-act="toggletoday"' +
+      (state.todayOnly ? ' checked' : '') + '> hôm nay</label>' +
+      '<label style="cursor:pointer;white-space:nowrap;"><input type="checkbox" data-act="toggleall"' +
+      (state.showAll ? ' checked' : '') + '> mọi kho</label>' +
+      '</span></div>');
     if (rows.length) {
       parts.push('<div class="tph-row"><button class="tph-btn tph-ghost" data-act="copyma">Copy mã</button>' +
         '<button class="tph-btn tph-ghost" data-act="copytable">Copy bảng</button>' +
