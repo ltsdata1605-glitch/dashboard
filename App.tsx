@@ -106,6 +106,9 @@ const TabContent = React.memo(() => {
                     <div 
                         key={view.id} 
                         className={`${view.className || ''} ${activeTab === view.id ? 'flex-1 relative w-full' : '!absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}`}
+                        // Audit A25 (2026-09-29): tab ẩn chỉ bị đẩy ra ngoài màn hình — phím Tab và trình đọc
+                        // màn hình vẫn đi vào ô nhập/nút của nó. `inert` chặn cả hai; không đổi giao diện.
+                        inert={activeTab !== view.id || undefined}
                     >
                         {React.cloneElement(view.component, { isActive: activeTab === view.id })}
                     </div>
@@ -173,6 +176,7 @@ function AppContent() {
         // án + CheckThuongView + BiWrapper) bất kể user đang dùng tab nào — tốn băng thông/CPU di
         // động vô ích nếu user chỉ dùng Phân ca/In tem. Giờ chỉ tải trước đúng tab hiện tại (đã
         // resolve xong từ IndexedDB lúc effect này chạy, do LayoutContext load activeTab async).
+        let idleHandle: number | undefined;
         const timer = setTimeout(() => {
             const preloadTarget = () => {
                 switch (activeTab) {
@@ -188,12 +192,17 @@ function AppContent() {
                 }
             };
             if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-                window.requestIdleCallback(preloadTarget);
+                idleHandle = window.requestIdleCallback(preloadTarget);
             } else {
                 preloadTarget();
             }
         }, 1500);
-        return () => clearTimeout(timer);
+        // Audit A28: trước đây chỉ huỷ setTimeout — lượt idle đã đặt vẫn chạy sau khi đổi tab và tải
+        // trước chunk của tab vừa rời (tốn băng thông/CPU điện thoại vô ích).
+        return () => {
+            clearTimeout(timer);
+            if (idleHandle !== undefined && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
+        };
     }, [activeTab]);
 
     const getTabIcon = () => {

@@ -57,6 +57,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
             onClose={() => onResolve('cancel')}
             maxWidth="lg"
             hideHeader
+            ariaLabel="Trùng lặp dữ liệu"
         >
             <div className="-m-5 flex flex-col p-6 space-y-5">
                 {/* Header */}

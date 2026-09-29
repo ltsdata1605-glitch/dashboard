@@ -21,6 +21,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             hideHeader
+            ariaLabel="Chọn loại tệp doanh số"
             maxWidth="sm"
         >
             <div className="-m-5 p-4">

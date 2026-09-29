@@ -34,10 +34,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const isUnstyled = variant === 'unstyled';
-    
+
+    // Audit A16 (2026-09-29): `outline-none` mà không có dấu focus thay thế → người dùng bàn phím
+    // không biết đang đứng ở nút nào. `focus-visible` CHỈ hiện khi điều hướng bằng bàn phím, không
+    // hiện khi chạm/bấm chuột → giao diện thường ngày không đổi.
+    // `outline-solid` bắt buộc: ở Tailwind 4, `outline-none` đặt --tw-outline-style: none và
+    // `outline-2` dùng lại chính biến đó → không có nó thì viền vẫn vô hình (đã đo trong test).
+    const focusRing = 'focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500';
     const baseStyles = isUnstyled
-      ? 'outline-none disabled:opacity-50 disabled:cursor-not-allowed'
-      : 'inline-flex items-center justify-center font-medium transition-colors duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap';
+      ? `outline-none ${focusRing} disabled:opacity-50 disabled:cursor-not-allowed`
+      : `inline-flex items-center justify-center font-medium transition-colors duration-200 outline-none ${focusRing} disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap`;
     
     const variants: Record<ButtonVariant, string> = {
       primary: 'bg-sky-600 hover:bg-sky-700 text-white border border-transparent',

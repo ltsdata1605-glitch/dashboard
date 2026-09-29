@@ -23,6 +23,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
             onClose={onClose}
             position="bottom"
             hideHeader
+            ariaLabel="Xuất ảnh báo cáo"
             maxWidth="md"
             noRounded
         >

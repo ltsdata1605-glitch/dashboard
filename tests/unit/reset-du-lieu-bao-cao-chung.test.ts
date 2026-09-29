@@ -15,6 +15,9 @@ vi.mock('../../utils/localDbScope', () => ({
     LEGACY_BI_HUB_DB_NAME: 'BI_HUB_DATABASE_V2',
     setActiveLocalUid: vi.fn(),
     biHubDbName: () => 'BI_HUB_DATABASE_V2',
+    KHAI_THAC_LEGACY_DB_NAME: 'YCX_KHAI_THAC_DB',
+    khaiThacDbName: () => 'YCX_KHAI_THAC_DB',
+    isPerAccountDbName: (name: string) => name.includes('__'),
     markCleanSlateMigrated: vi.fn(async () => {}),
     resetLocalScopeInheritance: vi.fn(),
 }));

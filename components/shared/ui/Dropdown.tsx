@@ -51,7 +51,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
       }
     };
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
+      if (e.key !== 'Escape') return;
+      // preventDefault: Escape chỉ đóng menu này, không đóng luôn Modal chứa nó (Modal bỏ qua phím
+      // Escape đã bị xử lý). Trả focus về nút mở menu cho người dùng bàn phím (audit A15).
+      e.preventDefault();
+      close();
+      const trigger = containerRef.current?.querySelector<HTMLElement>('[data-dropdown-trigger]');
+      trigger?.focus({ preventScroll: true });
     };
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleEsc);
@@ -67,16 +73,57 @@ export const Dropdown: React.FC<DropdownProps> = ({
     close();
   }, [onSelect, close]);
 
+  // Mũi tên ↑/↓ đi giữa các mục (audit A15): trước đây chỉ có Tab, menu dài phải Tab qua từng mục.
+  const handlePanelKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Home' && e.key !== 'End') return;
+    const buttons = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>('button:not([disabled])'));
+    if (buttons.length === 0) return;
+    e.preventDefault();
+    const idx = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    let next = 0;
+    if (e.key === 'End') next = buttons.length - 1;
+    else if (e.key === 'ArrowDown') next = idx < 0 ? 0 : (idx + 1) % buttons.length;
+    else if (e.key === 'ArrowUp') next = idx < 0 ? buttons.length - 1 : (idx - 1 + buttons.length) % buttons.length;
+    buttons[next].focus();
+  }, []);
+
+  // Mở bằng bàn phím (↓ trên nút mở) → focus mục đang chọn hoặc mục đầu.
+  const handleTriggerKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setIsOpen(true);
+      requestAnimationFrame(() => {
+        const panel = containerRef.current?.querySelector<HTMLElement>('[data-dropdown-panel]');
+        const target = panel?.querySelector<HTMLButtonElement>('button[aria-current="true"]:not([disabled])')
+          ?? panel?.querySelector<HTMLButtonElement>('button:not([disabled])');
+        target?.focus();
+      });
+      return;
+    }
+    onActivateKey(toggle)(e);
+  }, [toggle]);
+
   return (
     <div ref={containerRef} className={cn('relative inline-flex', className)}>
       {/* Trigger */}
-      <div role="button" tabIndex={0} onClick={toggle} onKeyDown={onActivateKey(toggle)} className="cursor-pointer">
+      <div
+        role="button"
+        tabIndex={0}
+        data-dropdown-trigger=""
+        aria-haspopup="true"
+        aria-expanded={isOpen}
+        onClick={toggle}
+        onKeyDown={handleTriggerKeyDown}
+        className="cursor-pointer"
+      >
         {trigger}
       </div>
 
       {/* Panel */}
       {isOpen && (
         <div
+          data-dropdown-panel=""
+          onKeyDown={handlePanelKeyDown}
           className={cn(
             'absolute top-full mt-1.5 z-[var(--p-z-dropdown)]',
             'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',

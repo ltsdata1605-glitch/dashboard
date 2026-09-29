@@ -28,6 +28,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       hideHeader
+      ariaLabel={title}
       maxWidth="sm"
       footer={
         <div className="flex flex-row-reverse gap-2">

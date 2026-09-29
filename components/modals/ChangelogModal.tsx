@@ -14,6 +14,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
             isOpen={isOpen}
             onClose={onClose}
             hideHeader
+            ariaLabel="Lịch sử cập nhật"
             maxWidth="2xl"
             footer={
                 <div className="flex justify-end">

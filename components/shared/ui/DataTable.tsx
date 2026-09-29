@@ -100,6 +100,23 @@ const SortIcon: React.FC<{ direction: SortDirection; active: boolean }> = ({ dir
     : <ArrowDown size={12} className="text-sky-500" />;
 };
 
+/** true khi viewport ≥ 1024px (breakpoint `lg` — cùng ngưỡng với lớp `hidden lg:table-cell`). */
+function useIsLgUp(): boolean {
+  const query = '(min-width: 1024px)';
+  const [matches, setMatches] = React.useState(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia(query).matches : true
+  );
+  React.useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const mql = window.matchMedia(query);
+    const onChange = () => setMatches(mql.matches);
+    onChange();
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
+  return matches;
+}
+
 export function DataTable<T>({
   columns,
   data,
@@ -124,24 +141,31 @@ export function DataTable<T>({
   tableClassName,
   rowProps,
 }: DataTableProps<T>) {
+  // Cột `hideMobile` bị ẩn bằng CSS dưới `lg` — nhóm cột phải tính colSpan theo số cột ĐANG HIỆN,
+  // nếu không dải nhóm lệch sang phải so với cột bên dưới trên điện thoại (audit A18, 2026-09-29).
+  const isDesktop = useIsLgUp();
+
   // Build group headers
   const groups = React.useMemo(() => {
-    const result: { label: string; color: string; colSpan: number }[] = [];
+    const result: { label: string; color: string; colSpan: number; mobileSpan: number }[] = [];
     let currentGroup = '';
     let currentSpan = 0;
+    let currentMobileSpan = 0;
     let currentColor = 'slate';
     columns.forEach((col, i) => {
       const group = col.group || '';
       if (group === currentGroup) {
         currentSpan++;
+        if (!col.hideMobile) currentMobileSpan++;
       } else {
-        if (currentSpan > 0) result.push({ label: currentGroup, color: currentColor, colSpan: currentSpan });
+        if (currentSpan > 0) result.push({ label: currentGroup, color: currentColor, colSpan: currentSpan, mobileSpan: currentMobileSpan });
         currentGroup = group;
         currentColor = col.groupColor || 'slate';
         currentSpan = 1;
+        currentMobileSpan = col.hideMobile ? 0 : 1;
       }
       if (i === columns.length - 1) {
-        result.push({ label: currentGroup, color: currentColor, colSpan: currentSpan });
+        result.push({ label: currentGroup, color: currentColor, colSpan: currentSpan, mobileSpan: currentMobileSpan });
       }
     });
     return result;
@@ -181,19 +205,27 @@ export function DataTable<T>({
         overflowVisible ? 'overflow-visible' : 'overflow-hidden',
         className
       )}
-      style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
+      // overflowVisible: không có khung cuộn trong → giữ cách cũ (cuộn dọc ở khung ngoài).
+      style={maxHeight && overflowVisible ? { maxHeight, overflowY: 'auto' } : undefined}
     >
-      <div className={overflowVisible ? 'overflow-visible' : 'overflow-x-auto custom-scrollbar'}>
+      {/* Audit A18: `stickyHeader` trước đây không được dùng tới — và dù có dùng, khung cuộn dọc nằm ở
+          div NGOÀI còn div trong (overflow-x-auto) mới là khung cuộn gần nhất của thead, nên sticky không
+          bám được. Nay chiều cao tối đa đặt ở CHÍNH khung cuộn trong. */}
+      <div
+        className={overflowVisible ? 'overflow-visible' : 'overflow-x-auto custom-scrollbar'}
+        style={maxHeight && !overflowVisible ? { maxHeight, overflowY: 'auto' } : undefined}
+      >
         <table className={cn('w-full border-collapse', fixedLayout && 'table-fixed', tableClassName)} style={fixedMinWidth ? { minWidth: fixedMinWidth } : undefined}>
-          <thead>
+          <thead className={cn(stickyHeader && !overflowVisible && 'sticky top-0 z-10 bg-white dark:bg-slate-900')}>
             {/* Group Headers */}
             {hasGroups && (
               <tr>
                 {groups.map((g, i) => (
                   <th
                     key={`g-${i}`}
-                    colSpan={g.colSpan}
+                    colSpan={isDesktop ? g.colSpan : Math.max(1, g.mobileSpan)}
                     className={cn(
+                      g.mobileSpan === 0 && 'hidden lg:table-cell',
                       'text-[11px] font-bold uppercase tracking-wider text-center border-b border-slate-200 dark:border-slate-700/50 py-1.5 px-2',
                       g.label ? groupColorClasses[g.color] || groupColorClasses.slate : 'bg-transparent'
                     )}
@@ -226,6 +258,12 @@ export function DataTable<T>({
                     minWidth: col.minWidth,
                   }}
                   onClick={() => col.sortable && handleSort(col)}
+                  // Audit A19: sắp xếp được bằng bàn phím + trình đọc màn hình biết chiều đang sắp.
+                  tabIndex={col.sortable && onSort ? 0 : undefined}
+                  onKeyDown={col.sortable && onSort ? (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort(col); }
+                  } : undefined}
+                  aria-sort={col.sortable ? (sortColumn === col.id && sortDirection === 'asc' ? 'ascending' : sortColumn === col.id && sortDirection === 'desc' ? 'descending' : 'none') : undefined}
                 >
                   <span className="inline-flex items-center gap-1">
                     {col.header}

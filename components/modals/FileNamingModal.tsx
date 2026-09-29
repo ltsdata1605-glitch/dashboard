@@ -40,6 +40,7 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
             onClose={() => {}}
             maxWidth="md"
             hideHeader
+            ariaLabel="Đặt tên hiển thị"
             hideCloseButton
         >
             <div className="-m-5 flex flex-col p-6 space-y-5">
