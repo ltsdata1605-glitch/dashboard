@@ -151,6 +151,9 @@
             .app-shell { padding: 0 4px; }
             /* Landing page */
             #landingPage h1 { font-size: 1.5rem !important; }
+            /* Nút phiên bản nổi (fixed) từng đè lên dãy bộ lọc và nút xuất ảnh trên iPhone — ẩn trên mobile;
+               lịch sử phiên bản vẫn mở được từ nút ở màn chào (#versionInfo). */
+            #versionInfoPersistent { display: none !important; }
             #landingPage .hero-content { padding: 12px 12px 0; }
             /* Search section - keep horizontal but compact */
             #searchSection .mod-card { padding: 8px 10px !important; border-radius: 0 !important; }
@@ -318,18 +321,21 @@
             </div>
 
             <!-- Footer / Trust Indicators -->
-            <div class="mt-12 flex items-center justify-center gap-6 text-center">
-                <div class="flex items-center gap-1.5 text-slate-400">
+            <!-- iPhone (2026-09-28, đo trên iframe 390px): hàng không xuống dòng nên mục đầu lệch ra
+                 ngoài mép trái (-3px), mục cuối tràn phải, nhãn phiên bản bị bẻ 3 dòng → cho xuống
+                 dòng và giữ mỗi nhãn liền một khối. -->
+            <div class="mt-12 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 px-4 text-center">
+                <div class="flex items-center gap-1.5 whitespace-nowrap text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
                     <span class="text-[10px] font-semibold text-slate-500">Local Processing</span>
                 </div>
                 <div class="w-1 h-1 rounded-full bg-slate-300"></div>
-                <div class="flex items-center gap-1.5 text-slate-400">
+                <div class="flex items-center gap-1.5 whitespace-nowrap text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
                     <span class="text-[10px] font-semibold text-slate-500">Instant Speed</span>
                 </div>
                 <div class="w-1 h-1 rounded-full bg-slate-300"></div>
-                <div class="flex items-center gap-1.5 text-slate-400">
+                <div class="flex items-center gap-1.5 whitespace-nowrap text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
                     <span class="text-[10px] font-semibold text-slate-500">Smart UI</span>
                 </div>
@@ -339,7 +345,9 @@
                      ~200 dòng nội dung versionHistory không ai mở được. Đặt cùng hàng với 3 badge tin
                      cậy phía trên (nơi duy nhất luôn hiện trước khi tải file, không đụng tới UI phức
                      tạp hơn ở màn hình đã có dữ liệu). -->
-                <button id="versionInfo" type="button" class="version-info-trigger flex items-center gap-1.5 text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer">
+                <!-- min-height 44px: vùng chạm tối thiểu trên iPhone (test mobile-iphone-6-module) — khi hàng này còn
+                     tràn ngoài màn hình thì nút không bị đo; xuống dòng vừa màn hình rồi thì phải đủ 44px. -->
+                <button id="versionInfo" type="button" style="min-height:44px" class="version-info-trigger flex items-center gap-1.5 whitespace-nowrap text-slate-400 hover:text-indigo-500 transition-colors cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
                     <span class="text-[10px] font-semibold">Phiên bản V10.6</span>
                 </button>
@@ -474,7 +482,7 @@
         <div class="bg-white shadow-xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b">
                 <h3 id="versionModalTitle" class="text-xl font-bold text-[#0f172a]">Lịch Sử Phiên Bản</h3>
-                <button id="closeVersionModalButton" class="text-slate-400 hover:text-slate-600 no-print">
+                <button id="closeVersionModalButton" class="text-slate-400 hover:text-slate-600 no-print" style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;margin-right:-10px">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
@@ -489,15 +497,22 @@
                 const DB_NAME = 'keyval-store';
                 const STORE_NAME = 'keyval';
                 
-                const getIDB = () => {
-                    return new Promise((resolve, reject) => {
-                        const request = indexedDB.open(DB_NAME, 1);
-                        request.onupgradeneeded = () => {
-                            request.result.createObjectStore(STORE_NAME);
-                        };
-                        request.onsuccess = () => resolve(request.result);
-                        request.onerror = () => reject(request.error);
-                    });
+                // Mở KHÔNG ép version: trang cha (services/checkThuongIframeService.ts) có thể đã nâng
+                // version khi tự vá database bị tạo rỗng. Thiếu store 'keyval' thì tự vá tương tự.
+                const openIDB = (version) => new Promise((resolve, reject) => {
+                    const request = version ? indexedDB.open(DB_NAME, version) : indexedDB.open(DB_NAME);
+                    request.onupgradeneeded = () => {
+                        if (!request.result.objectStoreNames.contains(STORE_NAME)) request.result.createObjectStore(STORE_NAME);
+                    };
+                    request.onsuccess = () => { const db = request.result; db.onversionchange = () => db.close(); resolve(db); };
+                    request.onerror = () => reject(request.error);
+                });
+                const getIDB = async () => {
+                    const db = await openIDB();
+                    if (db.objectStoreNames.contains(STORE_NAME)) return db;
+                    const next = db.version + 1;
+                    db.close();
+                    return openIDB(next);
                 };
                 
                 window.idbKeyval = {
@@ -2009,7 +2024,7 @@
                                         <col class="col-thuong" style="width: 86px;">
                                     </colgroup>
                                     <thead>
-                                        <tr class="bg-slate-50/90 text-[10.5px] uppercase tracking-wider text-slate-500 font-extrabold border-b border-slate-200 select-none">
+                                        <tr class="bg-slate-50/90 text-[11px] uppercase tracking-wider text-slate-500 font-extrabold border-b border-slate-200 select-none">
                                             <th class="px-2.5 py-1.5 text-center col-nganh-hang">Ngành Hàng</th>
                                             <th class="px-1.5 py-1.5 text-center col-du-kien" style="width: 80px;">% D.Kiến</th>
                                             <th class="px-1.5 py-1.5 text-center col-vuot" style="width: 72px;">D.Kiến Vượt</th>
@@ -2366,11 +2381,15 @@
             // lại bản JS thuần tương đương. Chỉ dùng cho xuất ẢNH ĐƠN LẺ — các nút "xuất tất cả"
             // vẫn tải file bình thường vì share sheet cần bấm xác nhận từng ảnh, không hợp vòng lặp.
             async function shareOrDownloadDataUrl(dataUrl, filename) {
-                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+                // iPadOS 13+ báo UA "Macintosh" — nhận qua màn cảm ứng.
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                    || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+                    || window.innerWidth < 768;
                 if (isMobile && navigator.share && navigator.canShare) {
+                    let blob = null;
                     try {
                         const res = await fetch(dataUrl);
-                        const blob = await res.blob();
+                        blob = await res.blob();
                         const file = new File([blob], filename, { type: 'image/png' });
                         const displayName = filename.replace(/\.png$/i, '').replace(/_/g, ' ');
                         const shareData = { files: [file], title: displayName, text: displayName };
@@ -2380,6 +2399,12 @@
                         }
                     } catch (err) {
                         if (err && err.name === 'AbortError') return; // Người dùng bấm huỷ share — không phải lỗi
+                        // Safari iOS chỉ cho share ~1s sau lượt chạm; dựng ảnh lâu hơn → NotAllowedError.
+                        // Nhờ trang cha hiện nút "Chia sẻ / Lưu ảnh" (chạm lại = thao tác mới hợp lệ).
+                        if (err && err.name === 'NotAllowedError' && blob && window.parent !== window) {
+                            window.parent.postMessage({ type: 'CHECK_THUONG_SHARE_RETRY', blob, filename }, location.origin);
+                            return;
+                        }
                         console.error('Lỗi khi chia sẻ:', err);
                         // rơi xuống tải file bình thường bên dưới
                     }
@@ -2764,7 +2789,7 @@
                     const captureArea = document.getElementById('summaryReportArea');
                     const titleElement = captureArea.querySelector('#summaryCard h2');
                     
-                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                     
                     captureElementAsImage(captureArea, `${storeName}_tong_hop.png`, {
                         onBeforeCapture: () => {
@@ -2838,7 +2863,7 @@
 
                 const exportAnalysisBtn = event.target.closest('#exportAnalysisImageButton');
                 if (exportAnalysisBtn) {
-                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                      captureWithStoreBanner(analysisSection, `${storeName}_phan_tich.png`);
                      return;
                 }
@@ -2937,7 +2962,7 @@
                                 noSale: 'nhom_no_sale'
                             };
                             const friendlyKey = keyNames[groupKey] || groupKey;
-                            const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                            const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                             const filename = `${storeName}_${friendlyKey}.png`;
                             if (groupKey === 'achieved100' || groupKey === 'notAchieved100') {
                                 captureElementAsImage(captureTarget, filename);
@@ -3132,7 +3157,7 @@
                         all: 'tat_ca_nhom'
                     };
                     const friendlyKey = keyNames[activeFilter] || activeFilter;
-                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                     const filename = `${storeName}_${friendlyKey}.png`;
                     const captureTarget = activeFilter === 'all' 
                         ? document.getElementById('detailsGrid') 
@@ -3154,7 +3179,7 @@
                     const exportAllFilteredImages = async () => {
                         const filterContainer = document.getElementById('filterContainer');
                         if (!filterContainer) return;
-                        const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                        const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                         const filtersToExport = [...filterContainer.querySelectorAll('.filter-btn')].map(btn => btn.dataset.filter).filter(f => f && f !== 'all');
                         
                         loadingOverlay.classList.remove('hidden');

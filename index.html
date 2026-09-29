@@ -44,6 +44,9 @@
       lỗ hổng bảo mật (blob: worker vẫn chạy code cùng-origin do JS của trang tự tạo, không phải
       nguồn ngoài).
     -->
+    <!-- connect-src thêm https://www.google.com (2026-09-28): GA4 bật Google Signals gửi thêm lượt
+      đo tới www.google.com/g/collect — thiếu host này Console báo "Refused to connect" ở MỌI lần mở
+      app (đo trên dữ liệu thật). Chỉ cho gửi request (connect-src), không cho chạy script. -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' https://www.googletagmanager.com https://apis.google.com;
@@ -51,7 +54,7 @@
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https:;
-      connect-src 'self' https://qr.sepay.vn https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
+      connect-src 'self' https://qr.sepay.vn https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
       frame-src 'self' https://*.run.app https://auth.dashboard.pro.vn https://dashboa-7e20b.firebaseapp.com https://accounts.google.com;
       object-src 'none';
       base-uri 'self';
@@ -63,13 +66,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-CPbdrapl.js"></script>
+  <script type="module" crossorigin src="/assets/index-QU73IclO.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-react-CuI6ZZ0-.js">
   <link rel="modulepreload" crossorigin href="/assets/shared-utils-CoyMcgY7.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-firebase-Dw0xug9_.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-motion-Dr_v89-1.js">
   <link rel="modulepreload" crossorigin href="/assets/vendor-icons-84gaZs07.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-Dpvnk3TZ.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-Cb1NfL8t.css">
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-screen antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">
