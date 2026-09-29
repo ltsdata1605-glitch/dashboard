@@ -6212,6 +6212,26 @@ nhất + quy mô dữ liệu.
 
 Hồi quy: `khai-thac.spec.ts` 4/4 xanh (ConfirmDialog qua Modal mới).
 
+### E2E TOÀN BỘ trên cây đã merge (152 test, Chromium, lượt sạch 26 phút)
+84 xanh · 31 đỏ · 37 bỏ qua (spec dữ liệu thật / cần đăng nhập). **19/19 test mới của Đợt 1 xanh.**
+Cả 31 test đỏ đã được đối chiếu, **không test nào đỏ do Đợt 1**:
+- **25 đỏ Y HỆT trên `origin/main`** (chạy trên worktree main, dev server riêng):
+  `bi-bonus-compare` (3), `bi-competition` (4), `bi-competition-bonus-col`, `bi-competition-export-fit`
+  (helper seed chờ `textarea` không còn); `phan-tich-performance-modal` (5), `pivot-table` (5),
+  `system-traffic-stats` (cấu hình Google Sheets bị proxy chặn + selector "Tệp Realtime" khớp 2 phần tử);
+  `tax-qr-and-export` › xuất ảnh (thiếu khối QR trong vùng chụp); `tnb-pmh-userscript` (2 — test chưa
+  theo bộ lọc "hôm nay" mới của 5c05cac); `iframe-tabs-csp` › xlsx CDN; `auth-fresh-login-no-flash` (1).
+- **6 đỏ do môi trường**, chạy lại bằng CONFIG GỐC của dự án thì xanh/skip: `bi-import-employees-button`,
+  `xss-header-sanitization`, `sticker-nut-va-quet-ma` (2), `sticker-toc-do-quet-ma` (1 xanh, 1 skip) —
+  spec quét mã tự khai `launchOptions` nên đè mất đường dẫn Chromium của config tạm.
+
+Cách chạy e2e trong container này (Playwright 1.63 đòi chromium-1243, máy có 1194): đặt
+`PLAYWRIGHT_BROWSERS_PATH` tới 1 thư mục symlink `chromium_headless_shell-1243/chrome-headless-shell-linux64/chrome-headless-shell`
+→ `/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell` — dùng được nguyên
+`playwright.config.ts`. ⚠️ KHÔNG chạy 2 dev server Vite dùng chung `node_modules/.vite` (worktree symlink
+node_modules): server sau tối ưu lại dependency đè cache server trước → trang nạp 2 bản React
+("Cannot read properties of null (reading 'useContext')"). Đã gặp thật ở lượt đầu, phải chạy lại.
+
 ### Chưa kiểm được (nói rõ)
 - **WebKit / Safari thật: CHƯA** — container chỉ có Chromium. Kiểm tra cảm ứng (A23) và iPhone là
   Chromium giả lập, không phải bằng chứng Safari.
