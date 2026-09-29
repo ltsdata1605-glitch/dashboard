@@ -6128,7 +6128,15 @@ Kết thúc Đợt 5: toàn bộ e2e 99 xanh / 0 đỏ / 38 bỏ qua (có ghi l�
 Bàn giao: `AUDIT_YCX.md` (40 phát hiện, audit TĨNH, chưa chạy gì), `UI_CATALOG.md`, `INVENTORY.md`.
 Mọi phát hiện dưới đây đã được **kiểm chứng lại trên source của nhánh này** trước khi sửa.
 
-## Baseline đo trước khi sửa (commit 6b8f2b6)
+## ⚠️ Đính chính baseline (cùng ngày, sau khi fetch)
+Nhánh làm việc lúc bắt đầu đứng ở `6b8f2b6`, **chậm 17 commit so với `origin/main`** (`02af127`) — source
+trong ZIP audit ứng với main. Bảng baseline ngay dưới là của `6b8f2b6`; trên main thì: CI cài
+`functions/` (6ef5c2e), unit test Bot LINE + ratchet đã xanh (d2e2853), và **N01 đã được sửa** ở
+`9416bce` (dọn khi đổi tài khoản không còn xoá database riêng của người khác / khoá localStorage ngoài
+app). Đã merge `origin/main` vào nhánh (merge, không rebase) — xung đột duy nhất: bố cục header
+`Modal.tsx` (giữ bố cục của main + thêm `aria-label`). A01 **vẫn còn** trên main.
+
+## Baseline đo trước khi sửa (commit 6b8f2b6 — cũ, xem đính chính trên)
 | Bước | Kết quả | Ghi chú |
 |---|---|---|
 | typecheck | ✅ khi đã `npm ci` trong `functions/` | Thiếu `functions/node_modules` → 3 lỗi TS2307 (`firebase-admin/*`): test đơn vị import `functions/src/*`. CI `check.yml` KHÔNG cài `functions/` → nhiều khả năng CI đỏ sẵn. |
@@ -6178,3 +6186,49 @@ trỏ `executablePath`, KHÔNG sửa `playwright.config.ts`). **Không có WebKi
 ## Chờ chủ dự án trả lời
 A01 + N01 (chính sách dữ liệu cục bộ), phạm vi migrate, nhận diện, định dạng batch export, iOS thấp
 nhất + quy mô dữ liệu.
+
+## Kết quả Đợt 1 (2026-09-29)
+
+### Kiểm tra tổng (cây đã merge main, trước khi push)
+| Bước | main `02af127` | Sau Đợt 1 |
+|---|---|---|
+| typecheck | ✅ | ✅ |
+| eslint | 0 lỗi / 143 cảnh báo | 0 lỗi / 143 cảnh báo (không thêm) |
+| test:unit | 890 ✅ | 903 ✅ (+13 test mới) |
+| build | ✅ | ✅ |
+| lint:ratchet | ✅ | ✅ |
+
+### Mỗi sửa đổi có test ĐỎ trên mã cũ, XANH trên mã mới (Chromium, chạy trong container)
+| Phát hiện | Test | Mã cũ (đo thật) | Mã mới |
+|---|---|---|---|
+| A02 | `xuat-anh-hang-loat-ket-qua.spec.ts` + unit | `canvas.toBlob` lỗi ở ảnh 2/3 → `{success:true, exportedCount:125, batchCount:3}` | `success:false`, 2/3 ảnh, 75 SP, chỉ đúng phần 2 lỗi; không còn DOM tạm |
+| A03 | `phan-tich-xuat-hang-loat-theo-kho.spec.ts` | Worker chậm 9s → ảnh "Kho 90001" mang số liệu TẤT CẢ Kho (66 Tr thay vì 11 Tr) | Mỗi ảnh đúng số liệu Kho của nó (11/22/33 Tr), báo "Đã xuất đủ 4/4 ảnh" |
+| A04 | cùng file (2 test) | Tải chunk PerformanceModal lỗi → lớp phủ "0/3" kẹt vĩnh viễn, không báo gì; ảnh lỗi không được báo | Lớp phủ tắt + báo lỗi; ảnh lỗi → "Đã xuất 2/3 ảnh. Chưa xuất được: …" |
+| A09 | `check-thuong-xuat-anh-ten-dac-biet.spec.ts` | Tên file chứa `<script>` NUỐT CẢ BẢNG xếp hạng khỏi ảnh; `<u>` thành thẻ thật | Hiện đúng nguyên văn |
+| A11 | `modal-ngan-xep.spec.ts` | Mount modal đóng / đóng ConfirmDialog lồng → `body.overflow='unset'` khi A còn mở; 1 Escape đóng cả A | `hidden` giữ nguyên; Escape chỉ đóng modal trên cùng; đóng hết thì trả đúng giá trị cũ |
+| A12 | cùng file | Không `role=dialog`, không tên, focus ở lại trang sau | `role=dialog`, `aria-modal`, tên = tiêu đề; Tab vòng trong modal; đóng trả focus về nút đã mở |
+| A23 | `keo-tai-lai-trang.spec.ts` (5) | Kéo xuống trong vùng cuộn đang cuộn dở bị chặn; 2 ngón bị chặn | Không chặn 2 ca đó; vẫn chặn kéo-tải-lại ở vùng không cuộn |
+| A30 | `khai-thac-luu-cam-ket.spec.ts` (lặp 6 lần) | Transaction bị huỷ sau khi `put` thành công → hàm lưu báo xong, dữ liệu KHÔNG có trên máy | Báo lỗi |
+
+Hồi quy: `khai-thac.spec.ts` 4/4 xanh (ConfirmDialog qua Modal mới).
+
+### Chưa kiểm được (nói rõ)
+- **WebKit / Safari thật: CHƯA** — container chỉ có Chromium. Kiểm tra cảm ứng (A23) và iPhone là
+  Chromium giả lập, không phải bằng chứng Safari.
+- Luồng Phân tích chạy với **cấu hình ngành hàng giả** (Google Sheets bị proxy chặn) và dữ liệu mẫu
+  3 Kho — không phải dữ liệu thật.
+- Giao ảnh trên mobile (share sheet) của batch KHÔNG đổi — chờ quyết định định dạng batch (PNG riêng /
+  chia sẻ nhiều ảnh / ZIP).
+
+### Việc còn lại / phát hiện phụ trong lúc làm
+- `tests/e2e/phan-tich-performance-modal.spec.ts` hỏng SẴN trên mã cũ: `getByText('Tệp Realtime (Xem
+  nhanh)')` khớp 2 phần tử (nút tab ở landing + lựa chọn trong modal) → strict mode violation.
+- `services/uiService.ts` `hideExportOverlay` gỡ lớp phủ sau 200ms bằng biến chung: gọi `show` lại
+  trong 200ms đó thì lớp phủ mới bị gỡ theo (chưa gặp thật, chưa sửa).
+- Batch NV trên điện thoại: mỗi ảnh gọi `shareBlob` không chờ → nhiều bảng chia sẻ chồng nhau — thuộc
+  câu hỏi định dạng batch.
+- Đợt 2 đề xuất (component dùng chung, không đổi nhận diện): Button focus-visible (A16), Tooltip
+  portal/collision/touch (A14), Dropdown bàn phím + aria (A15), DataTable stickyHeader + colSpan theo
+  cột hiển thị (A18), kích thước Modal đơn điệu (A13, cần rà 67 nơi gọi), worker BI reset (A27),
+  huỷ requestIdleCallback (A28).
+
