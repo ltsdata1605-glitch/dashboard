@@ -29,7 +29,9 @@ export function downloadBlob(blob: Blob, filename: string, forceDownload = false
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Thu hồi TRỄ (như services/uiService.ts gốc): Safari iOS đọc blob URL không đồng bộ sau
+    // click() — thu hồi ngay là tải hỏng/tải file rỗng.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 /** Check if Web Share API with file sharing is available */

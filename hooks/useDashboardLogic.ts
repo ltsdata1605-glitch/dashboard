@@ -56,6 +56,7 @@ export const useDashboardLogic = () => {
         kpiTargets, updateKpiTargets: updateKpiTargetsRaw,
         isInternalProcessing,
         isFilterProcessing,
+        processedFilterState,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync: handleAcceptCloudSyncRaw,
@@ -115,7 +116,8 @@ export const useDashboardLogic = () => {
         filterState,
         handleFilterChange,
         setStatus,
-        isFilterProcessing
+        isFilterProcessing,
+        processedFilterState
     });
 
     // Removed repopulating filter state effects here because they caused 

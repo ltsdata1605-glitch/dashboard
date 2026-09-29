@@ -64,6 +64,7 @@ export function ConfirmDialog({
       onClose={onClose}
       maxWidth="sm"
       zIndex={zIndex}
+      ariaLabel={title}
     >
       <div className="flex flex-col items-center text-center p-6 pb-2">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${selected.bg}`}>

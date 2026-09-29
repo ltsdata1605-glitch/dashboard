@@ -5924,3 +5924,62 @@ Chưa làm được / cần chủ dự án:
 - `features/sticker-event/services/uiService.ts` có cùng lỗi share iOS — ngoài phạm vi 3 module.
 - `hrmSlipTextParser.ts`/`taxHistoryGrouping.ts` (Tính thuế) dùng regex lookbehind `(?<!` — iOS < 16.4
   không hỗ trợ, cả chunk Tính thuế sẽ lỗi cú pháp trên iPhone cũ.
+
+---
+
+# Nâng cấp theo audit tĩnh AUDIT_YCX.md — Đợt 1: sửa nền tảng (2026-09-29)
+
+## Nguồn & độ tin cậy
+Bàn giao: `AUDIT_YCX.md` (40 phát hiện, audit TĨNH, chưa chạy gì), `UI_CATALOG.md`, `INVENTORY.md`.
+Mọi phát hiện dưới đây đã được **kiểm chứng lại trên source của nhánh này** trước khi sửa.
+
+## Baseline đo trước khi sửa (commit 6b8f2b6)
+| Bước | Kết quả | Ghi chú |
+|---|---|---|
+| typecheck | ✅ khi đã `npm ci` trong `functions/` | Thiếu `functions/node_modules` → 3 lỗi TS2307 (`firebase-admin/*`): test đơn vị import `functions/src/*`. CI `check.yml` KHÔNG cài `functions/` → nhiều khả năng CI đỏ sẵn. |
+| eslint | ✅ | |
+| test:unit | ❌ 1/853 đỏ SẴN | `line-bot-group-features` "nhóm chưa cấu hình -> BẬT hết": hàm trả thêm `pmhRelay:false`. Không thuộc đợt này. |
+| build | ✅ | |
+| lint:ratchet | ❌ đỏ SẴN | 21 dòng vượt baseline (line-bot, tax-calculator, BI IndustryKpiCard/AutoClickGuideModal, sticker ControlPanel). Không thuộc đợt này. |
+| e2e (Chromium 1194 qua config tạm) | ❌ 2 test đỏ SẴN | `indexeddb-rieng-theo-tai-khoan` + `doi-tai-khoan-don-du-lieu` — xem N01. |
+
+Môi trường: chỉ có Chromium (Playwright 1.63 đòi chromium-1243, máy có 1194 → chạy bằng config tạm
+trỏ `executablePath`, KHÔNG sửa `playwright.config.ts`). **Không có WebKit, không có Safari thật.**
+
+## Kiểm chứng phát hiện ưu tiên
+- **A01 — ĐÚNG.** `AuthContext.logout()` → `clearAllLocalAppData()` → dọn `YCX_KHAI_THAC_DB` (Báo cáo
+  khai thác chỉ lưu cục bộ, không có bản trên cloud).
+- **N01 — MỚI, ngoài audit.** Từ `152830f` (25/09) `clearAllLocalAppData()` quét `indexedDB.databases()`
+  và dọn MỌI database (kể cả `BI_HUB_DATABASE_V2__<uid>` của tài khoản khác) + gần như MỌI khoá
+  localStorage. Hàm này chạy ở cả đăng xuất lẫn đổi tài khoản → trái quyết định 23/09 (CLAUDE.md §1.2
+  "người cũ quay lại vẫn còn nguyên"). Commit ghi "2 test e2e đỏ do đổi hành vi có chủ đích" → là
+  QUYẾT ĐỊNH CHÍNH SÁCH, gộp vào câu hỏi A01, **chưa sửa**.
+- **A02 — ĐÚNG.** `exportElementAsImage` (Sticker) nuốt lỗi trả `null`; vòng batch bỏ qua `null`, vẫn
+  trả `success:true, exportedCount:totalCount`; caller báo "Đã xuất thành công N file ảnh".
+- **A03 — ĐÚNG.** `waitForFilterSettled` hết 8s vẫn chụp; 150ms đầu giả định cờ đã bật; không có gì
+  xác nhận `processedData` thuộc Kho vừa chọn.
+- **A04 — ĐÚNG.** `await import(PerformanceModal)` + `createRoot` nằm trước `try/finally`; kết quả chụp
+  từng NV bị bỏ qua.
+- **A06 — ĐÚNG** (Sticker + Phân ca `downloadBlob` thu hồi URL ngay sau `click()`).
+- **A09 — ĐÚNG.** `checkThuongImageExport` chèn `storeName/storeCode/title/fileName` vào `innerHTML`.
+- **A11/A12 — ĐÚNG.** Modal đóng cũng ghi `body.style.overflow='unset'`; Escape đóng MỌI modal đang
+  mở; không có `role=dialog`/`aria-modal`/nhãn/giữ focus.
+- **A18 — ĐÚNG** (`stickyHeader` không được dùng; chỉ 2 caller BI) — để đợt component.
+- **A23 — ĐÚNG.** `touchmove` chặn mọi kéo xuống khi `scrollY===0`, kể cả trong modal/bảng đang cuộn.
+- **A30 — ĐÚNG.** `khaiThacDb.request()` resolve ở `IDBRequest.onsuccess`, chưa chờ transaction commit.
+
+## Phạm vi Đợt 1 (không đổi giao diện, không đổi chính sách dữ liệu)
+| # | File | Thay đổi hành vi | Rủi ro | Kiểm tra |
+|---|---|---|---|---|
+| 1 | `features/sticker-event/services/batchImageExportService.ts`, `StickerEventApp.tsx` | Kết quả từng ảnh; báo đúng số ảnh xuất được + tên ảnh lỗi; gỡ DOM tạm trong `finally` | Thông báo đổi chữ khi có lỗi | Unit: 1 ảnh lỗi giữa batch |
+| 2 | `features/sticker-event/services/uiService.ts`, `features/phan-ca/services/uiService.ts` | Thu hồi blob URL trễ 60s (như gốc/BI) | Không | Unit |
+| 3 | `hooks/useExportLogic.ts` | Batch NV: toàn bộ vòng đời trong `try/finally`, báo số ảnh lỗi | Luồng xuất Phân tích | Unit/e2e |
+| 4 | `hooks/useDataManagement.ts`, `hooks/useDashboardLogic.ts`, `hooks/useExportLogic.ts` | Batch Kho: chỉ chụp khi `processedData` được tính cho đúng Kho; quá giờ → Kho đó báo lỗi, không chụp dữ liệu cũ | Luồng xuất Phân tích | Unit logic chờ + e2e |
+| 5 | `components/shared/ui/Modal.tsx`, `ConfirmDialog.tsx` | Khoá cuộn theo ngăn xếp; Escape chỉ modal trên cùng; ARIA; focus | 63 file dùng Modal | Playwright: modal lồng, Escape, Tab, trả focus |
+| 6 | `public/prevent-pull-to-refresh.js` | Không chặn khi vùng cuộn bên trong còn cuộn lên được / nhiều ngón | Kéo-tải-lại trên Android | Playwright touch |
+| 7 | `features/check-thuong/services/checkThuongImageExport.ts` | Escape HTML — ảnh giữ nguyên | Không | Unit/e2e tên có `<`, `&` |
+| 8 | `features/khai-thac/services/khaiThacDb.ts` | Promise ghi chỉ resolve khi transaction commit | Không | e2e khai-thac |
+
+## Chờ chủ dự án trả lời
+A01 + N01 (chính sách dữ liệu cục bộ), phạm vi migrate, nhận diện, định dạng batch export, iOS thấp
+nhất + quy mô dữ liệu.

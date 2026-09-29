@@ -6,6 +6,9 @@ import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExpor
 import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
+import toast from 'react-hot-toast';
+import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
+import type { BatchItemOutcome } from '../services/batchExportResult';
 
 // Khớp phần destructure của exportElementAsImage (services/uiService.ts) — hàm đó vẫn nhận any,
 // chỉ gõ kiểu phần gọi ở hook này. Export để DashboardContext.tsx dùng lại.
@@ -32,7 +35,19 @@ interface ExportLogicProps {
     /** Cờ Worker đang tính lại processedData sau khi đổi filter — dùng để handleBatchKhoExport
      *  đợi ĐÚNG lúc dữ liệu Kho mới đã sẵn sàng thay vì chỉ dựa vào timeout cố định. */
     isFilterProcessing?: boolean;
+    /** Bộ lọc mà processedData đang hiển thị được tính cho (useDataManagement) — batch theo Kho chỉ
+     *  chụp khi nó ĐÚNG là filterState hiện tại (cùng object) và đúng Kho yêu cầu. */
+    processedFilterState?: FilterState | null;
 }
+
+/** Báo kết quả batch theo số ảnh xuất được THẬT (audit A03/A04). */
+const reportBatchOutcome = (items: BatchItemOutcome[], fatalError?: unknown) => {
+    const { type, message } = describeBatchOutcome(items, fatalError);
+    if (type === 'success') toast.success(message, { id: 'batch-export-result', duration: 4000 });
+    else toast.error(message, { id: 'batch-export-result', duration: 12000 });
+};
+
+const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 
 export const useExportLogic = ({
     productConfig,
@@ -41,7 +56,8 @@ export const useExportLogic = ({
     filterState,
     handleFilterChange,
     setStatus,
-    isFilterProcessing
+    isFilterProcessing,
+    processedFilterState
 }: ExportLogicProps) => {
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
@@ -53,6 +69,15 @@ export const useExportLogic = ({
     useEffect(() => {
         isFilterProcessingRef.current = isFilterProcessing;
     }, [isFilterProcessing]);
+
+    // Cùng lý do như trên: vòng lặp batch Kho phải đọc giá trị ĐÃ COMMIT mới nhất. Cập nhật trong
+    // useEffect (chạy sau commit) nên khi 2 ref khớp nhau thì DOM đã mang dữ liệu mới.
+    const filterStateRef = useRef(filterState);
+    const processedFilterStateRef = useRef(processedFilterState);
+    useEffect(() => {
+        filterStateRef.current = filterState;
+        processedFilterStateRef.current = processedFilterState;
+    }, [filterState, processedFilterState]);
 
     const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: ExportImageOptions = {}) => {
         if (element) {
@@ -101,52 +126,75 @@ export const useExportLogic = ({
         setIsExporting(true);
         const total = employeesToExport.length;
         showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
-        
-        // Dynamically import PerformanceModal to break circular dependency
-        const { default: PerformanceModal } = await import('../components/modals/PerformanceModal');
 
-        const offscreenContainer = document.createElement('div');
-        offscreenContainer.style.cssText = 'position: absolute; left: -9999px; top: 0;';
-        document.body.appendChild(offscreenContainer);
-        const root = ReactDOM.createRoot(offscreenContainer);
+        const outcomes: BatchItemOutcome[] = [];
+        let fatalError: unknown;
+        let offscreenContainer: HTMLDivElement | null = null;
+        let root: ReactDOM.Root | null = null;
+        // Audit A04: import chunk + tạo root trước đây nằm NGOÀI try/finally — lỗi tải chunk (mạng
+        // chập chờn, bản deploy mới) để overlay và isExporting kẹt vĩnh viễn. Nay mọi bước nằm trong.
         try {
+            // Dynamically import PerformanceModal to break circular dependency
+            const { default: PerformanceModal } = await import('../components/modals/PerformanceModal');
+
+            offscreenContainer = document.createElement('div');
+            offscreenContainer.style.cssText = 'position: absolute; left: -9999px; top: 0;';
+            document.body.appendChild(offscreenContainer);
+            root = ReactDOM.createRoot(offscreenContainer);
+            const container = offscreenContainer;
+            const activeRoot = root;
+
             for (let i = 0; i < employeesToExport.length; i++) {
                 const employee = employeesToExport[i];
                 updateExportOverlay(`Đang xuất: ${employee.name}`, `${i + 1}/${total}`);
-                await new Promise<void>(resolve => {
-                    root.render(
-                        React.createElement(PerformanceModal, {
-                            isOpen: true,
-                            onClose: () => {},
-                            employeeName: employee.name,
-                            fullSellerArray: processedData.employeeData.fullSellerArray,
-                            validSalesData: processedData.filteredValidSalesData,
-                            productConfig: productConfig,
-                            onExport: async (el: HTMLElement, fn: string, opts?: ExportImageOptions) => { await exportElementAsImage(el, fn, opts); },
-                            isBatchExporting: true
-                        })
-                    );
-                    setTimeout(resolve, 800);
-                });
-                const modalContent = offscreenContainer.querySelector('.modal-content');
-                if (modalContent) {
-                    const filename = `Phân Tích Hiệu Quả - ${sanitizeFilename(employee.name)}.png`;
-                    // Bề rộng ảnh khớp với xuất lẻ ở PerformanceModal.handleExport: 800px, nới thêm
-                    // nếu bảng Phụ kiện/ĐGD đang bật nhiều cột. Đếm cột ngay trên DOM vừa render vì
-                    // luồng này chụp thẳng .modal-content, không đi qua handleExport của modal.
-                    const categoryHeaderCells = modalContent.querySelectorAll(`.${CATEGORY_TABLE_CLASS} thead tr:last-child th`);
-                    await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length) });
+                try {
+                    await new Promise<void>(resolve => {
+                        activeRoot.render(
+                            React.createElement(PerformanceModal, {
+                                isOpen: true,
+                                onClose: () => {},
+                                employeeName: employee.name,
+                                fullSellerArray: processedData.employeeData.fullSellerArray,
+                                validSalesData: processedData.filteredValidSalesData,
+                                productConfig: productConfig,
+                                onExport: async (el: HTMLElement, fn: string, opts?: ExportImageOptions) => { await exportElementAsImage(el, fn, opts); },
+                                isBatchExporting: true
+                            })
+                        );
+                        setTimeout(resolve, 800);
+                    });
+                    const modalContent = container.querySelector('.modal-content');
+                    if (!modalContent) {
+                        outcomes.push({ label: employee.name, ok: false, error: 'Không dựng được nội dung' });
+                    } else {
+                        const filename = `Phân Tích Hiệu Quả - ${sanitizeFilename(employee.name)}.png`;
+                        // Bề rộng ảnh khớp với xuất lẻ ở PerformanceModal.handleExport: 800px, nới thêm
+                        // nếu bảng Phụ kiện/ĐGD đang bật nhiều cột. Đếm cột ngay trên DOM vừa render vì
+                        // luồng này chụp thẳng .modal-content, không đi qua handleExport của modal.
+                        const categoryHeaderCells = modalContent.querySelectorAll(`.${CATEGORY_TABLE_CLASS} thead tr:last-child th`);
+                        const blob = await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length) });
+                        outcomes.push(blob
+                            ? { label: employee.name, ok: true }
+                            : { label: employee.name, ok: false, error: 'Không tạo được ảnh' });
+                    }
+                } catch (itemError) {
+                    console.error(`[Batch NV] Lỗi khi xuất ${employee.name}:`, itemError);
+                    outcomes.push({ label: employee.name, ok: false, error: getErrorMessage(itemError) });
                 }
                 // Memory pressure relief: clear render + yield to GC between exports
-                root.render(null);
+                activeRoot.render(null);
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
+        } catch (error) {
+            console.error('Lỗi khi xuất ảnh hàng loạt theo nhân viên:', error);
+            fatalError = error;
         } finally {
             setIsExporting(false);
             hideExportOverlay();
-            root.unmount();
-            document.body.removeChild(offscreenContainer);
+            try { root?.unmount(); } catch { /* đã unmount */ }
+            offscreenContainer?.remove();
         }
+        reportBatchOutcome(outcomes, fatalError);
     }, [productConfig, processedData]);
 
     const handleBatchKhoExport = useCallback(async () => {
@@ -158,38 +206,49 @@ export const useExportLogic = ({
         setIsExporting(true);
         const originalKho = filterState.kho;
 
-        // BUG FIX: trước đây chỉ đợi timeout cố định (1.5s) sau mỗi lần đổi filter Kho rồi chụp
-        // ảnh ngay — dataset lớn có thể mất hơn 1.5s để Worker tính lại processedData, khiến ảnh
-        // xuất chụp nhầm dữ liệu Kho TRƯỚC ĐÓ mà không có dấu hiệu lỗi nào. Đợi ĐÚNG tín hiệu
-        // isFilterProcessing chuyển về false (qua ref, đọc giá trị tươi trong vòng lặp async dài),
-        // rồi mới đợi thêm 1 khoảng ngắn để DOM kịp vẽ lại trước khi chụp.
-        const waitForFilterSettled = async (maxWaitMs = 8000) => {
-            const start = Date.now();
-            await new Promise(resolve => setTimeout(resolve, 150)); // đợi cờ kịp bật lên true
-            while (isFilterProcessingRef.current && Date.now() - start < maxWaitMs) {
-                await new Promise(resolve => setTimeout(resolve, 200));
-            }
-            await new Promise(resolve => setTimeout(resolve, 300)); // đệm cho DOM vẽ lại
+        // Audit A03 (2026-09-29): trước đây chờ cờ isFilterProcessing về false, HẾT 8s VẪN CHỤP, và
+        // 150ms đầu chỉ là đoán cờ đã kịp bật. Nay chờ tới khi processedData được tính cho ĐÚNG
+        // filterState hiện tại (cùng object — useDataManagement gửi kèm object này theo từng lượt
+        // PROCESS) và đúng Kho yêu cầu. Hết giờ → Kho đó báo lỗi, KHÔNG chụp dữ liệu cũ.
+        const waitForKhoData = async (kho: string[], maxWaitMs = 20000): Promise<boolean> => {
+            const ready = await waitUntil(() => {
+                const current = filterStateRef.current;
+                return !isFilterProcessingRef.current
+                    && processedFilterStateRef.current === current
+                    && sameKhoSelection(current.kho, kho);
+            }, { timeoutMs: maxWaitMs, intervalMs: 100 });
+            if (!ready) return false;
+            // Đệm cho DOM vẽ lại (biểu đồ, phần tính trì hoãn) trước khi chụp — giữ như trước.
+            await nextFrame();
+            await nextFrame();
+            await new Promise(resolve => setTimeout(resolve, 300));
+            return true;
         };
 
+        const outcomes: BatchItemOutcome[] = [];
+        let fatalError: unknown;
         try {
             const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
             const total = khosToExport.length + 1; // +1 for warehouse summary
             showExportOverlay('Đang xuất báo cáo kho...', `1/${total}`);
-            const overviewElement = document.getElementById('business-overview');
-            const warehouseElement = document.getElementById('warehouse-summary-view');
 
-            if (!overviewElement || !warehouseElement) {
+            if (!document.getElementById('business-overview') || !document.getElementById('warehouse-summary-view')) {
                 throw new Error('Không tìm thấy thành phần cần xuất (#business-overview or #warehouse-summary-view).');
             }
 
             // Export warehouse summary once (all khos, no highlight)
             updateExportOverlay('Đang xuất: Tổng hợp kho', `1/${total}`);
             handleFilterChange({ kho: [] }); // Reset to show all
-            await waitForFilterSettled();
-            await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
-                elementsToHide: ['.hide-on-export'],
-            });
+            if (!(await waitForKhoData([]))) {
+                outcomes.push({ label: 'Tổng hợp kho', ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
+            } else {
+                // Tìm lại phần tử mỗi lượt — React có thể đã dựng lại nút DOM sau khi đổi bộ lọc.
+                const warehouseElement = document.getElementById('warehouse-summary-view');
+                const blob = warehouseElement ? await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
+                    elementsToHide: ['.hide-on-export'],
+                }) : null;
+                outcomes.push({ label: 'Tổng hợp kho', ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
+            }
             await new Promise(resolve => setTimeout(resolve, 800));
 
             // Then export business overview per kho
@@ -197,17 +256,23 @@ export const useExportLogic = ({
                 const kho = khosToExport[i];
                 updateExportOverlay(`Đang xuất: ${kho}`, `${i + 2}/${total}`);
                 handleFilterChange({ kho: [kho] });
-                await waitForFilterSettled();
+                if (!(await waitForKhoData([kho]))) {
+                    outcomes.push({ label: kho, ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
+                    continue;
+                }
 
-                await exportElementAsImage(overviewElement, `Tổng Quan Kinh Doanh - ${kho}.png`, {
+                const overviewElement = document.getElementById('business-overview');
+                const blob = overviewElement ? await exportElementAsImage(overviewElement, `Tổng Quan Kinh Doanh - ${kho}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     captureAsDisplayed: true,
-                });
+                }) : null;
+                outcomes.push({ label: kho, ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
 
                 await new Promise(resolve => setTimeout(resolve, 800));
             }
         } catch (error) {
             console.error("Lỗi khi xuất hàng loạt theo kho:", error);
+            fatalError = error;
             setStatus({ message: 'Đã xảy ra lỗi trong quá trình xuất hàng loạt.', type: 'error', progress: 0 });
         } finally {
             handleFilterChange({ kho: originalKho });
@@ -215,6 +280,7 @@ export const useExportLogic = ({
             setIsExporting(false);
             hideExportOverlay();
         }
+        reportBatchOutcome(outcomes, fatalError);
     }, [uniqueFilterOptions, filterState, handleFilterChange, setStatus]);
 
     const handleExportUncollectedSheet = useCallback(async () => {

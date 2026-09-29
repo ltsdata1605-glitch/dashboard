@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getBatchChunks } from './batchImageExportService';
+import { getBatchChunks, runBatchExportLoop, describeBatchExportResult, escapeHtml } from './batchImageExportService';
 import { Product } from '../types';
 
 describe('batchImageExportService - getBatchChunks', () => {
@@ -76,3 +76,69 @@ describe('batchImageExportService - getBatchChunks', () => {
     });
 });
 
+
+/**
+ * Audit A02 (2026-09-29): ảnh lỗi giữa batch từng bị bỏ qua lặng lẽ, cuối vòng vẫn báo
+ * "Đã xuất thành công N file ảnh". Các test dưới chạy đúng vòng lặp thật (runBatchExportLoop),
+ * chỉ thay bước chụp/giao bằng hàm giả.
+ */
+describe('batchImageExportService - kết quả từng ảnh (A02)', () => {
+    const products = Array.from({ length: 125 }, (_, i) => ({ msp: String(i + 1) }));
+    const batches = getBatchChunks(products, 50, '2026-09-29');
+    const fakeBlob = { size: 1 } as unknown as Blob;
+    const noSleep = async () => {};
+
+    it('một ảnh lỗi giữa batch: KHÔNG báo thành công, đếm đúng số ảnh và sản phẩm xuất được', async () => {
+        const delivered: string[] = [];
+        const res = await runBatchExportLoop(batches, {
+            capture: async (b) => (b.batchIndex === 1 ? null : fakeBlob),
+            deliver: (_blob, filename) => { delivered.push(filename); },
+            pauseBetweenMs: 450,
+            sleep: noSleep,
+        });
+        expect(res.success).toBe(false);
+        expect(res.batchCount).toBe(2);
+        expect(res.totalBatches).toBe(3);
+        expect(res.exportedCount).toBe(75); // 50 + 25, không phải 125
+        expect(res.totalCount).toBe(125);
+        expect(res.failed.map(f => f.batchNum)).toEqual([2]);
+        expect(delivered).toHaveLength(2);
+
+        const msg = describeBatchExportResult(res);
+        expect(msg.title).toBe('Xuất ảnh chưa đầy đủ');
+        expect(msg.message).toContain('2/3');
+        expect(msg.message).toContain('Phần 2/3 (dòng 51-100)');
+    });
+
+    it('bước chụp ném lỗi: ghi nhận lỗi và vẫn xuất các ảnh sau', async () => {
+        const res = await runBatchExportLoop(batches, {
+            capture: async (b) => { if (b.batchIndex === 0) throw new Error('canvas quá lớn'); return fakeBlob; },
+            deliver: () => {},
+            sleep: noSleep,
+        });
+        expect(res.batchCount).toBe(2);
+        expect(res.failed[0].error).toBe('canvas quá lớn');
+    });
+
+    it('tất cả thành công: giữ nguyên câu thông báo cũ', async () => {
+        const res = await runBatchExportLoop(batches, { capture: async () => fakeBlob, deliver: () => {}, sleep: noSleep });
+        expect(res.success).toBe(true);
+        expect(res.exportedCount).toBe(125);
+        expect(describeBatchExportResult(res)).toEqual({
+            title: 'Xuất ảnh thành công',
+            message: 'Đã xuất thành công 3 file ảnh (125 sản phẩm, mỗi ảnh tối đa 50 dòng)!',
+        });
+    });
+
+    it('không ảnh nào xuất được: báo lỗi, không báo "thành công"', async () => {
+        const res = await runBatchExportLoop(batches, { capture: async () => null, deliver: () => {}, sleep: noSleep });
+        expect(res.success).toBe(false);
+        expect(describeBatchExportResult(res).title).toBe('Lỗi');
+    });
+
+    it('escapeHtml: tên sản phẩm có ký tự HTML không bị hiểu là thẻ', () => {
+        expect(escapeHtml('Cáp <1m> & "sạc"')).toBe('Cáp &lt;1m&gt; &amp; &quot;sạc&quot;');
+        expect(escapeHtml(undefined)).toBe('');
+        expect(escapeHtml(12)).toBe('12');
+    });
+});

@@ -44,8 +44,14 @@ function request<T>(build: (tx: IDBTransaction) => IDBRequest<T>, stores: string
     return openDb().then(db => new Promise<T>((resolve, reject) => {
         const tx = db.transaction(stores, mode);
         const req = build(tx);
-        req.onsuccess = () => resolve(req.result);
+        let result: T;
+        req.onsuccess = () => { result = req.result; };
         req.onerror = () => reject(req.error ?? new Error('Lỗi IndexedDB'));
+        // Audit A30 (2026-09-29): chỉ báo xong khi transaction đã COMMIT. Request thành công chưa có
+        // nghĩa là đã lưu — transaction vẫn có thể bị huỷ sau đó (hết dung lượng, trình duyệt đóng
+        // kết nối…) và UI sẽ báo "đã lưu" cho dữ liệu không hề nằm trên máy.
+        tx.oncomplete = () => resolve(result);
+        tx.onabort = () => reject(tx.error ?? req.error ?? new Error('Giao dịch IndexedDB bị huỷ — dữ liệu chưa được lưu'));
     }));
 }
 
@@ -85,5 +91,6 @@ export const khaiThacDb = {
         tx.objectStore(STORE_LEADS).clear();
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error ?? new Error('Không xoá được dữ liệu'));
+        tx.onabort = () => reject(tx.error ?? new Error('Không xoá được dữ liệu'));
     })),
 };

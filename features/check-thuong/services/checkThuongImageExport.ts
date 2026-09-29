@@ -9,6 +9,19 @@ export interface ExportImageOptions {
     fontName?: string;
 }
 
+/**
+ * Tên siêu thị / mã kho / tiêu đề / tên file lấy từ file Excel người dùng tải lên rồi chèn vào
+ * `innerHTML` của ảnh xuất — phải escape (audit A09, 2026-09-29): tên có `<`, `&` sẽ vỡ bố cục
+ * hoặc bị trình duyệt hiểu thành thẻ HTML. Chữ bình thường không đổi → ảnh giữ nguyên như trước.
+ */
+export const escapeHtml = (value: unknown): string =>
+    String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
 export async function exportLeaderboardToImage({
     stores,
     limit,
@@ -72,8 +85,8 @@ export async function exportLeaderboardToImage({
         rowsHtml += `
             <tr style="background-color: ${bgRow}; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; line-height: 1.2;">
                 <td style="padding: 4px 2px; text-align: center; font-weight: ${rankWeight}; color: ${rankColor}; width: 32px;">#${rank}</td>
-                <td style="padding: 4px 2px; text-align: center; font-weight: 800; color: #0284c7; width: 42px;">${store.storeCode}</td>
-                <td style="padding: 4px 6px; font-weight: 600; color: #1e293b; width: 178px; max-width: 178px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${store.storeName}</td>
+                <td style="padding: 4px 2px; text-align: center; font-weight: 800; color: #0284c7; width: 42px;">${escapeHtml(store.storeCode)}</td>
+                <td style="padding: 4px 6px; font-weight: 600; color: #1e293b; width: 178px; max-width: 178px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(store.storeName)}</td>
                 <td style="padding: 4px 3px; text-align: center; font-weight: 700; color: #059669; width: 48px; white-space: nowrap;">${store.achievedCount} <span style="color: #94a3b8; font-size: 9px; font-weight: 500;">/ ${store.totalCategories}</span></td>
                 <td style="padding: 4px 3px; text-align: center; width: 66px;">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
@@ -94,7 +107,7 @@ export async function exportLeaderboardToImage({
                 <div style="display: flex; align-items: center; gap: 6px;">
                     <span style="font-size: 16px;">🏆</span>
                     <h1 style="margin: 0; font-size: 13px; font-weight: 900; color: #0f172a; letter-spacing: -0.01em; text-transform: uppercase; font-family: inherit;">
-                        ${displayTitle}
+                        ${escapeHtml(displayTitle)}
                     </h1>
                 </div>
                 <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 2.5px 7px; white-space: nowrap;">
@@ -103,7 +116,7 @@ export async function exportLeaderboardToImage({
                 </div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3px; font-size: 9px; color: #64748b; font-family: inherit;">
-                <span style="truncate; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${channelText}${fileName ? ` • ${fileName}` : ''}</span>
+                <span style="truncate; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(channelText)}${fileName ? ` • ${escapeHtml(fileName)}` : ''}</span>
                 <span style="color: #94a3b8; shrink-0;">${timeStr}</span>
             </div>
         </div>

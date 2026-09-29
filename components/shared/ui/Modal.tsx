@@ -1,9 +1,64 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from './utils';
 import { Button } from './Button';
 import { Icon } from '../../common/Icon';
+
+// ═══════════════════════════════════════════════════════════════════════
+// NGĂN XẾP MODAL (audit A11/A12, 2026-09-29)
+// Trước đây MỖI instance — kể cả modal đang ĐÓNG — ghi `body.style.overflow = 'unset'`: đóng một
+// ConfirmDialog lồng trong modal khác là mở khoá cuộn trang phía sau dù modal ngoài vẫn mở; và một
+// lần Escape đóng MỌI modal đang mở. Nay: modal ghi tên vào ngăn xếp khi mở, khoá cuộn khi ngăn
+// xếp từ rỗng → có, trả lại đúng giá trị cũ khi ngăn xếp rỗng; chỉ modal TRÊN CÙNG nhận Escape/Tab.
+// Trạng thái nằm trên globalThis (như utils/localDbScope.ts) để 2 bản module trùng vẫn dùng chung.
+// ═══════════════════════════════════════════════════════════════════════
+interface ModalStackState { stack: string[]; savedOverflow: string | null }
+const STACK_KEY = '__ycxModalStack__';
+
+const getModalStack = (): ModalStackState => {
+  const g = globalThis as unknown as Record<string, ModalStackState | undefined>;
+  if (!g[STACK_KEY]) g[STACK_KEY] = { stack: [], savedOverflow: null };
+  return g[STACK_KEY]!;
+};
+
+const pushModal = (id: string) => {
+  const s = getModalStack();
+  if (s.stack.includes(id)) return;
+  if (s.stack.length === 0) {
+    s.savedOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+  s.stack.push(id);
+};
+
+const popModal = (id: string) => {
+  const s = getModalStack();
+  const i = s.stack.indexOf(id);
+  if (i === -1) return;
+  s.stack.splice(i, 1);
+  if (s.stack.length === 0) {
+    document.body.style.overflow = s.savedOverflow ?? '';
+    s.savedOverflow = null;
+  }
+};
+
+const isTopModal = (id: string) => {
+  const s = getModalStack();
+  return s.stack[s.stack.length - 1] === id;
+};
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
+
+const getFocusable = (root: HTMLElement) =>
+  Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(el => el.getClientRects().length > 0);
+
+/** Trả focus về ô nhập trên màn cảm ứng sẽ bật lại bàn phím ảo (iPhone) — không làm với loại này. */
+const isTextEntry = (el: HTMLElement) =>
+  el.isContentEditable || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' ||
+  (el.tagName === 'INPUT' && !['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'range', 'color'].includes((el as HTMLInputElement).type));
+
+const isCoarsePointer = () => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
 
 export interface ModalProps {
   isOpen: boolean;
@@ -26,6 +81,8 @@ export interface ModalProps {
   /** 'bottom' = dán đáy màn hình trên mobile (bottom-sheet), căn giữa trên desktop. Mặc định 'center'. */
   position?: 'center' | 'bottom';
   zIndex?: string;
+  /** Tên hộp thoại cho trình đọc màn hình khi KHÔNG có `title` (vd. dùng `hideHeader`). */
+  ariaLabel?: string;
 }
 
 export function Modal({
@@ -42,30 +99,83 @@ export function Modal({
   hideHeader = false,
   noRounded = false,
   position = 'center',
-  zIndex = 'z-50'
+  zIndex = 'z-50',
+  ariaLabel
 }: ModalProps) {
-  // Prevent body scroll when modal is open
+  const modalId = useId();
+  const titleId = `${modalId}-title`;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
-  // Handle ESC key
+  // Khoá cuộn theo ngăn xếp + giữ/trả focus. Modal ĐÓNG không đụng tới gì cả.
   useEffect(() => {
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    pushModal(modalId);
+
+    // Đưa focus vào hộp thoại (bàn phím/trình đọc màn hình không còn "ở lại" trang phía sau).
+    // Focus vào CHÍNH KHUNG hộp thoại chứ không vào ô nhập đầu tiên — trên iPhone focus ô nhập là
+    // bật bàn phím ảo. Ô có autoFocus (React focus lúc commit) thì giữ nguyên.
+    const raf = requestAnimationFrame(() => {
+      const el = dialogRef.current;
+      if (el && !el.contains(document.activeElement)) el.focus({ preventScroll: true });
+    });
+
+    return () => {
+      cancelAnimationFrame(raf);
+      popModal(modalId);
+      if (
+        previouslyFocused && previouslyFocused.isConnected && previouslyFocused !== document.body &&
+        !(isTextEntry(previouslyFocused) && isCoarsePointer())
+      ) {
+        previouslyFocused.focus({ preventScroll: true });
+      }
+    };
+  }, [isOpen, modalId]);
+
+  // Escape: chỉ modal trên cùng; Tab/Shift+Tab: vòng trong modal trên cùng.
+  useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
+      if (!isTopModal(modalId)) return;
+      if (e.key === 'Escape') {
+        if (!e.defaultPrevented) onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const root = dialogRef.current;
+      if (!root) return;
+      const active = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      const inside = !!active && root.contains(active);
+      // Focus đang ở một lớp nổi khác gắn vào body (panel dropdown qua portal…) — không can thiệp.
+      // Chỉ kéo về khi focus lạc ra trang phía sau (#root), ra body, hoặc sang modal bên dưới.
+      if (active && !inside && active !== document.body &&
+          !active.closest('#root') && !active.closest('[data-modal-overlay]')) return;
+      const focusable = getFocusable(root);
+      if (focusable.length === 0) {
+        e.preventDefault();
+        root.focus({ preventScroll: true });
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!inside || active === root) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      } else if (e.shiftKey && active === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && active === last) {
+        e.preventDefault();
+        first.focus();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, modalId]);
 
   // Scale theo DESIGN.md (sm/md/lg/xl chuẩn hóa theo boltz_project_rules_md) —
   // 2xl/4xl/full là size mở rộng riêng của dự án cho các modal nhiều nội dung
@@ -108,11 +218,18 @@ export function Modal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
             onClick={onClose}
+            aria-hidden="true"
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
           />
 
           {/* Modal Container */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={showHeader && title ? titleId : undefined}
+            aria-label={showHeader && title ? undefined : ariaLabel}
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -120,7 +237,7 @@ export function Modal({
             className={cn(
               // `dvh` chứ không `vh`: trên Safari iOS `90vh` tính cả phần màn hình nằm dưới thanh địa chỉ
               // → đáy modal (nút Lưu/Huỷ ở footer) bị che khi thanh địa chỉ đang hiện.
-              "relative w-full bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90dvh] overflow-hidden",
+              "relative w-full bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90dvh] overflow-hidden focus:outline-none",
               // Sheet dính đáy màn hình: chừa vùng thanh Home của iPhone cho footer.
               isBottom && "pb-[env(safe-area-inset-bottom,0px)] sm:pb-0",
               roundedClass,
@@ -136,7 +253,7 @@ export function Modal({
                     <p className="text-[11px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>
                   )}
                   {title && (
-                    <h3 className={cn("font-bold text-sm sm:text-lg tracking-tight", titleColorClass)}>
+                    <h3 id={titleId} className={cn("font-bold text-sm sm:text-lg tracking-tight", titleColorClass)}>
                       {title}
                     </h3>
                   )}
@@ -149,6 +266,7 @@ export function Modal({
                       variant="unstyled"
                       size="none"
                       onClick={onClose}
+                      aria-label="Đóng"
                       // Nút đóng từng chỉ 22px trên iPhone (icon 14px + p-1) — nhỏ nhất trong mọi modal.
                       className="min-h-11 min-w-11 -mr-2 sm:min-h-0 sm:min-w-0 sm:mr-0 p-1 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                     >

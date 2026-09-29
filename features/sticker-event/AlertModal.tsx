@@ -15,6 +15,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ isOpen, onClose, message, title
       isOpen={isOpen}
       onClose={onClose}
       hideHeader
+      ariaLabel={title}
       maxWidth="sm"
       footer={
         <Button

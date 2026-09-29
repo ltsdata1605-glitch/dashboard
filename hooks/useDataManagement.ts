@@ -43,6 +43,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [crossSellingConfig, setCrossSellingConfig] = useState<CrossSellingConfig | null>(null);
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
+    /** Bộ lọc mà `processedData` ĐANG HIỂN THỊ được tính cho — commit cùng lượt với processedData.
+     *  Xuất ảnh hàng loạt theo Kho dùng nó để chỉ chụp khi dữ liệu trên màn hình đúng là của Kho vừa
+     *  chọn (audit A03, 2026-09-29: trước đây chỉ dựa cờ isFilterProcessing + thời gian chờ, hết giờ
+     *  vẫn chụp → có thể ra ảnh mang tên Kho B nhưng số liệu Kho A). */
+    const [processedFilterState, setProcessedFilterState] = useState<FilterState | null>(null);
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
     const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean } } | null>(null);
 
@@ -889,6 +894,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             setBaseFilteredData(pending.baseFilteredData);
                             setWarehouseFilteredData(pending.warehouseFilteredData);
                         }
+                        setProcessedFilterState(pending ? pending.filterState : null);
                         setEmployeeAnalysisData(result.employeeData);
                         if (result.employeeData?.fullSellerArray && result.employeeData.fullSellerArray.length > 0) {
                             const currentWarehouse = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
@@ -1018,6 +1024,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         filteredValidSalesData: DataRow[];
         unshippedOrders: DataRow[];
         uncollectedOrders: DataRow[];
+        /** Bộ lọc gửi kèm lượt PROCESS này — xem processedFilterState. */
+        filterState: FilterState;
     }[]>([]);
 
     const configRetryRef = useRef<Promise<void> | null>(null);
@@ -1075,6 +1083,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 filteredValidSalesData: computedFilteredValidSalesData,
                 unshippedOrders: computedUnshippedOrders,
                 uncollectedOrders: computedUncollectedOrders,
+                filterState,
             });
             workerRef.current.postMessage({
                 type: 'PROCESS',
@@ -1221,6 +1230,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         availableMonths: availableWeeksMonths.availableMonths,
         isInternalProcessing: isHardProcessing, // only true during file upload / initial load
         isFilterProcessing,
+        processedFilterState,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync,
