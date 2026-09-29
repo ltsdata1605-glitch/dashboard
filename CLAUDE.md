@@ -36,6 +36,11 @@ một câu báo trước rẻ hơn nhiều so với khôi phục. Mọi việc k
 
 **Mục này thay thế các câu "không phải việc agent tự chạy" ở bản CLAUDE.md cũ** (mục 1.1, dòng Deploy).
 
+**Đồng bộ cloud → máy Mac của chủ dự án (bổ sung 2026-09-29):** máy Mac chạy
+`scripts/dong-bo-may-tinh/` (launchd, mỗi 5 phút) tự `git pull --ff-only` nhánh `main` khi máy sạch. Nghĩa
+là mọi thứ agent đẩy lên `main` sẽ tự về máy chủ dự án — vẫn phải đưa lên `main` (không chỉ nhánh
+`claude/*`) thì máy mới nhận. Máy đang sửa dở / có commit chưa push thì script KHÔNG kéo, chỉ báo.
+
 ---
 
 ## 0. Quy trình bắt buộc trước khi sửa code
