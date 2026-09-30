@@ -23,3 +23,17 @@ bash scripts/dong-bo-may-tinh/go-cai-dat.sh
   Gặp thông báo "CHƯA đồng bộ": commit/push hoặc `git stash` phần đang sửa, rồi `git pull`.
 
 Đã thử 5 tình huống (máy sạch / sửa dở / commit chưa push / nhánh khác / sạch lại) bằng repo giả lập — 2026-09-29.
+
+## Lỗi "Operation not permitted" trong nhật ký (mã 126 ở `launchctl list`)
+macOS không cho tiến trình nền đọc `~/Documents`, `~/Desktop`, `~/Downloads` → script không chạy được lần nào.
+Cách sửa (chọn 1):
+1. **Khuyên dùng — chuyển dự án ra ngoài `Documents`:**
+   ```bash
+   bash scripts/dong-bo-may-tinh/go-cai-dat.sh
+   mv ~/Documents/dashboardycx ~/dashboardycx
+   cd ~/dashboardycx && bash scripts/dong-bo-may-tinh/cai-dat.sh
+   ```
+2. Cấp quyền: Cài đặt hệ thống → Quyền riêng tư & Bảo mật → Truy cập toàn bộ ổ đĩa → `+` → `⌘⇧G` gõ `/bin/bash`
+   → bật. (Nhanh nhưng rộng: MỌI script bash đều có quyền đọc cả ổ.)
+Kiểm lại: `launchctl kickstart -k gui/$(id -u)/vn.dashboard.dong-bo; sleep 5; tail -3 ~/Library/Logs/dashboard-dong-bo.log`
+— không còn dòng "Operation not permitted" là được.

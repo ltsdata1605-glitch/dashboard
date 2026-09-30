@@ -8,6 +8,16 @@ SCRIPT="$REPO/scripts/dong-bo-may-tinh/dong-bo.sh"
 CHU_KY="${CHU_KY_GIAY:-300}"   # 5 phút; đổi bằng: CHU_KY_GIAY=600 bash cai-dat.sh
 
 [ "$(uname)" = "Darwin" ] || { echo "Script này dành cho macOS."; exit 1; }
+
+# macOS chặn tiến trình nền (launchd) đọc ~/Documents, ~/Desktop, ~/Downloads → log báo
+# "Operation not permitted", mã thoát 126, KHÔNG BAO GIỜ đồng bộ (gặp thật 2026-09-30).
+case "$REPO" in
+  "$HOME/Documents"*|"$HOME/Desktop"*|"$HOME/Downloads"*)
+    echo "⚠️  Dự án đang nằm trong $(echo "$REPO" | sed "s|$HOME/||" | cut -d/ -f1) — macOS sẽ CHẶN đồng bộ nền."
+    echo "   Chuyển dự án ra ngoài (vd: mv \"$REPO\" ~/dashboardycx) rồi chạy lại cài đặt ở chỗ mới,"
+    echo "   hoặc cấp Full Disk Access cho /bin/bash (xem README mục 'Operation not permitted')."
+    ;;
+esac
 chmod +x "$SCRIPT"
 mkdir -p "$HOME/Library/LaunchAgents"
 cat > "$PLIST" <<PL
