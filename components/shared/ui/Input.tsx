@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useId } from 'react';
 import { cn } from './utils';
 import { Icon } from '../../common/Icon';
 import { Button } from './Button';
@@ -14,6 +14,10 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, error, leftIcon, rightIcon, onRightIconClick, onLeftIconClick, fullWidth = true, ...props }, ref) => {
+    // Audit A17 (2026-09-30): dòng lỗi trước đây chỉ là <p> đứng cạnh — trình đọc màn hình không biết
+    // ô nào đang lỗi. Nay nối lỗi vào ô qua aria-invalid + aria-describedby (giữ describedby sẵn có).
+    const errorId = `${useId()}-error`;
+    const describedBy = [props['aria-describedby'], error ? errorId : undefined].filter(Boolean).join(' ') || undefined;
     return (
       <div className={cn("relative", fullWidth ? "w-full" : "w-auto")}>
         {leftIcon && (
@@ -45,6 +49,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             className
           )}
           {...props}
+          aria-invalid={error ? true : props['aria-invalid']}
+          aria-describedby={describedBy}
         />
         
         {rightIcon && (
@@ -63,7 +69,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         
         {error && (
-          <p className="mt-1.5 text-xs font-bold text-rose-500 dark:text-rose-400">
+          <p id={errorId} role="alert" className="mt-1.5 text-xs font-bold text-rose-500 dark:text-rose-400">
             {error}
           </p>
         )}

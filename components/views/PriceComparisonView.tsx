@@ -68,6 +68,17 @@ const DEFAULT_SITES: SiteConfig[] = [
 
 const API_BASE = 'http://localhost:3456';
 
+/**
+ * Audit A32 (2026-09-30): server so giá chạy trên MÁY TÍNH (`localhost:3456`). Trên điện thoại,
+ * `localhost` là chính điện thoại → không bao giờ kết nối được. Không đo theo bề rộng màn hình (cửa sổ
+ * máy tính thu nhỏ vẫn dùng được) mà theo thiết bị cảm ứng di động thật.
+ */
+const laThietBiDiDong = () => {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /Mobi|Android|iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && (navigator.maxTouchPoints || 0) > 1);
+};
+
 // ─── Helpers ─────────────────────────────────────────────
 function formatVND(num: number): string {
   if (!num || num <= 0) return '—';
@@ -93,18 +104,27 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [results, setResults] = useState<ProductResult[]>([]);
   const [error, setError] = useState('');
-  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking');
+  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline' | 'mobile'>(() => laThietBiDiDong() ? 'mobile' : 'checking');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
+  // Audit A33: lượt so giá đang chạy — huỷ khi view bị gỡ (đăng xuất…). Chỉ ĐỔI TAB thì view vẫn
+  // được giữ (keep-alive) và lượt so giá tiếp tục chạy nền — đó là chủ đích (người dùng chờ kết quả).
+  const scrapeAbortRef = useRef<AbortController | null>(null);
+  React.useEffect(() => () => {
+    scrapeAbortRef.current?.abort();
+    eventSourceRef.current?.close();
+    eventSourceRef.current = null;
+  }, []);
 
   // Check server health on mount
   React.useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || laThietBiDiDong()) return;
     checkServerHealth();
   }, [isActive]);
 
   const checkServerHealth = useCallback(async () => {
+    if (laThietBiDiDong()) { setServerStatus('mobile'); return; }
     setServerStatus('checking');
     try {
       const res = await fetch(`${API_BASE}/api/health`, { signal: AbortSignal.timeout(5000) });
@@ -256,10 +276,13 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       // SSE connection error — continue without progress updates
     };
     
+    const abort = new AbortController();
+    scrapeAbortRef.current = abort;
     try {
       const competitorKeys = competitorSites.map(s => s.key);
       
       const response = await fetch(`${API_BASE}/api/scrape-prices`, {
+        signal: abort.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -279,6 +302,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       setResults(data.results);
       
     } catch (err) {
+      if (abort.signal.aborted) return; // view đã bị gỡ — không cập nhật gì nữa
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
         setError('Không thể kết nối tới server scraping. Hãy chạy: cd price-scraper-server && npm start');
@@ -287,7 +311,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       }
     } finally {
       evtSource.close();
-      eventSourceRef.current = null;
+      if (eventSourceRef.current === evtSource) eventSourceRef.current = null;
+      if (scrapeAbortRef.current === abort) scrapeAbortRef.current = null;
       setIsRunning(false);
       setProgress(null);
     }
@@ -405,12 +430,28 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
             <span className={`w-2 h-2 rounded-full ${
               serverStatus === 'online' ? 'bg-emerald-500 animate-pulse' 
               : serverStatus === 'offline' ? 'bg-rose-500' 
+              : serverStatus === 'mobile' ? 'bg-amber-500'
               : 'bg-amber-500 animate-pulse'
             }`} />
-            {serverStatus === 'online' ? 'Server Online' : serverStatus === 'offline' ? 'Server Offline' : 'Đang kiểm tra...'}
+            {serverStatus === 'online' ? 'Server Online' : serverStatus === 'offline' ? 'Server Offline' : serverStatus === 'mobile' ? 'Chỉ dùng trên máy tính' : 'Đang kiểm tra...'}
           </div>
         </div>
       </div>
+
+      {serverStatus === 'mobile' && (
+        <div data-testid="so-gia-chi-may-tinh" className="bg-amber-50 border border-amber-200 rounded p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-700 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-medium text-amber-800">Công cụ So giá chỉ chạy trên máy tính</p>
+              <p className="text-sm text-amber-700 mt-1">
+                Việc lấy giá do một chương trình chạy trên máy tính của bạn thực hiện (server so giá). Điện thoại
+                không kết nối được tới chương trình đó. Hãy mở trang này trên máy tính đang chạy server so giá.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Server offline warning */}
       {serverStatus === 'offline' && (

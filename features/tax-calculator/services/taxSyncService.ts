@@ -1,9 +1,36 @@
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 import { db, auth } from '../../../services/firebase';
 import { SavedTaxRecord } from '../types/tax.types';
 import { taxIndexedDbService } from './taxIndexedDbService';
 
 const FIRESTORE_DOC_KEY = 'tax_calculator_history';
+const CLOUD_LIMIT = 100; // Giới hạn 100 bản ghi gần nhất trên cloud (bản trên máy không giới hạn)
+
+/**
+ * Audit A31 (2026-09-30): trước đây mọi thao tác là getDoc → sửa mảng → setDoc. Hai thiết bị (hoặc 2
+ * lượt lưu liền nhau) chen giữa nhau thì lượt ghi sau GHI ĐÈ mảng mà lượt trước vừa thêm → mất bản
+ * ghi. Nay đọc-sửa-ghi trong MỘT transaction: Firestore tự chạy lại `sua` với dữ liệu mới nhất nếu
+ * có ai ghi chen vào. Cùng document, cùng định dạng — không đổi rules, không di trú.
+ * `sua` trả null = không cần ghi. Trả về false nếu cloud lỗi (bản trên máy vẫn đã lưu).
+ */
+async function suaMangTrenCloud(uid: string, sua: (records: SavedTaxRecord[], exists: boolean) => SavedTaxRecord[] | null): Promise<boolean> {
+    const docRef = doc(db, 'users', uid, 'setting', FIRESTORE_DOC_KEY);
+    try {
+        await runTransaction(db, async (tx) => {
+            const snap = await tx.get(docRef);
+            const current: SavedTaxRecord[] = snap.exists() ? snap.data()?.records || [] : [];
+            const next = sua(current, snap.exists());
+            if (next) tx.set(docRef, { records: next, updatedAt: serverTimestamp() }, { merge: true });
+        });
+        return true;
+    } catch (err) {
+        console.error('[TaxSync] Lỗi đồng bộ Firestore:', err);
+        // Trước đây chỉ log — người dùng tưởng đã lên cloud. Nay báo rõ.
+        toast.error('Đã lưu trên máy này nhưng CHƯA đồng bộ lên cloud (mất mạng?). Thiết bị khác sẽ chưa thấy thay đổi này.', { id: 'tax-cloud-sync', duration: 6000 });
+        return false;
+    }
+}
 
 /**
  * Service đồng bộ dữ liệu tính thuế 3 lớp:
@@ -79,29 +106,11 @@ export const taxSyncService = {
         // 2. Lưu vào Firestore nếu đã đăng nhập
         const user = auth.currentUser;
         if (user) {
-            try {
-                const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
-                const snap = await getDoc(docRef);
-                const currentRecords: SavedTaxRecord[] = snap.exists() ? snap.data()?.records || [] : [];
-
-                const newCloudRecord: SavedTaxRecord = {
-                    ...record,
-                    id: localId,
-                    syncedToCloud: true
-                };
-
-                const updatedRecords = [
-                    newCloudRecord,
-                    ...currentRecords.filter(r => r.createdAt !== record.createdAt)
-                ].slice(0, 100); // Giới hạn 100 bản ghi gần nhất
-
-                await setDoc(docRef, {
-                    records: updatedRecords,
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
-            } catch (err) {
-                console.error('[TaxSync] Lỗi lưu lên Firestore:', err);
-            }
+            const newCloudRecord: SavedTaxRecord = { ...record, id: localId, syncedToCloud: true };
+            await suaMangTrenCloud(user.uid, current => [
+                newCloudRecord,
+                ...current.filter(r => r.createdAt !== record.createdAt),
+            ].slice(0, CLOUD_LIMIT));
         }
 
         return localId;
@@ -115,20 +124,7 @@ export const taxSyncService = {
 
         const user = auth.currentUser;
         if (user && createdAt) {
-            try {
-                const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
-                const snap = await getDoc(docRef);
-                if (snap.exists()) {
-                    const currentRecords: SavedTaxRecord[] = snap.data()?.records || [];
-                    const filtered = currentRecords.filter(r => r.createdAt !== createdAt);
-                    await setDoc(docRef, {
-                        records: filtered,
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
-                }
-            } catch (err) {
-                console.error('[TaxSync] Lỗi xóa trên Firestore:', err);
-            }
+            await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.filter(r => r.createdAt !== createdAt) : null);
         }
     },
 
@@ -140,25 +136,8 @@ export const taxSyncService = {
 
         const user = auth.currentUser;
         if (user) {
-            try {
-                const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
-                const snap = await getDoc(docRef);
-                if (snap.exists()) {
-                    const currentRecords: SavedTaxRecord[] = snap.data()?.records || [];
-                    const updated = currentRecords.map(r => {
-                        if (r.id === idOrCreatedAt || r.createdAt === idOrCreatedAt) {
-                            return { ...r, monthYear: newMonthYear };
-                        }
-                        return r;
-                    });
-                    await setDoc(docRef, {
-                        records: updated,
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
-                }
-            } catch (err) {
-                console.error('[TaxSync] Lỗi cập nhật tháng trên Firestore:', err);
-            }
+            await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
+                (r.id === idOrCreatedAt || r.createdAt === idOrCreatedAt) ? { ...r, monthYear: newMonthYear } : r) : null);
         }
     },
 
@@ -170,26 +149,9 @@ export const taxSyncService = {
 
         const user = auth.currentUser;
         if (user) {
-            try {
-                const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
-                const snap = await getDoc(docRef);
-                if (snap.exists()) {
-                    const currentRecords: SavedTaxRecord[] = snap.data()?.records || [];
-                    const keySet = new Set(idOrCreatedAts);
-                    const updated = currentRecords.map(r => {
-                        if (keySet.has(r.id as number) || keySet.has(r.createdAt)) {
-                            return { ...r, monthYear: newMonthYear };
-                        }
-                        return r;
-                    });
-                    await setDoc(docRef, {
-                        records: updated,
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
-                }
-            } catch (err) {
-                console.error('[TaxSync] Lỗi cập nhật tháng hàng loạt trên Firestore:', err);
-            }
+            const keySet = new Set(idOrCreatedAts);
+            await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
+                (keySet.has(r.id as number) || keySet.has(r.createdAt)) ? { ...r, monthYear: newMonthYear } : r) : null);
         }
     },
 

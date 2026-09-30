@@ -160,8 +160,11 @@
             #searchSection .mod-card > div { flex-direction: row !important; gap: 4px !important; align-items: flex-end !important; }
             #searchSection .mod-card > div > div { padding: 0 !important; }
             #searchSection .mod-card > div > div[style*="width:1px"] { margin: 0 6px !important; }
-            #searchSection .mod-input { height: 32px !important; font-size:11px !important; padding-left: 28px !important; border-radius: 6px !important; }
-            #searchSection .mod-btn { height: 32px !important; width: 32px !important; border-radius: 6px !important; }
+            .mod-input { font-size:16px !important; } /* mọi ô nhập trên điện thoại: ≥16px, Safari không tự phóng to */
+            /* Audit A17 (2026-09-30): trang con này KHÔNG chặn phóng to trong viewport → ô nhập < 16px khiến
+               Safari iPhone tự phóng to mỗi lần chạm vào ô; 32px cũng dưới chuẩn chạm 44px. */
+            #searchSection .mod-input { height: 44px !important; font-size:16px !important; padding-left: 28px !important; border-radius: 6px !important; }
+            #searchSection .mod-btn { height: 44px !important; width: 44px !important; border-radius: 6px !important; }
             #searchSection label { font-size:11px !important; margin-bottom: 2px !important; }
             /* Summary banner */
             .summary-banner { padding: 12px 14px !important; }

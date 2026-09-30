@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { exportElementAsImage } from '../../../services/uiService';
+import { deliverImage } from '../../../components/shared/ui/imageDelivery';
 import { TaxCalculationResult } from '../types/tax.types';
 import { formatVnd } from '../services/taxCalculatorService';
 
@@ -172,11 +173,23 @@ export const TaxResultPanel: React.FC<TaxResultPanelProps> = ({
       const blob = await exportElementAsImage(captureRef.current, filename, {
         elementsToHide: ['[data-html2canvas-ignore="true"]', '.hide-on-export'],
         captureAsDisplayed: true,
+        mode: 'blob-only',
       });
 
       if (blob) {
-        toast.success('Đã xuất ảnh bảng tính thuế thành công!', { id: toastId });
-        // Xuất ảnh là lúc kết quả đã chốt -> tự lưu vào lịch sử luôn
+        // Audit A35 (2026-09-30): trước đây báo "thành công" ngay khi CÓ ẢNH, còn khâu giao (chia sẻ
+        // trên điện thoại) chạy không chờ — người dùng huỷ chia sẻ hay Safari từ chối vẫn thấy
+        // "thành công". Nay giao qua deliverImage và báo theo KẾT QUẢ THẬT.
+        const ketQua = await deliverImage(blob, filename);
+        if (ketQua === 'shared' || ketQua === 'downloaded') {
+          toast.success(ketQua === 'shared' ? 'Đã chia sẻ ảnh bảng tính thuế.' : 'Đã tải ảnh bảng tính thuế về máy.', { id: toastId });
+        } else if (ketQua === 'cancelled') {
+          toast('Đã huỷ chia sẻ ảnh.', { id: toastId });
+        } else {
+          toast.dismiss(toastId); // 'retry-offered': đã hiện nút "Chia sẻ / Lưu ảnh" để chạm lại
+        }
+        // Lưu lịch sử khi ẢNH ĐÃ DỰNG (kết quả tính đã chốt) — không phụ thuộc người dùng có chia sẻ
+        // hay không. Chủ dự án muốn chỉ lưu sau khi chia sẻ thì chuyển dòng này vào nhánh trên.
         await onExported?.();
       } else {
         toast.error('Không thể tạo ảnh báo cáo. Vui lòng thử lại.', { id: toastId });

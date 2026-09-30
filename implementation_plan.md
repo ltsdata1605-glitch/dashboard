@@ -6499,3 +6499,18 @@ bỏ khúc generation cũ, đường 1 message); e2e Phân tích/pivot/xuất �
 Tổng kết chuỗi tối ưu nạp 200.000 dòng: khựng dài nhất 2,28s (trước Đợt 4) → **0,65s**; tổng khựng
 8,77s → ~3,7s. Việc lớn còn lại trên luồng chính: các `useMemo` lọc dữ liệu (computeBaseAndPeriodData,
 isValidSalesRow) chạy song song với Worker — chuyển hẳn sang Worker là thay đổi kiến trúc, chưa làm.
+
+---
+
+# Đợt 8 (2026-09-30) — các mục P1 còn lại của audit
+Đối chiếu 40 mục audit với kế hoạch: A17, A19–A22, A24, A26, A29, A31–A40 chưa được xử lý. Đợt 8 làm
+các mục P1 sửa được cụ thể.
+
+| Mục | File | Thay đổi | Kiểm tra |
+|---|---|---|---|
+| A31 Thuế đồng bộ cloud | `features/tax-calculator/services/taxSyncService.ts` | Đọc-sửa-ghi mảng lịch sử trong `runTransaction` (lưu/xoá/đổi tháng); cùng document, cùng định dạng → không đổi rules. Lỗi cloud báo toast "đã lưu trên máy, CHƯA lên cloud" (trước chỉ log). Giữ trần 100 bản trên cloud — **chủ dự án xác nhận** | unit `tax-sync-giao-dich.test.ts`: ĐỎ mã cũ (2 lượt lưu cùng lúc mất 1 bản; lưu+xoá chen nhau mất bản mới), XANH mã mới |
+| A32 So giá trên điện thoại | `components/views/PriceComparisonView.tsx` | Điện thoại/iPad: báo "Công cụ So giá chỉ chạy trên máy tính", không gọi `localhost:3456` | `so-gia-dien-thoai-va-huy.spec.ts` ĐỎ cũ / XANH mới |
+| A33 So giá dọn dẹp | cùng file | Gỡ view (đăng xuất…) → huỷ request (`AbortController`) + đóng luồng tiến độ SSE. Đổi tab vẫn chạy tiếp (chủ đích, view keep-alive) | cùng spec ĐỎ cũ / XANH mới |
+| A35 Thuế xuất ảnh | `features/tax-calculator/components/TaxResultPanel.tsx` | Giao qua `deliverImage`, báo theo kết quả thật (đã chia sẻ / đã tải / đã huỷ / chạm lại). Lịch sử vẫn lưu khi ảnh đã dựng (kết quả tính đã chốt) | tax-* e2e 15/16 (1 đỏ SẴN: ảnh QR từ dịch vụ ngoài bị proxy chặn) |
+| A17 Ô nhập | `components/shared/ui/Input.tsx`, `public/check-thuong.html` | Input: lỗi nối vào ô (`aria-invalid`, `aria-describedby`, `role=alert`). Check thưởng (viewport KHÔNG chặn phóng to): ô nhập điện thoại 11px/32px → 16px/44px (Safari hết tự phóng to khi chạm) | `o-nhap-a17.spec.ts` 2/2 |
+`npm run check` xanh (unit 922); e2e check-thuong/ui dùng chung 16 xanh.
