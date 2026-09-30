@@ -191,12 +191,12 @@ jobs:
   # Trước đây mọi test "iPhone" chỉ là Chromium đổi UA/viewport. Vẫn KHÔNG thay được iPhone thật
   # (share sheet, camera, đăng nhập Google), nhưng bắt được lỗi riêng của WebKit: IndexedDB trong
   # Worker, module worker, transfer ArrayBuffer, CSS/touch.
-  # `continue-on-error`: job mới, CHỈ BÁO trong lúc xác minh trên runner — chưa chặn merge.
+  # Lượt đầu (run 156) đỏ 1 spec do test dùng `new Touch()` (WebKit không cho) — đã sửa test;
+  # run 158 xanh 9/9 → bỏ `continue-on-error`, WebKit đỏ là chặn như các job khác.
   # ───────────────────────────────────────────────────────────────────────────────────────────
   e2e-webkit:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    continue-on-error: true
     env:
       E2E_BASE_URL: http://127.0.0.1:5173
       E2E_WEBKIT: '1'
