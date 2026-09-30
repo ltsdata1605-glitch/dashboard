@@ -34,7 +34,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
             maxWidth="lg"
             title={
                 <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-sky-500 text-white shadow-sm shadow-indigo-500/30">
+                    <div className="p-2 rounded-xl bg-gradient-to-tr from-sky-600 to-sky-500 text-white shadow-sm shadow-sky-500/30">
                         <Zap className="h-5 w-5" />
                     </div>
                     <div>
@@ -42,7 +42,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
                                 Hướng Dẫn Tính Năng Copy All
                             </h3>
-                            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700">
+                            <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide rounded-full bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300 border border-sky-300 dark:border-sky-700">
                                 1-Click
                             </span>
                         </div>
@@ -55,7 +55,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
             footer={
                 <div className="flex items-center justify-between w-full">
                     <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
                         An toàn 100% • Chạy trực tiếp trên trình duyệt • Không lưu dữ liệu ra ngoài
                     </span>
                     <Button
@@ -71,15 +71,15 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
         >
             <div className="space-y-4 py-1 text-slate-700 dark:text-slate-200">
                 {/* LỢI ÍCH TÍNH NĂNG */}
-                <div className="p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/80 via-sky-50/50 to-sky-50/50 dark:from-indigo-950/20 dark:via-sky-950/20 dark:to-sky-950/20 border border-indigo-200/60 dark:border-indigo-800/40">
+                <div className="p-3.5 rounded-xl bg-gradient-to-r from-sky-50/80 via-sky-50/50 to-sky-50/50 dark:from-sky-950/20 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/60 dark:border-sky-800/40">
                     <div className="flex items-start gap-2.5">
-                        <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0 mt-0.5" />
+                        <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
                         <div className="text-xs space-y-1">
-                            <p className="font-semibold text-indigo-900 dark:text-indigo-200">
+                            <p className="font-semibold text-sky-900 dark:text-sky-200">
                                 Giải pháp lấy dữ liệu chuẩn xác 100% (Đồng bộ công nghệ CopyAll):
                             </p>
                             <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                <strong className="text-indigo-700 dark:text-indigo-300">Copy All</strong> sẽ tự động kiểm tra và mở tất cả các dấu <code className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-bold text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700">[+]</code> nếu có, sau đó tự động sao chép toàn bộ trang theo chuẩn <strong className="text-slate-800 dark:text-slate-200">CopyAll</strong> vào Clipboard. Dữ liệu sao chép đảm bảo trọn vẹn 38 chương trình thi đua & ngành hàng, không bao giờ bị thiếu! Trên trang BI mới (baocao.dienmayxanh.com) còn tự bật sẵn <strong className="text-slate-800 dark:text-slate-200">Trả góp</strong> và <strong className="text-slate-800 dark:text-slate-200">DT quy đổi</strong> nếu đang tắt.
+                                <strong className="text-sky-700 dark:text-sky-300">Copy All</strong> sẽ tự động kiểm tra và mở tất cả các dấu <code className="px-1 py-0.5 bg-white dark:bg-slate-800 rounded font-bold text-sky-600 dark:text-sky-400 border border-slate-200 dark:border-slate-700">[+]</code> nếu có, sau đó tự động sao chép toàn bộ trang theo chuẩn <strong className="text-slate-800 dark:text-slate-200">CopyAll</strong> vào Clipboard. Dữ liệu sao chép đảm bảo trọn vẹn 38 chương trình thi đua & ngành hàng, không bao giờ bị thiếu! Trên trang BI mới (baocao.dienmayxanh.com) còn tự bật sẵn <strong className="text-slate-800 dark:text-slate-200">Trả góp</strong> và <strong className="text-slate-800 dark:text-slate-200">DT quy đổi</strong> nếu đang tắt.
                             </p>
                         </div>
                     </div>
@@ -101,10 +101,10 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                         {/* VÙNG KÉO THẢ TRỰC TIẾP */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {/* NÚT 1: COPY ALL (TỰ MỞ [+] & SAO CHÉP) */}
-                            <div className="flex flex-col justify-between gap-2.5 p-3 bg-indigo-50/60 dark:bg-indigo-950/30 rounded-xl border-2 border-dashed border-indigo-300 dark:border-indigo-700">
+                            <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-xl border-2 border-dashed border-sky-300 dark:border-sky-700">
                                 <div>
                                     <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                                        <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                        <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                                         <span>Copy All (Khuyên dùng)</span>
                                     </div>
                                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -118,10 +118,10 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                         e.preventDefault();
                                         toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: '🖱️', duration: 4000 });
                                     }}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-xs rounded-lg shadow-md shadow-indigo-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-indigo-400/40"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
-                                    <Sparkles className="w-4 h-4 text-indigo-100" />
+                                    <Sparkles className="w-4 h-4 text-sky-100" />
                                     <span>⚡ Copy All 1-Click</span>
                                 </a>
                             </div>
@@ -204,9 +204,9 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 variant="unstyled"
                                 size="none"
                                 onClick={() => handleCopyCode(AUTO_CLICK_BOOKMARKLET_CODE, 'autoclick', 'Copy All')}
-                                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 dark:text-indigo-300 rounded-lg border border-indigo-200 dark:border-indigo-800 text-xs font-semibold active:scale-95 transition-all"
+                                className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-lg border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
                             >
-                                {copiedKey === 'autoclick' ? <Check className="w-3.5 h-3.5 text-indigo-600" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                {copiedKey === 'autoclick' ? <Check className="w-3.5 h-3.5 text-sky-600" /> : <Sparkles className="w-3.5 h-3.5" />}
                                 <span>{copiedKey === 'autoclick' ? 'Đã sao chép Copy All!' : 'Sao chép mã Copy All (Có mở [+])'}</span>
                             </Button>
                             <Button

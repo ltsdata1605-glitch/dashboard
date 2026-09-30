@@ -1210,14 +1210,14 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             ref={bookmarkletRef}
                             href={AUTO_CLICK_BOOKMARKLET_CODE}
                             draggable
-                            className="min-h-8 sm:min-h-0 group relative inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-indigo-600/20 hover:shadow-sm hover:shadow-indigo-600/30 border border-indigo-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98]"
+                            className="min-h-8 sm:min-h-0 group relative inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-sky-600/20 hover:shadow-sm hover:shadow-sky-600/30 border border-sky-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98]"
                             title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();
                                 setIsGuideOpen(true);
                             }}
                         >
-                            <Copy className="w-3.5 h-3.5 text-indigo-100 group-hover:scale-105 transition-transform shrink-0" />
+                            <Copy className="w-3.5 h-3.5 text-sky-100 group-hover:scale-105 transition-transform shrink-0" />
                             <span className="tracking-tight font-semibold">Copy All</span>
                         </a>
                     </div>

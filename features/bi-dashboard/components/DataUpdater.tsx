@@ -739,7 +739,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         size="none"
                         onClick={() => handleStartAutoSync('luyke')}
                         title="Tự động thu thập 4 bảng dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                        className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-emerald-600/30"
+                        className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-emerald-600/30"
                     >
                         <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-100" />
                         <span className="text-[11px] sm:text-xs tracking-wide font-medium">Tự động Luỹ kế</span>
