@@ -6629,3 +6629,9 @@ Kiểm: 2 spec đã sửa `--repeat-each=2` → 10/10 xanh; `npm run check` xanh
 + README hướng dẫn biến `archive/backup.cjs` thành 1 dòng `require(...)`. Chọn file bằng `git ls-files --cached
 --others --exclude-standard` + `.env*` → 1,3 GB → 7,9 MB. Giữ tên đánh số, commit+push, không --force.
 Thử: nén-only trên cây thật (0 file rác trong zip); repo giả lập: commit+push OK, bị từ chối khi remote mới hơn → exit 1, zip vẫn có.
+
+## Đồng bộ Mac — sửa "Operation not permitted" (2026-09-30)
+Bộ tự đồng bộ trên Mac CHƯA từng chạy: dự án nằm trong `~/Documents` → macOS (TCC) chặn launchd đọc, mã 126.
+Chủ dự án đã chuyển dự án sang `~/dashboardycx` + cài lại → `launchctl list` mã **0**, plist trỏ đúng thư mục mới.
+`cai-dat.sh` nay cảnh báo khi dự án nằm trong Documents/Desktop/Downloads. Kiểm bằng mã thoát launchctl và
+`git reflog` (bộ đồng bộ để lại `pull -q --ff-only origin main`), KHÔNG bằng `tail` nhật ký.
