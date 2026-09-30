@@ -1,4 +1,5 @@
 import React, { Suspense } from 'react';
+import { TouchTitleHint } from './components/shared/ui/TouchTitleHint';
 import { LayoutProvider, useLayout, useActiveTab } from './contexts/LayoutContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
@@ -372,6 +373,8 @@ export default function App() {
                     <ErrorBoundary name="App_Root">
                         <AppContent />
                         <Toaster position="bottom-right" containerStyle={{ zIndex: 999999 }} />
+                        {/* Màn cảm ứng: nhấn giữ nút có `title` để đọc chú thích (audit A14) */}
+                        <TouchTitleHint />
                     </ErrorBoundary>
                 </LayoutProvider>
             </SyncProvider>

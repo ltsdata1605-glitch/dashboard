@@ -6375,3 +6375,13 @@ Test: unit `worker-timeout.test.ts`; e2e luồng nạp Phân tích 7/7 xanh; che
 Còn lại (cố ý chưa làm — đụng định dạng lưu trữ dữ liệu thật): khựng dài nhất ~2,3s là `JSON.parse`
 kết quả Worker (~1,5s) và `JSON.stringify` khi lưu (~1,3s). Hướng: Worker tự ghi IndexedDB và gửi dữ
 liệu theo khúc — cần di trú định dạng lưu, làm riêng khi được duyệt.
+
+---
+
+# Đợt 5 — Check thưởng iframe (A10) + chú thích trên màn cảm ứng (A14) (2026-09-30)
+| Mục | File | Thay đổi | Kiểm tra |
+|---|---|---|---|
+| A10 | `public/check-thuong.html` | Trần diện tích canvas iOS cho cả 4 điểm chụp (`exportPixelRatio`, bản JS thuần của `capPixelRatioForArea`); nút xuất ảnh BXH trong modal đi đường chia sẻ (trước luôn tải file) + báo lỗi (trước nuốt lặng); "Xuất tất cả BXH" đếm và báo ảnh lỗi (trước nuốt lặng) | Cú pháp script nội tuyến kiểm bằng Node; e2e check-thuong-luu-du-lieu, ios-report-bi-check-thuong, mobile-iphone-6-module xanh. ⚠️ Chưa có e2e riêng chụp ảnh trong iframe (cần file Excel Check thưởng mẫu) |
+| A14 | `components/shared/ui/TouchTitleHint.tsx` (mới), `App.tsx` | ~514 `title=` không hiện trên cảm ứng → 1 bộ lắng nghe toàn trang: nhấn giữ 0,5s phần tử có `title` → bong bóng chữ; cú click kèm theo bị chặn; chạm thường và máy có chuột không đổi | `nhan-giu-xem-chu-thich.spec.ts` 3/3 |
+Check: typecheck/eslint (0 lỗi, 143 cảnh báo)/unit 909/build/ratchet xanh.
+Không làm: đổi kích thước Modal (A13) — đổi giao diện 63 nơi, cần duyệt ảnh trước/sau.

@@ -2380,6 +2380,18 @@
             // check-thuong.html là file HTML độc lập, không dùng chung TS module đó được nên viết
             // lại bản JS thuần tương đương. Chỉ dùng cho xuất ẢNH ĐƠN LẺ — các nút "xuất tất cả"
             // vẫn tải file bình thường vì share sheet cần bấm xác nhận từng ảnh, không hợp vòng lặp.
+            // --- Trần diện tích canvas iOS (audit A10, 2026-09-30) ---
+            // Safari iOS giới hạn canvas ~16,7 triệu px; vượt là ảnh TRẮNG, không báo lỗi. Bản JS thuần
+            // của utils/dataUtils.ts capPixelRatioForArea() — chỉ áp trên thiết bị di động như app chính.
+            function exportPixelRatio(width, height, ratio) {
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                    || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+                    || window.innerWidth < 768;
+                if (!isMobile || !(width > 0) || !(height > 0)) return ratio;
+                const maxRatio = Math.sqrt(16000000 / (width * height));
+                return Math.min(ratio, Math.floor(maxRatio * 1000) / 1000);
+            }
+
             async function shareOrDownloadDataUrl(dataUrl, filename) {
                 // iPadOS 13+ báo UA "Macintosh" — nhận qua màn cảm ứng.
                 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
@@ -2456,7 +2468,7 @@
                     const fullHeight = Math.max(element.scrollHeight, element.offsetHeight, element.clientHeight);
 
                     const dataUrl = await htmlToImage.toPng(element, {
-                        pixelRatio: 2,
+                        pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
                         width: fullWidth,
                         height: fullHeight,
                         backgroundColor: options.backgroundColor || '#ffffff',
@@ -2638,7 +2650,7 @@
                     const fullHeight = Math.max(exportContainer.scrollHeight, exportContainer.offsetHeight, exportContainer.clientHeight);
 
                     const dataUrl = await htmlToImage.toPng(exportContainer, {
-                        pixelRatio: 2,
+                        pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
                         width: fullWidth,
                         height: fullHeight,
                         backgroundColor: '#ffffff',
@@ -2873,6 +2885,8 @@
                     const exportAllAnalysisRankings = async () => {
                         const analysisItems = analysisSection.querySelectorAll('.opportunity-item');
                         if (analysisItems.length === 0) return;
+                        let soAnhXuatDuoc = 0;
+                        const anhLoi = [];
 
                         loadingOverlay.classList.remove('hidden');
                         const tempContainer = document.createElement('div');
@@ -2921,7 +2935,7 @@
                                 const fullWidth = Math.max(tempContainer.firstChild.scrollWidth, tempContainer.firstChild.offsetWidth, tempContainer.firstChild.clientWidth);
                                 const fullHeight = Math.max(tempContainer.firstChild.scrollHeight, tempContainer.firstChild.offsetHeight, tempContainer.firstChild.clientHeight);
                                 const dataUrl = await htmlToImage.toPng(tempContainer.firstChild, { 
-                                    pixelRatio: 2, 
+                                    pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2), 
                                     backgroundColor: '#ffffff',
                                     width: fullWidth,
                                     height: fullHeight
@@ -2931,14 +2945,23 @@
                                 link.download = filename;
                                 link.href = dataUrl;
                                 link.click();
+                                soAnhXuatDuoc++;
                                 await new Promise(res => setTimeout(res, 300));
                             } catch (err) {
                                 console.error("Lỗi xuất ảnh BXH:", err);
+                                anhLoi.push(`${groupName} - ${groupChannel}`);
                             }
                         }
                         document.body.removeChild(tempContainer);
                         loadingOverlay.classList.add('hidden');
                         loadingText.textContent = '';
+                        // Audit A10: trước đây ảnh lỗi bị nuốt lặng lẽ — người dùng tưởng đã đủ ảnh.
+                        const tong = soAnhXuatDuoc + anhLoi.length;
+                        if (anhLoi.length > 0) {
+                            messageEl.textContent = `Đã xuất ${soAnhXuatDuoc}/${tong} ảnh. Chưa xuất được: ${anhLoi.slice(0, 5).join(', ')}${anhLoi.length > 5 ? ` (+${anhLoi.length - 5} nhóm khác)` : ''}. Vui lòng xuất lại.`;
+                            messageEl.classList.remove('hidden');
+                            setTimeout(() => messageEl.classList.add('hidden'), 12000);
+                        }
                     };
                     exportAllAnalysisRankings();
                     return;
@@ -3074,16 +3097,18 @@
                     const fullWidth = Math.max(tempContainer.firstChild.scrollWidth, tempContainer.firstChild.offsetWidth, tempContainer.firstChild.clientWidth);
                     const fullHeight = Math.max(tempContainer.firstChild.scrollHeight, tempContainer.firstChild.offsetHeight, tempContainer.firstChild.clientHeight);
 
+                    // Audit A10: trước đây luôn tải file (iPhone không mở được Lưu ảnh/LINE/Zalo) và lỗi
+                    // chụp bị bỏ qua lặng lẽ. Nay đi đường chia sẻ chung + báo lỗi.
                     htmlToImage.toPng(tempContainer.firstChild, { 
-                         pixelRatio: 2,
+                         pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
                          backgroundColor: '#ffffff',
                          width: fullWidth,
                          height: fullHeight
-                    }).then(dataUrl => {
-                         const link = document.createElement('a');
-                         link.download = filename;
-                         link.href = dataUrl;
-                         link.click();
+                    }).then(dataUrl => shareOrDownloadDataUrl(dataUrl, filename)).catch(err => {
+                         console.error('Lỗi xuất ảnh xếp hạng:', err);
+                         messageEl.textContent = 'Lỗi xuất ảnh: ' + ((err && err.message) || err);
+                         messageEl.classList.remove('hidden');
+                         setTimeout(() => messageEl.classList.add('hidden'), 5000);
                     }).finally(() => {
                          if (document.body.contains(tempContainer)) {
                              document.body.removeChild(tempContainer);
