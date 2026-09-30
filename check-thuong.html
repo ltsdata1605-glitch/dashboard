@@ -14,11 +14,9 @@
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
-    <!-- Audit A39 (2026-09-30): ĐÃ BỎ link Google Fonts riêng của trang này. Trang luôn chạy trong
-         iframe của app, và CheckThuongView.tsx chép MỌI stylesheet của trang cha (index.html đã nạp
-         đúng các họ phông của bộ chọn phông, kể cả @font-face UTM Avo tự host) vào iframe khi tải —
-         link riêng ở đây là tải lần 2, lại chặn hiển thị iframe tới khi Google Fonts trả lời (mạng
-         yếu ở siêu thị, hoặc mất mạng). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;700&family=Oswald:wght@400;500;600;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; }
         body {
@@ -162,11 +160,8 @@
             #searchSection .mod-card > div { flex-direction: row !important; gap: 4px !important; align-items: flex-end !important; }
             #searchSection .mod-card > div > div { padding: 0 !important; }
             #searchSection .mod-card > div > div[style*="width:1px"] { margin: 0 6px !important; }
-            .mod-input { font-size:16px !important; } /* mọi ô nhập trên điện thoại: ≥16px, Safari không tự phóng to */
-            /* Audit A17 (2026-09-30): trang con này KHÔNG chặn phóng to trong viewport → ô nhập < 16px khiến
-               Safari iPhone tự phóng to mỗi lần chạm vào ô; 32px cũng dưới chuẩn chạm 44px. */
-            #searchSection .mod-input { height: 44px !important; font-size:16px !important; padding-left: 28px !important; border-radius: 6px !important; }
-            #searchSection .mod-btn { height: 44px !important; width: 44px !important; border-radius: 6px !important; }
+            #searchSection .mod-input { height: 32px !important; font-size:11px !important; padding-left: 28px !important; border-radius: 6px !important; }
+            #searchSection .mod-btn { height: 32px !important; width: 32px !important; border-radius: 6px !important; }
             #searchSection label { font-size:11px !important; margin-bottom: 2px !important; }
             /* Summary banner */
             .summary-banner { padding: 12px 14px !important; }
@@ -237,13 +232,9 @@
             /* Overflow protection */
             body { overflow-x: hidden; }
             #mainContent, #comparisonContent, #summaryReportArea { overflow-x: hidden; }
-            /* Ẩn scrollbar trên mobile — TRỪ vùng cuộn ngang thật (.overflow-x-auto: bảng chi tiết, BXH).
-               Audit A24 (2026-09-30): trước đây ẩn TẤT CẢ, kể cả chỉ báo cuộn gốc của iOS → bảng rộng
-               hơn màn hình mà người dùng không có dấu hiệu nào để biết còn cột phía phải. */
-            *:not(.overflow-x-auto)::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-            *:not(.overflow-x-auto) { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-            .overflow-x-auto { scrollbar-width: thin; }
-            .overflow-x-auto::-webkit-scrollbar { height: 4px; }
+            /* Ẩn scrollbar trên bảng dữ liệu/mobile */
+            ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+            * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
             
             /* Card grid - hiển thị dạng grid 2 cột trên di động, không trượt ngang */
             #detailsGrid div[style*="grid-template-columns"] { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; padding: 10px !important; overflow-x: visible !important; }
@@ -470,7 +461,7 @@
 
     <!-- Ranking Modal -->
     <div id="rankingModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-2 sm:p-4 z-[9999]" style="z-index:9999">
-        <div class="bg-white shadow-xl rounded-xl w-full max-w-4xl max-h-[90dvh] flex flex-col overflow-hidden">
+        <div class="bg-white shadow-xl rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b">
                 <h3 id="modalTitle" class="text-xl font-bold text-[#0f172a]">Bảng Xếp Hạng</h3>
                 <div class="flex items-center gap-2 no-print">
@@ -488,7 +479,7 @@
 
     <!-- Version History Modal -->
     <div id="versionModal" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50">
-        <div class="bg-white shadow-xl rounded-xl w-full max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden">
+        <div class="bg-white shadow-xl rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b">
                 <h3 id="versionModalTitle" class="text-xl font-bold text-[#0f172a]">Lịch Sử Phiên Bản</h3>
                 <button id="closeVersionModalButton" class="text-slate-400 hover:text-slate-600 no-print" style="min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;margin-right:-10px">
