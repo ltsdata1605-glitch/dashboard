@@ -6514,3 +6514,11 @@ các mục P1 sửa được cụ thể.
 | A35 Thuế xuất ảnh | `features/tax-calculator/components/TaxResultPanel.tsx` | Giao qua `deliverImage`, báo theo kết quả thật (đã chia sẻ / đã tải / đã huỷ / chạm lại). Lịch sử vẫn lưu khi ảnh đã dựng (kết quả tính đã chốt) | tax-* e2e 15/16 (1 đỏ SẴN: ảnh QR từ dịch vụ ngoài bị proxy chặn) |
 | A17 Ô nhập | `components/shared/ui/Input.tsx`, `public/check-thuong.html` | Input: lỗi nối vào ô (`aria-invalid`, `aria-describedby`, `role=alert`). Check thưởng (viewport KHÔNG chặn phóng to): ô nhập điện thoại 11px/32px → 16px/44px (Safari hết tự phóng to khi chạm) | `o-nhap-a17.spec.ts` 2/2 |
 `npm run check` xanh (unit 922); e2e check-thuong/ui dùng chung 16 xanh.
+
+# Đợt 9 (2026-09-30) — công cụ kiểm & tài liệu (A36, A37, A38, A40)
+| Mục | Thay đổi |
+|---|---|
+| A36 WebKit | `playwright.config.ts`: project `webkit` (engine Safari, bật bằng `E2E_WEBKIT=1` — container dev không cài WebKit). CI: job mới `e2e-webkit` cài WebKit và chạy 9 spec liên quan điện thoại (Worker+IndexedDB, chia sẻ một lần, giao ảnh, modal, kéo tải lại, nhấn giữ, ô nhập, So giá). `continue-on-error` trong lúc xác minh lượt đầu trên runner. Vẫn KHÔNG thay iPhone thật (share sheet, camera, đăng nhập Google). |
+| A37 | `lint:ratchet:ci` = `--check-only`: CI không còn tự ghi/tự tạo baseline (thiếu baseline → đỏ). `typecheck:functions` + bước CI "Typecheck Cloud Functions" (trước đây functions/ không được typecheck ở đâu cả). Strict TS theo từng module: CHƯA làm (đổi lớn). |
+| A38 | `RULES.md`: bảng khu vực đủ 7 thư mục `features/*`; ghi đúng indigo đã hết alias `sky` (2026-09-09); dark mode ĐÃ TẮT, cấm `dark:` mới (bản cũ bắt buộc cặp `dark:`); 2 checklist bỏ "kiểm Dark mode". |
+| A40 | `.e2e-chrome-profile/` và `functions/lib/` đều đã gitignore. Script nén backup `archive/backup.cjs` CHỈ có trên máy Mac (thư mục `archive/` bị gitignore) nên agent không sửa được — **đề nghị chủ dự án** cho script bỏ qua: `node_modules/`, `functions/node_modules/`, `functions/lib/`, `dist/`, `.e2e-chrome-profile/`, `test-results/`, `playwright-report/`, `node_modules/.vite/` (hoặc đơn giản: chỉ nén `git ls-files` + lockfile). |

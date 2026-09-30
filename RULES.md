@@ -111,6 +111,7 @@ Mỗi View trong `components/views/` (Root) hoặc mỗi `features/*` là một 
 | 🟢 **ISOLATED** | `features/bi-dashboard/*` | Chỉ Report BI | Hoàn toàn tách biệt khỏi 3 khu vực còn lại |
 | 🟢 **ISOLATED** | `features/phan-ca/*` | Chỉ Phân ca | Hoàn toàn tách biệt khỏi 3 khu vực còn lại |
 | 🟢 **ISOLATED** | `features/sticker-event/*` | Chỉ In Sticker | Hoàn toàn tách biệt khỏi 3 khu vực còn lại |
+| 🟢 **ISOLATED** | `features/check-thuong/*`, `features/khai-thac/*`, `features/line-bot/*`, `features/tax-calculator/*` | Check thưởng / Báo cáo khai thác / Bot LINE / Tính thuế | Thư mục tính năng riêng, mount trong khu vực Root (không phải "mini-app" độc lập như 3 dòng trên). *(Bổ sung 2026-09-30 — audit A38: bảng cũ chỉ ghi 3 thư mục `features/*`, thực tế có 7.)* |
 
 ### 2.4 Checklist trước khi sửa file SHARED / CRITICAL
 
@@ -125,9 +126,9 @@ Mỗi View trong `components/views/` (Root) hoặc mỗi `features/*` là một 
 Đây là "hợp đồng" tối thiểu mà Root, `bi-dashboard`, `phan-ca`, `sticker-event` đều phải tuân theo, bất kể khu vực đó được viết lúc nào hay bởi đợt vibecode nào. Vi phạm các điều này là nguyên nhân chính khiến giao diện/hành vi giữa các khu vực bị lệch nhau (xem AUDIT.md).
 
 1. **UI component**: Mọi phần tử tương tác (button, modal, input, badge, bảng, dropdown, skeleton loading) BẮT BUỘC dùng `components/shared/ui/*`. Cấm viết mới `<button>` thô hoặc tự dựng modal `fixed inset-0` — dùng `Button`, `Modal`, `ConfirmDialog` có sẵn (xem props tại `components/shared/ui/index.ts`).
-2. **Màu & token**: Chỉ dùng bảng màu semantic đã duyệt (`sky`=primary, `slate`=secondary, `emerald`=success, `amber`=warning, `rose`=danger). Cấm khai báo `:root`/custom property CSS mới trong file của `features/*` (nguồn token duy nhất là `styles/tokens.css`). *Lưu ý đã biết*: `styles.css` hiện override `--color-indigo-*` bằng hex của `sky` — một số nơi cố tình dùng `indigo-*` làm alias cho "primary" (đúng ý), một số nơi khác dùng `indigo` như 1 màu riêng biệt trong mảng xoay vòng màu cùng với `sky` (vd. `TargetHero.tsx`, `CompetitionTab.tsx`, `colorTheme` type ở `DataUpdater.tsx`/`SupermarketConfig.tsx`) — 2 nhóm này đang vô tình render giống hệt nhau. **Chưa sửa tự động vì rủi ro làm 2 màu vốn cần phân biệt bị trộn lẫn — khi động tới các nhóm này ở Phase migrate sau, cần xử lý thủ công theo từng trường hợp, không tìm-thay hàng loạt.**
+2. **Màu & token**: Chỉ dùng bảng màu semantic đã duyệt (`sky`=primary, `slate`=secondary, `emerald`=success, `amber`=warning, `rose`=danger). Cấm khai báo `:root`/custom property CSS mới trong file của `features/*` (nguồn token duy nhất là `styles/tokens.css`). *(Sửa 2026-09-30 — audit A38)*: khối override `--color-indigo-*` = hex `sky` trong `styles.css` **đã bị xoá từ 2026-09-09** (1.407 class `indigo-*` đã đổi sang `sky-*` trước đó). `indigo` nay là màu tím-xanh THẬT của Tailwind, chỉ dùng làm họ thứ 6 trong dải xoay vòng ("6 họ × 2 tầng"); dùng `indigo` làm "primary" là SAI — primary là `sky`. `lint:ratchet` chặn mọi `indigo-*` mới ngoài baseline.
 3. **Utils dùng chung**: Format tiền/số/ngày nên tái sử dụng `utils/dataUtils.ts` khi cùng mục đích hiển thị. Nếu một feature cần định dạng khác về bản chất (vd. giá đầy đủ để in vs số rút gọn để xem dashboard), được phép có hàm riêng — nhưng phải đặt tên/comment rõ mục đích khác biệt, không đặt trùng tên `formatCurrency`/`formatNumber` gây nhầm là bản duplicate.
-4. **Dark mode**: Mọi class có màu phải có `dark:` tương ứng — không có ngoại lệ theo khu vực. Nếu feature dùng CSS custom property riêng (không phải Tailwind), phải có khối `.dark .ten-scope-class {...}` tương ứng.
+4. **Dark mode**: **ĐÃ TẮT toàn dự án** (từ 2026-07-10, `contexts/LayoutContext.tsx` khoá Sáng). CẤM viết class `dark:` mới; class `dark:` cũ để yên (vô hiệu). *(Sửa 2026-09-30 — audit A38: bản cũ bắt buộc mọi màu phải có cặp `dark:`, ngược với quyết định đã chốt ở CLAUDE.md mục 2.)*
 5. **Mobile toolbar pattern**: View có toolbar desktop (portal `#global-header-actions`) bắt buộc có toolbar mobile `lg:hidden` tương ứng, theo mẫu `DashboardView.tsx`.
 
 **Checklist cụ thể để tick khi sửa code** nằm ở mục 9.5.
@@ -164,7 +165,7 @@ Cần sửa **đúng 3 file** (không hơn):
 ### 4.1 UI Framework
 - **Tailwind CSS 4** — Dùng class utility, KHÔNG viết CSS custom trừ `@media print`
 - **Không dùng rounded corners mạnh** — Ưu tiên `rounded-lg` hoặc `rounded-xl`, tránh `rounded-3xl`
-- **Dark mode**: Luôn thêm class `dark:` cho mỗi element màu sắc
+- **Dark mode**: đã tắt — KHÔNG thêm class `dark:` mới (xem mục 2.5.4)
 
 ### 4.2 Bảng biểu (Tables)
 Tuân thủ `UI_GUIDELINES.md`:
@@ -219,7 +220,7 @@ className="text-slate-500 hover:text-slate-700 dark:text-slate-400"
 | Context | Phạm vi | Chức năng |
 |---|---|---|
 | `AuthContext` | Toàn app | User auth, role, login/logout |
-| `LayoutContext` | Toàn app | activeTab, sidebar state, dark mode |
+| `LayoutContext` | Toàn app | activeTab, sidebar state (dark mode khoá Sáng, không bật được) |
 | `DashboardContext` | DashboardView | Data upload, filter state |
 | `ThemeContext` | Toàn app | Theme preferences |
 
@@ -282,7 +283,7 @@ npm run deploy
 - [ ] `npm run build` thành công (không lỗi TypeScript)
 - [ ] Không có `console.log` debug còn sót
 - [ ] Test trên cả Desktop và Mobile viewport
-- [ ] Kiểm tra Dark mode
+- [ ] Kiểm tra trên màn điện thoại (Chromium giả lập + job `e2e-webkit` trên CI; iPhone thật cho chia sẻ/camera/đăng nhập)
 
 ---
 
@@ -322,7 +323,7 @@ Trước khi sửa, tự hỏi:
 
 - [ ] Không thêm `<button>` thô / modal `fixed inset-0` mới — dùng `components/shared/ui/*`.
 - [ ] Màu dùng đúng scale semantic (sky/slate/emerald/amber/rose) — không thêm màu ngoài danh sách đã duyệt.
-- [ ] Mỗi class màu có `dark:` cặp tương ứng.
+- [ ] KHÔNG thêm class `dark:` mới (dark mode đã tắt).
 - [ ] Không tạo `:root`/custom property CSS mới trong file của `features/*` — dùng token có sẵn ở `styles/tokens.css`.
 - [ ] Format tiền/số/ngày dùng hàm chung `utils/dataUtils.ts` nếu cùng mục đích hiển thị; nếu viết hàm riêng vì khác mục đích, đặt tên rõ ràng không trùng tên hàm chung.
 - [ ] View có toolbar desktop (portal) phải có toolbar mobile `lg:hidden` tương ứng.

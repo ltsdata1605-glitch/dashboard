@@ -35,6 +35,15 @@ export default defineConfig({
         video: 'off',
     },
     projects: [
+        // Audit A36 (2026-09-30): trước đây CHỈ Chromium — test "iPhone" chỉ đổi UA/viewport/cảm ứng
+        // trên Chromium, không chứng minh gì về Safari. Project `webkit` chạy ĐÚNG ENGINE của Safari
+        // (vẫn không thay thế được iPhone thật: share sheet, camera, đăng nhập Google, bàn phím ảo).
+        // Chỉ bật khi đặt E2E_WEBKIT=1 (container dev không cài WebKit); CI có job `e2e-webkit` riêng.
+        // Spec tự khai báo giả lập điện thoại bằng test.use({ isMobile, hasTouch, viewport, userAgent }).
+        ...(process.env.E2E_WEBKIT ? [{
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+        }] : []),
         {
             name: 'chromium',
             use: {

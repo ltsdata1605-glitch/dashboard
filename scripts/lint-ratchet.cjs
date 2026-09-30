@@ -14,7 +14,12 @@
  * Cơ chế: đếm vi phạm theo file, so với baseline đã commit (violations-baseline.json).
  * Fail nếu 1 file bất kỳ có số vi phạm TĂNG so với baseline. Tự hạ baseline khi giảm.
  * Baseline chưa tồn tại → tạo mới từ hiện trạng (không fail lần đầu).
+ *
+ * `--check-only` (audit A37, 2026-09-30 — dùng trên CI): CHỈ KIỂM, không bao giờ ghi file. Thiếu
+ * baseline thì FAIL (thay vì tự tạo rồi báo xanh), cải thiện thì chỉ nhắc chạy lại không cờ ở máy dev
+ * để hạ baseline. Công cụ kiểm tự sửa chuẩn của chính nó là kiểu "xanh" không chứng minh được gì.
  */
+const CHECK_ONLY = process.argv.includes('--check-only');
 
 const fs = require('fs');
 const path = require('path');
@@ -179,6 +184,10 @@ function main() {
   const baseline = loadBaseline();
 
   if (!baseline) {
+    if (CHECK_ONLY) {
+      console.error('[lint-ratchet] Thiếu violations-baseline.json — --check-only không tự tạo baseline.');
+      process.exit(1);
+    }
     saveBaseline(current);
     console.log(`[lint-ratchet] Chưa có baseline — đã tạo mới tại violations-baseline.json (${Object.keys(current).length} file có vi phạm được ghi nhận).`);
     console.log('[lint-ratchet] Từ lần chạy sau, script sẽ chặn nếu vi phạm ở bất kỳ file nào TĂNG so với baseline này.');
@@ -218,7 +227,9 @@ function main() {
     process.exit(1);
   }
 
-  if (improved) {
+  if (improved && CHECK_ONLY) {
+    console.log('[lint-ratchet] OK — có cải thiện so với baseline (chế độ --check-only: KHÔNG ghi; chạy `npm run lint:ratchet` ở máy dev rồi commit baseline mới).');
+  } else if (improved) {
     saveBaseline(nextBaseline);
     console.log('[lint-ratchet] OK — không có vi phạm mới. Baseline đã được hạ xuống theo cải thiện vừa có.');
   } else {

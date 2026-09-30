@@ -12,6 +12,8 @@
     "typecheck": "tsc --noEmit",
     "lint:eslint": "eslint .",
     "lint:ratchet": "node scripts/lint-ratchet.cjs",
+    "lint:ratchet:ci": "node scripts/lint-ratchet.cjs --check-only",
+    "typecheck:functions": "npm run typecheck --prefix functions",
     "audit": "npm audit || true",
     "check": "npm run typecheck && npm run lint:eslint && npm run test:unit && npm run build && npm run lint:ratchet",
     "predeploy": "npm run build",
