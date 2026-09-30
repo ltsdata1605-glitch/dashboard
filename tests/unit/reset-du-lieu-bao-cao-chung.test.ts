@@ -10,7 +10,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const purgeAllUserCloudData = vi.fn(async () => {});
 const purgeUserBiDataReports = vi.fn(async () => {});
+const purgeKhoSalesFiles = vi.fn(async () => {});
 vi.mock('../../services/firestoreService', () => ({ purgeAllUserCloudData, purgeUserBiDataReports }));
+vi.mock('../../services/khoDataService', () => ({ purgeKhoSalesFiles }));
 vi.mock('../../utils/localDbScope', () => ({
     LEGACY_BI_HUB_DB_NAME: 'BI_HUB_DATABASE_V2',
     setActiveLocalUid: vi.fn(),
@@ -34,12 +36,17 @@ const { resetAllDataAsNewUser } = await import('../../services/localDataOwner');
 const firebaseUser = { uid: 'u-1', email: 'a@b.c' };
 
 describe('resetAllDataAsNewUser — báo cáo dùng chung', () => {
-    beforeEach(() => { purgeAllUserCloudData.mockClear(); purgeUserBiDataReports.mockClear(); });
+    beforeEach(() => {
+        purgeAllUserCloudData.mockClear();
+        purgeUserBiDataReports.mockClear();
+        purgeKhoSalesFiles.mockClear();
+    });
 
     it('quản lý: xoá đúng Kho được truyền (lời hứa của hộp xác nhận nay được thực hiện)', async () => {
         await resetAllDataAsNewUser(firebaseUser, { khoXoaBaoCaoChung: ['910'] });
         expect(purgeAllUserCloudData).toHaveBeenCalledWith('u-1');
         expect(purgeUserBiDataReports).toHaveBeenCalledWith(['910']);
+        expect(purgeKhoSalesFiles).toHaveBeenCalledWith('910');
     });
 
     it('admin / Super Admin (danh sách rỗng): KHÔNG xoá báo cáo dùng chung, vẫn xoá dữ liệu riêng', async () => {

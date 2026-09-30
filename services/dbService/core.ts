@@ -629,3 +629,17 @@ export async function cleanupGarbageKeys(): Promise<void> {
         console.error('[IDB Cleanup] Failed to run garbage cleanup:', e);
     }
 }
+
+export async function deleteSetting(key: string): Promise<void> {
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve, reject) => {
+            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+            tx.objectStore(SETTINGS_STORE).delete(key);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch (e) {
+        console.warn(`[IDB] deleteSetting failed for ${key}:`, e);
+    }
+}

@@ -108,10 +108,20 @@ export const useFileUploadLogic = ({
             if (user) {
                 const { deleteCloudSalesData } = await import('../services/cloudDataService');
                 await deleteCloudSalesData(user).catch(console.error);
+                if (userRole === 'manager' && departmentId) {
+                    const { purgeKhoSalesFiles } = await import('../services/khoDataService');
+                    const { parseKhoList } = await import('../utils/dataUtils');
+                    const khos = parseKhoList(departmentId);
+                    for (const k of khos) {
+                        await purgeKhoSalesFiles(k).catch(console.error);
+                    }
+                }
             }
             setAppState('upload');
+            toast.success('Đã xóa sạch dữ liệu phân tích!');
         } catch (error) {
             console.error(error);
+            toast.error('Có lỗi xảy ra khi xóa dữ liệu!');
         }
     };
 

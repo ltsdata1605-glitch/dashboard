@@ -126,6 +126,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
     // States cho Gia Hạn và Thu Hồi
     const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+    const [actionLoadingType, setActionLoadingType] = useState<'approve' | 'reject' | null>(null);
     const [confirmRevokeUser, setConfirmRevokeUser] = useState<UserActionTarget | null>(null);
     const [extendingUser, setExtendingUser] = useState<UserActionTarget | null>(null);
     const [extendDays, setExtendDays] = useState<number>(30);
@@ -524,6 +525,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
         try {
             setActionLoadingId(requestId);
+            setActionLoadingType(isApproved ? 'approve' : 'reject');
             if (isApproved) {
                 const targetRole = (editRoles[requestId] as AdminRole | undefined) || 'employee';
                 if ((targetRole as string) === 'pending') {
@@ -531,6 +533,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     // người dùng được duyệt nhưng vẫn không có quyền gì. Bắt chọn vai trò trước.
                     toast.error('Chọn vai trò (Nhân Viên / Quản Lý / Admin) trước khi bấm Duyệt.');
                     setActionLoadingId(null);
+                    setActionLoadingType(null);
                     return;
                 }
 
@@ -550,18 +553,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     }
                 }
 
-                // Cập nhật lạc quan (optimistic) ngay lập tức (0ms)
-                if (listMode === 'expired') {
-                    setRequests(prev => prev.filter(req => req.id !== requestId));
-                } else {
-                    setRequests(prev => prev.map(req => req.id === requestId ? { ...req, status: 'approved', expiresAt: expiresAtIso } : req));
-                }
-                if (allAdminUsersRef.current) {
-                    allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
-                        u.id === requestId ? { ...u, status: 'approved', expiresAt: expiresAtIso } : u
-                    );
-                }
-
                 await adminUpdateUser({
                     targetUid: requestId,
                     role: targetRole === 'blocked' ? 'employee' : targetRole,
@@ -578,16 +569,20 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     }
                 });
 
-                toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : listMode === 'expired' ? `Đã GIA HẠN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
-            } else {
-                // Thu hồi quyền truy cập: xóa lạc quan khỏi danh sách hiện tại
-                setRequests(prev => prev.filter(req => req.id !== requestId));
+                // Cập nhật sau khi server xử lý thành công: loại khỏi hàng đợi Chờ duyệt / Hết hạn
+                if (listMode === 'expired' || listMode === 'pending') {
+                    setRequests(prev => prev.filter(req => req.id !== requestId));
+                } else {
+                    setRequests(prev => prev.map(req => req.id === requestId ? { ...req, role: targetRole, status: 'approved', expiresAt: expiresAtIso } : req));
+                }
                 if (allAdminUsersRef.current) {
                     allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
-                        u.id === requestId ? { ...u, status: listMode === 'pending' ? 'rejected' : 'expired' } : u
+                        u.id === requestId ? { ...u, role: targetRole, status: 'approved', expiresAt: expiresAtIso, departmentId: editDepartments[requestId] || '', employeeName: editNames[requestId] || '' } : u
                     );
                 }
 
+                toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : listMode === 'expired' ? `Đã GIA HẠN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
+            } else {
                 await adminUpdateUser({
                     targetUid: requestId,
                     status: listMode === 'pending' ? 'rejected' : 'expired',
@@ -597,6 +592,14 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         type: 'error'
                     }
                 });
+
+                // Thu hồi / từ chối: xóa khỏi danh sách hiện tại
+                setRequests(prev => prev.filter(req => req.id !== requestId));
+                if (allAdminUsersRef.current) {
+                    allAdminUsersRef.current = allAdminUsersRef.current.map(u => 
+                        u.id === requestId ? { ...u, status: listMode === 'pending' ? 'rejected' : 'expired' } : u
+                    );
+                }
 
                 toast.success(listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu!' : 'Đã THU HỒI quyền truy cập!');
             }
@@ -610,6 +613,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             fetchRequests(true);
         } finally {
             setActionLoadingId(null);
+            setActionLoadingType(null);
         }
     };
 
@@ -795,7 +799,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         case 'date': default: return dir * ((a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
                                     }
                                 }).map((req) => (
-                                    <motion.div key={req.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`bg-white dark:bg-slate-800 border rounded-md ${!req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200 dark:border-slate-700/50'} shadow-sm transition-all overflow-hidden`}>
+                                    <motion.div key={req.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`bg-white dark:bg-slate-800 border rounded-md ${actionLoadingId === req.id ? 'ring-2 ring-sky-500/60 border-sky-400 dark:border-sky-500 shadow-md' : !req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200 dark:border-slate-700/50'} shadow-sm transition-all overflow-hidden`}>
                                         {/* Row 1: Avatar + Name + Role + Actions */}
                                         <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/30">
                                             <div className="relative shrink-0">
@@ -833,11 +837,39 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {listMode === 'pending' ? (
                                                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, false)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
-                                                            <Icon name="x" size={3.5} />
+                                                        <Button 
+                                                            variant="unstyled" 
+                                                            size="none" 
+                                                            disabled={actionLoadingId === req.id}
+                                                            onClick={() => handleApproval(req.id, false)} 
+                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700 cursor-pointer" 
+                                                            title="Từ chối"
+                                                        >
+                                                            {actionLoadingId === req.id && actionLoadingType === 'reject' ? (
+                                                                <Icon name="loader-2" size={3.5} className="animate-spin text-rose-600" />
+                                                            ) : (
+                                                                <Icon name="x" size={3.5} />
+                                                            )}
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleApproval(req.id, true)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-colors flex items-center gap-1">
-                                                            <Icon name="check" size={3.5} /> Duyệt
+                                                        <Button 
+                                                            variant="unstyled" 
+                                                            size="none" 
+                                                            disabled={actionLoadingId === req.id}
+                                                            onClick={() => handleApproval(req.id, true)} 
+                                                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 disabled:bg-sky-500/80 disabled:cursor-wait transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer shadow-2xs"
+                                                            title="Phê duyệt yêu cầu"
+                                                        >
+                                                            {actionLoadingId === req.id && actionLoadingType === 'approve' ? (
+                                                                <>
+                                                                    <Icon name="loader-2" size={3.5} className="animate-spin text-white" />
+                                                                    <span>Đang duyệt...</span>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Icon name="check" size={3.5} />
+                                                                    <span>Duyệt</span>
+                                                                </>
+                                                            )}
                                                         </Button>
                                                     </div>
                                                 ) : listMode === 'expired' ? (

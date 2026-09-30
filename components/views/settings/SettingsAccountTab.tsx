@@ -127,6 +127,7 @@ export const SettingsAccountTab: React.FC = () => {
             toast.error("Có lỗi xảy ra khi Cập nhật thông tin!");
         } finally {
             setIsSaving(false);
+            setIsConfirmDoiKhoOpen(false);
         }
     };
 

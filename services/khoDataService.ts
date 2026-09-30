@@ -18,7 +18,7 @@
 
 import { db } from './firebase';
 import {
-    doc, getDoc, getDocs, updateDoc, collection, writeBatch, serverTimestamp
+    doc, getDoc, getDocs, updateDoc, deleteDoc, collection, writeBatch, serverTimestamp
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
@@ -249,6 +249,49 @@ export async function deleteKhoSalesFile(maKho: string, fileId: string): Promise
     snapshot.forEach(docSnap => batch.delete(docSnap.ref));
     batch.delete(doc(filesCollectionRef(maKho), fileId));
     await batch.commit();
+}
+
+/**
+ * Xoá sạch toàn bộ file doanh số (metadata + toàn bộ chunks) của 1 Kho.
+ * Dùng khi quản lý reset dữ liệu Kho hoặc bấm xoá tất cả dữ liệu.
+ */
+export async function purgeKhoSalesFiles(maKho: string): Promise<void> {
+    if (!maKho) return;
+    try {
+        const filesRef = filesCollectionRef(maKho);
+        const filesSnap = await getDocs(filesRef);
+        if (!filesSnap.empty) {
+            for (const fileDoc of filesSnap.docs) {
+                const fileId = fileDoc.id;
+                const chunksRef = chunksCollectionRef(maKho, fileId);
+                const chunkSnap = await getDocs(chunksRef);
+                
+                for (let i = 0; i < chunkSnap.docs.length; i += BATCH_GROUP_SIZE) {
+                    const group = chunkSnap.docs.slice(i, i + BATCH_GROUP_SIZE);
+                    const batch = writeBatch(db);
+                    group.forEach(c => batch.delete(c.ref));
+                    await batch.commit();
+                }
+                await deleteDoc(fileDoc.ref);
+            }
+        }
+
+        // Xoá cache cục bộ và snapshot đã lưu của Kho này
+        try {
+            const appliedSnapshotKey = `khoDataAppliedSnapshot::${maKho}`;
+            await dbService.deleteSetting(appliedSnapshotKey);
+            const allSettings = await dbService.getAllSettings();
+            for (const key of Object.keys(allSettings)) {
+                if (key.startsWith(`khoDataCache_${maKho}_`)) {
+                    await dbService.deleteSetting(key);
+                }
+            }
+        } catch {
+            /* bỏ qua lỗi xoá cache setting */
+        }
+    } catch (err) {
+        console.warn(`[KhoData] Lỗi purgeKhoSalesFiles cho Kho ${maKho}:`, err);
+    }
 }
 
 /**

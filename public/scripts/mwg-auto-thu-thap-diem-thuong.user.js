@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      6.9
+// @version      7.0
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -15,6 +15,7 @@
 // @match        http://localhost/*
 // @match        https://localhost/*
 // @grant        unsafeWindow
+// @grant        GM_xmlhttpRequest
 // @grant        GM_setClipboard
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -24,6 +25,22 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.0 — CHUẨN HOÁ TOÀN DIỆN QUY TRÌNH TỰ ĐỘNG REALTIME THEO CHUẨN THAO TÁC GỐC MWG:
+ * - Chuẩn hoá luồng UI Fallback 4 bước không chuyển trang thừa:
+ *   + Bước 1: Tại Doanh thu hợp nhất (/dashboard/revenue-consolidated), tự động chọn "Realtime" (bg-blue-600 text-white),
+ *     bật "DT quy đổi", bật toggle/nút "Trả góp", mở dropdown Siêu thị chọn "Chọn tất cả" -> Mở rộng cấp và Copy Doanh thu hợp nhất.
+ *   + Bước 2: Ở nguyên tại trang Doanh thu hợp nhất, chọn trực tiếp tab "Ngành hàng BI" (div.inline-flex > button:nth-of-type(3)) ->
+ *     Mở rộng cấp và Copy Doanh thu ngành hàng BI.
+ *   + Bước 3: Ở nguyên tại trang Doanh thu hợp nhất, chọn trực tiếp tab "Nhân viên" (div.inline-flex > button:nth-of-type(4)) ->
+ *     Copy Doanh thu nhân viên.
+ *   + Bước 4: Điều hướng sang Thi đua (/dashboard/thi-dua), mở dropdown Siêu thị chọn "Chọn tất cả",
+ *     BẮT BUỘC BẤM NÚT "Realtime" (khắc phục dứt điểm lỗi bị copy nhầm dữ liệu Luỹ kế mặc định) -> Copy Thi đua Realtime.
+ * - Sửa lỗi Direct Internal API Engine: Bind unsafeWindow.fetch đúng ngữ cảnh Window, bổ sung @grant GM_xmlhttpRequest
+ *   triệt tiêu hoàn toàn lỗi "Failed to execute 'fetch' on 'Window': Illegal invocation".
+ * - Bổ sung hàm ensureTraGopActive() nhận diện chuẩn xác nút button toggle "Trả góp" trong div.flex > button.
+ * - Tối ưu điều hướng nav sidebar cho SPA baocao.dienmayxanh.com: Nhận diện chính xác nav a:nth-of-type(2) (Doanh thu)
+ *   và nav a:nth-of-type(3) (Thi đua).
+ *
  * BẢN 6.9 — ƯU TIÊN ĐẦU TIÊN KHI CHẠY REALTIME: TỰ ĐỘNG CHỌN QUA TAB "Realtime" (bg-blue-600 text-white):
  * - Ưu tiên số 1 tuyệt đối: Ngay khi kích hoạt Tự động Realtime, tự động tìm và click chọn tab "Realtime"
  *   để nút chuyển sang trạng thái active (bg-blue-600 text-white), đưa toàn bộ giao diện MWG sang chế độ Realtime.
@@ -2280,6 +2297,51 @@
     return false;
   }
 
+  async function ensureTraGopActive() {
+    console.log('[BI-Sync] Đang kiểm tra bộ lọc / nút "Trả góp"...');
+    const candidates = Array.from(document.querySelectorAll('button, div.flex > button, [role="button"], label'));
+    const btn = candidates.find(el => {
+      if (!acpIsVisible(el)) return false;
+      const txt = (el.textContent || '').trim().toLowerCase();
+      return txt === 'trả góp' || (txt.includes('trả góp') && txt.length <= 15);
+    });
+
+    if (btn) {
+      const cls = btn.getAttribute('class') || '';
+      const style = window.getComputedStyle(btn);
+      const isBlue =
+        cls.includes('bg-blue-600') ||
+        cls.includes('bg-blue-500') ||
+        cls.includes('text-blue-600') ||
+        cls.includes('border-blue-600') ||
+        cls.includes('bg-blue-50') ||
+        btn.getAttribute('aria-pressed') === 'true' ||
+        btn.getAttribute('data-state') === 'on' ||
+        btn.getAttribute('data-state') === 'checked' ||
+        style.backgroundColor.includes('37, 99, 235') ||
+        style.color.includes('37, 99, 235');
+
+      const isInactive =
+        cls.includes('bg-white') ||
+        cls.includes('text-gray') ||
+        cls.includes('border-slate-200') ||
+        cls.includes('border-gray-200');
+
+      if (!isBlue || isInactive) {
+        console.log('[BI-Sync] Kích hoạt bật nút "Trả góp"...');
+        acpTriggerClick(btn);
+        try { btn.click(); } catch (_) {}
+        await sleep(250);
+        await acpWaitForLoadingComplete(15000, 200, 200);
+      } else {
+        console.log('[BI-Sync] Nút "Trả góp" đã active sẵn.');
+      }
+      return true;
+    }
+
+    return await ensureCheckboxChecked('Trả góp');
+  }
+
   async function selectTabOrSection(tabName) {
     const btn = findButtonByText([tabName]);
     if (btn) {
@@ -2292,25 +2354,50 @@
   }
 
   async function navigateToBiSection(sectionName, fallbackPath) {
+    if (fallbackPath && location.pathname.includes(fallbackPath)) {
+      console.log(`[BI-Sync] Đã ở trang ${fallbackPath}, không cần điều hướng.`);
+      return true;
+    }
+
     const links = Array.from(document.querySelectorAll('aside a, nav a, div a, button, [role="link"]'));
-    const target = links.find((el) => {
+    let target = links.find((el) => {
       if (!acpIsVisible(el)) return false;
       const txt = (el.textContent || '').trim().toLowerCase();
       const href = (el.getAttribute('href') || '').toLowerCase();
       const sName = sectionName.toLowerCase();
-      return txt.includes(sName) || (fallbackPath && href.includes(fallbackPath.toLowerCase()));
+      return (sName && (txt === sName || txt.includes(sName))) || (fallbackPath && href.includes(fallbackPath.toLowerCase()));
     });
+
+    if (!target) {
+      if (fallbackPath && fallbackPath.includes('thi-dua')) {
+        target = document.querySelector('nav a[href*="thi-dua"]') ||
+                 document.querySelector('#root nav a:nth-of-type(3)') ||
+                 document.querySelector('nav a:nth-of-type(3)');
+      } else if (fallbackPath && fallbackPath.includes('revenue-consolidated')) {
+        target = document.querySelector('nav a[href*="revenue-consolidated"]') ||
+                 document.querySelector('#root nav a:nth-of-type(2)') ||
+                 document.querySelector('nav a:nth-of-type(2)');
+      }
+    }
 
     if (target) {
       console.log(`[BI-Sync] Điều hướng SPA tới: ${sectionName}`);
       acpTriggerClick(target);
+      try { target.click(); } catch (_) {}
+      await sleep(500);
       await acpWaitForLoadingComplete(45000, 700, 500);
-      return true;
+      if (fallbackPath && location.pathname.includes(fallbackPath)) {
+        return true;
+      }
     }
 
     if (fallbackPath && !location.pathname.includes(fallbackPath)) {
       console.log(`[BI-Sync] Điều hướng qua URL: ${fallbackPath}`);
-      location.href = `https://${location.hostname}${fallbackPath}`;
+      const currentUrl = new URL(location.href);
+      const mode = currentUrl.searchParams.get('ycx_mode');
+      const jobId = currentUrl.searchParams.get('job_id');
+      const queryStr = (mode && jobId) ? `?ycx_mode=${mode}&job_id=${jobId}#ycx_mode=${mode}&job_id=${jobId}` : '';
+      location.href = `https://${location.hostname}${fallbackPath}${queryStr}`;
       return false;
     }
 
@@ -2534,23 +2621,70 @@
     const url = endpoint.startsWith('common/')
       ? `https://baocao.dienmayxanh.com/kb-api/${endpoint}`
       : `https://baocao.dienmayxanh.com/kb-api/reports/${endpoint}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'accept': '*/*',
-        'authorization': `Bearer ${token}`,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(bodyObj),
-    });
-    if (!res.ok) {
-      throw new Error(`API ${endpoint} trả về HTTP ${res.status}`);
+
+    const headers = {
+      'accept': '*/*',
+      'authorization': `Bearer ${token}`,
+      'content-type': 'application/json',
+    };
+    const bodyStr = JSON.stringify(bodyObj);
+
+    // 1. Thử gọi qua fetch được bind chuẩn với unsafeWindow hoặc window
+    const fetchFn = (typeof unsafeWindow !== 'undefined' && unsafeWindow.fetch)
+      ? unsafeWindow.fetch.bind(unsafeWindow)
+      : (typeof window !== 'undefined' && window.fetch ? window.fetch.bind(window) : null);
+
+    if (fetchFn) {
+      try {
+        const res = await fetchFn(url, {
+          method: 'POST',
+          headers,
+          body: bodyStr,
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json && json.success !== false) {
+            return json.data || [];
+          }
+          console.warn(`[BI-Sync] API ${endpoint} trả về success = false:`, json?.message);
+        } else {
+          console.warn(`[BI-Sync] API ${endpoint} HTTP ${res.status}`);
+        }
+      } catch (fetchErr) {
+        console.warn(`[BI-Sync] fetchFn thất bại cho ${endpoint}, chuyển sang GM_xmlhttpRequest:`, fetchErr);
+      }
     }
-    const json = await res.json();
-    if (!json || json.success === false) {
-      throw new Error(`API ${endpoint} không thành công: ${json?.message || 'Lỗi server'}`);
+
+    // 2. Fallback sang GM_xmlhttpRequest (bỏ qua mọi rào cản sandbox/CORS)
+    if (typeof GM_xmlhttpRequest === 'function') {
+      return new Promise((resolve, reject) => {
+        GM_xmlhttpRequest({
+          method: 'POST',
+          url,
+          headers,
+          data: bodyStr,
+          onload: (response) => {
+            try {
+              if (response.status >= 200 && response.status < 300) {
+                const json = JSON.parse(response.responseText);
+                if (json && json.success !== false) {
+                  return resolve(json.data || []);
+                }
+                return reject(new Error(json?.message || `API ${endpoint} không thành công`));
+              }
+              reject(new Error(`API ${endpoint} trả về HTTP ${response.status}`));
+            } catch (parseErr) {
+              reject(parseErr);
+            }
+          },
+          onerror: (err) => reject(new Error(`GM_xmlhttpRequest lỗi cho ${endpoint}: ${err?.statusText || 'Lỗi mạng'}`)),
+          ontimeout: () => reject(new Error(`Timeout API ${endpoint}`)),
+        });
+      });
     }
-    return json.data || [];
+
+    throw new Error(`Không thể thực hiện request API ${endpoint}`);
   }
 
   async function acpFetchStoresFromAsmApi(token) {
@@ -2790,10 +2924,10 @@
         await ensureRealtimeTabActive();
         await sleep(250);
 
-        // TIẾP THEO: Đảm bảo tự động chọn "DT quy đổi" & tick checkbox "Trả góp"
+        // TIẾP THEO: Đảm bảo tự động chọn "DT quy đổi" & bật nút "Trả góp"
         await ensureToggleActive('DT quy đổi');
         await sleep(200);
-        await ensureCheckboxChecked('Trả góp');
+        await ensureTraGopActive();
         await sleep(200);
         await acpWaitForLoadingComplete(15000, 250, 200);
 
@@ -2961,22 +3095,29 @@
         // ====== NẾU KHÔNG CÓ TOKEN HOẶC API LỖI: CHẠY UI AUTOMATION FALLBACK ======
 
         // --- BƯỚC 1: Doanh thu hợp nhất Realtime ---
-        // 1. ƯU TIÊN SỐ 1: Tự động chọn tab "Realtime" (bg-blue-600 text-white) ĐẦU TIÊN
-        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Ưu tiên đầu tiên: Đang chọn tab "Realtime"...');
+        if (!location.pathname.includes('/dashboard/revenue-consolidated')) {
+          await navigateToBiSection('Doanh thu hợp nhất', '/dashboard/revenue-consolidated');
+          await acpWaitForLoadingComplete(35000, 700, 500);
+        }
+
+        // 1. ƯU TIÊN SỐ 1: Tự động chọn tab "Realtime" (bg-blue-600 text-white)
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Bước 1/4: Đang chọn tab "Realtime"...');
         await ensureRealtimeTabActive();
         await sleep(250);
 
         // 2. Tiếp theo: Tự động bật "DT quy đổi"
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Bước 1/4: Đang bật "DT quy đổi"...');
         await ensureToggleActive('DT quy đổi');
         await sleep(250);
 
-        // 3. Tiếp theo: Tự động tick checkbox "Trả góp"
-        await ensureCheckboxChecked('Trả góp');
+        // 3. Tiếp theo: Tự động bật nút "Trả góp"
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Bước 1/4: Đang bật "Trả góp"...');
+        await ensureTraGopActive();
         await sleep(250);
         await acpWaitForLoadingComplete(15000, 250, 250);
 
-        // 4. Tiếp theo mới thiết lập bộ lọc Siêu thị (Chọn tất cả)
-        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị (Chọn tất cả)...');
+        // 4. Tiếp theo: Thiết lập bộ lọc Siêu thị (Chọn tất cả)
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Bước 1/4: Đang chọn tất cả siêu thị...');
         await ensureSelectAllChecked();
         await acpWaitForLoadingComplete(35000, 500, 400);
 
@@ -2985,11 +3126,11 @@
         await sleep(150);
         await ensureToggleActive('DT quy đổi');
         await sleep(150);
-        await ensureCheckboxChecked('Trả góp');
+        await ensureTraGopActive();
         await sleep(150);
         await acpWaitForLoadingComplete(15000, 250, 250);
 
-        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang mở rộng các cấp dữ liệu...');
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Bước 1/4: Đang mở rộng các cấp dữ liệu...');
         await expandAllCandidates(null, (msg) => {
           reportProgress(1, totalSteps, 'Doanh thu hợp nhất', msg);
         });
@@ -2998,55 +3139,47 @@
         results.summary = await collectCurrentBiData();
         console.log('[BI-Sync] Đã xong Bước 1: Doanh thu hợp nhất', results.summary?.length);
 
-        // --- BƯỚC 2: Thi đua ---
-        await reportProgress(2, totalSteps, 'Thi đua', 'Đang chuyển sang dữ liệu Thi đua...');
-        let okTabThidua = await selectTabOrSection('Thi đua');
-        if (!okTabThidua) {
-          await navigateToBiSection('Thi đua', '/dashboard/thi-dua');
-        }
-        await acpWaitForLoadingComplete(35000, 600, 500);
-
-        await ensureSelectAllChecked();
-        await acpWaitForLoadingComplete(30000, 500, 400);
-
-        results.competition = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 2: Thi đua', results.competition?.length);
-
-        // --- BƯỚC 3: Doanh thu ngành hàng BI (Hình 2: Chọn tab Ngành hàng BI ngay trên Doanh thu hợp nhất) ---
-        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Đang chuyển sang tab Ngành hàng BI...');
-        if (!location.pathname.includes('/dashboard/revenue-consolidated')) {
-          await navigateToBiSection('Doanh thu hợp nhất', '/dashboard/revenue-consolidated');
-          await acpWaitForLoadingComplete(35000, 700, 500);
-        }
+        // --- BƯỚC 2: Ngành hàng BI (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Ngành hàng BI") ---
+        await reportProgress(2, totalSteps, 'Ngành hàng BI', 'Bước 2/4: Đang chọn tab "Ngành hàng BI"...');
         await selectTabOrSection('Ngành hàng BI');
         await acpWaitForLoadingComplete(35000, 600, 500);
 
-        await ensureSelectAllChecked();
-        await acpWaitForLoadingComplete(30000, 500, 400);
-
-        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Đang mở rộng các cấp ngành hàng...');
+        await reportProgress(2, totalSteps, 'Ngành hàng BI', 'Bước 2/4: Đang mở rộng các cấp ngành hàng...');
         await expandAllCandidates(null, (msg) => {
-          reportProgress(3, totalSteps, 'Ngành hàng BI', msg);
+          reportProgress(2, totalSteps, 'Ngành hàng BI', msg);
         });
         await acpWaitForLoadingComplete(20000, 400, 300);
 
         results.industry = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 3: Ngành hàng BI', results.industry?.length);
+        console.log('[BI-Sync] Đã xong Bước 2: Ngành hàng BI', results.industry?.length);
 
-        // --- BƯỚC 4: Doanh thu nhân viên ---
-        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Đang chuyển sang tab Nhân viên...');
-        if (!location.pathname.includes('/dashboard/revenue-consolidated')) {
-          await navigateToBiSection('Doanh thu hợp nhất', '/dashboard/revenue-consolidated');
-          await acpWaitForLoadingComplete(35000, 700, 500);
-        }
+        // --- BƯỚC 3: Doanh thu nhân viên (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Nhân viên") ---
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Bước 3/4: Đang chọn tab "Nhân viên"...');
         await selectTabOrSection('Nhân viên');
         await acpWaitForLoadingComplete(35000, 600, 500);
 
+        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Bước 3/4: Đang sao chép doanh thu nhân viên...');
+        results.employee = await collectCurrentBiData();
+        console.log('[BI-Sync] Đã xong Bước 3: Doanh thu nhân viên', results.employee?.length);
+
+        // --- BƯỚC 4: Thi đua (ĐIỀU HƯỚNG SANG TRANG /dashboard/thi-dua & BẤM REALTIME) ---
+        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang chuyển sang trang Thi đua...');
+        await navigateToBiSection('Thi đua', '/dashboard/thi-dua');
+        await acpWaitForLoadingComplete(35000, 600, 500);
+
+        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang chọn tất cả siêu thị...');
         await ensureSelectAllChecked();
         await acpWaitForLoadingComplete(30000, 500, 400);
 
-        results.employee = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 4: Doanh thu nhân viên', results.employee?.length);
+        // BƯỚC QUYẾT ĐỊNH: Bấm nút "Realtime" trên trang Thi đua
+        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang chọn chế độ "Realtime" cho Thi đua...');
+        await ensureRealtimeTabActive();
+        await sleep(250);
+        await acpWaitForLoadingComplete(30000, 500, 400);
+
+        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang sao chép dữ liệu Thi đua Realtime...');
+        results.competition = await collectCurrentBiData();
+        console.log('[BI-Sync] Đã xong Bước 4: Thi đua Realtime', results.competition?.length);
 
         await reportDone(results);
 

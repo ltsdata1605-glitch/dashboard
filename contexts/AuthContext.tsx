@@ -242,14 +242,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Gọi Cloud Function requestAccess (functions/src/session.ts) — hàm này tự
             // gửi notification cho admin/manager của deptId, client không cần gọi lại.
             await requestAccessApi(requestedRole, deptId, empName);
-            setUserRole('pending');
-            setStatus('pending');
-            setDepartmentId(deptId);
-            setEmployeeName(empName);
         } catch (error) {
-            console.error("Lỗi gửi yêu cầu truy cập:", error);
-            throw error;
+            console.warn("[Auth] requestAccessApi gặp cảnh báo/timeout, kiểm tra Firestore trực tiếp:", error);
+            try {
+                const { doc, getDoc } = await import('firebase/firestore');
+                const snap = await getDoc(doc(db, 'users', user.uid));
+                const data = snap.data();
+                if (data && data.status === 'pending') {
+                    console.log("[Auth] Firestore đã ghi nhận trạng thái pending thành công!");
+                } else {
+                    throw error;
+                }
+            } catch {
+                console.error("Lỗi gửi yêu cầu truy cập:", error);
+                throw error;
+            }
         }
+        setUserRole('pending');
+        setStatus('pending');
+        setDepartmentId(deptId);
+        setEmployeeName(empName);
+        saveSetting('cached_user_role', 'pending').catch(() => {});
+        saveSetting('cached_user_status', 'pending').catch(() => {});
+        if (deptId) saveSetting('cached_dept_id', deptId).catch(() => {});
+        if (empName) saveSetting('cached_emp_name', empName).catch(() => {});
     };
 
     const loginWithGoogle = async () => {

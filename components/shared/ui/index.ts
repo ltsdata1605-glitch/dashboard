@@ -55,3 +55,7 @@ export { SectionCard } from './SectionCard';
 export { SectionHeader } from './SectionHeader';
 export { KpiCard } from './KpiCard';
 export type { KpiCardProps } from './KpiCard';
+
+export { FeatureLandingLayout } from './FeatureLandingLayout';
+export type { FeatureLandingLayoutProps } from './FeatureLandingLayout';
+

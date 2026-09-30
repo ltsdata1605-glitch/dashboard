@@ -37,5 +37,11 @@ export const requestAccess = async (
     departmentId: string,
     employeeName?: string
 ): Promise<void> => {
-    await requestAccessFn({ requestedRole, departmentId, employeeName });
+    const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('REQUEST_TIMEOUT')), 8000)
+    );
+    await Promise.race([
+        requestAccessFn({ requestedRole, departmentId, employeeName }),
+        timeoutPromise
+    ]);
 };

@@ -67,6 +67,7 @@ export const useDashboardLogic = () => {
         handleDeleteFile: handleDeleteFileRaw,
         hasRealtimeData,
         handleClearRealtimeData,
+        handleClearAllData: handleClearAllDataRaw,
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
@@ -165,6 +166,7 @@ export const useDashboardLogic = () => {
     // của DashboardContext re-render dù dữ liệu không đổi.
     const stableHandleClearDepartments = useStableCallback(handleClearDepartments);
     const stableHandleClearData = useStableCallback(handleClearData);
+    const stableHandleClearAllData = useStableCallback(handleClearAllDataRaw);
     const stableHandleShiftFileProcessing = useStableCallback(handleShiftFileProcessing);
     const stableHandleFileProcessing = useStableCallback(handleFileProcessing);
     const stableHandleAcceptCloudSync = useStableCallback(handleAcceptCloudSyncRaw);
@@ -299,6 +301,7 @@ export const useDashboardLogic = () => {
         activeModal, setActiveModal, modalData,
         handleClearDepartments: stableHandleClearDepartments,
         handleClearData: stableHandleClearData,
+        handleClearAllData: stableHandleClearAllData,
         handleShiftFileProcessing: stableHandleShiftFileProcessing,
         handleFileProcessing: stableHandleFileProcessing,
         pendingNaming, setPendingNaming,
@@ -349,7 +352,7 @@ export const useDashboardLogic = () => {
         filterState, handleFilterChange,
         pendingCloudSync, stableHandleAcceptCloudSync,
         activeModal, modalData,
-        stableHandleClearDepartments, stableHandleClearData, stableHandleShiftFileProcessing, stableHandleFileProcessing,
+        stableHandleClearDepartments, stableHandleClearData, stableHandleClearAllData, stableHandleShiftFileProcessing, stableHandleFileProcessing,
         pendingNaming, pendingConflict,
         openPerformanceModal, openUnshippedModal, handleExport, handleBatchExport, handleBatchKhoExport, handleExportUncollectedSheet,
         pendingExport, handlePendingDownload, handlePendingShare, handlePendingClose,
