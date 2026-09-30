@@ -6342,3 +6342,12 @@ Phần lớn 38s là Worker đọc Excel (luồng chính rảnh ~26s). Khựng l
 - Chuyển stringify + ghi IndexedDB (2) vào Worker (IndexedDB dùng được trong Worker) hoặc lưu từng khúc.
 - Worker gửi kết quả theo khúc để tránh 1 lần parse 1,5s.
 - Xem lại tuỳ chọn `WTF: true` trong `services/worker.ts` (chế độ gỡ lỗi của SheetJS: ném lỗi với định dạng lạ).
+
+---
+
+# Đợt 4 — hiệu năng nạp dữ liệu lớn (2026-09-30)
+| # | File | Thay đổi | Rủi ro | Kiểm tra |
+|---|---|---|---|---|
+| 1 | `hooks/useFileUploadLogic.ts` | Hạn chờ Worker 60s CỨNG → hạn theo dung lượng file (60s + 3s/MB) và gia hạn mỗi lần Worker báo tiến độ. Lỗi thật: file 194MB mất ~35s trên máy 4 nhân; file 100MB trên iPhone dễ vượt 60s → "Quá thời gian xử lý tệp" | File hỏng thật mất lâu hơn mới báo lỗi | unit (hàm tính hạn) + e2e 200k |
+| 2 | `services/dbService/salesData.ts` | Cache DÙNG MỘT LẦN: `saveTempRealtimeData` commit xong giữ bản trong bộ nhớ; `getTempRealtimeData` kế tiếp trả luôn (không đọc + JSON.parse lại 200.000 dòng); `clearTempRealtimeData` xoá cache | Object trả về là bản trong bộ nhớ (nội dung giống hệt bản đọc lại — cùng xuất phát từ JSON.parse, parsedDate là Date ở cả 2) | e2e 200k đo trước/sau + e2e Phân tích |
+| 3 | (sau khi đo lại có sourcemap) | Điểm nóng còn lại | — | — |
