@@ -11,12 +11,23 @@ test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 }
 const keo = (page: Page, targetSel: string, tuY: number, denY: number, soNgon = 1) =>
     page.evaluate(({ targetSel, tuY, denY, soNgon }) => {
         const target = document.querySelector(targetSel)!;
-        const mk = (y: number) => Array.from({ length: soNgon }, (_, i) =>
-            new Touch({ identifier: i + 1, target, clientX: 100 + i * 50, clientY: y }));
-        target.dispatchEvent(new TouchEvent('touchstart', { touches: mk(tuY), bubbles: true, cancelable: true }));
-        const move = new TouchEvent('touchmove', { touches: mk(denY), bubbles: true, cancelable: true });
-        target.dispatchEvent(move);
-        return move.defaultPrevented;
+        // Chromium cho `new Touch()`; WebKit (engine Safari, job CI e2e-webkit) báo "Illegal constructor"
+        // → dựng Event thường gắn danh sách `touches` cùng các trường script đọc (clientY, target).
+        const coTouch = (() => { try { new Touch({ identifier: 0, target }); return true; } catch { return false; } })();
+        const phat = (type: string, y: number) => {
+            const ds = Array.from({ length: soNgon }, (_, i) => ({ identifier: i + 1, target, clientX: 100 + i * 50, clientY: y }));
+            let ev: Event;
+            if (coTouch) {
+                ev = new TouchEvent(type, { touches: ds.map(t => new Touch(t)), bubbles: true, cancelable: true });
+            } else {
+                ev = new Event(type, { bubbles: true, cancelable: true });
+                Object.defineProperty(ev, 'touches', { value: ds });
+            }
+            target.dispatchEvent(ev);
+            return ev;
+        };
+        phat('touchstart', tuY);
+        return phat('touchmove', denY).defaultPrevented;
     }, { targetSel, tuY, denY, soNgon });
 
 test.beforeEach(async ({ page }) => {
