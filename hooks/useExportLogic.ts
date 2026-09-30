@@ -2,6 +2,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
+import { offerBatchShare, type BatchShareFile } from '../components/shared/ui/BatchShareToast';
+import { isMobileLikeDevice } from '../utils/dataUtils';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
@@ -45,6 +47,24 @@ const reportBatchOutcome = (items: BatchItemOutcome[], fatalError?: unknown) => 
     const { type, message } = describeBatchOutcome(items, fatalError);
     if (type === 'success') toast.success(message, { id: 'batch-export-result', duration: 4000 });
     else toast.error(message, { id: 'batch-export-result', duration: 12000 });
+};
+
+/**
+ * Điện thoại chia sẻ được tệp: gom ảnh cả lô rồi chia sẻ MỘT lần (components/shared/ui/BatchShareToast).
+ * Trước đây mỗi ảnh gọi share riêng không chờ → iOS từ chối ngay từ ảnh đầu, để lại N thông báo "chạm
+ * lại" chồng nhau. Trả về `mode` cho exportElementAsImage + hàm giao cả lô sau khi xong.
+ */
+const taoBoGomAnh = () => {
+    const gom = isMobileLikeDevice() && typeof navigator !== 'undefined' && !!navigator.share && !!navigator.canShare;
+    const files: BatchShareFile[] = [];
+    return {
+        mode: (gom ? 'blob-only' : 'download') as 'blob-only' | 'download',
+        them: (blob: Blob | null, filename: string) => { if (gom && blob) files.push({ blob, filename }); },
+        giao: () => {
+            if (!gom || files.length === 0) return;
+            offerBatchShare(files, () => files.forEach(f => downloadBlob(f.blob, f.filename, true)));
+        },
+    };
 };
 
 const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
@@ -128,6 +148,7 @@ export const useExportLogic = ({
         showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
 
         const outcomes: BatchItemOutcome[] = [];
+        const gomAnh = taoBoGomAnh();
         let fatalError: unknown;
         let offscreenContainer: HTMLDivElement | null = null;
         let root: ReactDOM.Root | null = null;
@@ -172,7 +193,8 @@ export const useExportLogic = ({
                         // nếu bảng Phụ kiện/ĐGD đang bật nhiều cột. Đếm cột ngay trên DOM vừa render vì
                         // luồng này chụp thẳng .modal-content, không đi qua handleExport của modal.
                         const categoryHeaderCells = modalContent.querySelectorAll(`.${CATEGORY_TABLE_CLASS} thead tr:last-child th`);
-                        const blob = await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length) });
+                        const blob = await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length), mode: gomAnh.mode });
+                        gomAnh.them(blob, filename);
                         outcomes.push(blob
                             ? { label: employee.name, ok: true }
                             : { label: employee.name, ok: false, error: 'Không tạo được ảnh' });
@@ -195,6 +217,7 @@ export const useExportLogic = ({
             offscreenContainer?.remove();
         }
         reportBatchOutcome(outcomes, fatalError);
+        gomAnh.giao();
     }, [productConfig, processedData]);
 
     const handleBatchKhoExport = useCallback(async () => {
@@ -226,6 +249,7 @@ export const useExportLogic = ({
         };
 
         const outcomes: BatchItemOutcome[] = [];
+        const gomAnh = taoBoGomAnh();
         let fatalError: unknown;
         try {
             const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
@@ -246,7 +270,9 @@ export const useExportLogic = ({
                 const warehouseElement = document.getElementById('warehouse-summary-view');
                 const blob = warehouseElement ? await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
                     elementsToHide: ['.hide-on-export'],
+                    mode: gomAnh.mode,
                 }) : null;
+                gomAnh.them(blob, 'Báo Cáo Kho Tổng Hợp.png');
                 outcomes.push({ label: 'Tổng hợp kho', ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
             }
             await new Promise(resolve => setTimeout(resolve, 800));
@@ -265,7 +291,9 @@ export const useExportLogic = ({
                 const blob = overviewElement ? await exportElementAsImage(overviewElement, `Tổng Quan Kinh Doanh - ${kho}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     captureAsDisplayed: true,
+                    mode: gomAnh.mode,
                 }) : null;
+                gomAnh.them(blob, `Tổng Quan Kinh Doanh - ${kho}.png`);
                 outcomes.push({ label: kho, ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
 
                 await new Promise(resolve => setTimeout(resolve, 800));
@@ -281,6 +309,7 @@ export const useExportLogic = ({
             hideExportOverlay();
         }
         reportBatchOutcome(outcomes, fatalError);
+        gomAnh.giao();
     }, [uniqueFilterOptions, filterState, handleFilterChange, setStatus]);
 
     const handleExportUncollectedSheet = useCallback(async () => {

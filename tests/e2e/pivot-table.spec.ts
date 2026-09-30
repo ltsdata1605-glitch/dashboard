@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { createSalesXlsx } from './helpers/salesFixture';
+import { createProductConfigXlsx, createSalesXlsx } from './helpers/salesFixture';
 
 /**
  * Bảng Phân tích động (Pivot) — components/pivot/PivotTable.tsx.
@@ -10,10 +10,15 @@ import { createSalesXlsx } from './helpers/salesFixture';
  * số tổng KHỚP với thẻ KPI của trang.
  */
 const moBangPivot = async (page: import('@playwright/test').Page) => {
+    // Cấu hình ngành hàng dựng tại chỗ (Google Sheets bị chặn ở máy chạy test — xem salesFixture).
+    const cauHinh = createProductConfigXlsx();
+    await page.route('**://docs.google.com/**', r => r.fulfill({
+        status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
+    }));
     await page.goto('/');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());
-    await page.getByText('Tệp Realtime (Xem nhanh)').click();
+    await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
     await expect(page.getByText(/Doanh Thu/i).first()).toBeVisible({ timeout: 45_000 });
 
     await page.getByRole('button', { name: /Bộ lọc|Lọc/i }).first().click().catch(() => {});

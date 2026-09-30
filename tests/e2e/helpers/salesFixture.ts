@@ -74,3 +74,21 @@ export function createSalesXlsx(): string {
     if (!existsSync(file)) throw new Error('Không tạo được file Excel test');
     return file;
 }
+
+/**
+ * Cấu hình ngành hàng tối thiểu khớp các mã nhóm ở ROWS (2026-09-30). App tải cấu hình từ Google
+ * Sheets — proxy của container chạy test chặn, nên test dựng cấu hình tại chỗ (chạy được mọi nơi,
+ * không phụ thuộc bảng tính thật thay đổi). Dùng: page.route('**://docs.google.com/**', …).
+ */
+export function createProductConfigXlsx(): Buffer {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ['NhomCha', 'NhomCon', 'NhomHang'],
+        ['ICT', 'Smartphone', '1491'], ['Phụ kiện', 'Camera', '4219'], ['Phụ kiện', 'Pin SDP', '12'],
+        ['Phụ kiện', 'Loa', '1031'], ['Gia dụng', 'Máy lọc nước', '4171'], ['Gia dụng', 'Nồi cơm', '4156'],
+    ]), 'Ngành hàng');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+        ['Hình thức xuất', 'Tính doanh thu', 'Hình thức'], ['Xuất bán hàng tại siêu thị', 'Có', 'Tiền mặt'],
+    ]), 'Hình thức xuất');
+    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+}

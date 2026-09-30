@@ -74,8 +74,12 @@ export async function shareBlob(blob: Blob, filename: string): Promise<boolean> 
 // EXPORT OVERLAY — Full-screen overlay with progress during image export
 // ═══════════════════════════════════════════════════════════════════════
 let _overlayEl: HTMLDivElement | null = null;
+// Hẹn gỡ lớp phủ (sau hiệu ứng mờ 200ms). show() gọi lại trong 200ms đó phải HUỶ hẹn này — trước đây
+// hẹn cũ vẫn chạy và gỡ luôn lớp phủ vừa hiện lại (lô xuất ảnh thứ 2 bấm ngay sau lô 1 mất lớp phủ).
+let _overlayRemoveTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function showExportOverlay(message = 'Đang xuất ảnh...', progress?: string) {
+    if (_overlayRemoveTimer) { clearTimeout(_overlayRemoveTimer); _overlayRemoveTimer = null; }
     if (!_overlayEl) {
         _overlayEl = document.createElement('div');
         _overlayEl.id = 'export-overlay';
@@ -119,7 +123,9 @@ export function updateExportOverlay(message?: string, progress?: string) {
 export function hideExportOverlay() {
     if (_overlayEl) {
         _overlayEl.style.opacity = '0';
-        setTimeout(() => {
+        if (_overlayRemoveTimer) clearTimeout(_overlayRemoveTimer);
+        _overlayRemoveTimer = setTimeout(() => {
+            _overlayRemoveTimer = null;
             _overlayEl?.remove();
             _overlayEl = null;
         }, 200);

@@ -1,9 +1,13 @@
 import { expect, test } from '@playwright/test';
-import { createSalesXlsx, TEST_EMPLOYEE } from './helpers/salesFixture';
+import { createProductConfigXlsx, createSalesXlsx, TEST_EMPLOYEE } from './helpers/salesFixture';
 
 /** Phân Tích > Nhân Viên > modal "Phân Tích Hiệu Quả Cá Nhân" — kiểm chứng thay đổi 2026-09-05. */
 test.describe('Phân Tích — modal hiệu quả cá nhân', () => {
     test.beforeEach(async ({ page }) => {
+        const cauHinh = createProductConfigXlsx();
+        await page.route('**://docs.google.com/**', r => r.fulfill({
+            status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
+        }));
         await page.goto('/');
         await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
 
@@ -11,7 +15,8 @@ test.describe('Phân Tích — modal hiệu quả cá nhân', () => {
         const file = createSalesXlsx();
         await page.locator('input[type="file"]').first().setInputFiles(file);
         // App hỏi chế độ phân tích cho tệp vừa tải lên
-        await page.getByText('Tệp Realtime (Xem nhanh)').click();
+        // Chữ này có ở 2 nơi (nút tab trang đầu + lựa chọn trong modal) → chỉ bấm trong modal.
+        await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
 
         // Chờ dashboard dựng xong (KPI hiện ra)
         await expect(page.getByText(/Doanh Thu/i).first()).toBeVisible({ timeout: 45_000 });

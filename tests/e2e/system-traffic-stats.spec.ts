@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { createSalesXlsx } from './helpers/salesFixture';
+import { createProductConfigXlsx, createSalesXlsx } from './helpers/salesFixture';
 
 /**
  * Kiểm chứng RUNTIME cho bản sửa hạn mức Firestore 2026-09-17 mục 6 — `hooks/useSystemTraffic.ts`
@@ -39,10 +39,15 @@ test('thống kê lượt truy cập vẫn hiển thị sau khi gộp 2 lượt 
     // Dòng thống kê nằm trong khối `{showDashboard && ...}` của DashboardView, nên phải NẠP DỮ
     // LIỆU thật mới render — nếu không trang dừng ở màn hình landing "Dữ liệu phức tạp / Phân tích
     // siêu tốc". Dùng lại đúng cách nạp của tests/e2e/pivot-table.spec.ts.
+    // Cấu hình ngành hàng dựng tại chỗ (Google Sheets bị chặn ở máy chạy test — xem salesFixture).
+    const cauHinh = createProductConfigXlsx();
+    await page.route('**://docs.google.com/**', r => r.fulfill({
+        status: 200, contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', body: cauHinh,
+    }));
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());
-    await page.getByText('Tệp Realtime (Xem nhanh)').click();
+    await page.locator('[data-modal-overlay]').getByText('Tệp Realtime (Xem nhanh)').click();
     await expect(page.getByText(/Doanh Thu/i).first()).toBeVisible({ timeout: 45_000 });
     await page.waitForTimeout(2000);
 

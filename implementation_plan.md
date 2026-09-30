@@ -6467,3 +6467,18 @@ lại hẹp hơn). Chụp ảnh trước/sau các modal dùng từng cỡ để 
   THẬT (props mẫu) ở 1366×768. Chụp được 25/27; EmployeeManagerModal và KpiCardConfigModal cần cả
   DashboardProvider (kiểm bằng typecheck + đổi class). Đo chiều rộng: 672→720, 896→960 đúng cả 25.
 - Kiểm tra: e2e modal-ngan-xep + ui-dung-chung-dot-2 xanh; `npm run check` xanh.
+
+---
+
+# Đợt 7 (2026-09-30) — màu Report BI, chia sẻ một lần trên điện thoại, lớp phủ, sửa test hỏng sẵn
+Trước đợt: deploy `315ae156` (Đợt 6 + màu) lên dashboard.pro.vn, kiểm trang live trả đúng bản build
+(`index-DeJ9zO1j.js`) và tải được `salesJsonWriter.worker-*.js` (200).
+
+| Mục | File | Thay đổi | Kiểm tra |
+|---|---|---|---|
+| CI đỏ do màu (commit `964f27cf` của chủ dự án) | `AutoClickGuideModal.tsx`, `SupermarketConfig.tsx` (nút Copy mới), `DataUpdater.tsx` | indigo → sky (13+2 dòng), teal → emerald. **Đổi màu nhìn thấy được** (indigo thật tím-xanh → sky), vì override indigo=sky đã bị xoá từ 2026-09-09. Không đụng dòng mã bookmarklet chạy trên site MWG | lint-ratchet OK; chụp AutoClickGuideModal sau khi đổi |
+| Xuất hàng loạt trên điện thoại | `components/shared/ui/BatchShareToast.tsx` (mới), `hooks/useExportLogic.ts` | Trước: mỗi ảnh gọi share riêng không chờ → iOS từ chối từ ảnh đầu → N thông báo "chạm lại". Nay gom cả lô (vẫn PNG riêng) → 1 nút "Chia sẻ / Lưu N ảnh" → 1 lượt chạm, 1 bảng chia sẻ. Không chia sẻ được nhiều tệp → tải từng ảnh. Áp cho lô NV và lô Kho | `xuat-hang-loat-dien-thoai-chia-se-mot-lan.spec.ts`: ĐỎ trên mã cũ (3 lượt share đều bị từ chối), XANH mã mới |
+| Lớp phủ xuất ảnh | `services/uiService.ts` | `show` trong 200ms sau `hide` bị hẹn gỡ cũ gỡ mất → `show` huỷ hẹn gỡ | cùng spec: ĐỎ cũ / XANH mới |
+| Test hỏng sẵn | `phan-tich-performance-modal`, `pivot-table`, `system-traffic-stats` + `helpers/salesFixture.ts` (`createProductConfigXlsx`) | Bấm "Tệp Realtime" trong modal (chữ có ở 2 nơi → strict mode); cấu hình ngành hàng dựng tại chỗ thay vì tải Google Sheets | 5 + 5 + 1 xanh (trước: đỏ) |
+Hồi quy: 18 e2e xuất ảnh/modal xanh; `npm run check` xanh (unit 917).
+⚠️ Chromium giả lập iPhone — chia sẻ nhiều ảnh cần thử trên iPhone thật (iOS 17 hỗ trợ `files` nhiều tệp).
