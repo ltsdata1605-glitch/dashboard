@@ -6608,4 +6608,8 @@ vệ, kiểu `RefObject<T | null>` của React 19, khai báo module cho `sortabl
 3. `IndustryView`/`useIndustryViewLogic`: mới dán 1 trong 2 bộ (Realtime/Luỹ kế) → mảng phụ thuộc useMemo đọc bộ còn lại (null) → sập màn Siêu thị › Doanh thu. Nay chỉ render khi bộ đang xem có dữ liệu + `?.`.
 4. `DashboardView`: modal hiệu quả NV render khi `modalData` null → sập; nay có điều kiện.
 5. Vài chỗ đọc trường tuỳ chọn không kiểm (`bonus.dailyData[…]`, `metrics.byProduct[…]`, `modalState.data.tabId`) → sập nếu thiếu; nay `?.`.
-Kiểm tra: `tsc --strict` 0 lỗi; `npm run check` xanh (unit 936); e2e toàn bộ: xem kết quả bên dưới.
+Kiểm tra: `tsc --strict` 0 lỗi; `npm run check` xanh (unit 936).
+e2e TOÀN BỘ sau khi bật strict (190 test, 21,7 phút): 142 xanh, 43 bỏ qua (cần dữ liệu/tài khoản thật), 5 đỏ —
+4 đỏ Y HỆT trên commit ngay trước strict (auth-fresh-login-no-flash:82, iframe-tabs-csp xlsx CDN, tnb-pmh-userscript ×2);
+auth-fresh-login-no-flash:52 đỏ trong lượt toàn bộ (chờ `aside` quá 10s) nhưng chạy riêng trên mã mới 3/3 xanh → nhạy
+thời gian khi chạy dài, không phải hồi quy.
