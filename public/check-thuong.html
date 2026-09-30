@@ -574,6 +574,10 @@
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
                     const payload = {
+                        // Hợp đồng dữ liệu cầu nối Check thưởng → Report BI (A29): xem
+                        // features/bi-dashboard/services/checkThuongBonus.ts (docCheckThuongPayload)
+                        schemaVersion: 1,
+                        source: 'check-thuong',
                         competitionData: competitionData,
                         fileName: fileStatus.textContent.replace('Đã tải: ', '').replace(' (từ bộ nhớ tạm)', ''),
                         uploadTime: fileUploadTime,

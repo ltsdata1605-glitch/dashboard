@@ -39,6 +39,48 @@ export function unwrapCheckThuongRows(payload: unknown): CtRow[] {
         .filter((r): r is CtRow => Array.isArray(r));
 }
 
+/**
+ * HỢP ĐỒNG DỮ LIỆU cầu nối Check thưởng → Report BI (audit A29, 2026-09-30).
+ * Người ghi: iframe `public/check-thuong.html` (saveState) — từ v1 ghi thêm `schemaVersion`/`source`.
+ * Đơn vị: các cột tiền (CT_COLS.THUONG_*, TONG_THUONG) = ĐỒNG; `uploadTime` = chuỗi thời điểm do iframe
+ * ghi; `lastModified` = epoch mili-giây. Bản CŨ (không có schemaVersion) vẫn đọc được.
+ */
+export const CHECK_THUONG_SCHEMA = 1;
+
+export interface CheckThuongPayloadV1 {
+    schemaVersion: number;
+    source: 'check-thuong';
+    competitionData: CtRow[];
+    fileName?: string;
+    uploadTime?: string | null;
+    code1?: string;
+    code2?: string;
+    lastModified?: number;
+}
+
+/** Adapter ĐỌC ở biên: hỏng / không có dòng dữ liệu → null (màn BI coi như chưa có dữ liệu Check thưởng). */
+export function docCheckThuongPayload(raw: unknown): CheckThuongPayloadV1 | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, unknown>;
+    const rows = unwrapCheckThuongRows(r);
+    if (rows.length === 0) return null;
+    const version = typeof r.schemaVersion === 'number' ? r.schemaVersion : 0;
+    if (version > CHECK_THUONG_SCHEMA) {
+        console.warn(`[CheckThuongBonus] Dữ liệu schema v${version} mới hơn bản app (v${CHECK_THUONG_SCHEMA}) — đọc các trường đã biết.`);
+    }
+    const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
+    return {
+        schemaVersion: CHECK_THUONG_SCHEMA,
+        source: 'check-thuong',
+        competitionData: rows,
+        fileName: str(r.fileName),
+        uploadTime: typeof r.uploadTime === 'string' ? r.uploadTime : null,
+        code1: str(r.code1),
+        code2: str(r.code2),
+        lastModified: typeof r.lastModified === 'number' ? r.lastModified : undefined,
+    };
+}
+
 export const normalizeGroupName = (s: unknown): string =>
     String(s ?? '').normalize('NFC').toUpperCase().replace(/\s+/g, ' ').trim();
 

@@ -3,7 +3,7 @@ import { getRootSetting } from '../utils/db';
 import { auth } from '../../../services/firebase';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
-import { computeBonusByGroup, unwrapCheckThuongRows, type BonusCell, type CtRow } from '../services/checkThuongBonus';
+import { computeBonusByGroup, docCheckThuongPayload, type BonusCell, type CtRow, type CheckThuongPayloadV1 } from '../services/checkThuongBonus';
 import { LEGACY_BI_HUB_DB_NAME } from '../../../utils/localDbScope';
 
 export interface UseCheckThuongBonusResult {
@@ -82,29 +82,24 @@ function getCheckThuongFromLegacyDb(): Promise<CheckThuongPayload | null> {
     });
 }
 
-async function fetchCheckThuongPayload(): Promise<CheckThuongPayload | null> {
+async function fetchCheckThuongPayload(): Promise<CheckThuongPayloadV1 | null> {
+    // Mọi nguồn đi qua adapter docCheckThuongPayload (A29): bản cũ nâng lên v1, bản hỏng bỏ qua.
     // 1. Thử từ database scoped của user hiện tại
     try {
-        const root = await getRootSetting<CheckThuongPayload>('checkthuong_data');
-        if (root && typeof root === 'object' && Array.isArray(root.competitionData) && root.competitionData.length > 0) {
-            return root;
-        }
+        const root = docCheckThuongPayload(await getRootSetting<unknown>('checkthuong_data'));
+        if (root) return root;
     } catch {}
 
     // 2. Thử từ database 'keyval-store' của iframe Check Thưởng (nơi public/check-thuong.html ghi)
     try {
-        const fromIframe = await getCheckThuongFromIframeDb();
-        if (fromIframe && typeof fromIframe === 'object' && Array.isArray(fromIframe.competitionData) && fromIframe.competitionData.length > 0) {
-            return fromIframe;
-        }
+        const fromIframe = docCheckThuongPayload(await getCheckThuongFromIframeDb());
+        if (fromIframe) return fromIframe;
     } catch {}
 
     // 3. Thử từ database dùng chung cũ BI_HUB_DATABASE_V2
     try {
-        const fromLegacy = await getCheckThuongFromLegacyDb();
-        if (fromLegacy && typeof fromLegacy === 'object' && Array.isArray(fromLegacy.competitionData) && fromLegacy.competitionData.length > 0) {
-            return fromLegacy;
-        }
+        const fromLegacy = docCheckThuongPayload(await getCheckThuongFromLegacyDb());
+        if (fromLegacy) return fromLegacy;
     } catch {}
 
     return null;
@@ -116,7 +111,7 @@ async function fetchCheckThuongPayload(): Promise<CheckThuongPayload | null> {
  * Chỉ tải khi `enabled` (đang ở Luỹ kế) — file ~26k dòng, không parse khi không cần.
  */
 export function useCheckThuongBonus(activeSupermarket: string, enabled: boolean): UseCheckThuongBonusResult {
-    const [payload, setPayload] = useState<CheckThuongPayload | null>(null);
+    const [payload, setPayload] = useState<CheckThuongPayloadV1 | null>(null);
     const [supermarketMap, setSupermarketMap] = useState<Record<string, string>>({});
     const [version, setVersion] = useState(0);
 
@@ -127,8 +122,12 @@ export function useCheckThuongBonus(activeSupermarket: string, enabled: boolean)
         };
         const onCloudSync = () => setVersion(v => v + 1);
         const onMsg = (e: MessageEvent) => {
+            // Chỉ nhận từ trang CÙNG NGUỒN (iframe Check thưởng của app) — trước đây nhận từ BẤT KỲ cửa sổ
+            // nào: trang lạ mở app trong khung/cửa sổ con có thể bơm số thưởng giả vào bảng Thi đua (A29).
+            if (e.origin !== window.location.origin) return;
             if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED' && e.data.payload) {
-                setPayload(e.data.payload);
+                const p = docCheckThuongPayload(e.data.payload);
+                if (p) setPayload(p);
             }
         };
         window.addEventListener('ycx-setting-changed', onChange);
@@ -151,7 +150,7 @@ export function useCheckThuongBonus(activeSupermarket: string, enabled: boolean)
         return () => { alive = false; };
     }, [enabled, version]);
 
-    const rows = useMemo<CtRow[]>(() => (payload ? unwrapCheckThuongRows(payload) : []), [payload]);
+    const rows = useMemo<CtRow[]>(() => (payload ? payload.competitionData : []), [payload]);
 
     const bonusByGroup = useMemo(() => {
         if (!enabled || rows.length === 0 || !activeSupermarket) return null;

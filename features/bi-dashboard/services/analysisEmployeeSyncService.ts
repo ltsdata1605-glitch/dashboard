@@ -18,11 +18,57 @@ export interface AnalysisEmployeeItem {
     supermarket?: string;    // Tên hoặc mã siêu thị nếu có
 }
 
+/**
+ * HỢP ĐỒNG DỮ LIỆU cầu nối Phân tích → Report BI (audit A29, 2026-09-30 — chủ dự án xác nhận thứ tự).
+ * `schemaVersion`/`source` thêm từ v1; bản lưu CŨ (không có 2 trường này) vẫn đọc được — `docAnalysisEmployeesPayload`
+ * nâng lên v1 khi đọc. Đơn vị: `updatedAt` = epoch mili-giây. Định danh ổn định: `id` = mã nhân viên (chuỗi số).
+ * Đổi hình dạng → tăng ANALYSIS_EMPLOYEES_SCHEMA và viết nhánh nâng cấp trong adapter.
+ */
+export const ANALYSIS_EMPLOYEES_SCHEMA = 1;
+
 export interface AnalysisEmployeesPayload {
+    schemaVersion?: number;
+    source?: 'phan-tich';
+    /** epoch mili-giây */
     updatedAt: number;
     supermarket?: string;
     totalCount: number;
     employees: AnalysisEmployeeItem[];
+}
+
+/**
+ * Adapter ĐỌC ở biên (IndexedDB / Firestore → Report BI). Trả null nếu dữ liệu hỏng/không đúng hình
+ * dạng (thay vì để màn BI vỡ khi gặp `employees` không phải mảng…). Bản cũ → nâng lên v1.
+ */
+export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, unknown>;
+    if (!Array.isArray(r.employees)) return null;
+    const version = typeof r.schemaVersion === 'number' ? r.schemaVersion : 0;
+    if (version > ANALYSIS_EMPLOYEES_SCHEMA) {
+        console.warn(`[AnalysisEmployeeSync] Dữ liệu schema v${version} mới hơn bản app (v${ANALYSIS_EMPLOYEES_SCHEMA}) — đọc các trường đã biết.`);
+    }
+    const employees: AnalysisEmployeeItem[] = [];
+    for (const e of r.employees as unknown[]) {
+        if (!e || typeof e !== 'object') continue;
+        const x = e as Record<string, unknown>;
+        if (typeof x.name !== 'string' || !x.name) continue;
+        employees.push({
+            id: typeof x.id === 'string' ? x.id : String(x.id ?? ''),
+            name: x.name,
+            originalName: typeof x.originalName === 'string' ? x.originalName : x.name,
+            department: typeof x.department === 'string' ? x.department : '',
+            supermarket: typeof x.supermarket === 'string' ? x.supermarket : undefined,
+        });
+    }
+    return {
+        schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
+        source: 'phan-tich',
+        updatedAt: typeof r.updatedAt === 'number' ? r.updatedAt : 0,
+        supermarket: typeof r.supermarket === 'string' ? r.supermarket : undefined,
+        totalCount: employees.length,
+        employees,
+    };
 }
 
 const EXCLUDED_DEPT_KEYWORDS = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca'];
@@ -121,6 +167,8 @@ export async function saveAnalysisEmployees(
     }
 
     const payload: AnalysisEmployeesPayload = {
+        schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
+        source: 'phan-tich',
         updatedAt: Date.now(),
         supermarket,
         totalCount: cleanList.length,
@@ -159,10 +207,10 @@ export async function saveAnalysisEmployees(
  * Đọc danh sách nhân viên phân tích từ IndexedDB (fallback Firebase nếu trên thiết bị mới)
  */
 export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload | null> {
-    // 1. Đọc từ IndexedDB
-    let local = await getSetting<AnalysisEmployeesPayload>(ANALYSIS_EMPLOYEES_KEY);
+    // 1. Đọc từ IndexedDB — qua adapter (A29): bản cũ nâng lên v1, bản hỏng bỏ qua
+    let local = docAnalysisEmployeesPayload(await getSetting<unknown>(ANALYSIS_EMPLOYEES_KEY));
     if (!local) {
-        local = await getSetting<AnalysisEmployeesPayload>(`bi_${ANALYSIS_EMPLOYEES_KEY}`);
+        local = docAnalysisEmployeesPayload(await getSetting<unknown>(`bi_${ANALYSIS_EMPLOYEES_KEY}`));
     }
 
     if (local && Array.isArray(local.employees) && local.employees.length > 0) {
@@ -177,8 +225,8 @@ export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload |
             const snap = await getDoc(docRef);
             if (snap.exists()) {
                 const data = snap.data();
-                if (data && data.value) {
-                    const cloudPayload = data.value as AnalysisEmployeesPayload;
+                const cloudPayload = docAnalysisEmployeesPayload(data?.value);
+                if (cloudPayload) {
                     // Lưu lại vào IndexedDB để lần sau đọc nhanh
                     await saveSetting(ANALYSIS_EMPLOYEES_KEY, cloudPayload);
                     await saveSetting(`bi_${ANALYSIS_EMPLOYEES_KEY}`, cloudPayload);

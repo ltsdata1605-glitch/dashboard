@@ -6586,3 +6586,12 @@ Cần chủ dự án xác nhận thứ tự trước khi làm.
 | A22 | `LandingPageView.tsx`: bỏ 3 quầng sáng blur 100px `animate-pulse` vô hạn + quầng sáng khi rê chuột; khung tải tệp: kính mờ 2 lớp bo 24px bóng lớn → panel phẳng viền `slate-200` bo 6px. `LoginView.tsx`: thẻ kính mờ bo 24px bóng 2xl → phẳng bo 6px. Giữ tiêu đề, chữ gradient, lưới nền tĩnh | Animation vô hạn ở màn chào 3 → 0. (CPU headless không đo được phần GPU của blur — không tuyên bố số CPU.) Ảnh trước/sau: `anh-man-chao-a22.spec.ts` |
 | A20 | Khối `<style>` nội tuyến `!important` trong `BiWrapper.tsx` → `features/bi-dashboard/biDensity.css`: chế độ TƯỜNG MINH `data-density="compact"` (≤768px), bỏ `!important` (CSS ngoài layer thắng `@layer utilities` của Tailwind 4; chỉ giữ ở chỗ phải thắng style nội tuyến); KHÔNG thu nhỏ component dùng chung có kiểu chuẩn — `Button` (trừ `unstyled`) và `Input` gắn `data-ui="shared"` | Nút chuẩn trong BI trên điện thoại 11px → 12px (như mọi nơi); điều khiển riêng của BI (tab, bảng, số) giữ nguyên độ gọn. Ảnh trước/sau: `anh-bi-mat-do-a20.spec.ts` (Cập nhật/Siêu thị/Thi đua/Nhân viên, 390px) |
 `npm run check` xanh (unit 930); e2e BI/mobile/iOS/ui/smoke/xss 31 xanh; `auth-fresh-login-no-flash` đỏ SẴN (đỏ y hệt trên mã cũ).
+
+# Đợt 14a (2026-09-30) — A29 hợp đồng dữ liệu có phiên bản cho 2 cầu nối (chủ dự án xác nhận thứ tự)
+Nguyên tắc: KHÔNG gom model; mỗi cầu nối 1 hợp đồng + 1 adapter ĐỌC ở biên; dữ liệu cũ vẫn đọc được.
+| Cầu nối | Thay đổi |
+|---|---|
+| Phân tích → Report BI (`analysisEmployeeSyncService.ts`) | `AnalysisEmployeesPayload` thêm `schemaVersion: 1`, `source: 'phan-tich'` (ghi mới); `docAnalysisEmployeesPayload()` kiểm hình dạng, nâng bản cũ lên v1, bỏ phần tử hỏng, mã NV số → chuỗi; dùng cho cả IndexedDB và Firestore |
+| Check thưởng → Report BI (`checkThuongBonus.ts`, `useCheckThuongBonus.ts`, iframe `check-thuong.html`) | iframe ghi thêm `schemaVersion/source`; `docCheckThuongPayload()` cho 3 nguồn đọc + postMessage. **Sửa lỗ hổng**: `useCheckThuongBonus` nhận postMessage từ MỌI nguồn → trang lạ có thể bơm số thưởng giả; nay chỉ nhận cùng origin |
+Đơn vị ghi rõ trong chú thích hợp đồng: tiền = ĐỒNG, `updatedAt/lastModified` = epoch ms.
+Test "golden fixture" `cau-noi-dto-a29.test.ts` 6/6 (bản cũ, bản Firestore `{__fsArr}`, bản hỏng, chuẩn hoá NV, thưởng thật/dự kiến theo đồng). `npm run check` xanh (unit 936); e2e BI/Check thưởng 31 xanh.
