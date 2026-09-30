@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      6.6
+// @version      6.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, ĐẦU TIÊN luôn tự chọn DT quy đổi & Trả góp, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -24,6 +24,13 @@
 // ==/UserScript==
 
 /*
+ * BẢN 6.7 — KHẮC PHỤC TRIỆT ĐỂ LỖI TỰ ĐỘNG LẤY THƯỞNG NHÂN VIÊN TRÊN NEWINSITE:
+ * - Cô lập hoàn toàn phạm vi hoạt động của BI Direct Token Sniffer: Chỉ chạy trên BI_HOSTNAMES
+ *   (baocao.dienmayxanh.com & bi.thegioididong.com), tuyệt đối không can thiệp fetch/XHR hay tiêm sniffer vào newinsite.thegioididong.com.
+ * - Khắc phục lỗi "Illegal invocation" khi gọi fetchOne: Gọi fetch trực tiếp qua unsafeWindow.fetch.bind(unsafeWindow)
+ *   chuẩn xác theo ngữ cảnh trang MWG kèm credentials: "include".
+ * - Giữ nguyên toàn bộ tính năng v6.6: Tự động chọn DT quy đổi & Trả góp ngay đầu tiên, Bước 3 GROUPBY BICAT trong 1 lần gọi duy nhất.
+ *
  * BẢN 6.6 — ĐẦU TIÊN TỰ CHECK CHỌN "DT QUY ĐỔI" VÀ "TRẢ GÓP" (ƯU TIÊN TUYỆT ĐỐI BƯỚC 1):
  * - Đưa việc click chọn "DT quy đổi" và tick checkbox "Trả góp" lên NGAY ĐẦU TIÊN ở Bước 1, TRƯỚC HẾT khi mở dropdown Siêu thị hay nạp dữ liệu.
  * - Nhận diện chính xác và tự động chuyển trạng thái đối nghịch từ "DT thực" sang "DT quy đổi".
@@ -460,11 +467,15 @@
       strRewardUser: empId,
     });
 
+    const fetchFn = (typeof unsafeWindow !== 'undefined' && unsafeWindow.fetch)
+      ? unsafeWindow.fetch.bind(unsafeWindow)
+      : (window.fetch ? window.fetch.bind(window) : fetch);
+
     let attempt = 0;
     while (true) {
       attempt++;
       try {
-        const res = await fetch(`${API_URL}?${params.toString()}`, {
+        const res = await fetchFn(`${API_URL}?${params.toString()}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -2325,12 +2336,12 @@
     }
   }
 
-  // ====== BẢN 6.2: DIRECT INTERNAL API ENGINE CHO BAOCAO.DIENMAYXANH.COM ======
+  // ====== BẢN 6.2+: DIRECT INTERNAL API ENGINE (CHỈ DÀNH CHO BAOCAO.DIENMAYXANH.COM) ======
   let capturedAuthToken = null;
   let capturedStoreIds = null;
 
-  // Lắng nghe Token được phát từ Page Context hoặc Inline Injector
-  if (typeof window !== 'undefined') {
+  // Lắng nghe Token & Hook Fetch/XHR CHỈ KHI ĐANG Ở TRANG BÁO CÁO BI (KHÔNG CAN THIỆP NEWINSITE)
+  if (typeof window !== 'undefined' && Array.isArray(BI_HOSTNAMES) && BI_HOSTNAMES.includes(location.hostname)) {
     try {
       window.addEventListener('message', (ev) => {
         try {
@@ -2346,13 +2357,13 @@
       });
     } catch (_) {}
 
-    // Hook fetch & XHR trên cả unsafeWindow (trang web) và window (sandbox)
+    // Hook fetch & XHR chỉ trên targetWin của portal BI
     try {
       const targetWin = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
 
-      const origFetch = targetWin.fetch || window.fetch;
+      const origFetch = targetWin.fetch ? targetWin.fetch.bind(targetWin) : null;
       if (origFetch) {
-        const hookedFetch = async function (...args) {
+        targetWin.fetch = async function (...args) {
           try {
             const [, config] = args;
             const headers = config?.headers;
@@ -2378,28 +2389,25 @@
               } catch (_) {}
             }
           } catch (_) {}
-          return origFetch.apply(this, args);
+          return origFetch(...args);
         };
-        targetWin.fetch = hookedFetch;
-        if (targetWin !== window) window.fetch = hookedFetch;
       }
 
-      const origSetHeader = targetWin.XMLHttpRequest?.prototype?.setRequestHeader || XMLHttpRequest.prototype.setRequestHeader;
+      const origSetHeader = targetWin.XMLHttpRequest?.prototype?.setRequestHeader;
       if (origSetHeader) {
-        const hookedSetHeader = function (header, value) {
+        const boundOrigSetHeader = origSetHeader;
+        targetWin.XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
           try {
             if (header && header.toLowerCase() === 'authorization' && value && value.toLowerCase().startsWith('bearer ')) {
               capturedAuthToken = value.replace(/^bearer\s+/i, '').trim();
               try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
             }
           } catch (_) {}
-          return origSetHeader.apply(this, arguments);
+          return boundOrigSetHeader.apply(this, arguments);
         };
-        if (targetWin.XMLHttpRequest?.prototype) targetWin.XMLHttpRequest.prototype.setRequestHeader = hookedSetHeader;
-        XMLHttpRequest.prototype.setRequestHeader = hookedSetHeader;
       }
 
-      // Tiêm script sniffer trực tiếp vào Page Context để chắc chắn 100% bắt được
+      // Tiêm script sniffer trực tiếp vào Page Context của BI để chắc chắn 100% bắt được
       const injectSniffer = () => {
         try {
           const s = document.createElement('script');
