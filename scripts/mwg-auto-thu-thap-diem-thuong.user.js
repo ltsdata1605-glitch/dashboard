@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      6.2
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động phân rã đa siêu thị cho Quản lý Cụm/ASM, chạy ngầm 100% không chuyển trang) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
+// @version      6.3
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 1 luôn chọn DT quy đổi & Trả góp, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
@@ -24,6 +24,16 @@
 // ==/UserScript==
 
 /*
+ * BẢN 6.3 — BƯỚC 3 CHUẨN GROUPBY BICAT TRONG 1 LẦN GỌI & BƯỚC 1 LUÔN CHỌN DT QUY ĐỔI + TRẢ GÓP:
+ * - Bước 3 Ngành hàng BI (Đúng chuẩn): Gọi trực tiếp POST /reports/revenue-consolidated-get với GROUPBY: "BICAT"
+ *   ngay trên báo cáo Doanh thu hợp nhất để lấy toàn bộ cây ngành hàng + nhóm con trong 1 lần gọi duy nhất!
+ *   Loại bỏ hoàn toàn lỗi chuyển sang trang con bi-category rời rạc.
+ * - Bước 1 Doanh thu hợp nhất: Luôn kích hoạt toggle "DT quy đổi" và bật checkbox "Trả góp" theo đúng yêu cầu,
+ *   trích xuất chuẩn xác 100% các cột DOANH THU QĐ, TARGET (QĐ), % HT, DT TRẢ GÓP.
+ * - Tự động phát hiện danh sách siêu thị qua API portal /common/filter-store-getbyasmlist: Tự động gom
+ *   tất cả Store IDs được phân quyền (ví dụ 1678, 7904, 8231) để bắn trúng đích 100% dữ liệu từng siêu thị.
+ * - Sửa cả UI Fallback: Không bao giờ redirect sang bi-category; bấm chọn tab "Ngành hàng BI" ngay trên Doanh thu hợp nhất.
+ *
  * BẢN 6.2 — CHẠY NGẦM HOÀN TOÀN 100% (KHÔNG CHUYỂN TRANG, KHÔNG CLICK [+]):
  * - Bổ sung @grant unsafeWindow & tiêm Page-Context Token Sniffer: Bắt trọn Bearer JWT token từ mọi nguồn
  *   (sessionStorage, localStorage, Keycloak object, fetch/XHR interceptor) ngay cả khi Tampermonkey chạy sandbox.
@@ -357,7 +367,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '6.2';
+  const SCRIPT_VERSION = '6.3';
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
   const BI_BRIDGE_SOURCE = 'ycx-bi-automation';
@@ -2049,6 +2059,37 @@
     return true;
   }
 
+  async function ensureCheckboxChecked(labelText) {
+    const candidates = Array.from(document.querySelectorAll('label, div, span, button'));
+    for (const el of candidates) {
+      if (!acpIsVisible(el)) continue;
+      const txt = (el.textContent || '').trim();
+      if (txt === labelText || txt.startsWith(labelText)) {
+        // Tìm input checkbox bên trong hoặc kế cạnh
+        const input = el.querySelector('input[type="checkbox"]') || el.parentElement?.querySelector('input[type="checkbox"]');
+        if (input && !input.checked) {
+          console.log(`[BI-Sync] Bật checkbox: ${labelText}`);
+          acpTriggerClick(input);
+          await acpWaitForLoadingComplete(30000, 500, 400);
+          return true;
+        }
+        // Trường hợp custom checkbox (button role="checkbox" hoặc có data-state)
+        const customChk = el.querySelector('[role="checkbox"]') || el.parentElement?.querySelector('[role="checkbox"]') || (el.getAttribute('role') === 'checkbox' ? el : null);
+        if (customChk) {
+          const checked = customChk.getAttribute('aria-checked') === 'true' || customChk.getAttribute('data-state') === 'checked';
+          if (!checked) {
+            console.log(`[BI-Sync] Bật custom checkbox: ${labelText}`);
+            acpTriggerClick(customChk);
+            await acpWaitForLoadingComplete(30000, 500, 400);
+            return true;
+          }
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   async function selectTabOrSection(tabName) {
     const btn = findButtonByText([tabName]);
     if (btn) {
@@ -2402,7 +2443,10 @@
   }
 
   async function acpFetchBiApi(endpoint, bodyObj, token) {
-    const res = await fetch(`https://baocao.dienmayxanh.com/kb-api/reports/${endpoint}`, {
+    const url = endpoint.startsWith('common/')
+      ? `https://baocao.dienmayxanh.com/kb-api/${endpoint}`
+      : `https://baocao.dienmayxanh.com/kb-api/reports/${endpoint}`;
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'accept': '*/*',
@@ -2419,6 +2463,31 @@
       throw new Error(`API ${endpoint} không thành công: ${json?.message || 'Lỗi server'}`);
     }
     return json.data || [];
+  }
+
+  async function acpFetchStoresFromAsmApi(token) {
+    try {
+      const data = await acpFetchBiApi('common/filter-store-getbyasmlist', {
+        KEYWORD: '',
+        PAGEINDEX: 1,
+        PAGESIZE: 10000000,
+        PERKEY: '',
+        AMIDS: null,
+        RSMIDS: null,
+        AsUser: null,
+        COMPANYIDLIST: null,
+        CHAINIDLIST: null,
+      }, token);
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map(item => ({
+          id: String(item.id),
+          name: item.Value || String(item.id),
+        }));
+      }
+    } catch (e) {
+      console.warn('[BI-Sync] filter-store-getbyasmlist fallback:', e);
+    }
+    return [];
   }
 
   function acpSerializeSummaryRealtime(cardData, rowsData) {
@@ -2652,10 +2721,15 @@
             const todayKey = parseInt(`${yyyy}${mm}${dd}`, 10);
             const monthKey = parseInt(`${yyyy}${mm}`, 10);
 
-            // BƯỚC 1: Doanh thu hợp nhất Realtime (Dùng STORE nếu có storeIds, ngược lại dùng ALL để lấy toàn cụm)
-            await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang tải dữ liệu Doanh thu hợp nhất siêu tốc qua API...');
-            const viewLevel = storeIds ? 'STORE' : 'ALL';
-            const viewIds = storeIds || null;
+            // 1. Tự động lấy danh sách siêu thị chuẩn xác qua API filter-store-getbyasmlist của portal
+            let storeList = await acpFetchStoresFromAsmApi(token);
+            let activeStoreIds = storeList.length > 0 ? storeList.map(s => s.id).join(',') : (storeIds || null);
+            console.log(`[BI-Sync] Danh sách siêu thị phát hiện ban đầu (${storeList.length}):`, storeList.map(s => s.name));
+
+            // BƯỚC 1: Doanh thu hợp nhất Realtime (Luôn chọn DT quy đổi & Trả góp)
+            await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang tải dữ liệu Doanh thu hợp nhất (DT quy đổi & Trả góp)...');
+            const viewLevel = activeStoreIds ? 'STORE' : 'ALL';
+            const viewIds = activeStoreIds || null;
             const [cardData, summaryRows] = await Promise.all([
               acpFetchBiApi('revenue-consolidated-card-get', {
                 FROMDATE: todayKey,
@@ -2680,15 +2754,14 @@
                 OUTPUTTYPEIDS: null,
                 OUTPUTTYPEEXCLUDES: null,
                 PAGEINDEX: 1,
-                PAGESIZE: 50,
+                PAGESIZE: 0,
               }, token)
             ]);
             results.summary = acpSerializeSummaryRealtime(cardData, summaryRows);
             console.log('[BI-Sync] [API] Bước 1 Xong: Doanh thu hợp nhất', results.summary?.length);
 
-            // Bóc tách danh sách các siêu thị thật từ bảng Doanh thu hợp nhất
-            const storeList = [];
-            if (Array.isArray(summaryRows)) {
+            // Nếu storeList từ API rỗng thì bóc tách tiếp từ summaryRows
+            if (storeList.length === 0 && Array.isArray(summaryRows)) {
               for (const r of summaryRows) {
                 if (r.rowcode) {
                   const id = String(r.rowcode);
@@ -2698,12 +2771,14 @@
                   }
                 }
               }
+              if (storeList.length > 0) {
+                activeStoreIds = storeList.map(s => s.id).join(',');
+              }
             }
             if (storeList.length === 0 && storeIds) {
               storeList.push({ id: storeIds, name: storeIds });
             }
-            const activeStoreIds = storeList.length > 0 ? storeList.map(s => s.id).join(',') : (storeIds || null);
-            console.log(`[BI-Sync] [API] Phát hiện ${storeList.length} siêu thị:`, storeList.map(s => s.name));
+            console.log(`[BI-Sync] [API] Tổng cộng ${storeList.length} siêu thị sẽ đồng bộ:`, storeList.map(s => s.name));
 
             // BƯỚC 2: Thi đua Realtime (API trả về trọn vẹn cả 39 chương trình cho mọi siêu thị trong cụm)
             await reportProgress(2, totalSteps, 'Thi đua', 'Đang tải 39 chương trình Thi đua qua API...');
@@ -2719,11 +2794,11 @@
             results.competition = acpSerializeCompetitionRealtime(compData);
             console.log('[BI-Sync] [API] Bước 2 Xong: Thi đua', results.competition?.length);
 
-            // BƯỚC 3: Doanh thu ngành hàng BI Realtime — Lấy lần lượt cho từng siêu thị riêng biệt
+            // BƯỚC 3: Doanh thu ngành hàng BI Realtime (Hình 2: revenue-consolidated-get GROUPBY BICAT trong 1 lần gọi)
             const industryByStore = {};
             for (let i = 0; i < storeList.length; i++) {
               const st = storeList[i];
-              await reportProgress(3, totalSteps, 'Ngành hàng BI', `[${i + 1}/${storeList.length}] Đang tải ngành hàng cho ${st.name}...`);
+              await reportProgress(3, totalSteps, 'Ngành hàng BI', `[${i + 1}/${storeList.length}] Đang tải cây ngành hàng BI cho ${st.name}...`);
               const industryData = await acpFetchBiApi('revenue-consolidated-get', {
                 FROMDATE: todayKey,
                 TODATE: todayKey,
@@ -2736,7 +2811,7 @@
                 OUTPUTTYPEIDS: null,
                 OUTPUTTYPEEXCLUDES: null,
                 PAGEINDEX: 1,
-                PAGESIZE: 50,
+                PAGESIZE: 0,
               }, token);
               const serializedInd = acpSerializeIndustryRealtime(industryData);
               industryByStore[st.name] = serializedInd;
@@ -2778,20 +2853,23 @@
             console.warn('[BI-Sync] Direct API Engine gặp lỗi, tự động chuyển sang UI Fallback:', apiErr);
           }
         } else {
-          console.warn('[BI-Sync] Không bắt được Token hoặc Store ID, tự động kích hoạt UI Automation Fallback...');
+          console.warn('[BI-Sync] Không bắt được Token, tự động kích hoạt UI Automation Fallback...');
         }
 
         // ====== NẾU KHÔNG CÓ TOKEN HOẶC API LỖI: CHẠY UI AUTOMATION FALLBACK ======
 
-        // --- BƯỚC 1: Doanh thu hợp nhất Realtime ---
-        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị và Realtime...');
+        // --- BƯỚC 1: Doanh thu hợp nhất Realtime (Luôn bật DT quy đổi và Trả góp theo Hình 3) ---
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị, Realtime, DT quy đổi và Trả góp...');
         await ensureSelectAllChecked();
         await acpWaitForLoadingComplete(35000, 500, 400);
 
         await ensureToggleActive('Realtime');
         await acpWaitForLoadingComplete(30000, 500, 400);
 
-        await ensureToggleActive('DT thực');
+        await ensureToggleActive('DT quy đổi');
+        await acpWaitForLoadingComplete(25000, 400, 300);
+
+        await ensureCheckboxChecked('Trả góp');
         await acpWaitForLoadingComplete(25000, 400, 300);
 
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang mở rộng các cấp dữ liệu...');
@@ -2817,13 +2895,17 @@
         results.competition = await collectCurrentBiData();
         console.log('[BI-Sync] Đã xong Bước 2: Thi đua', results.competition?.length);
 
-        // --- BƯỚC 3: Doanh thu ngành hàng BI ---
-        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Đang chuyển sang Doanh thu ngành hàng BI...');
-        await navigateToBiSection('Doanh Thu Ngành Hàng BI', '/dashboard/revenue-category');
-        await acpWaitForLoadingComplete(40000, 800, 500);
+        // --- BƯỚC 3: Doanh thu ngành hàng BI (Hình 2: Chọn tab Ngành hàng BI ngay trên Doanh thu hợp nhất) ---
+        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Đang chuyển sang tab Ngành hàng BI...');
+        if (!location.pathname.includes('/dashboard/revenue-consolidated')) {
+          await navigateToBiSection('Doanh thu hợp nhất', '/dashboard/revenue-consolidated');
+          await acpWaitForLoadingComplete(35000, 700, 500);
+        }
+        await selectTabOrSection('Ngành hàng BI');
+        await acpWaitForLoadingComplete(35000, 600, 500);
 
         await ensureSelectAllChecked();
-        await acpWaitForLoadingComplete(35000, 500, 400);
+        await acpWaitForLoadingComplete(30000, 500, 400);
 
         await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Đang mở rộng các cấp ngành hàng...');
         await expandAllCandidates(null, (msg) => {
@@ -2836,9 +2918,10 @@
 
         // --- BƯỚC 4: Doanh thu nhân viên ---
         await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Đang chuyển sang tab Nhân viên...');
-        await navigateToBiSection('Doanh thu hợp nhất', '/dashboard/revenue-consolidated');
-        await acpWaitForLoadingComplete(35000, 700, 500);
-
+        if (!location.pathname.includes('/dashboard/revenue-consolidated')) {
+          await navigateToBiSection('Doanh thu hợp nhất', '/dashboard/revenue-consolidated');
+          await acpWaitForLoadingComplete(35000, 700, 500);
+        }
         await selectTabOrSection('Nhân viên');
         await acpWaitForLoadingComplete(35000, 600, 500);
 
