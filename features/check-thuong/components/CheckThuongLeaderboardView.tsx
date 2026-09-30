@@ -125,14 +125,16 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
         setIsExporting(true);
         const toastId = toast.loading(`Đang tạo ảnh Top ${exportLimit} siêu thị...`);
         try {
-            await exportLeaderboardToImage({
+            const ketQua = await exportLeaderboardToImage({
                 stores: filteredStores,
                 limit: exportLimit,
                 channel: filters.channel,
                 fileName,
                 fontName: activeFont
             });
-            toast.success(`Đã xuất ảnh Top ${exportLimit} siêu thị thành công!`, { id: toastId, icon: '📸' });
+            // Báo theo kết quả thật: đóng bảng chia sẻ / chờ chạm lại thì không báo "thành công".
+            if (ketQua === 'shared' || ketQua === 'downloaded') toast.success(`Đã xuất ảnh Top ${exportLimit} siêu thị thành công!`, { id: toastId, icon: '📸' });
+            else toast.dismiss(toastId);
         } catch (err: any) {
             console.error('Export Image Error:', err);
             toast.error(err?.message || 'Xuất ảnh thất bại, vui lòng thử lại!', { id: toastId });
@@ -150,14 +152,16 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
         setIsExporting(true);
         const toastId = toast.loading(`Đang tạo ảnh Top ${topStores.length} kênh ${channel}...`);
         try {
-            await exportLeaderboardToImage({
+            const ketQua = await exportLeaderboardToImage({
                 stores: topStores,
                 limit: topStores.length,
                 channel,
                 fileName,
                 fontName: activeFont
             });
-            toast.success(`Đã xuất ảnh Top ${topStores.length} kênh ${channel} thành công!`, { id: toastId, icon: '📸' });
+            // Báo theo kết quả thật: đóng bảng chia sẻ / chờ chạm lại thì không báo "thành công".
+            if (ketQua === 'shared' || ketQua === 'downloaded') toast.success(`Đã xuất ảnh Top ${topStores.length} kênh ${channel} thành công!`, { id: toastId, icon: '📸' });
+            else toast.dismiss(toastId);
         } catch (err: any) {
             console.error('Export Channel Image Error:', err);
             toast.error(err?.message || 'Xuất ảnh thất bại, vui lòng thử lại!', { id: toastId });

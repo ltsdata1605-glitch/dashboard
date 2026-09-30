@@ -1,4 +1,6 @@
 import { CheckThuongStoreSummary } from '../types';
+import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
+import { deliverImage, type DeliveryResult } from '../../../components/shared/ui/imageDelivery';
 
 export interface ExportImageOptions {
     stores: CheckThuongStoreSummary[];
@@ -29,7 +31,7 @@ export async function exportLeaderboardToImage({
     customTitle,
     fileName,
     fontName = 'UTM Avo'
-}: ExportImageOptions): Promise<void> {
+}: ExportImageOptions): Promise<DeliveryResult> {
     const listToExport = limit ? stores.slice(0, limit) : stores;
     if (listToExport.length === 0) {
         throw new Error('Không có dữ liệu siêu thị để xuất ảnh!');
@@ -86,7 +88,7 @@ export async function exportLeaderboardToImage({
             <tr style="background-color: ${bgRow}; border-bottom: 1px solid #f1f5f9; font-size: 10.5px; line-height: 1.2;">
                 <td style="padding: 4px 2px; text-align: center; font-weight: ${rankWeight}; color: ${rankColor}; width: 32px;">#${rank}</td>
                 <td style="padding: 4px 2px; text-align: center; font-weight: 800; color: #0284c7; width: 42px;">${escapeHtml(store.storeCode)}</td>
-                <td style="padding: 4px 6px; font-weight: 600; color: #1e293b; width: 178px; max-width: 178px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(store.storeName)}</td>
+                <td style="padding: 4px 6px; font-weight: 600; color: #1e293b; width: 178px; max-width: 178px; white-space: normal; overflow-wrap: anywhere; word-break: break-word;">${escapeHtml(store.storeName)}</td>
                 <td style="padding: 4px 3px; text-align: center; font-weight: 700; color: #059669; width: 48px; white-space: nowrap;">${store.achievedCount} <span style="color: #94a3b8; font-size: 9px; font-weight: 500;">/ ${store.totalCategories}</span></td>
                 <td style="padding: 4px 3px; text-align: center; width: 66px;">
                     <div style="display: flex; align-items: center; justify-content: center; gap: 3px;">
@@ -158,23 +160,25 @@ export async function exportLeaderboardToImage({
         const fullHeight = captureTarget.offsetHeight || captureTarget.scrollHeight;
 
         const htmlToImage = await import('html-to-image');
-        const dataUrl = await htmlToImage.toPng(captureTarget, {
-            pixelRatio: 2.5, // Độ nét cực cao cho màn hình điện thoại
+        // Audit A08 (2026-09-30): Blob thay data URL (data URL của ảnh Top lớn chiếm gấp ~1,4 lần bộ
+        // nhớ và phải giải mã lại); tỉ lệ 2.5 cho độ nét điện thoại nhưng có trần diện tích canvas iOS.
+        const pixelRatio = isMobileLikeDevice() ? capPixelRatioForArea(fullWidth, fullHeight, 2.5) : 2.5;
+        const blob = await htmlToImage.toBlob(captureTarget, {
+            pixelRatio,
             backgroundColor: '#ffffff',
             width: fullWidth,
             height: fullHeight,
             cacheBust: true
         });
 
-        if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 500) {
+        if (!blob || blob.size < 500) {
             throw new Error('Không thể tạo dữ liệu ảnh (kết quả rỗng)');
         }
 
         const channelSlug = (channel && channel !== 'ALL') ? `Kenh_${channel.replace(/[^a-zA-Z0-9]/g, '_')}_` : '';
-        const link = document.createElement('a');
-        link.download = `Top_${listToExport.length}_${channelSlug}Thuong_Cao_${dateFileStr}.png`;
-        link.href = dataUrl;
-        link.click();
+        // Trước đây luôn tải file (a.click) — trên iPhone không mở được Lưu ảnh/LINE/Zalo. Nay giao
+        // ảnh qua khâu chung: máy tính tải về, điện thoại mở bảng chia sẻ.
+        return await deliverImage(blob, `Top_${listToExport.length}_${channelSlug}Thuong_Cao_${dateFileStr}.png`);
     } finally {
         if (wrapper.parentNode) {
             wrapper.parentNode.removeChild(wrapper);

@@ -1,24 +1,17 @@
-import { isAbortError } from '../../../utils/dataUtils';
+import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
+import { deliverImage, downloadBlobFile } from '../../../components/shared/ui/imageDelivery';
 
 export type ExportMode = 'download' | 'share' | 'blob-only';
 
-/** Download a blob as a file */
+/** Download a blob as a file (mobile + ảnh → bảng chia sẻ, trừ khi ép tải).
+ *  Audit A06 (2026-09-30): dùng khâu giao ảnh CHUNG components/shared/ui/imageDelivery — nhận iPad,
+ *  thu hồi blob URL trễ, có nút chạm lại khi Safari từ chối chia sẻ. Giữ nguyên chữ ký cho nơi gọi. */
 export function downloadBlob(blob: Blob, filename: string, forceDownload = false) {
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-    if (isMobile && blob.type.startsWith('image/') && !forceDownload) {
-        shareBlob(blob, filename);
+    if (!forceDownload && blob.type.startsWith('image/') && isMobileLikeDevice()) {
+        void deliverImage(blob, filename, { share: true });
         return;
     }
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.download = filename;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    // Thu hồi TRỄ (như services/uiService.ts gốc): Safari iOS đọc blob URL không đồng bộ sau
-    // click() — thu hồi ngay là tải hỏng/tải file rỗng.
-    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    downloadBlobFile(blob, filename);
 }
 
 /** Check if Web Share API with file sharing is available */
@@ -32,36 +25,9 @@ export function canShareFiles(): boolean {
     }
 }
 
-/** Share a blob via Web Share API (LINE, Zalo, etc.) */
+/** Share a blob via Web Share API (LINE, Zalo, etc.) — true chỉ khi bảng chia sẻ thật sự hoàn tất. */
 export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
-    try {
-        // Tiêu đề khu vực ảnh được xuất: bỏ đuôi .png, gạch dưới -> khoảng trắng
-        const displayName = filename.replace(/\.png$/i, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim() || 'Anh xuat';
-        const file = new File([blob], `${displayName}.png`, { type: 'image/png' });
-
-        const shareData = {
-            files: [file],
-            title: displayName,
-            text: displayName
-        };
-        
-        if (navigator.canShare && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-            return true;
-        } else {
-            console.warn('Web Share API không hỗ trợ chia sẻ file trên trình duyệt này.');
-            // Fallback: download instead
-            downloadBlob(blob, filename, true);
-            return false;
-        }
-    } catch (error: unknown) {
-        // User cancelled share — not an error
-        if (isAbortError(error)) return false;
-        console.error('Lỗi khi chia sẻ:', error);
-        // Fallback: download
-        downloadBlob(blob, filename, true);
-        return false;
-    }
+    return (await deliverImage(blob, filename, { share: true })) === 'shared';
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -972,6 +938,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (finalHeight * scale > 32000) {
             finalScale = Math.max(1, 32000 / finalHeight);
             console.warn(`Cảnh báo: Ảnh quá dài (${finalHeight}px). Tự động giảm tỉ lệ xuống ${finalScale.toFixed(2)} để tránh lỗi trình duyệt.`);
+        }
+        // Audit A06: Safari iOS có trần DIỆN TÍCH canvas (~16,7 triệu px) — vượt là ảnh trắng/blob rỗng,
+        // trần chiều cao ở trên không chặn được bảng rộng. Chỉ áp trên thiết bị di động (như Phân tích).
+        if (isMobileLikeDevice()) {
+            const capped = capPixelRatioForArea(finalWidth, finalHeight, finalScale);
+            if (capped < finalScale) finalScale = capped;
         }
 
         const isDark = document.documentElement.classList.contains('dark');

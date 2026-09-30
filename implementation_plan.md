@@ -6305,3 +6305,17 @@ Mọi test mới của Đợt 1 + Đợt 2 xanh.
 | A06 | `features/phan-ca/services/uiService.ts`, `features/sticker-event/services/uiService.ts` | `downloadBlob/shareBlob` dùng hàm chung (nhận iPad, có nút chạm lại); trần diện tích canvas iOS trên thiết bị di động (trước chỉ trần chiều cao 32000px) | Ảnh rất lớn trên iPhone hơi mờ hơn (thay vì trắng) | e2e + unit |
 | A07 | `features/khai-thac/utils/exportImage.ts` | Trần diện tích; giao ảnh qua hàm chung (có nút chạm lại, thu hồi trễ) | Không | e2e |
 | A08 | `features/check-thuong/services/checkThuongImageExport.ts` | Blob thay data URL; tỉ lệ 2.5 có trần diện tích; mobile mở chia sẻ thay vì luôn tải; tên siêu thị dài xuống dòng thay vì bị cắt "…" | Dòng tên rất dài cao hơn trong ảnh | e2e |
+
+## Kết quả Đợt 3 (2026-09-30)
+Test `xuat-anh-giao-anh-chung.spec.ts` (8, Chromium giả lập iPhone iOS 17 — KHÔNG phải Safari thật):
+| Kiểm | Mã cũ (đo thật) | Mã mới |
+|---|---|---|
+| Phân ca / Sticker bảng 300 dòng trên iPhone | ảnh 1384×16384 = **22,7 triệu px** (vượt trần iOS → Safari trả ảnh trắng) | 1162×13753 = 16,0 triệu px |
+| Check thưởng Top trên iPhone | luôn tải file (không mở Lưu ảnh/LINE/Zalo), hàm trả `undefined` | mở bảng chia sẻ, trả `shared`; tên siêu thị dài xuống dòng thay vì "…" |
+| Khâu giao ảnh chung | — | `shared` / `cancelled` (không tải) / `retry-offered` (có nút chạm lại, không tải lặng lẽ) |
+Hồi quy: khai-thac, check-thuong-xuat-anh-ten-dac-biet, check-thuong-top-feature, xuat-anh-hang-loat-ket-qua,
+ios-xuat-anh-chia-se, ios-report-bi-check-thuong, sticker-nut-va-quet-ma — 16/16 xanh.
+Check: typecheck/eslint (0 lỗi, 143 cảnh báo)/unit 906/build/ratchet xanh.
+
+Còn lại: 4 điểm chụp ảnh trong `public/check-thuong.html` (A10, iframe vanilla JS — không import được
+module ES của app; cần bridge postMessage sang trang cha) và đo hiệu năng 200.000 dòng.
