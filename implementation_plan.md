@@ -6319,3 +6319,26 @@ Check: typecheck/eslint (0 lỗi, 143 cảnh báo)/unit 906/build/ratchet xanh.
 
 Còn lại: 4 điểm chụp ảnh trong `public/check-thuong.html` (A10, iframe vanilla JS — không import được
 module ES của app; cần bridge postMessage sang trang cha) và đo hiệu năng 200.000 dòng.
+
+## Đo hiệu năng — dữ liệu 200.000 dòng (2026-09-30)
+File GIẢ 200.000 dòng / 40 NV / 5 kho, 194MB (xlsx không nén — nặng gấp ~2 lần cỡ chủ dự án nêu),
+Chromium trên container 4 nhân (KHÔNG phải iPhone — điện thoại sẽ chậm hơn nhiều lần).
+Công cụ: `tests/bench/gen-sales-xlsx.mjs` + `tests/e2e/perf-nap-du-lieu-lon.spec.ts` (bỏ qua nếu không đặt PERF_FILE).
+
+| Bản | Chọn chế độ → hiện số | Heap JS | Khựng luồng chính (≥50ms) |
+|---|---|---|---|
+| dev server | 40,7–44,9s | 239–286MB | 54–63 lần, dài nhất 1,9–2,3s, tổng ~12,5s |
+| **build production** | **38,3s** | **199MB** | **15 lần, dài nhất 2,1s, tổng 9,2s** |
+
+Bản dev bị phóng đại bởi React 19 dev (jsxDEV tạo stack trace cho mọi phần tử) — luôn đo bản build.
+Phần lớn 38s là Worker đọc Excel (luồng chính rảnh ~26s). Khựng luồng chính (bản build, profiler CPU):
+1. `JSON.parse` kết quả Worker gửi về (useFileUploadLogic, worker.onmessage) ~1,5s.
+2. `saveTempRealtimeData`: `JSON.stringify` 200.000 dòng để lưu IndexedDB ~1,4s.
+3. `getMergedSalesData` ĐỌC LẠI chính dữ liệu vừa lưu + `JSON.parse` ~1,4s — **thừa**.
+4. Tính toán trong useDataManagement ~1,0s.
+
+Đề xuất Đợt 4 (sửa lớp lưu trữ lõi của Phân tích — cần kế hoạch + đo trước/sau riêng):
+- Bỏ lượt đọc lại (3) bằng cách dùng dữ liệu đang có trong bộ nhớ (cẩn thận: object bị dùng chung/biến đổi).
+- Chuyển stringify + ghi IndexedDB (2) vào Worker (IndexedDB dùng được trong Worker) hoặc lưu từng khúc.
+- Worker gửi kết quả theo khúc để tránh 1 lần parse 1,5s.
+- Xem lại tuỳ chọn `WTF: true` trong `services/worker.ts` (chế độ gỡ lỗi của SheetJS: ném lỗi với định dạng lạ).
