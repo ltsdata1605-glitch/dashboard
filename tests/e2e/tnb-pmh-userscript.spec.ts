@@ -110,7 +110,7 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
 
     // Bot (fixture) chỉ trả mã nếu giá trị đến qua sự kiện 'input' — chứng minh React-setter chạy đúng.
     const res = page.locator('#tnb-pmh-helper .tph-res');
-    await expect(res).toContainText('Mã nhận: 3');
+    await expect(res).toContainText(/Mã nhận: 3\b|Hôm nay: 3 mã/); // v1.6 bật lọc "hôm nay" mặc định → nhãn đổi
     await expect(res).toContainText('PHC96180QP');
     await expect(res).toContainText('ABCDE12345');
     await expect(res).toContainText('Z2Y9X8W7V6');
@@ -145,7 +145,7 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
     await page.locator('#tnb-pmh-helper [data-act="go"]').click();
 
     const res = page.locator('#tnb-pmh-helper .tph-res');
-    await expect(res).toContainText('Mã nhận: 3');
+    await expect(res).toContainText(/Mã nhận: 3\b|Hôm nay: 3 mã/); // v1.6 bật lọc "hôm nay" mặc định → nhãn đổi
 
     // Kiểm tra xuất hiện các thẻ chọn nhanh (quick pills)
     const pillWc200 = page.locator('#tnb-pmh-helper .tph-pill[data-loai="WC200"]');
@@ -175,6 +175,6 @@ test.describe('TNB PMH userscript — gửi loạt & gom mã', () => {
 
     // Bấm Tất cả để xoá lọc
     await page.locator('#tnb-pmh-helper .tph-pill[data-loai=""]').click();
-    await expect(res).toContainText('Mã nhận: 3');
+    await expect(res).toContainText(/Mã nhận: 3\b|Hôm nay: 3 mã/); // v1.6 bật lọc "hôm nay" mặc định → nhãn đổi
   });
 });

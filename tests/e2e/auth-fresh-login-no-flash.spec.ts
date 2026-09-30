@@ -73,7 +73,8 @@ test('đăng nhập mới: không nháy "Cập Nhật Mã Kho" trước khi vào
     expect(summary['PENDING_VIEW'] || 0, 'đã nháy màn "Cập Nhật Mã Kho" trong lúc chờ phân quyền').toBe(0);
 
     // Sau khi resolveSession xong -> vào dashboard (sidebar có nút điều hướng), không còn màn Login/Pending
-    await expect(page.locator('aside').first()).toBeVisible({ timeout: 10_000 });
+    // 20s: chạy riêng vào dashboard < 3s, nhưng trong lượt e2e toàn bộ (~22 phút) dev server chậm hẳn → 10s từng đỏ oan
+    await expect(page.locator('aside').first()).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/Cập Nhật Mã Kho/i)).toHaveCount(0);
 });
 
@@ -116,6 +117,11 @@ test('mở app có cache admin: vào thẳng dashboard, không spinner/không m�
     console.log('CÓ CACHE — TRẠNG THÁI:', JSON.stringify(summary));
     expect(summary['PENDING_VIEW'] || 0).toBe(0);
     expect(summary['LOGIN'] || 0).toBe(0);
-    // Cho phép 1-2 mẫu spinner đầu tiên (lúc chưa đọc xong cache IndexedDB), còn lại phải là dashboard
-    expect(summary['DASHBOARD'] || 0).toBeGreaterThan(15);
+    // Cho phép 1-2 mẫu spinner đầu tiên (lúc chưa đọc xong cache IndexedDB), còn lại phải là dashboard.
+    // Đếm theo TỈ LỆ, không theo số mẫu tuyệt đối: đọc innerText cả dashboard mất ~200ms/mẫu nên 2,3s
+    // chỉ lấy được ~11 mẫu — ngưỡng cũ "> 15" đỏ dù 11/11 mẫu đều là dashboard (sửa 2026-09-30).
+    const tong = seen.length;
+    const dashboard = summary['DASHBOARD'] || 0;
+    expect(dashboard, `dashboard ${dashboard}/${tong} mẫu`).toBeGreaterThanOrEqual(5);
+    expect(tong - dashboard, 'số mẫu KHÔNG phải dashboard').toBeLessThanOrEqual(2);
 });

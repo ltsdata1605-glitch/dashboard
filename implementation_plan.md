@@ -6613,3 +6613,13 @@ e2e TOÀN BỘ sau khi bật strict (190 test, 21,7 phút): 142 xanh, 43 bỏ qu
 4 đỏ Y HỆT trên commit ngay trước strict (auth-fresh-login-no-flash:82, iframe-tabs-csp xlsx CDN, tnb-pmh-userscript ×2);
 auth-fresh-login-no-flash:52 đỏ trong lượt toàn bộ (chờ `aside` quá 10s) nhưng chạy riêng trên mã mới 3/3 xanh → nhạy
 thời gian khi chạy dài, không phải hồi quy.
+
+## Đợt 15 — dọn 4 test e2e đỏ sẵn (2026-09-30)
+Cả 4 đều là test LỖI THỜI / đo sai, không phải lỗi app — đã kiểm trước khi sửa:
+| Test | Nguyên nhân thật | Sửa |
+|---|---|---|
+| `auth-fresh-login-no-flash:82` | 11/11 mẫu đều là DASHBOARD (hành vi đúng), nhưng test đòi > 15 mẫu trong 2,3s — đọc `innerText` cả dashboard mất ~200ms/mẫu | Đếm theo tỉ lệ: ≥ 5 mẫu dashboard, tối đa 2 mẫu khác |
+| `auth-fresh-login-no-flash:52` | Chỉ đỏ trong lượt toàn bộ (dev server chậm), riêng lẻ 3/3 xanh | Chờ `aside` 10s → 20s |
+| `tnb-pmh-userscript` ×2 (+1 cùng assert) | Userscript v1.6 (`5c05cac7`) bật lọc "hôm nay" mặc định → nhãn đổi từ "Mã nhận: 3" thành "Hôm nay: 3 mã"; 3 mã vẫn gom đủ | Assert chấp nhận cả 2 dạng nhãn |
+| `iframe-tabs-csp` xlsx CDN | Chromium trong container không ra được `cdn.sheetjs.com` (curl qua proxy thì được). Trên CI bước này XANH | Không sửa — giới hạn môi trường container |
+Kiểm: 2 spec đã sửa `--repeat-each=2` → 10/10 xanh; `npm run check` xanh.
