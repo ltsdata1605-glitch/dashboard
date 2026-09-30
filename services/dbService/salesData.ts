@@ -1,5 +1,18 @@
 import type { DataRow, StoredSalesData, UploadedFileRegistryItem } from '../../types';
 import { getDb, getSetting, saveSetting, APP_STORE, resetDbConnection } from './core';
+import { biHubDbName } from '../../utils/localDbScope';
+
+// ── Đợt 4 (2026-09-30): cache DÙNG MỘT LẦN cho tempRealtimeData ─────────────────────────────────
+// Đo trên 200.000 dòng (bản build): nạp tệp Realtime xong, saveTempRealtimeData() ghi IndexedDB rồi
+// getMergedSalesData() ĐỌC LẠI ngay chính dữ liệu đó + JSON.parse ~1,4s khựng luồng chính — thừa.
+// Nay: ghi xong (transaction đã commit) thì giữ bản trong bộ nhớ; lượt getTempRealtimeData() KẾ
+// TIẾP trả luôn bản này rồi xoá cache. Nội dung giống hệt bản đọc lại: các dòng đều xuất phát từ
+// JSON.parse (không có kiểu lạ), parsedDate là Date ở cả 2 đường; savedAt mọi nơi dùng qua new Date().
+// An toàn: gắn với TÊN database của tài khoản (đổi tài khoản → không dùng được) + chỉ sống 10s +
+// xoá khi dữ liệu bị xoá/ghi bởi đường khác.
+let tempRealtimeOnce: { dbName: string; expires: number; value: StoredSalesData } | null = null;
+const TEMP_CACHE_TTL_MS = 10_000;
+const dropTempRealtimeCache = () => { tempRealtimeOnce = null; };
 
 // PERF FIX: saveSalesFileData/saveTempRealtimeData lưu bằng JSON.stringify() (biến Date thành
 // ISO string), nhưng bên đọc trước đây KHÔNG khôi phục lại thành Date — khiến
@@ -66,6 +79,7 @@ export async function saveSyncCloudRealtimeData(
             savedAt: new Date(savedAt),
             fileLastModified
         };
+        dropTempRealtimeCache();
         const db = await getDb();
         await new Promise<void>((resolve, reject) => {
             const tx = db.transaction(APP_STORE, 'readwrite');
@@ -478,6 +492,7 @@ export async function clearAllSalesFiles(): Promise<void> {
 
 export async function saveTempRealtimeData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
     const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
+    dropTempRealtimeCache();
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
@@ -516,15 +531,20 @@ export async function saveTempRealtimeData(data: DataRow[], filename: string, fi
         });
     };
 
+    const rememberSaved = () => {
+        tempRealtimeOnce = { dbName: biHubDbName(), expires: Date.now() + TEMP_CACHE_TTL_MS, value: stored };
+    };
     try {
         const db = await getDb();
         await tryTransaction(db);
+        rememberSaved();
     } catch (error) {
         console.warn('[IDB] Retry saveTempRealtimeData after error:', (error as Error)?.message);
         resetDbConnection();
         try {
             const db = await getDb();
             await tryTransaction(db);
+            rememberSaved();
         } catch (retryError) {
             console.error('[IDB] Permanent failure saving temp realtime data:', retryError);
             throw retryError;
@@ -533,6 +553,12 @@ export async function saveTempRealtimeData(data: DataRow[], filename: string, fi
 }
 
 export async function getTempRealtimeData(): Promise<StoredSalesData | null> {
+    const cached = tempRealtimeOnce;
+    tempRealtimeOnce = null; // dùng một lần — lượt sau luôn đọc IndexedDB
+    const dangXoaTatCa = typeof window !== 'undefined' && (window as unknown as { __ycx_is_resetting_all_data?: boolean }).__ycx_is_resetting_all_data;
+    if (cached && !dangXoaTatCa && cached.expires > Date.now() && cached.dbName === biHubDbName()) {
+        return cached.value;
+    }
     try {
         const db = await getDb();
         return new Promise((resolve) => {
@@ -583,7 +609,45 @@ export async function getTempRealtimeData(): Promise<StoredSalesData | null> {
     }
 }
 
+/**
+ * Chỉ trả lời "có dữ liệu Realtime tạm hay không" — KHÔNG JSON.parse cả bảng (200.000 dòng ~1,4s).
+ * Đợt 4 (2026-09-30): refreshRegistry()/đồng bộ cloud gọi getTempRealtimeData() chỉ để lấy boolean
+ * này, vừa tốn một lượt parse, vừa tiêu mất cache dùng-một-lần của lượt nạp tệp.
+ */
+export async function hasTempRealtimeData(): Promise<boolean> {
+    const cached = tempRealtimeOnce;
+    if (cached && cached.expires > Date.now() && cached.dbName === biHubDbName()) {
+        return cached.value.data.length > 0;
+    }
+    try {
+        const db = await getDb();
+        return await new Promise<boolean>((resolve) => {
+            try {
+                const req = db.transaction(APP_STORE, 'readonly').objectStore(APP_STORE).get('tempRealtimeData');
+                req.onsuccess = () => {
+                    const res = req.result;
+                    if (!res) { resolve(false); return; }
+                    if (typeof res === 'string') {
+                        // Bản lưu luôn là JSON.stringify({ data, filename, ... }) → khoá `data` đứng đầu.
+                        if (res.startsWith('{"data":[]')) { resolve(false); return; }
+                        if (res.startsWith('{"data":[')) { resolve(true); return; }
+                        try { resolve(((JSON.parse(res) as StoredSalesData).data || []).length > 0); } catch { resolve(false); }
+                        return;
+                    }
+                    resolve(Array.isArray(res.data) && res.data.length > 0);
+                };
+                req.onerror = () => resolve(false);
+            } catch {
+                resolve(false);
+            }
+        });
+    } catch {
+        return false;
+    }
+}
+
 export async function clearTempRealtimeData(): Promise<void> {
+    dropTempRealtimeCache();
     try {
         const db = await getDb();
         return new Promise<void>((resolve) => {

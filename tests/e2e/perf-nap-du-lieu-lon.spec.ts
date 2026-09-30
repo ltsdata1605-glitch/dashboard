@@ -67,10 +67,16 @@ test('đo nạp dữ liệu lớn vào Phân tích', async ({ page }) => {
     }
     console.log('JSXCALLER\n' + [...caller.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => `${(v / 1000).toFixed(0)}ms ${k}`).join('\n'));
     await page.waitForTimeout(3000);
+    // Ép dọn rác trước khi đọc heap — không thì số heap lẫn rác chưa thu, không so sánh được giữa 2 lượt.
+    await cdp.send('HeapProfiler.enable');
+    await cdp.send('HeapProfiler.collectGarbage');
+    await page.waitForTimeout(12_000); // quá hạn cache 10s của salesData (nếu còn) rồi dọn lần nữa
+    await cdp.send('HeapProfiler.collectGarbage');
     const m = await page.evaluate(() => {
         const w = window as unknown as { __long: number[]; performance: Performance & { memory?: { usedJSHeapSize: number } } };
         const l = w.__long;
         return { heapMB: Math.round((w.performance.memory?.usedJSHeapSize || 0) / 1e6), longCount: l.length, longMax: Math.max(0, ...l), longTotal: l.reduce((a, b) => a + b, 0) };
     });
+    console.log('SOLIEU', (await page.locator('#business-overview').innerText()).replace(/\s+/g, ' ').slice(0, 160));
     console.log('PERF', JSON.stringify({ taiFileDenChonCheDo_s: (tChon - t0) / 1000, chonDenHienSo_s: (tXong - tChon) / 1000, ...m }));
 });

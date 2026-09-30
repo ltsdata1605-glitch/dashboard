@@ -7,7 +7,7 @@ import { processShiftFile, DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import toast from 'react-hot-toast';
 import { initialFilterState } from './useFilterState';
-import { normalizeSalesData, parseExcelDate, getRowValue, toLocalISOString } from '../utils/dataUtils';
+import { normalizeSalesData, parseExcelDate, getRowValue, toLocalISOString, workerTimeoutMs } from '../utils/dataUtils';
 import { COL } from '../constants';
 import type { UploadConflictInfo } from '../components/modals/UploadConflictModal';
 
@@ -26,6 +26,7 @@ interface FileUploadLogicProps {
     departmentId?: string;
     onRegistryChange?: () => void;
 }
+
 
 export const useFileUploadLogic = ({
     originalData,
@@ -188,15 +189,23 @@ export const useFileUploadLogic = ({
                         return;
                     }
                     
-                    // Safety timeout of 60 seconds
-                    timeoutId = setTimeout(() => {
-                        cleanup();
-                        reject(new Error(`Quá thời gian xử lý tệp ${file.name} (Quá 60 giây)`));
-                    }, 60000);
+                    // Đợt 4 (2026-09-30): trước đây hạn CỨNG 60s cho cả tệp — file 194MB mất ~35s trên máy
+                    // 4 nhân, file 100MB trên iPhone dễ vượt 60s và nạp thất bại hẳn. Nay hạn theo dung
+                    // lượng tệp và được GIA HẠN mỗi khi Worker báo tiến độ (Worker còn sống, chỉ chậm).
+                    const hanCho = workerTimeoutMs(file.size);
+                    const datHan = () => {
+                        if (timeoutId) clearTimeout(timeoutId);
+                        timeoutId = setTimeout(() => {
+                            cleanup();
+                            reject(new Error(`Quá thời gian xử lý tệp ${file.name} (quá ${Math.round(hanCho / 1000)} giây không có tiến triển)`));
+                        }, hanCho);
+                    };
+                    datHan();
 
                     worker.onmessage = (e) => {
                         const { type, payload } = e.data;
                         if (type === 'progress') {
+                            datHan();
                             const fileProgress = payload.progress || 0;
                             const overallProgress = Math.round(
                                 (i / files.length) * 100 + (fileProgress / files.length)

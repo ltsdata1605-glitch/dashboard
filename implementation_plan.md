@@ -6351,3 +6351,27 @@ Phần lớn 38s là Worker đọc Excel (luồng chính rảnh ~26s). Khựng l
 | 1 | `hooks/useFileUploadLogic.ts` | Hạn chờ Worker 60s CỨNG → hạn theo dung lượng file (60s + 3s/MB) và gia hạn mỗi lần Worker báo tiến độ. Lỗi thật: file 194MB mất ~35s trên máy 4 nhân; file 100MB trên iPhone dễ vượt 60s → "Quá thời gian xử lý tệp" | File hỏng thật mất lâu hơn mới báo lỗi | unit (hàm tính hạn) + e2e 200k |
 | 2 | `services/dbService/salesData.ts` | Cache DÙNG MỘT LẦN: `saveTempRealtimeData` commit xong giữ bản trong bộ nhớ; `getTempRealtimeData` kế tiếp trả luôn (không đọc + JSON.parse lại 200.000 dòng); `clearTempRealtimeData` xoá cache | Object trả về là bản trong bộ nhớ (nội dung giống hệt bản đọc lại — cùng xuất phát từ JSON.parse, parsedDate là Date ở cả 2) | e2e 200k đo trước/sau + e2e Phân tích |
 | 3 | (sau khi đo lại có sourcemap) | Điểm nóng còn lại | — | — |
+
+## Kết quả Đợt 4 (2026-09-30)
+Đo bằng `perf-nap-du-lieu-lon.spec.ts`, file GIẢ 200.000 dòng/194MB, bản build production, ép GC
+trước khi đọc heap, CÙNG máy 4 nhân (Chromium — không phải iPhone):
+| | Mã cũ | Mã mới |
+|---|---|---|
+| Chọn chế độ → hiện số | 37,9s | **34,7s** |
+| Tổng khựng luồng chính | 8,77s | **6,45s (−26%)** |
+| Heap sau GC | 199MB | 199MB |
+| Khựng dài nhất | 2,28s | 2,29s |
+Số liệu giữ nguyên (DT Thực 3010.6 Tỷ, DTQĐ 7431.2 Tỷ ở cả 2 bản).
+
+Đã sửa:
+1. Hạn chờ Worker 60s cứng → `workerTimeoutMs()` (60s + 3s/MB, 100MB → 6 phút), gia hạn mỗi lần Worker
+   báo tiến độ — file lớn trên điện thoại không còn bị cắt giữa chừng.
+2. Cache dùng-một-lần tempRealtimeData (bỏ lượt đọc lại + JSON.parse ngay sau khi lưu).
+3. `hasTempRealtimeData()` — kiểm có/không không cần parse; `refreshRegistry`, đồng bộ cloud, "Xem báo
+   cáo" dùng nó (trước đây 3 chỗ này parse cả 200.000 dòng chỉ để lấy 1 boolean — và chỗ đầu còn tiêu
+   mất cache của bước 2).
+Test: unit `worker-timeout.test.ts`; e2e luồng nạp Phân tích 7/7 xanh; check xanh (unit 909).
+
+Còn lại (cố ý chưa làm — đụng định dạng lưu trữ dữ liệu thật): khựng dài nhất ~2,3s là `JSON.parse`
+kết quả Worker (~1,5s) và `JSON.stringify` khi lưu (~1,3s). Hướng: Worker tự ghi IndexedDB và gửi dữ
+liệu theo khúc — cần di trú định dạng lưu, làm riêng khi được duyệt.

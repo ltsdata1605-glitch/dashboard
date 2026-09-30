@@ -88,8 +88,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
             // Cập nhật registry ngầm để FileHistoryModal nhận thông tin tệp mới
             dbService.getSalesFilesRegistry().then(reg => {
-                dbService.getTempRealtimeData().then(tempRealtime => {
-                    setHasRealtimeData(!!(tempRealtime && tempRealtime.data && tempRealtime.data.length > 0));
+                dbService.hasTempRealtimeData().then(coRealtime => {
+                    setHasRealtimeData(coRealtime);
                     setFileRegistry(reg.map(file => ({ ...file, isMissingLocalData: false })));
                 });
             }).catch(console.error);
@@ -631,9 +631,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
     const refreshRegistry = useCallback(async () => {
         try {
-            const [reg, tempRealtime] = await Promise.all([
+            const [reg, coRealtime] = await Promise.all([
                 dbService.getSalesFilesRegistry(),
-                dbService.getTempRealtimeData()
+                dbService.hasTempRealtimeData() // chỉ cần có/không — không parse cả bảng
             ]);
             
             const validatedReg = await Promise.all(reg.map(async (file) => {
@@ -645,7 +645,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             }));
 
             setFileRegistry(validatedReg);
-            setHasRealtimeData(!!(tempRealtime && tempRealtime.data.length > 0));
+            setHasRealtimeData(coRealtime);
         } catch (err) {
             console.error('[Registry] Failed to fetch registry:', err);
         }
@@ -806,8 +806,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     return;
                 }
             } else {
-                const tempRealtime = await dbService.getTempRealtimeData();
-                if (!tempRealtime || tempRealtime.data.length === 0) {
+                // Chỉ cần biết có/không — getMergedSalesData() bên dưới mới đọc dữ liệu thật.
+                if (!(await dbService.hasTempRealtimeData())) {
                     toast.error('Vui lòng chọn ít nhất một tệp hoặc nạp dữ liệu trước!');
                     setAppState('upload');
                     return;

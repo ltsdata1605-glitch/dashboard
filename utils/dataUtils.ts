@@ -1077,3 +1077,11 @@ export function formatCleanDisplayName(name?: string | null, fallback = 'Thành 
     return clean || fallback;
 }
 
+
+/** Hạn chờ Worker đọc 1 tệp Excel: 60s + 3s mỗi MB (100MB → 6 phút), gia hạn mỗi lần có tiến độ.
+ *  Bước chậm nhất (XLSX.read) là một lời gọi đồng bộ không báo tiến độ được, nên hạn phải đủ cho
+ *  cả tệp lớn trên điện thoại yếu. */
+export function workerTimeoutMs(fileSizeBytes: number): number {
+    const mb = Math.max(0, fileSizeBytes) / (1024 * 1024);
+    return 60_000 + Math.ceil(mb * 3_000);
+}
