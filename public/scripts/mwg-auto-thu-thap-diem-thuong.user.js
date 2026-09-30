@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      6.7
+// @version      6.8
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, ĐẦU TIÊN luôn tự chọn DT quy đổi & Trả góp, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -24,6 +24,14 @@
 // ==/UserScript==
 
 /*
+ * BẢN 6.8 — KHẮC PHỤC TRIỆT ĐỂ LỖI FETCH VÀ LỖI acpRemoveDiacritics:
+ * - Khắc phục ReferenceError: acpRemoveDiacritics is not defined trong ensureToggleActive.
+ * - Loại bỏ hoàn toàn monkey-patching targetWin.fetch / XHR: Giữ nguyên native window.fetch nguyên bản 100%,
+ *   triệt tiêu hoàn toàn lỗi "Failed to execute 'fetch' on 'Window': Illegal invocation".
+ * - Token JWT Keycloak được đọc trực tiếp từ sessionStorage & localStorage (oidc.user/access_token/Bearer) tức thì.
+ * - Sửa chuẩn xác dải ngày Realtime: FROMDATE là ngày 01 đầu tháng (ví dụ 20260901) đến TODATE (todayKey)
+ *   chuẩn xác 100% theo đúng payload API báo cáo của MWG.
+ *
  * BẢN 6.7 — KHẮC PHỤC TRIỆT ĐỂ LỖI TỰ ĐỘNG LẤY THƯỞNG NHÂN VIÊN TRÊN NEWINSITE:
  * - Cô lập hoàn toàn phạm vi hoạt động của BI Direct Token Sniffer: Chỉ chạy trên BI_HOSTNAMES
  *   (baocao.dienmayxanh.com & bi.thegioididong.com), tuyệt đối không can thiệp fetch/XHR hay tiêm sniffer vào newinsite.thegioididong.com.
@@ -2063,6 +2071,11 @@
     return false;
   }
 
+  function acpRemoveDiacritics(str) {
+    if (!str || typeof str !== 'string') return '';
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+  }
+
   async function ensureToggleActive(toggleName) {
     const btn = findButtonByText([
       toggleName,
@@ -2336,11 +2349,11 @@
     }
   }
 
-  // ====== BẢN 6.2+: DIRECT INTERNAL API ENGINE (CHỈ DÀNH CHO BAOCAO.DIENMAYXANH.COM) ======
+  // ====== BẢN 6.8: DIRECT INTERNAL API ENGINE (CHỈ DÀNH CHO BAOCAO.DIENMAYXANH.COM) ======
   let capturedAuthToken = null;
   let capturedStoreIds = null;
 
-  // Lắng nghe Token & Hook Fetch/XHR CHỈ KHI ĐANG Ở TRANG BÁO CÁO BI (KHÔNG CAN THIỆP NEWINSITE)
+  // Lắng nghe Token được phát từ Page Context hoặc Inline Injector
   if (typeof window !== 'undefined' && Array.isArray(BI_HOSTNAMES) && BI_HOSTNAMES.includes(location.hostname)) {
     try {
       window.addEventListener('message', (ev) => {
@@ -2355,115 +2368,6 @@
           }
         } catch (_) {}
       });
-    } catch (_) {}
-
-    // Hook fetch & XHR chỉ trên targetWin của portal BI
-    try {
-      const targetWin = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-
-      const origFetch = targetWin.fetch ? targetWin.fetch.bind(targetWin) : null;
-      if (origFetch) {
-        targetWin.fetch = async function (...args) {
-          try {
-            const [, config] = args;
-            const headers = config?.headers;
-            if (headers) {
-              let auth = null;
-              if (headers instanceof Headers) {
-                auth = headers.get('authorization') || headers.get('Authorization');
-              } else if (typeof headers === 'object') {
-                auth = headers.authorization || headers.Authorization;
-              }
-              if (auth && typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')) {
-                capturedAuthToken = auth.replace(/^bearer\s+/i, '').trim();
-                try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
-              }
-            }
-            if (config?.body && typeof config.body === 'string') {
-              try {
-                const b = JSON.parse(config.body);
-                if (b.VIEWIDS || b.STOREIDS) {
-                  capturedStoreIds = String(b.VIEWIDS || b.STOREIDS);
-                  try { gmSet('BI_CAPTURED_STORE_IDS', capturedStoreIds); } catch (_) {}
-                }
-              } catch (_) {}
-            }
-          } catch (_) {}
-          return origFetch(...args);
-        };
-      }
-
-      const origSetHeader = targetWin.XMLHttpRequest?.prototype?.setRequestHeader;
-      if (origSetHeader) {
-        const boundOrigSetHeader = origSetHeader;
-        targetWin.XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
-          try {
-            if (header && header.toLowerCase() === 'authorization' && value && value.toLowerCase().startsWith('bearer ')) {
-              capturedAuthToken = value.replace(/^bearer\s+/i, '').trim();
-              try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
-            }
-          } catch (_) {}
-          return boundOrigSetHeader.apply(this, arguments);
-        };
-      }
-
-      // Tiêm script sniffer trực tiếp vào Page Context của BI để chắc chắn 100% bắt được
-      const injectSniffer = () => {
-        try {
-          const s = document.createElement('script');
-          s.textContent = `
-            (function() {
-              function notify(t) {
-                if (t && typeof t === 'string') {
-                  var c = t.replace(/^bearer\\s+/i, '').trim();
-                  if (c.length > 20) window.postMessage({ type: 'MWG_DIRECT_AUTH_TOKEN', token: c }, '*');
-                }
-              }
-              try {
-                [sessionStorage, localStorage].forEach(function(st) {
-                  if (!st) return;
-                  for (var i = 0; i < st.length; i++) {
-                    var v = st.getItem(st.key(i));
-                    if (!v || typeof v !== 'string') continue;
-                    if (v.indexOf('Bearer ') !== -1) {
-                      var m = v.match(/Bearer\\s+([A-Za-z0-9_.-]+)/i);
-                      if (m) notify(m[1]);
-                    }
-                    if (v.indexOf('eyJhbGciOi') === 0 && v.split('.').length === 3) notify(v);
-                    if (v.indexOf('access_token') !== -1 || v.indexOf('eyJhbGciOi') !== -1) {
-                      try {
-                        var obj = JSON.parse(v);
-                        if (obj && obj.access_token) notify(obj.access_token);
-                      } catch(e) {}
-                      var jm = v.match(/(eyJhbGciOi[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)/);
-                      if (jm) notify(jm[1]);
-                    }
-                  }
-                });
-              } catch(e) {}
-              var _f = window.fetch;
-              if (_f) {
-                window.fetch = function() {
-                  try {
-                    var cfg = arguments[1];
-                    if (cfg && cfg.headers) {
-                      var h = cfg.headers;
-                      var a = h.authorization || h.Authorization;
-                      if (!a && h.get) a = h.get('authorization') || h.get('Authorization');
-                      if (a) notify(a);
-                    }
-                  } catch(e) {}
-                  return _f.apply(this, arguments);
-                };
-              }
-            })();
-          `;
-          (document.head || document.documentElement).appendChild(s);
-          s.remove();
-        } catch (_) {}
-      };
-      if (document.head || document.documentElement) injectSniffer();
-      else document.addEventListener('DOMContentLoaded', injectSniffer);
     } catch (_) {}
   }
 
@@ -2821,6 +2725,8 @@
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             const todayKey = parseInt(`${yyyy}${mm}${dd}`, 10);
+            const fromDateKey = parseInt(`${yyyy}${mm}01`, 10);
+            const toDateKey = todayKey;
             const monthKey = parseInt(`${yyyy}${mm}`, 10);
 
             // 1. Tự động lấy danh sách siêu thị chuẩn xác qua API filter-store-getbyasmlist của portal
@@ -2834,8 +2740,8 @@
             const viewIds = activeStoreIds || null;
             const [cardData, summaryRows] = await Promise.all([
               acpFetchBiApi('revenue-consolidated-card-get', {
-                FROMDATE: todayKey,
-                TODATE: todayKey,
+                FROMDATE: fromDateKey,
+                TODATE: toDateKey,
                 VIEWLEVEL: viewLevel,
                 VIEWIDS: viewIds,
                 CHAINIDS: null,
@@ -2845,8 +2751,8 @@
                 OUTPUTTYPEEXCLUDES: null,
               }, token),
               acpFetchBiApi('revenue-consolidated-get', {
-                FROMDATE: todayKey,
-                TODATE: todayKey,
+                FROMDATE: fromDateKey,
+                TODATE: toDateKey,
                 VIEWLEVEL: viewLevel,
                 VIEWIDS: viewIds,
                 CHAINIDS: null,
@@ -2902,8 +2808,8 @@
               const st = storeList[i];
               await reportProgress(3, totalSteps, 'Ngành hàng BI', `[${i + 1}/${storeList.length}] Đang tải cây ngành hàng BI cho ${st.name}...`);
               const industryData = await acpFetchBiApi('revenue-consolidated-get', {
-                FROMDATE: todayKey,
-                TODATE: todayKey,
+                FROMDATE: fromDateKey,
+                TODATE: toDateKey,
                 VIEWLEVEL: 'STORE',
                 VIEWIDS: st.id,
                 CHAINIDS: null,
@@ -2929,8 +2835,8 @@
               const st = storeList[i];
               await reportProgress(4, totalSteps, 'Doanh thu nhân viên', `[${i + 1}/${storeList.length}] Đang tải nhân viên cho ${st.name}...`);
               const staffData = await acpFetchBiApi('revenue-consolidated-staff-get', {
-                FROMDATE: todayKey,
-                TODATE: todayKey,
+                FROMDATE: fromDateKey,
+                TODATE: toDateKey,
                 VIEWLEVEL: 'STORE',
                 VIEWIDS: st.id,
                 CHAINIDS: null,
