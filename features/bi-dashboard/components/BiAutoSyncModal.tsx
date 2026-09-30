@@ -100,7 +100,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                     Cần cập nhật Userscript lên phiên bản mới v6.9
                                 </p>
                                 <p className="text-rose-800 dark:text-rose-300 leading-relaxed">
-                                    Trình duyệt của bạn đang chạy bản cũ {currentVersion ? `(v${currentVersion})` : ''}. Bản mới v6.9 ưu tiên chọn tab "Realtime" (bg-blue-600) đầu tiên, tự động chọn "DT quy đổi" & "Trả góp", hỗ trợ chuẩn xác dải ngày Realtime và Bước 3 GROUPBY BICAT trong 1 lần gọi.
+                                    Trình duyệt của bạn đang chạy bản cũ {currentVersion ? `(v${currentVersion})` : ''}. Bản mới v6.9 ưu tiên chọn tab "Realtime" (nút màu xanh) đầu tiên, tự động chọn "DT quy đổi" & "Trả góp", hỗ trợ chuẩn xác dải ngày Realtime và Bước 3 GROUPBY BICAT trong 1 lần gọi.
                                 </p>
                                 <div className="pt-2 flex flex-wrap gap-2">
                                     <Button
