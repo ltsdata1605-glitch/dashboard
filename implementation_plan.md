@@ -6385,3 +6385,29 @@ liệu theo khúc — cần di trú định dạng lưu, làm riêng khi đượ
 | A14 | `components/shared/ui/TouchTitleHint.tsx` (mới), `App.tsx` | ~514 `title=` không hiện trên cảm ứng → 1 bộ lắng nghe toàn trang: nhấn giữ 0,5s phần tử có `title` → bong bóng chữ; cú click kèm theo bị chặn; chạm thường và máy có chuột không đổi | `nhan-giu-xem-chu-thich.spec.ts` 3/3 |
 Check: typecheck/eslint (0 lỗi, 143 cảnh báo)/unit 909/build/ratchet xanh.
 Không làm: đổi kích thước Modal (A13) — đổi giao diện 63 nơi, cần duyệt ảnh trước/sau.
+
+---
+
+# Đợt 6 — Bỏ lần khựng 2,3s khi nạp tệp lớn + đồng đều kích thước Modal (A13) (2026-09-30)
+Chủ dự án duyệt cả 2 mục. Trước khi làm: đã deploy `4a9c093e` (Đợt 1–5) lên dashboard.pro.vn
+(gh-pages `71aa1c1d`, kiểm trang live trả đúng `assets/index-B3ATkWP2.js` của bản build).
+
+## 6a. Khựng khi nạp tệp — KẾ HOẠCH
+Đo lại mã hiện tại: Worker trả MỘT chuỗi JSON 200.000 dòng → luồng chính `JSON.parse` một phát (~1,5s,
+không chia được) → lúc lưu lại `JSON.stringify` y hệt dữ liệu đó (~1,3s).
+Phát hiện quan trọng: chuỗi luồng chính stringify lại **trùng từng byte** với chuỗi Worker đã gửi — dòng
+nào từ Worker cũng có `parsedDate` hợp lệ (ISO), luồng chính chỉ đổi ISO → `Date` rồi stringify lại ra
+đúng ISO đó. Vì vậy **KHÔNG cần đổi định dạng lưu, KHÔNG cần di trú dữ liệu thật**:
+1. `services/worker.ts` gửi kết quả thành nhiều KHÚC JSON (mỗi khúc ~10.000 dòng) thay vì 1 chuỗi.
+2. `hooks/useFileUploadLogic.ts` parse từng khúc, nhường luồng chính giữa các khúc (không còn 1 khối
+   1,5s); vẫn nhận kiểu cũ (1 chuỗi) cho an toàn.
+3. Khi lưu, ghép các khúc thành đúng chuỗi JSON cũ và ghi thẳng — bỏ `JSON.stringify` 1,3s.
+   Có chốt an toàn: nếu có dòng nào mà ngày ở luồng chính lệch với chuỗi gốc thì quay về stringify như cũ.
+4. Test đơn vị: chuỗi ghép == `JSON.stringify` kiểu cũ (từng byte), cả Realtime lẫn Lịch sử.
+5. Đo trước/sau bằng `perf-nap-du-lieu-lon.spec.ts` (bản build, ép GC); số liệu phải giữ nguyên
+   (DT Thực 3010.6 Tỷ, DTQĐ 7431.2 Tỷ).
+
+## 6b. Modal A13 — KẾ HOẠCH
+Thang `maxWidth` hiện không đơn điệu: `2xl`=672px < `lg`=720px < `4xl`=896px < `xl`=960px (tên to hơn
+lại hẹp hơn). Chụp ảnh trước/sau các modal dùng từng cỡ để chủ dự án duyệt; chỉ đổi bảng ánh xạ trong
+`components/shared/ui/Modal.tsx` + (nếu cần) nơi gọi, không đổi nội dung modal.
