@@ -103,7 +103,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
         </span>
       }
       titleColorClass="text-rose-700"
-      maxWidth="2xl"
+      maxWidth="lg"
     >
       <div className="space-y-6">
           <form onSubmit={handleSearch} className="space-y-2">

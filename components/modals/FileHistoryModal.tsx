@@ -57,7 +57,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
             onClose={onClose}
             hideHeader
             ariaLabel="Danh sách YCX luỹ kế"
-            maxWidth="2xl"
+            maxWidth="lg"
         >
             <div className="-m-5">
             {/* Header */}

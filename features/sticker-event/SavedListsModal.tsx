@@ -112,7 +112,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
             onClose={onClose}
             title="Danh sách đã lưu"
             titleColorClass="text-slate-900"
-            maxWidth="2xl"
+            maxWidth="lg"
         >
             <div className="space-y-6 flex flex-col h-full">
                 {error && (

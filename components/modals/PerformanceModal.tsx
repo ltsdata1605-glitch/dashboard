@@ -502,7 +502,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             subTitle="Phân Tích Hiệu Quả Cá Nhân"
             titleColorClass="text-sky-700 dark:text-sky-400"
             controls={controls}
-            maxWidth="4xl"
+            maxWidth="xl"
         >
             <div className="-m-5 p-3 sm:p-6 bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
                 {modalContent}

@@ -13,7 +13,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
       isOpen
       onClose={onClose}
       hideCloseButton
-      maxWidth="4xl"
+      maxWidth="xl"
       footer={
         <div className="flex justify-end">
           <Button onClick={onClose}>Đã hiểu</Button>

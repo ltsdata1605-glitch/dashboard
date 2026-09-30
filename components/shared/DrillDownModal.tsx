@@ -83,7 +83,7 @@ export const DrillDownModal: React.FC<DrillDownModalProps> = ({
             onClose={onClose}
             title={title}
             subTitle={`${rows.length.toLocaleString('vi-VN')} dòng cấu thành`}
-            maxWidth="4xl"
+            maxWidth="xl"
         >
             <div className="space-y-2">
                 <div className="flex flex-wrap items-center gap-2">

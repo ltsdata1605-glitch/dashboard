@@ -40,7 +40,7 @@ const GoogleSheetExportModal: React.FC<GoogleSheetExportModalProps> = ({ data, o
       isOpen
       onClose={onClose}
       title="Xuất Mẫu Lịch Bận Ra Google Sheet"
-      maxWidth="2xl"
+      maxWidth="lg"
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>Đóng</Button>

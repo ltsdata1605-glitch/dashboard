@@ -72,7 +72,12 @@ export interface ModalProps {
   controls?: React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | 'full';
+  /**
+   * Thang ĐƠN ĐIỆU: sm 420 < md 560 < lg 720 < xl 960 < full 95vw.
+   * (A13, 2026-09-30: bỏ `2xl`=672px và `4xl`=896px — tên to hơn mà lại HẸP hơn `lg`/`xl`, khiến cùng
+   * loại modal mỗi nơi một cỡ. 15 nơi dùng `2xl` chuyển sang `lg` (+48px), 12 nơi `4xl` sang `xl` (+64px).)
+   */
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   hideCloseButton?: boolean;
   /** Ẩn hẳn thanh header chuẩn — dùng khi component con tự dựng header riêng trong children. */
   hideHeader?: boolean;
@@ -177,16 +182,12 @@ export function Modal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, modalId]);
 
-  // Scale theo DESIGN.md (sm/md/lg/xl chuẩn hóa theo boltz_project_rules_md) —
-  // 2xl/4xl/full là size mở rộng riêng của dự án cho các modal nhiều nội dung
-  // (bảng dữ liệu lớn...), DESIGN.md gốc không định nghĩa nên giữ nguyên như cũ.
+  // Scale theo DESIGN.md (sm/md/lg/xl) + `full` cho modal bảng dữ liệu lớn. Xem chú thích prop maxWidth.
   const maxWidthClasses = {
     'sm': 'max-w-[420px]',
     'md': 'max-w-[560px]',
     'lg': 'max-w-[720px]',
     'xl': 'max-w-[960px]',
-    '2xl': 'max-w-2xl',
-    '4xl': 'max-w-4xl',
     'full': 'max-w-[95vw]'
   };
 

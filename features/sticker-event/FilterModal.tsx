@@ -42,7 +42,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
       onClose={onClose}
       title="Bộ lọc & Sắp xếp"
       titleColorClass="text-slate-900"
-      maxWidth="2xl"
+      maxWidth="lg"
       footer={
         <div className="flex justify-end">
           <Button

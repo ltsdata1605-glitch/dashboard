@@ -338,7 +338,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             title={editingConfig ? "Chỉnh Sửa Bảng" : "Tạo Bảng Mới"}
             subTitle="Tùy chỉnh bảng so sánh hiệu suất trong 7 ngày"
             titleColorClass="text-sky-700 dark:text-sky-400"
-            maxWidth="4xl"
+            maxWidth="xl"
             footer={
                 <div className="flex items-center justify-between">
                     <Button variant="unstyled" size="none" type="button" onClick={onClose}> Hủy Bỏ </Button>

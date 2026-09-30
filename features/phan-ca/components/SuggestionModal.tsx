@@ -23,7 +23,7 @@ const SuggestionModal: React.FC<SuggestionModalProps> = ({ suggestions, onAccept
       isOpen
       onClose={onClose}
       title="💡 Gợi Ý Tối Ưu Lịch"
-      maxWidth="2xl"
+      maxWidth="lg"
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>Đóng</Button>

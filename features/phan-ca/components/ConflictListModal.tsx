@@ -15,7 +15,7 @@ const ConflictListModal: React.FC<ConflictListModalProps> = ({ conflicts, onClos
       isOpen
       onClose={onClose}
       title="Danh Sách Ca Cần Xử Lý"
-      maxWidth="2xl"
+      maxWidth="lg"
       footer={
         <div className="flex justify-end">
           <Button onClick={onClose}>Đã Hiểu</Button>

@@ -291,7 +291,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             title={editingColumn ? "Chỉnh Sửa Cột" : "Tạo Cột Mới"}
             subTitle="Cấu hình số liệu hiển thị trong bảng"
             titleColorClass="text-sky-700 dark:text-sky-400"
-            maxWidth="4xl"
+            maxWidth="xl"
             footer={
                 <div className="flex justify-end gap-3">
                     <Button variant="unstyled" size="none" type="button" onClick={onClose}>Hủy Bỏ</Button>

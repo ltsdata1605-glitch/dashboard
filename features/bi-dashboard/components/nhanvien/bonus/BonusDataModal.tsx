@@ -49,7 +49,7 @@ export const BonusDataModal: React.FC<{
             isOpen={true}
             onClose={() => onClose('stop')}
             zIndex="z-[300]"
-            maxWidth="2xl"
+            maxWidth="lg"
             title={
                 <span className="flex items-center gap-3 uppercase">
                     <span className="text-slate-500 dark:text-slate-400">Cập nhật:</span>

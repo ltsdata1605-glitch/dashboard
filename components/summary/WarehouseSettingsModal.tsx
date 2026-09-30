@@ -377,7 +377,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             title="Cấu Hình Cột Báo Cáo"
             subTitle="Tùy chỉnh hiển thị dữ liệu kho"
             titleColorClass="text-slate-800 dark:text-white"
-            maxWidth="4xl"
+            maxWidth="xl"
             footer={view === 'picker' ? (
                 <div className="flex items-center justify-between">
                     <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="min-h-11 sm:min-h-0 py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">

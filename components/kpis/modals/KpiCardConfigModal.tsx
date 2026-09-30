@@ -209,7 +209,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
             title="Cấu hình Dãy thẻ KPI"
             subTitle="Tuỳ chỉnh hiển thị thẻ tổng quan"
             titleColorClass="text-slate-800 dark:text-white"
-            maxWidth="4xl"
+            maxWidth="xl"
             footer={
                 <div className="flex justify-end gap-2 sm:gap-3">
                     <Button variant="unstyled" size="none" onClick={onClose}>

@@ -25,7 +25,7 @@ const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileNam
             onClose={onClose}
             title="Xem trước PDF"
             titleColorClass="text-slate-900"
-            maxWidth="4xl"
+            maxWidth="xl"
             controls={
                 <Button
                     variant="ghost"

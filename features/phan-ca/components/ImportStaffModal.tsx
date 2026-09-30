@@ -79,7 +79,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
       onClose={onClose}
       zIndex="z-[60]"
       title="Cấu Hình Nhập Nhân Viên"
-      maxWidth="4xl"
+      maxWidth="xl"
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>Hủy bỏ</Button>

@@ -250,7 +250,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
       onClose={handleClose}
       zIndex="z-[60]"
       title="Quản Lý Mẫu Ca Xoay"
-      maxWidth="4xl"
+      maxWidth="xl"
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={handleClose}>Hủy</Button>

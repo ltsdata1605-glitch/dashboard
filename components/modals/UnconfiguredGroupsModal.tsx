@@ -61,7 +61,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             onClose={onClose}
             hideHeader
             ariaLabel="Nhóm hàng chưa cấu hình"
-            maxWidth="2xl"
+            maxWidth="lg"
         >
             <div className="-m-5">
             {/* Header */}

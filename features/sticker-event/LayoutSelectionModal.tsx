@@ -51,7 +51,7 @@ const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, o
             onClose={onClose}
             title="Chọn Kiểu & Bố Cục In"
             titleColorClass="text-slate-900"
-            maxWidth="2xl"
+            maxWidth="lg"
         >
             <div className="space-y-4">
                 <div className="py-2">

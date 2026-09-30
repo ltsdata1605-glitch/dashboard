@@ -24,7 +24,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
       }
       titleColorClass="text-slate-900"
       subTitle="Hệ thống In Sticker Event"
-      maxWidth="2xl"
+      maxWidth="lg"
       footer={
         <div className="flex justify-end">
           <Button

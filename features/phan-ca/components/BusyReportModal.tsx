@@ -14,7 +14,7 @@ const BusyReportModal: React.FC<BusyReportModalProps> = ({ report, onClose }) =>
       isOpen
       onClose={onClose}
       title="Đã Xử Lý Tự Động Lịch Bận"
-      maxWidth="4xl"
+      maxWidth="xl"
       footer={
         <div className="flex justify-end">
           <Button onClick={onClose}>OK</Button>

@@ -139,7 +139,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                 </span>
             }
             titleColorClass="text-slate-900"
-            maxWidth="2xl"
+            maxWidth="lg"
             footer={
                 <div className="flex justify-between items-center">
                     <Button

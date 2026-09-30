@@ -6456,3 +6456,14 @@ ArrayBuffer + IndexedDB trong worker; nếu hỏng vẫn còn đường cũ.
 Thang `maxWidth` hiện không đơn điệu: `2xl`=672px < `lg`=720px < `4xl`=896px < `xl`=960px (tên to hơn
 lại hẹp hơn). Chụp ảnh trước/sau các modal dùng từng cỡ để chủ dự án duyệt; chỉ đổi bảng ánh xạ trong
 `components/shared/ui/Modal.tsx` + (nếu cần) nơi gọi, không đổi nội dung modal.
+
+## 6b. KẾT QUẢ (đã làm)
+- `components/shared/ui/Modal.tsx`: bỏ `2xl` (672px) và `4xl` (896px) khỏi kiểu `maxWidth` → thang đơn
+  điệu `sm 420 < md 560 < lg 720 < xl 960 < full 95vw`. Bỏ khỏi KIỂU (không chỉ đổi giá trị) để
+  TypeScript chặn mọi nơi còn dùng tên cũ.
+- 27 nơi gọi: 15 `2xl` → `lg` (+48px), 12 `4xl` → `xl` (+64px) — chọn cỡ gần nhất để thay đổi nhìn
+  thấy ít nhất. Điện thoại (<720px) không đổi.
+- Ảnh trước/sau: `tests/e2e/anh-modal-a13.spec.ts` + `helpers/modalSizeHarness.tsx` dựng từng modal
+  THẬT (props mẫu) ở 1366×768. Chụp được 25/27; EmployeeManagerModal và KpiCardConfigModal cần cả
+  DashboardProvider (kiểm bằng typecheck + đổi class). Đo chiều rộng: 672→720, 896→960 đúng cả 25.
+- Kiểm tra: e2e modal-ngan-xep + ui-dung-chung-dot-2 xanh; `npm run check` xanh.
