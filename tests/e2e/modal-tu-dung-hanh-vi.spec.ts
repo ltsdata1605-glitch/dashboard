@@ -26,3 +26,16 @@ test('modal tự dựng: tên + khoá cuộn + bẫy Tab + Escape đóng + trả
     expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('mo-bieu-thue');
 });
+
+test('lớp phủ tự dựng trong component lớn (CouponImportModal): tên + khoá cuộn + Escape đóng + trả focus', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(async () => (await import('/tests/e2e/helpers/couponHarness.tsx' as string)).mountHarness());
+    await page.locator('#mo-nap-ma').click();
+    const hop = page.getByRole('dialog', { name: 'Nạp mã giảm giá' });
+    await expect(hop).toBeVisible();
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+    await page.keyboard.press('Escape');
+    await expect(hop).toHaveCount(0);
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('mo-nap-ma');
+});

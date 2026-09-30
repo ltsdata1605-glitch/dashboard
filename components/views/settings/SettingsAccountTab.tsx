@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useModalBehavior } from '../../shared/ui/Modal';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useActiveTab } from '../../../contexts/LayoutContext';
@@ -31,6 +32,9 @@ export const SettingsAccountTab: React.FC = () => {
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [isConfirmDoiKhoOpen, setIsConfirmDoiKhoOpen] = useState(false);
+    // Hộp xác nhận "xoá toàn bộ dữ liệu" (tự dựng — audit A34): hành vi modal chuẩn; không đóng khi đang xoá.
+    const hopResetRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isResetModalOpen, () => { if (!isResetting) setIsResetModalOpen(false); }, hopResetRef);
 
     // "Xoá tất cả dữ liệu" xoá kèm báo cáo Luỹ kế & Thi đua DÙNG CHUNG của Kho — CHỈ khi là quản lý,
     // CHỈ đúng Kho của họ. Admin / Super Admin KHÔNG BAO GIỜ xoá: Kho gắn thêm của Super Admin (vd 910)
@@ -363,8 +367,8 @@ export const SettingsAccountTab: React.FC = () => {
 
             {/* Modal xác nhận xoá toàn bộ dữ liệu như người dùng mới */}
             {isResetModalOpen && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-                    <div className="bg-white dark:bg-slate-850 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
+                <div data-modal-overlay="" className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+                    <div ref={hopResetRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá toàn bộ dữ liệu" tabIndex={-1} className="outline-none bg-white dark:bg-slate-850 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
                         <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                             <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 shrink-0">
                                 <Icon name="trash-2" size={6} />

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useModalBehavior } from '../../../components/shared/ui/Modal';
 import {
     Ticket,
     Plus,
@@ -77,6 +78,9 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     const todayVN = getVietnamTodayString();
 
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
+    // Hộp xác nhận xoá toàn bộ (tự dựng — audit A34): hành vi modal chuẩn; không đóng khi đang xoá.
+    const hopXoaTatCaRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isConfirmDeleteAllOpen, () => { if (!isDeletingAll) setIsConfirmDeleteAllOpen(false); }, hopXoaTatCaRef);
 
     const handleCopyCode = (couponId: string, code: string) => {
         navigator.clipboard.writeText(code);
@@ -746,7 +750,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             {/* Modal xác nhận xoá toàn bộ kho mã */}
             {isConfirmDeleteAllOpen && (
                 <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-in zoom-in-95 duration-150">
+                    <div ref={hopXoaTatCaRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá toàn bộ kho mã" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-in zoom-in-95 duration-150">
                         <div className="flex items-center gap-3.5 text-rose-600 dark:text-rose-400">
                             <div className="p-3 bg-rose-100 dark:bg-rose-950/60 rounded-2xl shrink-0">
                                 <AlertTriangle size={24} />

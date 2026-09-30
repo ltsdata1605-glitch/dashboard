@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { useModalBehavior } from '../../../components/shared/ui/Modal';
 import {
     X,
     Upload,
@@ -179,6 +180,13 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         return batches;
     }, [coupons]);
 
+    // Modal tự dựng (audit A34): hành vi chuẩn cho hộp chính và hộp xác nhận xoá lồng bên trong —
+    // ngăn xếp modal đảm bảo Escape đóng hộp xác nhận trước. Không đóng khi đang ghi/xoá dở.
+    const hopChinhRef = useRef<HTMLDivElement>(null);
+    const hopXoaRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isOpen, () => { if (!isSubmitting) onClose(); }, hopChinhRef);
+    useModalBehavior(isOpen && !!batchToDelete, () => { if (!deletingBatchId) setBatchToDelete(null); }, hopXoaRef);
+
     if (!isOpen) return null;
 
     const effectiveType = selectedType === 'CUSTOM' ? (customType.trim() || 'Event') : selectedType;
@@ -302,7 +310,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+            <div ref={hopChinhRef} role="dialog" aria-modal="true" aria-label="Nạp mã giảm giá" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
                 {/* Modal Header */}
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2">
@@ -680,7 +688,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
             {/* Modal xác nhận xoá đợt nạp */}
             {batchToDelete && (
                 <div data-modal-overlay="" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-150">
-                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-rose-200 dark:border-rose-900/50 space-y-4">
+                    <div ref={hopXoaRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá đợt nạp mã" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-rose-200 dark:border-rose-900/50 space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-600 rounded-xl">
                                 <AlertTriangle size={24} />

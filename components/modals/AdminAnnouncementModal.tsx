@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { listenSystemAnnouncement } from '../../services/systemAnnouncementService';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
@@ -26,21 +27,9 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
         if (!isOpen) return;
 
         let hasInitialized = false;
-        const q = query(
-            collection(db, 'shared_configs'),
-            orderBy('createdAt', 'desc'),
-            limit(50)
-        );
-
-        const unsub = onSnapshot(q, (snapshot) => {
+        // 1 lượt đọc thay vì 50 (services/systemAnnouncementService.ts)
+        const unsub = listenSystemAnnouncement((found) => {
             if (!hasInitialized) {
-                let found: { content?: string; active?: boolean; isSystemAnnouncement?: boolean } | null = null;
-                snapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    if (data.isSystemAnnouncement && !found) {
-                        found = data;
-                    }
-                });
                 if (found) {
                     setContent(found.content || '');
                     setActive(found.active || false);
@@ -52,7 +41,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
             }
         }, (error) => {
             console.error("Lỗi khi đọc thông báo admin:", error);
-        });
+        }, 50);
 
         return () => unsub();
     }, [isOpen]);

@@ -62,6 +62,13 @@ const makePng = (): string => {
 const openTaxWithBothSlips = async (page: import('@playwright/test').Page) => {
     await page.route('**/features/tax-calculator/services/salarySlipOcrService.ts*', route =>
         route.fulfill({ status: 200, contentType: 'application/javascript', body: OCR_STUB }));
+    // Ảnh QR lấy từ dịch vụ ngoài (qr.sepay.vn) — máy chạy test có thể không ra được mạng (container
+    // cloud bị proxy chặn → test này từng đỏ SẴN). Trả 1 ảnh PNG 1×1 thay thế: thứ cần kiểm là app
+    // TẢI được QR rồi nhúng vào ảnh xuất, không phải nội dung QR của SePay.
+    await page.route('https://qr.sepay.vn/**', route => route.fulfill({
+        status: 200, contentType: 'image/png', headers: { 'Access-Control-Allow-Origin': '*' },
+        body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'),
+    }));
 
     await page.goto('/?tab=tools-tax');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();

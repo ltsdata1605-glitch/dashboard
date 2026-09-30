@@ -6567,3 +6567,15 @@ tính toán hiện tại (đã có `calculateRowMetrics` làm nguồn chân lý)
 2. Adapter ở biên (`toXxxDto` / `fromXxxDto`) + test "golden fixture" (locale, ngày, số, đơn vị).
 3. Bắt đầu từ cầu nối đang có thật: Phân tích → Report BI (danh sách NV), Check thưởng → Report BI (thưởng).
 Cần chủ dự án xác nhận thứ tự trước khi làm.
+
+---
+
+# Đợt 12 (2026-09-30) — theo quyết định chủ dự án
+| Mục | Thay đổi | Kiểm tra |
+|---|---|---|
+| Thuế: bỏ trần 100 bản (chủ dự án: "Không" giữ) | `taxSyncService.ts`: bỏ `slice(0,100)`. Giữ 1 giới hạn KỸ THUẬT: lịch sử là 1 document Firestore (tối đa 1 MiB ≈ 700–2.000 bản) → chỉ khi chạm ~900KB mới bỏ bản CŨ NHẤT khỏi bản cloud (bản trên máy giữ đủ) + báo người dùng. Không giới hạn tuyệt đối = mỗi bản 1 document (di trú) — chưa làm | unit: 150 bản giữ đủ; lịch sử ~1,8MB cắt còn < 900KB, giữ bản mới |
+| Thuế: lưu lịch sử khi tạo ảnh (chủ dự án chốt) | Giữ nguyên | — |
+| 4 lớp phủ còn lại (A34) | `CouponImportModal` (hộp chính + hộp xác nhận xoá lồng), `CouponManagerTab`, `SettingsAccountTab` (+ `data-modal-overlay` để hạ thanh mobile): gắn `useModalBehavior`, `role=dialog/alertdialog`, tên; KHÔNG đóng khi đang ghi/xoá dở | e2e `modal-tu-dung-hanh-vi` 2/2 |
+| Test QR Thuế đỏ sẵn | `tax-qr-and-export.spec.ts` tự phục vụ ảnh `qr.sepay.vn` (PNG 1×1 + CORS) | 7/7 xanh (trước 6/7); thêm vào CI |
+| Thông báo hệ thống 100 → 1 lượt đọc | `services/systemAnnouncementService.ts`: `where(isSystemAnnouncement==true) + orderBy(createdAt desc) + limit(1)`; thiếu chỉ mục → tự quay về cách cũ. Dùng ở DashboardView (100 đọc) và AdminAnnouncementModal (50 đọc). Sửa luôn lỗi: >100 cấu hình mới hơn → thông báo biến mất | unit 2/2. ⚠️ Cần tạo chỉ mục ghép `shared_configs (isSystemAnnouncement ASC, createdAt DESC)` — CLI trong container chưa đăng nhập. Cố ý KHÔNG thêm file indexes vào `firebase.json` (deploy:rules sẽ đề nghị XOÁ các chỉ mục tạo tay không có trong file) |
+`npm run check` xanh (unit 926); e2e Thuế/modal/LINE/Phân tích 26 xanh.

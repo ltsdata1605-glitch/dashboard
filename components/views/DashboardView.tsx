@@ -7,8 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 import { getSetting, saveSetting } from '../../services/dbService';
-import { doc, onSnapshot, collection, query, orderBy, limit } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import { listenSystemAnnouncement } from '../../services/systemAnnouncementService';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -113,24 +112,11 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [announcement, setAnnouncement] = useState<{ content: string; active: boolean } | null>(null);
 
     useEffect(() => {
-        const q = query(
-            collection(db, 'shared_configs'),
-            orderBy('createdAt', 'desc'),
-            limit(100)
+        // 1 lượt đọc thay vì 100 (services/systemAnnouncementService.ts — tự quay về cách cũ nếu thiếu chỉ mục)
+        return listenSystemAnnouncement(
+            (found) => setAnnouncement(found as { content: string; active: boolean } | null),
+            (error) => console.error("Lỗi khi lắng nghe thông báo hệ thống:", error),
         );
-        const unsub = onSnapshot(q, (snapshot) => {
-            let found: { id?: string; content?: string; active?: boolean; isSystemAnnouncement?: boolean } | null = null;
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                if (data.isSystemAnnouncement && !found) {
-                    found = { id: docSnap.id, ...data };
-                }
-            });
-            setAnnouncement(found as { content: string; active: boolean } | null);
-        }, (error) => {
-            console.error("Lỗi khi lắng nghe thông báo hệ thống:", error);
-        });
-        return () => unsub();
     }, []);
 
     useEffect(() => {

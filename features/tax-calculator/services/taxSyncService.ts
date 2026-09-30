@@ -5,7 +5,25 @@ import { SavedTaxRecord } from '../types/tax.types';
 import { taxIndexedDbService } from './taxIndexedDbService';
 
 const FIRESTORE_DOC_KEY = 'tax_calculator_history';
-const CLOUD_LIMIT = 100; // Giới hạn 100 bản ghi gần nhất trên cloud (bản trên máy không giới hạn)
+/**
+ * Chủ dự án (2026-09-30): BỎ trần 100 bản ghi. Còn lại đúng 1 giới hạn KỸ THUẬT: cả lịch sử nằm trong
+ * 1 document Firestore, mà document tối đa 1 MiB. Mỗi bản ghi ~0,5–1,5 KB → ~700–2.000 bản (một người
+ * lưu mỗi tháng = hàng chục năm). Chỉ khi bản trên cloud chạm ngưỡng dưới đây mới bỏ bớt bản CŨ NHẤT
+ * khỏi bản cloud (bản trên máy giữ đủ) và báo người dùng. Muốn không giới hạn tuyệt đối thì phải tách
+ * mỗi bản ghi 1 document (di trú dữ liệu) — chưa làm.
+ */
+const CLOUD_MAX_BYTES = 900_000;
+function catTheoDungLuong(records: SavedTaxRecord[]): SavedTaxRecord[] {
+    let out = records;
+    // Ước lượng theo độ dài JSON (UTF-8 của tiếng Việt ≤ 3 byte/ký tự → nhân 1,5 cho an toàn)
+    while (out.length > 1 && JSON.stringify(out).length * 1.5 > CLOUD_MAX_BYTES) {
+        out = out.slice(0, Math.floor(out.length * 0.95));
+    }
+    if (out.length < records.length) {
+        toast(`Lịch sử Thuế trên cloud đã gần giới hạn 1 MB — ${records.length - out.length} bản cũ nhất chỉ còn lưu trên máy này.`, { id: 'tax-cloud-full', duration: 8000 });
+    }
+    return out;
+}
 
 /**
  * Audit A31 (2026-09-30): trước đây mọi thao tác là getDoc → sửa mảng → setDoc. Hai thiết bị (hoặc 2
@@ -107,10 +125,10 @@ export const taxSyncService = {
         const user = auth.currentUser;
         if (user) {
             const newCloudRecord: SavedTaxRecord = { ...record, id: localId, syncedToCloud: true };
-            await suaMangTrenCloud(user.uid, current => [
+            await suaMangTrenCloud(user.uid, current => catTheoDungLuong([
                 newCloudRecord,
                 ...current.filter(r => r.createdAt !== record.createdAt),
-            ].slice(0, CLOUD_LIMIT));
+            ]));
         }
 
         return localId;

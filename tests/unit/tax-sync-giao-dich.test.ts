@@ -23,7 +23,7 @@ vi.mock('firebase/firestore', () => ({
         return chay;
     },
 }));
-vi.mock('react-hot-toast', () => ({ default: { error: vi.fn() } }));
+vi.mock('react-hot-toast', () => ({ default: Object.assign(vi.fn(), { error: vi.fn() }) }));
 vi.mock('../../services/firebase', () => ({ db: {}, auth: { currentUser: { uid: 'u1' } } }));
 let nextId = 1;
 vi.mock('../../features/tax-calculator/services/taxIndexedDbService', () => ({
@@ -44,5 +44,23 @@ describe('taxSyncService — đọc-sửa-ghi trong transaction', () => {
     it('lưu và xoá chen nhau → không hồi sinh bản đã xoá, không mất bản mới', async () => {
         await Promise.all([taxSyncService.saveRecord(rec('moi')), taxSyncService.deleteRecord(99, 'cu')]);
         expect(store.data!.records.map(r => r.createdAt)).toEqual(['moi']);
+    });
+
+    it('không còn trần 100 bản: 150 bản giữ đủ trên cloud', async () => {
+        store.data = { records: Array.from({ length: 149 }, (_, i) => ({ createdAt: `cu-${i}` })) };
+        await taxSyncService.saveRecord(rec('moi'));
+        expect(store.data!.records).toHaveLength(150);
+        expect(store.data!.records[0].createdAt).toBe('moi');
+    });
+
+    it('lịch sử chạm giới hạn 1 MB của document: bỏ bớt bản CŨ NHẤT khỏi cloud, giữ bản mới', async () => {
+        const dai = 'x'.repeat(2000);
+        store.data = { records: Array.from({ length: 600 }, (_, i) => ({ createdAt: `cu-${i}`, ghiChu: dai } as { createdAt: string })) };
+        await taxSyncService.saveRecord(rec('moi'));
+        const r = store.data!.records;
+        expect(r[0].createdAt).toBe('moi');
+        expect(r.length).toBeLessThan(601);
+        expect(JSON.stringify(r).length * 1.5).toBeLessThanOrEqual(900_000);
+        expect(r[r.length - 1].createdAt).toBe(`cu-${r.length - 2}`); // cắt ở phía cũ nhất
     });
 });
