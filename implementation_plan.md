@@ -6293,3 +6293,15 @@ Kiểm tra: typecheck ✅ · eslint 0 lỗi/143 cảnh báo (không đổi) · u
 `phan-tich-performance-modal` (5), `pivot-table` (5), `system-traffic-stats`, `tax-qr-and-export`
 › xuất ảnh, `tnb-pmh-userscript` (2), `iframe-tabs-csp` › xlsx CDN, `auth-fresh-login-no-flash`.
 Mọi test mới của Đợt 1 + Đợt 2 xanh.
+
+---
+
+# Nâng cấp theo audit — Đợt 3: hệ xuất ảnh (2026-09-30)
+
+## Phạm vi (giữ PNG riêng từng ảnh — quyết định chủ dự án; iOS ≥ 17)
+| Mục | File | Thay đổi | Rủi ro | Kiểm tra |
+|---|---|---|---|---|
+| Nền | `components/shared/ui/imageDelivery.ts` (mới) | Một hàm giao ảnh dùng chung (theo đúng mẫu gốc `services/uiService.ts`): desktop tải; mobile share → Safari từ chối thì nút chạm lại; không share được thì tải; thu hồi blob trễ 60s; TRẢ VỀ kết quả `shared/downloaded/cancelled/retry-offered` | Không (hàm mới) | e2e giả lập share |
+| A06 | `features/phan-ca/services/uiService.ts`, `features/sticker-event/services/uiService.ts` | `downloadBlob/shareBlob` dùng hàm chung (nhận iPad, có nút chạm lại); trần diện tích canvas iOS trên thiết bị di động (trước chỉ trần chiều cao 32000px) | Ảnh rất lớn trên iPhone hơi mờ hơn (thay vì trắng) | e2e + unit |
+| A07 | `features/khai-thac/utils/exportImage.ts` | Trần diện tích; giao ảnh qua hàm chung (có nút chạm lại, thu hồi trễ) | Không | e2e |
+| A08 | `features/check-thuong/services/checkThuongImageExport.ts` | Blob thay data URL; tỉ lệ 2.5 có trần diện tích; mobile mở chia sẻ thay vì luôn tải; tên siêu thị dài xuống dòng thay vì bị cắt "…" | Dòng tên rất dài cao hơn trong ảnh | e2e |
