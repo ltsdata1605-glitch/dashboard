@@ -5,15 +5,33 @@ import type { DataRow } from '../types';
 let cachedData: DataRow[] = [];         // Đã lọc RBAC — PROCESS bên dưới dùng y nguyên biến này như trước.
 let cachedOriginalData: DataRow[] = []; // Thô, chưa lọc — allUnconfiguredGroups cố ý dùng phạm vi rộng hơn RBAC.
 
+// Khúc originalData đang nhận (SET_DATA_CHUNK) — gắn với generation; khúc của generation khác → bỏ.
+let pendingGeneration: number | null = null;
+let pendingRows: DataRow[] = [];
+
 self.onmessage = (event: MessageEvent) => {
     const { type, payload } = event.data;
+
+    if (type === 'SET_DATA_CHUNK') {
+        if (payload.generation !== pendingGeneration) { pendingGeneration = payload.generation; pendingRows = []; }
+        const rows = payload.rows as DataRow[];
+        for (let i = 0; i < rows.length; i++) pendingRows.push(rows[i]);
+        return;
+    }
 
     if (type === 'SET_DATA') {
         // Mục 65b: trước đây SET_DATA chỉ nhận rbacData đã lọc SẴN trên main thread (tính qua
         // useMemo, chặn main thread 1-3s với dữ liệu lớn). Giờ nhận thẳng originalData thô +
         // tham số RBAC/config, tự lọc + tính uniqueFilterOptions/allUnconfiguredGroups NGAY
         // TRONG WORKER — dù Worker tự "đứng hình" bao lâu cũng không ảnh hưởng UI main thread.
-        const { generation, originalData, rbacParams, productConfig, departmentMap } = payload;
+        const { generation, rbacParams, productConfig, departmentMap } = payload;
+        let originalData: DataRow[] = payload.originalData;
+        if (payload.chunked) {
+            // Nhận từng khúc (hooks/useDataManagement.ts) — ghép đủ rồi mới xử lý như bản 1 message.
+            originalData = pendingGeneration === generation ? pendingRows : [];
+            pendingGeneration = null;
+            pendingRows = [];
+        }
         try {
             cachedOriginalData = originalData;
             cachedData = computeRbacFilteredData(originalData, rbacParams);

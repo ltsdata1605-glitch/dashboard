@@ -15,6 +15,9 @@ import { db } from '../services/firebase';
 import type { SalesDataMeta } from '../services/cloudDataService';
 import { saveAnalysisEmployees } from '../features/bi-dashboard/services/analysisEmployeeSyncService';
 
+/** Số dòng mỗi khúc khi gửi originalData sang analytics worker (xem effect SET_DATA). */
+const SET_DATA_CHUNK_ROWS = 20_000;
+
 interface DataManagementProps {
     filterState: FilterState;
     configUrl: string;
@@ -955,12 +958,31 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }
 
         if (!workerRef.current || !workerReady) return; // tự gửi lại khi workerReady đổi (có trong deps)
+        const worker = workerRef.current;
 
-        workerRef.current.postMessage({
+        // 2026-09-30: gửi 1 message chứa cả originalData = structured clone ĐỒNG BỘ ~0,76s luồng chính
+        // ở 200.000 dòng (đo bằng perf-nap-du-lieu-lon, bản build). Nay gửi từng khúc
+        // SET_DATA_CHUNK_ROWS dòng, nhường luồng giữa các khúc; Worker ghép lại rồi mới xử lý như cũ
+        // khi nhận SET_DATA. Dữ liệu nhỏ vẫn đi 1 message như trước. Dữ liệu đổi giữa chừng
+        // (generation mới) → vòng cũ dừng, Worker bỏ khúc dở của generation cũ.
+        let huy = false;
+        const conHieuLuc = () => !huy && generation === dataGenerationRef.current;
+        const chiaKhuc = originalData.length > SET_DATA_CHUNK_ROWS;
+        void (async () => {
+            if (chiaKhuc) {
+                for (let i = 0; i < originalData.length; i += SET_DATA_CHUNK_ROWS) {
+                    if (!conHieuLuc()) return;
+                    worker.postMessage({ type: 'SET_DATA_CHUNK', payload: { generation, rows: originalData.slice(i, i + SET_DATA_CHUNK_ROWS) } });
+                    await new Promise(r => setTimeout(r, 0));
+                }
+                if (!conHieuLuc()) return;
+            }
+            worker.postMessage({
             type: 'SET_DATA',
             payload: {
                 generation,
-                originalData,
+                originalData: chiaKhuc ? undefined : originalData,
+                chunked: chiaKhuc,
                 rbacParams: {
                     isDemoMode,
                     userRole,
@@ -971,7 +993,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 productConfig: productConfig ? unwrapProductConfigProxies(productConfig) : null,
                 departmentMap,
             }
-        });
+            });
+        })();
+        return () => { huy = true; };
     }, [originalData, userRole, departmentId, employeeName, user?.email, isDemoMode, productConfig, departmentMap, workerReady]);
 
     // Mục 65d: baseFilteredData/warehouseFilteredData/filteredValidSalesData trước đây được WORKER

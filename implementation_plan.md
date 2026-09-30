@@ -6482,3 +6482,20 @@ Trước đợt: deploy `315ae156` (Đợt 6 + màu) lên dashboard.pro.vn, ki�
 | Test hỏng sẵn | `phan-tich-performance-modal`, `pivot-table`, `system-traffic-stats` + `helpers/salesFixture.ts` (`createProductConfigXlsx`) | Bấm "Tệp Realtime" trong modal (chữ có ở 2 nơi → strict mode); cấu hình ngành hàng dựng tại chỗ thay vì tải Google Sheets | 5 + 5 + 1 xanh (trước: đỏ) |
 Hồi quy: 18 e2e xuất ảnh/modal xanh; `npm run check` xanh (unit 917).
 ⚠️ Chromium giả lập iPhone — chia sẻ nhiều ảnh cần thử trên iPhone thật (iOS 17 hỗ trợ `files` nhiều tệp).
+
+## Đợt 7b — bước phân tích: gửi dữ liệu sang Worker theo khúc (2026-09-30)
+Đo trên bản build không nén (`vite build --minify false`): khối khựng còn lại lớn nhất là effect gửi
+`SET_DATA` — `postMessage` sao chép cả 200.000 dòng sang analytics worker trong 1 lần (~0,76s đồng bộ).
+- `hooks/useDataManagement.ts`: dữ liệu > 20.000 dòng → gửi từng khúc `SET_DATA_CHUNK` (20.000 dòng),
+  nhường luồng giữa các khúc, cuối cùng `SET_DATA {chunked: true}`. Dữ liệu đổi giữa chừng → vòng cũ
+  dừng. Dữ liệu nhỏ đi 1 message như cũ.
+- `services/analytics.worker.ts`: ghép khúc theo generation; khúc của generation cũ bị bỏ.
+Đo (200.000 dòng, bản build, 2 lượt): khựng dài nhất **1,41s → 0,65s / 0,68s**; tổng khựng 3,9s →
+3,7–4,1s (không đổi — việc chỉ được chia nhỏ); số liệu giữ nguyên (3010.6 Tỷ / 7431.2 Tỷ).
+Kiểm tra: tệp 45.000 dòng (đi đường chia khúc) — chữ trong KPI, bảng Chi tiết theo Kho, xếp hạng
+Nhân viên **giống hệt** mã cũ; unit `analytics-worker-set-data-khuc.test.ts` 3/3 (ghép đúng thứ tự,
+bỏ khúc generation cũ, đường 1 message); e2e Phân tích/pivot/xuất ảnh 21 xanh; `npm run check` xanh (920).
+
+Tổng kết chuỗi tối ưu nạp 200.000 dòng: khựng dài nhất 2,28s (trước Đợt 4) → **0,65s**; tổng khựng
+8,77s → ~3,7s. Việc lớn còn lại trên luồng chính: các `useMemo` lọc dữ liệu (computeBaseAndPeriodData,
+isValidSalesRow) chạy song song với Worker — chuyển hẳn sang Worker là thay đổi kiến trúc, chưa làm.
