@@ -13,6 +13,9 @@ import {
     addSupermarketNameToKho,
     removeSupermarketNameFromKho,
     moveSupermarketNameToKho,
+    saveSupermarketMap,
+    autoResolveSupermarketKhoMap,
+    extractKhoFromStoreName,
     type SupermarketToKhoMap,
 } from '../services/biSupermarketMapService';
 
@@ -122,10 +125,42 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
         return Array.from(new Set([...fromSummary, ...fromSummaryRT, ...fromCompetition, ...fromCompetitionRT])).filter(n => !isEmployeeName(n));
     }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime]);
 
+    // TỰ ĐỘNG CẬP NHẬT MÃ KHO (Người dùng không cần thao tác)
+    // 1. Số ở đầu là Mã Kho (Ví dụ: 1678 - ĐMM_AGI_TTO - Tri Tôn => Mã kho 1678)
+    // 2. So khớp tên: ĐMM_AGI_TTO - Tri Tôn và 1678 - ĐMM_AGI_TTO - Tri Tôn là 1 siêu thị => cùng Mã kho 1678
+    useEffect(() => {
+        if (pastedNames.length === 0 || isLoading) return;
+
+        const { updatedMap, newMappings, count } = autoResolveSupermarketKhoMap(pastedNames, map);
+        if (count > 0) {
+            setSavingKey('auto-resolve');
+            saveSupermarketMap(updatedMap, userId)
+                .then(() => {
+                    setMap(updatedMap);
+                    const listSummary = Object.entries(newMappings)
+                        .map(([n, k]) => `• ${n} → Kho ${k}`)
+                        .slice(0, 4)
+                        .join('\n');
+                    const moreMsg = count > 4 ? `\n...và ${count - 4} siêu thị khác` : '';
+                    toast.success(`⚡ Đã tự động cập nhật Mã Kho cho ${count} siêu thị:\n${listSummary}${moreMsg}`, {
+                        icon: '🤖',
+                        duration: 6000,
+                    });
+                })
+                .catch(err => {
+                    console.error('[BiSupermarketMapAdmin] Lỗi tự động lưu mã kho:', err);
+                })
+                .finally(() => {
+                    setSavingKey(null);
+                });
+        }
+    }, [pastedNames, map, isLoading, userId]);
+
     const unmappedNames = useMemo(() => pastedNames.filter(name => !map[name]), [pastedNames, map]);
 
     const handleSaveUnmapped = async (name: string) => {
-        const maKho = (unmappedKho[name] ?? (allowedKhos[0] || '')).trim();
+        const fallbackKho = extractKhoFromStoreName(name) || allowedKhos[0] || '';
+        const maKho = (unmappedKho[name] ?? fallbackKho).trim();
         if (!maKho) {
             toast.error('Nhập Mã Kho.');
             return;
@@ -330,7 +365,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                                         <KhoInput
                                             isAdmin={isAdmin}
                                             allowedKhos={allowedKhos}
-                                            value={unmappedKho[name] ?? ''}
+                                            value={unmappedKho[name] ?? extractKhoFromStoreName(name) ?? ''}
                                             onChange={(v) => setUnmappedKho(prev => ({ ...prev, [name]: v }))}
                                             disabled={savingKey === name}
                                             className="text-xs w-20 h-7 py-0.5 px-2"

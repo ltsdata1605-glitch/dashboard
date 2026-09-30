@@ -87,4 +87,76 @@ describe('biSupermarketMapService — Cấu hình Mã Kho riêng biệt theo t�
         const mapB = await fetchSupermarketMap(userB);
         expect(mapB['Siêu thị Z']).toBe('333');
     });
+
+    describe('Tự động trích xuất Mã Kho và So khớp tên siêu thị', () => {
+        it('extractKhoFromStoreName trích xuất chính xác mã kho từ các số ở đầu', async () => {
+            const { extractKhoFromStoreName } = await import('./biSupermarketMapService');
+            expect(extractKhoFromStoreName('1678 - ĐMM_AGI_TTO - Tri Tôn')).toBe('1678');
+            expect(extractKhoFromStoreName('7904 - ĐMS_AGI_TTO - Cô Tô')).toBe('7904');
+            expect(extractKhoFromStoreName('8231 - ĐMS_AGI_TTO - Lương An Trà')).toBe('8231');
+            expect(extractKhoFromStoreName('910 - ĐML_STR_STR - 99 Hùng Vương')).toBe('910');
+            expect(extractKhoFromStoreName('2449 - ĐMM_CTH_NKI - 43 Mậu Thân')).toBe('2449');
+            expect(extractKhoFromStoreName('ĐMS_AGI_TTO - Lương An Trà')).toBeNull();
+            expect(extractKhoFromStoreName('ĐMS_AGI_TTO - Cô Tô')).toBeNull();
+            expect(extractKhoFromStoreName('ĐMM_AGI_TTO - Tri Tôn')).toBeNull();
+        });
+
+        it('normalizeStoreNameForMatching chuẩn hóa tên sau khi bỏ số ở đầu để so khớp', async () => {
+            const { normalizeStoreNameForMatching } = await import('./biSupermarketMapService');
+            const norm1 = normalizeStoreNameForMatching('1678 - ĐMM_AGI_TTO - Tri Tôn');
+            const norm2 = normalizeStoreNameForMatching('ĐMM_AGI_TTO - Tri Tôn');
+            expect(norm1).toBe(norm2);
+
+            const norm3 = normalizeStoreNameForMatching('7904 - ĐMS_AGI_TTO - Cô Tô');
+            const norm4 = normalizeStoreNameForMatching('ĐMS_AGI_TTO - Cô Tô');
+            expect(norm3).toBe(norm4);
+
+            const norm5 = normalizeStoreNameForMatching('8231 - ĐMS_AGI_TTO - Lương An Trà');
+            const norm6 = normalizeStoreNameForMatching('ĐMS_AGI_TTO - Lương An Trà');
+            expect(norm5).toBe(norm6);
+        });
+
+        it('autoResolveSupermarketKhoMap tự động map chính xác cả 6 siêu thị trong ví dụ của user', async () => {
+            const { autoResolveSupermarketKhoMap } = await import('./biSupermarketMapService');
+            const inputCandidates = [
+                '1678 - ĐMM_AGI_TTO - Tri Tôn',
+                '7904 - ĐMS_AGI_TTO - Cô Tô',
+                '8231 - ĐMS_AGI_TTO - Lương An Trà',
+                'ĐMS_AGI_TTO - Lương An Trà',
+                'ĐMS_AGI_TTO - Cô Tô',
+                'ĐMM_AGI_TTO - Tri Tôn',
+            ];
+
+            const { updatedMap, newMappings, count } = autoResolveSupermarketKhoMap(inputCandidates, {});
+
+            expect(count).toBe(6);
+            expect(updatedMap['1678 - ĐMM_AGI_TTO - Tri Tôn']).toBe('1678');
+            expect(updatedMap['ĐMM_AGI_TTO - Tri Tôn']).toBe('1678');
+            expect(updatedMap['7904 - ĐMS_AGI_TTO - Cô Tô']).toBe('7904');
+            expect(updatedMap['ĐMS_AGI_TTO - Cô Tô']).toBe('7904');
+            expect(updatedMap['8231 - ĐMS_AGI_TTO - Lương An Trà']).toBe('8231');
+            expect(updatedMap['ĐMS_AGI_TTO - Lương An Trà']).toBe('8231');
+
+            expect(newMappings['ĐMM_AGI_TTO - Tri Tôn']).toBe('1678');
+            expect(newMappings['ĐMS_AGI_TTO - Cô Tô']).toBe('7904');
+            expect(newMappings['ĐMS_AGI_TTO - Lương An Trà']).toBe('8231');
+        });
+
+        it('getKhoFromSupermarketName tra cứu linh hoạt theo mã số đầu hoặc tên tương đương', async () => {
+            const { getKhoFromSupermarketName } = await import('./biSupermarketMapService');
+            const map = {
+                '1678 - ĐMM_AGI_TTO - Tri Tôn': '1678',
+                'ĐMS_AGI_TTO - Cô Tô': '7904',
+            };
+
+            // 1. Tên có số ở đầu tự lấy ra mã kho
+            expect(getKhoFromSupermarketName('8231 - ĐMS_AGI_TTO - Lương An Trà', map)).toBe('8231');
+
+            // 2. Tên không có số nhưng map đã có bản ghi tương đương
+            expect(getKhoFromSupermarketName('ĐMM_AGI_TTO - Tri Tôn', map)).toBe('1678');
+
+            // 3. Tên có số nhưng map chỉ lưu tên không có số
+            expect(getKhoFromSupermarketName('7904 - ĐMS_AGI_TTO - Cô Tô', map)).toBe('7904');
+        });
+    });
 });

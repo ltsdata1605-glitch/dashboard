@@ -25,6 +25,7 @@ import {
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { parseCompetitionDataBySupermarket, SupermarketCompetitionData, parseNumber, parseSummaryData, isEmployeeName, findMatchingSupermarketKey } from '../utils/dashboardHelpers';
+import { getKhoFromSupermarketName } from './biSupermarketMapService';
 
 const SUMMARY_LUYKE_HEADER_MARKER = 'Tên miền\tDT Hôm Qua\tDTLK\tDT Dự Kiến\tDTQĐ';
 
@@ -77,21 +78,10 @@ export function splitSummaryLuyKeByKho(
         const name = (row[0] || '').trim();
         if (!name || name === 'Tổng' || isEmployeeName(name)) continue;
 
-        let maKho = nameToKho[name];
+        let maKho = getKhoFromSupermarketName(name, nameToKho);
         if (!maKho) {
             const matchedKey = findMatchingSupermarketKey(name, Object.keys(nameToKho));
             if (matchedKey) maKho = nameToKho[matchedKey];
-        }
-        if (!maKho) {
-            const prefixCode = name.match(/^(\d+)\s*-\s*/)?.[1];
-            if (prefixCode && Object.values(nameToKho).includes(prefixCode)) {
-                maKho = prefixCode;
-            } else {
-                const withoutPrefix = name.replace(/^\d+\s*-\s*/, '');
-                if (nameToKho[withoutPrefix]) {
-                    maKho = nameToKho[withoutPrefix];
-                }
-            }
         }
 
         if (!maKho) {
@@ -201,21 +191,10 @@ export async function uploadCompetitionLuyKeIfManager(
         // trước đây bị đẩy vào skippedNames mỗi lần dán, che mất cảnh báo thật (siêu thị thật sự thiếu map).
         if (name.toUpperCase() === 'TỔNG') continue;
         if (!data.programs || data.programs.length === 0) continue;
-        let maKho = nameToKho[name];
+        let maKho = getKhoFromSupermarketName(name, nameToKho);
         if (!maKho) {
             const matchedKey = findMatchingSupermarketKey(name, Object.keys(nameToKho));
             if (matchedKey) maKho = nameToKho[matchedKey];
-        }
-        if (!maKho) {
-            const prefixCode = name.match(/^(\d+)\s*-\s*/)?.[1];
-            if (prefixCode && Object.values(nameToKho).includes(prefixCode)) {
-                maKho = prefixCode;
-            } else {
-                const withoutPrefix = name.replace(/^\d+\s*-\s*/, '');
-                if (nameToKho[withoutPrefix]) {
-                    maKho = nameToKho[withoutPrefix];
-                }
-            }
         }
         if (!maKho) { skippedNames.push(name); continue; }
         if (!allowedSet.has(maKho)) continue;
