@@ -10,6 +10,8 @@ import { initialFilterState } from './useFilterState';
 import { normalizeSalesData, parseExcelDate, getRowValue, toLocalISOString, workerTimeoutMs } from '../utils/dataUtils';
 import { COL } from '../constants';
 import { workerResultToChunks, parseJsonChunks } from '../services/salesJsonChunks';
+
+const ISO_NGAY = /^\d{4}-\d{2}-\d{2}T/;
 import type { UploadConflictInfo } from '../components/modals/UploadConflictModal';
 
 
@@ -257,6 +259,11 @@ export const useFileUploadLogic = ({
                     if (rawDate) {
                         if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
                             dateObj = rawDate;
+                        } else if (typeof rawDate === 'string' && ISO_NGAY.test(rawDate)) {
+                            // Đường nhanh (2026-09-30): Worker luôn gửi parsedDate dạng ISO. parseExcelDate
+                            // thử regex dd/MM/yyyy trước (không bao giờ khớp chuỗi bắt đầu bằng năm 4 số)
+                            // rồi mới `new Date(chuỗi)` — kết quả y hệt, bỏ 200.000 lần thử regex.
+                            dateObj = new Date(rawDate);
                         } else if (typeof rawDate === 'string' || typeof rawDate === 'number') {
                             dateObj = parseExcelDate(rawDate);
                         }

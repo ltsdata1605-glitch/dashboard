@@ -6534,3 +6534,36 @@ các mục P1 sửa được cụ thể.
 | A39 phông | Bỏ link Google Fonts riêng của Check thưởng (trang cha đã chép stylesheet phông vào iframe). Sửa `CheckThuongView`: chép stylesheet vào iframe **2 lần** + chép vào document tạm `about:blank`. ĐO: yêu cầu CSS phông khi mở Check thưởng **4 → 2**; iframe vẫn đúng phông UTM Avo, Tailwind vẫn áp dụng. |
 | A22 landing | **Đề xuất (chưa làm)**: thay đổi thẩm mỹ thuần (blur/gradient/animate-pulse ở màn chào) — cần chủ dự án chọn hướng. |
 `npm run check` xanh; e2e Check thưởng/modal/ui/Thuế/Phân tích/BI: 47 xanh, 1 đỏ SẴN (QR ngoài).
+
+# Đợt 11 (2026-09-30) — khối khựng còn lại khi nạp + đề xuất A29
+Thêm vào `perf-nap-du-lieu-lon.spec.ts` dòng `LONGTASK`: ghép từng long task của trình duyệt với mẫu
+CPU trong đúng khoảng thời gian đó (trước chỉ ghép được các task liền nhau). Kết quả (bản build không nén):
+| Long task | Thành phần |
+|---|---|
+| 757ms | chuỗi `useMemo` lọc lần render đầu: `isValidSalesRow` (cleanAndNormalize/getRowValue ×200.000) + `computeBaseAndPeriodData` |
+| 680ms | vòng chuẩn hoá ngày sau khi nạp (`parseExcelDate` từng dòng) |
+| 251ms | tính danh sách tuần/tháng |
+
+Quyết định: KHÔNG chuyển chuỗi lọc sang Worker. Luồng đó gánh quy tắc RBAC (sai là lộ dữ liệu ngoài phạm
+vi Kho) và hàng đợi FIFO giữ "cùng epoch" giữa danh sách và số liệu (Mục 65d/65e) — rủi ro lớn cho lợi ích
+< 0,8s. Làm 2 việc cục bộ, giữ nguyên kết quả:
+1. `hooks/useDataManagement.ts`: phân loại dòng (`isValidSalesRow`/`isUncollectedOrder` — không phụ thuộc
+   bộ lọc) lưu lên chính dòng dưới khoá **Symbol** kèm số hiệu cấu hình. Đo 200.000 dòng (Node, hàm thật):
+   lần đầu 162→189ms, **mỗi lần đổi bộ lọc sau đó 162→29ms**. Đã thử WeakMap trước: lần đầu 303ms, lần sau
+   73ms — bỏ. Symbol không lọt vào JSON (IndexedDB/cloud) hay structured clone (Worker) — đã kiểm.
+2. `hooks/useFileUploadLogic.ts`: đường nhanh ngày ISO (`new Date(chuỗi)` thay vì thử regex dd/MM/yyyy chắc
+   chắn trượt) — đối chiếu 5.007 mẫu: giống hệt `parseExcelDate`.
+Đo bản build (2 lượt): khựng dài nhất lúc nạp 650/651ms (như trước đợt), số liệu giữ nguyên (3010.6 /
+7431.2 Tỷ). Tệp 45.000 dòng: KPI, bảng theo Kho, xếp hạng NV **giống hệt** mã cũ. e2e Phân tích 20 xanh.
+
+## A29 — ĐỀ XUẤT (chưa làm: đổi kiểu dữ liệu xuyên 5 khu vực)
+Hiện trạng: "nhân viên / kho / doanh thu" có hình dạng, tên và đơn vị khác nhau ở `types.ts` (Phân tích),
+BI `types/nhanVienTypes.ts`, Check thưởng, Khai thác, Sticker; ngày tồn tại cả Date/epoch/ISO. Không phải lỗi
+tính toán hiện tại (đã có `calculateRowMetrics` làm nguồn chân lý) nhưng dễ sai khi nối module (vd cầu nối
+`analysisEmployeeSyncService`).
+Đề xuất theo đúng hướng audit (KHÔNG gom mọi model làm một):
+1. Mỗi CẦU NỐI giữa 2 khu vực có 1 DTO riêng, có `schemaVersion`, `source`, đơn vị ghi rõ trong tên
+   (`doanhThuVnd`, `ngayIso`), định danh ổn định (mã NV số, mã kho).
+2. Adapter ở biên (`toXxxDto` / `fromXxxDto`) + test "golden fixture" (locale, ngày, số, đơn vị).
+3. Bắt đầu từ cầu nối đang có thật: Phân tích → Report BI (danh sách NV), Check thưởng → Report BI (thưởng).
+Cần chủ dự án xác nhận thứ tự trước khi làm.

@@ -22,12 +22,16 @@ test('đo nạp dữ liệu lớn vào Phân tích', async ({ page }) => {
         const w = window as unknown as { __long: number[] };
         w.__long = [];
         new PerformanceObserver(l => l.getEntries().forEach(e => w.__long.push(Math.round(e.duration)))).observe({ type: 'longtask', buffered: true });
+        const wl = window as unknown as { __longTs: [number, number][] };
+        wl.__longTs = [];
+        new PerformanceObserver(l => l.getEntries().forEach(e => wl.__longTs.push([e.startTime, e.duration]))).observe({ type: 'longtask', buffered: true });
     });
     await page.goto('/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     const cdp = await page.context().newCDPSession(page);
     await cdp.send('Profiler.enable');
     await cdp.send('Profiler.setSamplingInterval', { interval: 1000 });
+    const perfT0 = await page.evaluate(() => performance.now());
     await cdp.send('Profiler.start');
     const t0 = Date.now();
     await page.locator('input[type="file"]').first().setInputFiles(process.env.PERF_FILE!);
@@ -35,7 +39,7 @@ test('đo nạp dữ liệu lớn vào Phân tích', async ({ page }) => {
     const tChon = Date.now();
     await expect(page.locator('#business-overview')).toContainText(/DT Thực\D{0,20}[\d.]+ (Tr|Tỷ)/, { timeout: 800_000 });
     const tXong = Date.now();
-    const { profile } = await cdp.send('Profiler.stop') as { profile: { nodes: { id: number; callFrame: { functionName: string; url: string; lineNumber: number }; hitCount?: number }[]; samples: number[]; timeDeltas: number[] } };
+    const { profile } = await cdp.send('Profiler.stop') as { profile: { startTime?: number; nodes: { id: number; callFrame: { functionName: string; url: string; lineNumber: number }; hitCount?: number }[]; samples: number[]; timeDeltas: number[] } };
     const self = new Map<number, number>();
     profile.samples.forEach((id, i) => self.set(id, (self.get(id) || 0) + (profile.timeDeltas[i] || 0)));
     const agg = new Map<string, number>();
@@ -46,6 +50,28 @@ test('đo nạp dữ liệu lớn vào Phân tích', async ({ page }) => {
     }
     const top = [...agg.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([k, v]) => `${(v / 1000).toFixed(0)}ms ${k}`);
     console.log('TOP\n' + top.join('\n'));
+    // Từng LONG TASK (PerformanceObserver) → các hàm app (gần nhất, bỏ node_modules) chiếm CPU trong đúng khoảng đó.
+    {
+        const par = new Map<number, number>();
+        profile.nodes.forEach(n => ((n as unknown as { children?: number[] }).children || []).forEach(c => par.set(c, n.id)));
+        const byIdL = new Map(profile.nodes.map(n => [n.id, n]));
+        const appKey = (id: number) => {
+            for (let p: number | undefined = id; p !== undefined; p = par.get(p)) {
+                const cf = byIdL.get(p)!.callFrame;
+                if (cf.url && !cf.url.includes('node_modules') && !cf.url.includes('vendor-')) return `${cf.functionName || '(anon)'} ${cf.url.replace(/^.*\/assets\//, '').split('?')[0]}:${cf.lineNumber + 1}`;
+            }
+            const cf = byIdL.get(id)!.callFrame; return `${cf.functionName || '(native)'}`;
+        };
+        const longTs = await page.evaluate(() => (window as unknown as { __longTs: [number, number][] }).__longTs);
+        let tt = 0; const times: number[] = [];
+        profile.timeDeltas.forEach(d => { tt += d; times.push(perfT0 + tt / 1000); });
+        const bang = longTs.filter(([st]) => st >= perfT0).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([st, d]) => {
+            const agg2 = new Map<string, number>();
+            profile.samples.forEach((id, i) => { if (times[i] >= st && times[i] <= st + d) { const k = appKey(id); agg2.set(k, (agg2.get(k) || 0) + (profile.timeDeltas[i] || 0) / 1000); } });
+            return `${Math.round(d)}ms = ` + [...agg2.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, v]) => `${v.toFixed(0)} ${k}`).join(' | ');
+        });
+        console.log('LONGTASK\n' + bang.join('\n'));
+    }
     // Các lần khựng DÀI NHẤT (chuỗi mẫu liên tục không "(idle)") và hàm nào lấp đầy từng lần.
     const nodeKey = new Map(profile.nodes.map(n => [n.id, `${n.callFrame.functionName || '(anon)'} ${n.callFrame.url.replace(/^.*\/assets\//, '').split('?')[0]}:${n.callFrame.lineNumber + 1}`]));
     const runs: { ms: number; fns: Map<string, number> }[] = [];

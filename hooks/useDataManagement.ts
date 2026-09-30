@@ -18,6 +18,35 @@ import { saveAnalysisEmployees } from '../features/bi-dashboard/services/analysi
 /** Số dòng mỗi khúc khi gửi originalData sang analytics worker (xem effect SET_DATA). */
 const SET_DATA_CHUNK_ROWS = 20_000;
 
+/**
+ * CACHE PHÂN LOẠI THEO DÒNG (2026-09-30). `isValidSalesRow`/`isUncollectedOrder` chỉ phụ thuộc
+ * (dòng, cấu hình ngành hàng) — KHÔNG phụ thuộc bộ lọc — nhưng trước đây chạy lại trên cả 200.000
+ * dòng MỖI LẦN đổi bộ lọc. Nay kết quả gắn lên chính dòng dưới khoá Symbol, kèm "số hiệu" của cấu
+ * hình (đổi cấu hình = số hiệu mới = tính lại). Gọi đúng 2 hàm chuẩn nên kết quả y hệt.
+ * Symbol: JSON.stringify (lưu IndexedDB/cloud) và structured clone (gửi Worker) đều BỎ QUA khoá
+ * Symbol → không lọt vào dữ liệu lưu. Đo 200.000 dòng: lần đầu 162→189ms, mỗi lần đổi bộ lọc sau
+ * đó 162→29ms. (Đã thử WeakMap: lần đầu 303ms, lần sau 73ms — không đáng.)
+ */
+const PL_HOP_LE = 1, PL_CHUA_THU = 2;
+const PHAN_LOAI = Symbol('ycxPhanLoai');
+const soHieuCauHinh = new WeakMap<object, number>();
+let soHieuKeTiep = 1;
+const KHONG_CAU_HINH = {};
+function taoPhanLoai(cauHinhGoc: ProductConfig | null, unwrapped: ProductConfig | null) {
+    const khoa = cauHinhGoc || KHONG_CAU_HINH;
+    let soHieu = soHieuCauHinh.get(khoa);
+    if (soHieu === undefined) { soHieu = soHieuKeTiep++; soHieuCauHinh.set(khoa, soHieu); }
+    const sh = soHieu;
+    return (row: DataRow): number => {
+        const o = row as unknown as Record<symbol, number | undefined>;
+        const v = o[PHAN_LOAI];
+        if (v !== undefined && (v >>> 2) === sh) return v & 3;
+        const f = (isValidSalesRow(row, unwrapped) ? PL_HOP_LE : 0) | (isUncollectedOrder(row, unwrapped) ? PL_CHUA_THU : 0);
+        o[PHAN_LOAI] = (sh << 2) | f;
+        return f;
+    };
+}
+
 interface DataManagementProps {
     filterState: FilterState;
     configUrl: string;
@@ -1027,10 +1056,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
     // isValidSalesRow cần productConfig ĐÃ UNWRAP (giống hệt Worker) để khớp đúng hành vi
     // getParentGroup hiện có — productConfig context luôn là bản Proxy-wrap.
-    const computedFilteredValidSalesData = useMemo(() => {
-        const unwrapped = productConfig ? unwrapProductConfigProxies(productConfig) : null;
-        return mainPeriodData.filter(row => isValidSalesRow(row, unwrapped));
-    }, [mainPeriodData, productConfig]);
+    const phanLoai = useMemo(
+        () => taoPhanLoai(productConfig, productConfig ? unwrapProductConfigProxies(productConfig) : null),
+        [productConfig]
+    );
+    const computedFilteredValidSalesData = useMemo(
+        () => mainPeriodData.filter(row => (phanLoai(row) & PL_HOP_LE) !== 0),
+        [mainPeriodData, phanLoai]
+    );
 
     // Mục 65e: cùng lý do computedFilteredValidSalesData ở trên — unshippedOrders là
     // TẬP CON của filteredValidSalesData đã tính sẵn (lọc rẻ, không cần productConfig thêm lần
@@ -1042,10 +1075,10 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         () => computedFilteredValidSalesData.filter(row => getRowValue(row, COL.XUAT) === 'Chưa xuất'),
         [computedFilteredValidSalesData]
     );
-    const computedUncollectedOrders = useMemo(() => {
-        const unwrapped = productConfig ? unwrapProductConfigProxies(productConfig) : null;
-        return mainPeriodData.filter(row => isUncollectedOrder(row, unwrapped));
-    }, [mainPeriodData, productConfig]);
+    const computedUncollectedOrders = useMemo(
+        () => mainPeriodData.filter(row => (phanLoai(row) & PL_CHUA_THU) !== 0),
+        [mainPeriodData, phanLoai]
+    );
 
     // Giữ tính ATOMIC với processedData: nhiều nơi (IndustryGrid, KpiCards,
     // useEmployeeAnalysisData, useHeadToHeadLogic...) kết hợp dữ liệu Worker-sourced
