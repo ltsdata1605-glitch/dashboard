@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import type { DataRow, Status } from '../types';
 import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize } from '../utils/dataUtils';
 import { COL, VARIANT_TO_SHORT_KEY } from '../constants';
+import { rowsToJsonBuffers, type JsonBufferResult } from './salesJsonChunks';
 
 interface WorkerMessage {
     file: File;
@@ -192,7 +193,11 @@ async function processSingleFileInWorker(file: File) {
         postStatus({ message: 'Hoàn tất xử lý (đang chuyển dữ liệu)...', type: 'info', progress: 95 });
 
         // Post the final result back to the main thread
-        self.postMessage({ type: 'result', payload: JSON.stringify(validResults) });
+        // Đợt 6: gửi theo KHÚC JSON UTF-8, CHUYỂN quyền sở hữu (không sao chép chuỗi 190MB khi nhận) —
+        // luồng chính parse từng khúc; lúc lưu các khúc đi thẳng sang Worker ghi IndexedDB (services/salesJsonChunks.ts).
+        const chunks = rowsToJsonBuffers(validResults);
+        const payload: JsonBufferResult = { format: 'json-utf8-chunks', chunks };
+        (self as unknown as Worker).postMessage({ type: 'result', payload }, chunks);
 
     } catch (error) {
         console.error("Lỗi khi xử lý file trong worker:", error);

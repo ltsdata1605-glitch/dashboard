@@ -1,6 +1,42 @@
 import type { DataRow, StoredSalesData, UploadedFileRegistryItem } from '../../types';
 import { getDb, getSetting, saveSetting, APP_STORE, resetDbConnection } from './core';
 import { biHubDbName } from '../../utils/localDbScope';
+import { storedSalesJsonWrap } from '../salesJsonChunks';
+import type { SalesJsonWriteRequest } from '../salesJsonWriter.worker';
+
+// ── Đợt 6 (2026-09-30): ghi JSON dựng sẵn NGOÀI luồng chính ─────────────────────────────────────
+// `rawChunks` = các khúc JSON UTF-8 do Worker đọc tệp tạo ra (services/salesJsonChunks.ts). Worker ghi
+// (services/salesJsonWriter.worker.ts) ghép thành chuỗi TRÙNG TỪNG BYTE với JSON.stringify kiểu cũ và
+// `put` vào cùng database đang mở → luồng chính không còn khựng ~1,7s (stringify + put 200.000 dòng).
+// Lỗi bất kỳ (không có Worker, database lạ, quá hạn) → trả false để hàm gọi ghi theo đường cũ.
+// Các khúc được CHUYỂN sang Worker (bên gọi mất quyền dùng chúng) — chỉ dùng một lần.
+const RAW_WRITE_TIMEOUT_MS = 120_000;
+async function writeRawJsonOffMain(key: string, rawChunks: ArrayBuffer[], prefix: string, suffix: string): Promise<boolean> {
+    if (typeof Worker === 'undefined' || rawChunks.length === 0) return false;
+    let worker: Worker | null = null;
+    try {
+        const db = await getDb();
+        const { default: WriterWorker } = await import('../salesJsonWriter.worker?worker');
+        worker = new WriterWorker();
+        const w = worker;
+        const req: SalesJsonWriteRequest = { dbName: db.name, storeName: APP_STORE, key, chunks: rawChunks, prefix, suffix };
+        return await new Promise<boolean>((resolve) => {
+            const t = setTimeout(() => { console.warn('[IDB] Worker ghi quá hạn:', key); resolve(false); }, RAW_WRITE_TIMEOUT_MS);
+            w.onmessage = (e: MessageEvent<{ ok: boolean; error?: string }>) => {
+                clearTimeout(t);
+                if (!e.data?.ok) console.warn('[IDB] Worker ghi lỗi, ghi lại theo đường cũ:', e.data?.error);
+                resolve(!!e.data?.ok);
+            };
+            w.onerror = (err) => { clearTimeout(t); console.warn('[IDB] Worker ghi hỏng:', err.message); resolve(false); };
+            w.postMessage(req, rawChunks);
+        });
+    } catch (e) {
+        console.warn('[IDB] Không dùng được Worker ghi, ghi theo đường cũ:', (e as Error)?.message);
+        return false;
+    } finally {
+        worker?.terminate();
+    }
+}
 
 // ── Đợt 4 (2026-09-30): cache DÙNG MỘT LẦN cho tempRealtimeData ─────────────────────────────────
 // Đo trên 200.000 dòng (bản build): nạp tệp Realtime xong, saveTempRealtimeData() ghi IndexedDB rồi
@@ -283,7 +319,9 @@ export async function resetHistoricalFilesToInactive(): Promise<UploadedFileRegi
     return updated;
 }
 
-export async function saveSalesFileData(fileId: string, data: DataRow[]): Promise<void> {
+/** `rawChunks` (tuỳ chọn, Đợt 6): khúc JSON gốc của đúng `data` — có thì ghi ngoài luồng chính. */
+export async function saveSalesFileData(fileId: string, data: DataRow[], rawChunks?: ArrayBuffer[]): Promise<void> {
+    if (rawChunks && await writeRawJsonOffMain('salesData_' + fileId, rawChunks, '', '')) return;
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
@@ -490,9 +528,20 @@ export async function clearAllSalesFiles(): Promise<void> {
 
 // --- Temporary Realtime File Data ---
 
-export async function saveTempRealtimeData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
+/**
+ * `rawChunks` (tuỳ chọn, Đợt 6): khúc JSON gốc của đúng `data` từ Worker đọc tệp — có thì ghi ngoài
+ * luồng chính, KHÔNG `JSON.stringify` lại 200.000 dòng. Chuỗi lưu vẫn y hệt kiểu cũ.
+ */
+export async function saveTempRealtimeData(data: DataRow[], filename: string, fileLastModified?: number, rawChunks?: ArrayBuffer[]): Promise<void> {
     const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
     dropTempRealtimeCache();
+    if (rawChunks) {
+        const { prefix, suffix } = storedSalesJsonWrap({ filename, savedAt: stored.savedAt, fileLastModified });
+        if (await writeRawJsonOffMain('tempRealtimeData', rawChunks, prefix, suffix)) {
+            tempRealtimeOnce = { dbName: biHubDbName(), expires: Date.now() + TEMP_CACHE_TTL_MS, value: stored };
+            return;
+        }
+    }
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;

@@ -46,6 +46,21 @@ test('đo nạp dữ liệu lớn vào Phân tích', async ({ page }) => {
     }
     const top = [...agg.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25).map(([k, v]) => `${(v / 1000).toFixed(0)}ms ${k}`);
     console.log('TOP\n' + top.join('\n'));
+    // Các lần khựng DÀI NHẤT (chuỗi mẫu liên tục không "(idle)") và hàm nào lấp đầy từng lần.
+    const nodeKey = new Map(profile.nodes.map(n => [n.id, `${n.callFrame.functionName || '(anon)'} ${n.callFrame.url.replace(/^.*\/assets\//, '').split('?')[0]}:${n.callFrame.lineNumber + 1}`]));
+    const runs: { ms: number; fns: Map<string, number> }[] = [];
+    let cur: { ms: number; fns: Map<string, number> } | null = null;
+    profile.samples.forEach((id, i) => {
+        const k = nodeKey.get(id) || '?';
+        const dt = (profile.timeDeltas[i] || 0) / 1000;
+        if (k.startsWith('(idle)')) { if (cur) runs.push(cur); cur = null; return; }
+        cur = cur || { ms: 0, fns: new Map() };
+        cur.ms += dt;
+        cur.fns.set(k, (cur.fns.get(k) || 0) + dt);
+    });
+    if (cur) runs.push(cur);
+    console.log('KHUNG\n' + runs.sort((a, b) => b.ms - a.ms).slice(0, 4).map(r => `${r.ms.toFixed(0)}ms = ` +
+        [...r.fns.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k, v]) => `${v.toFixed(0)} ${k}`).join(' | ')).join('\n'));
     // Thời gian tự thân của jsxDEV/createElement, cộng dồn theo component NGƯỜI GỌI gần nhất trong mã app
     const parent = new Map<number, number>();
     profile.nodes.forEach(n => ((n as unknown as { children?: number[] }).children || []).forEach(c => parent.set(c, n.id)));

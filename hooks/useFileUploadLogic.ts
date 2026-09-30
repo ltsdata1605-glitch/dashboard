@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { initialFilterState } from './useFilterState';
 import { normalizeSalesData, parseExcelDate, getRowValue, toLocalISOString, workerTimeoutMs } from '../utils/dataUtils';
 import { COL } from '../constants';
+import { workerResultToChunks, parseJsonChunks } from '../services/salesJsonChunks';
 import type { UploadConflictInfo } from '../components/modals/UploadConflictModal';
 
 
@@ -164,6 +165,9 @@ export const useFileUploadLogic = ({
             const updatedRegistry = [...registry];
             const realtimeRows: DataRow[] = [];
             let maxRealtimeLastModified = 0;
+            // Đợt 6: khúc JSON gốc (UTF-8) từ Worker của các tệp Realtime — lưu thẳng ngoài luồng chính,
+            // bỏ JSON.stringify ~1,4s. null = có tệp không dùng được JSON gốc → lưu kiểu cũ.
+            let realtimeJsonParts: ArrayBuffer[] | null = [];
             
             if (!isHistorical) {
                 await dbService.clearTempRealtimeData();
@@ -173,7 +177,7 @@ export const useFileUploadLogic = ({
                 const file = files[i];
                 
                 // Spin up worker for this specific file
-                const workerResult = await new Promise<string | DataRow[]>((resolve, reject) => {
+                const workerResult = await new Promise<unknown>((resolve, reject) => {
                     let worker: Worker;
                     let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -234,8 +238,16 @@ export const useFileUploadLogic = ({
                     worker.postMessage({ file });
                 });
                 
-                // Parse if it is a stringified JSON (from worker optimization)
-                const parsedData: DataRow[] = typeof workerResult === 'string' ? JSON.parse(workerResult) : workerResult;
+                // Đợt 6: Worker gửi các KHÚC JSON → parse từng khúc, nhường luồng giữa các khúc
+                // (trước: 1 lần JSON.parse ~1,5s đứng giao diện ở 200.000 dòng).
+                const jsonChunks = workerResultToChunks(workerResult);
+                const parsedData: DataRow[] = jsonChunks ? await parseJsonChunks(jsonChunks) : (workerResult as DataRow[]);
+                // JSON gốc còn dùng để LƯU được không: chỉ khi luồng chính không làm lệch dòng nào so
+                // với chuỗi gốc (việc duy nhất nó làm là đổi parsedDate ISO → Date, stringify lại ra
+                // đúng ISO đó). Lệch 1 dòng → quay về JSON.stringify như cũ.
+                let jsonGocKhop = jsonChunks !== null;
+                // Chỉ khúc dạng ArrayBuffer (Worker mới) mới chuyển được sang Worker ghi.
+                const rawChunks = jsonChunks && jsonChunks.every(c => c instanceof ArrayBuffer) ? jsonChunks as ArrayBuffer[] : null;
                 
                 // Calculate file dates and unique dates
                 const fileDates: Date[] = [];
@@ -253,6 +265,7 @@ export const useFileUploadLogic = ({
                         dateObj = parseExcelDate(getRowValue(row, COL.DATE_CREATED));
                     }
                     if (dateObj && !isNaN(dateObj.getTime())) {
+                        if (jsonGocKhop && (typeof rawDate !== 'string' || dateObj.toISOString() !== rawDate)) jsonGocKhop = false;
                         row.parsedDate = dateObj;
                         fileDates.push(dateObj);
                     }
@@ -456,7 +469,7 @@ export const useFileUploadLogic = ({
 
                     // Save this file's data to IDB
                     const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    await dbService.saveSalesFileData(fileId, parsedData);
+                    await dbService.saveSalesFileData(fileId, parsedData, jsonGocKhop && rawChunks ? rawChunks : undefined);
                     
                     // Add metadata to registry
                     updatedRegistry.push({
@@ -475,6 +488,8 @@ export const useFileUploadLogic = ({
                     for (let j = 0; j < parsedData.length; j++) {
                         realtimeRows.push(parsedData[j]);
                     }
+                    if (realtimeJsonParts && jsonGocKhop && rawChunks) realtimeJsonParts.push(...rawChunks);
+                    else realtimeJsonParts = null;
                     if (file.lastModified && file.lastModified > maxRealtimeLastModified) {
                         maxRealtimeLastModified = file.lastModified;
                     }
@@ -501,7 +516,8 @@ export const useFileUploadLogic = ({
                     }
                 }
                 // Save to tempRealtimeData
-                await dbService.saveTempRealtimeData(realtimeRows, realtimeFilename, maxRealtimeLastModified || Date.now());
+                await dbService.saveTempRealtimeData(realtimeRows, realtimeFilename, maxRealtimeLastModified || Date.now(),
+                    realtimeJsonParts && realtimeJsonParts.length > 0 ? realtimeJsonParts : undefined);
             }
             
             // Notify registry change if listener exists

@@ -6407,6 +6407,51 @@ nào từ Worker cũng có `parsedDate` hợp lệ (ISO), luồng chính chỉ �
 5. Đo trước/sau bằng `perf-nap-du-lieu-lon.spec.ts` (bản build, ép GC); số liệu phải giữ nguyên
    (DT Thực 3010.6 Tỷ, DTQĐ 7431.2 Tỷ).
 
+## 6a. KẾT QUẢ (đã làm)
+Kế hoạch ban đầu (chỉ ghép chuỗi rồi lưu) ĐO RA KHÔNG ĐỠ: `put` của IndexedDB phải tự làm phẳng chuỗi
+ghép 190MB (0,3s → 1,2s), khựng dài nhất còn tệ hơn (2,19s → 2,54s). Đã bỏ hướng đó. Thêm phân tích
+"khựng nào do hàm nào" vào `perf-nap-du-lieu-lon.spec.ts` (dòng `KHUNG`) mới thấy 3 khối của mã cũ:
+| Khối | Thành phần (mã cũ) |
+|---|---|
+| 2,2s | NHẬN chuỗi 190MB từ Worker 1,2s + `JSON.parse` 0,6s |
+| 1,75s | `JSON.stringify` khi lưu 1,4s + `put` 0,3s |
+| 1,6s | bước phân tích (analytics worker/SET_DATA — việc khác, chưa đụng) |
+
+Cách làm cuối:
+- `services/worker.ts`: gửi các khúc JSON 10.000 dòng dạng UTF-8 `ArrayBuffer`, CHUYỂN quyền sở hữu
+  (không sao chép khi nhận).
+- `hooks/useFileUploadLogic.ts`: giải mã + parse từng khúc, nhường luồng giữa các khúc; vẫn nhận kiểu
+  cũ (1 chuỗi). Chốt an toàn: nếu có dòng mà ngày ở luồng chính lệch chuỗi gốc → lưu kiểu cũ.
+- `services/salesJsonWriter.worker.ts` (mới): nhận các khúc, ghép thành chuỗi và `put` vào đúng
+  database đang mở. Không tạo database rỗng (huỷ nâng cấp nếu chưa có).
+- `services/dbService/salesData.ts`: `saveTempRealtimeData`/`saveSalesFileData` nhận thêm `rawChunks`;
+  Worker ghi lỗi/quá hạn/không tạo được → tự ghi lại bằng đường cũ.
+- `services/salesJsonChunks.ts` (mới): hàm dùng chung. **Định dạng lưu không đổi, không di trú.**
+
+Đo (file giả 200.000 dòng/194MB, bản build, ép GC, cùng máy, cùng phiên):
+| | Mã cũ | Mã mới |
+|---|---|---|
+| Khựng dài nhất | 2,19s | **1,41s** |
+| Tổng khựng luồng chính | 6,60s | **3,92s (−41%)** |
+| Heap sau GC | 199MB | 199MB |
+| Chọn chế độ → hiện số | 37,2s | 38,9s (dao động máy; phần CPU chuyển sang Worker) |
+Khối 2,2s và 1,75s biến mất khỏi luồng chính; khối còn lại lớn nhất là bước phân tích (1,8s).
+Số liệu giữ nguyên (DT Thực 3010.6 Tỷ, DTQĐ 7431.2 Tỷ).
+
+Kiểm tra:
+- unit `sales-json-chunks.test.ts` 4/4: chuỗi Worker ghi == `JSON.stringify` kiểu cũ TỪNG BYTE,
+  cả Realtime nhiều tệp lẫn Lũy kế.
+- e2e `luu-du-lieu-ngoai-luong-chinh.spec.ts` 3/3 (build + dev):
+  - Worker ghi chạy và báo ok, không rơi đường cũ;
+  - chuỗi trong IndexedDB đúng định dạng; tải lại trang ra đúng số;
+  - chặn Worker ghi → vẫn lưu bằng đường cũ;
+  - nhánh Lũy kế ghi `salesData_<id>`.
+- Hồi quy e2e nạp Phân tích (mat-mang-cau-hinh, xuat-hang-loat-theo-kho, xuat-anh-hang-loat-ket-qua):
+  10 xanh.
+- `npm run check` xanh (unit 913).
+⚠️ Chromium trong container, không phải iPhone Safari thật. iOS 17 hỗ trợ module worker + transfer
+ArrayBuffer + IndexedDB trong worker; nếu hỏng vẫn còn đường cũ.
+
 ## 6b. Modal A13 — KẾ HOẠCH
 Thang `maxWidth` hiện không đơn điệu: `2xl`=672px < `lg`=720px < `4xl`=896px < `xl`=960px (tên to hơn
 lại hẹp hơn). Chụp ảnh trước/sau các modal dùng từng cỡ để chủ dự án duyệt; chỉ đổi bảng ánh xạ trong
