@@ -175,9 +175,13 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     .bi-report-module .w-12 { width: 32px !important; }
                     .bi-report-module .h-12 { height: 32px !important; }
                     
-                    /* Ẩn scrollbar trên bảng dữ liệu/mobile */
-                    .bi-report-module ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-                    .bi-report-module * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+                    /* Ẩn scrollbar trên mobile — TRỪ vùng cuộn thật (.overflow-x-auto / .overflow-auto: bảng
+                       48 cột). Audit A20 (2026-09-30): ẩn TẤT CẢ làm mất cả chỉ báo cuộn gốc của iOS —
+                       bảng rộng gấp 3 màn hình mà không có dấu hiệu nào cho biết còn cột bên phải. */
+                    .bi-report-module *:not(.overflow-x-auto):not(.overflow-auto)::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+                    .bi-report-module *:not(.overflow-x-auto):not(.overflow-auto) { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+                    .bi-report-module .overflow-x-auto, .bi-report-module .overflow-auto { scrollbar-width: thin; }
+                    .bi-report-module .overflow-x-auto::-webkit-scrollbar, .bi-report-module .overflow-auto::-webkit-scrollbar { height: 4px; width: 4px; }
                 }
 
                 /* KHÔNG BO GÓC cho tất cả bảng, viền, thẻ card trong toàn bộ phân hệ Report BI (giữ nguyên avatar tròn) */

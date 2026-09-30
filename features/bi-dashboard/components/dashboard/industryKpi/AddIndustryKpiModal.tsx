@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { useModalBehavior } from '../../../../../components/shared/ui/Modal';
 import { IndustryItemOption, IndustryKpiCardConfig } from '../../../services/industryKpiCalc';
 import { X, Search, Check, Plus, RotateCcw, Package, Layers } from 'lucide-react';
 import { Button } from '../../../../../components/shared/ui/Button';
@@ -49,11 +50,14 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
         );
     }, [activeTab, availableIndustries, availableSubIndustries, searchTerm]);
 
+    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isOpen, onClose, dialogRef);
     if (!isOpen) return null;
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Quản lý và thêm thẻ KPI ngành hàng" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
                 {/* Header */}
                 <div className="px-4 py-3 bg-sky-600 dark:bg-sky-700 text-white flex items-center justify-between">
                     <div className="flex items-center gap-2">

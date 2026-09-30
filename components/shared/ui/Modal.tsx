@@ -60,56 +60,14 @@ const isTextEntry = (el: HTMLElement) =>
 
 const isCoarsePointer = () => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
 
-export interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: React.ReactNode;
-  /** Dòng phụ nhỏ hiển thị phía trên title trong header (tương đương subTitle của ModalWrapper cũ). */
-  subTitle?: React.ReactNode;
-  /** Override màu chữ của title, vd. "text-rose-700 dark:text-rose-400". Mặc định dùng màu slate chuẩn. */
-  titleColorClass?: string;
-  /** Nội dung tùy chỉnh (nút phụ...) hiển thị cạnh nút đóng trong header. */
-  controls?: React.ReactNode;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-  /**
-   * Thang ĐƠN ĐIỆU: sm 420 < md 560 < lg 720 < xl 960 < full 95vw.
-   * (A13, 2026-09-30: bỏ `2xl`=672px và `4xl`=896px — tên to hơn mà lại HẸP hơn `lg`/`xl`, khiến cùng
-   * loại modal mỗi nơi một cỡ. 15 nơi dùng `2xl` chuyển sang `lg` (+48px), 12 nơi `4xl` sang `xl` (+64px).)
-   */
-  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
-  hideCloseButton?: boolean;
-  /** Ẩn hẳn thanh header chuẩn — dùng khi component con tự dựng header riêng trong children. */
-  hideHeader?: boolean;
-  /** Bỏ bo góc — dùng cho modal cần tràn viền/edge-to-edge. */
-  noRounded?: boolean;
-  /** 'bottom' = dán đáy màn hình trên mobile (bottom-sheet), căn giữa trên desktop. Mặc định 'center'. */
-  position?: 'center' | 'bottom';
-  zIndex?: string;
-  /** Tên hộp thoại cho trình đọc màn hình khi KHÔNG có `title` (vd. dùng `hideHeader`). */
-  ariaLabel?: string;
-}
-
-export function Modal({
-  isOpen,
-  onClose,
-  title,
-  subTitle,
-  titleColorClass = 'text-slate-800 dark:text-slate-100',
-  controls,
-  children,
-  footer,
-  maxWidth = 'md',
-  hideCloseButton = false,
-  hideHeader = false,
-  noRounded = false,
-  position = 'center',
-  zIndex = 'z-50',
-  ariaLabel
-}: ModalProps) {
+/**
+ * HÀNH VI của hộp thoại, tách khỏi GIAO DIỆN (audit A34, 2026-09-30): ngăn xếp modal (khoá cuộn đếm
+ * tham chiếu), Escape chỉ đóng modal trên cùng, bẫy Tab trong hộp thoại, đưa focus vào khung và trả
+ * về khi đóng. `Modal` dùng hook này; các modal TỰ DỰNG (LINE/Thuế/BI…) gắn cùng hook để có đủ hành
+ * vi mà không phải đổi bố cục. Khung gắn `dialogRef` cần `tabIndex={-1}` + `role="dialog"`.
+ */
+export function useModalBehavior(isOpen: boolean, onClose: () => void, dialogRef: React.RefObject<HTMLElement | null>) {
   const modalId = useId();
-  const titleId = `${modalId}-title`;
-  const dialogRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -181,6 +139,59 @@ export function Modal({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, modalId]);
+}
+
+export interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: React.ReactNode;
+  /** Dòng phụ nhỏ hiển thị phía trên title trong header (tương đương subTitle của ModalWrapper cũ). */
+  subTitle?: React.ReactNode;
+  /** Override màu chữ của title, vd. "text-rose-700 dark:text-rose-400". Mặc định dùng màu slate chuẩn. */
+  titleColorClass?: string;
+  /** Nội dung tùy chỉnh (nút phụ...) hiển thị cạnh nút đóng trong header. */
+  controls?: React.ReactNode;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  /**
+   * Thang ĐƠN ĐIỆU: sm 420 < md 560 < lg 720 < xl 960 < full 95vw.
+   * (A13, 2026-09-30: bỏ `2xl`=672px và `4xl`=896px — tên to hơn mà lại HẸP hơn `lg`/`xl`, khiến cùng
+   * loại modal mỗi nơi một cỡ. 15 nơi dùng `2xl` chuyển sang `lg` (+48px), 12 nơi `4xl` sang `xl` (+64px).)
+   */
+  maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  hideCloseButton?: boolean;
+  /** Ẩn hẳn thanh header chuẩn — dùng khi component con tự dựng header riêng trong children. */
+  hideHeader?: boolean;
+  /** Bỏ bo góc — dùng cho modal cần tràn viền/edge-to-edge. */
+  noRounded?: boolean;
+  /** 'bottom' = dán đáy màn hình trên mobile (bottom-sheet), căn giữa trên desktop. Mặc định 'center'. */
+  position?: 'center' | 'bottom';
+  zIndex?: string;
+  /** Tên hộp thoại cho trình đọc màn hình khi KHÔNG có `title` (vd. dùng `hideHeader`). */
+  ariaLabel?: string;
+}
+
+export function Modal({
+  isOpen,
+  onClose,
+  title,
+  subTitle,
+  titleColorClass = 'text-slate-800 dark:text-slate-100',
+  controls,
+  children,
+  footer,
+  maxWidth = 'md',
+  hideCloseButton = false,
+  hideHeader = false,
+  noRounded = false,
+  position = 'center',
+  zIndex = 'z-50',
+  ariaLabel
+}: ModalProps) {
+  const modalId = useId();
+  const titleId = `${modalId}-title`;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useModalBehavior(isOpen, onClose, dialogRef);
 
   // Scale theo DESIGN.md (sm/md/lg/xl) + `full` cho modal bảng dữ liệu lớn. Xem chú thích prop maxWidth.
   const maxWidthClasses = {

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { useModalBehavior } from '../../../components/shared/ui/Modal';
 import {
     X,
     ExternalLink,
@@ -29,6 +30,9 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
     const [currentStep, setCurrentStep] = useState<number>(1);
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
 
+    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isOpen, onClose, dialogRef);
     if (!isOpen) return null;
 
     const handleCopyWebhook = () => {
@@ -143,7 +147,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Hướng dẫn tạo và cấu hình BOT LINE" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                     <div className="flex items-center gap-2.5">

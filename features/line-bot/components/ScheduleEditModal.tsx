@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useModalBehavior } from '../../../components/shared/ui/Modal';
 import { X, Clock, Calendar, Check, MessageSquare, Repeat } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
@@ -84,6 +85,9 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
         }
     }, [schedule, isOpen]);
 
+    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isOpen, onClose, dialogRef);
     if (!isOpen) return null;
 
     const handleRepeatTypeChange = (newType: ScheduleRepeatType) => {
@@ -168,7 +172,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Lịch hẹn gửi tin" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
                         <Clock size={16} className="text-emerald-500" />

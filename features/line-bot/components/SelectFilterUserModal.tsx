@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { useModalBehavior } from '../../../components/shared/ui/Modal';
 import {
     X,
     Users,
@@ -100,6 +101,9 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
         });
     }, [interactedUsers, searchTerm, channelFilter, filterNamesSet]);
 
+    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isOpen, onClose, dialogRef);
     if (!isOpen) return null;
 
     const handleToggleSelectId = (id: string) => {
@@ -161,7 +165,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Chọn người dùng Bot để lọc PMH" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden">
                 
                 {/* Header */}
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">

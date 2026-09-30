@@ -149,7 +149,12 @@ export const CheckThuongView: React.FC = () => {
             // 1. Copy all parent styles (including Tailwind) to iframe so we don't need Tailwind CDN
             try {
                 const iframeDoc = iframe.contentDocument;
-                if (iframeDoc?.head) {
+                // onLoad chạy 2 lần cho cùng 1 document (sự kiện 'load' + nhánh readyState bên dưới) →
+                // trước đây chép MỌI stylesheet 2 lần: CSS bị phân tích 2 lần, link phông tải 2 lần
+                // (đo 2026-09-30). Đánh dấu document đã chép.
+                // Bỏ qua document tạm `about:blank` (iframe chưa nạp xong trang thật) — chép vào đó là tải phí.
+                if (iframeDoc?.head && iframeDoc.URL.includes('check-thuong') && !iframeDoc.head.hasAttribute('data-parent-styles-copied')) {
+                    iframeDoc.head.setAttribute('data-parent-styles-copied', '');
                     const parentStyles = document.querySelectorAll('style, link[rel="stylesheet"]');
                     parentStyles.forEach(styleNode => {
                         iframeDoc.head.appendChild(styleNode.cloneNode(true));

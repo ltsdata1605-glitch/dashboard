@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useModalBehavior } from '../../../components/shared/ui/Modal';
 import { X, Layers, Sparkles } from 'lucide-react';
 import { Button } from '../../../components/shared/ui/Button';
 import {
@@ -22,6 +23,9 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
     activeBracketsWithProxy = [],
     activeBracketsWithoutProxy = [],
 }) => {
+    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useModalBehavior(isOpen, onClose, dialogRef);
     if (!isOpen) return null;
 
     const brackets = TAX_BRACKETS_2026;
@@ -30,7 +34,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-            <div className="relative w-full max-w-xl bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Biểu thuế thu nhập cá nhân" tabIndex={-1} className="outline-none relative w-full max-w-xl bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-2">

@@ -352,8 +352,11 @@ body:has([data-modal-overlay]) .mobile-chrome {
   }
 }
 
+/* Audit A26 (2026-09-30): trước đây `infinite`. Animate box-shadow = vẽ lại trên luồng chính MỖI
+   KHUNG HÌNH, mãi mãi, trên mọi thẻ KPI đã đạt → đo được ~3s CPU mỗi 20s khi tab Phân tích để
+   yên (máy siêu thị bật cả ngày, iPhone nóng máy). Nay nhấp nháy 3 lần (7,5s) báo "đã đạt" rồi dừng. */
 .animate-pulse-glow-green {
-  animation: pulseGlow 2.5s ease-in-out infinite;
+  animation: pulseGlow 2.5s ease-in-out 3;
 }
 
 @keyframes pulseGlowAmber {
@@ -369,7 +372,11 @@ body:has([data-modal-overlay]) .mobile-chrome {
 }
 
 .animate-pulse-glow-amber {
-  animation: pulseGlowAmber 2.5s ease-in-out infinite;
+  animation: pulseGlowAmber 2.5s ease-in-out 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-glow-green, .animate-pulse-glow-amber { animation: none; }
 }
 
 /* Horizontal scroll fade indicator */
