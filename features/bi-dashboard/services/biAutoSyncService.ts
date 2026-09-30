@@ -235,9 +235,9 @@ export async function startBiAutoSyncSession(mode: BiSyncMode): Promise<{ jobId:
         throw new Error('USERSCRIPT_NOT_INSTALLED');
     }
 
-    // Bắt buộc userscript phải từ bản 6.2 trở lên để chạy ngầm 100% qua Direct Internal API
+    // Bắt buộc userscript phải từ bản 6.3 trở lên để có Bước 3 GROUPBY BICAT & Bước 1 DT quy đổi + Trả góp
     const ver = isInstalled.version || '0';
-    if (ver < '6.2') {
+    if (ver < '6.3') {
         throw new Error(`USERSCRIPT_OUTDATED:${ver}`);
     }
 
