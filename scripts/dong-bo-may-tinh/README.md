@@ -35,5 +35,6 @@ Cách sửa (chọn 1):
    ```
 2. Cấp quyền: Cài đặt hệ thống → Quyền riêng tư & Bảo mật → Truy cập toàn bộ ổ đĩa → `+` → `⌘⇧G` gõ `/bin/bash`
    → bật. (Nhanh nhưng rộng: MỌI script bash đều có quyền đọc cả ổ.)
-Kiểm lại: `launchctl kickstart -k gui/$(id -u)/vn.dashboard.dong-bo; sleep 5; tail -3 ~/Library/Logs/dashboard-dong-bo.log`
-— không còn dòng "Operation not permitted" là được.
+Kiểm lại: `launchctl kickstart -k gui/$(id -u)/vn.dashboard.dong-bo; sleep 5; launchctl list | grep vn.dashboard.dong-bo`
+— cột thứ 2 là **`0`** là chạy được (`126` = vẫn bị chặn). ĐỪNG kiểm bằng `tail` nhật ký: khi máy đã mới nhất
+script KHÔNG ghi gì, nên `tail` chỉ hiện lại các dòng lỗi cũ (đường dẫn cũ) dù đã hết lỗi.
