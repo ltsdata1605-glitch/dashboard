@@ -217,6 +217,10 @@ export const resetAllDataAsNewUser = async (
             await purgeAllUserCloudData(user.uid);
             if (opts?.khoXoaBaoCaoChung?.length) {
                 await purgeUserBiDataReports(opts.khoXoaBaoCaoChung);
+                const { purgeKhoSalesFiles } = await import('./khoDataService');
+                for (const maKho of opts.khoXoaBaoCaoChung) {
+                    await purgeKhoSalesFiles(maKho);
+                }
             }
         } catch (e) {
             console.warn('[resetAllDataAsNewUser] Lỗi khi xoá dữ liệu cloud Firestore:', e);
@@ -231,6 +235,7 @@ export const resetAllDataAsNewUser = async (
     try {
         const { markCleanSlateMigrated, resetLocalScopeInheritance } = await import('../utils/localDbScope');
         if (user?.uid) {
+            setLocalDataOwner(user.uid);
             resetLocalScopeInheritance(user.uid);
             await markCleanSlateMigrated(user.uid);
         }

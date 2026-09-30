@@ -150,11 +150,17 @@ export const requestAccess = onCall(async (request) => {
     requestDate: FieldValue.serverTimestamp(),
   });
 
-  await notifyAdminsAndManagers(departmentId, {
+  // Bọc timeout 2.5s cho notifyAdminsAndManagers để không giữ client chờ lâu/treo UI
+  const notifyPromise = notifyAdminsAndManagers(departmentId, {
     title: 'Đăng ký vào Kho mới',
     message: `${request.auth?.token.name ?? request.auth?.token.email ?? 'Một người dùng'} vừa đăng ký truy cập mã Kho gốc: ${departmentId}.`,
     type: 'info',
+  }).catch((err) => {
+    console.error('[Session] Lỗi gửi thông báo cho admin/manager:', err);
   });
+
+  const notifyTimeout = new Promise<void>((resolve) => setTimeout(resolve, 2500));
+  await Promise.race([notifyPromise, notifyTimeout]);
 
   return { success: true };
 });

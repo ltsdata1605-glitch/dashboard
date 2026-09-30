@@ -14,6 +14,7 @@ import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../services/uiService';
 import { Button } from '../../../components/shared/ui/Button';
+import { FeatureLandingLayout } from '../../../components/shared/ui';
 
 interface DashboardProps {
     onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget'; supermarketName?: string; scrollToConfig?: boolean }) => void;
@@ -21,61 +22,45 @@ interface DashboardProps {
 }
 
 /**
- * Màn hình khi CHƯA có dữ liệu — chuẩn "Bảng điều khiển ca trực" (2026-09-11).
- *
- * Bản cũ có: lưới nền mờ dần theo mask hình elip, 3 quả cầu phát sáng `blur-[100px]`
- * `mix-blend-multiply` `animate-pulse` lệch pha nhau, chữ tiêu đề tô gradient 3 chặng, thẻ kính
- * `backdrop-blur-3xl` lồng 2 lớp bo góc kèm quầng sáng hiện khi rê chuột.
- *
- * Bỏ hết. Nguyên tắc gốc của chuẩn: **mỗi pixel dành cho số, không dành cho trang trí** — và ở màn
- * này người dùng chỉ cần biết ĐÚNG MỘT việc: chưa có dữ liệu thì bấm vào đâu. Ba quả cầu
- * `animate-pulse` còn tốn CPU vẽ lại liên tục trên chính loại laptop cũ mà chuẩn này nhắm tới.
- *
- * Giữ nguyên: nội dung chữ, 2 nút hành động, dải nhãn chân trang.
+ * Màn hình khi CHƯA có dữ liệu — Đồng bộ chuẩn Landing Page sang trọng giống Phân Tích:
+ * - Ambient background grid + 3 quả cầu phát sáng nhịp nhàng
+ * - Typography 3-phase gradient (sky via rose to sky)
+ * - Glassmorphism card với quầng sáng viền mờ ảo
+ * - Card upload / điều hướng thao tác cập nhật dữ liệu
+ * - Dải huy hiệu tin cậy chân trang
  */
 const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ onNavigate, message }) => (
-    <div className="min-h-[calc(100vh-120px)] flex flex-col justify-center items-center font-sans bg-slate-50 dark:bg-slate-900 pb-8">
-        <div className="w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-4">
-
-            <div className="mb-4">
-                <h1 className="text-3xl sm:text-4xl lg:text-[2.8rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-3">
-                    {message ? message : (<>Dữ liệu phức tạp.<br/><span className="text-sky-700 dark:text-sky-400">Phân tích siêu tốc.</span></>)}
-                </h1>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
-                    Chuyển đổi tức thì hàng chục ngàn dòng báo cáo BI thành bảng phân tích trực quan.<br className="hidden sm:block"/>
-                    Tối ưu hiệu suất bằng cách xử lý trực tiếp trên trình duyệt.
-                </p>
+    <FeatureLandingLayout>
+        <div className="flex items-center gap-3 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
+                <UploadIcon className="h-5 w-5" />
             </div>
-
-            <div className="w-full max-w-md mt-2">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-5">
-                    <div className="flex flex-col items-center gap-4">
-                        <div className="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center border border-slate-200 dark:border-slate-700">
-                            <UploadIcon className="h-6 w-6 text-sky-700 dark:text-sky-400" />
-                        </div>
-                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={onNavigate}
-                                className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-11 text-sm font-bold rounded text-white bg-sky-600 hover:bg-sky-700 transition-colors"
-                            >
-                                Cập nhật dữ liệu
-                            </Button>
-                        </div>
-                    </div>
-                </div>
+            <div className="text-left flex-1">
+                <h3 className="font-bold text-slate-900 dark:text-white text-[13px]">Nhập dữ liệu Báo cáo BI</h3>
+                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Hỗ trợ dán hoặc nạp dữ liệu BI</p>
             </div>
-
-            <div className="mt-8 flex items-center justify-center gap-6 text-center">
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Local Processing</span>
-                <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Instant Speed</span>
-                <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Smart UI</span>
-            </div>
-
         </div>
-    </div>
+
+        <button
+            type="button"
+            onClick={onNavigate}
+            className="w-full relative group/dropzone flex flex-col items-center justify-center min-h-[120px] border-2 border-dashed border-slate-200 dark:border-slate-700/60 hover:border-sky-400/50 dark:hover:border-sky-500/50 rounded-xl cursor-pointer bg-slate-50/50 dark:bg-slate-800/20 hover:bg-sky-50/30 dark:hover:bg-sky-950/20 transition-all duration-300 overflow-hidden p-4"
+        >
+            <div className="w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-sky-100 text-slate-400 group-hover/dropzone:text-sky-500">
+                <UploadIcon className="h-5 w-5" />
+            </div>
+            <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300">
+                <span className="text-sky-600 dark:text-sky-400 font-semibold">Cập nhật dữ liệu</span> hoặc nạp báo cáo mới
+            </p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                Tự động đồng bộ từ Tampermonkey hoặc nhập thủ công
+            </p>
+        </button>
+
+        <p className="mt-3 text-[12px] font-medium text-slate-500 dark:text-slate-400 text-center">
+            {message || 'Chưa có dữ liệu nào được nạp.'}
+        </p>
+    </FeatureLandingLayout>
 );
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) => {

@@ -13,8 +13,10 @@ import {
     XCircle,
     ListFilter,
     Building2,
-    User
+    User,
+    LogIn
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/shared/ui/Button';
 import { useBotScope } from './hooks/useBotScope';
@@ -37,11 +39,12 @@ import { LineBotOnboardingModal } from './components/LineBotOnboardingModal';
 type LineBotTab = 'coupons' | 'filtered' | 'schedules' | 'keywords' | 'admins' | 'group-features' | 'syntax' | 'settings';
 
 export default function LineBotView() {
-    const { userRole, isDemoMode } = useAuth();
+    const { user, userRole, isDemoMode, setDemoMode, loginWithGoogle } = useAuth();
     const isManagerOrAdmin = isDemoMode || userRole === 'admin' || userRole === 'manager';
 
     const [activeSubTab, setActiveSubTab] = useState<LineBotTab>('coupons');
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
+    const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
     const tabBarRef = useRef<HTMLDivElement>(null);
 
     // Quản lý phạm vi Bot: Kế thừa Bot Kho hoặc Dùng Bot cá nhân riêng biệt
@@ -55,6 +58,24 @@ export default function LineBotView() {
         departmentId: currentDept,
         switchScope
     } = botScopeHook;
+
+    const handleGoogleAuth = async () => {
+        try {
+            setIsLoggingIn(true);
+            await loginWithGoogle();
+            setDemoMode(false);
+            toast.success('Đăng nhập thành công! Đang đồng bộ Bot LINE theo kho...', { id: 'line-bot-auth' });
+            botScopeHook.refreshScope();
+        } catch (err: unknown) {
+            console.error('[LineBotView] Đăng nhập Google lỗi:', err);
+            const code = (err as { code?: string })?.code;
+            if (code !== 'auth/popup-closed-by-user') {
+                toast.error('Đăng nhập Google không thành công. Vui lòng thử lại.');
+            }
+        } finally {
+            setIsLoggingIn(false);
+        }
+    };
 
     // Mobile: 9 tab không vừa 1 màn — cuộn tab đang chọn vào tầm nhìn để người dùng luôn thấy mình đang ở đâu.
     useEffect(() => {
@@ -161,6 +182,36 @@ export default function LineBotView() {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
+                        {/* Nút Đăng nhập / Chuyển tài khoản Google để thừa kế BOT LINE */}
+                        {!user || isDemoMode ? (
+                            <Button
+                                variant="primary"
+                                size="none"
+                                onClick={handleGoogleAuth}
+                                disabled={isLoggingIn}
+                                aria-label="Đăng nhập để thừa kế Bot"
+                                title="Đăng nhập tài khoản Google quản lý để tự động thừa kế Bot Kho"
+                                className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg border border-sky-600 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                            >
+                                <LogIn size={13} />
+                                <span>{isLoggingIn ? 'Đang kết nối...' : 'Đăng nhập để thừa kế'}</span>
+                            </Button>
+                        ) : (
+                            <Button
+                                variant="secondary"
+                                size="none"
+                                onClick={handleGoogleAuth}
+                                disabled={isLoggingIn}
+                                aria-label="Đổi tài khoản Google để thừa kế Bot"
+                                title={`Đang đăng nhập: ${user.email || user.displayName || 'Tài khoản'}. Bấm để chuyển sang tài khoản Google quản lý khác.`}
+                                className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200/80 dark:border-slate-700/80 shadow-2xs transition-all active:scale-95 cursor-pointer"
+                            >
+                                <LogIn size={12} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                                <span className="hidden md:inline text-slate-500 dark:text-slate-400 max-w-[110px] truncate">{user.displayName || user.email?.split('@')[0]}</span>
+                                <span>{isLoggingIn ? '...' : 'Đổi tài khoản'}</span>
+                            </Button>
+                        )}
+
                         <Button
                             variant="ghost"
                             size="none"
@@ -206,6 +257,10 @@ export default function LineBotView() {
                                 ) : hasWarehouseBot ? (
                                     <p className="font-semibold sm:truncate">
                                         💡 Kho <strong>{currentDept}</strong> đã có sẵn Bot LINE "{warehouseBot?.botName}". Bạn có muốn dùng chung cùng các Quản lý khác không?
+                                    </p>
+                                ) : isDemoMode || !user ? (
+                                    <p className="font-medium text-slate-600 dark:text-slate-300 sm:truncate">
+                                        🏢 Đang ở chế độ xem thử Kho <strong>{currentDept}</strong>. Đăng nhập Google để tự động kiểm tra và thừa kế Bot của kho.
                                     </p>
                                 ) : (
                                     <p className="font-medium text-slate-500 dark:text-slate-400 sm:truncate">

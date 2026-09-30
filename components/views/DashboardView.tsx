@@ -84,7 +84,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         departmentMap, processedData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         activeModal, setActiveModal, modalData,
-        handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
+        handleClearDepartments, handleClearData, handleClearAllData, handleShiftFileProcessing, handleFileProcessing,
         openUnshippedModal, handleExport, handleBatchKhoExport, handleExportUncollectedSheet,
         filterState,
         processingTime,
@@ -435,15 +435,38 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         </div>
                                         <div className="flex items-center gap-3">
                                             {(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive))) && (
-                                                <Button
-                                                    variant="unstyled" size="none"
-                                                    onClick={() => logic.hasRealtimeData ? logic.handleClearRealtimeData() : logic.handleClearData()}
-                                                    title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
-                                                    className="flex items-center gap-1.5 px-2 py-1 bg-white/50 hover:bg-rose-50/80 dark:bg-slate-800/50 dark:hover:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-bold rounded-md border border-rose-200/60 dark:border-rose-800/50 text-[11px] uppercase tracking-widest transition-colors"
-                                                >
-                                                    <Icon name="trash-2" size={3.5} className="opacity-80 text-rose-500" />
-                                                    <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA YCX LŨY KẾ"}</span>
-                                                </Button>
+                                                logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive) ? (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Button
+                                                            variant="unstyled" size="none"
+                                                            onClick={handleClearRealtimeData}
+                                                            title="Xóa dữ liệu xem nhanh (Realtime)"
+                                                            className="flex items-center gap-1.5 px-2 py-1 bg-white/50 hover:bg-rose-50/80 dark:bg-slate-800/50 dark:hover:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-bold rounded-md border border-rose-200/60 dark:border-rose-800/50 text-[11px] uppercase tracking-widest transition-colors cursor-pointer"
+                                                        >
+                                                            <Icon name="trash-2" size={3.5} className="opacity-80 text-rose-500" />
+                                                            <span>XÓA REALTIME</span>
+                                                        </Button>
+                                                        <Button
+                                                            variant="unstyled" size="none"
+                                                            onClick={handleClearAllData}
+                                                            title="Xóa sạch toàn bộ dữ liệu Phân Tích trong 1 lần bấm"
+                                                            className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-md shadow-xs text-[11px] uppercase tracking-widest transition-colors cursor-pointer"
+                                                        >
+                                                            <Icon name="trash-2" size={3.5} />
+                                                            <span>XÓA TẤT CẢ</span>
+                                                        </Button>
+                                                    </div>
+                                                ) : (
+                                                    <Button
+                                                        variant="unstyled" size="none"
+                                                        onClick={() => logic.hasRealtimeData ? handleClearRealtimeData() : handleClearAllData()}
+                                                        title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
+                                                        className="flex items-center gap-1.5 px-2 py-1 bg-white/50 hover:bg-rose-50/80 dark:bg-slate-800/50 dark:hover:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-bold rounded-md border border-rose-200/60 dark:border-rose-800/50 text-[11px] uppercase tracking-widest transition-colors cursor-pointer"
+                                                    >
+                                                        <Icon name="trash-2" size={3.5} className="opacity-80 text-rose-500" />
+                                                        <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA TẤT CẢ DỮ LIỆU"}</span>
+                                                    </Button>
+                                                )
                                             )}
                                             {logic.fileInfo && (
                                                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
@@ -661,6 +684,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             registry={logic.fileRegistry}
                             onToggleActive={logic.handleToggleFileActive}
                             onDelete={logic.handleDeleteFile}
+                            onDeleteAll={handleClearAllData}
                             onProcessFile={(files, isCloudSync, isHistorical) => {
                                 setIsFileHistoryModalOpen(false);
                                 handleFileProcessing(files, isCloudSync, isHistorical);

@@ -76,7 +76,12 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                     }
                 />
                 {reports.length === 0 ? (
-                    <p className="px-3 py-10 text-center text-[13px] text-slate-400">Chưa có đơn hàng nào được ghi nhận. Bấm <b>Báo cáo</b> ở tab Nhập báo cáo.</p>
+                    <div className="relative group m-2">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-xl blur-lg opacity-40 group-hover:opacity-80 transition duration-700 pointer-events-none"></div>
+                        <div className="relative bg-white/90 backdrop-blur-md rounded-lg border border-slate-200 px-4 py-10 text-center">
+                            <p className="text-[13px] text-slate-500">Chưa có đơn hàng nào được ghi nhận. Bấm <b className="text-sky-600">Báo cáo</b> ở tab Nhập báo cáo.</p>
+                        </div>
+                    </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[720px] text-[13px] tabular-nums border-collapse" data-testid="history-table">

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Icon } from '../common/Icon';
 import { FileHistoryManager } from './FileHistoryManager';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
+import { Button } from '../shared/ui/Button';
 import type { UploadedFileRegistryItem } from '../../types';
 import type { KhoSalesFileMeta } from '../../services/khoDataService';
 
@@ -56,6 +57,9 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
         }
     };
 
+    const [isConfirmPurgeOpen, setIsConfirmPurgeOpen] = useState(false);
+    const [isPurging, setIsPurging] = useState(false);
+
     const handleConfirmDelete = async () => {
         if (!pendingDeleteId) return;
         setIsDeleting(true);
@@ -71,6 +75,20 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
         }
     };
 
+    const handleConfirmPurgeAll = async () => {
+        setIsPurging(true);
+        try {
+            const { purgeKhoSalesFiles } = await import('../../services/khoDataService');
+            await purgeKhoSalesFiles(maKho);
+            setFiles([]);
+        } catch (err) {
+            console.error('[KhoFileManager] Lỗi xoá tất cả file Kho:', err);
+        } finally {
+            setIsPurging(false);
+            setIsConfirmPurgeOpen(false);
+        }
+    };
+
     if (files === null) {
         return (
             <div className="flex items-center justify-center py-4 text-slate-400 dark:text-slate-500">
@@ -83,10 +101,21 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
 
     return (
         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1.5 mb-1.5">
-                <Icon name="share-2" size={3.5} className="text-sky-500" />
-                Dữ liệu Kho dùng chung ({maKho})
-            </h4>
+            <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
+                    <Icon name="share-2" size={3.5} className="text-sky-500" />
+                    Dữ liệu Kho dùng chung ({maKho})
+                </h4>
+                <Button
+                    variant="unstyled" size="none"
+                    onClick={() => setIsConfirmPurgeOpen(true)}
+                    className="text-[11px] text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                    title={`Xoá sạch tất cả ${files.length} file dùng chung của Kho ${maKho}`}
+                >
+                    <Icon name="trash-2" size={3} />
+                    <span>Xoá tất cả ({files.length} file)</span>
+                </Button>
+            </div>
             <FileHistoryManager
                 registry={files.map(toRegistryItem)}
                 onToggleActive={handleToggleActive}
@@ -102,6 +131,16 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
                 confirmText="Xoá"
                 variant="danger"
                 isLoading={isDeleting}
+            />
+            <ConfirmDialog
+                isOpen={isConfirmPurgeOpen}
+                onClose={() => setIsConfirmPurgeOpen(false)}
+                onConfirm={handleConfirmPurgeAll}
+                title={`Xoá sạch tất cả file của Kho ${maKho}?`}
+                message={`Toàn bộ ${files.length} file doanh số dùng chung của Kho ${maKho} sẽ bị xoá vĩnh viễn khỏi Cloud và thiết bị. Mọi người dùng cùng Kho sẽ không còn thấy dữ liệu này nữa.`}
+                confirmText="Xoá tất cả"
+                variant="danger"
+                isLoading={isPurging}
             />
         </div>
     );

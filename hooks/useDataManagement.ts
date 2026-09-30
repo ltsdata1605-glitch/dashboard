@@ -814,6 +814,40 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }
     }, [user, isDemoMode, setAppState, setStatus, refreshRegistry]);
 
+    const handleClearAllData = useCallback(async () => {
+        try {
+            setIsHardProcessing(true);
+            setStatus({ message: 'Đang xóa toàn bộ dữ liệu phân tích...', type: 'info', progress: 30 });
+            await dbService.clearAllSalesFiles();
+            latestActiveSalesMetaRef.current = null;
+            
+            if (user && !isDemoMode) {
+                const { deleteCloudSalesData } = await import('../services/cloudDataService');
+                await deleteCloudSalesData(user).catch(console.error);
+                if (userRole === 'manager' && departmentId) {
+                    const { purgeKhoSalesFiles } = await import('../services/khoDataService');
+                    const { parseKhoList } = await import('../utils/dataUtils');
+                    const khos = parseKhoList(departmentId);
+                    for (const k of khos) {
+                        await purgeKhoSalesFiles(k).catch(console.error);
+                    }
+                }
+            }
+            
+            await refreshRegistry();
+            setOriginalData([]);
+            setProcessedData(null);
+            setFileInfo(null);
+            setAppState('upload');
+            toast.success('Đã xóa toàn bộ dữ liệu phân tích!');
+        } catch (error) {
+            console.error('[ClearAll] Error clearing all data:', error);
+            toast.error('Có lỗi xảy ra khi xóa toàn bộ dữ liệu!');
+        } finally {
+            setIsHardProcessing(false);
+        }
+    }, [user, userRole, departmentId, isDemoMode, setAppState, setStatus, refreshRegistry]);
+
     const handleViewReport = useCallback(async () => {
         try {
             setIsHardProcessing(true);
@@ -1314,6 +1348,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         handleDeleteFile,
         hasRealtimeData,
         handleClearRealtimeData,
+        handleClearAllData,
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,

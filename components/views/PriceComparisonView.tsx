@@ -818,12 +818,17 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
 
       {/* Empty state */}
       {products.length === 0 && results.length === 0 && (
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-12 text-center">
-          <Search className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">Chưa có sản phẩm nào</h3>
-          <p className="text-sm text-slate-400 dark:text-slate-500 max-w-md mx-auto">
-            Nhập danh sách sản phẩm bằng cách paste text hoặc upload file Excel, sau đó bấm "Bắt đầu so sánh giá" để tool tự động tìm kiếm giá trên các trang đối thủ.
-          </p>
+        <div className="relative group my-4">
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
+          <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-xl border border-slate-200 dark:border-slate-700/60 p-10 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-100 dark:border-sky-500/20">
+              <Search className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">Chưa có sản phẩm nào</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+              Nhập danh sách sản phẩm bằng cách paste text hoặc tải file Excel, sau đó bấm "Bắt đầu so sánh giá" để hệ thống tự động quét giá trên các hệ thống đối thủ.
+            </p>
+          </div>
         </div>
       )}
     </div>

@@ -16,6 +16,7 @@ export {
     getValue,
     setValue,
     cleanupGarbageKeys,
+    deleteSetting,
 } from './dbService/core';
 
 export * from './dbService/salesData';

@@ -37,24 +37,66 @@ const ROOT_COLLECTION = 'line_bots';
 export const lineBotFirestoreService = {
     /**
      * Tìm Bot LINE đã được tạo và chia sẻ trong cùng Mã Kho (departmentId)
+     * Hỗ trợ tìm kiếm theo 1 mã kho hoặc chuỗi nhiều mã kho (ví dụ: "1678,7904,8231")
      */
     async findWarehouseBot(departmentId: string): Promise<WarehouseBotSummary | null> {
         const cleanDept = (departmentId || '').trim();
         if (!cleanDept || cleanDept === 'ALL' || cleanDept === 'ALL (Super Admin)') return null;
         try {
-            const q = query(
-                collection(db, ROOT_COLLECTION),
-                where('departmentId', '==', cleanDept),
-                where('active', '==', true),
-                limit(5)
-            );
-            const snap = await getDocs(q);
-            if (snap.empty) return null;
-            // Tìm bot có isWarehouseShared !== false và đã có channelAccessToken
-            const sharedDoc = snap.docs.find(d => {
-                const data = d.data();
-                return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
-            });
+            // Tách các mã kho nếu tài khoản quản lý nhiều kho (ví dụ: "1678,7904,8231")
+            const userDepts = cleanDept.split(',').map(s => s.trim()).filter(Boolean);
+            if (userDepts.length === 0) return null;
+
+            let sharedDoc: any = null;
+
+            // 1. Thử query theo mảng 'in' nếu có nhiều kho (Firestore hỗ trợ 'in' tới 10 phần tử)
+            if (userDepts.length > 1) {
+                const qIn = query(
+                    collection(db, ROOT_COLLECTION),
+                    where('departmentId', 'in', userDepts.slice(0, 10)),
+                    where('active', '==', true),
+                    limit(10)
+                );
+                const snapIn = await getDocs(qIn);
+                sharedDoc = snapIn.docs.find(d => {
+                    const data = d.data();
+                    return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
+                });
+            }
+
+            // 2. Nếu chưa thấy hoặc chỉ có 1 kho, query chính xác theo chuỗi ban đầu
+            if (!sharedDoc) {
+                const q = query(
+                    collection(db, ROOT_COLLECTION),
+                    where('departmentId', '==', cleanDept),
+                    where('active', '==', true),
+                    limit(5)
+                );
+                const snap = await getDocs(q);
+                sharedDoc = snap.docs.find(d => {
+                    const data = d.data();
+                    return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
+                });
+            }
+
+            // 3. Nếu vẫn chưa thấy, quét các bot đang active để đối chiếu mềm (nếu bot lưu nhiều mã hoặc mã chứa nhau)
+            if (!sharedDoc && userDepts.length > 0) {
+                const qActive = query(
+                    collection(db, ROOT_COLLECTION),
+                    where('active', '==', true),
+                    limit(30)
+                );
+                const snapActive = await getDocs(qActive);
+                sharedDoc = snapActive.docs.find(d => {
+                    const data = d.data();
+                    if (data.isWarehouseShared === false || !data.channelAccessToken) return false;
+                    const botDept = String(data.departmentId || '').trim();
+                    const botDepts = botDept.split(',').map(s => s.trim()).filter(Boolean);
+                    // Kiểm tra có bất kỳ mã kho nào trùng nhau không
+                    return userDepts.some(ud => botDepts.includes(ud) || botDept.includes(ud));
+                });
+            }
+
             if (!sharedDoc) return null;
             const data = sharedDoc.data();
             return {

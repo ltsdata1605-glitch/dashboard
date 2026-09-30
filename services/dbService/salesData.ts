@@ -514,9 +514,31 @@ export async function deleteSalesFileData(fileId: string): Promise<void> {
 
 export async function clearAllSalesFiles(): Promise<void> {
     try {
+        dropTempRealtimeCache();
         const registry = await getSalesFilesRegistry();
         for (const file of registry) {
             await deleteSalesFileData(file.id);
+        }
+        // Quét sạch mọi khoá mồ côi bắt đầu bằng salesData hoặc tempRealtimeData trong APP_STORE
+        try {
+            const db = await getDb();
+            await new Promise<void>((resolve) => {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                const store = tx.objectStore(APP_STORE);
+                const req = store.getAllKeys();
+                req.onsuccess = () => {
+                    const keys = req.result || [];
+                    keys.forEach(k => {
+                        const keyStr = String(k);
+                        if (keyStr.startsWith('salesData') || keyStr === 'tempRealtimeData') {
+                            store.delete(k);
+                        }
+                    });
+                };
+                tx.oncomplete = tx.onerror = tx.onabort = () => resolve();
+            });
+        } catch {
+            /* bỏ qua lỗi quét toàn bộ key */
         }
         await saveSalesFilesRegistry([]);
         await clearSalesData();

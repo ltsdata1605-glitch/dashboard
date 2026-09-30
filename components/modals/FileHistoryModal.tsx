@@ -1,8 +1,9 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState } from 'react';
 import { Icon } from '../common/Icon';
 import { Modal } from '../shared/ui/Modal';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
 import { KhoFileManager } from '../upload/KhoFileManager';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import type { UploadedFileRegistryItem } from '../../types';
 import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
@@ -13,6 +14,7 @@ interface FileHistoryModalProps {
     registry: UploadedFileRegistryItem[];
     onToggleActive: (id: string) => Promise<void> | void;
     onDelete: (id: string) => Promise<void> | void;
+    onDeleteAll?: () => Promise<void> | void;
     onProcessFile: (files: File[], isCloudSync?: boolean, isHistorical?: boolean) => void;
     onViewReport?: () => void;
 }
@@ -23,10 +25,13 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
     registry,
     onToggleActive,
     onDelete,
+    onDeleteAll,
     onProcessFile,
     onViewReport
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isConfirmDeleteAllOpen, setIsConfirmDeleteAllOpen] = useState(false);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
     // Nhân viên chỉ xem dữ liệu thừa kế từ quản lý Kho (implementation_plan.md mục 37) —
     // chặn thêm ở đây (phòng thủ sâu) dù lối vào modal này (FilterBar.tsx) đã ẩn với nhân
     // viên rồi, phòng trường hợp có lối vào khác sau này.
@@ -94,17 +99,53 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                         <p className="text-[11px] mt-0.5">Vui lòng tải lên tệp Excel doanh số cũ để tạo báo cáo tích lũy gộp dài hạn.</p>
                     </div>
                 ) : (
-                    <FileHistoryManager
-                        registry={registry}
-                        onToggleActive={onToggleActive}
-                        onDelete={onDelete}
-                        compact={true}
-                    />
+                    <div>
+                        {onDeleteAll && canManageFiles && (
+                            <div className="flex justify-end mb-1">
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={() => setIsConfirmDeleteAllOpen(true)}
+                                    className="text-[11px] text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                                    title="Xoá sạch toàn bộ tệp luỹ kế đã lưu"
+                                >
+                                    <Icon name="trash-2" size={3} />
+                                    <span>Xoá tất cả ({registry.length} tệp)</span>
+                                </Button>
+                            </div>
+                        )}
+                        <FileHistoryManager
+                            registry={registry}
+                            onToggleActive={onToggleActive}
+                            onDelete={onDelete}
+                            compact={true}
+                        />
+                    </div>
                 )}
 
                 {managedKhos.map(maKho => (
                     <KhoFileManager key={maKho} maKho={maKho} />
                 ))}
+
+                <ConfirmDialog
+                    isOpen={isConfirmDeleteAllOpen}
+                    onClose={() => setIsConfirmDeleteAllOpen(false)}
+                    onConfirm={async () => {
+                        if (!onDeleteAll) return;
+                        setIsDeletingAll(true);
+                        try {
+                            await onDeleteAll();
+                            onClose();
+                        } finally {
+                            setIsDeletingAll(false);
+                            setIsConfirmDeleteAllOpen(false);
+                        }
+                    }}
+                    title="Xoá tất cả tệp luỹ kế?"
+                    message={`Toàn bộ ${registry.length} tệp Excel luỹ kế sẽ bị xoá khỏi bộ nhớ thiết bị và Cloud. Bạn sẽ cần nạp lại nếu muốn xem tiếp.`}
+                    confirmText="Xoá tất cả"
+                    variant="danger"
+                    isLoading={isDeletingAll}
+                />
 
                 <div className="pt-1 flex justify-between items-center gap-3 flex-wrap">
                     {canManageFiles ? (
