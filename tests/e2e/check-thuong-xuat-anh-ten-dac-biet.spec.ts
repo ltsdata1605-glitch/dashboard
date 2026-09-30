@@ -10,7 +10,8 @@ test('tên siêu thị có ký tự HTML: ảnh hiện đúng nguyên văn, khô
     const kq = await page.evaluate(async () => {
         const w = window as unknown as { __xss?: number };
         HTMLAnchorElement.prototype.click = function () { /* chặn tải file trong test */ };
-        let chup: { text: string; soImg: number; soB: number } | null = null;
+        // `as`: TS thu hẹp biến gán trong callback về `null` → `never` ở strict
+        let chup = null as { text: string; soImg: number; soB: number } | null;
         const mo = new MutationObserver(() => {
             const el = document.getElementById('check-thuong-capture-target');
             if (el && !chup) chup = { text: el.textContent || '', soImg: el.querySelectorAll('img').length, soB: el.querySelectorAll('b').length };

@@ -316,7 +316,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             let loiTaiCauHinhNhe = false;
                             const [cloudData, heavyCloudData] = await Promise.all([
                                 fetchFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nhẹ:", err); loiTaiCauHinhNhe = true; return null; }),
-                                fetchHeavySettingsFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nặng:", err); return {}; })
+                                fetchHeavySettingsFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nặng:", err); return {} as Awaited<ReturnType<typeof fetchHeavySettingsFromCloud>>; })
                             ]);
 
                             // 1. Đồng bộ cấu hình nhẹ — quyết định ở services/heavySyncPolicy.ts
@@ -398,11 +398,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                     }
                                     
                                     // Cập nhật state runtime
-                                    if (key === 'departmentMap') setDepartmentMap(cloudItem.value);
-                                    if (key === 'crossSellingConfig') setCrossSellingConfig(cloudItem.value);
-                                    if (key === 'kpiCardConfig') setKpiCardsConfig(cloudItem.value);
+                                    // strict (2026-09-30): giá trị cloud là `unknown` — ghi rõ kiểu của từng khoá nặng
+                                    if (key === 'departmentMap') setDepartmentMap(cloudItem.value as DepartmentMap);
+                                    if (key === 'crossSellingConfig') setCrossSellingConfig(cloudItem.value as CrossSellingConfig);
+                                    if (key === 'kpiCardConfig') setKpiCardsConfig(cloudItem.value as import('../types').KpiCardConfig[]);
                                     if (key === 'productConfig') {
-                                        if (cloudItem.value?.config) setProductConfig(cloudItem.value.config);
+                                        const pc = (cloudItem.value as { config?: ProductConfig } | undefined)?.config;
+                                        if (pc) setProductConfig(pc);
                                     }
                                     
                                     window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));

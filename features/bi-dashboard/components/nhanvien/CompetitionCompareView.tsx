@@ -179,7 +179,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     const autoPairs = useMemo(() => {
         const employeeByName = new Map(allEmployees.map(e => [e.originalName, e]));
         const empRows = (revenueRows || []).filter(r => r.type === 'employee').sort((a, b) => (b.dtqd || 0) - (a.dtqd || 0));
-        const sortedEmps = empRows.map(r => employeeByName.get(r.originalName)).filter(Boolean) as Employee[];
+        const sortedEmps = empRows.map(r => (r.originalName ? employeeByName.get(r.originalName) : undefined)).filter(Boolean) as Employee[];
         const pairs: { a: Employee, b: Employee, label: string }[] = [];
         for (let i = 0; i < sortedEmps.length - 1; i += 2) {
             pairs.push({ a: sortedEmps[i], b: sortedEmps[i+1], label: `Top ${i+1} vs ${i+2}` });
@@ -401,7 +401,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
                                 <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
-                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
+                                {(statsA.compStats.dkhtNotDat ?? 0) > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
                                 {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsA.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
@@ -418,7 +418,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
                                 <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
-                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
+                                {(statsB.compStats.dkhtNotDat ?? 0) > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
                                 {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsB.compStats.noSale} No Sale</div>}
                             </div>
                         </div>

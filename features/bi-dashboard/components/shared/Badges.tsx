@@ -7,8 +7,8 @@ export const MedalBadge: React.FC<{ rank?: number; className?: string }> = ({ ra
     return <span className={`${base} text-slate-400 dark:text-slate-500`}>#{rank}</span>;
 };
 
-export const DeltaBadge: React.FC<{ current: number, previous?: number, isPercent?: boolean, isCurrency?: boolean }> = ({ current, previous, isPercent = false, isCurrency = false }) => {
-    if (previous === undefined || previous === 0 || isNaN(previous) || isNaN(current)) return null;
+export const DeltaBadge: React.FC<{ current: number | undefined, previous?: number, isPercent?: boolean, isCurrency?: boolean }> = ({ current, previous, isPercent = false, isCurrency = false }) => {
+    if (previous === undefined || previous === 0 || isNaN(previous) || current === undefined || isNaN(current)) return null;
     const diff = current - previous;
     if (isNaN(diff) || Math.abs(diff) < 0.01) return null;
 

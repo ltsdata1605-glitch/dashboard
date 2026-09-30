@@ -29,10 +29,10 @@ interface EditShiftModalProps {
   info: EditShiftModalInfo;
   onClose: () => void;
   onSave: (newShiftData: ScheduleInfo) => void;
-  onFindSolution: () => Solution;
+  onFindSolution: () => Solution | null;
   onConfirmReplacement: (replacementId: string) => void;
   onConfirmDaySwap: (swapPartnerId: string, swapDay: number) => void;
-  onFindSolutionForDemotion: (roleToReplace: 'gh' | 'kho' | 'tn') => Solution;
+  onFindSolutionForDemotion: (roleToReplace: 'gh' | 'kho' | 'tn') => Solution | null;
   onConfirmSwapAndChange: (replacementId: string, newShiftForOriginal: ScheduleInfo) => void;
   rules: SchedulingRules;
   allStaff: StaffMember[];

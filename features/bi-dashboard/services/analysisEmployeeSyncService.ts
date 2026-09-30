@@ -76,7 +76,7 @@ const EXCLUDED_DEPT_KEYWORDS = ['quản lý', 'trưởng ca', 'kế toán', 'ti�
 /**
  * Kiểm tra xem một nhân viên có phải tài khoản hệ thống hoặc tài khoản phụ cần loại bỏ không
  */
-export function isSystemOrIgnoredEmployee(name: string, dept?: string): boolean {
+export function isSystemOrIgnoredEmployee(name: string | undefined, dept?: string): boolean {
     if (name) {
         const lowerName = name.toLowerCase().trim();
         if (

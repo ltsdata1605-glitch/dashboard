@@ -198,7 +198,7 @@ export const useWarehouseLogic = ({
                     if (!metrics.byProduct) return 0;
                     let total = 0;
                     targetCol.productCodes.forEach(code => {
-                        total += metrics.byProduct[code]?.[targetCol.metricType!] || 0;
+                        total += metrics.byProduct?.[code]?.[targetCol.metricType!] || 0;
                     });
                     return total;
                 }
@@ -271,7 +271,7 @@ export const useWarehouseLogic = ({
                 if (!metrics.byProduct) return 0;
                 let total = 0;
                 column.productCodes.forEach(code => {
-                    let val = metrics.byProduct[code]?.[column.metricType!];
+                    let val = metrics.byProduct?.[code]?.[column.metricType!];
                     if (val !== undefined) {
                         if (column.metricType === 'revenue' || column.metricType === 'revenueQD') {
                             val = val / 1000000;

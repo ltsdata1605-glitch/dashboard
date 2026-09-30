@@ -10,7 +10,7 @@ interface ScheduleTableProps {
   staffList: StaffMember[];
   config: ScheduleConfig;
   targets: ScheduleTargets;
-  tableRef: React.RefObject<HTMLTableElement>;
+  tableRef: React.RefObject<HTMLTableElement | null>;
   onDeleteEmployee: (id: string) => void;
   onEditShift: (employeeId: string, dayIndex: number) => void;
   onDayClick?: (day: number) => void;

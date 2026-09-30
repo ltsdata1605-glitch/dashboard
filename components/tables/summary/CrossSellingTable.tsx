@@ -7,7 +7,7 @@ import { CrossSellingConfig } from '../../../types';
 import { SAMPLE_CONFIG } from '../../modals/CrossSellingBuilderModal';
 
 interface CrossSellingTableProps {
-    tableContainerRef: React.RefObject<HTMLDivElement>;
+    tableContainerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableContainerRef }) => {

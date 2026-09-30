@@ -191,7 +191,7 @@ export const useRevenueData = ({
                     ? (sumTarget > 0 ? (sumDtqd / sumTarget) * 100 : 0)
                     : (sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0);
                 const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
-                const avgInstallment = result.reduce((s, e) => s + e.calculatedInstallment, 0) / result.length;
+                const avgInstallment = result.reduce((s, e) => s + Number(e.calculatedInstallment), 0) / result.length;
                 const avgBk = result.reduce((s, e) => s + (e.pctBillBk || 0), 0) / result.length;
                 const sumBonusTong = result.reduce((s, e) => s + (e.bonus_tong || 0), 0);
                 
@@ -258,7 +258,7 @@ export const useRevenueData = ({
             const deptPctDkht = isRealtime
                 ? (sumTarget > 0 ? (sumDtqd / sumTarget) * 100 : 0)
                 : (sumTarget > 0 ? (sumDuKien / sumTarget) * 100 : 0);
-            const avgInstallment = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + e.calculatedInstallment, 0) / deptEmployees.length : 0;
+            const avgInstallment = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + Number(e.calculatedInstallment), 0) / deptEmployees.length : 0;
             const avgBk = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + (e.pctBillBk || 0), 0) / deptEmployees.length : 0;
             const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
             const sumBonusTong = deptEmployees.reduce((s, e) => s + (e.bonus_tong || 0), 0);
@@ -330,7 +330,7 @@ export const useRevenueData = ({
                 grandSumDtqd += group.sumDtqd;
                 grandSumTarget += group.sumTarget;
                 grandTotalEmps += group.employees.length;
-                grandSumInstallment += group.employees.reduce((s, e) => s + e.calculatedInstallment, 0);
+                grandSumInstallment += group.employees.reduce((s, e) => s + Number(e.calculatedInstallment), 0);
                 grandSumBk += group.employees.reduce((s, e) => s + (e.pctBillBk || 0), 0);
 
                 grandPrevDtlk += prevDeptDtlk;

@@ -33,7 +33,7 @@ const FontUploadSection: React.FC<{
     fontName: string | null | undefined;
     onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onRemove: () => void;
-    inputRef: React.RefObject<HTMLInputElement>;
+    inputRef: React.RefObject<HTMLInputElement | null>;
 }> = ({ title, fontName, onUpload, onRemove, inputRef }) => (
     <div className="mb-4">
         <h4 className="text-sm font-semibold text-slate-600 mb-2">{title}</h4>

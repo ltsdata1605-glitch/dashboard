@@ -216,10 +216,10 @@ Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội 
         const items = parsePastedCouponList(sampleWaterPurifiers, 'Giờ Vàng Giá Sốc');
         expect(items.length).toBe(36);
 
-        const hoaPhat = items.filter(i => i.productName.includes('Hòa Phát'));
-        const karofi = items.filter(i => i.productName.includes('Karofi'));
-        const sunhouse = items.filter(i => i.productName.includes('Sunhouse'));
-        const kangaroo = items.filter(i => i.productName.includes('Kangaroo'));
+        const hoaPhat = items.filter(i => i.productName!.includes('Hòa Phát'));
+        const karofi = items.filter(i => i.productName!.includes('Karofi'));
+        const sunhouse = items.filter(i => i.productName!.includes('Sunhouse'));
+        const kangaroo = items.filter(i => i.productName!.includes('Kangaroo'));
 
         expect(hoaPhat.length).toBe(9);
         expect(karofi.length).toBe(9);
@@ -900,7 +900,7 @@ MĐH Áp Dụng: 00910SO26090335446`;
             expect(parsed.warehouse).toBe('910');
 
             // Xác minh kiểm tra danh mục: MM700 hoàn toàn không thuộc sản phẩm của bot
-            const isBelongsToBot = sampleIctCoupons.some(c => matchesProductSearch(c, parsed.couponType));
+            const isBelongsToBot = sampleIctCoupons.some(c => matchesProductSearch(c, parsed.couponType!));
             expect(isBelongsToBot).toBe(false);
             // -> Khi isBelongsToBot === false, Bot sẽ TUYỆT ĐỐI IM LẶNG!
         });

@@ -297,7 +297,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                 </div>
 
                 <div className="mt-3 sm:mt-4">
-                    {activeSubTab === 'revenue' && activeSupermarket !== 'Tổng' && (
+                    {activeSubTab === 'revenue' && activeSupermarket !== 'Tổng' && (isRealtimeView ? industryRealtimeParsed : industryLuyKeParsed) && (
                         <div className="js-industry-view-container">
                             <IndustryView
                                 ref={industryTableRef}

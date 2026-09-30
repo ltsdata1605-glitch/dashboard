@@ -464,7 +464,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     key={opt.key}
                                     label={opt.label}
                                     icon={opt.icon}
-                                    isActive={visibility[opt.key as keyof VisibilityState]}
+                                    isActive={!!visibility[opt.key as keyof VisibilityState]}
                                     onToggle={() => onVisibilityChange(opt.key as keyof VisibilityState, !visibility[opt.key as keyof VisibilityState])}
                                     color={opt.color}
                                 />

@@ -126,7 +126,8 @@ export const ColorSettingsModal: React.FC<{
     if (!isOpen) return null;
 
     const renderRow = (label: string, key: keyof ColorSettings, isCurrency = false) => {
-        const config = temp[key] || DEFAULT_COLOR_SETTINGS[key];
+        // `bankem` là khoá tuỳ chọn: thiếu ở cả 2 nơi thì dùng mặc định của `ht` (trước đây sập khi đọc config.good)
+        const config: CriterionConfig = temp[key] || DEFAULT_COLOR_SETTINGS[key] || DEFAULT_COLOR_SETTINGS.ht;
         
         return (
             <div className="py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">

@@ -584,7 +584,7 @@ export function useStickerPrinterData() {
                             setDrawTitleSize(4.3);
                         } else {
                             // Ensure existing tickets have updated defaults: 2.9cqw for contentBottom, size 8 for contentTopRight, size 7.6 for contentBottomRight, size 3 for contentBottomRightSub
-                            setDrawTickets(savedState.drawTickets.map(t => ({
+                            setDrawTickets(savedState.drawTickets.map((t: TicketDrawData) => ({
                                 ...t,
                                 contentTopRight: (t.contentTopRight && t.contentTopRight.trim())
                                     ? t.contentTopRight.replace(/7\.6cqw/g, '8cqw')

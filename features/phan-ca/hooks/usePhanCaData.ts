@@ -129,7 +129,7 @@ export function usePhanCaData() {
       if (savedSupermarkets.length > 0) {
         setSupermarkets(savedSupermarkets);
         const lastSupermarket = savedUiState?.lastSupermarket;
-        setCurrentSupermarket(savedSupermarkets.includes(lastSupermarket) ? lastSupermarket : savedSupermarkets[0]);
+        setCurrentSupermarket(lastSupermarket && savedSupermarkets.includes(lastSupermarket) ? lastSupermarket : savedSupermarkets[0]);
       } else {
         setSupermarkets([]);
         setCurrentSupermarket('');

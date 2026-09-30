@@ -471,12 +471,12 @@ export function processEmployeeData(
         let weakPointsExploitation = 0;
 
         if (thresholds) {
-            if (emp.doanhThuQD <= thresholds.dtqd_40p) weakPointsRevenue++;
+            if (thresholds.dtqd_40p !== undefined && emp.doanhThuQD <= thresholds.dtqd_40p) weakPointsRevenue++;
             if (emp.hieuQuaValue < 35) weakPointsRevenue++;
             if (emp.dtTraChamPercent_CE_ICT < 45) weakPointsRevenue++;
             
-            if (emp.slCE_ICT <= thresholds.slCE_ICT_30p) weakPointsExploitation++;
-            if (emp.slTraCham_CE_ICT <= thresholds.slTraCham_CE_ICT_30p) weakPointsExploitation++;
+            if (thresholds.slCE_ICT_30p !== undefined && emp.slCE_ICT <= thresholds.slCE_ICT_30p) weakPointsExploitation++;
+            if (thresholds.slTraCham_CE_ICT_30p !== undefined && emp.slTraCham_CE_ICT <= thresholds.slTraCham_CE_ICT_30p) weakPointsExploitation++;
             if (emp.traChamPercent_CE_ICT < 50) weakPointsExploitation++;
         }
         

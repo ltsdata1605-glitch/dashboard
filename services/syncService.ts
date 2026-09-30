@@ -107,12 +107,12 @@ export const initSyncListeners = () => {
 
     window.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('ycx-setting-changed', handleSettingChanged);
+    window.addEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
 
     return () => {
         window.removeEventListener('visibilitychange', handleVisibilityChange);
         window.removeEventListener('beforeunload', handleBeforeUnload);
-        window.removeEventListener('ycx-setting-changed', handleSettingChanged);
+        window.removeEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
         clearTimeout(debounceTimer);
     };
 };

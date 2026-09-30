@@ -26,7 +26,7 @@ const normalizeExploitationTabColumns = (tab: CustomExploitationTabConfig): Cust
             percentageConfig: {
                 numeratorMetric: tab.percentageConfig?.numeratorMetric || 'quantity',
                 baseMetric: tab.percentageConfig?.baseMetric || 'quantity',
-                numeratorFilters: tab.filters,
+                numeratorFilters: tab.filters!, // strict: giữ nguyên hành vi cũ (tab dựng từ builder luôn có filters)
                 denominatorFilters: tab.percentageConfig?.filters || { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }
             }
         });
@@ -195,11 +195,11 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             }
         };
 
-        window.addEventListener('ycx-setting-changed', handleSettingChanged);
-        window.addEventListener('indexeddb-change', handleSettingChanged);
+        window.addEventListener('ycx-setting-changed', handleSettingChanged as unknown as EventListener);
+        window.addEventListener('indexeddb-change', handleSettingChanged as unknown as EventListener);
         return () => {
-            window.removeEventListener('ycx-setting-changed', handleSettingChanged);
-            window.removeEventListener('indexeddb-change', handleSettingChanged);
+            window.removeEventListener('ycx-setting-changed', handleSettingChanged as unknown as EventListener);
+            window.removeEventListener('indexeddb-change', handleSettingChanged as unknown as EventListener);
         };
     }, []);
 
@@ -444,7 +444,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         if (modalState.data?.tabId) {
             const targetMode = modalState.data?.targetMode || 'detail';
             const setTabs = targetMode === 'detail' ? setCustomExploitationTabs : setEfficiencyExploitationTabs;
-            setTabs(prev => prev.filter(t => t.id !== modalState.data.tabId));
+            setTabs(prev => prev.filter(t => t.id !== modalState.data?.tabId));
             setIsClosingModal(true);
         }
     }, [modalState.data]);

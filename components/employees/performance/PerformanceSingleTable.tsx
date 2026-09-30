@@ -40,7 +40,7 @@ interface RenderSingleTableProps {
     targetPerEmployee: number;
     onEmployeeClick: (name: string) => void;
     isEditingTarget: boolean;
-    targetInputRef: React.RefObject<HTMLInputElement>;
+    targetInputRef: React.RefObject<HTMLInputElement | null>;
     setTargetPerEmployee: (v: number) => void;
     handleSaveTarget: () => void;
     setIsEditingTarget: (v: boolean) => void;
@@ -134,7 +134,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
         Object.entries(dataToRender).forEach(([dept, employees]: [string, Employee[]]) => {
             if (!Array.isArray(employees) || employees.length === 0) return;
             
-            const sorted = [...employees].sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0));
+            const sorted = [...employees].sort((a, b) => ((b as unknown as Record<string, number | undefined>)[key] ?? 0) - ((a as unknown as Record<string, number | undefined>)[key] ?? 0));
             const count = sorted.length;
             
             // TOP 20%
@@ -346,7 +346,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     </thead>
 
                     <tbody>
-                        {Object.entries(dataToRender).map(([dept, employees]: [string, EmployeeWithTarget[]], deptIdx) => {
+                        {(Object.entries(dataToRender) as [string, EmployeeWithTarget[]][]).map(([dept, employees], deptIdx) => {
                             if (!Array.isArray(employees)) return null;
                             const dc = DEPT_COLORS[deptIdx % DEPT_COLORS.length];
                             

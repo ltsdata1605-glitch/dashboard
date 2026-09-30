@@ -259,7 +259,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
 
                                 {/* Center Data (Symmetrical & Prevent wrapping on export) */}
                                 <div className={`flex-1 flex items-center justify-center font-medium tracking-tight ${textClass} ${hasData ? '' : 'opacity-25'} ${valueSize} w-full text-center whitespace-nowrap overflow-visible`}>
-                                    {hasData ? formatValue(dayData.value, metricName) : '-'}
+                                    {hasData ? formatValue(dayData.value!, metricName) : '-'}
                                 </div>
 
                                 {/* Bottom Row: Bar & Holiday */}

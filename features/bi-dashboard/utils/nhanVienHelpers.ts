@@ -278,7 +278,7 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
             hasExplicitTotal = true;
             totalRow.dtlk += dtlkValue;
             totalRow.dtqd += dtqdValue;
-            totalRow.soLuong += soLuongValue;
+            totalRow.soLuong = Number(totalRow.soLuong) + soLuongValue; // strict: undefined → NaN như `+=` cũ
         } else if (isDept) {
             currentDeptDS = rawName;
             if (!isIgnoredDept(currentDeptDS)) {
@@ -288,7 +288,7 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
                 const dept = deptMap.get(rawName)!;
                 dept.dtlk += dtlkValue;
                 dept.dtqd += dtqdValue;
-                dept.soLuong += soLuongValue;
+                dept.soLuong = Number(dept.soLuong) + soLuongValue;
             }
         } else if (isValidEmployeeName(rawName)) {
             if (!isIgnoredDept(currentDeptDS)) {
@@ -297,7 +297,7 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
                     const existing = empMap.get(canonicalName)!;
                     existing.dtlk += dtlkValue;
                     existing.dtqd += dtqdValue;
-                    existing.soLuong += soLuongValue;
+                    existing.soLuong = Number(existing.soLuong) + soLuongValue;
                 } else {
                     empMap.set(canonicalName, {
                         type: 'employee',

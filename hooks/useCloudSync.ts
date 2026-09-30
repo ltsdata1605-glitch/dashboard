@@ -336,7 +336,7 @@ export const useCloudSync = () => {
             syncPendingHeavySettings();
         };
 
-        window.addEventListener('ycx-setting-changed', handleSettingChanged);
+        window.addEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
         
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') syncIfChanged();
@@ -355,7 +355,7 @@ export const useCloudSync = () => {
             clearTimeout(bootTimer);
             if (unsubConfig) unsubConfig();
             if (unsubConfigs) unsubConfigs();
-            window.removeEventListener('ycx-setting-changed', handleSettingChanged);
+            window.removeEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('beforeunload', handleBeforeUnload);
             window.clearInterval(intervalId);

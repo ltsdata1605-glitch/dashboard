@@ -223,7 +223,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                     <tr key="total-row" className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800 border-b border-slate-200 dark:border-slate-700">
                                         <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 text-left">{item.name}</td>
                                         <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-300">
-                                            {f.format(Math.ceil(item.sumTong / 1000))}
+                                            {f.format(Math.ceil(Number(item.sumTong) / 1000))}
                                         </td>
                                         <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
                                         <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
@@ -257,7 +257,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             <tr key={`${item.type}-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-extrabold text-slate-800 dark:text-slate-200 border-t border-slate-200 dark:border-slate-700">
                                 <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700">{item.name}</td>
                                 <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400">
-                                    {f.format(Math.ceil(item.sumTong / 1000))}
+                                    {f.format(Math.ceil(Number(item.sumTong) / 1000))}
                                 </td>
                                 <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
                                 <td className="px-2 py-1 text-center text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700">-</td>
@@ -287,10 +287,10 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         );
                     }
 
-                    const isHighlighted = highlightedEmployees.has(item.originalName);
+                    const isHighlighted = highlightedEmployees.has(item.originalName!);
                     const bonus = getBonusForEmployee(bonusData, item.originalName, item.name);
                     const isStale = !isUpdatedToday(bonus?.updatedAt);
-                    const weeksBelowAvgCount = getEmployeeWeeksBelowAvgCount(item.originalName);
+                    const weeksBelowAvgCount = getEmployeeWeeksBelowAvgCount(item.originalName!);
                     const belowAvgCount = allDates.reduce((count, dateStr) => {
                         const val = bonus?.dailyData?.[dateStr] || 0;
                         const avg = colStats[dateStr]?.avg || 0;
@@ -302,7 +302,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                             <td className="px-2 py-1 border-r border-slate-200 dark:border-slate-700">
                                 <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => onEmployeeClick(item as Employee)} onKeyDown={onActivateKey(() => onEmployeeClick(item as Employee))}>
                                     {item.rank && <MedalBadge rank={item.rank} />}
-                                    <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} />
+                                    <AvatarDisplay employeeName={item.originalName!} supermarketName={supermarketName} />
                                     <span className={`text-[13px] font-bold truncate ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200'}`}>{item.name}</span>
                                 </div>
                             </td>
@@ -319,7 +319,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                 const isExpanded = expandedWeeks[week.id];
                                 const weekDates = week.dates;
                                 if (!isExpanded) {
-                                    const weekTotal = getWeekTotalForEmployee(item.originalName, weekDates);
+                                    const weekTotal = getWeekTotalForEmployee(item.originalName!, weekDates);
                                     const weekAvg = weekAverages[week.id] || 0;
                                     const weekTop3 = weekStats[week.id]?.top3Threshold || 0;
 

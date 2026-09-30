@@ -30,7 +30,7 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
     if (this.state.hasError) {
       let displayMessage = "Đã xảy ra lỗi không mong muốn.";
       try {
-        const errObj = JSON.parse(this.state.error.message);
+        const errObj = JSON.parse(this.state.error?.message ?? '');
         if (errObj.error) displayMessage = `Lỗi Firestore: ${errObj.error} (${errObj.operationType} at ${errObj.path})`;
       } catch (e) {
         displayMessage = this.state.error?.message || displayMessage;

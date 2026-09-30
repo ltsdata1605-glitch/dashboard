@@ -39,20 +39,22 @@ export const flattenTree = (
 
 const DEFAULT_HIDDEN_COLUMNS = ['% Tỉ trọng', 'Target (QĐ)', '% HT Target (QĐ)'];
 
-export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndustryRealtimeData>, luykeData: ReturnType<typeof parseIndustryLuyKeData>, isRealtime: boolean) {
+export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndustryRealtimeData> | null, luykeData: ReturnType<typeof parseIndustryLuyKeData> | null, isRealtime: boolean) {
     const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>('global-hidden-cols-industry-v2', DEFAULT_HIDDEN_COLUMNS);
     const [hiddenIndustries, setHiddenIndustries] = useIndexedDBState<string[]>('global-hidden-industries', []);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
-    const data = isRealtime ? realtimeData : luykeData.table;
+    const data = isRealtime ? realtimeData! : luykeData!.table; // IndustryView chỉ render khi bộ đang xem khác null
     const { headers, rows } = data;
 
     const allIndustries = useMemo(() => {
-        const sourceRows = isRealtime ? realtimeData.rows : luykeData.table.rows;
+        // ?.: bộ KHÔNG đang xem có thể null (vd chỉ mới dán Realtime) — trước đây mảng phụ thuộc bên dưới
+        // đọc luykeData.table.rows vô điều kiện nên sập (strict 2026-09-30)
+        const sourceRows = isRealtime ? realtimeData?.rows : luykeData?.table.rows;
         return (sourceRows || [])
             .map((row) => row[0])
             .filter((name: string) => name && name !== 'Tổng' && name !== 'Không tính doanh thu');
-    }, [realtimeData.rows, luykeData.table.rows, isRealtime]);
+    }, [realtimeData?.rows, luykeData?.table.rows, isRealtime]);
 
     const processedTable = useMemo(() => {
         if (!headers || headers.length === 0 || !rows || rows.length === 0) {

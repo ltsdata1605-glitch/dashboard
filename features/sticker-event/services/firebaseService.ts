@@ -460,7 +460,7 @@ export const fetchSavedListsFromFirestore = async (
         const targetId = String(userIdentifier || '').toLowerCase();
         const targetUid = String(currentUid).toLowerCase();
 
-        return (
+        return !!(
           itemUserId === targetId ||
           itemAuthUid === targetId ||
           (targetUid && itemAuthUid === targetUid) ||

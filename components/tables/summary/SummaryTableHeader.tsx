@@ -7,13 +7,13 @@ import type { FilterState } from '../../../types';
 
 interface SummaryTableHeaderProps {
     displayTitle: string;
-    displayDescription: string;
+    displayDescription?: string;
     reportSubTitle?: string;
     filterState: FilterState;
     tableMode: string;
     setTableMode: (mode: 'standard' | 'comparison' | 'cross_selling') => void;
     isCrossSellingMode: boolean;
-    userRole: string;
+    userRole: string | null;
     setIsBuilderOpen: (open: boolean) => void;
     isComparisonMode: boolean;
     compMode: string;
@@ -23,7 +23,7 @@ interface SummaryTableHeaderProps {
     setActiveFilterKey: React.Dispatch<React.SetStateAction<string | null>>;
     visibleColumns: string[];
     setVisibleColumns: React.Dispatch<React.SetStateAction<string[]>>;
-    columnsPopupRef: React.RefObject<HTMLDivElement>;
+    columnsPopupRef: React.RefObject<HTMLDivElement | null>;
     isFullScreen?: boolean;
     setIsFullScreen?: (val: boolean) => void;
     dateDisplay?: { current: string; prev: string };

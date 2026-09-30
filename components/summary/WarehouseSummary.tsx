@@ -843,8 +843,11 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                 avg = (totals[col.metric as keyof typeof totals] as number) / totalRows;
                                             } else if (col.metricType === 'revenueQD' && totals.doanhThuQD !== undefined) {
                                                 avg = totals.doanhThuQD / totalRows;
-                                            } else if (customTotals[col.id] !== undefined) {
-                                                avg = customTotals[col.id] / totalRows;
+                                            } else if (customTotals.get(col.id) !== undefined) {
+                                                // strict (2026-09-30) bắt được: customTotals là Map — đọc bằng [] luôn ra undefined
+                                                // nên tô màu ">avg"/"<avg" của cột tuỳ chỉnh ở các DÒNG chưa bao giờ chạy (dòng tổng
+                                                // bên dưới đã dùng .get() đúng).
+                                                avg = (customTotals.get(col.id) || 0) / totalRows;
                                             }
                                         }
 
@@ -924,11 +927,11 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
                                 <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[11px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
                                 {visibleColumns.map((col, index) => {
-                                    let value;
+                                    let value: number | undefined;
                                     if (col.isCustom) {
                                         value = customTotals.get(col.id) || 0;
                                     } else if (col.metric && totals[col.metric as keyof typeof totals] !== undefined) {
-                                        value = totals[col.metric as keyof typeof totals];
+                                        value = totals[col.metric as keyof typeof totals] as number;
                                     } else if (col.metric === 'target') {
                                         value = totalTarget;
                                     } else if (col.metric === 'percentHT') {

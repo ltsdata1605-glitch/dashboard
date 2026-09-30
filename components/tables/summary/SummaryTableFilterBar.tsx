@@ -7,7 +7,7 @@ import { Button } from '../../shared/ui/Button';
 interface SummaryTableFilterBarProps {
     isCrossSellingMode: boolean;
     isPending: boolean;
-    sortableListRef: React.RefObject<HTMLDivElement>;
+    sortableListRef: React.RefObject<HTMLDivElement | null>;
     localDrilldownOrder: string[];
     getFilterProps: (key: string) => { options: string[]; selected: string[]; onChange: (s: string[]) => void };
     activeFilterKey: string | null;

@@ -181,14 +181,11 @@ export function useStickerEventDb({
         const shouldFetchInventory = firestoreLatestInv > localLatestInv || localInventory.length === 0;
 
         if (shouldFetchProducts || shouldFetchInventory) {
-            const fetchPromises = [];
-            if (shouldFetchProducts) fetchPromises.push(fetchProductsFromFirestore(storeId));
-            else fetchPromises.push(Promise.resolve(localProducts));
-
-            if (shouldFetchInventory) fetchPromises.push(fetchInventoryFromFirestore(storeId));
-            else fetchPromises.push(Promise.resolve(localInventory));
-
-            const [firestoreProducts, firestoreInventory] = await Promise.all(fetchPromises);
+            // strict (2026-09-30): tuple có kiểu thay cho mảng không kiểu (cùng thứ tự, cùng lời gọi)
+            const [firestoreProducts, firestoreInventory] = await Promise.all([
+                shouldFetchProducts ? fetchProductsFromFirestore(storeId) : Promise.resolve(localProducts),
+                shouldFetchInventory ? fetchInventoryFromFirestore(storeId) : Promise.resolve(localInventory),
+            ]);
             
             if (shouldFetchProducts && firestoreProducts.length > 0) {
                 setAllProducts(firestoreProducts);

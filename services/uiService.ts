@@ -783,7 +783,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
             // Inline computed styles for text elements (fonts, fills) 
             const liveTexts = sourceSvg.querySelectorAll('text, tspan');
-            svgClone.querySelectorAll('text, tspan').forEach((textEl: SVGElement, idx: number) => {
+            svgClone.querySelectorAll('text, tspan').forEach((el: Element, idx: number) => {
+                const textEl = el as SVGElement;
                 const liveText = liveTexts[idx];
                 if (liveText) {
                     const computed = window.getComputedStyle(liveText);

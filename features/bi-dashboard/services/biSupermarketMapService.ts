@@ -38,7 +38,7 @@ export async function fetchSupermarketMap(userId?: string): Promise<SupermarketT
     // 1. Kiểm tra IndexedDB cục bộ của chính tài khoản này
     let cachedMap: SupermarketToKhoMap | null = null;
     try {
-        cachedMap = await dbUtils.get<SupermarketToKhoMap>(localKey);
+        cachedMap = (await dbUtils.get<SupermarketToKhoMap>(localKey)) ?? null;
     } catch (e) {
         console.warn('[biSupermarketMapService] Lỗi đọc IndexedDB:', e);
     }

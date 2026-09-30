@@ -10,6 +10,11 @@ declare const lucide: {
 // dùng package 'sortablejs' riêng (không có @types/sortablejs nên cũng ngầm định any).
 declare const Sortable: any;
 
+// strict (2026-09-30): 2 package npm không kèm kiểu và không có @types — khai báo rút gọn (kiểu any,
+// như trước khi bật strict; strict chỉ bắt buộc phải NÓI RA điều đó).
+declare module 'sortablejs';
+declare module 'lunar-javascript';
+
 interface ImportMetaEnv {
   readonly VITE_FIREBASE_API_KEY?: string;
   readonly VITE_FIREBASE_AUTH_DOMAIN?: string;

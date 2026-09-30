@@ -132,16 +132,20 @@ const RevenueView: React.FC<{
 
     // Màu theo TIẾN ĐỘ (so với % ngày đã trôi qua trong tháng) — khác với colorSettings (ngưỡng % cố định),
     // chuẩn hoá với tone màu đậm nét, tương phản cao.
-    const getHtColor = React.useCallback((htValue: number, hasTarget: boolean = true) => {
+    const getHtColor = React.useCallback((htValue: number | undefined, hasTarget: boolean = true) => {
         if (!hasTarget) return '#94a3b8'; // slate-400 — chưa cấu hình target
+        // undefined: 2 phép so sánh bên dưới đều false → cam; giữ nguyên, chỉ ghi rõ (strict 2026-09-30)
+        if (htValue === undefined) return '#ea580c';
         const progress = timeProgressData.percentage;
         if (htValue < progress) return '#dc2626'; // Đỏ đậm nổi bật
         if (htValue >= progress + 20) return '#059669'; // Emerald đậm nổi bật
         return '#ea580c'; // Cam đậm nổi bật
     }, [timeProgressData.percentage]);
 
-    const getDynamicColor = React.useCallback((val: number, config: CriterionConfig) => {
+    const getDynamicColor = React.useCallback((val: number | undefined, config: CriterionConfig) => {
         if (!config) return undefined;
+        // undefined: mọi phép >= đều false → màu "yếu"; giữ nguyên, chỉ ghi rõ (strict 2026-09-30)
+        if (val === undefined) return toBoldVividColor(config.bad.color);
         let color: string;
         if (val >= config.good.threshold) color = config.good.color;
         else if (val >= config.average.threshold) color = config.average.color;
@@ -549,7 +553,7 @@ const RevenueView: React.FC<{
                                                     {/* NỔI BẬT 2: HQQĐ */}
                                                     <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-emerald-50/60 dark:bg-emerald-950/20`}>
                                                         <div className="font-bold" style={{ color: getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
-                                                        <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
+                                                        <DeltaBadge current={row.hieuQuaQD * 100} previous={Number(prev?.hqqd) * 100} isPercent />
                                                     </td>
                                                     {/* NỔI BẬT 3: %T.Chậm */}
                                                     <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>

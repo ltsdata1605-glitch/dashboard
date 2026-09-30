@@ -51,9 +51,9 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     
     const showDeptHeaders = Object.keys(processedData).length > 1 || (Object.keys(processedData).length === 1 && Object.keys(processedData)[0] !== 'Không Phân Ca');
     
-    const formatPct = (value: number) => value > 0 ? `${value.toFixed(0)}%` : '-';
-    const formatNum = (value: number) => value > 0 ? formatQuantityWithFraction(value) : '-';
-    const formatC = (value: number) => value > 0 ? formatCurrency(value) : '-';
+    const formatPct = (value: number | undefined) => value !== undefined && value > 0 ? `${value.toFixed(0)}%` : '-';
+    const formatNum = (value: number | undefined) => value !== undefined && value > 0 ? formatQuantityWithFraction(value) : '-';
+    const formatC = (value: number | undefined) => value !== undefined && value > 0 ? formatCurrency(value) : '-';
     const formatCustomColPct = (v: number, col: CustomColumnConfig) => {
         if (v === 0 || v === null || v === undefined || isNaN(v) || !isFinite(v)) return '-';
         const decimals = col.percentageConfig?.decimalPlaces !== undefined ? col.percentageConfig.decimalPlaces : 0;

@@ -508,8 +508,9 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                                     if (roleTag === 'Kho' && staff.gender !== partner.gender) continue;
 
                                     // Tráo đổi ca làm việc của 2 người tại ngày d
-                                    const temp = { ...staff.schedule[d] };
-                                    staff.schedule[d] = { ...partner.schedule[d] };
+                                    // strict: ô có thể null → spread ra {} (hành vi cũ giữ nguyên, chỉ ghi kiểu)
+                                    const temp = { ...staff.schedule[d] } as ScheduleInfo;
+                                    staff.schedule[d] = { ...partner.schedule[d] } as ScheduleInfo;
                                     partner.schedule[d] = temp;
 
                                     fixed = true;

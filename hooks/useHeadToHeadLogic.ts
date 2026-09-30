@@ -418,8 +418,8 @@ export const useHeadToHeadLogic = ({
         });
 
         tableRows.sort((a, b) => {
-            const valA = a[sortConfig.key];
-            const valB = b[sortConfig.key];
+            const valA = (a as unknown as Record<string | number, unknown>)[sortConfig.key];
+            const valB = (b as unknown as Record<string | number, unknown>)[sortConfig.key];
             if (typeof valA === 'number' && typeof valB === 'number') {
                 if (valA !== valB) return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
             }

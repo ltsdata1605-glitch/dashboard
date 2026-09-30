@@ -27,7 +27,7 @@ export interface SummaryTableInput {
 
 export interface BuildSummaryTableOptions {
     isCumulative: boolean;
-    activeSupermarket: string;
+    activeSupermarket: string | null;
     supermarketMonthlyTargets: Record<string, number>;
     hiddenSupermarkets: string[];
     /** Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị) làm Target hiển thị và tính toán */

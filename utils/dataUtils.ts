@@ -33,13 +33,12 @@ const normalizeCache = new Map<string, string>();
 // any: val là giá trị ô Excel/DataRow thô (string/number/Date/boolean...), dùng ở hàng nghìn call site — không đổi kiểu tham số/trả về
 export const cleanAndNormalize = (val: any): string => {
     if (val === undefined || val === null) return '';
-    const raw = val.toString().trim();
-    let cached = normalizeCache.get(raw);
-    if (!cached) {
-        cached = raw.toLowerCase().normalize('NFC');
-        normalizeCache.set(raw, cached);
-    }
-    return cached;
+    const raw: string = val.toString().trim();
+    const cached = normalizeCache.get(raw);
+    if (cached) return cached;
+    const normalized = raw.toLowerCase().normalize('NFC');
+    normalizeCache.set(raw, normalized);
+    return normalized;
 };
 
 // Bản chuẩn hoá (cleanAndNormalize) của 3 Set hình thức xuất tĩnh trong constants.ts — dùng làm
@@ -379,7 +378,7 @@ export const getDisplayParentGroup = (maNhomHang: string, productConfig: Product
     return parentGroup;
 };
 
-export function getExportFilenamePrefix(khoFilter: string | string[]): string {
+export function getExportFilenamePrefix(khoFilter: string | string[] | undefined): string {
     const khoArray = Array.isArray(khoFilter) ? khoFilter : (khoFilter ? [khoFilter] : []);
     const khosStr = (khoArray.length > 0 && !khoArray.includes('all')) ? khoArray.join('_') : 'Tat-ca-khu-vuc';
     return `[${khosStr.toUpperCase()}]`;
@@ -390,7 +389,10 @@ export function sanitizeFilename(name: string): string {
     return name.replace(/[\\/:*?"<>|]/g, '');
 }
 
-export const roundUp = (num: number): number => {
+export const roundUp = (num: number | undefined): number => {
+    // strict (2026-09-30): nhiều nơi truyền trường tuỳ chọn. Trước đây Math.ceil(undefined) = NaN —
+    // giữ nguyên kết quả đó, chỉ ghi rõ.
+    if (num === undefined) return NaN;
     if (num > -1e-9 && num < 0) {
         return 0;
     }

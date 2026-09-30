@@ -637,7 +637,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             </div>
                         </>
                     )}
-                    {activeModal === 'performance' && processedData && (
+                    {activeModal === 'performance' && processedData && modalData && (
                         <React.Suspense fallback={null}>
                             <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport} />
                         </React.Suspense>

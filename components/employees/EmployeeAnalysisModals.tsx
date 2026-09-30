@@ -124,7 +124,7 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
             <ConfirmDialog
                 isOpen={modalState.type === 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB'}
                 onClose={() => setModalState({ type: null })}
-                onConfirm={handleDeleteCustomExploitationTab}
+                onConfirm={handleDeleteCustomExploitationTab ?? (() => {})}
                 variant="danger"
                 title="Xác nhận Xóa Thẻ Tùy Chỉnh"
                 confirmText="Xác nhận Xóa"

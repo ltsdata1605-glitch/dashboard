@@ -6595,3 +6595,17 @@ Nguyên tắc: KHÔNG gom model; mỗi cầu nối 1 hợp đồng + 1 adapter �
 | Check thưởng → Report BI (`checkThuongBonus.ts`, `useCheckThuongBonus.ts`, iframe `check-thuong.html`) | iframe ghi thêm `schemaVersion/source`; `docCheckThuongPayload()` cho 3 nguồn đọc + postMessage. **Sửa lỗ hổng**: `useCheckThuongBonus` nhận postMessage từ MỌI nguồn → trang lạ có thể bơm số thưởng giả; nay chỉ nhận cùng origin |
 Đơn vị ghi rõ trong chú thích hợp đồng: tiền = ĐỒNG, `updatedAt/lastModified` = epoch ms.
 Test "golden fixture" `cau-noi-dto-a29.test.ts` 6/6 (bản cũ, bản Firestore `{__fsArr}`, bản hỏng, chuẩn hoá NV, thưởng thật/dự kiến theo đồng). `npm run check` xanh (unit 936); e2e BI/Check thưởng 31 xanh.
+
+# Đợt 14b (2026-09-30) — bật TypeScript `strict` toàn dự án (A37)
+Đo: `tsc --strict` ra 152 lỗi / ~45 file (ít hơn dự kiến) → sửa hết rồi bật `"strict": true` trong tsconfig.json
+(thay vì bật từng module). Nguyên tắc: GIỮ NGUYÊN hành vi — nới kiểu tham số khi hàm đã xử lý undefined y hệt
+(roundUp, DeltaBadge, getHtColor/getDynamicColor, formatter…, nhánh undefined ghi rõ trả đúng giá trị cũ, vd
+`Math.ceil(undefined)` = NaN), `Number(x)` khi cộng dồn (undefined → NaN như cũ), `!` ở chỗ đã có điều kiện bảo
+vệ, kiểu `RefObject<T | null>` của React 19, khai báo module cho `sortablejs`/`lunar-javascript`.
+**Lỗi thật strict bắt được (đã sửa):**
+1. `WarehouseSummary.tsx`: đọc `Map` bằng `[]` → luôn undefined → tô màu ">avg/<avg" cột tuỳ chỉnh ở các DÒNG chưa bao giờ chạy.
+2. `ColorSettingsModal.tsx`: `DEFAULT_COLOR_SETTINGS` thiếu `bankem` → cấu hình cũ không có `bankem` làm sập hộp cài màu.
+3. `IndustryView`/`useIndustryViewLogic`: mới dán 1 trong 2 bộ (Realtime/Luỹ kế) → mảng phụ thuộc useMemo đọc bộ còn lại (null) → sập màn Siêu thị › Doanh thu. Nay chỉ render khi bộ đang xem có dữ liệu + `?.`.
+4. `DashboardView`: modal hiệu quả NV render khi `modalData` null → sập; nay có điều kiện.
+5. Vài chỗ đọc trường tuỳ chọn không kiểm (`bonus.dailyData[…]`, `metrics.byProduct[…]`, `modalState.data.tabId`) → sập nếu thiếu; nay `?.`.
+Kiểm tra: `tsc --strict` 0 lỗi; `npm run check` xanh (unit 936); e2e toàn bộ: xem kết quả bên dưới.

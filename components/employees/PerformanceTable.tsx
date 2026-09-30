@@ -182,7 +182,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
                 groupType={activeTab}
                 handleTabChange={handleTabChange}
                 sortConfig={sortConfig}
-                onSort={handleSort}
+                onSort={handleSort as (key: string) => void}
                 tableRef={ref}
                 onSingleExport={onExport || (() => {})}
                 isExporting={isExporting}

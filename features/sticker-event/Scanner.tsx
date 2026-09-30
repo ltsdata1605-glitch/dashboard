@@ -206,7 +206,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         () => {} // qrCodeErrorCallback
       ).then(() => {
         const stream = html5Qrcode.getRunningTrackCapabilities();
-        if (stream) setActiveCameraId(stream.deviceId);
+        if (stream) setActiveCameraId(stream.deviceId ?? null);
         setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
         setError(null);
         detectTorch();
@@ -341,8 +341,8 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       const nextCamera = cameras[nextIndex];
 
       setStatus(`Đang chuyển sang camera: ${nextCamera.label}...`);
-      scannerRef.current.stop().then(() => {
-        scannerRef.current.start(
+      scannerRef.current!.stop().then(() => {
+        scannerRef.current!.start(
           nextCamera.id,
           config,
           qrCodeSuccessCallback,

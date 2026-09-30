@@ -14,9 +14,9 @@ interface RevenueDesktopRowProps {
     onHighlightToggle: (name: string) => void;
     supermarketName: string;
     colorSettings: ColorSettings;
-    getHtColor: (val: number, hasTarget?: boolean) => string;
-    getDynamicColor: (val: number, config: CriterionConfig) => string | undefined;
-    getDkhtColor?: (val: number, hasTarget?: boolean) => string;
+    getHtColor: (val: number | undefined, hasTarget?: boolean) => string;
+    getDynamicColor: (val: number | undefined, config: CriterionConfig) => string | undefined;
+    getDkhtColor?: (val?: number | null, hasTarget?: boolean) => string;
     isShowRemaining?: boolean;
     targetTraGop?: number;
     targetQuyDoi?: number;
@@ -103,7 +103,7 @@ export const RevenueDesktopRow = React.memo(({
             {/* NỔI BẬT 2: HQQĐ */}
             <td className="export-col-performance px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50 bg-emerald-50/50 dark:bg-emerald-950/20">
                 <Pill className="font-bold" color={getMetricColorByTarget(isNaN(row.hieuQuaQD) ? 0 : row.hieuQuaQD * 100, targetQuyDoi)}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</Pill>
-                <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
+                <DeltaBadge current={row.hieuQuaQD * 100} previous={Number(prev?.hqqd) * 100} isPercent />
             </td>
             {/* NỔI BẬT 3: %T.Chậm */}
             <td className={`export-col-performance px-2 py-[3px] text-center font-bold tabular-nums bg-amber-50/50 dark:bg-amber-950/20 ${!isRealtimeMode ? 'border-r border-slate-100 dark:border-slate-700/50' : ''}`}>

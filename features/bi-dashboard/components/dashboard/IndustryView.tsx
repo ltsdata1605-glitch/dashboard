@@ -23,8 +23,10 @@ interface SortConfig {
 }
 
 interface IndustryViewProps {
-    realtimeData: ReturnType<typeof parseIndustryRealtimeData>;
-    luykeData: ReturnType<typeof parseIndustryLuyKeData>;
+    // Có thể null (chưa dán dữ liệu ngành hàng). Dashboard CHỈ render view khi bộ dữ liệu của chế độ
+    // đang xem có (strict 2026-09-30 — trước đây null ở đây là sập màn Siêu thị › Doanh thu).
+    realtimeData: ReturnType<typeof parseIndustryRealtimeData> | null;
+    luykeData: ReturnType<typeof parseIndustryLuyKeData> | null;
     isRealtime: boolean;
     activeSupermarket?: string;
     onExport?: () => Promise<void>;
@@ -108,7 +110,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         allSubIndustries
     } = logic;
 
-    const data = isRealtime ? realtimeData : luykeData.table;
+    const data = isRealtime ? realtimeData! : luykeData!.table; // Dashboard đảm bảo bộ đang xem khác null
     const { headers, rows } = data;
 
     const headerGroups = useMemo(() => {

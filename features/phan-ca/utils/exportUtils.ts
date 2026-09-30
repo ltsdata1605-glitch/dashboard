@@ -5,7 +5,7 @@ import { abbreviateVietnameseName } from './stringUtils';
 
 import { exportElementAsImage } from '../services/uiService';
 
-export const exportToExcel = async (tableRef: RefObject<HTMLTableElement>) => {
+export const exportToExcel = async (tableRef: RefObject<HTMLTableElement | null>) => {
     if (tableRef.current) {
         const XLSX = await import('xlsx');
         const wb = XLSX.utils.table_to_book(tableRef.current, { sheet: "LichLamViec" });
@@ -13,7 +13,7 @@ export const exportToExcel = async (tableRef: RefObject<HTMLTableElement>) => {
     }
 };
 
-export const exportToImage = async (exportRef: RefObject<HTMLElement>, filename: string = 'Lich_Phan_Ca.png'): Promise<void> => {
+export const exportToImage = async (exportRef: RefObject<HTMLElement | null>, filename: string = 'Lich_Phan_Ca.png'): Promise<void> => {
     if (!exportRef.current) {
         throw new Error("Phần tử để xuất không tồn tại.");
     }

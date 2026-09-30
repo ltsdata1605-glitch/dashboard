@@ -333,7 +333,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                             fill={textColor} 
                             fontSize={11} 
                             fontWeight="bold"
-                            formatter={(val: number) => trendState.metric === 'quantity' ? formatQuantity(val) : formatCurrency(val)}
+                            formatter={(val: unknown) => trendState.metric === 'quantity' ? formatQuantity(val as number) : formatCurrency(val as number)}
                         />
                     </Area>
                 </AreaChart>
@@ -360,7 +360,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                         fill={textColor} 
                         fontSize={11} 
                         fontWeight="bold"
-                        formatter={(val: number) => trendState.metric === 'quantity' ? formatQuantity(val) : formatCurrency(val)}
+                        formatter={(val: unknown) => trendState.metric === 'quantity' ? formatQuantity(val as number) : formatCurrency(val as number)}
                     />
                     {chartData.map((entry, index) => (
                         <Cell 

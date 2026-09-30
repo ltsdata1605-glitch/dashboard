@@ -51,7 +51,7 @@ export const BonusDesktopRow = React.memo(({
             <td className="px-2 py-1 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
                 <div className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
                     <MedalBadge rank={item.rank} />
-                    <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item as Employee)} />
+                    <AvatarDisplay employeeName={item.originalName!} supermarketName={supermarketName} onClick={() => onEmployeeClick(item as Employee)} />
                     <div className="flex flex-col min-w-0">
                         <span className={`text-[12px] sm:text-[13px] font-bold whitespace-nowrap tracking-tight ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>
                             {item.name}

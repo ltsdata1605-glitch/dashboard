@@ -10,7 +10,7 @@ import { StickerEventUserRecord } from './types';
 interface UserManagementModalProps {
     isOpen: boolean;
     onClose: () => void;
-    storeId: string;
+    storeId: string | undefined;
     currentUserId: string;
 }
 
@@ -35,7 +35,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
         setIsLoading(true);
         setError(null);
         try {
-            const fetchedUsers = await fetchAllUsers(storeId);
+            const fetchedUsers = await fetchAllUsers(storeId!); // chỉ gọi khi có storeId (effect bên trên)
             setUsers(fetchedUsers);
         } catch (err) {
             console.error("Error fetching users:", err);
@@ -113,7 +113,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
         setConfirmAction(null);
         setIsLoading(true);
         try {
-            await clearAllUsers(storeId);
+            await clearAllUsers(storeId ?? ''); // clearAllUsers tự bỏ qua khi rỗng
             await signOut(auth);
             window.location.reload();
         } catch (err) {

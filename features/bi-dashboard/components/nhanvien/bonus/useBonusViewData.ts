@@ -50,7 +50,7 @@ export function useBonusViewData({
     const getWeekTotalForEmployee = (employeeName: string, weekDates: string[]) => {
         const bonus = bonusData[employeeName];
         if (!bonus || !bonus.dailyData) return 0;
-        return weekDates.reduce((sum, dateStr) => sum + (bonus.dailyData[dateStr] || 0), 0);
+        return weekDates.reduce((sum, dateStr) => sum + (bonus.dailyData?.[dateStr] || 0), 0);
     };
 
     const getWeekAverage = (weekDates: string[]) => {
@@ -148,7 +148,7 @@ export function useBonusViewData({
             const totalSum = employees.reduce((sum, e) => {
                 const bonus = bonusData[e.originalName];
                 if (!bonus || !bonus.dailyData) return sum;
-                const weekSum = week.dates.reduce((s, dateStr) => s + (bonus.dailyData[dateStr] || 0), 0);
+                const weekSum = week.dates.reduce((s, dateStr) => s + (bonus.dailyData?.[dateStr] || 0), 0);
                 return sum + weekSum;
             }, 0);
             avgs[week.id] = totalSum / employees.length;
@@ -163,7 +163,7 @@ export function useBonusViewData({
                 .map(e => {
                     const bonus = bonusData[e.originalName];
                     if (!bonus || !bonus.dailyData) return 0;
-                    return week.dates.reduce((sum, dateStr) => sum + (bonus.dailyData[dateStr] || 0), 0);
+                    return week.dates.reduce((sum, dateStr) => sum + (bonus.dailyData?.[dateStr] || 0), 0);
                 })
                 .filter(v => v > 0);
 
@@ -179,7 +179,7 @@ export function useBonusViewData({
         weeks.forEach(week => {
             const bonus = bonusData[employeeName];
             if (!bonus || !bonus.dailyData) return;
-            const weekTotal = week.dates.reduce((sum, dateStr) => sum + (bonus.dailyData[dateStr] || 0), 0);
+            const weekTotal = week.dates.reduce((sum, dateStr) => sum + (bonus.dailyData?.[dateStr] || 0), 0);
             const weekAvg = weekAverages[week.id] || 0;
             if (weekTotal > 0 && weekTotal < weekAvg) {
                 count++;
@@ -193,7 +193,7 @@ export function useBonusViewData({
         const stats: Record<string, { avg: number; top3Threshold: number }> = {};
         allDates.forEach(dateStr => {
             const values = employees
-                .map(e => bonusData[e.originalName]?.dailyData?.[dateStr] || 0)
+                .map(e => (e.originalName ? bonusData[e.originalName] : undefined)?.dailyData?.[dateStr] || 0)
                 .filter(v => v > 0);
             const sum = values.reduce((s, v) => s + v, 0);
             const avg = employees.length > 0 ? sum / employees.length : 0;
@@ -208,7 +208,7 @@ export function useBonusViewData({
 
     const { avgTong, avgWeeksBelowAvg, avgBelowAvgDays } = useMemo(() => {
         if (isActive === false || employees.length === 0) return { avgTong: 0, avgWeeksBelowAvg: 0, avgBelowAvgDays: 0 };
-        const sumTong = employees.reduce((s, e) => s + (bonusData[e.originalName]?.tong || 0), 0);
+        const sumTong = employees.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.tong || 0), 0);
         const avgTong = sumTong / employees.length;
 
         const sumWeeksBelowAvg = employees.reduce((sum, e) => {
@@ -313,14 +313,14 @@ export function useBonusViewData({
                 const sumDtlk = result.reduce((s, e) => s + (getRevenueForEmployee(revenueMap, e.originalName, e.name)?.dtlk || 0), 0);
                 const origTotalRow = revenueRows.find(r => r.type === 'total');
                 const sumHqqd = origTotalRow && origTotalRow.hieuQuaQD ? (origTotalRow.hieuQuaQD * 100) : (sumDtlk > 0 ? ((sumDtqd - sumDtlk) / sumDtlk) * 100 : 0);
-                const sumErp = result.reduce((s, e) => s + (bonusData[e.originalName]?.erp || 0), 0);
-                const sumTnong = result.reduce((s, e) => s + (bonusData[e.originalName]?.tNong || 0), 0);
-                const sumTong = result.reduce((s, e) => s + (bonusData[e.originalName]?.tong || 0), 0);
-                const sumDkien = result.reduce((s, e) => s + (bonusData[e.originalName]?.dKien || 0), 0);
+                const sumErp = result.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.erp || 0), 0);
+                const sumTnong = result.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.tNong || 0), 0);
+                const sumTong = result.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.tong || 0), 0);
+                const sumDkien = result.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.dKien || 0), 0);
 
                 const dailySums: Record<string, number> = {};
                 allDates.forEach(dateStr => {
-                    dailySums[dateStr] = result.reduce((s, e) => s + (bonusData[e.originalName]?.dailyData?.[dateStr] || 0), 0);
+                    dailySums[dateStr] = result.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.dailyData?.[dateStr] || 0), 0);
                 });
 
                 result.push({
@@ -376,14 +376,14 @@ export function useBonusViewData({
             const sumDtlk = emps.reduce((s, e) => s + (getRevenueForEmployee(revenueMap, e.originalName, e.name)?.dtlk || 0), 0);
             const origDeptRow = revenueRows.find(r => r.type === 'department' && r.name === d);
             const sumHqqd = origDeptRow && origDeptRow.hieuQuaQD ? (origDeptRow.hieuQuaQD * 100) : (sumDtlk > 0 ? ((sumDtqd - sumDtlk) / sumDtlk) * 100 : 0);
-            const sumErp = emps.reduce((s, e) => s + (bonusData[e.originalName]?.erp || 0), 0);
-            const sumTnong = emps.reduce((s, e) => s + (bonusData[e.originalName]?.tNong || 0), 0);
-            const sumTong = emps.reduce((s, e) => s + (bonusData[e.originalName]?.tong || 0), 0);
-            const sumDkien = emps.reduce((s, e) => s + (bonusData[e.originalName]?.dKien || 0), 0);
+            const sumErp = emps.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.erp || 0), 0);
+            const sumTnong = emps.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.tNong || 0), 0);
+            const sumTong = emps.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.tong || 0), 0);
+            const sumDkien = emps.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.dKien || 0), 0);
 
             const dailySums: Record<string, number> = {};
             allDates.forEach(dateStr => {
-                dailySums[dateStr] = emps.reduce((s, e) => s + (bonusData[e.originalName]?.dailyData?.[dateStr] || 0), 0);
+                dailySums[dateStr] = emps.reduce((s, e) => s + ((e.originalName ? bonusData[e.originalName] : undefined)?.dailyData?.[dateStr] || 0), 0);
             });
 
             let sortValue = 0;
