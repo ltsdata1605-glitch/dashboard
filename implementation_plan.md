@@ -6635,3 +6635,12 @@ Bộ tự đồng bộ trên Mac CHƯA từng chạy: dự án nằm trong `~/Do
 Chủ dự án đã chuyển dự án sang `~/dashboardycx` + cài lại → `launchctl list` mã **0**, plist trỏ đúng thư mục mới.
 `cai-dat.sh` nay cảnh báo khi dự án nằm trong Documents/Desktop/Downloads. Kiểm bằng mã thoát launchctl và
 `git reflog` (bộ đồng bộ để lại `pull -q --ff-only origin main`), KHÔNG bằng `tail` nhật ký.
+
+## BI-Sync 7.1 — chạy Realtime nhưng đổ số Luỹ kế (2026-09-30)
+Nguyên nhân (đã ĐO bằng test): Direct API Engine từ bản 6.8 gửi `FROMDATE = 01 đầu tháng → TODATE = hôm nay`
+(= dải Luỹ kế) cho 4 lượt Doanh thu hợp nhất / Ngành hàng BI / Nhân viên, và Thi đua `TIMETYPE: 2`. Bấm nút
+"Realtime" trên giao diện (6.9/7.0) vô tác dụng vì số lấy thẳng từ API với ngày ghi cứng.
+Sửa: FROMDATE = TODATE = hôm nay; Thi đua TIMETYPE 1 (trang MWG dùng `?timetype=1` cho Realtime — xem tileLinkService.ts).
+Test `bi-sync-realtime-ngay.spec.ts` (nạp userscript thật, ghi payload mọi POST /kb-api/): ĐỎ mã cũ (FROMDATE 20260901),
+XANH mã mới; thêm vào CI. ⚠️ TIMETYPE 1 = Realtime là suy từ URL trang MWG, chưa đối chiếu payload thật — cần chủ dự
+án xác nhận 1 lần trên DevTools (Network → competition-bymsg-get).

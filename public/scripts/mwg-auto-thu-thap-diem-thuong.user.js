@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.0
+// @version      7.1
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -25,6 +25,14 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.1 — SỬA LỖI "CHẠY REALTIME NHƯNG ĐỔ SỐ LUỸ KẾ" (Direct API Engine):
+ * - Nguyên nhân: từ bản 6.8, 4 lượt gọi API Realtime gửi FROMDATE = ngày 01 đầu tháng → TODATE = hôm nay,
+ *   tức dải LUỸ KẾ ĐẦU THÁNG ĐẾN NAY. Việc bấm nút "Realtime" trên giao diện (6.9/7.0) KHÔNG tác động được,
+ *   vì dữ liệu lấy thẳng từ API với ngày ghi cứng, không đọc trạng thái nút.
+ * - Sửa: Realtime = CHỈ HÔM NAY (FROMDATE = TODATE = hôm nay) cho Doanh thu hợp nhất, Ngành hàng BI, Nhân viên.
+ * - Thi đua: TIMETYPE 2 → 1. Trang MWG dùng ?timetype=1 cho Realtime (đúng như link Realtime trong Dashboard YCX,
+ *   tileLinkService.ts); TIMETYPE 2 là Luỹ kế.
+ *
  * BẢN 7.0 — CHUẨN HOÁ TOÀN DIỆN QUY TRÌNH TỰ ĐỘNG REALTIME THEO CHUẨN THAO TÁC GỐC MWG:
  * - Chuẩn hoá luồng UI Fallback 4 bước không chuyển trang thừa:
  *   + Bước 1: Tại Doanh thu hợp nhất (/dashboard/revenue-consolidated), tự động chọn "Realtime" (bg-blue-600 text-white),
@@ -2953,7 +2961,9 @@
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             const todayKey = parseInt(`${yyyy}${mm}${dd}`, 10);
-            const fromDateKey = parseInt(`${yyyy}${mm}01`, 10);
+            // REALTIME = CHỈ HÔM NAY. KHÔNG dùng ngày 01 đầu tháng: 01 → hôm nay là dải LUỸ KẾ
+            // (lỗi bản 6.8–7.0: chạy Realtime nhưng đổ số Luỹ kế).
+            const fromDateKey = todayKey;
             const toDateKey = todayKey;
             const monthKey = parseInt(`${yyyy}${mm}`, 10);
 
@@ -3023,7 +3033,7 @@
               VIEWLEVEL: 'COMPANY',
               VIEWIDS: null,
               ISVIEWSTORE: 0,
-              TIMETYPE: 2,
+              TIMETYPE: 1, // 1 = Realtime (trang MWG: ?timetype=1); 2 = Luỹ kế — bản ≤ 7.0 gửi 2 nên ra số Luỹ kế
               STOREIDS: activeStoreIds,
               PAGESIZE: 0,
             }, token);

@@ -172,6 +172,10 @@ jobs:
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/tax-qr-and-export.spec.ts --output=test-results/tax-qr-and-export
 
+      - name: 'E2E: bi-sync-realtime-ngay'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/bi-sync-realtime-ngay.spec.ts --output=test-results/bi-sync-realtime-ngay
+
       - name: 'E2E: xss-header-sanitization'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/xss-header-sanitization.spec.ts --output=test-results/xss-header-sanitization
