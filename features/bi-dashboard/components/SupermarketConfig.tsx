@@ -2,7 +2,7 @@
 import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { ResetIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
-import { Link2, Pencil, GripVertical } from 'lucide-react';
+import { Link2, Pencil, GripVertical, Copy } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -1210,22 +1210,15 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             ref={bookmarkletRef}
                             href={AUTO_CLICK_BOOKMARKLET_CODE}
                             draggable
-                            className="min-h-11 sm:min-h-0 group relative inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-600 via-sky-600 to-emerald-600 hover:from-emerald-500 hover:via-sky-500 hover:to-emerald-500 text-white font-bold text-xs rounded-lg shadow-sm shadow-emerald-600/25 hover:shadow-md hover:shadow-emerald-600/40 border border-emerald-400/40 transition-all duration-200 cursor-grab active:cursor-grabbing hover:scale-[1.03] active:scale-[0.98]"
+                            className="min-h-8 sm:min-h-0 group relative inline-flex items-center gap-1.5 px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-indigo-600/20 hover:shadow-sm hover:shadow-indigo-600/30 border border-indigo-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98]"
                             title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();
                                 setIsGuideOpen(true);
                             }}
                         >
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-100"></span>
-                            </span>
-                            <SparklesIcon className="w-3.5 h-3.5 text-emerald-100 group-hover:rotate-12 transition-transform duration-200 shrink-0" />
-                            <span className="tracking-wide">Auto Click+</span>
-                            <span className="ml-0.5 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-wider rounded bg-emerald-700/80 text-emerald-100 border border-emerald-400/30">
-                                1-Click
-                            </span>
+                            <Copy className="w-3.5 h-3.5 text-indigo-100 group-hover:scale-105 transition-transform shrink-0" />
+                            <span className="tracking-tight font-semibold">Copy All</span>
                         </a>
                     </div>
                 </div>
