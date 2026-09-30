@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      6.3
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 1 luôn chọn DT quy đổi & Trả góp, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
+// @version      6.6
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, ĐẦU TIÊN luôn tự chọn DT quy đổi & Trả góp, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
@@ -24,6 +24,19 @@
 // ==/UserScript==
 
 /*
+ * BẢN 6.6 — ĐẦU TIÊN TỰ CHECK CHỌN "DT QUY ĐỔI" VÀ "TRẢ GÓP" (ƯU TIÊN TUYỆT ĐỐI BƯỚC 1):
+ * - Đưa việc click chọn "DT quy đổi" và tick checkbox "Trả góp" lên NGAY ĐẦU TIÊN ở Bước 1, TRƯỚC HẾT khi mở dropdown Siêu thị hay nạp dữ liệu.
+ * - Nhận diện chính xác và tự động chuyển trạng thái đối nghịch từ "DT thực" sang "DT quy đổi".
+ * - Tối ưu bộ chọn checkbox "Trả góp": Quét input[type="checkbox"], custom role="checkbox", svg checkmark, và label/container "Trả góp".
+ * - Bổ sung regex quét JWT token Keycloak/OIDC trong mọi key của sessionStorage/localStorage để Direct Internal API bắt token tức thì.
+ * - Sau khi siêu thị nạp xong dữ liệu, tự động kiểm tra lại một lần nữa đảm bảo "DT quy đổi" & "Trả góp" vẫn đang được kích hoạt.
+ *
+ * BẢN 6.4 — ĐẦU TIÊN LUÔN TỰ CHỌN "DT QUY ĐỔI" VÀ "TRẢ GÓP" NGAY KHI VÀO TRANG:
+ * - Ưu tiên số 1: Tự động bấm toggle "DT quy đổi" và tick checkbox "Trả góp" ngay lập tức trước khi thực hiện
+ *   bất kỳ thao tác tải hay chọn siêu thị nào, giải quyết dứt điểm tình trạng bị trễ hoặc trượt click.
+ * - Bộ chọn thông minh: Tự dò input checkbox, role="checkbox", svg icon check và container label của "Trả góp".
+ * - Kiểm tra trạng thái đối nghịch: Nhận diện chính xác khi "DT thực" đang bật để chuyển sang "DT quy đổi".
+ *
  * BẢN 6.3 — BƯỚC 3 CHUẨN GROUPBY BICAT TRONG 1 LẦN GỌI & BƯỚC 1 LUÔN CHỌN DT QUY ĐỔI + TRẢ GÓP:
  * - Bước 3 Ngành hàng BI (Đúng chuẩn): Gọi trực tiếp POST /reports/revenue-consolidated-get với GROUPBY: "BICAT"
  *   ngay trên báo cáo Doanh thu hợp nhất để lấy toàn bộ cây ngành hàng + nhóm con trong 1 lần gọi duy nhất!
@@ -367,7 +380,7 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '6.3';
+  const SCRIPT_VERSION = '6.4';
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
   const BI_BRIDGE_SOURCE = 'ycx-bi-automation';
@@ -2040,53 +2053,124 @@
   }
 
   async function ensureToggleActive(toggleName) {
-    const btn = findButtonByText([toggleName]);
-    if (!btn) return false;
+    const btn = findButtonByText([
+      toggleName,
+      toggleName.toLowerCase(),
+      acpRemoveDiacritics(toggleName),
+      acpRemoveDiacritics(toggleName).toLowerCase()
+    ]);
+    if (!btn) {
+      console.warn(`[BI-Sync] Không tìm thấy nút: ${toggleName}`);
+      return false;
+    }
 
-    const isAlreadyActive =
+    const btnStyle = window.getComputedStyle(btn);
+    const isBlue =
       btn.classList.contains('bg-blue-600') ||
       btn.classList.contains('bg-blue-500') ||
       btn.classList.contains('bg-indigo-600') ||
+      btn.classList.contains('bg-primary') ||
+      btnStyle.backgroundColor.includes('37, 99, 235') ||
+      btnStyle.backgroundColor.includes('59, 130, 246');
+
+    let isAlreadyActive =
+      isBlue ||
       btn.getAttribute('aria-pressed') === 'true' ||
       btn.getAttribute('data-state') === 'checked' ||
-      btn.getAttribute('data-state') === 'on';
+      btn.getAttribute('data-state') === 'on' ||
+      btn.classList.contains('active');
+
+    // Nếu đang muốn chọn "DT quy đổi", kiểm tra xem "DT thực" có đang chiếm active không
+    if (toggleName === 'DT quy đổi' || toggleName.toLowerCase().includes('quy đổi')) {
+      const dtThucBtn = findButtonByText(['DT thực', 'dt thuc']);
+      if (dtThucBtn) {
+        const thucStyle = window.getComputedStyle(dtThucBtn);
+        const thucIsActive =
+          dtThucBtn.classList.contains('bg-blue-600') ||
+          dtThucBtn.classList.contains('bg-blue-500') ||
+          dtThucBtn.classList.contains('bg-indigo-600') ||
+          thucStyle.backgroundColor.includes('37, 99, 235') ||
+          thucStyle.backgroundColor.includes('59, 130, 246');
+        if (thucIsActive) {
+          isAlreadyActive = false;
+        }
+      }
+    }
 
     if (!isAlreadyActive) {
       console.log(`[BI-Sync] Bật toggle: ${toggleName}`);
       acpTriggerClick(btn);
-      await acpWaitForLoadingComplete(30000, 500, 400);
+      try { btn.click(); } catch (_) {}
+      await sleep(250);
+      await acpWaitForLoadingComplete(15000, 200, 200);
     }
     return true;
   }
 
   async function ensureCheckboxChecked(labelText) {
-    const candidates = Array.from(document.querySelectorAll('label, div, span, button'));
+    const norm = labelText.toLowerCase().trim();
+    const candidates = Array.from(document.querySelectorAll('label, div, span, button, p, input[type="checkbox"]'));
     for (const el of candidates) {
       if (!acpIsVisible(el)) continue;
-      const txt = (el.textContent || '').trim();
-      if (txt === labelText || txt.startsWith(labelText)) {
-        // Tìm input checkbox bên trong hoặc kế cạnh
-        const input = el.querySelector('input[type="checkbox"]') || el.parentElement?.querySelector('input[type="checkbox"]');
-        if (input && !input.checked) {
-          console.log(`[BI-Sync] Bật checkbox: ${labelText}`);
-          acpTriggerClick(input);
-          await acpWaitForLoadingComplete(30000, 500, 400);
-          return true;
-        }
-        // Trường hợp custom checkbox (button role="checkbox" hoặc có data-state)
-        const customChk = el.querySelector('[role="checkbox"]') || el.parentElement?.querySelector('[role="checkbox"]') || (el.getAttribute('role') === 'checkbox' ? el : null);
-        if (customChk) {
-          const checked = customChk.getAttribute('aria-checked') === 'true' || customChk.getAttribute('data-state') === 'checked';
-          if (!checked) {
-            console.log(`[BI-Sync] Bật custom checkbox: ${labelText}`);
-            acpTriggerClick(customChk);
-            await acpWaitForLoadingComplete(30000, 500, 400);
+
+      // 1. Nếu el trực tiếp là input[type="checkbox"]
+      if (el.tagName.toLowerCase() === 'input' && el.type === 'checkbox') {
+        const id = el.id;
+        if (id) {
+          const lbl = document.querySelector(`label[for="${id}"]`);
+          if (lbl && (lbl.textContent || '').toLowerCase().includes(norm)) {
+            if (!el.checked) {
+              console.log(`[BI-Sync] Bật input checkbox: ${labelText}`);
+              acpTriggerClick(el);
+              try { el.click(); } catch (_) {}
+              await sleep(200);
+            }
             return true;
           }
+        }
+      }
+
+      const txt = (el.textContent || '').trim().toLowerCase();
+      if (txt === norm || (txt.includes(norm) && txt.length < norm.length + 15)) {
+        const container = el.closest('label, div.flex, div.inline-flex, button') || el.parentElement;
+        if (container) {
+          // Thử input[type="checkbox"]
+          const input = container.querySelector('input[type="checkbox"]');
+          if (input) {
+            if (!input.checked) {
+              console.log(`[BI-Sync] Bật input checkbox: ${labelText}`);
+              acpTriggerClick(input);
+              try { input.click(); } catch (_) {}
+              await sleep(200);
+            }
+            return true;
+          }
+          // Thử role="checkbox" hoặc button
+          const customChk = container.getAttribute('role') === 'checkbox' ? container : container.querySelector('[role="checkbox"]');
+          if (customChk) {
+            const checked = customChk.getAttribute('aria-checked') === 'true' ||
+                            customChk.getAttribute('data-state') === 'checked' ||
+                            customChk.classList.contains('bg-blue-600') ||
+                            customChk.classList.contains('bg-indigo-600') ||
+                            customChk.querySelector('svg');
+            if (!checked) {
+              console.log(`[BI-Sync] Bật custom role="checkbox": ${labelText}`);
+              acpTriggerClick(customChk);
+              try { customChk.click(); } catch (_) {}
+              await sleep(200);
+            }
+            return true;
+          }
+          // Click vào container hoặc el
+          console.log(`[BI-Sync] Click label/container checkbox: ${labelText}`);
+          acpTriggerClick(container);
+          try { container.click(); } catch (_) {}
+          await sleep(200);
           return true;
         }
       }
     }
+    console.warn(`[BI-Sync] Không tìm thấy checkbox: ${labelText}`);
     return false;
   }
 
@@ -2338,6 +2422,14 @@
                       if (m) notify(m[1]);
                     }
                     if (v.indexOf('eyJhbGciOi') === 0 && v.split('.').length === 3) notify(v);
+                    if (v.indexOf('access_token') !== -1 || v.indexOf('eyJhbGciOi') !== -1) {
+                      try {
+                        var obj = JSON.parse(v);
+                        if (obj && obj.access_token) notify(obj.access_token);
+                      } catch(e) {}
+                      var jm = v.match(/(eyJhbGciOi[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+)/);
+                      if (jm) notify(jm[1]);
+                    }
                   }
                 });
               } catch(e) {}
@@ -2384,17 +2476,19 @@
           const v = st.getItem(k);
           if (!v || typeof v !== 'string') continue;
           if (v.includes('Bearer ')) {
-            const m = v.match(/Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/);
+            const m = v.match(/Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
             if (m) return m[1];
           }
           if (v.startsWith('eyJhbGciOi') && v.split('.').length === 3) {
             return v;
           }
-          if (v.includes('access_token')) {
+          if (v.includes('access_token') || v.includes('eyJhbGciOi')) {
             try {
               const obj = JSON.parse(v);
               if (obj.access_token && typeof obj.access_token === 'string') return obj.access_token;
             } catch (_) {}
+            const jm = v.match(/(eyJhbGciOi[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/);
+            if (jm) return jm[1];
           }
         }
       }
@@ -2858,19 +2952,33 @@
 
         // ====== NẾU KHÔNG CÓ TOKEN HOẶC API LỖI: CHẠY UI AUTOMATION FALLBACK ======
 
-        // --- BƯỚC 1: Doanh thu hợp nhất Realtime (Luôn bật DT quy đổi và Trả góp theo Hình 3) ---
-        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị, Realtime, DT quy đổi và Trả góp...');
+        // --- BƯỚC 1: Doanh thu hợp nhất Realtime (ĐẦU TIÊN: Luôn tự chọn "DT quy đổi" và "Trả góp" trước) ---
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang tự động chọn "DT quy đổi" và "Trả góp"...');
+        // 1. Tự động bật "DT quy đổi" ĐẦU TIÊN
+        await ensureToggleActive('DT quy đổi');
+        await sleep(250);
+
+        // 2. Tự động tick checkbox "Trả góp" ĐẦU TIÊN
+        await ensureCheckboxChecked('Trả góp');
+        await sleep(250);
+
+        // 3. Tự động đảm bảo nút "Realtime" đang được chọn
+        await ensureToggleActive('Realtime');
+        await sleep(250);
+
+        await acpWaitForLoadingComplete(15000, 250, 250);
+
+        // 4. Tiếp theo mới thiết lập bộ lọc Siêu thị (Chọn tất cả)
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị (Chọn tất cả)...');
         await ensureSelectAllChecked();
         await acpWaitForLoadingComplete(35000, 500, 400);
 
-        await ensureToggleActive('Realtime');
-        await acpWaitForLoadingComplete(30000, 500, 400);
-
+        // 5. Kiểm tra và đảm bảo lại một lần nữa "DT quy đổi" & "Trả góp" vẫn được chọn
         await ensureToggleActive('DT quy đổi');
-        await acpWaitForLoadingComplete(25000, 400, 300);
-
+        await sleep(200);
         await ensureCheckboxChecked('Trả góp');
-        await acpWaitForLoadingComplete(25000, 400, 300);
+        await sleep(200);
+        await acpWaitForLoadingComplete(15000, 250, 250);
 
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang mở rộng các cấp dữ liệu...');
         await expandAllCandidates(null, (msg) => {

@@ -97,10 +97,10 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                             <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                             <div className="text-xs space-y-1.5">
                                 <p className="font-bold text-rose-900 dark:text-rose-200">
-                                    Cần cập nhật Userscript lên phiên bản mới v6.3
+                                    Cần cập nhật Userscript lên phiên bản mới v6.6
                                 </p>
                                 <p className="text-rose-800 dark:text-rose-300 leading-relaxed">
-                                    Trình duyệt của bạn đang chạy bản cũ {currentVersion ? `(v${currentVersion})` : ''}. Bản mới v6.3 hỗ trợ Bước 3 lấy trọn vẹn cây ngành hàng BI (GROUPBY BICAT) trong 1 lần gọi, Bước 1 luôn chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API.
+                                    Trình duyệt của bạn đang chạy bản cũ {currentVersion ? `(v${currentVersion})` : ''}. Bản mới v6.6 hỗ trợ Bước 1 tự động chọn DT quy đổi & Trả góp ngay đầu tiên, Bước 3 lấy trọn vẹn cây ngành hàng BI (GROUPBY BICAT) trong 1 lần gọi, tự động lấy danh sách siêu thị qua API.
                                 </p>
                                 <div className="pt-2 flex flex-wrap gap-2">
                                     <Button
@@ -110,7 +110,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                         className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
-                                        <span>👉 Bấm vào đây để Cài đặt / Cập nhật Userscript v6.3 ngay</span>
+                                        <span>👉 Bấm vào đây để Cài đặt / Cập nhật Userscript v6.6 ngay</span>
                                     </Button>
                                     <Button
                                         variant="secondary"
@@ -145,7 +145,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                         className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
-                                        <span>Cài đặt Userscript v6.3 ngay</span>
+                                        <span>Cài đặt Userscript v6.6 ngay</span>
                                     </Button>
                                     <Button
                                         variant="secondary"
