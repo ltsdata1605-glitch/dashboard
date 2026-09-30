@@ -19,7 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const errorId = `${useId()}-error`;
     const describedBy = [props['aria-describedby'], error ? errorId : undefined].filter(Boolean).join(' ') || undefined;
     return (
-      <div className={cn("relative", fullWidth ? "w-full" : "w-auto")}>
+      <div data-ui="shared" className={cn("relative", fullWidth ? "w-full" : "w-auto")}>
         {leftIcon && (
           <Button
             type="button"

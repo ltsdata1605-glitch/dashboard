@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../../components/common/Icon';
@@ -123,66 +124,11 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     ];
 
     return (
-        <div className="flex flex-col w-full min-h-screen bi-report-module">
+        <div data-density="compact" className="flex flex-col w-full min-h-screen bi-report-module">
             <style>{`
-                @media (max-width: 768px) {
-                    /* THANG CHỮ TRÊN ĐIỆN THOẠI — SÀN 11px.
-                       Bản cũ ("High-Density Typography") ép NHỎ HƠN cả cỡ tác giả viết:
-                       text-[11px] -> 9px, text-[11px] -> 8px, text-xs -> 9px. Tức là quy tắc
-                       "cỡ chữ nhỏ nhất là 11px" của CLAUDE.md mục 2 bị phá ĐÚNG ở chế độ điện
-                       thoại — nơi chữ khó đọc nhất. Đo thật trên iPhone 15 (2026-09-26): 71 chỗ
-                       chữ dưới 11px, nhỏ nhất 8px.
-                       Nay vẫn nén so với desktop (vẫn là màn hình nhỏ, vẫn ưu tiên số liệu) nhưng
-                       KHÔNG bao giờ xuống dưới 11px. */
-                    .bi-report-module .text-3xl { font-size: 20px !important; }
-                    .bi-report-module .text-2xl { font-size: 18px !important; }
-                    .bi-report-module .text-xl { font-size: 16px !important; }
-                    .bi-report-module .text-lg { font-size: 14px !important; }
-                    .bi-report-module .text-base { font-size: 13px !important; }
-                    .bi-report-module .text-sm { font-size: 12px !important; }
-                    .bi-report-module .text-xs { font-size: 11px !important; }
-                    .bi-report-module .text-\\[14px\\] { font-size: 13px !important; }
-                    .bi-report-module .text-\\[13px\\] { font-size: 12px !important; }
-                    .bi-report-module .text-\\[12px\\] { font-size: 11px !important; }
-                    .bi-report-module .text-\\[11px\\] { font-size: 11px !important; }
-                    .bi-report-module .text-\\[10px\\] { font-size: 11px !important; }
-                    .bi-report-module .text-\\[9px\\] { font-size: 11px !important; }
-                    
-                    /* Inline styles font size — cũng giữ sàn 11px */
-                    .bi-report-module span[style*="font-size:13px"] { font-size: 12px !important; }
-                    .bi-report-module span[style*="font-size:12px"] { font-size: 11px !important; }
-                    .bi-report-module span[style*="font-size:11px"] { font-size: 11px !important; }
-                    
-                    /* Triệt tiêu khoảng trắng thừa */
-                    .bi-report-module .p-4 { padding: 10px !important; }
-                    .bi-report-module .p-3 { padding: 8px !important; }
-                    .bi-report-module .p-6 { padding: 12px !important; }
-                    .bi-report-module .py-6 { padding-top: 12px !important; padding-bottom: 12px !important; }
-                    .bi-report-module .px-6 { padding-left: 12px !important; padding-right: 12px !important; }
-                    
-                    .bi-report-module .gap-6 { gap: 12px !important; }
-                    .bi-report-module .gap-4 { gap: 8px !important; }
-                    .bi-report-module .gap-3 { gap: 6px !important; }
-                    .bi-report-module .gap-2 { gap: 4px !important; }
-                    
-                    .bi-report-module .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 12px !important; }
-                    .bi-report-module .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 8px !important; }
-                    
-                    .bi-report-module .mb-6 { margin-bottom: 12px !important; }
-                    .bi-report-module .mb-4 { margin-bottom: 8px !important; }
-                    
-                    /* Icon sizes */
-                    .bi-report-module .w-12 { width: 32px !important; }
-                    .bi-report-module .h-12 { height: 32px !important; }
-                    
-                    /* Ẩn scrollbar trên mobile — TRỪ vùng cuộn thật (.overflow-x-auto / .overflow-auto: bảng
-                       48 cột). Audit A20 (2026-09-30): ẩn TẤT CẢ làm mất cả chỉ báo cuộn gốc của iOS —
-                       bảng rộng gấp 3 màn hình mà không có dấu hiệu nào cho biết còn cột bên phải. */
-                    .bi-report-module *:not(.overflow-x-auto):not(.overflow-auto)::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-                    .bi-report-module *:not(.overflow-x-auto):not(.overflow-auto) { -ms-overflow-style: none !important; scrollbar-width: none !important; }
-                    .bi-report-module .overflow-x-auto, .bi-report-module .overflow-auto { scrollbar-width: thin; }
-                    .bi-report-module .overflow-x-auto::-webkit-scrollbar, .bi-report-module .overflow-auto::-webkit-scrollbar { height: 4px; width: 4px; }
-                }
+                /* Chế độ mật độ gọn trên điện thoại: xem features/bi-dashboard/biDensity.css (A20).
+                   Lịch sử thang chữ: bản cũ ép chữ xuống 8–9px ("High-Density Typography"), phá quy tắc
+                   sàn 11px của CLAUDE.md đúng trên điện thoại (đo iPhone 15 2026-09-26: 71 chỗ < 11px). */
 
                 /* KHÔNG BO GÓC cho tất cả bảng, viền, thẻ card trong toàn bộ phân hệ Report BI (giữ nguyên avatar tròn) */
                 .bi-report-module table,

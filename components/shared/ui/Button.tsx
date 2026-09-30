@@ -82,6 +82,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
+        // Đánh dấu nút CÓ KIỂU CHUẨN (không phải 'unstyled' tự tạo kiểu) — chế độ mật độ gọn của
+        // Report BI (features/bi-dashboard/biDensity.css) không thu nhỏ các nút này (audit A20).
+        data-ui={isUnstyled ? undefined : 'shared'}
         {...props}
       >
         {isLoading && (

@@ -66,9 +66,10 @@ const LoginView: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 bg-static-blobs">
-            <div className="max-w-md w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-3xl shadow-2xl p-8 border border-slate-200/50 dark:border-slate-700/50 animate-fade-in-up">
+            {/* A22 (2026-09-30): thẻ phẳng thay kính mờ + bo 24px + bóng lớn */}
+            <div className="max-w-md w-full bg-white rounded-md p-8 border border-slate-200 animate-fade-in-up">
                 <div className="flex justify-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center shadow-lg shadow-sky-100 dark:shadow-sky-900/20">
+                    <div className="w-16 h-16 rounded-md bg-sky-50 flex items-center justify-center">
                         <Icon name="layout-dashboard" className="w-8 h-8 text-sky-700 dark:text-sky-400" />
                     </div>
                 </div>

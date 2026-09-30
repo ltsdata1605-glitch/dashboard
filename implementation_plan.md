@@ -6579,3 +6579,10 @@ Cần chủ dự án xác nhận thứ tự trước khi làm.
 | Test QR Thuế đỏ sẵn | `tax-qr-and-export.spec.ts` tự phục vụ ảnh `qr.sepay.vn` (PNG 1×1 + CORS) | 7/7 xanh (trước 6/7); thêm vào CI |
 | Thông báo hệ thống 100 → 1 lượt đọc | `services/systemAnnouncementService.ts`: `where(isSystemAnnouncement==true) + orderBy(createdAt desc) + limit(1)`; thiếu chỉ mục → tự quay về cách cũ. Dùng ở DashboardView (100 đọc) và AdminAnnouncementModal (50 đọc). Sửa luôn lỗi: >100 cấu hình mới hơn → thông báo biến mất | unit 2/2. ⚠️ Cần tạo chỉ mục ghép `shared_configs (isSystemAnnouncement ASC, createdAt DESC)` — CLI trong container chưa đăng nhập. Cố ý KHÔNG thêm file indexes vào `firebase.json` (deploy:rules sẽ đề nghị XOÁ các chỉ mục tạo tay không có trong file) |
 `npm run check` xanh (unit 926); e2e Thuế/modal/LINE/Phân tích 26 xanh.
+
+# Đợt 13 (2026-09-30) — A22 màn chào + A20 Report BI chế độ mật độ (chủ dự án duyệt)
+| Mục | Thay đổi | Đo / kiểm |
+|---|---|---|
+| A22 | `LandingPageView.tsx`: bỏ 3 quầng sáng blur 100px `animate-pulse` vô hạn + quầng sáng khi rê chuột; khung tải tệp: kính mờ 2 lớp bo 24px bóng lớn → panel phẳng viền `slate-200` bo 6px. `LoginView.tsx`: thẻ kính mờ bo 24px bóng 2xl → phẳng bo 6px. Giữ tiêu đề, chữ gradient, lưới nền tĩnh | Animation vô hạn ở màn chào 3 → 0. (CPU headless không đo được phần GPU của blur — không tuyên bố số CPU.) Ảnh trước/sau: `anh-man-chao-a22.spec.ts` |
+| A20 | Khối `<style>` nội tuyến `!important` trong `BiWrapper.tsx` → `features/bi-dashboard/biDensity.css`: chế độ TƯỜNG MINH `data-density="compact"` (≤768px), bỏ `!important` (CSS ngoài layer thắng `@layer utilities` của Tailwind 4; chỉ giữ ở chỗ phải thắng style nội tuyến); KHÔNG thu nhỏ component dùng chung có kiểu chuẩn — `Button` (trừ `unstyled`) và `Input` gắn `data-ui="shared"` | Nút chuẩn trong BI trên điện thoại 11px → 12px (như mọi nơi); điều khiển riêng của BI (tab, bảng, số) giữ nguyên độ gọn. Ảnh trước/sau: `anh-bi-mat-do-a20.spec.ts` (Cập nhật/Siêu thị/Thi đua/Nhân viên, 390px) |
+`npm run check` xanh (unit 930); e2e BI/mobile/iOS/ui/smoke/xss 31 xanh; `auth-fresh-login-no-flash` đỏ SẴN (đỏ y hệt trên mã cũ).

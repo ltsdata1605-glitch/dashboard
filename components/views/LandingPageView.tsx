@@ -35,10 +35,9 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
             {/* Ambient Background Grid */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
-            {/* Animated Glow Orbs */}
-            <div className="absolute top-[10%] left-[20%] w-[200px] h-[200px] bg-sky-500/30 dark:bg-sky-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-pulse pointer-events-none"></div>
-            <div className="absolute top-[10%] right-[20%] w-[200px] h-[200px] bg-rose-500/30 dark:bg-rose-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
-            <div className="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] bg-sky-500/30 dark:bg-sky-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
+            {/* A22 (2026-09-30, chủ dự án duyệt): ĐÃ BỎ 3 quầng sáng blur 100px nhấp nháy vô hạn
+                (animate-pulse) và quầng sáng khi rê chuột — trang trí thuần, tốn GPU/pin trên máy siêu thị
+                và iPhone. Chuẩn "Bảng điều khiển ca trực": không trang trí khối tĩnh. */}
 
             <div className="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-4">
                 
@@ -56,12 +55,10 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
 
                 {/* Main Action Area - Glass Card */}
                 <div className="w-full max-w-2xl">
-                    <div className="relative group">
-                        {/* Glow effect behind */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/40 via-rose-500/40 to-sky-500/40 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
-                        
-                        <div className="relative bg-white/70 dark:bg-[#111827]/70 backdrop-blur-3xl rounded-[24px] p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white dark:ring-white/10">
-                            <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/5 p-5">
+                    <div className="relative">
+                        {/* Khung tải tệp: panel phẳng — viền mảnh, bo 6px, không kính mờ/đổ bóng (A22) */}
+                        <div className="relative">
+                            <div className="bg-white rounded-md overflow-hidden border border-slate-200 p-5">
                                 {canManageFiles ? (
                                     <>
                                         <UploadSection
