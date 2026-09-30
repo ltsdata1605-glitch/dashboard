@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      6.8
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, ĐẦU TIÊN luôn tự chọn DT quy đổi & Trả góp, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
+// @version      6.9
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
@@ -24,6 +24,13 @@
 // ==/UserScript==
 
 /*
+ * BẢN 6.9 — ƯU TIÊN ĐẦU TIÊN KHI CHẠY REALTIME: TỰ ĐỘNG CHỌN QUA TAB "Realtime" (bg-blue-600 text-white):
+ * - Ưu tiên số 1 tuyệt đối: Ngay khi kích hoạt Tự động Realtime, tự động tìm và click chọn tab "Realtime"
+ *   để nút chuyển sang trạng thái active (bg-blue-600 text-white), đưa toàn bộ giao diện MWG sang chế độ Realtime.
+ * - Sau khi tab "Realtime" được chọn, tiếp tục đảm bảo tự động bật "DT quy đổi" và tick checkbox "Trả góp".
+ * - Cơ chế nhận diện thông minh: Kiểm tra tính đối nghịch giữa "Lũy kế" và "Realtime", tự động click chuyển đổi nếu "Lũy kế" đang active.
+ * - Giữ nguyên 100% Direct Internal API Engine siêu tốc v6.8, khắc phục hoàn toàn mọi lỗi fetch và undefined.
+ *
  * BẢN 6.8 — KHẮC PHỤC TRIỆT ĐỂ LỖI FETCH VÀ LỖI acpRemoveDiacritics:
  * - Khắc phục ReferenceError: acpRemoveDiacritics is not defined trong ensureToggleActive.
  * - Loại bỏ hoàn toàn monkey-patching targetWin.fetch / XHR: Giữ nguyên native window.fetch nguyên bản 100%,
@@ -2076,7 +2083,82 @@
     return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
   }
 
+  // Ưu tiên hàng đầu khi chạy Realtime: Đảm bảo tab "Realtime" luôn được chọn (bg-blue-600 text-white)
+  async function ensureRealtimeTabActive() {
+    console.log('[BI-Sync] Ưu tiên đầu tiên: Chuyển sang chế độ "Realtime"...');
+    const findRealtimeBtn = () => {
+      const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], span, div'));
+      for (const el of candidates) {
+        if (!acpIsVisible(el)) continue;
+        const txt = (el.textContent || '').trim();
+        if (txt.toLowerCase() === 'realtime') {
+          return el.closest('button, a, [role="button"]') || el;
+        }
+      }
+      return null;
+    };
+
+    const isRealtimeActive = (btn) => {
+      if (!btn) return false;
+      const cls = btn.getAttribute('class') || '';
+      const style = window.getComputedStyle(btn);
+      const hasBlueBg =
+        cls.includes('bg-blue-600') ||
+        cls.includes('bg-blue-500') ||
+        cls.includes('bg-indigo-600') ||
+        style.backgroundColor.includes('37, 99, 235') ||
+        style.backgroundColor.includes('59, 130, 246');
+      const hasWhiteText =
+        cls.includes('text-white') ||
+        style.color.includes('255, 255, 255');
+      return hasBlueBg && hasWhiteText;
+    };
+
+    let btn = findRealtimeBtn();
+    if (!btn) {
+      console.warn('[BI-Sync] Không tìm thấy nút Realtime trên giao diện');
+      return false;
+    }
+
+    // Nếu "Lũy kế" đang active hoặc "Realtime" chưa active thì click chọn "Realtime"
+    const luyKeBtn = findButtonByText(['Lũy kế', 'luy ke']);
+    let luyKeIsActive = false;
+    if (luyKeBtn) {
+      const lkStyle = window.getComputedStyle(luyKeBtn);
+      luyKeIsActive =
+        luyKeBtn.classList.contains('bg-blue-600') ||
+        luyKeBtn.classList.contains('bg-blue-500') ||
+        lkStyle.backgroundColor.includes('37, 99, 235');
+    }
+
+    if (!isRealtimeActive(btn) || luyKeIsActive) {
+      console.log('[BI-Sync] Kích hoạt chuyển sang tab "Realtime" (bg-blue-600 text-white)...');
+      acpTriggerClick(btn);
+      try { btn.click(); } catch (_) {}
+      await sleep(350);
+      await acpWaitForLoadingComplete(15000, 250, 200);
+
+      // Kiểm tra lại lần 2
+      btn = findRealtimeBtn();
+      if (btn && !isRealtimeActive(btn)) {
+        console.log('[BI-Sync] Thử click lại nút Realtime lần 2...');
+        acpTriggerClick(btn);
+        try { btn.click(); } catch (_) {}
+        await sleep(350);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+      }
+    } else {
+      console.log('[BI-Sync] Nút Realtime đã ở trạng thái active (bg-blue-600 text-white)');
+    }
+    return true;
+  }
+
   async function ensureToggleActive(toggleName) {
+    // Nếu là Realtime thì gọi trực tiếp ensureRealtimeTabActive
+    if (toggleName === 'Realtime' || toggleName.toLowerCase() === 'realtime') {
+      return await ensureRealtimeTabActive();
+    }
+
     const btn = findButtonByText([
       toggleName,
       toggleName.toLowerCase(),
@@ -2703,6 +2785,18 @@
       if (mode === 'realtime') {
         const totalSteps = 4;
 
+        // ƯU TIÊN SỐ 1 KHI CHẠY REALTIME: Tự động chọn tab "Realtime" (bg-blue-600 text-white)
+        await reportProgress(1, totalSteps, 'Khởi tạo Realtime', 'Ưu tiên đầu tiên: Đang chọn tab "Realtime"...');
+        await ensureRealtimeTabActive();
+        await sleep(250);
+
+        // TIẾP THEO: Đảm bảo tự động chọn "DT quy đổi" & tick checkbox "Trả góp"
+        await ensureToggleActive('DT quy đổi');
+        await sleep(200);
+        await ensureCheckboxChecked('Trả góp');
+        await sleep(200);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
         // ====== THỬ CHẠY BẰNG DIRECT INTERNAL API ENGINE (SIÊU TỐC 1-2S) ======
         await reportProgress(1, totalSteps, 'Khởi tạo API', 'Đang xác thực phiên làm việc Direct API...');
         let token = await acpGetAuthToken();
@@ -2866,20 +2960,19 @@
 
         // ====== NẾU KHÔNG CÓ TOKEN HOẶC API LỖI: CHẠY UI AUTOMATION FALLBACK ======
 
-        // --- BƯỚC 1: Doanh thu hợp nhất Realtime (ĐẦU TIÊN: Luôn tự chọn "DT quy đổi" và "Trả góp" trước) ---
-        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang tự động chọn "DT quy đổi" và "Trả góp"...');
-        // 1. Tự động bật "DT quy đổi" ĐẦU TIÊN
+        // --- BƯỚC 1: Doanh thu hợp nhất Realtime ---
+        // 1. ƯU TIÊN SỐ 1: Tự động chọn tab "Realtime" (bg-blue-600 text-white) ĐẦU TIÊN
+        await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Ưu tiên đầu tiên: Đang chọn tab "Realtime"...');
+        await ensureRealtimeTabActive();
+        await sleep(250);
+
+        // 2. Tiếp theo: Tự động bật "DT quy đổi"
         await ensureToggleActive('DT quy đổi');
         await sleep(250);
 
-        // 2. Tự động tick checkbox "Trả góp" ĐẦU TIÊN
+        // 3. Tiếp theo: Tự động tick checkbox "Trả góp"
         await ensureCheckboxChecked('Trả góp');
         await sleep(250);
-
-        // 3. Tự động đảm bảo nút "Realtime" đang được chọn
-        await ensureToggleActive('Realtime');
-        await sleep(250);
-
         await acpWaitForLoadingComplete(15000, 250, 250);
 
         // 4. Tiếp theo mới thiết lập bộ lọc Siêu thị (Chọn tất cả)
@@ -2887,11 +2980,13 @@
         await ensureSelectAllChecked();
         await acpWaitForLoadingComplete(35000, 500, 400);
 
-        // 5. Kiểm tra và đảm bảo lại một lần nữa "DT quy đổi" & "Trả góp" vẫn được chọn
+        // 5. Kiểm tra và đảm bảo lại một lần nữa "Realtime", "DT quy đổi" & "Trả góp" vẫn được chọn
+        await ensureRealtimeTabActive();
+        await sleep(150);
         await ensureToggleActive('DT quy đổi');
-        await sleep(200);
+        await sleep(150);
         await ensureCheckboxChecked('Trả góp');
-        await sleep(200);
+        await sleep(150);
         await acpWaitForLoadingComplete(15000, 250, 250);
 
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang mở rộng các cấp dữ liệu...');
