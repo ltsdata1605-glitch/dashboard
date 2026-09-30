@@ -8,6 +8,7 @@
 import { auth, db } from '../../../services/firebase';
 import { doc, getDoc, getDocs, collection, setDoc, serverTimestamp } from 'firebase/firestore';
 import * as dbUtils from '../utils/db';
+import { shortenSupermarketName } from '../../../utils/dataUtils';
 
 export type SupermarketToKhoMap = Record<string, string>;
 
@@ -215,4 +216,202 @@ export async function moveSupermarketNameToKho(
     const currentMap = await fetchSupermarketMap(userId);
     const updated: SupermarketToKhoMap = { ...currentMap, [name]: toMaKho };
     await saveSupermarketMap(updated, userId);
+}
+
+/**
+ * Trích xuất Mã Kho từ tiền tố số ở đầu tên siêu thị (nếu có).
+ * Ví dụ:
+ * - "1678 - ĐMM_AGI_TTO - Tri Tôn" => "1678"
+ * - "7904 - ĐMS_AGI_TTO - Cô Tô" => "7904"
+ * - "8231 - ĐMS_AGI_TTO - Lương An Trà" => "8231"
+ * - "910 - ĐML_STR_STR - 99 Hùng Vương" => "910"
+ * - "ĐMS_AGI_TTO - Cô Tô" => null
+ */
+export function extractKhoFromStoreName(name: string): string | null {
+    if (!name || typeof name !== 'string') return null;
+    const trimmed = name.trim();
+    // Bắt đầu bằng 2 đến 6 chữ số, theo sau bởi dấu phân cách (-, _, :, .) hoặc khoảng trắng
+    const match = trimmed.match(/^(\d{2,6})(?:\s*[-_:.]|\s+)/);
+    if (match && match[1]) {
+        return match[1];
+    }
+    // Hoặc toàn bộ chuỗi chỉ là số
+    if (/^\d{2,6}$/.test(trimmed)) {
+        return trimmed;
+    }
+    return null;
+}
+
+/**
+ * Chuẩn hóa tên siêu thị để so khớp chéo (bỏ tiền tố mã số ở đầu nếu có, chuẩn hóa dấu nối và khoảng trắng).
+ * Ví dụ:
+ * - "1678 - ĐMM_AGI_TTO - Tri Tôn" => "đmm agi tto tri tôn"
+ * - "ĐMM_AGI_TTO - Tri Tôn" => "đmm agi tto tri tôn"
+ * (Hai chuỗi này trở nên giống hệt nhau để nhận diện cùng 1 siêu thị)
+ */
+export function normalizeStoreNameForMatching(name: string): string {
+    if (!name || typeof name !== 'string') return '';
+    return name
+        .trim()
+        .replace(/^\s*\d{2,6}\s*[-_:.]*\s*/, '')
+        .toLowerCase()
+        .replace(/[-_.:]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+/**
+ * Tự động phân tích và giải quyết ánh xạ Siêu thị → Mã Kho:
+ * 1. Nếu tên bắt đầu bằng số (ví dụ: "1678 - ĐMM_AGI_TTO - Tri Tôn") => Lấy số đầu "1678" làm Mã Kho.
+ * 2. Nếu tên không có số nhưng sau khi bỏ mã số trùng với siêu thị đã biết => Gán cùng Mã Kho.
+ *    (VD: "ĐMM_AGI_TTO - Tri Tôn" và "1678 - ĐMM_AGI_TTO - Tri Tôn" => cùng là 1678).
+ * 3. Nếu tên rút gọn (shortenSupermarketName, vd "Tri Tôn", "Cô Tô", "Lương An Trà") trùng với siêu thị đã biết => Gán cùng Mã Kho.
+ */
+export function autoResolveSupermarketKhoMap(
+    candidateNames: string[],
+    existingMap: SupermarketToKhoMap = {}
+): { updatedMap: SupermarketToKhoMap; newMappings: SupermarketToKhoMap; count: number } {
+    const updatedMap: SupermarketToKhoMap = { ...existingMap };
+    const newMappings: SupermarketToKhoMap = {};
+
+    // 1. Tạo từ điển tra cứu từ existingMap và từ các candidate có số ở đầu
+    const normNameToKho = new Map<string, string>();
+    const shortNameToKho = new Map<string, string>();
+
+    // Đưa existingMap vào từ điển tra cứu
+    for (const [name, kho] of Object.entries(existingMap)) {
+        if (!kho || typeof kho !== 'string' || !kho.trim()) continue;
+        const cleanKho = kho.trim();
+        const norm = normalizeStoreNameForMatching(name);
+        if (norm && !normNameToKho.has(norm)) {
+            normNameToKho.set(norm, cleanKho);
+        }
+        const short = shortenSupermarketName(name).trim().toLowerCase();
+        if (short && !shortNameToKho.has(short)) {
+            shortNameToKho.set(short, cleanKho);
+        }
+    }
+
+    // Quét candidateNames để gom các siêu thị có mã số ở đầu vào từ điển
+    for (const rawName of candidateNames) {
+        if (!rawName || typeof rawName !== 'string') continue;
+        const name = rawName.trim();
+        const extractedKho = extractKhoFromStoreName(name);
+        if (extractedKho) {
+            const norm = normalizeStoreNameForMatching(name);
+            if (norm && !normNameToKho.has(norm)) {
+                normNameToKho.set(norm, extractedKho);
+            }
+            const short = shortenSupermarketName(name).trim().toLowerCase();
+            if (short && !shortNameToKho.has(short)) {
+                shortNameToKho.set(short, extractedKho);
+            }
+        }
+    }
+
+    // 2. Duyệt qua từng candidateName để tự động giải quyết mã kho
+    for (const rawName of candidateNames) {
+        if (!rawName || typeof rawName !== 'string') continue;
+        const name = rawName.trim();
+        if (!name || name === 'Tổng' || name === 'TỔNG') continue;
+
+        // Nếu đã có mã kho trong updatedMap rồi thì bỏ qua
+        if (updatedMap[name]) continue;
+
+        let resolvedKho: string | null = null;
+
+        // Ưu tiên 1: Tên bắt đầu bằng số (ví dụ: "1678 - ĐMM_AGI_TTO - Tri Tôn")
+        const extractedKho = extractKhoFromStoreName(name);
+        if (extractedKho) {
+            resolvedKho = extractedKho;
+        } else {
+            // Ưu tiên 2: Trùng tên chuẩn hóa (bỏ mã số ở đầu)
+            const norm = normalizeStoreNameForMatching(name);
+            if (norm && normNameToKho.has(norm)) {
+                resolvedKho = normNameToKho.get(norm)!;
+            } else {
+                // Ưu tiên 3: Trùng tên rút gọn shortenSupermarketName (ví dụ "Tri Tôn", "Cô Tô", "Lương An Trà")
+                const short = shortenSupermarketName(name).trim().toLowerCase();
+                if (short && shortNameToKho.has(short)) {
+                    resolvedKho = shortNameToKho.get(short)!;
+                }
+            }
+        }
+
+        if (resolvedKho) {
+            updatedMap[name] = resolvedKho;
+            newMappings[name] = resolvedKho;
+
+            // Đưa ngay vào từ điển để các candidate tiếp theo so khớp
+            const norm = normalizeStoreNameForMatching(name);
+            if (norm && !normNameToKho.has(norm)) {
+                normNameToKho.set(norm, resolvedKho);
+            }
+            const short = shortenSupermarketName(name).trim().toLowerCase();
+            if (short && !shortNameToKho.has(short)) {
+                shortNameToKho.set(short, resolvedKho);
+            }
+        }
+    }
+
+    return {
+        updatedMap,
+        newMappings,
+        count: Object.keys(newMappings).length,
+    };
+}
+
+/**
+ * Tự động phân tích và lưu trực tiếp vào cơ sở dữ liệu nếu có mapping mới
+ */
+export async function autoSyncSupermarketKhoMap(
+    candidateNames: string[],
+    userId?: string
+): Promise<{ resolvedCount: number; updatedMap: SupermarketToKhoMap; newMappings: SupermarketToKhoMap }> {
+    const currentMap = await fetchSupermarketMap(userId);
+    const { updatedMap, newMappings, count } = autoResolveSupermarketKhoMap(candidateNames, currentMap);
+
+    if (count > 0) {
+        await saveSupermarketMap(updatedMap, userId);
+        console.log(`[biSupermarketMapService] Đã tự động cập nhật ${count} siêu thị vào bảng map:`, newMappings);
+    }
+
+    return { resolvedCount: count, updatedMap, newMappings };
+}
+
+/**
+ * Tra cứu Mã Kho từ tên siêu thị (với fallback tự động trích xuất và so khớp tên)
+ */
+export function getKhoFromSupermarketName(name: string, map: SupermarketToKhoMap = {}): string | null {
+    if (!name || typeof name !== 'string') return null;
+    const cleanName = name.trim();
+
+    // 1. Khớp chính xác trong map
+    if (map[cleanName]) return map[cleanName];
+
+    // 2. Tự động lấy số ở đầu tên nếu có
+    const extracted = extractKhoFromStoreName(cleanName);
+    if (extracted) return extracted;
+
+    // 3. Khớp theo tên chuẩn hoá (bỏ số ở đầu)
+    const norm = normalizeStoreNameForMatching(cleanName);
+    if (norm) {
+        for (const [mapKey, kho] of Object.entries(map)) {
+            if (normalizeStoreNameForMatching(mapKey) === norm) {
+                return kho;
+            }
+        }
+    }
+
+    // 4. Khớp theo tên rút gọn shortenSupermarketName
+    const short = shortenSupermarketName(cleanName).trim().toLowerCase();
+    if (short) {
+        for (const [mapKey, kho] of Object.entries(map)) {
+            if (shortenSupermarketName(mapKey).trim().toLowerCase() === short) {
+                return kho;
+            }
+        }
+    }
+
+    return null;
 }
