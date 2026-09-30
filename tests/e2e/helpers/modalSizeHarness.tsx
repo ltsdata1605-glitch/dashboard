@@ -33,6 +33,7 @@ export const MODALS: Record<string, () => Promise<Record<string, unknown>>> = {
     'sticker/UserGuideModal': () => import('../../../features/sticker-event/UserGuideModal'),
     'sticker/LayoutSelectionModal': () => import('../../../features/sticker-event/LayoutSelectionModal'),
     'sticker/SavedListsModal': () => import('../../../features/sticker-event/SavedListsModal'),
+    'bi/AutoClickGuideModal': () => import('../../../features/bi-dashboard/components/AutoClickGuideModal'),
     'bi/BonusDataModal': () => import('../../../features/bi-dashboard/components/nhanvien/bonus/BonusDataModal'),
 };
 
