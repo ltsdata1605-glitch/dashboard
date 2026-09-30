@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, PlusIcon } from './Icons';
-import { Link2, Pencil, X } from 'lucide-react';
+import { Link2, Pencil, X, RotateCcw, Zap, TrendingUp, Clock } from 'lucide-react';
 import SupermarketConfig from './SupermarketConfig';
 import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
@@ -16,6 +16,16 @@ import {
     resetTileLink,
     TILE_CUSTOM_LINKS_KEY,
 } from '../services/tileLinkService';
+import {
+    BiSyncMode,
+    BiSyncProgress,
+    startBiAutoSyncSession,
+    applyBiSyncResults,
+    onBiProgress,
+    onBiDone,
+    onBiError,
+} from '../services/biAutoSyncService';
+import { BiAutoSyncModal } from './BiAutoSyncModal';
 import { extractSupermarketList, extractAllSupermarketList, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -504,6 +514,129 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         }
     }, [supermarkets, activeSupermarket, setActiveSupermarket]);
 
+    // --- Quản lý Tự động cập nhật Realtime & Luỹ kế qua Tampermonkey ---
+    const [autoSyncModalOpen, setAutoSyncModalOpen] = useState(false);
+    const [autoSyncMode, setAutoSyncMode] = useState<BiSyncMode>('realtime');
+    const [autoSyncStatus, setAutoSyncStatus] = useState<'idle' | 'running' | 'success' | 'error' | 'not-installed' | 'outdated'>('idle');
+    const [autoSyncCurrentVersion, setAutoSyncCurrentVersion] = useState<string>('');
+    const [autoSyncProgress, setAutoSyncProgress] = useState<BiSyncProgress | null>(null);
+    const [autoSyncError, setAutoSyncError] = useState<string>('');
+    const workerWindowRef = React.useRef<Window | null>(null);
+
+    const handleStartAutoSync = async (mode: BiSyncMode) => {
+        setAutoSyncMode(mode);
+        setAutoSyncProgress(null);
+        setAutoSyncError('');
+        setAutoSyncStatus('running');
+        setAutoSyncModalOpen(true);
+
+        try {
+            const { workerWindow } = await startBiAutoSyncSession(mode);
+            workerWindowRef.current = workerWindow;
+        } catch (err: any) {
+            const msg = err?.message || '';
+            if (msg === 'USERSCRIPT_NOT_INSTALLED') {
+                setAutoSyncStatus('not-installed');
+            } else if (msg.startsWith('USERSCRIPT_OUTDATED')) {
+                setAutoSyncStatus('outdated');
+                setAutoSyncCurrentVersion(msg.split(':')[1] || '');
+            } else {
+                setAutoSyncStatus('error');
+                setAutoSyncError(msg || 'Không thể khởi chạy quy trình tự động.');
+            }
+        }
+    };
+
+    useEffect(() => {
+        const unsubProgress = onBiProgress((prog) => {
+            setAutoSyncProgress(prog);
+            setAutoSyncStatus('running');
+        });
+
+        const unsubDone = onBiDone(async (payload) => {
+            setAutoSyncStatus('success');
+            const targetSupermarket = activeSupermarket || supermarkets[0] || null;
+            const res = await applyBiSyncResults(payload.mode, payload.results, targetSupermarket);
+
+            confetti({
+                particleCount: 80,
+                spread: 80,
+                origin: { y: 0.6 }
+            });
+
+            const modeLabel = payload.mode === 'realtime' ? 'Realtime' : 'Luỹ kế';
+            toast.success(`✨ Tự động cập nhật thành công ${res.successCount} mục dữ liệu ${modeLabel}!`, { duration: 4000 });
+
+            const nowTs = getDetailedTimestamp();
+            if (payload.mode === 'realtime') {
+                if (payload.results.summary) {
+                    setSummaryRealtime(payload.results.summary);
+                    setSummaryRealtimeTs(nowTs);
+                    addUpdate('summary-realtime', 'Tự động cập nhật Doanh thu hợp nhất (Realtime)', 'BC Tổng hợp');
+                }
+                if (payload.results.competition) {
+                    setCompetitionRealtime(payload.results.competition);
+                    setCompetitionRealtimeTs(nowTs);
+                    addUpdate('competition-realtime', 'Tự động cập nhật Báo cáo Thi đua (Realtime)', 'Thi Đua Cụm');
+                }
+                if (payload.results.industryByStore) {
+                    Object.keys(payload.results.industryByStore).forEach(stName => {
+                        const shortName = shortenSupermarketName(stName);
+                        addUpdate(`config-${shortName}-industry-realtime`, `Tự động cập nhật Ngành hàng BI - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                    });
+                } else if (payload.results.industry && targetSupermarket) {
+                    addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-industry-realtime`, `Tự động cập nhật Ngành hàng BI - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                }
+                if (payload.results.employeeByStore) {
+                    Object.keys(payload.results.employeeByStore).forEach(stName => {
+                        const shortName = shortenSupermarketName(stName);
+                        addUpdate(`config-${shortName}-employee-realtime`, `Tự động cập nhật Doanh thu nhân viên - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                    });
+                } else if (payload.results.employee && targetSupermarket) {
+                    addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-employee-realtime`, `Tự động cập nhật Doanh thu nhân viên - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                }
+            } else {
+                if (payload.results.summary) {
+                    setSummaryLuyKe(payload.results.summary);
+                    setSummaryLuyKeTs(nowTs);
+                    addUpdate('summary-luy-ke', 'Tự động cập nhật Doanh thu hợp nhất (Luỹ kế)', 'BC Tổng hợp');
+                    if (canManageSharedBiData && user) {
+                        uploadSummaryLuyKeIfManager(user, allowedKhos, payload.results.summary, supermarketNameToKho, employeeName)
+                            .then(({ skippedNames }) => notifySkippedNames(skippedNames))
+                            .catch(e => console.error('[AutoSync] Lỗi upload summary luy ke:', e));
+                    }
+                }
+                if (payload.results.competition) {
+                    setCompetitionLuyKe(payload.results.competition);
+                    setCompetitionLuyKeTs(nowTs);
+                    addUpdate('competition-luy-ke', 'Tự động cập nhật Báo cáo Thi đua (Luỹ kế)', 'Thi Đua Cụm');
+                    if (targetSupermarket) {
+                        addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-thidua`, `Tự động cập nhật Thi đua - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                    }
+                    if (canManageSharedBiData && user) {
+                        uploadCompetitionLuyKeIfManager(user, allowedKhos, payload.results.competition, supermarketNameToKho, employeeName)
+                            .then(({ skippedNames }) => notifySkippedNames(skippedNames))
+                            .catch(e => console.error('[AutoSync] Lỗi upload competition luy ke:', e));
+                    }
+                }
+                if (payload.results.installment && targetSupermarket) {
+                    addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-tragop`, `Tự động cập nhật Trả chậm - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                }
+            }
+        });
+
+        const unsubError = onBiError((err) => {
+            setAutoSyncStatus('error');
+            setAutoSyncError(err.message || 'Lỗi trong quá trình tự động thu thập.');
+        });
+
+        return () => {
+            unsubProgress();
+            unsubDone();
+            unsubError();
+        };
+    }, [activeSupermarket, supermarkets, canManageSharedBiData, employeeName, supermarketNameToKho, user?.uid]);
+
     const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
     const handleClearAllData = async () => {
@@ -570,7 +703,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             }
         }
 
-        toast.success('Đã xoá thành công! Toàn bộ dữ liệu đã được làm mới sạch sẽ.');
+        toast.success('Đã đặt lại thành công! Toàn bộ dữ liệu đã được đưa về mặc định.');
 
         // 5. Phát event để mọi subscriber trong ứng dụng reset về defaultValue
         window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'ALL' } }));
@@ -587,17 +720,41 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                         CẬP NHẬT DỮ LIỆU
                     </h2>
                 </div>
-                <div className="flex flex-none justify-end gap-2 ml-auto">
+                <div className="flex flex-none items-center justify-end gap-2 ml-auto">
+                    {/* Nút Tự động Realtime */}
+                    <Button
+                        variant="unstyled"
+                        size="none"
+                        onClick={() => handleStartAutoSync('realtime')}
+                        title="Tự động thu thập 4 bảng dữ liệu Realtime từ MWG qua Tampermonkey"
+                        className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-amber-600/30"
+                    >
+                        <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-100 fill-amber-200" />
+                        <span className="text-[11px] sm:text-xs tracking-wide font-medium">Tự động Realtime</span>
+                    </Button>
+
+                    {/* Nút Tự động Luỹ kế */}
+                    <Button
+                        variant="unstyled"
+                        size="none"
+                        onClick={() => handleStartAutoSync('luyke')}
+                        title="Tự động thu thập 4 bảng dữ liệu Luỹ kế từ MWG qua Tampermonkey"
+                        className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-emerald-600/30"
+                    >
+                        <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-100" />
+                        <span className="text-[11px] sm:text-xs tracking-wide font-medium">Tự động Luỹ kế</span>
+                    </Button>
+
                     <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <Button
                             variant="unstyled"
                             size="none"
                             onClick={() => setIsConfirmingClear(true)}
-                            title="Xoá tất cả dữ liệu"
-                            className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
+                            title="Đặt lại toàn bộ dữ liệu về mặc định"
+                            className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
                         >
-                            <TrashIcon className="h-4 w-4 text-rose-500" />
-                            <span className="uppercase text-[11px] sm:text-xs tracking-wider">LÀM MỚI TẤT CẢ</span>
+                            <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500" />
+                            <span className="text-[11px] sm:text-xs tracking-wide">Đặt lại</span>
                         </Button>
                     </div>
                 </div>
@@ -886,9 +1043,9 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 isOpen={isConfirmingClear}
                 onClose={() => setIsConfirmingClear(false)}
                 onConfirm={handleClearAllData}
-                title="Xoá tất cả dữ liệu?"
+                title="Đặt lại tất cả dữ liệu?"
                 message="Toàn bộ báo cáo đã dán (Realtime, Luỹ kế, Thi đua, cấu hình từng siêu thị...) sẽ bị xoá khỏi thiết bị này và đưa về mặc định. Hành động này không thể hoàn tác."
-                confirmText="Xoá tất cả dữ liệu"
+                confirmText="Đặt lại tất cả dữ liệu"
                 variant="danger"
             />
 
@@ -960,6 +1117,29 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     </form>
                 </Modal>
             )}
+
+            {/* Modal tiến trình Tự động cập nhật Realtime / Luỹ kế qua Tampermonkey */}
+            <BiAutoSyncModal
+                isOpen={autoSyncModalOpen}
+                mode={autoSyncMode}
+                progress={autoSyncProgress}
+                status={autoSyncStatus}
+                currentVersion={autoSyncCurrentVersion}
+                errorMessage={autoSyncError}
+                onClose={() => setAutoSyncModalOpen(false)}
+                onCancel={() => {
+                    setAutoSyncStatus('idle');
+                    setAutoSyncProgress(null);
+                }}
+                onReopenWorker={() => {
+                    try {
+                        const target = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${autoSyncMode}&job_id=${autoSyncProgress?.jobId || 'reopen'}#ycx_mode=${autoSyncMode}`;
+                        window.open(target, 'mwg_bi_worker');
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                }}
+            />
         </div>
     );
 };
