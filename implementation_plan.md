@@ -6623,3 +6623,9 @@ Cả 4 đều là test LỖI THỜI / đo sai, không phải lỗi app — đã 
 | `tnb-pmh-userscript` ×2 (+1 cùng assert) | Userscript v1.6 (`5c05cac7`) bật lọc "hôm nay" mặc định → nhãn đổi từ "Mã nhận: 3" thành "Hôm nay: 3 mã"; 3 mã vẫn gom đủ | Assert chấp nhận cả 2 dạng nhãn |
 | `iframe-tabs-csp` xlsx CDN | Chromium trong container không ra được `cdn.sheetjs.com` (curl qua proxy thì được). Trên CI bước này XANH | Không sửa — giới hạn môi trường container |
 Kiểm: 2 spec đã sửa `--repeat-each=2` → 10/10 xanh; `npm run check` xanh.
+
+## Đợt 16 — script sao lưu mới (A40) (2026-09-30)
+`archive/backup.cjs` chỉ có trên Mac (archive/ gitignore) → viết `scripts/sao-luu/sao-luu.cjs` (có trong git, tự về Mac)
++ README hướng dẫn biến `archive/backup.cjs` thành 1 dòng `require(...)`. Chọn file bằng `git ls-files --cached
+--others --exclude-standard` + `.env*` → 1,3 GB → 7,9 MB. Giữ tên đánh số, commit+push, không --force.
+Thử: nén-only trên cây thật (0 file rác trong zip); repo giả lập: commit+push OK, bị từ chối khi remote mới hơn → exit 1, zip vẫn có.
