@@ -6,6 +6,11 @@ import {
 } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
+import AutoSyncScheduleButton from './AutoSyncScheduleButton';
+import {
+    claimScheduleRun, dueSchedules, getSchedules, loadSchedules, nextScheduleTime, onSchedulesChanged, scheduleHasRun,
+    SCHEDULE_LABELS, type ScheduleKey, type Schedules,
+} from '../../services/autoSyncSchedule';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useIndexedDBState } from '../../features/bi-dashboard/hooks/useIndexedDBState';
 import { useBiAutoSync } from '../../features/bi-dashboard/hooks/useBiAutoSync';
@@ -52,6 +57,12 @@ export default function GlobalAutoSyncDock() {
     const [ycxMode, setYcxMode] = useState<YcxMode>('realtime');
     const [ycxYeuCau, setYcxYeuCau] = useState<YcxMode>('realtime');
     const ycxJobRef = useRef<string | null>(null);
+    const [lich, setLich] = useState<Schedules>(() => getSchedules());
+    useEffect(() => {
+        void loadSchedules().then(() => setLich({ ...getSchedules() }));
+        return onSchedulesChanged(() => setLich({ ...getSchedules() }));
+    }, []);
+    const nhanHen = (k: ScheduleKey) => { const t = nextScheduleTime(lich[k]); return t ? `⏰ Hẹn ${t}` : null; };
     const ycxStopRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
@@ -104,21 +115,40 @@ export default function GlobalAutoSyncDock() {
     const ycxScriptDu = ycxScript.installed && compareVersions(ycxScript.version || '0', YCX_MIN_USERSCRIPT_VERSION) >= 0;
 
     // ─── Handlers ───
-    const handleTriggerAutoBonus = useCallback(() => {
+    // auto === true: lượt hẹn giờ — AutoBonusPanel chạy thẳng kỳ "Hiện tại" (không mở hộp chọn kỳ). Mục Thưởng có thể
+    // chưa tải xong → bắn lại tới khi panel xác nhận (tối đa ~15s).
+    const handleTriggerAutoBonus = useCallback((auto?: unknown) => {
+        const tuDong = auto === true;
         if (activeTab !== 'employees') {
             setActiveTab('employees');
         }
         window.dispatchEvent(new CustomEvent('nhanvien-switch-tab', { detail: { tab: 'bonus' } }));
-        setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus'));
-        }, 150);
+        if (!tuDong) {
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus'));
+            }, 150);
+            return;
+        }
+        let daNhan = false;
+        const onAck = () => { daNhan = true; };
+        window.addEventListener('ycx-auto-bonus-trigger-ack', onAck, { once: true });
+        let lan = 0;
+        const thu = () => {
+            if (daNhan || lan++ > 15) { window.removeEventListener('ycx-auto-bonus-trigger-ack', onAck); return; }
+            window.dispatchEvent(new CustomEvent('nhanvien-switch-tab', { detail: { tab: 'bonus' } }));
+            window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus', { detail: { auto: true } }));
+            setTimeout(thu, 1000);
+        };
+        setTimeout(thu, 300);
     }, [activeTab, setActiveTab]);
 
-    const handleStartBiSync = useCallback((mode: 'realtime' | 'luyke') => {
+    // auto: lượt hẹn giờ — không có cú bấm nên mở tab MWG nhờ userscript (tuChayTiep), Luỹ kế lấy tháng mặc định
+    const handleStartBiSync = useCallback((mode: 'realtime' | 'luyke', auto = false) => {
         if (activeTab !== 'employees') {
             setActiveTab('employees');
         }
-        startBiSync(mode);
+        if (auto) void startBiSync(mode, { tuChayTiep: true });
+        else startBiSync(mode);
     }, [activeTab, setActiveTab, startBiSync]);
 
     useEffect(() => {
@@ -132,7 +162,7 @@ export default function GlobalAutoSyncDock() {
         return () => window.removeEventListener('ycx-trigger-bi-auto-sync', handleBiTrigger);
     }, [handleStartBiSync]);
 
-    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime') => {
+    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime', opts: { auto?: boolean } = {}) => {
         // Luỹ kế = 01 → hôm qua; hôm nay ngày 01 thì chưa có ngày nào để luỹ kế → chạy Realtime (chủ dự án chốt)
         const mode = resolveYcxMode(requested);
         setYcxYeuCau(requested);
@@ -191,10 +221,13 @@ export default function GlobalAutoSyncDock() {
             }
         });
 
-        if (!startYcxJob(jobId, mode)) {
+        void startYcxJob(jobId, mode, { auto: opts.auto }).then((ok) => {
+            if (ok) return;
             setYcxPhase('error');
-            setYcxMessage('Trình duyệt chặn mở tab mới — cho phép cửa sổ bật lên (pop-up) cho dashboard.pro.vn rồi bấm lại.');
-        }
+            setYcxMessage(opts.auto
+                ? 'Hẹn giờ không mở được tab report.mwgroup.vn — cần userscript bản 7.16 trở lên (Tampermonkey).'
+                : 'Trình duyệt chặn mở tab mới — cho phép cửa sổ bật lên (pop-up) cho dashboard.pro.vn rồi bấm lại.');
+        });
     }, [ycxScriptDu, kiemTraYcxScript, activeTab, setActiveTab]);
 
     const huyYcx = () => {
@@ -213,6 +246,28 @@ export default function GlobalAutoSyncDock() {
             setYcxStep(null);
         }
     };
+
+    // ─── Hẹn giờ tự chạy cho 5 nút (services/autoSyncSchedule.ts) ───
+    const chayTheoLichRef = useRef<(k: ScheduleKey) => void>(() => {});
+    chayTheoLichRef.current = (k: ScheduleKey) => {
+        if (k === 'bi-realtime') handleStartBiSync('realtime', true);
+        else if (k === 'bi-luyke') handleStartBiSync('luyke', true);
+        else if (k === 'bonus') handleTriggerAutoBonus(true);
+        else if (k === 'ycx-realtime') handleTriggerYcxSync('realtime', { auto: true });
+        else if (k === 'ycx-luyke') handleTriggerYcxSync('luyke', { auto: true });
+    };
+    useEffect(() => {
+        const tick = () => {
+            // Mỗi lượt chỉ chạy 1 nút — nút khác đến hạn cùng lúc sẽ chạy ở lượt sau (30s), đỡ giành tab
+            const den = dueSchedules(getSchedules(), new Date(), scheduleHasRun)[0];
+            if (!den || !claimScheduleRun(den.marker)) return;
+            toast(`⏰ ${den.time} — tự chạy ${SCHEDULE_LABELS[den.key]}`, { duration: 6000 });
+            chayTheoLichRef.current(den.key);
+        };
+        const t0 = setTimeout(tick, 5000);
+        const t = setInterval(tick, 30_000);
+        return () => { clearTimeout(t0); clearInterval(t); };
+    }, []);
 
     const ycxDangChay = ycxPhase === 'running';
     const ycxStepList = ycxSteps(ycxMode);
@@ -243,49 +298,49 @@ export default function GlobalAutoSyncDock() {
                             type="button"
                             onClick={() => handleStartBiSync('realtime')}
                             title="Tự động Realtime (Report BI)"
-                            className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
-                            <Zap className="w-4 h-4 fill-amber-200" />
+                            <Zap className="w-4 h-4 fill-amber-200" />{lich['bi-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
                             onClick={() => handleStartBiSync('luyke')}
                             title="Tự động Luỹ kế (Report BI)"
-                            className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
-                            <TrendingUp className="w-4 h-4" />
+                            <TrendingUp className="w-4 h-4" />{lich['bi-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
                             onClick={handleTriggerAutoBonus}
                             title={bonusStatus.isBusy ? `Tự động Đổ Thưởng (${bonusStatus.label || 'Đang chạy'})` : 'Tự động Đổ Thưởng'}
-                            className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-sky-600 via-sky-600 to-sky-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                            className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-600 via-sky-600 to-sky-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 bonusStatus.isBusy ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
-                            <Gift className="w-4 h-4 text-sky-100" />
+                            <Gift className="w-4 h-4 text-sky-100" />{lich['bonus']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title={ycxDangChay && ycxMode === 'realtime' ? 'Tự động YCX Realtime (Đang chạy...)' : 'Tự động YCX Realtime (Phân Tích)'}
                             aria-label="Tự động YCX Realtime"
-                            className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-700 to-sky-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                            className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-700 to-sky-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 ycxDangChay && ycxMode === 'realtime' ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
-                            <FileSpreadsheet className="w-4 h-4 text-sky-100" />
+                            <FileSpreadsheet className="w-4 h-4 text-sky-100" />{lich['ycx-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
                             onClick={() => handleTriggerYcxSync('luyke')}
                             title={ycxDangChay && ycxMode === 'luyke' ? 'Tự động YCX Luỹ kế (Đang chạy...)' : 'Tự động YCX Luỹ kế (Phân Tích, 01 → hôm qua)'}
                             aria-label="Tự động YCX Luỹ kế"
-                            className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-emerald-700 via-emerald-700 to-emerald-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                            className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-700 via-emerald-700 to-emerald-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 ycxDangChay && ycxMode === 'luyke' ? 'ring-2 ring-emerald-400 animate-pulse' : ''
                             }`}
                         >
-                            <CalendarRange className="w-4 h-4 text-emerald-100" />
+                            <CalendarRange className="w-4 h-4 text-emerald-100" />{lich['ycx-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                     </div>
                 ) : (
@@ -312,54 +367,68 @@ export default function GlobalAutoSyncDock() {
                             </button>
                         </div>
 
+                        <div className="relative">
                         {/* Nút 1: Tự động Realtime (BI) */}
                         <button
                             type="button"
                             onClick={() => handleStartBiSync('realtime')}
+                            aria-label="Tự động Realtime (Report BI)"
                             title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_6px_20px_rgba(245,158,11,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_6px_20px_rgba(245,158,11,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
                                 <Zap className="h-4 w-4 text-amber-100 fill-amber-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.9)]" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
-                                    Tự động Realtime
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                    BI Realtime
                                 </span>
-                                <span className="text-[11px] font-semibold text-amber-100/90 leading-none mt-1">
-                                    ⚡ Tức thì hôm nay
+                                <span className="text-[11px] font-semibold text-amber-100/90 leading-none mt-1 truncate">
+                                    {nhanHen('bi-realtime') || '⚡ Hôm nay'}
                                 </span>
                             </div>
                         </button>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <AutoSyncScheduleButton scheduleKey="bi-realtime" tone="dark" compact />
+                            </div>
+                        </div>
 
+                        <div className="relative">
                         {/* Nút 2: Tự động Luỹ kế (BI) */}
                         <button
                             type="button"
                             onClick={() => handleStartBiSync('luyke')}
+                            aria-label="Tự động Luỹ kế (Report BI)"
                             title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(16,185,129,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(16,185,129,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
                                 <TrendingUp className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(110,231,183,0.9)]" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
-                                    Tự động Luỹ kế
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                    BI Luỹ kế
                                 </span>
-                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1">
-                                    📈 Cả tháng đến nay
+                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1 truncate">
+                                    {nhanHen('bi-luyke') || '📈 Tháng đến nay'}
                                 </span>
                             </div>
                         </button>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <AutoSyncScheduleButton scheduleKey="bi-luyke" tone="dark" compact />
+                            </div>
+                        </div>
 
+                        <div className="relative">
                         {/* Nút 3: Tự động Đổ Thưởng (HRM) */}
                         <button
                             type="button"
                             onClick={handleTriggerAutoBonus}
+                            aria-label="Tự động Đổ Thưởng"
                             title="Tự động thu thập điểm và đổ thưởng nhân viên từ HRM qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:from-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(147,51,234,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:from-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(147,51,234,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
@@ -367,23 +436,28 @@ export default function GlobalAutoSyncDock() {
                             }`}>
                                 <Gift className="h-4 w-4 text-sky-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
-                                    Tự động Đổ Thưởng
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                    Đổ Thưởng
                                 </span>
-                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1">
-                                    {bonusStatus.isBusy ? `⚡ ${bonusStatus.label || 'Đang xử lý...'}` : '🎁 Thưởng nhân viên'}
+                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1 truncate">
+                                    {bonusStatus.isBusy ? `⚡ ${bonusStatus.label || 'Đang xử lý...'}` : (nhanHen('bonus') || '🎁 Nhân viên')}
                                 </span>
                             </div>
                         </button>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <AutoSyncScheduleButton scheduleKey="bonus" tone="dark" compact />
+                            </div>
+                        </div>
 
+                        <div className="relative">
                         {/* Nút 4: YCX Realtime (Phân Tích) */}
                         <button
                             type="button"
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title="Tự động xuất & nạp file YCX Realtime từ report.mwgroup.vn (báo cáo 77)"
                             aria-label="Tự động YCX Realtime"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(3,105,161,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(3,105,161,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(3,105,161,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(3,105,161,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
@@ -391,24 +465,29 @@ export default function GlobalAutoSyncDock() {
                             }`}>
                                 <FileSpreadsheet className="h-4 w-4 text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     YCX Realtime
                                 </span>
-                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1">
-                                    {ycxDangChay && ycxMode === 'realtime' ? '⚡ Đang chạy… bấm để xem' : '⚡ Tự động đổ & cập nhật'}
+                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1 truncate">
+                                    {ycxDangChay && ycxMode === 'realtime' ? '⚡ Đang chạy… bấm để xem' : (nhanHen('ycx-realtime') || '⚡ Đổ & cập nhật')}
                                 </span>
                             </div>
                         </button>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <AutoSyncScheduleButton scheduleKey="ycx-realtime" tone="dark" compact />
+                            </div>
+                        </div>
 
 
+                        <div className="relative">
                         {/* Nút 5: YCX Luỹ kế (Phân Tích) — Từ 01 đầu tháng → Đến HÔM QUA; ngày 01 chạy Realtime */}
                         <button
                             type="button"
                             onClick={() => handleTriggerYcxSync('luyke')}
                             title="Tự động xuất & nạp file YCX Luỹ kế (01 → hôm qua) từ report.mwgroup.vn (báo cáo 77). Ngày 01 sẽ chạy Realtime."
                             aria-label="Tự động YCX Luỹ kế"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(4,120,87,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(4,120,87,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(4,120,87,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(4,120,87,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
@@ -416,15 +495,19 @@ export default function GlobalAutoSyncDock() {
                             }`}>
                                 <CalendarRange className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     YCX Luỹ kế
                                 </span>
-                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1">
-                                    {ycxDangChay && ycxMode === 'luyke' ? '⚡ Đang chạy… bấm để xem' : '📅 01 → hôm qua'}
+                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1 truncate">
+                                    {ycxDangChay && ycxMode === 'luyke' ? '⚡ Đang chạy… bấm để xem' : (nhanHen('ycx-luyke') || '📅 01 → hôm qua')}
                                 </span>
                             </div>
                         </button>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <AutoSyncScheduleButton scheduleKey="ycx-luyke" tone="dark" compact />
+                            </div>
+                        </div>
 
                         {/* Footer micro-tag: bấm để xem hướng dẫn cài đặt & kiểm tra kết nối */}
                         <button

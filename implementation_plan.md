@@ -6924,3 +6924,22 @@ code chịu được cả mảng lẫn {Data}, STARTTIME dạng /Date()/ lẫn I
   chọn tay trên ô kendo-date-picker), nạp như "Lũy kế / Quá khứ" (`handleFileProcessing(…, isHistorical=true)` → hỏi tên
   gợi nhớ). Ngày 01: Luỹ kế chạy Realtime — quy tắc ở CẢ Dashboard (`resolveYcxMode`) lẫn userscript (`ycxResolveMode`).
   *Tự chọn thêm:* Từ ngày = 01 (chủ dự án chỉ nói "Đến ngày = hôm qua"; để Từ ngày mặc định hôm nay thì khoảng ngày ngược).
+
+## Gửi ảnh vào nhóm LINE + Hẹn giờ Auto Sync (2026-10-01, userscript 7.16)
+
+Chủ dự án chốt: (1) **đích theo từng nút** xuất ảnh (Tải về / Gửi nhóm LINE X); sau Auto Sync YCX Realtime chỉ những
+nút đặt "nhóm LINE" được tự xuất & gửi; (2) **hẹn giờ cho cả 5 nút** Auto Sync Pro; (3) chấp nhận hẹn giờ chạy trong
+trình duyệt (máy bật, tab mở, đã đăng nhập MWG, có Tampermonkey), lỡ giờ thì bỏ qua.
+
+- `services/lineReportDelivery.ts`: chọn bot như useBotScope (riêng / dùng chung Mã Kho), nén JPEG ≤ 950k ký tự base64
+  (vừa 1 doc Firestore, ≤ 1MB preview LINE), ghi `bot_media` (function phục vụ URL https), đẩy tin qua **userscript 7.16**
+  (`ycx-line-push:send` → GM_xmlhttpRequest api.line.me; chỉ endpoint push, `to` = ID LINE, tin text/image https), không
+  có userscript thì qua action **`pushImage`** mới của `lineBotWebhook` — **cần `npm run deploy:functions` từ máy Mac**
+  (container cloud không có quyền deploy).
+- `services/analysisExportDestinations.ts` + `components/analysis/ExportDestinationButton.tsx`: khoá = tên báo cáo trong
+  tên file; `handleExport` (useExportLogic) tự gửi LINE khi nút đặt đích LINE. Gắn ở: Tổng Quan Doanh Thu, Toàn Bộ Bản Tin,
+  Chi Tiết Theo Kho, Xu Hướng Doanh Thu. DashboardView chạy `runLineAutoExports()` sau khi file Auto Sync YCX Realtime hiện.
+- `services/autoSyncSchedule.ts` + `components/layout/AutoSyncScheduleButton.tsx`: đồng hồ trên từng nút, nhiều khung giờ,
+  lưu saveSetting; GlobalAutoSyncDock quét 30s/lần, cửa sổ 10 phút, dấu chạy ở localStorage (1 tab chạy). Chạy không cú bấm:
+  YCX/Đổ thưởng mở tab nhờ `open-worker` (7.16 thêm report 77 + newinsite), BI dùng `tuChayTiep`, Đổ thưởng chạy kỳ "Hiện tại".
+- Test: `tests/e2e/line-gui-anh-va-hen-gio.spec.ts` (bot giả qua `__YCX_TEST_LINE__`, chỉ bản dev), unit `services/autoSyncSchedule.test.ts`.

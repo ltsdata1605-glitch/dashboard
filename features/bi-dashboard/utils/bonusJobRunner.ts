@@ -28,6 +28,10 @@ let currentWorkerWindow: Window | null = null;
 export function reopenWorkerTab(): Window | null {
     try {
         currentWorkerWindow = window.open(MWG_URL, 'mwg_bonus_worker');
+        if (!currentWorkerWindow) {
+            // Bị chặn (lượt hẹn giờ không có cú bấm) → nhờ userscript ≥ 7.16 mở bằng GM_openInTab
+            window.dispatchEvent(new CustomEvent('ycx-bi-automation:open-worker', { detail: { source: 'ycx-bi-automation', url: MWG_URL } }));
+        }
         return currentWorkerWindow;
     } catch (e) {
         console.warn('[bonusJobRunner] Không thể mở tab MWG:', e);

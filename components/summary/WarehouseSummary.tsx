@@ -12,6 +12,8 @@ import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import ExportDestinationButton from '../analysis/ExportDestinationButton';
+import { registerAutoExport } from '../../services/analysisExportDestinations';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnConfig[] => {
     const savedIds = new Set(savedConfig.map(c => c.id));
@@ -307,15 +309,20 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         updateWarehouseColumnTarget(col.id, khoName, value);
     };
 
-    const handleSingleExport = async () => {
+    const handleSingleExport = async (tuDong = false) => {
         if (summaryRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(summaryRef.current, `${prefix} - Chi Tiết Theo Kho.png`, {
                 elementsToHide: ['.hide-on-export'],
-                scale: 2
+                scale: 2,
+                throwOnLineError: tuDong,
             });
-        }
+        } else if (tuDong) throw new Error('Bảng "Chi tiết theo kho" chưa hiển thị');
     };
+    // Tự xuất & gửi LINE sau Auto Sync YCX Realtime (khi nút đặt đích "nhóm LINE") — xem services/analysisExportDestinations
+    const singleExportRef = useRef(handleSingleExport);
+    singleExportRef.current = handleSingleExport;
+    useEffect(() => registerAutoExport('Chi Tiết Theo Kho', () => singleExportRef.current(true)), []);
 
     const { allIndustries, allGroups } = useMemo(() => {
         if (!productConfig) return { allIndustries: [] as string[], allGroups: [] as string[] };
@@ -652,9 +659,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 <Icon name="images" size={4.5} className="hidden lg:block" />
                             </Button>
                         )}
-                        <Button variant="unstyled" size="none" onClick={handleSingleExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
+                        <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
                             {isExporting ? <><Icon name="loader-2" className="animate-spin lg:hidden" size={4} /><Icon name="loader-2" className="animate-spin hidden lg:block" size={4.5} /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={4.5} className="hidden lg:block" /></>}
                         </Button>
+                        <ExportDestinationButton reportKey="Chi Tiết Theo Kho" />
                     </div>
                 </SectionHeader>
 

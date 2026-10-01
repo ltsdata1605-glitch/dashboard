@@ -15,8 +15,8 @@
 
 export const YCX_REPORT_URL = 'https://report.mwgroup.vn/home/dashboard/77';
 export const YCX_USERSCRIPT_URL = '/scripts/mwg-auto-thu-thap-diem-thuong.user.js';
-/** Bản userscript tối thiểu: 7.13 treo ở ô Kho / Lịch sử lỗi 415 (7.14 sửa); 7.15 thêm Luỹ kế */
-export const YCX_MIN_USERSCRIPT_VERSION = '7.15';
+/** Bản userscript tối thiểu: 7.13 treo ở ô Kho / Lịch sử lỗi 415 (7.14 sửa); 7.15 thêm Luỹ kế; 7.16 hẹn giờ + gửi LINE */
+export const YCX_MIN_USERSCRIPT_VERSION = '7.16';
 
 export type YcxMode = 'realtime' | 'luyke';
 
@@ -120,10 +120,31 @@ export function buildYcxReportUrl(jobId: string, mode: YcxMode = 'realtime'): st
  * PHẢI gọi ngay trong cú bấm của người dùng — nếu không trình duyệt chặn cửa sổ bật lên.
  * Trả về false nếu trình duyệt vẫn chặn.
  */
-export function startYcxJob(jobId: string, mode: YcxMode = 'realtime'): boolean {
+export function startYcxJob(jobId: string, mode: YcxMode = 'realtime', opts: { auto?: boolean } = {}): Promise<boolean> {
     window.dispatchEvent(new CustomEvent(EVT_START, { detail: { source: YCX_SOURCE, type: 'start-job', jobId, mode } }));
-    const w = window.open(buildYcxReportUrl(jobId, mode), '_blank');
-    return !!w;
+    const url = buildYcxReportUrl(jobId, mode);
+    if (!opts.auto) {
+        // Bấm tay: mở NGAY trong cú bấm (chờ gì trước đó là trình duyệt chặn cửa sổ bật lên)
+        const w = window.open(url, '_blank');
+        return Promise.resolve(!!w);
+    }
+    // Hẹn giờ: không có cú bấm → nhờ userscript ≥ 7.16 mở bằng GM_openInTab; không phản hồi thì thử window.open
+    return new Promise((resolve) => {
+        const onOk = (e: Event) => {
+            if ((e as CustomEvent).detail?.url !== url) return;
+            window.removeEventListener('ycx-bi-automation:open-worker-ok', onOk);
+            clearTimeout(t);
+            resolve(true);
+        };
+        const t = setTimeout(() => {
+            window.removeEventListener('ycx-bi-automation:open-worker-ok', onOk);
+            let w: Window | null = null;
+            try { w = window.open(url, '_blank'); } catch { /* bị chặn */ }
+            resolve(!!w);
+        }, 1500);
+        window.addEventListener('ycx-bi-automation:open-worker-ok', onOk);
+        window.dispatchEvent(new CustomEvent('ycx-bi-automation:open-worker', { detail: { source: 'ycx-bi-automation', url } }));
+    });
 }
 
 export function isYcxMessage(data: unknown): data is YcxMessage {

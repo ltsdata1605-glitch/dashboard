@@ -10,6 +10,8 @@ import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
+import { getExportDestination, loadExportDestinations, reportKeyFromFilename } from '../services/analysisExportDestinations';
 import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
 
@@ -26,6 +28,10 @@ export interface ExportImageOptions {
     fitAllColumns?: boolean;
     mode?: ExportMode;
     onCloneReady?: ((clone: HTMLElement) => void) | null;
+    /** 'auto' (mặc định): theo đích đã đặt cho nút (tải về / gửi nhóm LINE). 'download': luôn tải về. */
+    destination?: 'auto' | 'download';
+    /** Ném lỗi nếu gửi LINE hỏng (dùng cho lượt tự gửi sau Auto Sync) thay vì chỉ báo toast */
+    throwOnLineError?: boolean;
 }
 
 interface ExportLogicProps {
@@ -88,6 +94,7 @@ export const useExportLogic = ({
     isFilterProcessing,
     processedFilterState
 }: ExportLogicProps) => {
+    const { user, departmentId } = useAuth();
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
 
@@ -115,13 +122,37 @@ export const useExportLogic = ({
             setIsExporting(true);
             // Bảng chờ do bộ xuất ảnh chung tự mở (tiêu đề theo tên báo cáo) — không dùng lớp phủ cũ nữa
             await new Promise(resolve => setTimeout(resolve, 150));
+            const { destination = 'auto', throwOnLineError = false, ...rest } = options;
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
                 mode: 'blob-only' as ExportMode,
-                ...options
+                ...rest
             };
+            await loadExportDestinations();
+            const reportKey = reportKeyFromFilename(filename);
+            const dest = destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
+            if (blob && dest.kind === 'line') {
+                // Nút này đã đặt "Gửi nhóm LINE": gửi thay vì tải về (CLAUDE.md: cài đặt đích ở ngay nút xuất ảnh)
+                const tId = toast.loading(`Đang gửi "${reportKey}" vào nhóm LINE ${dest.groupName}…`);
+                try {
+                    const { sendReportImageToLine } = await import('../services/lineReportDelivery');
+                    const now = new Date();
+                    const p2 = (n: number) => String(n).padStart(2, '0');
+                    await sendReportImageToLine({
+                        blob, groupId: dest.groupId, fileName: filename,
+                        caption: `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`,
+                        uid: user?.uid || '', departmentId,
+                    });
+                    toast.success(`Đã gửi "${reportKey}" vào nhóm LINE ${dest.groupName}`, { id: tId });
+                } catch (err) {
+                    const msg = getErrorMessage(err);
+                    toast.error(`Gửi LINE thất bại: ${msg}`, { id: tId, duration: 8000 });
+                    if (throwOnLineError) throw new Error(msg);
+                }
+                return blob;
+            }
             if (blob) {
                 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
                 if (!isMobile) {
@@ -132,7 +163,7 @@ export const useExportLogic = ({
             }
             return blob;
         }
-    }, []);
+    }, [user?.uid, departmentId]);
 
     const handlePendingDownload = useCallback(() => {
         if (pendingExport) {

@@ -18,6 +18,8 @@ import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { Select } from '../shared/ui/Select';
+import ExportDestinationButton from '../analysis/ExportDestinationButton';
+import { registerAutoExport } from '../../services/analysisExportDestinations';
 import { Button } from '../shared/ui/Button';
 
 const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payload?: { payload: RechartsTrendData }[]; metricName: string }) => {
@@ -297,6 +299,13 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           handleExport(chartCardRef.current, `${prefix} - Xu Hướng Doanh Thu.png`, { captureAsDisplayed: true });
       }
   };
+  // Tự xuất & gửi LINE sau Auto Sync YCX Realtime (khi nút đặt đích "nhóm LINE") — chỉ ở dạng biểu đồ
+  const autoExportRef = useRef<() => Promise<void>>(async () => {});
+  autoExportRef.current = async () => {
+      if (displayMode === 'calendar' || !chartCardRef.current) throw new Error('Xu hướng doanh thu đang ở dạng Bảng Lịch');
+      await handleExport(chartCardRef.current, `${getExportFilenamePrefix(filterState.kho)} - Xu Hướng Doanh Thu.png`, { captureAsDisplayed: true, throwOnLineError: true });
+  };
+  useEffect(() => registerAutoExport('Xu Hướng Doanh Thu', () => autoExportRef.current()), []);
   
   const textColor = '#64748b';
   const gridColor = '#f1f5f9';
@@ -579,6 +588,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4} className="lg:hidden" />}
             {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4.5} className="hidden lg:block" />}
           </Button>
+          {displayMode !== 'calendar' && <ExportDestinationButton reportKey="Xu Hướng Doanh Thu" />}
         </div>
       </SectionHeader>
 

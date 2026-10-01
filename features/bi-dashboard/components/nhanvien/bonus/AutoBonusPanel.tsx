@@ -7,6 +7,7 @@ import { AutoBonusErrorDetailModal } from './AutoBonusErrorDetailModal';
 import { MultiMonthResultDetailModal } from './MultiMonthResultDetailModal';
 import { AutoBonusRangePickerModal } from './AutoBonusRangePickerModal';
 import { showAutoBonusResultToast, showAutoBonusErrorToast, showMultiMonthResultToast } from './AutoBonusToasts';
+import { getCurrentRangeDefault } from '../../../utils/bonusDateRange';
 
 type PendingRetry =
     | { type: 'single'; label: string }
@@ -48,7 +49,16 @@ export const AutoBonusPanel: React.FC<{
 
     // Lắng nghe sự kiện kích hoạt Tự động Đổ Thưởng từ khung AUTO SYNC dock
     useEffect(() => {
-        const handleTrigger = () => {
+        const handleTrigger = (e: Event) => {
+            // Hẹn giờ (khung Auto Sync Pro, 2026-10-01): chạy thẳng kỳ "Hiện tại" như bấm nút Chạy ở tab Hiện tại
+            if ((e as CustomEvent).detail?.auto) {
+                window.dispatchEvent(new CustomEvent('ycx-auto-bonus-trigger-ack'));
+                if (isBusyRef.current) return;
+                const r = getCurrentRangeDefault();
+                const [d, m] = r.toDate.split('/').map(Number);
+                handleRunSingleRef.current({ fromDate: r.fromDate, toDate: r.toDate, label: `ĐẾN NGÀY ${d}/${m}` });
+                return;
+            }
             setShowPicker(true);
         };
         window.addEventListener('ycx-trigger-auto-bonus', handleTrigger);
@@ -126,6 +136,10 @@ export const AutoBonusPanel: React.FC<{
         pendingRetryRef.current = { type: 'single', label: range.label };
         startAuto(range);
     };
+    const handleRunSingleRef = useRef(handleRunSingle);
+    handleRunSingleRef.current = handleRunSingle;
+    const isBusyRef = useRef(isBusy);
+    isBusyRef.current = isBusy;
     const handleRunYear = (year: number, label: string, fromMonthIndex0?: number, toMonthIndex0?: number) => {
         pendingRetryRef.current = { type: 'year', year, label };
         startYear(year, fromMonthIndex0, toMonthIndex0);

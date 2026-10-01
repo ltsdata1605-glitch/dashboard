@@ -1835,6 +1835,40 @@ export const lineBotWebhook = onRequest(
             }
         }
 
+        // 2b. Action: Gửi ẢNH báo cáo (kèm chú thích) vào nhóm LINE — Dashboard Phân tích "xuất ảnh → gửi nhóm LINE"
+        // (2026-10-01). Ảnh đã được tải lên bot_media trước (URL https của chính function này). Chỉ nhận ID nhóm/người
+        // LINE và URL ảnh https — không phải proxy push tuỳ ý.
+        if (action === 'pushImage') {
+            const token = String(req.body?.token || '').trim();
+            const to = String(req.body?.to || '').trim();
+            const imageUrl = String(req.body?.imageUrl || '').trim();
+            const text = String(req.body?.text || '').trim().slice(0, 1000);
+            if (!token || !/^[CRU][0-9a-f]{32}$/.test(to) || !/^https:\/\//.test(imageUrl)) {
+                res.status(200).json({ success: false, error: 'Thiếu Token, ID nhóm LINE hoặc đường dẫn ảnh' });
+                return;
+            }
+            try {
+                const messages: any[] = [];
+                if (text) messages.push({ type: 'text', text });
+                messages.push({ type: 'image', originalContentUrl: imageUrl, previewImageUrl: imageUrl });
+                const lineRes = await fetch('https://api.line.me/v2/bot/message/push', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ to, messages })
+                });
+                const data = await lineRes.json().catch(() => ({}));
+                if (!lineRes.ok) {
+                    res.status(200).json({ success: false, error: (data as any)?.message || `Gửi ảnh thất bại (mã lỗi HTTP ${lineRes.status})` });
+                    return;
+                }
+                res.status(200).json({ success: true });
+                return;
+            } catch (err: any) {
+                res.status(200).json({ success: false, error: err.message || 'Lỗi mạng khi gửi ảnh' });
+                return;
+            }
+        }
+
         // 3. Action: Broadcast tin nhắn (Proxy cho Frontend)
         if (action === 'sendBroadcast') {
             const token = String(req.body?.token || '').trim();

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
@@ -46,6 +47,8 @@ const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal
 import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
+import ExportDestinationButton from '../analysis/ExportDestinationButton';
+import { registerAutoExport, runLineAutoExports } from '../../services/analysisExportDestinations';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Icon } from '../common/Icon';
@@ -158,6 +161,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         return () => window.removeEventListener('ycx-request-upload-ycx', onRequestUpload);
     }, []);
 
+    // Mốc nạp YCX Realtime từ Auto Sync — đợi dữ liệu hiện xong thì tự gửi ảnh LINE (null = không chờ)
+    const choGuiLineRef = useRef<number | null>(null);
     // Lắng nghe file YCX từ GlobalAutoSyncDock (chức năng Tự động YCX Realtime)
     useEffect(() => {
         // mode 'luyke' (YCX Luỹ kế) → nạp như "Lũy kế / Quá khứ" (isHistorical); còn lại → "Tệp Realtime"
@@ -166,6 +171,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             const laLuyKe = (window as any).__pendingYcxAutoSyncMode === 'luyke';
             delete (window as any).__pendingYcxAutoSyncFile;
             delete (window as any).__pendingYcxAutoSyncMode;
+            if (!laLuyKe) choGuiLineRef.current = Date.now();
             handleFileProcessing([pendingFile], false, laLuyKe);
         }
 
@@ -174,12 +180,31 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             if (file) {
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
+                // YCX Realtime tự động → nạp xong thì tự xuất & gửi các ảnh đã đặt đích "nhóm LINE"
+                if (e.detail?.mode !== 'luyke') choGuiLineRef.current = Date.now();
                 handleFileProcessing([file], false, e.detail?.mode === 'luyke');
             }
         };
         window.addEventListener('ycx-auto-sync-file', handleAutoSyncFile);
         return () => window.removeEventListener('ycx-auto-sync-file', handleAutoSyncFile);
     }, [handleFileProcessing]);
+
+    // Dữ liệu Auto Sync YCX Realtime đã hiện → tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (đợi 2.5s cho biểu đồ vẽ xong)
+    useEffect(() => {
+        const moc = choGuiLineRef.current;
+        if (!moc || appState !== 'dashboard' || !processedData || isProcessing || isFilterProcessing) return;
+        if (Date.now() - moc > 10 * 60_000) { choGuiLineRef.current = null; return; }
+        const t = setTimeout(async () => {
+            if (choGuiLineRef.current !== moc) return;
+            choGuiLineRef.current = null;
+            const kq = await runLineAutoExports();
+            if (kq.length === 0) return;
+            const hong = kq.filter((r) => !r.ok);
+            if (hong.length) toast.error(`Tự gửi LINE: ${kq.length - hong.length}/${kq.length} ảnh — lỗi: ${hong.map((r) => r.key).join(', ')}`, { duration: 10000 });
+            else toast.success(`Tự gửi LINE: đã gửi ${kq.length} ảnh sau khi cập nhật YCX Realtime`);
+        }, 2500);
+        return () => clearTimeout(t);
+    }, [appState, processedData, isProcessing, isFilterProcessing]);
 
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
 
@@ -249,23 +274,32 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         });
     };
 
-    const handleBusinessOverviewExport = async () => {
+    // tuDong: lượt tự gửi LINE sau Auto Sync — lỗi phải ném ra để tổng kết biết ảnh nào hỏng
+    const handleBusinessOverviewExport = async (tuDong = false) => {
         if (businessOverviewRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(businessOverviewRef.current, `${prefix} - Toàn Bộ Bản Tin.png`, {
-                captureAsDisplayed: true,
+                captureAsDisplayed: true, throwOnLineError: tuDong,
             });
-        }
+        } else if (tuDong) throw new Error('Khối "Toàn bộ bản tin" chưa hiển thị');
     };
 
-    const handleKpiCardsOnlyExport = async () => {
+    const handleKpiCardsOnlyExport = async (tuDong = false) => {
         if (kpiCardsOnlyRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(kpiCardsOnlyRef.current, `${prefix} - Tổng Quan Doanh Thu.png`, {
-                captureAsDisplayed: true,
+                captureAsDisplayed: true, throwOnLineError: tuDong,
             });
-        }
+        } else if (tuDong) throw new Error('Khối "Tổng quan doanh thu" chưa hiển thị');
     };
+    // Đăng ký để lượt Auto Sync YCX Realtime tự xuất & gửi LINE (chỉ chạy khi nút đặt đích "nhóm LINE")
+    const exportRunnersRef = useRef({ tongQuan: handleKpiCardsOnlyExport, banTin: handleBusinessOverviewExport });
+    exportRunnersRef.current = { tongQuan: handleKpiCardsOnlyExport, banTin: handleBusinessOverviewExport };
+    useEffect(() => {
+        const a = registerAutoExport('Tổng Quan Doanh Thu', () => exportRunnersRef.current.tongQuan(true));
+        const b = registerAutoExport('Toàn Bộ Bản Tin', () => exportRunnersRef.current.banTin(true));
+        return () => { a(); b(); };
+    }, []);
 
     useEffect(() => {
         document.body.classList.remove('is-capturing');
@@ -601,14 +635,16 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                             <Icon name="settings-2" size={4} className="lg:hidden" />
                                                             <Icon name="settings-2" size={4.5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleKpiCardsOnlyExport()} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <Icon name="download" size={4} className="lg:hidden" />
                                                             <Icon name="download" size={4.5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
+                                                        <ExportDestinationButton reportKey="Tổng Quan Doanh Thu" />
+                                                        <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <Icon name="camera" size={4} className="lg:hidden" />
                                                             <Icon name="camera" size={4.5} className="hidden lg:block" />
                                                         </Button>
+                                                        <ExportDestinationButton reportKey="Toàn Bộ Bản Tin" />
                                                     </div>
                                                 </SectionHeader>
                                             </div>
