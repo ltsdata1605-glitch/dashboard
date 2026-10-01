@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.1
+// @version      7.2
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -25,6 +25,12 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.2 — THEO DÕI TIẾN TRÌNH NGAY TẠI DASHBOARD, XONG TỰ QUAY VỀ:
+ * - Direct API Engine không cần thao tác trên màn hình → vừa lấy được token là trả focus về tab Dashboard YCX
+ *   (window.opener.focus()) để người dùng xem tiến trình trong modal; tab MWG chạy nền.
+ * - Hoàn tất: báo xong → focus lại tab Dashboard → tự đóng tab MWG sau 1,2 giây (trước 2,8 giây).
+ *   Đường UI Fallback (bấm nút trên trang) vẫn giữ tab MWG ở trước vì cần trang hiển thị để thao tác.
+ *
  * BẢN 7.1 — SỬA LỖI "CHẠY REALTIME NHƯNG ĐỔ SỐ LUỸ KẾ" (Direct API Engine):
  * - Nguyên nhân: từ bản 6.8, 4 lượt gọi API Realtime gửi FROMDATE = ngày 01 đầu tháng → TODATE = hôm nay,
  *   tức dải LUỸ KẾ ĐẦU THÁNG ĐẾN NAY. Việc bấm nút "Realtime" trên giao diện (6.9/7.0) KHÔNG tác động được,
@@ -2496,6 +2502,12 @@
     `;
   }
 
+  // Trả focus về tab Dashboard YCX đã mở tab này (window.open). Trình duyệt có thể bỏ qua nếu không cho phép
+  // — khi đó window.close() vẫn đưa người dùng về tab đã mở nó (Chrome chọn lại tab "opener" khi đóng).
+  function acpFocusDashboard() {
+    try { if (window.opener && !window.opener.closed) window.opener.focus(); } catch (_) {}
+  }
+
   function acpShowOverlayDone(mode) {
     const overlay = document.getElementById('acp-bi-sync-overlay');
     if (overlay) {
@@ -2503,12 +2515,13 @@
         <div style="text-align:center;padding:8px 0;">
           <div style="font-size:24px;margin-bottom:6px;">🎉</div>
           <div style="font-weight:700;font-size:15px;color:#34d399;margin-bottom:4px;">Hoàn tất cập nhật ${mode === 'realtime' ? 'Realtime' : 'Luỹ kế'}!</div>
-          <div style="font-size:12px;color:#94a3b8;">Dữ liệu đã chuyển về Dashboard YCX.<br>Tab sẽ tự đóng sau 3 giây...</div>
+          <div style="font-size:12px;color:#94a3b8;">Dữ liệu đã chuyển về Dashboard YCX.<br>Đang quay về Dashboard...</div>
         </div>
       `;
+      acpFocusDashboard();
       setTimeout(() => {
         try { window.close(); } catch (_) {}
-      }, 2800);
+      }, 1200);
     }
   }
 
@@ -2956,6 +2969,8 @@
         if (token) {
           try {
             console.log(`[BI-Sync] Kích hoạt Direct Internal API Engine thành công! Token: ${token.substring(0, 15)}...`);
+            // Gọi API không cần trang hiển thị → về Dashboard xem tiến trình trong modal, tab này chạy nền
+            acpFocusDashboard();
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
