@@ -6914,3 +6914,8 @@ code chịu được cả mảng lẫn {Data}, STARTTIME dạng /Date()/ lẫn I
   `handleFileProcessing([file], false, false)` = Tệp Realtime.
 - Test: `tests/e2e/ycx-tu-dong-report-mwg.spec.ts` (3 — trang 77 giả dựng theo HAR) và `ycx-tu-dong-phan-tich.spec.ts` (4).
 - CHƯA kiểm trên MWG thật: HAR chỉ có lúc tải trang, không có lượt Xuất excel / GetData / tải file thật.
+- **7.14 (sau lần chạy thật đầu tiên, 2026-10-01):** (1) ô Kho treo — cây kho nằm trong cửa sổ Kendo bị chuyển ra cuối
+  `<body>` nên `el.querySelector('.jstree')` không thấy → tìm cây qua isolate scope (`componentStoreId`…), không có cây
+  sau 3s thì đổ ID từ API ngay. (2) `ManagerDownload/GetData` trả **HTTP 415** → đọc Lịch sử như làm tay: khung ẩn
+  `/ManagerDownload`, tải lại ~5s/lần, đọc `kendoGrid.dataSource`; API (JSON rồi form, qua GM_xmlhttpRequest) chỉ dự
+  phòng. 5 lỗi đọc liên tiếp → báo lỗi rõ. Dashboard đòi bản ≥ 7.14.

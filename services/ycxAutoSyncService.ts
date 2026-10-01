@@ -1,7 +1,7 @@
 /**
  * TỰ ĐỘNG YCX REALTIME cho Phân tích (2026-10-01).
  *
- * Luồng: khung "AUTO SYNC YCX" → mở report.mwgroup.vn/home/dashboard/77 (tab mới) → userscript bản ≥ 7.13 trên trang
+ * Luồng: khung "AUTO SYNC YCX" → mở report.mwgroup.vn/home/dashboard/77 (tab mới) → userscript bản ≥ 7.14 trên trang
  * đó đặt điều kiện (Kho tạo · Tất cả ngành hàng · Tất cả kho · hôm nay), bấm Xuất excel, chờ "Lịch sử xuất excel" xuất
  * xong → userscript phía Dashboard tải file bằng phiên đăng nhập MWG (GM_xmlhttpRequest) → `postMessage` ArrayBuffer về
  * đây → Phân tích nạp như bấm "File YCX" → "Tệp Realtime".
@@ -12,8 +12,8 @@
 
 export const YCX_REPORT_URL = 'https://report.mwgroup.vn/home/dashboard/77';
 export const YCX_USERSCRIPT_URL = '/scripts/mwg-auto-thu-thap-diem-thuong.user.js';
-/** Bản userscript đầu tiên biết làm việc trên report.mwgroup.vn */
-export const YCX_MIN_USERSCRIPT_VERSION = '7.13';
+/** Bản userscript tối thiểu cho Tự động YCX (7.13 treo ở ô Kho và đọc Lịch sử lỗi HTTP 415 — 7.14 sửa) */
+export const YCX_MIN_USERSCRIPT_VERSION = '7.14';
 
 export const YCX_SOURCE = 'ycx-ycx-auto';
 const EVT_START = 'ycx-ycx-auto:start-job';

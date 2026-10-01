@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.13
+// @version      7.14
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -31,6 +31,12 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.14 — SỬA TỰ ĐỘNG YCX THEO LẦN CHẠY THẬT ĐẦU TIÊN (chủ dự án 2026-10-01):
+ * - Ô Kho treo lâu: cây chọn kho nằm trong cửa sổ Kendo (bị chuyển ra cuối <body>), không nằm trong khối điều kiện →
+ *   tìm cây qua isolate scope của directive; không thấy cây sau 3s thì đổ danh sách kho từ API ngay.
+ * - "Lịch sử xuất excel HTTP 415": gọi thẳng ManagerDownload/GetData bị từ chối → đọc Lịch sử y như làm tay: mở trang
+ *   Lịch sử trong khung ẩn, tải lại mỗi ~5 giây, đọc bảng tới khi file "Đã xuất xong" (API chỉ còn là dự phòng).
+ *
  * BẢN 7.13 — TỰ ĐỘNG YCX REALTIME CHO PHÂN TÍCH (report.mwgroup.vn, báo cáo 77 "Chi tiết yêu cầu xuất"):
  * - Dashboard (Phân tích → khung AUTO SYNC YCX) mở report.mwgroup.vn/home/dashboard/77?ycx_ycx=realtime&ycx_job=…
  * - Trang báo cáo: Tìm theo (Kho) = Kho tạo, Ngành hàng = Tất cả, Kho = Tất cả, ngày mặc định (hôm nay) → gọi đúng hàm
@@ -479,7 +485,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.13';
+  const SCRIPT_VERSION_FALLBACK = '7.14';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -3732,30 +3738,108 @@
   const ycxPageFetch = (...a) => (ycxWin().fetch ? ycxWin().fetch.bind(ycxWin()) : fetch)(...a);
 
   async function ycxPostJson(path, body) {
-    const res = await ycxPageFetch(`https://${YCX_HOSTNAME}${path}`, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/plain, */*' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`${path} HTTP ${res.status}`);
-    return res.json();
+    try {
+      return await ycxGmRequest('POST', `https://${YCX_HOSTNAME}${path}`, { 'Content-Type': 'application/json; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/plain, */*' }, JSON.stringify(body));
+    } catch (e) {
+      const res = await ycxPageFetch(`https://${YCX_HOSTNAME}${path}`, {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/plain, */*' },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`${path} HTTP ${res.status}`);
+      return res.json();
+    }
   }
 
-  /** Lấy danh sách các dòng ở "Lịch sử xuất excel" (trang ManagerDownload gọi y hệt: POST form userName). */
-  async function ycxFetchHistory(userName) {
-    const res = await ycxPageFetch(`https://${YCX_HOSTNAME}/ManagerDownload/GetData`, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/javascript, */*; q=0.01' },
-      body: `userName=${encodeURIComponent(userName || '')}`,
-    });
-    if (!res.ok) throw new Error(`Lịch sử xuất excel HTTP ${res.status}`);
-    const j = await res.json();
+
+  function ycxRowsFrom(j) {
     if (Array.isArray(j)) return j;
     for (const k of ['Data', 'data', 'Items', 'items']) {
       if (j && Array.isArray(j[k])) return j[k];
       if (j && j[k] && Array.isArray(j[k].Data)) return j[k].Data;
     }
-    return [];
+    return null;
+  }
+
+  // 7.13.1: gọi thẳng ManagerDownload/GetData bị máy chủ trả HTTP 415 (chủ dự án gặp 2026-10-01) → đọc Lịch sử y như
+  // người dùng làm tay: mở trang "Lịch sử xuất excel" (khung ẩn cùng tên miền), mỗi lượt TẢI LẠI trang rồi đọc bảng.
+  let ycxFrame = null;
+  function ycxLoadFrame() {
+    return new Promise((resolve, reject) => {
+      if (!ycxFrame) {
+        ycxFrame = document.createElement('iframe');
+        ycxFrame.id = 'ycx-ycx-lich-su';
+        ycxFrame.setAttribute('aria-hidden', 'true');
+        ycxFrame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1200px;height:800px;border:0;visibility:hidden';
+        document.body.appendChild(ycxFrame);
+      }
+      const t = setTimeout(() => reject(new Error('Trang Lịch sử xuất excel không tải được sau 30 giây')), 30000);
+      ycxFrame.onload = () => { clearTimeout(t); resolve(ycxFrame.contentWindow); };
+      ycxFrame.src = `https://${YCX_HOSTNAME}/ManagerDownload?ycx_t=${Date.now()}`;
+    });
+  }
+
+  /** Dòng của bảng Kendo trên trang Lịch sử: chờ bảng đọc dữ liệu xong (tối đa 20s), rỗng thì trả []. */
+  async function ycxHistoryFromFrame() {
+    const fw = await ycxLoadFrame();
+    const t0 = Date.now();
+    let thayBang = 0;
+    while (Date.now() - t0 < 20000) {
+      await sleep(400);
+      let doc;
+      try { doc = fw.document; } catch (_) { throw new Error('Không đọc được trang Lịch sử xuất excel (bị chặn khung)'); }
+      if (/\/login|dang-?nhap|account/i.test(fw.location.pathname)) throw ycxErr('waiting', 'Phiên report.mwgroup.vn hết hạn — đăng nhập lại rồi bấm Chạy lại.');
+      const $f = fw.jQuery || fw.$;
+      const el = doc.querySelector('[data-role="grid"]');
+      const grid = el && $f ? $f(el).data('kendoGrid') : null;
+      if (!grid || !grid.dataSource) continue;
+      const data = grid.dataSource.data();
+      const rows = data && data.toJSON ? data.toJSON() : Array.from(data || []);
+      if (rows.length) return rows;
+      if (!thayBang) thayBang = Date.now();
+      else if (Date.now() - thayBang > 6000) return [];
+    }
+    throw new Error('Bảng Lịch sử xuất excel không hiện sau 20 giây');
+  }
+
+  function ycxGmRequest(method, url, headers, data) {
+    return new Promise((resolve, reject) => {
+      try {
+        GM_xmlhttpRequest({
+          method, url, headers, data, timeout: 30000,
+          onload: (r) => {
+            if (r.status >= 400) return reject(new Error(`HTTP ${r.status}`));
+            try { resolve(JSON.parse(r.responseText)); } catch (_) { reject(new Error('không phải JSON')); }
+          },
+          onerror: () => reject(new Error('lỗi mạng')), ontimeout: () => reject(new Error('quá thời gian')),
+        });
+      } catch (e) { reject(e); }
+    });
+  }
+
+  const ycxHistoryWays = {
+    frame: () => ycxHistoryFromFrame(),
+    json: (u) => ycxGmRequest('POST', `https://${YCX_HOSTNAME}/ManagerDownload/GetData`, { 'Content-Type': 'application/json; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest' }, JSON.stringify({ userName: u || '' })),
+    form: (u) => ycxGmRequest('POST', `https://${YCX_HOSTNAME}/ManagerDownload/GetData`, { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest' }, `userName=${encodeURIComponent(u || '')}`),
+  };
+  let ycxHistoryWay = null;
+
+  /** Lấy các dòng ở "Lịch sử xuất excel". Thử trang thật trước (giống thao tác tay), rồi tới API; nhớ cách chạy được. */
+  async function ycxFetchHistory(userName) {
+    const order = ycxHistoryWay ? [ycxHistoryWay] : ['frame', 'json', 'form'];
+    const loi = [];
+    for (const w of order) {
+      try {
+        const rows = ycxRowsFrom(await ycxHistoryWays[w](userName));
+        if (!rows) throw new Error('dữ liệu lạ');
+        ycxHistoryWay = w;
+        return rows;
+      } catch (e) {
+        if (e && e.step) throw e;
+        loi.push(`${w}: ${e && e.message}`);
+      }
+    }
+    throw new Error(`Lịch sử xuất excel — ${loi.join('; ')}`);
   }
 
   function ycxRowKey(r) { return String(r.UNIQUEQUERYID || `${r.DYNAMICREPORTNAME}|${r.STARTTIME}`); }
@@ -3814,29 +3898,55 @@
   }
 
   /** Bấm "Tất cả" của một ô chọn nhiều (cây jstree của trang); không được thì đổ danh sách lấy từ API làm dự phòng. */
-  async function ycxSelectAll(scope, cond, label, fallback) {
+  /**
+   * Cây jstree của một ô chọn nhiều. Cây có thể KHÔNG nằm trong khối điều kiện: ô Kho mở cây trong cửa sổ Kendo, mà
+   * Kendo chuyển cửa sổ ra cuối <body> — nên tìm cả qua isolate scope của directive (componentStoreId / componentSubgroupId…).
+   */
+  function ycxFindTree(el, $) {
+    const trong = el.querySelector('.jstree');
+    if (trong) return trong;
+    try {
+      const ng = ycxWin().angular;
+      for (const child of el.querySelectorAll('*')) {
+        const iso = ng.element(child).isolateScope ? ng.element(child).isolateScope() : null;
+        if (!iso) continue;
+        for (const k of Object.keys(iso)) {
+          if (!/^component\w*Id$/i.test(k) || typeof iso[k] !== 'string' || !iso[k]) continue;
+          const t = document.getElementById(iso[k]);
+          if (t && $(t).jstree && $(t).jstree(true)) return t;
+        }
+      }
+    } catch (_) { /* không có angular */ }
+    return null;
+  }
+
+  /** Bấm "Tất cả" của một ô chọn nhiều (cây jstree của trang); không được thì đổ danh sách lấy từ API làm dự phòng. */
+  async function ycxSelectAll(scope, cond, label, fallback, onWait) {
     const el = ycxCondEl(cond);
     const $ = ycxWin().jQuery || ycxWin().$;
     const t0 = Date.now();
     let daChon = false;
-    // Có cây (.jstree) mà chưa tải xong danh sách → chờ tới 30s; chưa thấy cây nào sau 8s → dùng đường dự phòng API
-    while (el && $ && Date.now() - t0 < (el.querySelector('.jstree') ? 30000 : 8000)) {
+    // Cây có mà chưa tải xong danh sách → chờ tối đa 12s; không thấy cây sau 3s → dùng đường dự phòng API ngay
+    while (el && $) {
+      const tree = ycxFindTree(el, $);
+      if (Date.now() - t0 > (tree ? 12000 : 3000)) break;
       try {
-        const tree = el.querySelector('.jstree');
-        const inst = tree && $(tree).jstree ? $(tree).jstree(true) : null;
+        const inst = tree ? $(tree).jstree(true) : null;
         if (inst && inst.get_json && inst.get_json('#', { flat: true }).length > 1) { inst.select_all(); daChon = true; break; }
       } catch (_) { /* cây chưa dựng */ }
-      await sleep(400);
+      await sleep(300);
     }
     if (daChon) {
       const t1 = Date.now();
-      while (!ycxHasValue(cond.OBJECTVALUE) && Date.now() - t1 < 5000) await sleep(200);
+      while (!ycxHasValue(cond.OBJECTVALUE) && Date.now() - t1 < 4000) await sleep(200);
     }
     if (!ycxHasValue(cond.OBJECTVALUE)) {
+      if (onWait) onWait(`Ô ${label}: chọn "Tất cả" qua danh sách của MWG…`);
       const ids = await fallback();
       if (ids.length) ycxApply(scope, () => { cond.OBJECTVALUE = ids; });
     }
     if (!ycxHasValue(cond.OBJECTVALUE)) throw ycxErr('conditions', `Không chọn được "Tất cả" ở ô ${label}.`);
+    console.log(`[YCX] ${label}: ${Array.isArray(cond.OBJECTVALUE) ? cond.OBJECTVALUE.length : 1} mục (${daChon ? 'cây trên trang' : 'API'})`);
   }
 
   async function ycxApplyConditions(scope) {
@@ -3907,10 +4017,17 @@
     const t0 = Date.now();
     const TIMEOUT = 20 * 60 * 1000;
     let lan = 0;
+    let loiLienTiep = 0;
     while (Date.now() - t0 < TIMEOUT) {
-      await sleep(lan++ === 0 ? 2500 : 4000);
+      // Như thao tác tay: xem lại Lịch sử mỗi ~5 giây
+      await sleep(lan++ === 0 ? 2500 : 5000);
       let rows = [];
-      try { rows = await ycxFetchHistory(userName); } catch (e) { onWait(`Đọc Lịch sử xuất excel lỗi (${e.message}) — thử lại…`); continue; }
+      try { rows = await ycxFetchHistory(userName); loiLienTiep = 0; } catch (e) {
+        if (e && e.step) throw e;
+        if (++loiLienTiep >= 5) throw ycxErr('waiting', `Không đọc được Lịch sử xuất excel: ${e.message}`);
+        onWait(`Đọc Lịch sử xuất excel lỗi (${e.message}) — thử lại…`);
+        continue;
+      }
       const moi = rows.filter((r) => !before.has(ycxRowKey(r))
         // Chụp mốc trước khi xuất hỏng (không đọc được lịch sử) → nhận dòng bắt đầu sau lúc bấm (lệch giờ tối đa 2 phút)
         || (before.size === 0 && ycxParseTime(r.STARTTIME) >= startedAt - 120000));
@@ -4004,6 +4121,8 @@
   }
 
   async function initYcxReportPage() {
+    // Khung ẩn "Lịch sử xuất excel" do chính script mở cũng chạy userscript — không làm gì trong khung
+    if (window.top !== window.self) return;
     const params = new URLSearchParams(location.search);
     const urlJob = params.get('ycx_job');
     const urlMode = params.get('ycx_ycx');

@@ -47,11 +47,13 @@ const TRANG_77 = `<!doctype html><html><head><meta charset="utf-8"></head><body>
   const itemScopes = new Map();
   window.angular = { element: (el) => ({
     scope: () => el && el.id === 'ctrl' ? scope : itemScopes.get(el),
-    isolateScope: () => ({ data: { isPermission: true, permissionValue: null, isActive: true, companyids: '', companybrandids: '', areaids: '' } }),
+    isolateScope: () => el && el.tagName === 'SEARCHSTOREBYAREA'
+      ? { componentStoreId: 'kho-tree-xyz', data: { isPermission: true, permissionValue: null, isActive: true, companyids: '', companybrandids: '', areaids: '' } }
+      : undefined,
   }) };
   // ---- jQuery + jstree giả cho ô Ngành hàng (đường chính: bấm "Tất cả" trên cây). Ô Kho KHÔNG có cây → đường dự phòng API ----
   const trees = new Map();
-  window.jQuery = window.$ = (el) => ({ jstree: (arg) => arg === true ? trees.get(el) : undefined, data: () => undefined });
+  window.jQuery = window.$ = (el) => ({ jstree: (arg) => arg === true ? trees.get(el) : (trees.has(el) ? {} : undefined), data: () => undefined });
   // Trang tải form điều kiện trễ một nhịp, như GetDynamicReport thật
   setTimeout(() => {
     scope.ListCondition = conds;
@@ -68,13 +70,23 @@ const TRANG_77 = `<!doctype html><html><head><meta charset="utf-8"></head><body>
           select_all: () => { window.__jstreeAll = true; setTimeout(() => { c.OBJECTVALUE = [1775, 13]; }, 50); },
         });
       }
-      if (c.PARAMNAME === 'V_STOREIDLIST') d.appendChild(document.createElement('searchstorebyarea'));
+      if (c.PARAMNAME === 'V_STOREIDLIST') {
+        d.appendChild(document.createElement('searchstorebyarea'));
+        // Như trang thật: cây kho nằm trong cửa sổ Kendo đã bị chuyển ra cuối <body>, KHÔNG nằm trong khối điều kiện
+        if (window.__khoCay) {
+          const t = document.createElement('div'); t.id = 'kho-tree-xyz'; document.body.appendChild(t);
+          trees.set(t, {
+            get_json: () => [{ id: 'r', data: { id: 0 } }, { id: 'k', data: { id: 910 } }],
+            select_all: () => { window.__khoAll = true; setTimeout(() => { c.OBJECTVALUE = [910]; }, 50); },
+          });
+        }
+      }
       box.appendChild(d);
     });
   }, 300);
 </script></body></html>`;
 
-async function dungTrangGia(page: Page, opts: { exportFail?: string } = {}) {
+async function dungTrangGia(page: Page, opts: { exportFail?: string; khoCay?: boolean; apiLichSu?: boolean } = {}) {
     const state = { exportBody: null as null | { listParam: { PARAMNAME: string; OBJECTVALUE: unknown }[] }, getDataCalls: 0, storeCalls: 0, xongSauLan: 3 };
     await page.route('https://report.mwgroup.vn/**', async (route) => {
         const req = route.request();
@@ -90,7 +102,10 @@ async function dungTrangGia(page: Page, opts: { exportFail?: string } = {}) {
             state.exportBody = req.postDataJSON();
             return route.fulfill({ json: opts.exportFail ? { Success: false, Message: opts.exportFail } : { Success: true, Data: { continueDownload: true } } });
         }
-        if (p === '/ManagerDownload/GetData') {
+        if (p === '/ManagerDownload') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: TRANG_LICH_SU });
+        // Như máy chủ thật (lần chạy 2026-10-01): gọi thẳng GetData bị 415
+        if (p === '/ManagerDownload/GetData' && !opts.apiLichSu) return route.fulfill({ status: 415, body: '' });
+        if (p === '/ManagerDownload/GetData' || p === '/__lich_su_bang') {
             state.getDataCalls++;
             const cu = { UNIQUEQUERYID: 'cu-1', DYNAMICREPORTNAME: 'Chi tiết yêu cầu xuất 30/09/2026 08:00:00', STARTTIME: '/Date(1759194000000)/', LINKDOWNLOAD: 'https://report.mwgroup.vn/files/cu.xlsx', ISLOADING: false };
             if (!state.exportBody) return route.fulfill({ json: [cu] });
@@ -101,29 +116,40 @@ async function dungTrangGia(page: Page, opts: { exportFail?: string } = {}) {
         }
         return route.fulfill({ status: 404, body: '' });
     });
-    await page.addInitScript(() => {
+    await page.addInitScript((khoCay) => {
         const w = window as unknown as Record<string, unknown>;
+        w.__khoCay = khoCay;
         const store = new Map<string, unknown>();
         w.__gm = store;
         w.GM_setClipboard = () => {};
         w.GM_getValue = (k: string, d: unknown) => (store.has(k) ? store.get(k) : d);
         w.GM_setValue = (k: string, v: unknown) => { store.set(k, v); };
         w.GM_addValueChangeListener = () => 0;
-        // HEAD đo kích thước file: báo ổn định ngay
-        w.GM_xmlhttpRequest = (o: { method: string; onload?: (r: unknown) => void }) => {
-            if (o.method === 'HEAD') setTimeout(() => o.onload?.({ status: 200, responseHeaders: 'content-length: 12345\r\n' }), 10);
+        // HEAD đo kích thước file: báo ổn định ngay; còn lại gọi thật (đi qua route giả)
+        w.GM_xmlhttpRequest = (o: { method: string; url: string; headers?: Record<string, string>; data?: string; onload?: (r: unknown) => void; onerror?: () => void }) => {
+            if (o.method === 'HEAD') { setTimeout(() => o.onload?.({ status: 200, responseHeaders: 'content-length: 12345\r\n' }), 10); return; }
+            fetch(o.url, { method: o.method, headers: o.headers, body: o.data })
+                .then((r) => r.text().then((t) => o.onload?.({ status: r.status, responseText: t })), () => o.onerror?.());
         };
         w.__closed = false;
         window.close = () => { w.__closed = true; };
-    });
+    }, !!opts.khoCay);
     return state;
 }
 
+// Trang "Lịch sử xuất excel": bảng Kendo nạp dữ liệu sau khi trang tải (như trang thật)
+const TRANG_LICH_SU = `<!doctype html><html><body><div data-role="grid" id="g"></div><script>
+  let rows = null;
+  setTimeout(() => fetch('/__lich_su_bang').then(r => r.json()).then(j => { rows = j; }), 200);
+  window.jQuery = (el) => ({ data: (k) => (k === 'kendoGrid' && rows ? { dataSource: { data: () => ({ toJSON: () => rows }) } } : undefined) });
+</script></body></html>`;
+
 const gm = (page: Page, k: string) => page.evaluate((key) => (window as unknown as { __gm: Map<string, unknown> }).__gm.get(key), k);
 
-test('report.mwgroup.vn: đặt Kho tạo + Tất cả ngành hàng + Tất cả kho, xuất excel, chờ Lịch sử xuất, báo đúng file MỚI', async ({ page }) => {
-    test.setTimeout(60_000);
-    const state = await dungTrangGia(page);
+test('report.mwgroup.vn: đặt Kho tạo + Tất cả ngành hàng + Tất cả kho, xuất excel, chờ Lịch sử xuất (đọc bảng trên trang, GetData 415), báo đúng file MỚI', async ({ page }) => {
+    test.setTimeout(90_000);
+    const state = await dungTrangGia(page, { khoCay: true });
+    const t0 = Date.now();
     await page.goto('https://report.mwgroup.vn/home/dashboard/77?ycx_ycx=realtime&ycx_job=job-1');
     await page.addScriptTag({ content: USERSCRIPT });
 
@@ -140,7 +166,10 @@ test('report.mwgroup.vn: đặt Kho tạo + Tất cả ngành hàng + Tất cả
     expect(p.V_STOREIDLIST).toBe('910');
     expect(p.V_FROMDATE).toBe('1/10/2026 00:00'); // ngày để mặc định
     expect(await page.evaluate(() => (window as unknown as { __jstreeAll: boolean }).__jstreeAll)).toBe(true);
-    expect(state.storeCalls).toBe(1);
+    // Ô Kho: bấm "Tất cả" trên cây nằm NGOÀI khối điều kiện (cửa sổ Kendo) — không phải chờ rồi gọi API
+    expect(await page.evaluate(() => (window as unknown as { __khoAll: boolean }).__khoAll)).toBe(true);
+    expect(state.storeCalls).toBe(0);
+    console.log('Thời gian cả lượt (giả lập):', Date.now() - t0, 'ms');
     // Chờ qua lượt "đang xuất" chứ không lấy file cũ
     expect(state.getDataCalls).toBeGreaterThanOrEqual(3);
     expect(await gm(page, 'ycx_ycx_job')).toMatchObject({ jobId: 'job-1', status: 'done' });
