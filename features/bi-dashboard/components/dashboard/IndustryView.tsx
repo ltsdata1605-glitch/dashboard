@@ -75,10 +75,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
 
     const safeName = activeSupermarket ? shortenSupermarketName(activeSupermarket) : '';
-    const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 45);
-    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
-    const targetTraGop = storedTraGop ?? 45;
-    const targetQuyDoi = storedQuyDoi ?? 40;
+    const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 60);
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 60);
+    const targetTraGop = storedTraGop ?? 60;
+    const targetQuyDoi = storedQuyDoi ?? 60;
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
@@ -548,13 +548,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         };
 
         const isTraGop = (headerName === 'Tỷ Trọng Trả Góp' || headerName === 'Tỷ Trọng Trả Chậm' || headerName === '%TC' || headerName === 'TRẢ CHẬM' || headerName === '%T.CHẬM' || headerName === 'TC' || headerName === 'Target Trả chậm') && !isNaN(numericValue);
-        const isHqqd = (headerName === '%HQQĐ' || headerName === '%QĐ' || headerName === 'HQQĐ' || headerName === 'Target Quy đổi') && !isNaN(numericValue);
+        const isHqqd = (headerName === '%HQQĐ' || headerName === '%QĐ' || headerName === 'HQQĐ' || headerName === 'Target Quy đổi' || headerName === 'Target Hiệu quả quy đổi') && !isNaN(numericValue);
 
         let cellTitle: string | undefined = undefined;
         if (isTraGop) {
             cellTitle = `Target Trả chậm: ${targetTraGop}% (${numericValue >= targetTraGop ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
         } else if (isHqqd) {
-            cellTitle = `Target Quy đổi: ${targetQuyDoi}% (${numericValue >= targetQuyDoi ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+            cellTitle = `Target Hiệu quả quy đổi: ${targetQuyDoi}% (${numericValue >= targetQuyDoi ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
         }
 
         let cellClasses = `

@@ -438,7 +438,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     const cell = row[oIdx];
                                                     const val = parseNumber(cell?.isMerged ? cell.value : cell);
                                                     const isHtCol = (h.includes('%HT') || h === '%HT V.Trội' || h === '%DKHT') && !isNaN(val);
-                                                    const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi') && !isNaN(val);
+                                                    const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi' || h === 'Target Hiệu quả quy đổi') && !isNaN(val);
                                                     const isTraGop = (h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC' || h === 'TRẢ CHẬM' || h === '%T.CHẬM' || h === 'TC' || h === 'Target Trả chậm') && !isNaN(val);
                                                     const isTtCol = h === '% TT';
 
@@ -448,11 +448,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         colorCls = val >= 100 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
                                                         cellTitle = `Mục tiêu: 100% (${val >= 100 ? 'Đạt' : 'Chưa đạt'})`;
                                                     } else if (isHqqd) {
-                                                        const targetQd = totalTargets.quyDoi ?? 40;
+                                                        const targetQd = totalTargets.quyDoi ?? 60;
                                                         colorCls = val >= targetQd ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
-                                                        cellTitle = `Target Quy đổi: ${targetQd}% (${val >= targetQd ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+                                                        cellTitle = `Target Hiệu quả quy đổi: ${targetQd}% (${val >= targetQd ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
                                                     } else if (isTraGop) {
-                                                        const targetTg = totalTargets.traGop ?? 45;
+                                                        const targetTg = totalTargets.traGop ?? 60;
                                                         colorCls = val >= targetTg ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
                                                         cellTitle = `Target Trả chậm: ${targetTg}% (${val >= targetTg ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
                                                     } else if (isTtCol) {
@@ -524,7 +524,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const cell = row[oIdx];
                                                 const val = parseNumber(cell?.isMerged ? cell.value : cell);
                                                 const isHtCol = (h.includes('%HT') || h === '%HT V.Trội' || h === '%DKHT') && !isNaN(val);
-                                                const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi') && !isNaN(val);
+                                                const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi' || h === 'Target Hiệu quả quy đổi') && !isNaN(val);
                                                 const isTraGop = (h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC' || h === 'TRẢ CHẬM' || h === '%T.CHẬM' || h === 'TC' || h === 'Target Trả chậm') && !isNaN(val);
                                                 const isTtCol = h === '% TT';
 
@@ -534,11 +534,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     colorCls = val >= 100 ? 'text-emerald-700 dark:text-emerald-400 font-bold' : val >= 85 ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
                                                     cellTitle = `Mục tiêu: 100% (${val >= 100 ? 'Đạt' : 'Chưa đạt'})`;
                                                 } else if (isHqqd) {
-                                                    const targetQd = storeTargets.quyDoi ?? 40;
+                                                    const targetQd = storeTargets.quyDoi ?? 60;
                                                     colorCls = val >= targetQd ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
-                                                    cellTitle = `Target Quy đổi: ${targetQd}% (${val >= targetQd ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
+                                                    cellTitle = `Target Hiệu quả quy đổi: ${targetQd}% (${val >= targetQd ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
                                                 } else if (isTraGop) {
-                                                    const targetTg = storeTargets.traGop ?? 45;
+                                                    const targetTg = storeTargets.traGop ?? 60;
                                                     colorCls = val >= targetTg ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-rose-700 dark:text-rose-400 font-bold';
                                                     cellTitle = `Target Trả chậm: ${targetTg}% (${val >= targetTg ? 'Đạt' : 'Chưa đạt - Cảnh báo'})`;
                                                 } else if (isTtCol) {

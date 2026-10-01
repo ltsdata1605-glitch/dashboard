@@ -150,10 +150,10 @@ const EmployeeProfileCard: React.FC<{
 }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const safeName = shortenSupermarketName(supermarketName || '');
-    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
-    const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 45);
-    const targetQuyDoi = storedQuyDoi ?? 40;
-    const targetTraGop = storedTraGop ?? 45;
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 60);
+    const [storedTraGop] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-tragop` as any) : null, 60);
+    const targetQuyDoi = storedQuyDoi ?? 60;
+    const targetTraGop = storedTraGop ?? 60;
 
     // --- State chọn nhân viên khi click vào tên ---
     const [isEmployeeSelectorOpen, setIsEmployeeSelectorOpen] = useState(false);
@@ -396,7 +396,7 @@ const EmployeeProfileCard: React.FC<{
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DTLK: <strong className="text-sky-700">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
-                        <span>HQQĐ: <strong className={((empRevenue?.hieuQuaQD || 0) * 100) >= targetQuyDoi ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-rose-700 dark:text-rose-400 font-bold"} title={`Target Quy đổi: ${targetQuyDoi}%`}>{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
+                        <span>HQQĐ: <strong className={((empRevenue?.hieuQuaQD || 0) * 100) >= targetQuyDoi ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-rose-700 dark:text-rose-400 font-bold"} title={`Target Hiệu quả quy đổi: ${targetQuyDoi}%`}>{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">

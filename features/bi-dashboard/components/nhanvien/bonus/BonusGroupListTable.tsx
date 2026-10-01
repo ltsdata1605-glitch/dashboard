@@ -26,8 +26,8 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
     highlightedEmployees, bonusData, revenueMap, onEmployeeClick, f, supermarketName,
 }) => {
     const safeName = shortenSupermarketName(supermarketName);
-    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 40);
-    const targetQuyDoi = storedQuyDoi ?? 40;
+    const [storedQuyDoi] = useIndexedDBState<number>(safeName ? (`targethero-${safeName}-quydoi` as any) : null, 60);
+    const targetQuyDoi = storedQuyDoi ?? 60;
 
     const columnThresholds = useMemo<Record<BonusColumnType, TierThresholds>>(() => {
         const employeeRows = displayList.filter(item => item.type !== 'department' && item.type !== 'total');
@@ -103,7 +103,7 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
                             >
                                 <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r whitespace-nowrap ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700 border-l-2 border-l-slate-300 dark:border-l-slate-600`}>{item.sumDtqd ? f.format(item.sumDtqd) : '-'}</td>
-                                <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700 ${item.sumHqqd ? (item.sumHqqd >= targetQuyDoi ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400') : ''}`} title={`Target Quy đổi: ${targetQuyDoi}%`}>{item.sumHqqd ? item.sumHqqd.toFixed(0) + '%' : '-'}</td>
+                                <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700 ${item.sumHqqd ? (item.sumHqqd >= targetQuyDoi ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400') : ''}`} title={`Target Hiệu quả quy đổi: ${targetQuyDoi}%`}>{item.sumHqqd ? item.sumHqqd.toFixed(0) + '%' : '-'}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-black border-slate-200 dark:border-slate-700 border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{f.format(Math.ceil((item.sumErp || 0) / 1000))}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-black border-slate-200 dark:border-slate-700 text-amber-600 dark:text-amber-400`}>{f.format(Math.ceil((item.sumTnong || 0) / 1000))}</td>
                                 <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>-</td>

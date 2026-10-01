@@ -66,31 +66,6 @@ export async function fetchSupermarketMap(userId?: string): Promise<SupermarketT
         }
     }
 
-    // 3. Fallback di chuyển dữ liệu cũ (chỉ chạy 1 lần cho người dùng đầu tiên nếu chưa có cấu hình riêng)
-    try {
-        const migrationKey = 'bi_migrated_legacy_map';
-        if (typeof window !== 'undefined' && !localStorage.getItem(migrationKey) && uid !== 'guest') {
-            const legacySnap = await getDocs(collection(db, 'biSupermarketMap'));
-            const legacyMap: SupermarketToKhoMap = {};
-            legacySnap.forEach(docSnap => {
-                const maKho = docSnap.id;
-                const names = docSnap.data()?.names;
-                if (Array.isArray(names)) {
-                    for (const name of names) {
-                        if (typeof name === 'string' && name) legacyMap[name] = maKho;
-                    }
-                }
-            });
-            if (Object.keys(legacyMap).length > 0) {
-                localStorage.setItem(migrationKey, 'true');
-                await saveSupermarketMap(legacyMap, uid);
-                return legacyMap;
-            }
-        }
-    } catch (e) {
-        console.warn('[biSupermarketMapService] Fallback legacy map error:', e);
-    }
-
     return cachedMap || {};
 }
 

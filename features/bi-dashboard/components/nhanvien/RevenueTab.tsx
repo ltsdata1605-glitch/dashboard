@@ -52,10 +52,10 @@ const RevenueView: React.FC<{
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dtqd', direction: 'desc' });
     const [isPrevMonthModalOpen, setIsPrevMonthModalOpen] = useState(false);
     
-    // Target động từ tab Cập nhật (Target Trả góp & Target Quy đổi)
+    // Target động từ tab Cập nhật (Target Trả chậm & Target Hiệu quả quy đổi)
     const safeName = shortenSupermarketName(supermarketName);
-    const [storedTraGopTarget] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 45);
-    const [storedQuyDoiTarget] = useIndexedDBState<number>(`targethero-${safeName}-quydoi`, 40);
+    const [storedTraGopTarget] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 60);
+    const [storedQuyDoiTarget] = useIndexedDBState<number>(`targethero-${safeName}-quydoi`, 60);
 
     const [multiTraGopTarget, setMultiTraGopTarget] = useState<number | null>(null);
     const [multiQuyDoiTarget, setMultiQuyDoiTarget] = useState<number | null>(null);
@@ -74,7 +74,7 @@ const RevenueView: React.FC<{
                     db.get<number>(`targethero-${sName}-tragop`),
                     db.get<number>(`targethero-${sName}-quydoi`)
                 ]);
-                return { tg: tg ?? 45, qd: qd ?? 40 };
+                return { tg: tg ?? 60, qd: qd ?? 60 };
             }));
             if (isMounted && results.length > 0) {
                 const avgTg = results.reduce((sum, r) => sum + r.tg, 0) / results.length;
@@ -87,8 +87,8 @@ const RevenueView: React.FC<{
         return () => { isMounted = false; };
     }, [activeSupermarkets]);
 
-    const targetTraGop = multiTraGopTarget ?? storedTraGopTarget ?? 45;
-    const targetQuyDoi = multiQuyDoiTarget ?? storedQuyDoiTarget ?? 40;
+    const targetTraGop = multiTraGopTarget ?? storedTraGopTarget ?? 60;
+    const targetQuyDoi = multiQuyDoiTarget ?? storedQuyDoiTarget ?? 60;
 
     // Lấy config từ DB
     const [storedColorSettings] = useIndexedDBState<ColorSettings>('rev-colors-v4', DEFAULT_COLOR_SETTINGS);
