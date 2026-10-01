@@ -6673,3 +6673,8 @@ Phát hiện kèm: userscript LUÔN báo `'6.4'` (hằng ghi cứng) nên Dashbo
 - Modal: bỏ "v6.9" ghi cứng, hiện bản đang chạy / bản mới nhất + hướng dẫn; nút mở tay nếu trình duyệt chặn tab.
 Test: unit 4/4; e2e `bi-sync-kiem-phien-ban.spec.ts` 3/3 (code cũ đỏ ca bản cũ), thêm vào CI.
 Lưu ý: mọi máy đang chạy ≤ 7.3 sẽ bị yêu cầu cập nhật 1 lần (vì chúng báo 6.4) — đúng ý đồ.
+
+## Report BI — chạy Tự động xong thì đóng modal ngay (2026-10-01)
+Chủ dự án: không cần bảng "Đã xong" ở Dashboard sau khi chạy xong (đã theo dõi trên trang MWG). `DataUpdater.tsx` onBiDone →
+`setAutoSyncModalOpen(false)`; vẫn còn toast + pháo giấy. Modal vẫn hiện khi đang chạy / lỗi / cần cập nhật userscript.
+Test `bi-auto-sync-xong-dong-modal.spec.ts` (trang Report BI thật, userscript giả lập): đỏ code cũ, xanh code mới; thêm CI.

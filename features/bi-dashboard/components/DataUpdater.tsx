@@ -557,6 +557,9 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
         const unsubDone = onBiDone(async (payload) => {
             setAutoSyncStatus('success');
+            // Chạy xong thì ĐÓNG modal ngay (chủ dự án 2026-10-01: không cần bảng này ở Dashboard sau khi xong —
+            // tiến trình đã xem trên trang MWG); kết quả báo bằng toast bên dưới.
+            setAutoSyncModalOpen(false);
             try { window.focus(); } catch { /* trình duyệt có thể không cho tự lấy focus */ }
             const targetSupermarket = activeSupermarket || supermarkets[0] || null;
             const res = await applyBiSyncResults(payload.mode, payload.results, targetSupermarket);
