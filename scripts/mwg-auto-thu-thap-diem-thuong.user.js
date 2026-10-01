@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.9
+// @version      7.10
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -468,7 +468,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.9';
+  const SCRIPT_VERSION_FALLBACK = '7.10';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -2526,7 +2526,7 @@
       { id: 4, title: 'Báo cáo Thi đua', desc: 'Thi đua Luỹ kế toàn cụm' },
       { id: 2, title: 'Ngành hàng BI', desc: 'Cây ngành hàng Luỹ kế từng siêu thị' },
       { id: 3, title: 'Doanh thu nhân viên', desc: 'Doanh thu nhân viên Luỹ kế từng siêu thị' },
-      { id: 5, title: 'Báo cáo Trả chậm', desc: 'Trả chậm từng nhân viên theo đối tác' },
+      { id: 5, title: 'Thi đua & Trả chậm', desc: 'Thi đua + trả chậm từng nhân viên, từng siêu thị' },
     ],
   };
   // Trạng thái bảng của job đang chạy (bước hiện tại, các bước đã xong)
@@ -2542,8 +2542,8 @@
     if (t.includes('hợp nhất')) return 1;
     if (t.includes('ngành hàng')) return 2;
     if (t.includes('nhân viên')) return 3;
+    if (t.includes('trả chậm')) return 5; // trước "thi đua": bước 5 Luỹ kế tên "Thi đua & Trả chậm"
     if (t.includes('thi đua')) return 4;
-    if (t.includes('trả chậm')) return 5;
     return null;
   }
 
@@ -2979,6 +2979,49 @@
     return lines.join('\n');
   }
 
+  // THI ĐUA theo NHÂN VIÊN của 1 siêu thị (competition-bymsg-get VIEWLEVEL "STORE" + STOREIDS, mẫu thật 09/2026 — 971 dòng
+  // = 39 chương trình × nhân viên). Ra đúng khuôn ô "Thi đua" của siêu thị (parseCompetitionData, định dạng BI mới): mỗi
+  // chương trình = dòng TÊN riêng, dòng "DOANH THU"|"SỐ LƯỢNG" riêng, rồi "<mã> - <tên>\t<giá trị>" từng nhân viên.
+  // (Để tên chung dòng với "DOANH THU" bằng tab thì bộ đọc bỏ tên, ra "Chương trình 0" — đã thử.) Bộ đọc lấy tên = dòng
+  // gần nhất phía trên KHÔNG phải "dòng rác trang" (bắt đầu bằng siêu thị/ngành hàng/vùng…, chứa "chương trình", toàn số…)
+  // → tên kiểu đó phải đổi nhẹ, nếu không nó lấy nhầm dòng nhân viên cuối của chương trình trước làm tên.
+  // Doanh thu API tính bằng TRIỆU có lẻ (vd 154.94) — ô Thi đua hiển thị DT theo "Tr" → giữ 2 chữ số lẻ; số lượng số nguyên.
+  // Bỏ dòng "online" (không phải nhân viên) và dòng của siêu thị khác nếu API có trả lẫn.
+  function acpSerializeCompetitionStaff(rows, storeId) {
+    const list = Array.isArray(rows) ? rows : [];
+    const byProgram = new Map();
+    for (const r of list) {
+      const id = String(r.salegroupid || r.staffuser || '');
+      if (!/^\d+$/.test(id)) continue;
+      if (storeId && r.storeid != null && String(r.storeid) !== String(storeId)) continue;
+      const key = r.programid || r.programname;
+      if (!byProgram.has(key)) byProgram.set(key, []);
+      byProgram.get(key).push(r);
+    }
+    if (byProgram.size === 0) return '';
+    const tenAnToan = (ten) => {
+      let t = String(ten || '').trim().replace(/chương trình/gi, 'CT');
+      if (!t || /^(\d+|TOP|BOTTOM|-)$/i.test(t) || /đã copy/i.test(t)
+        || /^(http|dashboards|tìm báo cáo|cập nhật lúc|tải lại|xuất excel|chép link|chép bảng|toàn công ty|lũy kế|luỹ kế|danh sách|toggle theme|miền|vùng|khu vực|siêu thị|ngành hàng)/i.test(t)) {
+        t = `TĐ ${t || 'CT'}`;
+      }
+      return t;
+    };
+    // Dòng đầu chứa "chương trình" để ô Thi đua nhận ra là dữ liệu thi đua (validateThiDuaData); bộ đọc coi là dòng rác
+    const lines = ['Thi đua nhân viên theo chương trình'];
+    for (const items of byProgram.values()) {
+      const first = items[0];
+      const isQty = acpCompIsQty(first);
+      lines.push(tenAnToan(first.programname), isQty ? 'SỐ LƯỢNG' : 'DOANH THU');
+      const vals = items.map((r) => ({
+        name: `${r.salegroupid || r.staffuser} - ${r.salegroupname || ''}`.trim(),
+        v: Number(isQty ? r.quantity : r.revenue) || 0,
+      })).sort((x, y) => y.v - x.v);
+      for (const x of vals) lines.push(`${x.name}\t${isQty ? Math.round(x.v) : x.v.toFixed(2)}`);
+    }
+    return lines.join('\n');
+  }
+
   // TRẢ CHẬM theo NHÂN VIÊN (tra-cham-matrix-get, VIEWLEVEL "STAFF", mẫu thật 09/2026): mỗi dòng API = 1 nhân viên × 1 đối tác.
   // Ra đúng khuôn ô "Trả chậm" (parseInstallmentData, định dạng A): "<mã> - <tên>\tDT trả góp\tDT siêu thị\tTỷ trọng\t(DT,%)…"
   // theo thứ tự đối tác ở dòng tiêu đề. Đối tác bộ đọc nhận ra (HomeCredit, FECredit, KREDIVO, HPL, SMARTPOS, Samsung,
@@ -3329,12 +3372,39 @@
             results.employee = Object.values(employeeByStore)[0] || '';
             results.employeeByStore = employeeByStore;
 
-            // BƯỚC 5 (chỉ Luỹ kế): Trả chậm theo NHÂN VIÊN từng siêu thị — tra-cham-matrix-get VIEWLEVEL STAFF
+            // BƯỚC 5 (chỉ Luỹ kế): ô "THI ĐUA & TRẢ CHẬM" của từng siêu thị — duyệt từng siêu thị như Ngành hàng BI:
+            // Thi đua theo nhân viên (competition-bymsg-get VIEWLEVEL STORE) + Trả chậm theo nhân viên (tra-cham-matrix-get STAFF)
             if (isLuyKe) {
               const installmentByStore = {};
+              const competitionByStore = {};
               for (let i = 0; i < storeList.length; i++) {
                 const st = storeList[i];
-                await reportProgress(5, totalSteps, 'Trả chậm', `[${i + 1}/${storeList.length}] Đang tải trả chậm nhân viên cho ${st.name}...`);
+                await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải thi đua nhân viên cho ${st.name}...`);
+                // Trang MWG gửi VIEWIDS là mã vùng của người xem (mẫu: "9567"), STOREIDS mới là siêu thị. Không có mã vùng
+                // → thử VIEWIDS = mã siêu thị, rỗng thì thử VIEWIDS null. Một siêu thị lỗi không được làm hỏng cả lượt.
+                try {
+                  let compStaff = [];
+                  for (const vid of [String(st.id), null]) {
+                    compStaff = await acpFetchBiApi('competition-bymsg-get', {
+                      MONTHKEY: monthKey,
+                      VIEWLEVEL: 'STORE',
+                      VIEWIDS: vid,
+                      ISVIEWSTORE: 0,
+                      TIMETYPE: 2,
+                      STOREIDS: String(st.id),
+                      PAGESIZE: 0,
+                    }, token);
+                    if (Array.isArray(compStaff) && compStaff.length > 0) break;
+                  }
+                  const serializedTd = acpSerializeCompetitionStaff(compStaff, st.id);
+                  if (serializedTd) {
+                    competitionByStore[st.name] = serializedTd;
+                    competitionByStore[st.id] = serializedTd;
+                  }
+                } catch (e) {
+                  console.warn('[BI-Sync] [API] Thi đua nhân viên lỗi cho', st.name, e);
+                }
+                await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải trả chậm nhân viên cho ${st.name}...`);
                 const tcData = await acpFetchBiApi('tra-cham-matrix-get', {
                   VIEWLEVEL: 'STAFF',
                   RSMIDS: null,
@@ -3347,7 +3417,8 @@
                 installmentByStore[st.id] = serializedTc;
               }
               results.installmentByStore = installmentByStore;
-              console.log('[BI-Sync] [API] Bước 5 Xong: Trả chậm cho', Object.keys(installmentByStore).length, 'siêu thị');
+              results.competitionByStore = competitionByStore;
+              console.log('[BI-Sync] [API] Bước 5 Xong: Thi đua', Object.keys(competitionByStore).length / 2, '& Trả chậm', Object.keys(installmentByStore).length / 2, 'siêu thị');
             }
             console.log('[BI-Sync] [API] Bước 4 Xong: Doanh thu nhân viên cho', Object.keys(employeeByStore).length, 'siêu thị');
 
