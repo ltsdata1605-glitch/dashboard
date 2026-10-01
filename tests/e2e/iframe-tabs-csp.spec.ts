@@ -57,7 +57,10 @@ test.describe('Tab dùng iframe không bị CSP chặn', () => {
 
         const frame = page.frames().find(f => f.url().includes('check-thuong.html'));
         expect(frame, 'không tìm thấy iframe check-thuong.html').toBeTruthy();
-        await expect(frame!.locator('body')).toContainText(/Tra cứu thưởng/i, { timeout: 15_000 });
+        // Kiểm nội dung ỔN ĐỊNH của trang (tiêu đề + ô nhập dữ liệu), không bám câu chữ trang trí: dòng
+        // "Tra cứu thưởng." ở phần đầu trang đã bị bỏ (5ee5f4bc) làm test đỏ dù iframe vẫn nạp đúng.
+        await expect.poll(() => frame!.title(), { timeout: 15_000 }).toMatch(/Tra Cứu Thưởng/i);
+        await expect(frame!.locator('body')).toContainText(/Nhập dữ liệu Check Thưởng/i, { timeout: 15_000 });
     });
 
     test('Tính thuế chạy NGAY TRONG app (không còn iframe Cloud Run), không khung nào bị CSP chặn', async ({ page }) => {
