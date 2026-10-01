@@ -18,6 +18,9 @@ export const EVT_BI_START_JOB = 'ycx-bi-automation:start-job';
 export const EVT_BI_PROGRESS = 'ycx-bi-automation:progress';
 export const EVT_BI_DONE = 'ycx-bi-automation:done';
 export const EVT_BI_ERROR = 'ycx-bi-automation:error';
+/** Nhờ userscript mở tab MWG bằng GM_openInTab (không bị chặn popup) — userscript ≥ 7.5 đáp lại OPEN_WORKER_OK. */
+export const EVT_BI_OPEN_WORKER = 'ycx-bi-automation:open-worker';
+export const EVT_BI_OPEN_WORKER_OK = 'ycx-bi-automation:open-worker-ok';
 
 export type BiSyncMode = 'realtime' | 'luyke';
 
@@ -255,13 +258,66 @@ export async function fetchLatestUserscriptVersion(): Promise<string | null> {
     }
 }
 
+// ====== TỰ CHẠY TIẾP SAU KHI CẬP NHẬT USERSCRIPT ======
+// Tampermonkey KHÔNG nạp bản mới vào trang đang mở sẵn: trang Dashboard vẫn giữ bản cũ tới khi tải lại → bấm Cập nhật
+// xong quay lại vẫn báo "bản cũ" (chủ dự án gặp 2026-10-01). Nên: ghi nhớ lượt dở vào sessionStorage (sống qua tải lại,
+// riêng từng tab) → quay lại tab thì tự tải lại → BiWrapper mở mục Cập nhật → DataUpdater tự chạy tiếp.
+const PENDING_KEY = 'ycx-bi-auto-pending';
+const PENDING_TTL_MS = 10 * 60 * 1000;
+/** Tự tải lại tối đa ngần này lần cho một lượt dở (chưa cập nhật mà cứ quay lại tab thì không tải lại mãi). */
+export const PENDING_MAX_RELOADS = 2;
+
+export interface PendingAutoSync { mode: BiSyncMode; ts: number; reloads: number }
+
+export function readPendingAutoSync(): PendingAutoSync | null {
+    try {
+        const raw = sessionStorage.getItem(PENDING_KEY);
+        if (!raw) return null;
+        const p = JSON.parse(raw) as PendingAutoSync;
+        if ((p.mode !== 'realtime' && p.mode !== 'luyke') || Date.now() - p.ts > PENDING_TTL_MS) return null;
+        return p;
+    } catch {
+        return null;
+    }
+}
+export function savePendingAutoSync(p: PendingAutoSync): void {
+    try { sessionStorage.setItem(PENDING_KEY, JSON.stringify(p)); } catch { /* chế độ riêng tư chặn storage */ }
+}
+export function clearPendingAutoSync(): void {
+    try { sessionStorage.removeItem(PENDING_KEY); } catch { /* bỏ qua */ }
+}
+
+/**
+ * Mở tab MWG. Lượt tự chạy tiếp (sau tải lại) KHÔNG có cú bấm của người dùng → window.open bị trình duyệt chặn, nên
+ * nhờ userscript (≥ 7.5) mở bằng GM_openInTab (không bị chặn); không có phản hồi thì mới thử window.open.
+ */
+async function moTabMwg(url: string, nhoUserscript: boolean): Promise<Window | 'userscript' | null> {
+    if (nhoUserscript) {
+        const ok = await new Promise<boolean>((resolve) => {
+            const onOk = () => { window.removeEventListener(EVT_BI_OPEN_WORKER_OK, onOk); resolve(true); };
+            window.addEventListener(EVT_BI_OPEN_WORKER_OK, onOk);
+            window.dispatchEvent(new CustomEvent(EVT_BI_OPEN_WORKER, { detail: { source: 'ycx-bi-automation', url } }));
+            setTimeout(() => { window.removeEventListener(EVT_BI_OPEN_WORKER_OK, onOk); resolve(false); }, 600);
+        });
+        if (ok) return 'userscript';
+    }
+    try {
+        return window.open(url, 'mwg_bi_worker');
+    } catch (e) {
+        console.warn('[BiAutoSync] Không mở được popup tab:', e);
+        return null;
+    }
+}
+
 /**
  * Khởi chạy chuỗi tự động thu thập: Kiểm tra userscript, mở tab worker, bắn event.
  * Userscript cũ hơn bản đang phát → TỰ MỞ trang cập nhật (Tampermonkey) và dừng, không chạy bằng bản cũ.
+ * `tuChayTiep`: lượt chạy lại tự động sau khi tải trang (không có cú bấm) — không mở lại trang cập nhật, chờ ping lâu hơn
+ * (userscript có thể chưa kịp nạp), mở tab MWG qua userscript.
  */
-export async function startBiAutoSyncSession(mode: BiSyncMode): Promise<{ jobId: string; workerWindow: Window | null }> {
+export async function startBiAutoSyncSession(mode: BiSyncMode, opts: { tuChayTiep?: boolean } = {}): Promise<{ jobId: string; workerWindow: Window | null; workerOpened: boolean }> {
     // Chạy song song để vẫn nằm trong thời hạn "người dùng vừa bấm" (trình duyệt mới cho mở tab mới)
-    const [isInstalled, latest] = await Promise.all([detectUserscript(800), fetchLatestUserscriptVersion()]);
+    const [isInstalled, latest] = await Promise.all([detectUserscript(opts.tuChayTiep ? 4000 : 800), fetchLatestUserscriptVersion()]);
     if (!isInstalled.installed) {
         throw new Error('USERSCRIPT_NOT_INSTALLED');
     }
@@ -269,21 +325,18 @@ export async function startBiAutoSyncSession(mode: BiSyncMode): Promise<{ jobId:
     const ver = isInstalled.version || '0';
     const canDat = latest || USERSCRIPT_MIN_VERSION;
     if (compareVersions(ver, canDat) < 0) {
-        try { window.open(USERSCRIPT_URL, '_blank'); } catch { /* trình duyệt chặn → modal có nút mở tay */ }
+        if (!opts.tuChayTiep) {
+            try { window.open(USERSCRIPT_URL, '_blank'); } catch { /* trình duyệt chặn → modal có nút mở tay */ }
+        }
         throw new Error(`USERSCRIPT_OUTDATED:${ver}:${latest || ''}`);
     }
 
     const jobId = makeJobId();
     sendStartBiJob(jobId, mode);
 
-    // Mở tab worker trực tiếp trong click gesture kèm URL query + hash để userscript trên tab MWG đọc được ngay lập tức
+    // Mở tab worker kèm URL query + hash để userscript trên tab MWG đọc được ngay lập tức
     const targetUrl = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${mode}&job_id=${jobId}#ycx_mode=${mode}&job_id=${jobId}`;
-    let workerWindow: Window | null = null;
-    try {
-        workerWindow = window.open(targetUrl, 'mwg_bi_worker');
-    } catch (e) {
-        console.warn('[BiAutoSync] Không mở được popup tab:', e);
-    }
-
-    return { jobId, workerWindow };
+    const tab = await moTabMwg(targetUrl, Boolean(opts.tuChayTiep));
+    const workerWindow = tab && tab !== 'userscript' ? tab : null;
+    return { jobId, workerWindow, workerOpened: Boolean(tab) };
 }

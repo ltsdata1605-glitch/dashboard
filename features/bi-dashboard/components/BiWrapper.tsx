@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import { readPendingAutoSync } from '../services/biAutoSyncService';
 import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
@@ -55,9 +56,10 @@ const TabSpinner = () => (
  */
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
-    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater'>('dashboard');
+    // Còn lượt "Tự động" dở (vừa tải lại sau khi cập nhật userscript) → mở thẳng mục Cập nhật để DataUpdater chạy tiếp
+    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater'>(() => (readPendingAutoSync() ? 'updater' : 'dashboard'));
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
-    const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
+    const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(readPendingAutoSync() ? ['dashboard', 'updater'] : ['dashboard']));
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 

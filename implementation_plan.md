@@ -6687,3 +6687,16 @@ trình như "PK - Sạc" thành siêu thị (hiển thị rút gọn "Sạc"); "
 Sửa `extractAllSupermarketList`: tên từ Thi đua chỉ nhận khi trông như siêu thị (mã kho / tiền tố chuỗi) hoặc khớp siêu thị
 đã biết từ Doanh thu / mã kho / tự thêm; bỏ chữ "Siêu thị" trơn. Bộ đọc nhận thêm ĐMM/ĐMS.
 Test `danhSachSieuThi.test.ts` 3/3; e2e BI (thi đua, nhân viên theo siêu thị, dữ liệu theo tài khoản) 6/6.
+
+## BI-Sync 7.5 — cập nhật userscript xong tự chạy tiếp (2026-10-01)
+Triệu chứng (chủ dự án): bấm Update trong Tampermonkey, quay lại trang vẫn báo "bản cũ v6.4", phải tự tải lại.
+Nguyên nhân: Tampermonkey KHÔNG nạp bản mới vào trang đang mở — bản cũ trong trang vẫn trả lời ping tới khi tải lại.
+Sửa:
+- `biAutoSyncService.ts`: lượt dở lưu `sessionStorage['ycx-bi-auto-pending']` {mode, ts, reloads} (10 phút);
+  `startBiAutoSyncSession(mode, { tuChayTiep })`: chờ ping 4s, không mở lại trang cập nhật, mở tab MWG qua userscript
+  (`ycx-bi-automation:open-worker` → GM_openInTab) vì lượt không có cú bấm thì window.open bị chặn.
+- `DataUpdater.tsx`: báo "cần cập nhật" → nhớ lượt; quay lại tab (visibilitychange) → tự tải lại (tối đa 2 lần/lượt);
+  tải xong còn lượt dở → tự chạy tiếp; tab không mở được → toast + nút "Mở lại tab MWG". `BiWrapper.tsx`: còn lượt dở →
+  mở thẳng mục Cập nhật.
+- Userscript 7.5: @grant GM_openInTab + window.close; nhận open-worker CHỈ với URL baocao.dienmayxanh.com.
+Test `bi-sync-cap-nhat-xong-tu-chay-tiep.spec.ts` 2/2 (code cũ: đứng im không tải lại); thêm CI. Các test bi-sync khác 18/18.

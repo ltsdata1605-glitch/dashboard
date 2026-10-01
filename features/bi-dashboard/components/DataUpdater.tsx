@@ -20,6 +20,10 @@ import {
     BiSyncMode,
     BiSyncProgress,
     startBiAutoSyncSession,
+    readPendingAutoSync,
+    savePendingAutoSync,
+    clearPendingAutoSync,
+    PENDING_MAX_RELOADS,
     applyBiSyncResults,
     onBiProgress,
     onBiDone,
@@ -524,30 +528,68 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const [autoSyncError, setAutoSyncError] = useState<string>('');
     const workerWindowRef = React.useRef<Window | null>(null);
 
-    const handleStartAutoSync = async (mode: BiSyncMode) => {
+    // Số lần đã tự tải lại cho lượt đang dở (xem readPendingAutoSync) — chặn vòng tải lại khi chưa cập nhật
+    const pendingReloadsRef = React.useRef(0);
+
+    const handleStartAutoSync = async (mode: BiSyncMode, opts: { tuChayTiep?: boolean } = {}) => {
         setAutoSyncMode(mode);
         setAutoSyncProgress(null);
         setAutoSyncError('');
         setAutoSyncStatus('running');
         setAutoSyncModalOpen(true);
+        if (!opts.tuChayTiep) pendingReloadsRef.current = 0;
 
         try {
-            const { workerWindow } = await startBiAutoSyncSession(mode);
+            const { workerWindow, workerOpened } = await startBiAutoSyncSession(mode, opts);
             workerWindowRef.current = workerWindow;
+            clearPendingAutoSync();
+            if (!workerOpened) {
+                // Trình duyệt chặn mở tab (không có cú bấm) — nút "Mở lại tab MWG" trong modal để bấm 1 lần
+                toast('Bấm "Mở lại tab MWG" để tiếp tục — trình duyệt chặn tự mở tab.', { icon: 'ℹ️', duration: 6000 });
+            }
         } catch (err: any) {
             const msg = err?.message || '';
             if (msg === 'USERSCRIPT_NOT_INSTALLED') {
+                clearPendingAutoSync();
                 setAutoSyncStatus('not-installed');
             } else if (msg.startsWith('USERSCRIPT_OUTDATED')) {
                 setAutoSyncStatus('outdated');
                 setAutoSyncCurrentVersion(msg.split(':')[1] || '');
                 setAutoSyncLatestVersion(msg.split(':')[2] || '');
+                // Nhớ lượt dở: cập nhật xong quay lại tab → tự tải lại để nạp bản mới → tự chạy tiếp
+                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current });
             } else {
+                clearPendingAutoSync();
                 setAutoSyncStatus('error');
                 setAutoSyncError(msg || 'Không thể khởi chạy quy trình tự động.');
             }
         }
     };
+
+    // Tải trang xong mà còn lượt dở (vừa cập nhật userscript) → tự chạy tiếp, không cần bấm lại
+    const handleStartRef = React.useRef(handleStartAutoSync);
+    handleStartRef.current = handleStartAutoSync;
+    useEffect(() => {
+        const p = readPendingAutoSync();
+        if (!p) return;
+        pendingReloadsRef.current = p.reloads;
+        void handleStartRef.current(p.mode, { tuChayTiep: true });
+    }, []);
+
+    // Đang báo "cần cập nhật": người dùng quay lại tab (sau khi bấm Update trong Tampermonkey) → tự tải lại trang,
+    // vì Tampermonkey chỉ nạp bản mới khi trang tải lại. Tối đa PENDING_MAX_RELOADS lần cho một lượt.
+    useEffect(() => {
+        if (!autoSyncModalOpen || autoSyncStatus !== 'outdated') return;
+        const onVisible = () => {
+            if (document.visibilityState !== 'visible') return;
+            const p = readPendingAutoSync();
+            if (!p || p.reloads >= PENDING_MAX_RELOADS) return;
+            savePendingAutoSync({ ...p, reloads: p.reloads + 1 });
+            window.location.reload();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => document.removeEventListener('visibilitychange', onVisible);
+    }, [autoSyncModalOpen, autoSyncStatus]);
 
     useEffect(() => {
         const unsubProgress = onBiProgress((prog) => {
@@ -1133,7 +1175,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 currentVersion={autoSyncCurrentVersion}
                 latestVersion={autoSyncLatestVersion}
                 errorMessage={autoSyncError}
-                onClose={() => setAutoSyncModalOpen(false)}
+                onClose={() => { setAutoSyncModalOpen(false); clearPendingAutoSync(); }}
                 onCancel={() => {
                     setAutoSyncStatus('idle');
                     setAutoSyncProgress(null);
