@@ -6878,3 +6878,26 @@ là tái phát lỗi cũ → bước 0 (ảnh mốc) + giữ test e2e iOS sẵn 
   Còn lại ngoài phạm vi: html2canvas ở In Sticker `printService` (trang IN PDF, không phải xuất ảnh).
 - **XA-4 (xong 2026-10-01)** — `components/shared/export/khongBanSao.test.ts` chặn import thư viện chụp ảnh ngoài thư mục
   chung (đã thử cố ý vi phạm: test đỏ đúng file); CLAUDE.md mục 1 (thứ dùng chung thứ 4) + DESIGN_SYSTEM.md mục 5b.
+
+---
+
+## Tự động YCX cho Phân tích (2026-10-01)
+
+Yêu cầu: khung giống "AUTO SYNC" của Report BI ở màn Phân tích — "Tự động đổ dữ liệu YCX và cập nhật YCX" (Realtime):
+mở `report.mwgroup.vn/home/dashboard/77` → Tìm theo (Kho) = Kho tạo, Ngành hàng = tất cả, Kho = tất cả, ngày mặc định
+(hôm nay) → Xuất excel → chờ ở Lịch sử xuất excel → tải file → nạp vào Phân tích như bấm "File YCX" → "Tệp Realtime".
+
+Đọc từ HAR chủ dự án gửi (chỉ có lúc TẢI TRANG, không có lượt bấm Xuất excel):
+- Báo cáo 77 = AngularJS; nút Xuất gọi `scope.ExportData()` → `POST Home/ExportExcelDynamicReport` với gói `listParam`
+  dựng từ `scope.ListCondition` (hàm `c()` của trang). Điều kiện: V_FROMDATE/V_TODATE (DATE, mặc định hôm nay),
+  V_STORESEARCHTYPE (COMBOBOX "Timtheo(kho)": 1 Kho xuất / **2 Kho tạo**, bắt buộc), V_MAINGROUPIDLIST (MULTISELECT
+  MAINGROUP — 115 nhóm từ `Home/SearchMainGroup`), V_STOREIDLIST (để trống = tất cả)…
+- Lịch sử: `POST ManagerDownload/GetData {userName}` → dòng có DYNAMICREPORTNAME, STARTTIME, ENDTIMESTRING, LINKDOWNLOAD,
+  ISLOADING. Trang tải bằng LINKDOWNLOAD (kiểm Content-Length ổn định 2 lần trước khi tải).
+
+Thiết kế: userscript (bản 7.13) trên report.mwgroup.vn đặt điều kiện vào CHÍNH scope của trang rồi gọi `ExportData()`
+(để trang tự dựng gói & định dạng ngày — không đoán định dạng), dò GetData tới khi có link, báo link qua GM storage;
+userscript phía Dashboard tải file bằng GM_xmlhttpRequest (kèm cookie MWG) rồi `postMessage` ArrayBuffer cho trang;
+Phân tích nhận file → `handleFileProcessing([file], false, false)` (= Tệp Realtime). Khung "AUTO SYNC YCX" nổi bên phải
+(desktop, tự thu gọn < 1536px) + modal tiến trình 5 bước. Rủi ro: chưa thấy gói xuất/GetData thật (HAR không có) —
+code chịu được cả mảng lẫn {Data}, STARTTIME dạng /Date()/ lẫn ISO; lỗi thì báo rõ bước hỏng để chủ dự án gửi HAR bổ sung.
