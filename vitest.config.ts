@@ -12,7 +12,7 @@ export default defineConfig({
     test: {
         environment: 'node',
         include: ['**/*.test.ts'],
-        exclude: ['node_modules/**', 'dist/**', 'archive/**', '_archive/**', 'functions/**', 'price-scraper-server/**'],
+        exclude: ['node_modules/**', 'dist/**', 'archive/**', '_archive/**', 'functions/**', 'price-scraper-server/**', '.claude/**'],
         css: false,
     },
 });

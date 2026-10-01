@@ -48,6 +48,7 @@ import PendingApprovalView from './components/views/PendingApprovalView';
 import CouponConverterView from './components/views/CouponConverterView';
 import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
+import GlobalAutoSyncDock from './components/layout/GlobalAutoSyncDock';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 
 /**
@@ -361,6 +362,8 @@ function AppContent() {
                     </div>
                 </main>
             </div>
+            {/* Global Auto Sync Pro Dock: Luôn hiển thị ở mọi nơi trên Laptop/Desktop */}
+            <GlobalAutoSyncDock />
         </div>
     );
 }

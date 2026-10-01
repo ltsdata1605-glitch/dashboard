@@ -83,7 +83,7 @@ test('Phân tích: khung AUTO SYNC YCX → mở báo cáo 77 → tiến trình �
 
     const dock = page.getByTestId('ycx-auto-dock');
     await expect(dock).toBeVisible();
-    await expect(dock).toContainText('Auto Sync YCX');
+    await expect(dock).toContainText('Auto Sync');
     await expect(dock).toContainText('bản 7.14', { timeout: 5000 });
     await page.screenshot({ path: test.info().outputPath('1-khung.png') });
 

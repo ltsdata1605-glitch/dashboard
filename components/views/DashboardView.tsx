@@ -46,7 +46,6 @@ const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal
 import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
-import YcxAutoSyncDock from '../analysis/YcxAutoSyncDock';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Icon } from '../common/Icon';
@@ -158,6 +157,26 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         if (pending) setTimeout(() => mainFileInputRef.current?.click(), 300);
         return () => window.removeEventListener('ycx-request-upload-ycx', onRequestUpload);
     }, []);
+
+    // Lắng nghe file YCX từ GlobalAutoSyncDock (chức năng Tự động YCX Realtime)
+    useEffect(() => {
+        const pendingFile = (window as any).__pendingYcxAutoSyncFile;
+        if (pendingFile) {
+            delete (window as any).__pendingYcxAutoSyncFile;
+            handleFileProcessing([pendingFile], false, false);
+        }
+
+        const handleAutoSyncFile = (e: any) => {
+            const file = e.detail?.file;
+            if (file) {
+                delete (window as any).__pendingYcxAutoSyncFile;
+                handleFileProcessing([file], false, false);
+            }
+        };
+        window.addEventListener('ycx-auto-sync-file', handleAutoSyncFile);
+        return () => window.removeEventListener('ycx-auto-sync-file', handleAutoSyncFile);
+    }, [handleFileProcessing]);
+
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
 
     const hasSalesData = !!(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)));
@@ -359,11 +378,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                 <DashboardContext.Provider value={logic}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingUploadFiles(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
-
-                    {/* Khung AUTO SYNC YCX: tự xuất file YCX Realtime trên report.mwgroup.vn rồi nạp như "File YCX" → "Tệp Realtime" */}
-                    <YcxAutoSyncDock
-                        onFile={(file) => handleFileProcessing([file], false, false)}
-                    />
 
                     <Header
                         onNewFile={handleNewFileClick}
