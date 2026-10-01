@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.4
+// @version      7.5
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -20,11 +20,19 @@
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_addValueChangeListener
+// @grant        GM_openInTab
+// @grant        window.close
 // @updateURL    https://dashboard.pro.vn/scripts/mwg-auto-thu-thap-diem-thuong.user.js
 // @downloadURL  https://dashboard.pro.vn/scripts/mwg-auto-thu-thap-diem-thuong.user.js
 // ==/UserScript==
 
 /*
+ * BẢN 7.5 — CẬP NHẬT XONG TỰ CHẠY TIẾP:
+ * - Tampermonkey không nạp bản mới vào trang đang mở → Dashboard tự tải lại khi người dùng quay lại tab, rồi tự chạy
+ *   tiếp lượt Tự động. Lượt này không có cú bấm nên Dashboard nhờ userscript mở tab MWG bằng GM_openInTab
+ *   (sự kiện 'ycx-bi-automation:open-worker', chỉ nhận URL baocao.dienmayxanh.com).
+ * - @grant window.close: tab MWG mở bằng GM_openInTab vẫn tự đóng được khi xong (setParent → về lại tab Dashboard).
+ *
  * BẢN 7.4 — BÁO ĐÚNG PHIÊN BẢN CHO DASHBOARD:
  * - SCRIPT_VERSION lấy từ GM_info (dòng @version), không còn ghi cứng '6.4'. Dashboard so với bản đang phát trên
  *   dashboard.pro.vn; máy chạy bản cũ hơn → Dashboard tự mở trang cập nhật trước khi chạy Tự động.
@@ -446,7 +454,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.4';
+  const SCRIPT_VERSION_FALLBACK = '7.5';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -1318,6 +1326,19 @@
         // bỏ qua lỗi đọc GM storage khi poll — sẽ thử lại ở lượt sau
       }
     }, 2500);
+
+    // Bản 7.5: Dashboard nhờ mở tab MWG khi KHÔNG có cú bấm (tự chạy tiếp sau khi tải lại để nạp bản mới) —
+    // window.open của trang bị chặn popup, GM_openInTab thì không. CHỈ mở trang báo cáo MWG.
+    window.addEventListener('ycx-bi-automation:open-worker', (e) => {
+      const url = e && e.detail && e.detail.url;
+      if (typeof url !== 'string' || !/^https:\/\/baocao\.dienmayxanh\.com\//.test(url)) return;
+      try {
+        GM_openInTab(url, { active: true, insert: true, setParent: true });
+        window.dispatchEvent(new CustomEvent('ycx-bi-automation:open-worker-ok', { detail: { url } }));
+      } catch (err) {
+        console.warn('[BI Bridge] GM_openInTab lỗi:', err);
+      }
+    });
 
     // Cầu nối Tự động hoá BI (Realtime & Luỹ kế)
     window.addEventListener(EVT_BI_START_JOB, (e) => {
