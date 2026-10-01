@@ -171,6 +171,14 @@ service cloud.firestore {
         allow read, write: if isSignedIn() && (isSelf(userId) || isManager());
       }
     }
+
+    // ───────────────────────────────────────────────────────────────────────────
+    // BỘ NHỚ LƯU TRỮ HÌNH ẢNH BOT LINE (Tải ảnh trực tiếp & Phục vụ webhook)
+    // ───────────────────────────────────────────────────────────────────────────
+    match /bot_media/{mediaId} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
   }
 }
 

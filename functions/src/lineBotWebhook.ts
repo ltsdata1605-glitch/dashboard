@@ -1601,13 +1601,68 @@ function filterPmhByUsers(text: string, candidateNames: string[], liffId?: strin
 export const lineBotWebhook = onRequest(
     { region: DEFAULT_REGION, cors: true },
     async (req, res) => {
-        // GET verification
+        // GET handler: Kiểm tra webhook hoặc phục vụ trực tiếp ảnh đính kèm (mediaId)
         if (req.method === 'GET') {
+            const mediaId = String(req.query.mediaId || req.query.media || '').trim();
+            if (mediaId) {
+                try {
+                    const snap = await db.collection('bot_media').doc(mediaId).get();
+                    if (!snap.exists) {
+                        res.status(404).send('Media not found');
+                        return;
+                    }
+                    const data = snap.data() || {};
+                    const base64Data = String(data.base64 || '').trim();
+                    const contentType = String(data.contentType || 'image/jpeg');
+                    if (!base64Data) {
+                        res.status(404).send('Image data empty');
+                        return;
+                    }
+                    const cleanBase64 = base64Data.replace(/^data:image\/[a-zA-Z0-9+]+;base64,/, '');
+                    const buffer = Buffer.from(cleanBase64, 'base64');
+                    res.setHeader('Content-Type', contentType);
+                    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+                    res.setHeader('Content-Length', buffer.length);
+                    res.status(200).send(buffer);
+                    return;
+                } catch (err: any) {
+                    console.error('Lỗi phục vụ media bot:', err);
+                    res.status(500).send('Error loading media');
+                    return;
+                }
+            }
             res.status(200).send('LINE Bot Webhook is active!');
             return;
         }
 
         const action = String(req.query.action || req.body?.action || '').trim();
+
+        // 0. Action: Tải ảnh trực tiếp lên Cloud (Upload Media Proxy)
+        if (action === 'uploadMedia') {
+            try {
+                const { base64, contentType, mediaId: customId, name } = req.body || {};
+                if (!base64) {
+                    res.status(400).json({ success: false, error: 'Thiếu dữ liệu base64 hình ảnh' });
+                    return;
+                }
+                const mediaId = customId || `media_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                const cleanBase64 = String(base64).replace(/^data:image\/[a-zA-Z0-9+]+;base64,/, '');
+                await db.collection('bot_media').doc(mediaId).set({
+                    id: mediaId,
+                    base64: cleanBase64,
+                    contentType: contentType || 'image/jpeg',
+                    name: name || 'image.jpg',
+                    createdAt: new Date().toISOString()
+                });
+                const url = `https://${DEFAULT_REGION}-dashboa-7e20b.cloudfunctions.net/lineBotWebhook?mediaId=${mediaId}`;
+                res.status(200).json({ success: true, mediaId, url });
+                return;
+            } catch (err: any) {
+                console.error('Lỗi uploadMedia:', err);
+                res.status(500).json({ success: false, error: err.message || 'Lỗi lưu media' });
+                return;
+            }
+        }
 
         // 1. Action: Xác thực token & lấy thông tin Bot (Proxy cho Frontend tránh lỗi CORS từ api.line.me)
         if (action === 'verifyToken') {
