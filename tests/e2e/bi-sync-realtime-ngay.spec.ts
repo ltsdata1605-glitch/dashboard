@@ -83,3 +83,50 @@ test('Tự động Realtime: mọi lượt gọi API chỉ lấy HÔM NAY, Thi �
     expect(thiDua).toHaveLength(1);
     expect(thiDua[0].body.TIMETYPE, 'Thi đua Realtime: TIMETYPE 1 (2 = Luỹ kế)').toBe(1);
 });
+
+test('bảng tiến trình trên trang MWG: cùng giao diện modal Dashboard, sáng đúng bước, xong báo hoàn tất', async ({ page }) => {
+    let thaThiDua: () => void = () => {};
+    const choThiDua = new Promise<void>((r) => { thaThiDua = r; });
+    await page.route('https://baocao.dienmayxanh.com/**', async (route) => {
+        const url = route.request().url();
+        if (url.includes('/kb-api/')) {
+            // Giữ API Thi đua lại để chụp được lúc bảng đang ở bước Thi đua
+            if (url.includes('competition-bymsg-get')) await choThiDua;
+            const data = url.includes('filter-store-getbyasmlist') ? [{ id: 1678, Value: '1678 - ĐMM_AGI_TTO - Tri Tôn' }] : [];
+            return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data }) });
+        }
+        return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: FIXTURE });
+    });
+    await page.addInitScript(() => {
+        const w = window as unknown as Record<string, unknown>;
+        const store = new Map<string, unknown>();
+        w.__gm = store;
+        w.GM_setClipboard = () => {};
+        w.GM_getValue = (k: string, d: unknown) => (store.has(k) ? store.get(k) : d);
+        w.GM_setValue = (k: string, v: unknown) => { store.set(k, v); };
+        w.GM_addValueChangeListener = () => 0;
+        localStorage.setItem('oidc.user:test', JSON.stringify({ access_token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl' }));
+    });
+    await page.setViewportSize({ width: 1314, height: 884 });
+    await page.goto(BI_URL);
+    await page.addScriptTag({ content: readFileSync(USERSCRIPT_PATH, 'utf-8') });
+
+    const bang = page.locator('#acp-bi-sync-overlay');
+    await expect(bang).toContainText('Tự động Cập nhật Realtime');
+    await expect(bang).toContainText('4 báo cáo');
+    const dong = (ten: string) => bang.locator('div[style*="justify-content:space-between"]', { hasText: ten }).first();
+    await expect(dong('Báo cáo Thi đua')).toContainText('Đang xử lý', { timeout: 30_000 });
+    await expect(dong('Doanh thu hợp nhất')).toContainText('Đã xong');
+    await expect(dong('Ngành hàng BI')).not.toContainText('Đã xong');
+    await expect(bang).toContainText('2/4 (50%)');
+    await page.screenshot({ path: test.info().outputPath('mwg-dang-chay.png') });
+
+    thaThiDua();
+    await expect(bang).toContainText('Toàn bộ 4 báo cáo Realtime đã chuyển về Dashboard YCX', { timeout: 30_000 });
+    for (const ten of ['Doanh thu hợp nhất', 'Ngành hàng BI', 'Doanh thu nhân viên', 'Báo cáo Thi đua']) {
+        await expect(dong(ten)).toContainText('Đã xong');
+    }
+    await page.screenshot({ path: test.info().outputPath('mwg-xong.png') });
+    // Lớp phủ không chặn chuột trang phía sau (đường UI Fallback cần bấm nút trên trang)
+    expect(await bang.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+});

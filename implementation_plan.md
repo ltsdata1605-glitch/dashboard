@@ -6654,3 +6654,10 @@ Yêu cầu chủ dự án: bảng tiến trình trên tab MWG phải hiện tron
   xong → focus Dashboard + đóng tab MWG sau 1,2s. Đường UI Fallback vẫn giữ tab MWG ở trước.
 - Test `bi-auto-sync-modal-tien-trinh.spec.ts` 3/3 (đỏ trên modal cũ 3/3), thêm vào CI. CHƯA kiểm được trên Chrome thật:
   trình duyệt có thể chặn `opener.focus()` — khi đó đóng tab MWG vẫn đưa về tab đã mở nó.
+
+## BI-Sync 7.3 — bảng tiến trình đầy đủ trên trang MWG (2026-10-01)
+Chủ dự án: bảng tiến trình (giống modal Dashboard) phải hiện ngay trên baocao.dienmayxanh.com lúc chạy.
+Userscript 7.3: thay hộp nhỏ góc phải bằng bảng giữa màn hình cùng giao diện modal (tiêu đề, "4 báo cáo", từng bước
+Đang xử lý/Đã xong theo TÊN bước, thông điệp + thanh %, báo hoàn tất / lỗi). Hiện ngay khi job bắt đầu. Ở lại tab MWG
+lúc chạy (bỏ chuyển về Dashboard đầu job của 7.2); xong chờ 2 giây → về Dashboard → đóng tab. Lớp nền `pointer-events:none`.
+Test `bi-sync-realtime-ngay.spec.ts` thêm ca bảng (giữ API Thi đua để chụp lúc đang chạy) — 2/2; ảnh đã xem.

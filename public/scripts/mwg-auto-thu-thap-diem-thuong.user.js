@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.2
+// @version      7.3
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -25,6 +25,13 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.3 — BẢNG TIẾN TRÌNH ĐẦY ĐỦ NGAY TRÊN TRANG MWG:
+ * - Thay hộp nhỏ góc phải bằng bảng giữa màn hình CÙNG GIAO DIỆN modal Dashboard: tiêu đề, nhãn "4 báo cáo",
+ *   từng bước (Đang xử lý / Đã xong), thông điệp + thanh %; xong hiện thông báo hoàn tất.
+ * - Ở lại trang MWG trong lúc chạy để người dùng theo dõi (bỏ chuyển về Dashboard ngay lúc bắt đầu của 7.2).
+ *   Xong: chờ 2 giây cho thấy đủ "Đã xong" → về tab Dashboard → đóng tab MWG.
+ * - Lớp nền mờ không chặn chuột, đường UI Fallback vẫn bấm được trang phía sau.
+ *
  * BẢN 7.2 — THEO DÕI TIẾN TRÌNH NGAY TẠI DASHBOARD, XONG TỰ QUAY VỀ:
  * - Direct API Engine không cần thao tác trên màn hình → vừa lấy được token là trả focus về tab Dashboard YCX
  *   (window.opener.focus()) để người dùng xem tiến trình trong modal; tab MWG chạy nền.
@@ -2459,47 +2466,125 @@
     return acpExtractVisibleText();
   }
 
-  function acpEnsureProgressOverlay(step, totalSteps, stepName, message) {
+  // ====== BẢNG TIẾN TRÌNH TRÊN TRANG MWG (bản 7.3) — cùng giao diện modal "Tự động Cập nhật" của Dashboard YCX ======
+  const ACP_SYNC_STEPS = {
+    realtime: [
+      { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
+      { id: 2, title: 'Ngành hàng BI', desc: 'Mở rộng cây [+] & sao chép ngành hàng' },
+      { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
+      { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép bảng thi đua' },
+    ],
+    luyke: [
+      { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
+      { id: 2, title: 'Ngành hàng BI', desc: 'Mở rộng cây [+] & sao chép ngành hàng' },
+      { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
+      { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép thi đua (Cụm & Siêu thị)' },
+      { id: 5, title: 'Báo cáo Trả chậm', desc: 'Chọn tất cả & sao chép tỷ trọng trả chậm' },
+    ],
+  };
+  // Trạng thái bảng của job đang chạy (bước hiện tại, các bước đã xong)
+  const acpSyncPanel = { mode: 'realtime', current: null, done: new Set(), step: 0, totalSteps: 0, stepName: '', message: '', phase: 'running', error: '' };
+
+  function acpEscHtml(v) {
+    return String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  // Bước xác định THEO TÊN, không theo số: Direct API báo 2 = Thi đua, đường UI báo 2 = Ngành hàng
+  function acpStepIdByName(stepName) {
+    const t = String(stepName || '').toLowerCase();
+    if (t.includes('hợp nhất')) return 1;
+    if (t.includes('ngành hàng')) return 2;
+    if (t.includes('nhân viên')) return 3;
+    if (t.includes('thi đua')) return 4;
+    if (t.includes('trả chậm')) return 5;
+    return null;
+  }
+
+  function acpRenderSyncPanel() {
     let overlay = document.getElementById('acp-bi-sync-overlay');
     if (!overlay) {
       overlay = document.createElement('div');
       overlay.id = 'acp-bi-sync-overlay';
+      // Lớp nền mờ KHÔNG chặn chuột (pointer-events:none) — đường UI Fallback vẫn bấm được trang phía sau
       Object.assign(overlay.style, {
-        position: 'fixed',
-        top: '20px',
-        right: '20px',
-        zIndex: 999999,
-        width: '320px',
-        padding: '16px',
-        borderRadius: '12px',
-        background: 'rgba(15, 23, 42, 0.95)',
-        backdropFilter: 'blur(8px)',
-        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        color: '#fff',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        fontSize: '13px',
-        lineHeight: '1.5',
-        transition: 'all 0.3s ease',
+        position: 'fixed', inset: '0', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(15, 23, 42, 0.35)', pointerEvents: 'none', padding: '16px',
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', lineHeight: '1.45',
       });
       document.body.appendChild(overlay);
     }
+    const st = acpSyncPanel;
+    const isRealtime = st.mode === 'realtime';
+    const steps = ACP_SYNC_STEPS[isRealtime ? 'realtime' : 'luyke'];
+    const percent = st.phase === 'done' ? 100 : (st.totalSteps > 0 ? Math.min(100, Math.round((st.step / st.totalSteps) * 100)) : 0);
 
-    const percent = Math.round((step / totalSteps) * 100);
-    overlay.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <span style="font-weight:700;color:#60a5fa;display:flex;align-items:center;gap:6px;">
-          <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#3b82f6;box-shadow:0 0 8px #3b82f6;"></span>
-          Tự động cập nhật BI
-        </span>
-        <span style="font-size:11px;font-weight:700;color:#94a3b8;">${step}/${totalSteps} (${percent}%)</span>
-      </div>
-      <div style="font-weight:600;font-size:14px;color:#f8fafc;margin-bottom:4px;">${stepName}</div>
-      <div style="color:#cbd5e1;font-size:12px;margin-bottom:10px;">${message}</div>
-      <div style="width:100%;height:6px;background:rgba(255,255,255,0.1);border-radius:999px;overflow:hidden;">
-        <div style="width:${percent}%;height:100%;background:linear-gradient(90deg, #3b82f6, #6366f1);border-radius:999px;transition:width 0.4s ease;"></div>
-      </div>
-    `;
+    const rows = steps.map((s) => {
+      const isDone = st.phase === 'done' || (st.done.has(s.id) && st.current !== s.id);
+      const isCur = st.phase === 'running' && st.current === s.id;
+      const border = isCur ? '#7dd3fc' : isDone ? '#a7f3d0' : '#e2e8f0';
+      const bg = isCur ? '#f0f9ff' : isDone ? '#f0fdf4' : '#f8fafc';
+      const dotBg = isDone ? '#059669' : isCur ? '#0284c7' : '#e2e8f0';
+      const dot = isDone ? '✓' : isCur ? '<span class="acp-sync-spin"></span>' : String(s.id);
+      const right = isDone ? '<span style="color:#059669;font-weight:700;font-size:12px;">Đã xong</span>'
+        : isCur ? '<span style="color:#0284c7;font-weight:700;font-size:12px;">Đang xử lý...</span>' : '';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid ${border};background:${bg};border-radius:6px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+          <div style="width:28px;height:28px;border-radius:50%;background:${dotBg};color:${isDone || isCur ? '#fff' : '#64748b'};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">${dot}</div>
+          <div style="min-width:0;">
+            <div style="font-weight:700;font-size:13px;color:${isDone || isCur ? '#0f172a' : '#64748b'};">${s.title}</div>
+            <div style="font-size:12px;color:#64748b;">${s.desc}</div>
+          </div>
+        </div>${right}
+      </div>`;
+    }).join('');
+
+    let footer = '';
+    if (st.phase === 'running') {
+      footer = `<div style="padding:10px 12px;border:1px solid #bae6fd;background:#f0f9ff;border-radius:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#0369a1;margin-bottom:2px;">
+          <span>${acpEscHtml(st.stepName || 'Đang khởi tạo...')}</span><span style="color:#64748b;">${st.step}/${st.totalSteps} (${percent}%)</span>
+        </div>
+        <div style="font-size:12px;color:#475569;margin-bottom:8px;word-break:break-word;">${acpEscHtml(st.message)}</div>
+        <div style="height:6px;background:#e2e8f0;border-radius:4px;overflow:hidden;"><div style="width:${percent}%;height:100%;background:#0284c7;transition:width .3s;"></div></div>
+      </div>`;
+    } else if (st.phase === 'done') {
+      footer = `<div style="padding:12px;border:1px solid #a7f3d0;background:#ecfdf5;border-radius:6px;color:#065f46;font-size:13px;font-weight:600;">
+        ✓ Toàn bộ ${steps.length} báo cáo ${isRealtime ? 'Realtime' : 'Luỹ kế'} đã chuyển về Dashboard YCX. Đang quay về Dashboard...
+      </div>`;
+    } else {
+      footer = `<div style="padding:12px;border:1px solid #fecdd3;background:#fff1f2;border-radius:6px;color:#9f1239;font-size:12px;">
+        <div style="font-weight:700;margin-bottom:2px;">⚠️ Lỗi cập nhật tự động</div><div style="word-break:break-word;">${acpEscHtml(st.error)}</div>
+      </div>`;
+    }
+
+    overlay.innerHTML = `<style>@keyframes acp-sync-rot{to{transform:rotate(360deg)}}.acp-sync-spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;display:inline-block;animation:acp-sync-rot .8s linear infinite}</style>
+      <div role="dialog" aria-label="Tự động cập nhật BI" style="width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:6px;box-shadow:0 20px 40px -10px rgba(15,23,42,.35);color:#0f172a;">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
+          <div style="width:40px;height:40px;border-radius:6px;background:${isRealtime ? '#f59e0b' : '#059669'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${isRealtime ? '⏱' : '📈'}</div>
+          <div style="min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-weight:700;font-size:16px;">${isRealtime ? 'Tự động Cập nhật Realtime' : 'Tự động Cập nhật Luỹ Kế'}</span>
+              <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;border:1px solid ${isRealtime ? '#fde68a' : '#a7f3d0'};background:${isRealtime ? '#fffbeb' : '#ecfdf5'};color:${isRealtime ? '#b45309' : '#047857'};">${steps.length} báo cáo</span>
+            </div>
+            <div style="font-size:12px;color:#64748b;">Đang lấy dữ liệu trên trang MWG và chuyển về Dashboard YCX — vui lòng không đóng tab này</div>
+          </div>
+        </div>
+        <div style="padding:16px 20px;">${rows}<div style="margin-top:4px;">${footer}</div></div>
+      </div>`;
+  }
+
+  function acpEnsureProgressOverlay(step, totalSteps, stepName, message, mode) {
+    const st = acpSyncPanel;
+    if (mode && mode !== st.mode) { st.mode = mode; }
+    const cur = acpStepIdByName(stepName);
+    if (cur !== null && st.current !== null && st.current !== cur) st.done.add(st.current);
+    if (cur !== null) st.current = cur;
+    Object.assign(st, { step, totalSteps, stepName, message, phase: 'running' });
+    acpRenderSyncPanel();
+  }
+
+  function acpResetSyncPanel(mode) {
+    Object.assign(acpSyncPanel, { mode, current: null, done: new Set(), step: 0, totalSteps: 0, stepName: '', message: 'Đang khởi tạo...', phase: 'running', error: '' });
   }
 
   // Trả focus về tab Dashboard YCX đã mở tab này (window.open). Trình duyệt có thể bỏ qua nếu không cho phép
@@ -2509,34 +2594,20 @@
   }
 
   function acpShowOverlayDone(mode) {
-    const overlay = document.getElementById('acp-bi-sync-overlay');
-    if (overlay) {
-      overlay.innerHTML = `
-        <div style="text-align:center;padding:8px 0;">
-          <div style="font-size:24px;margin-bottom:6px;">🎉</div>
-          <div style="font-weight:700;font-size:15px;color:#34d399;margin-bottom:4px;">Hoàn tất cập nhật ${mode === 'realtime' ? 'Realtime' : 'Luỹ kế'}!</div>
-          <div style="font-size:12px;color:#94a3b8;">Dữ liệu đã chuyển về Dashboard YCX.<br>Đang quay về Dashboard...</div>
-        </div>
-      `;
+    if (mode) acpSyncPanel.mode = mode;
+    acpSyncPanel.phase = 'done';
+    acpRenderSyncPanel();
+    // Để người dùng kịp thấy cả 4 bước "Đã xong" rồi mới quay về Dashboard và đóng tab
+    setTimeout(() => {
       acpFocusDashboard();
-      setTimeout(() => {
-        try { window.close(); } catch (_) {}
-      }, 1200);
-    }
+      try { window.close(); } catch (_) {}
+    }, 2000);
   }
 
   function acpShowOverlayError(errMsg) {
-    const overlay = document.getElementById('acp-bi-sync-overlay');
-    if (overlay) {
-      overlay.innerHTML = `
-        <div style="padding:4px 0;">
-          <div style="font-weight:700;font-size:14px;color:#f87171;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
-            <span>⚠️</span> Lỗi cập nhật tự động
-          </div>
-          <div style="font-size:12px;color:#cbd5e1;word-break:break-word;">${errMsg}</div>
-        </div>
-      `;
-    }
+    acpSyncPanel.phase = 'error';
+    acpSyncPanel.error = errMsg;
+    acpRenderSyncPanel();
   }
 
   // ====== BẢN 6.8: DIRECT INTERNAL API ENGINE (CHỈ DÀNH CHO BAOCAO.DIENMAYXANH.COM) ======
@@ -2882,6 +2953,9 @@
   async function acpRunBiAutomation(jobId, mode) {
     if (biJobRunning) return;
     biJobRunning = true;
+    // Hiện bảng tiến trình ngay khi bắt đầu, trước cả lượt chờ trang nạp xong
+    acpResetSyncPanel(mode);
+    try { acpRenderSyncPanel(); } catch (_) {}
     console.log(`[BI-Sync] Bắt đầu tự động cập nhật: mode=${mode}, jobId=${jobId}`);
 
     async function reportProgress(step, totalSteps, stepName, message) {
@@ -2898,7 +2972,7 @@
       try {
         await gmSet(GM_KEY_BI_PROGRESS, payload);
       } catch (_) {}
-      acpEnsureProgressOverlay(step, totalSteps, stepName, message);
+      acpEnsureProgressOverlay(step, totalSteps, stepName, message, mode);
     }
 
     async function reportError(message) {
@@ -2969,8 +3043,6 @@
         if (token) {
           try {
             console.log(`[BI-Sync] Kích hoạt Direct Internal API Engine thành công! Token: ${token.substring(0, 15)}...`);
-            // Gọi API không cần trang hiển thị → về Dashboard xem tiến trình trong modal, tab này chạy nền
-            acpFocusDashboard();
             const now = new Date();
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
