@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { RevenueRow, BonusMetrics } from '../types/nhanVienTypes';
 import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { getBonusForEmployee } from '../utils/bonusParser';
+import { getMonthProgress } from '../services/metricService';
 
 interface UseRevenueDataProps {
     rows: RevenueRow[];
@@ -17,6 +18,7 @@ interface UseRevenueDataProps {
     isActive?: boolean;
     bonusData?: Record<string, BonusMetrics | null>;
     isRealtime?: boolean;
+    dateContext?: { day?: number; month?: number; year?: number } | null;
 }
 
 export const useRevenueData = ({
@@ -32,7 +34,8 @@ export const useRevenueData = ({
     exportDeptFilter,
     isActive,
     bonusData,
-    isRealtime = false
+    isRealtime = false,
+    dateContext = null
 }: UseRevenueDataProps) => {
 
     const displayList = useMemo(() => {
@@ -73,10 +76,10 @@ export const useRevenueData = ({
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         
         const now = new Date();
-        const currentDay = now.getDate();
-        const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const remainingDays = Math.max(1, totalDays - currentDay + 1);
-        const daysPassed = Math.max(1, currentDay - 1);
+        const monthProgress = getMonthProgress(now, dateContext);
+        const totalDays = monthProgress.daysInMonth;
+        const daysPassed = monthProgress.daysPassed;
+        const remainingDays = Math.max(1, totalDays - daysPassed);
 
         // Tỷ lệ thời gian ngày cho chế độ Realtime (8h00 - 21h30 = 13.5 tiếng = 810 phút)
         const timeRatioRealtime = (() => {
@@ -382,7 +385,7 @@ export const useRevenueData = ({
         }
 
         return finalOutput;
-    }, [rows, departmentNames, sortConfig, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData]);
+    }, [rows, departmentNames, sortConfig, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData, isRealtime, dateContext]);
 
     return { displayList };
 };

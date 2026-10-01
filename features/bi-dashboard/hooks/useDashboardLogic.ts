@@ -20,6 +20,7 @@ import { useReportBiAuth } from './useReportBiAuth';
 import { fetchAllowedSummaryLuyKeText, fetchAllowedCompetitionLuyKeData } from '../services/biDataService';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { parseBaseTargetQuyDoi } from '../services/employeeParser';
+import { getMonthProgress, extractDateFromData } from '../services/metricService';
 
 export const useDashboardLogic = (isActive?: boolean) => {
     // --- State Management ---
@@ -344,8 +345,10 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 return;
             }
             const now = new Date();
-            const daysPassed = now.getDate();
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const dateContext = extractDateFromData(summaryLuyKe);
+            const monthProgress = getMonthProgress(now, dateContext);
+            const daysPassed = monthProgress.daysPassed;
+            const daysInMonth = monthProgress.daysInMonth;
             const baseTargets = computeCompetitionBaseTargets(competitionLuyKeBySupermarket);
             const newAugmentedData = structuredClone(competitionLuyKeBySupermarket);
             const programTotals: Record<string, { totalVT: number; totalLK: number }> = {};
@@ -436,7 +439,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
             const allMonthlyTargets: Record<string, number> = {};
             const allTargets: Record<string, { quyDoi: number; traGop: number; }> = {};
             const now = new Date();
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const dateContext = extractDateFromData(summaryLuyKe);
+            const monthProgress = getMonthProgress(now, dateContext);
+            const daysInMonth = monthProgress.daysInMonth;
 
             // Đọc toàn bộ DB để lấy tất cả cấu hình targethero-* (không phụ thuộc vào viết hoa/thường hay tiền tố)
             const allDbItems = await db.getAll();

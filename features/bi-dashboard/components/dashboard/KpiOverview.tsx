@@ -19,6 +19,7 @@ import { KpiCard } from '../../../../components/shared/ui/KpiCard';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { parseBaseTargetQuyDoi } from '../../services/employeeParser';
+import { getMonthProgress, extractDateFromData } from '../../services/metricService';
 import { Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -111,18 +112,11 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
 
     // --- 2. DT THỰC (Hiển thị Doanh thu Dự kiến) ---
     // Realtime: Dự kiến dựa trên quỹ thời gian ngày (8h00 - 21h30)
-    // Luỹ kế: (DT THỰC / (số ngày đã qua - 1)) * số ngày của tháng
-    let passedDays = Math.max(1, currentTime.getDate() - 1);
-    if (summaryLuyKeData) {
-        const matchDay = summaryLuyKeData.match(/(?:đến ngày|hết ngày|quỹ thời gian:\s*|nhịp\s*)(\d{1,2})/i);
-        if (matchDay && matchDay[1]) {
-            const parsedDay = parseInt(matchDay[1], 10);
-            if (!isNaN(parsedDay) && parsedDay > 0 && parsedDay <= 31) {
-                passedDays = parsedDay;
-            }
-        }
-    }
-    const daysInMonth = new Date(currentTime.getFullYear(), currentTime.getMonth() + 1, 0).getDate();
+    // Luỹ kế: (DT THỰC / số ngày đã qua) * số ngày của tháng (hỗ trợ tháng đã qua và ngày mùng 1)
+    const dateContext = extractDateFromData(summaryLuyKeData);
+    const monthProgress = getMonthProgress(currentTime, dateContext);
+    const passedDays = monthProgress.daysPassed;
+    const daysInMonth = monthProgress.daysInMonth;
 
     const dtThucDuKien = isRealtime
         ? computeRealtimeProjected(dtlk, dayTimeRatio)

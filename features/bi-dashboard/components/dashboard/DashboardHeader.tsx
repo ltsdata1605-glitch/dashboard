@@ -7,6 +7,8 @@ import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import { MOBILE_GUTTER, TOUCH_TARGET } from '../../utils/mobileUi';
+import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { getMonthProgress, extractDateFromData } from '../../services/metricService';
 
 interface DashboardHeaderProps {
     title: string;
@@ -36,7 +38,7 @@ const SUB_TABS: { tab: SubTab; label: string }[] = [
 ];
 
 const QUOTES: Record<SubTab, string> = {
-    revenue: 'Doanh thu không tự đến — doanh thu là kết quả của sự nỗ lực mỗi ngày.',
+    revenue: 'Doanh thu không tự đến — Doanh thu là kết quả của sự nỗ lực mỗi ngày.',
     competition: 'Thi đua là động lực, hiệu quả là mục tiêu — vượt qua giới hạn, khẳng định bản thân.',
 };
 
@@ -61,10 +63,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
     const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
 
+    // Nhận diện ngày tháng từ dữ liệu Luỹ kế để tính đúng tiến độ thời gian (hỗ trợ tháng đã qua và ngày mùng 1)
+    const [summaryLuyKeRaw] = useIndexedDBState<string>('summary-luy-ke', '');
+    const dateContext = useMemo(() => extractDateFromData(summaryLuyKeRaw) || null, [summaryLuyKeRaw]);
+    const monthProgress = useMemo(() => getMonthProgress(new Date(), dateContext), [dateContext]);
+
     // Tiêu đề cập nhật động theo chế độ Realtime / Luỹ kế và tab Doanh thu / Thi đua.
-    // Đã gỡ nhánh 'report' (Đợt 6): `MainTab` chỉ còn 'realtime' | 'cumulative'
-    // (dashboardHelpers.ts) nên `activeMainTab === 'report'` KHÔNG BAO GIỜ đúng — đó là code
-    // chết còn sót lại từ lúc bỏ chế độ "Báo cáo", và là 1 trong các lỗi làm hỏng `npm run check`.
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
         const smLabel = !activeSupermarket || activeSupermarket === 'Tổng'
@@ -73,6 +77,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         if (isRealtime) {
             return `REALTIME NGÀY ${getDateLabel(true)} - ${smLabel}`;
+        }
+        const dateStr = monthProgress.day && monthProgress.month ? `${monthProgress.day}/${monthProgress.month}` : getDateLabel(false);
+        return `LUỸ KẾ ĐẾN NGÀY ${dateStr} - ${smLabel}`;
+    }, [activeMainTab, activeSupermarket, monthProgress]);rue)} - ${smLabel}`;
         }
         return `LUỸ KẾ ĐẾN NGÀY ${getDateLabel(false)} - ${smLabel}`;
     }, [activeMainTab, activeSupermarket]);
@@ -223,7 +231,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         {QUOTES[activeSubTab]}
                     </p>
 
-                    <TimeProgressBar className="mt-2 sm:mt-2.5" isRealtime={activeMainTab === 'realtime'} />
+                    <TimeProgressBar
+                        className="mt-2 sm:mt-2.5"
+                        isRealtime={activeMainTab === 'realtime'}
+                        customDaysPassed={monthProgress.daysPassed}
+                        customTotalDays={monthProgress.daysInMonth}
+                    />
                 </div>
 
                 {/* Children content (e.g. merged SummaryTableView) */}

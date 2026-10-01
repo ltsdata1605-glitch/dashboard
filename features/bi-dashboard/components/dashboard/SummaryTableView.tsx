@@ -3,6 +3,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { buildSummaryTable } from '../../services/summaryTableCalc';
+import { extractDateFromData } from '../../services/metricService';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
@@ -128,9 +129,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    const [summaryLuyKeRaw] = useIndexedDBState<string>('summary-luy-ke', '');
+    const dateContext = useMemo(() => {
+        return extractDateFromData(summaryLuyKeRaw) || null;
+    }, [summaryLuyKeRaw]);
+
     const processedTable = useMemo(
-        () => buildSummaryTable(data, { isCumulative, activeSupermarket, supermarketMonthlyTargets, hiddenSupermarkets, useAdjustedTarget }),
-        [data, isCumulative, supermarketMonthlyTargets, activeSupermarket, hiddenSupermarkets, useAdjustedTarget]
+        () => buildSummaryTable(data, { isCumulative, activeSupermarket, supermarketMonthlyTargets, hiddenSupermarkets, useAdjustedTarget, dateContext }),
+        [data, isCumulative, supermarketMonthlyTargets, activeSupermarket, hiddenSupermarkets, useAdjustedTarget, dateContext]
     );
 
     const orderedHeaders = useMemo(() => {

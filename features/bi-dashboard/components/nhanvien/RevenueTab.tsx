@@ -7,6 +7,7 @@ import { RevenueRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { parseRevenueData } from '../../utils/nhanVienHelpers';
+import { getMonthProgress, extractDateFromData } from '../../services/metricService';
 
 
 import { DeltaBadge } from '../shared/Badges';
@@ -115,20 +116,25 @@ const RevenueView: React.FC<{
 
     const cardRef = useRef<HTMLDivElement>(null);
 
+    // Tự động phát hiện ngày/tháng của dữ liệu Luỹ kế để tính đúng tiến độ tháng đã qua
+    const [summaryLuyKeRaw] = useIndexedDBState<string>('summary-luy-ke', '');
+    const [danhSachRawStore] = useIndexedDBState<string>(supermarketName && supermarketName !== 'Tổng hợp' ? `config-${shortenSupermarketName(supermarketName)}-danhsach` : null, '');
+    const dateContext = useMemo(() => {
+        return extractDateFromData(summaryLuyKeRaw) || extractDateFromData(danhSachRawStore) || null;
+    }, [summaryLuyKeRaw, danhSachRawStore]);
+
     const timeProgressData = useMemo(() => {
         const now = new Date();
-        const dayPassed = now.getDate() - 1;
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const progress = getMonthProgress(now, dateContext);
+        const dayPassed = progress.daysPassed;
+        const daysInMonth = progress.daysInMonth;
         const percentage = (dayPassed / daysInMonth) * 100;
-        return { dayPassed, daysInMonth, percentage };
-    }, []);
+        return { dayPassed, daysInMonth, percentage, progress };
+    }, [dateContext]);
 
     const remainingDays = useMemo(() => {
-        const now = new Date();
-        const currentDay = now.getDate();
-        const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        return Math.max(1, totalDays - currentDay + 1);
-    }, []);
+        return Math.max(1, timeProgressData.daysInMonth - timeProgressData.dayPassed);
+    }, [timeProgressData.daysInMonth, timeProgressData.dayPassed]);
 
     // Màu theo TIẾN ĐỘ (so với % ngày đã trôi qua trong tháng) — khác với colorSettings (ngưỡng % cố định),
     // chuẩn hoá với tone màu đậm nét, tương phản cao.
@@ -166,7 +172,8 @@ const RevenueView: React.FC<{
         exportDeptFilter,
         isActive,
         bonusData,
-        isRealtime: isRealtimeMode
+        isRealtime: isRealtimeMode,
+        dateContext: timeProgressData.progress
     });
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
@@ -309,13 +316,20 @@ const RevenueView: React.FC<{
     // dựng span text-2xl font-black riêng — tránh tiêu đề bị to/nặng bất thường so với chuẩn thiết kế.
     // Vẫn giữ class js-report-title (ép font UTM Avo cho tiêu đề báo cáo, xem styles.css) trên cả
     // 2 span vì subtitle không còn là sibling liền kề của title trong SectionHeader.
+    const dateTitleStr = useMemo(() => {
+        if (timeProgressData.progress.day && timeProgressData.progress.month) {
+            return `${timeProgressData.progress.day}/${timeProgressData.progress.month}`;
+        }
+        return getYesterdayDateString();
+    }, [timeProgressData.progress]);
+
     const cardTitle = isRealtimeMode ? (
         <span className="js-report-title flex items-center gap-2">
             <span>DOANH THU REALTIME</span>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60 font-bold uppercase tracking-wider">Hôm nay</span>
         </span>
     ) : (
-        <span className="js-report-title">Doanh thu đến ngày {getYesterdayDateString()}</span>
+        <span className="js-report-title">Doanh thu đến ngày {dateTitleStr}</span>
     );
     const cardSubtitle = <span className="js-report-title">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>;
 
@@ -448,7 +462,11 @@ const RevenueView: React.FC<{
 
             {/* 3. Tiến độ thời gian */}
             <div className="px-4 pt-3 pb-1">
-                <TimeProgressBar isRealtime={isRealtimeMode} />
+                <TimeProgressBar
+                    isRealtime={isRealtimeMode}
+                    customDaysPassed={timeProgressData.dayPassed}
+                    customTotalDays={timeProgressData.daysInMonth}
+                />
             </div>
                     {isRealtimeMode && activeRows.length === 0 && (
                         <div className="mx-4 my-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex items-center gap-2">

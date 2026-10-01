@@ -1,18 +1,25 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { ProgressBar } from '../../../../../components/shared/ui/ProgressBar';
+import { getMonthProgress } from '../../../services/metricService';
 
 interface TimeProgressBarProps {
     className?: string;
     isRealtime?: boolean;
     startTime?: string; // Mặc định '08:00' (8h00)
     endTime?: string;   // Mặc định '21:30' (9h30 tối)
+    customDaysPassed?: number;
+    customTotalDays?: number;
+    customLabel?: string;
 }
 
 const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
     className = '',
     isRealtime = false,
     startTime = '08:00',
-    endTime = '21:30'
+    endTime = '21:30',
+    customDaysPassed,
+    customTotalDays,
+    customLabel
 }) => {
     // Tự động cập nhật thời gian thực mỗi phút khi ở chế độ Realtime
     const [now, setNow] = useState(() => new Date());
@@ -49,15 +56,23 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
                 percentage: Math.min(100, Math.max(0, pct))
             };
         } else {
-            // Chế độ Luỹ kế: đo lường theo ngày trong tháng
-            const dp = now.getDate() - 1;
-            const dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            // Chế độ Luỹ kế: đo lường theo ngày trong tháng (hỗ trợ tháng đã qua và ngày mùng 1 đầu tháng)
+            if (customDaysPassed !== undefined && customTotalDays !== undefined && customTotalDays > 0) {
+                const pct = Math.min(100, Math.max(0, (customDaysPassed / customTotalDays) * 100));
+                return {
+                    label: customLabel || `${customDaysPassed} / ${customTotalDays} ngày`,
+                    percentage: pct
+                };
+            }
+            const mp = getMonthProgress(now);
+            const dp = mp.daysPassed;
+            const dim = mp.daysInMonth;
             return {
                 label: `${dp} / ${dim} ngày`,
-                percentage: (dp / dim) * 100
+                percentage: Math.min(100, Math.max(0, (dp / dim) * 100))
             };
         }
-    }, [isRealtime, startTime, endTime, now]);
+    }, [isRealtime, startTime, endTime, now, customDaysPassed, customTotalDays, customLabel]);
 
     return (
         <div className={`w-full ${className}`}>

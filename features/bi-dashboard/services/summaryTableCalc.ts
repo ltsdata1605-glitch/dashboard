@@ -1,5 +1,6 @@
 import { parseNumber, roundUp, shortenSupermarketName, isSupermarketMatch } from '../utils/dashboardHelpers';
 import { getYesterdayDateString } from '../utils/nhanVienHelpers';
+import { getMonthProgress } from './metricService';
 
 /**
  * Dây chuyền dựng bảng "Tổng quan Siêu thị" — tách NGUYÊN KHỐI từ `SummaryTableView.tsx`
@@ -36,6 +37,8 @@ export interface BuildSummaryTableOptions {
     daysInMonth?: number;
     /** Số ngày luỹ kế đã qua trong tháng (mặc định = ngày hiện tại - 1). */
     passedDays?: number;
+    /** Ngữ cảnh ngày tháng trích xuất từ dữ liệu (dùng cho tháng đã qua hoặc ngày đầu tháng) */
+    dateContext?: { day?: number; month?: number; year?: number } | null;
 }
 
 export interface SummaryTableResult {
@@ -50,8 +53,11 @@ export function buildSummaryTable(
 ): SummaryTableResult {
     const { isCumulative, activeSupermarket, supermarketMonthlyTargets, hiddenSupermarkets } = opts;
     const { headers, rows } = data;
+    const now = new Date();
+    const progress = getMonthProgress(now, opts.dateContext);
+    const dateLabel = progress.day && progress.month ? `${progress.day}/${progress.month}` : getYesterdayDateString();
     let displayName = (activeSupermarket && activeSupermarket !== 'Tổng') ? shortenSupermarketName(activeSupermarket).toUpperCase() : 'TỔNG QUAN';
-    let title = isCumulative ? `LUỸ KẾ DOANH THU - ${displayName} ĐẾN NGÀY ${getYesterdayDateString()}` : `REALTIME DOANH THU - ${displayName}`;
+    let title = isCumulative ? `LUỸ KẾ DOANH THU - ${displayName} ĐẾN NGÀY ${dateLabel}` : `REALTIME DOANH THU - ${displayName}`;
 
     if (!headers || headers.length === 0) return { allHeaders: [], allRows: [], title };
 
@@ -67,9 +73,8 @@ export function buildSummaryTable(
     // narrow ở ~6 nơi render, vượt phạm vi 1 lần sửa type đơn giản.
     let tempHeaders = [...headers], tempRows: any[][] = JSON.parse(JSON.stringify(uniqueRows));
     const nameIndex = tempHeaders.indexOf('Tên miền');
-    const now = new Date();
-    const daysInMonth = opts.daysInMonth ?? new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    const passedDays = opts.passedDays ?? Math.max(1, now.getDate() - 1);
+    const daysInMonth = opts.daysInMonth ?? progress.daysInMonth;
+    const passedDays = opts.passedDays ?? progress.daysPassed;
 
     const getTargetForSm = (smName: string, currentRows: any[][]): number => {
         if (!smName) return 0;
