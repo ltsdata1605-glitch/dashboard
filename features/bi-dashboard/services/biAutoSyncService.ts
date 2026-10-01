@@ -357,6 +357,11 @@ export function clearPendingAutoSync(): void {
  */
 export function claimPendingAutoSync(): PendingAutoSync | null {
     const p = readPendingAutoSync();
+    // Chỉ chạy tiếp lượt dở được lưu ở LẦN TẢI TRANG TRƯỚC (vừa tải lại để nạp userscript mới). Lượt lưu trong chính
+    // lần tải này — vd bấm nút ở khung Auto Sync Pro chung lúc mục Cập nhật còn đang tải — thì không phải lượt dở: nhận
+    // nó là chạy lượt thứ 2 song song → 2 hộp thoại / 2 tab MWG (đo thật 2026-10-01 sau khi khung chuyển ra App).
+    const taiTrangLuc = typeof performance !== 'undefined' && performance.timeOrigin ? performance.timeOrigin : 0;
+    if (!p || (taiTrangLuc && p.ts >= taiTrangLuc)) return null;
     clearPendingAutoSync();
     return p;
 }

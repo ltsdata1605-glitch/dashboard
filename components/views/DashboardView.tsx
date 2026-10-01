@@ -160,17 +160,21 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     // Lắng nghe file YCX từ GlobalAutoSyncDock (chức năng Tự động YCX Realtime)
     useEffect(() => {
+        // mode 'luyke' (YCX Luỹ kế) → nạp như "Lũy kế / Quá khứ" (isHistorical); còn lại → "Tệp Realtime"
         const pendingFile = (window as any).__pendingYcxAutoSyncFile;
         if (pendingFile) {
+            const laLuyKe = (window as any).__pendingYcxAutoSyncMode === 'luyke';
             delete (window as any).__pendingYcxAutoSyncFile;
-            handleFileProcessing([pendingFile], false, false);
+            delete (window as any).__pendingYcxAutoSyncMode;
+            handleFileProcessing([pendingFile], false, laLuyKe);
         }
 
         const handleAutoSyncFile = (e: any) => {
             const file = e.detail?.file;
             if (file) {
                 delete (window as any).__pendingYcxAutoSyncFile;
-                handleFileProcessing([file], false, false);
+                delete (window as any).__pendingYcxAutoSyncMode;
+                handleFileProcessing([file], false, e.detail?.mode === 'luyke');
             }
         };
         window.addEventListener('ycx-auto-sync-file', handleAutoSyncFile);

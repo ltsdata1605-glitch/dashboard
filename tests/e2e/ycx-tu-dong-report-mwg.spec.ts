@@ -198,3 +198,40 @@ test('report.mwgroup.vn: mở trang KHÔNG có lượt nào → userscript khôn
     expect(state.exportBody).toBeNull();
     await expect(page.locator('#ycx-ycx-banner')).toHaveCount(0);
 });
+
+/** 7.15 — YCX Luỹ kế: Từ 01 đầu tháng → Đến HÔM QUA. Đồng hồ trình duyệt đặt sẵn để biết chắc "hôm nay". */
+async function chayLuyKe(page: Page, homNay: string, jobId: string) {
+    const state = await dungTrangGia(page, { khoCay: true });
+    await page.clock.install({ time: new Date(homNay) });
+    await page.goto(`https://report.mwgroup.vn/home/dashboard/77?ycx_ycx=luyke&ycx_job=${jobId}`);
+    await page.addScriptTag({ content: USERSCRIPT });
+    await expect.poll(() => gm(page, 'ycx_ycx_done'), { timeout: 40_000 }).toBeTruthy();
+    const p = Object.fromEntries(state.exportBody!.listParam.map((x) => [x.PARAMNAME, x.OBJECTVALUE]));
+    return { p, done: await gm(page, 'ycx_ycx_done') as { jobId: string; mode: string } };
+}
+
+test('report.mwgroup.vn: YCX Luỹ kế ngày 15/10 → Từ 01/10/2026, Đến 14/10/2026 (hôm qua), các điều kiện khác như Realtime', async ({ page }) => {
+    test.setTimeout(90_000);
+    const { p, done } = await chayLuyKe(page, '2026-10-15T09:00:00', 'job-lk');
+    expect(p.V_FROMDATE).toBe('01/10/2026');
+    expect(p.V_TODATE).toBe('14/10/2026');
+    expect(p.V_STORESEARCHTYPE).toBe('2');
+    expect(p.V_MAINGROUPIDLIST).toBe('1775,13');
+    expect(p.V_STOREIDLIST).toBe('910');
+    expect(done).toMatchObject({ jobId: 'job-lk', mode: 'luyke' });
+});
+
+test('report.mwgroup.vn: YCX Luỹ kế ĐẦU THÁNG (2/11) → Từ 01/11, Đến 01/11 — không lùi sang tháng trước', async ({ page }) => {
+    test.setTimeout(90_000);
+    const { p } = await chayLuyKe(page, '2026-11-02T08:00:00', 'job-lk2');
+    expect(p.V_FROMDATE).toBe('01/11/2026');
+    expect(p.V_TODATE).toBe('01/11/2026');
+});
+
+test('report.mwgroup.vn: YCX Luỹ kế vào NGÀY 01 → chạy Realtime (ngày để mặc định)', async ({ page }) => {
+    test.setTimeout(90_000);
+    const { p, done } = await chayLuyKe(page, '2026-10-01T10:00:00', 'job-lk1');
+    expect(p.V_FROMDATE).toBe('1/10/2026 00:00'); // giá trị mặc định trang giả đặt — không bị đổi
+    expect(p.V_TODATE).toBe('1/10/2026 00:00');
+    expect(done).toMatchObject({ jobId: 'job-lk1', mode: 'realtime' });
+});

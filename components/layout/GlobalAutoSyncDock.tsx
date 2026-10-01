@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
     Zap, TrendingUp, Sparkles, ChevronRight, ChevronLeft, Gift,
-    FileSpreadsheet, RefreshCw, AlertCircle, CheckCircle2,
+    FileSpreadsheet, CalendarRange, RefreshCw, AlertCircle, CheckCircle2,
 } from 'lucide-react';
 import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
@@ -11,16 +11,16 @@ import { useIndexedDBState } from '../../features/bi-dashboard/hooks/useIndexedD
 import { useBiAutoSync } from '../../features/bi-dashboard/hooks/useBiAutoSync';
 import { TampermonkeyInstallGuideModal } from '../../features/bi-dashboard/components/common/TampermonkeyInstallGuideModal';
 import {
-    YCX_MIN_USERSCRIPT_VERSION, YCX_REPORT_URL, YCX_STEPS, YCX_USERSCRIPT_URL,
+    YCX_MIN_USERSCRIPT_VERSION, YCX_REPORT_URL, YCX_USERSCRIPT_URL,
     compareVersions, detectYcxUserscript, fetchLatestYcxUserscriptVersion,
-    listenYcxJob, newYcxJobId, startYcxJob, ycxBufferToFile,
-    type YcxStep,
+    listenYcxJob, newYcxJobId, resolveYcxMode, startYcxJob, ycxBufferToFile, ycxSteps,
+    type YcxMode, type YcxStep,
 } from '../../services/ycxAutoSyncService';
 
 type YcxPhase = 'idle' | 'running' | 'error' | 'done';
 type ScriptState = { checked: boolean; installed: boolean; version?: string };
 
-const stepIndex = (s: YcxStep | null) => (s ? YCX_STEPS.findIndex((x) => x.id === s) : -1);
+const TEN_YCX: Record<YcxMode, string> = { realtime: 'YCX Realtime', luyke: 'YCX Luỹ kế' };
 
 export default function GlobalAutoSyncDock() {
     const { activeTab, setActiveTab } = useActiveTab();
@@ -48,6 +48,9 @@ export default function GlobalAutoSyncDock() {
     const [ycxStep, setYcxStep] = useState<YcxStep | null>(null);
     const [ycxMessage, setYcxMessage] = useState('');
     const [ycxLog, setYcxLog] = useState<{ at: number; text: string }[]>([]);
+    /** Chế độ lượt YCX đang chạy (Luỹ kế bấm ngày 01 → Realtime) và nút người dùng đã bấm */
+    const [ycxMode, setYcxMode] = useState<YcxMode>('realtime');
+    const [ycxYeuCau, setYcxYeuCau] = useState<YcxMode>('realtime');
     const ycxJobRef = useRef<string | null>(null);
     const ycxStopRef = useRef<(() => void) | null>(null);
 
@@ -129,7 +132,11 @@ export default function GlobalAutoSyncDock() {
         return () => window.removeEventListener('ycx-trigger-bi-auto-sync', handleBiTrigger);
     }, [handleStartBiSync]);
 
-    const handleTriggerYcxSync = useCallback(() => {
+    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime') => {
+        // Luỹ kế = 01 → hôm qua; hôm nay ngày 01 thì chưa có ngày nào để luỹ kế → chạy Realtime (chủ dự án chốt)
+        const mode = resolveYcxMode(requested);
+        setYcxYeuCau(requested);
+        setYcxMode(mode);
         setYcxModalOpen(true);
         if (!ycxScriptDu) {
             setYcxPhase('idle');
@@ -143,7 +150,11 @@ export default function GlobalAutoSyncDock() {
         setYcxStep('open');
         setYcxMessage('Đang mở report.mwgroup.vn…');
         setYcxLog([]);
-        ghiYcxLog('Bắt đầu lượt Tự động YCX Realtime');
+        ghiYcxLog(`Bắt đầu lượt Tự động ${TEN_YCX[mode]}`);
+        if (requested !== mode) {
+            ghiYcxLog('Hôm nay là ngày 01 — chưa có ngày nào để luỹ kế, chạy Realtime');
+            toast('Hôm nay là ngày 01 — YCX Luỹ kế chạy Realtime', { icon: '📅' });
+        }
 
         ycxStopRef.current = listenYcxJob(jobId, (m) => {
             if (ycxJobRef.current !== jobId) return;
@@ -167,18 +178,20 @@ export default function GlobalAutoSyncDock() {
                 setYcxPhase('done');
                 setYcxModalOpen(false);
 
-                // Lưu file tạm vào global để DashboardView nhận ngay cả khi đang chuyển tab
+                // Lưu file tạm vào global để DashboardView nhận ngay cả khi đang chuyển tab.
+                // mode: Realtime → "Tệp Realtime", Luỹ kế → "Lũy kế / Quá khứ"
                 (window as any).__pendingYcxAutoSyncFile = file;
-                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file } }));
+                (window as any).__pendingYcxAutoSyncMode = mode;
+                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode } }));
 
                 if (activeTab !== 'analysis') {
                     setActiveTab('analysis');
-                    toast.success('Đã tự động tải file YCX Realtime và chuyển sang Phân Tích!');
+                    toast.success(`Đã tự động tải file ${TEN_YCX[mode]} và chuyển sang Phân Tích!`);
                 }
             }
         });
 
-        if (!startYcxJob(jobId)) {
+        if (!startYcxJob(jobId, mode)) {
             setYcxPhase('error');
             setYcxMessage('Trình duyệt chặn mở tab mới — cho phép cửa sổ bật lên (pop-up) cho dashboard.pro.vn rồi bấm lại.');
         }
@@ -202,7 +215,8 @@ export default function GlobalAutoSyncDock() {
     };
 
     const ycxDangChay = ycxPhase === 'running';
-    const curYcxStep = stepIndex(ycxStep);
+    const ycxStepList = ycxSteps(ycxMode);
+    const curYcxStep = ycxStep ? ycxStepList.findIndex((x) => x.id === ycxStep) : -1;
 
     return (
         <>
@@ -253,14 +267,25 @@ export default function GlobalAutoSyncDock() {
                         </button>
                         <button
                             type="button"
-                            onClick={handleTriggerYcxSync}
-                            title={ycxDangChay ? 'Tự động YCX Realtime (Đang chạy...)' : 'Tự động YCX Realtime (Phân Tích)'}
+                            onClick={() => handleTriggerYcxSync('realtime')}
+                            title={ycxDangChay && ycxMode === 'realtime' ? 'Tự động YCX Realtime (Đang chạy...)' : 'Tự động YCX Realtime (Phân Tích)'}
                             aria-label="Tự động YCX Realtime"
                             className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-700 to-sky-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
-                                ycxDangChay ? 'ring-2 ring-sky-400 animate-pulse' : ''
+                                ycxDangChay && ycxMode === 'realtime' ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
                             <FileSpreadsheet className="w-4 h-4 text-sky-100" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => handleTriggerYcxSync('luyke')}
+                            title={ycxDangChay && ycxMode === 'luyke' ? 'Tự động YCX Luỹ kế (Đang chạy...)' : 'Tự động YCX Luỹ kế (Phân Tích, 01 → hôm qua)'}
+                            aria-label="Tự động YCX Luỹ kế"
+                            className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-emerald-700 via-emerald-700 to-emerald-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                                ycxDangChay && ycxMode === 'luyke' ? 'ring-2 ring-emerald-400 animate-pulse' : ''
+                            }`}
+                        >
+                            <CalendarRange className="w-4 h-4 text-emerald-100" />
                         </button>
                     </div>
                 ) : (
@@ -355,14 +380,14 @@ export default function GlobalAutoSyncDock() {
                         {/* Nút 4: YCX Realtime (Phân Tích) */}
                         <button
                             type="button"
-                            onClick={handleTriggerYcxSync}
+                            onClick={() => handleTriggerYcxSync('realtime')}
                             title="Tự động xuất & nạp file YCX Realtime từ report.mwgroup.vn (báo cáo 77)"
                             aria-label="Tự động YCX Realtime"
                             className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(3,105,161,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(3,105,161,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
-                                ycxDangChay ? 'animate-pulse' : ''
+                                ycxDangChay && ycxMode === 'realtime' ? 'animate-pulse' : ''
                             }`}>
                                 <FileSpreadsheet className="h-4 w-4 text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
                             </div>
@@ -371,7 +396,32 @@ export default function GlobalAutoSyncDock() {
                                     YCX Realtime
                                 </span>
                                 <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1">
-                                    {ycxDangChay ? '⚡ Đang chạy… bấm để xem' : '⚡ Tự động đổ & cập nhật'}
+                                    {ycxDangChay && ycxMode === 'realtime' ? '⚡ Đang chạy… bấm để xem' : '⚡ Tự động đổ & cập nhật'}
+                                </span>
+                            </div>
+                        </button>
+
+
+                        {/* Nút 5: YCX Luỹ kế (Phân Tích) — Từ 01 đầu tháng → Đến HÔM QUA; ngày 01 chạy Realtime */}
+                        <button
+                            type="button"
+                            onClick={() => handleTriggerYcxSync('luyke')}
+                            title="Tự động xuất & nạp file YCX Luỹ kế (01 → hôm qua) từ report.mwgroup.vn (báo cáo 77). Ngày 01 sẽ chạy Realtime."
+                            aria-label="Tự động YCX Luỹ kế"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(4,120,87,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(4,120,87,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                        >
+                            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
+                            <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
+                                ycxDangChay && ycxMode === 'luyke' ? 'animate-pulse' : ''
+                            }`}>
+                                <CalendarRange className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
+                                    YCX Luỹ kế
+                                </span>
+                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1">
+                                    {ycxDangChay && ycxMode === 'luyke' ? '⚡ Đang chạy… bấm để xem' : '📅 01 → hôm qua'}
                                 </span>
                             </div>
                         </button>
@@ -394,14 +444,14 @@ export default function GlobalAutoSyncDock() {
             <Modal
                 isOpen={ycxModalOpen}
                 onClose={dongYcxModal}
-                title="Tự động YCX Realtime"
+                title={`Tự động ${TEN_YCX[ycxMode]}`}
                 subTitle="report.mwgroup.vn · Báo cáo 77 · Chi tiết yêu cầu xuất"
                 maxWidth="md"
                 footer={
                     <div className="flex w-full items-center justify-end gap-2">
                         {ycxDangChay && <Button variant="secondary" size="sm" onClick={huyYcx}>Huỷ lượt này</Button>}
-                        {ycxPhase === 'error' && <Button variant="primary" size="sm" onClick={handleTriggerYcxSync}>Chạy lại</Button>}
-                        {ycxPhase === 'idle' && ycxScriptDu && <Button variant="primary" size="sm" onClick={handleTriggerYcxSync}>Bắt đầu</Button>}
+                        {ycxPhase === 'error' && <Button variant="primary" size="sm" onClick={() => handleTriggerYcxSync(ycxYeuCau)}>Chạy lại</Button>}
+                        {ycxPhase === 'idle' && ycxScriptDu && <Button variant="primary" size="sm" onClick={() => handleTriggerYcxSync(ycxYeuCau)}>Bắt đầu</Button>}
                         <Button variant="secondary" size="sm" onClick={dongYcxModal}>{ycxDangChay ? 'Ẩn (vẫn chạy)' : 'Đóng'}</Button>
                     </div>
                 }
@@ -417,7 +467,7 @@ export default function GlobalAutoSyncDock() {
                             <ol className="list-decimal pl-5 space-y-1 text-slate-700 dark:text-slate-300 text-xs">
                                 <li>Bấm <b>Cài / cập nhật userscript</b> → Tampermonkey hiện trang cài → bấm Cài đặt / Cập nhật{latestYcxVer ? ` (bản mới nhất ${latestYcxVer})` : ''}.</li>
                                 <li>Lần đầu tải file, Tampermonkey có thể hỏi quyền truy cập tên miền — chọn <b>Luôn cho phép</b>.</li>
-                                <li>Tải lại trang Dashboard rồi bấm lại <b>Tự động YCX Realtime</b>.</li>
+                                <li>Tải lại trang Dashboard rồi bấm lại <b>Tự động {TEN_YCX[ycxYeuCau]}</b>.</li>
                             </ol>
                             <div className="flex gap-2 pt-1">
                                 <Button variant="primary" size="sm" onClick={() => window.open(YCX_USERSCRIPT_URL, '_blank')}>Cài / cập nhật userscript</Button>
@@ -426,16 +476,19 @@ export default function GlobalAutoSyncDock() {
                         </div>
                     ) : ycxPhase === 'idle' ? (
                         <div className="space-y-2">
+                            {ycxYeuCau === 'luyke' && ycxMode === 'realtime' && (
+                                <p className="border-l-[3px] border-amber-500 bg-amber-50 px-3 py-1.5 text-amber-800" data-testid="ycx-luyke-ngay-1">Hôm nay là ngày 01 — chưa có ngày nào để luỹ kế, sẽ chạy <b>Realtime</b>.</p>
+                            )}
                             <p>Dashboard sẽ mở <b>{YCX_REPORT_URL.replace('https://', '')}</b> ở tab mới và tự động thao tác:</p>
                             <ol className="list-decimal pl-5 space-y-1 text-xs">
-                                {YCX_STEPS.map((s) => <li key={s.id}>{s.label}</li>)}
+                                {ycxStepList.map((s) => <li key={s.id}>{s.label}</li>)}
                             </ol>
                             <p className="text-[12px] text-slate-500">Yêu cầu đã đăng nhập sẵn tài khoản MWG trên trình duyệt này.</p>
                         </div>
                     ) : (
                         <>
                             <ol className="space-y-1.5" data-testid="ycx-auto-steps">
-                                {YCX_STEPS.map((s, i) => {
+                                {ycxStepList.map((s, i) => {
                                     const xong = ycxPhase === 'done' || i < curYcxStep;
                                     const dang = i === curYcxStep && ycxPhase === 'running';
                                     const loi = i === curYcxStep && ycxPhase === 'error';
@@ -454,7 +507,7 @@ export default function GlobalAutoSyncDock() {
                             </p>
                             {ycxPhase === 'error' && (
                                 <p className="text-[12px] text-slate-500">
-                                    Có thể làm tay: mở <a className="text-sky-700 dark:text-sky-400 underline" href={YCX_REPORT_URL} target="_blank" rel="noreferrer">báo cáo 77</a> → Xuất excel → Lịch sử xuất excel → Tải file excel → bấm <b>File YCX</b> → <b>Tệp Realtime</b>.
+                                    Có thể làm tay: mở <a className="text-sky-700 dark:text-sky-400 underline" href={YCX_REPORT_URL} target="_blank" rel="noreferrer">báo cáo 77</a> → Xuất excel → Lịch sử xuất excel → Tải file excel → bấm <b>File YCX</b> → <b>{ycxMode === 'luyke' ? 'Lũy kế / Quá khứ' : 'Tệp Realtime'}</b>.
                                 </p>
                             )}
                             {ycxLog.length > 1 && (

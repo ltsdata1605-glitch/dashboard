@@ -1,5 +1,8 @@
 /**
- * TỰ ĐỘNG YCX REALTIME cho Phân tích (2026-10-01).
+ * TỰ ĐỘNG YCX (Realtime & Luỹ kế) cho Phân tích (2026-10-01).
+ *
+ * Luỹ kế (bản 7.15): như Realtime nhưng Từ ngày = 01 đầu tháng, Đến ngày = HÔM QUA, nạp như "Lũy kế / Quá khứ".
+ * Hôm nay là ngày 01 thì chưa có ngày nào để luỹ kế → bấm Luỹ kế chạy Realtime (chủ dự án chốt).
  *
  * Luồng: khung "AUTO SYNC YCX" → mở report.mwgroup.vn/home/dashboard/77 (tab mới) → userscript bản ≥ 7.14 trên trang
  * đó đặt điều kiện (Kho tạo · Tất cả ngành hàng · Tất cả kho · hôm nay), bấm Xuất excel, chờ "Lịch sử xuất excel" xuất
@@ -12,8 +15,25 @@
 
 export const YCX_REPORT_URL = 'https://report.mwgroup.vn/home/dashboard/77';
 export const YCX_USERSCRIPT_URL = '/scripts/mwg-auto-thu-thap-diem-thuong.user.js';
-/** Bản userscript tối thiểu cho Tự động YCX (7.13 treo ở ô Kho và đọc Lịch sử lỗi HTTP 415 — 7.14 sửa) */
-export const YCX_MIN_USERSCRIPT_VERSION = '7.14';
+/** Bản userscript tối thiểu: 7.13 treo ở ô Kho / Lịch sử lỗi 415 (7.14 sửa); 7.15 thêm Luỹ kế */
+export const YCX_MIN_USERSCRIPT_VERSION = '7.15';
+
+export type YcxMode = 'realtime' | 'luyke';
+
+/** Luỹ kế vào ngày 01 → chạy Realtime (chưa có ngày nào của tháng để luỹ kế). */
+export function resolveYcxMode(requested: YcxMode, now: Date = new Date()): YcxMode {
+    return requested === 'luyke' && now.getDate() === 1 ? 'realtime' : requested;
+}
+
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const ddmm = (d: Date) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
+
+/** Khoảng ngày sẽ chọn trên báo cáo 77 (hiển thị cho người dùng — userscript tự tính lại cùng công thức). */
+export function ycxDateRange(mode: YcxMode, now: Date = new Date()): { from: string; to: string } {
+    if (mode === 'realtime') return { from: ddmm(now), to: ddmm(now) };
+    const homQua = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    return { from: ddmm(new Date(now.getFullYear(), now.getMonth(), 1)), to: ddmm(homQua) };
+}
 
 export const YCX_SOURCE = 'ycx-ycx-auto';
 const EVT_START = 'ycx-ycx-auto:start-job';
@@ -23,14 +43,21 @@ const BRIDGE_SOURCE = 'ycx-bonus-bridge';
 
 export type YcxStep = 'open' | 'conditions' | 'export' | 'waiting' | 'download' | 'load';
 
-export const YCX_STEPS: { id: YcxStep; label: string }[] = [
-    { id: 'open', label: 'Mở báo cáo 77 trên report.mwgroup.vn' },
-    { id: 'conditions', label: 'Chọn điều kiện: Kho tạo · Tất cả ngành hàng · Tất cả kho' },
-    { id: 'export', label: 'Bấm Xuất excel' },
-    { id: 'waiting', label: 'Chờ MWG xuất file (Lịch sử xuất excel)' },
-    { id: 'download', label: 'Tải file về Dashboard' },
-    { id: 'load', label: 'Nạp vào Phân tích (Tệp Realtime)' },
-];
+export function ycxSteps(mode: YcxMode, now: Date = new Date()): { id: YcxStep; label: string }[] {
+    const r = ycxDateRange(mode, now);
+    return [
+        { id: 'open', label: 'Mở báo cáo 77 trên report.mwgroup.vn' },
+        { id: 'conditions', label: mode === 'luyke'
+            ? `Chọn điều kiện: ${r.from} → ${r.to} · Kho tạo · Tất cả ngành hàng · Tất cả kho`
+            : 'Chọn điều kiện: hôm nay · Kho tạo · Tất cả ngành hàng · Tất cả kho' },
+        { id: 'export', label: 'Bấm Xuất excel' },
+        { id: 'waiting', label: 'Chờ MWG xuất file (Lịch sử xuất excel)' },
+        { id: 'download', label: 'Tải file về Dashboard' },
+        { id: 'load', label: mode === 'luyke' ? 'Nạp vào Phân tích (Lũy kế / Quá khứ)' : 'Nạp vào Phân tích (Tệp Realtime)' },
+    ];
+}
+
+export const YCX_STEPS = ycxSteps('realtime');
 
 export type YcxMessage =
     | { source: typeof YCX_SOURCE; type: 'progress'; jobId: string; step: YcxStep; message: string }
@@ -84,8 +111,8 @@ export function newYcxJobId(): string {
     return `ycx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function buildYcxReportUrl(jobId: string): string {
-    return `${YCX_REPORT_URL}?ycx_ycx=realtime&ycx_job=${encodeURIComponent(jobId)}`;
+export function buildYcxReportUrl(jobId: string, mode: YcxMode = 'realtime'): string {
+    return `${YCX_REPORT_URL}?ycx_ycx=${mode}&ycx_job=${encodeURIComponent(jobId)}`;
 }
 
 /**
@@ -93,9 +120,9 @@ export function buildYcxReportUrl(jobId: string): string {
  * PHẢI gọi ngay trong cú bấm của người dùng — nếu không trình duyệt chặn cửa sổ bật lên.
  * Trả về false nếu trình duyệt vẫn chặn.
  */
-export function startYcxJob(jobId: string): boolean {
-    window.dispatchEvent(new CustomEvent(EVT_START, { detail: { source: YCX_SOURCE, type: 'start-job', jobId, mode: 'realtime' } }));
-    const w = window.open(buildYcxReportUrl(jobId), '_blank');
+export function startYcxJob(jobId: string, mode: YcxMode = 'realtime'): boolean {
+    window.dispatchEvent(new CustomEvent(EVT_START, { detail: { source: YCX_SOURCE, type: 'start-job', jobId, mode } }));
+    const w = window.open(buildYcxReportUrl(jobId, mode), '_blank');
     return !!w;
 }
 

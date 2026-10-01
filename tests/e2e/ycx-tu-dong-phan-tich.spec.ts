@@ -8,7 +8,7 @@ import * as XLSX from 'xlsx';
 if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs);
 
 /**
- * Tự động YCX Realtime — phía Dashboard (Phân tích, 2026-10-01). Nạp NGUYÊN userscript thật (bản 7.14, nhánh trang
+ * Tự động YCX Realtime — phía Dashboard (Phân tích, 2026-10-01). Nạp NGUYÊN userscript thật (bản 7.15, nhánh trang
  * Dashboard) với shim GM_*; tab report.mwgroup.vn được giả lập bằng cách ghi thẳng tiến trình / kết quả vào bộ nhớ GM
  * như tab đó sẽ ghi (phần tab đó có test riêng: ycx-tu-dong-report-mwg.spec.ts). GM_xmlhttpRequest "tải file" trả về
  * một file bán hàng 3 Kho thật → kiểm Phân tích nạp đúng như bấm File YCX → Tệp Realtime.
@@ -45,7 +45,8 @@ test.use({ bypassCSP: true });
 
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-async function moPhanTichCoUserscript(page: Page) {
+async function moPhanTichCoUserscript(page: Page, homNay?: string) {
+    if (homNay) await page.clock.install({ time: new Date(homNay) });
     await page.setViewportSize({ width: 1920, height: 1000 });
     await page.route('**://docs.google.com/**', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: cauHinh() }));
     await page.route('**/__ycx_file_mwg__', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: fileBanHang() }));
@@ -84,7 +85,7 @@ test('Phân tích: khung AUTO SYNC YCX → mở báo cáo 77 → tiến trình �
     const dock = page.getByTestId('ycx-auto-dock');
     await expect(dock).toBeVisible();
     await expect(dock).toContainText('Auto Sync');
-    await expect(dock).toContainText('bản 7.14', { timeout: 5000 });
+    await expect(dock).toContainText('bản 7.15', { timeout: 5000 });
     await page.screenshot({ path: test.info().outputPath('1-khung.png') });
 
     const popupP = page.waitForEvent('popup');
@@ -128,7 +129,7 @@ test('Phân tích: tab MWG báo lỗi → khung hiện lỗi + nút Chạy lại
     test.setTimeout(60_000);
     await moPhanTichCoUserscript(page);
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText('bản 7.14', { timeout: 5000 });
+    await expect(dock).toContainText('bản 7.15', { timeout: 5000 });
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: /Tự động YCX Realtime/ }).click();
     const jobId = new URL((await popupP).url()).searchParams.get('ycx_job')!;
@@ -163,7 +164,51 @@ test('Phân tích: màn 1366px → khung thu gọn thành cột icon, mở tạm
     const box = await dock.boundingBox();
     expect(box!.width).toBeLessThan(80);
     await dock.getByRole('button', { name: 'Mở rộng khung Auto Sync YCX' }).click();
-    await expect(dock).toContainText('Auto Sync YCX');
+    await expect(dock).toContainText('Auto Sync Pro');
     await dock.getByRole('button', { name: 'Thu gọn khung Auto Sync YCX' }).click();
     expect((await dock.boundingBox())!.width).toBeLessThan(80);
+});
+
+/** YCX Luỹ kế (userscript 7.15): Từ 01 → hôm qua, nạp như "Lũy kế / Quá khứ" (hỏi tên gợi nhớ, lưu kho dữ liệu). */
+test('Phân tích: YCX Luỹ kế ngày 15 → mở báo cáo 77 chế độ luyke, nạp file như Lũy kế / Quá khứ', async ({ page }) => {
+    test.setTimeout(120_000);
+    await moPhanTichCoUserscript(page, '2026-10-15T09:00:00');
+    const dock = page.getByTestId('ycx-auto-dock');
+    await expect(dock).toContainText('bản 7.15', { timeout: 5000 });
+    await expect(dock).toContainText('YCX Luỹ kế');
+
+    const popupP = page.waitForEvent('popup');
+    await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
+    const popup = await popupP;
+    expect(popup.url()).toMatch(/\?ycx_ycx=luyke&ycx_job=ycx-/);
+    const jobId = new URL(popup.url()).searchParams.get('ycx_job')!;
+    expect(await page.evaluate(() => (window as unknown as { __gm: Map<string, unknown> }).__gm.get('ycx_ycx_job'))).toMatchObject({ jobId, mode: 'luyke' });
+
+    const modal = page.getByTestId('ycx-auto-modal');
+    await expect(page.getByRole('dialog', { name: /Tự động YCX Luỹ kế/ })).toBeVisible();
+    await expect(modal).toContainText('01/10/2026 → 14/10/2026');
+    await expect(modal).toContainText('Lũy kế / Quá khứ');
+    await page.screenshot({ path: test.info().outputPath('luyke-dang-chay.png') });
+
+    await gmSet(page, 'ycx_ycx_done', { source: 'ycx-ycx-auto', type: 'done', jobId, mode: 'luyke', url: 'https://report.mwgroup.vn/files/YCX-LuyKe.xlsx', fileName: 'YCX-LuyKe.xlsx', at: 9 });
+    // Nạp kiểu Lũy kế / Quá khứ → Phân tích hỏi tên gợi nhớ (Tệp Realtime thì không hỏi)
+    const ten = page.getByPlaceholder('Nhập tên hiển thị...');
+    await expect(ten).toBeVisible({ timeout: 30_000 });
+    await page.screenshot({ path: test.info().outputPath('luyke-dat-ten.png') });
+    await ten.fill('Luỹ kế 01-14/10');
+    await ten.press('Enter');
+    await expect(page.locator('#business-overview')).toContainText('66 Tr', { timeout: 60_000 });
+    await page.screenshot({ path: test.info().outputPath('luyke-da-nap.png') });
+});
+
+test('Phân tích: bấm YCX Luỹ kế vào NGÀY 01 → chạy Realtime', async ({ page }) => {
+    test.setTimeout(60_000);
+    await moPhanTichCoUserscript(page, '2026-10-01T09:00:00');
+    const dock = page.getByTestId('ycx-auto-dock');
+    await expect(dock).toContainText('bản 7.15', { timeout: 5000 });
+    const popupP = page.waitForEvent('popup');
+    await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
+    expect((await popupP).url()).toMatch(/\?ycx_ycx=realtime&ycx_job=ycx-/);
+    await expect(page.getByText('Hôm nay là ngày 01 — YCX Luỹ kế chạy Realtime')).toBeVisible();
+    await expect(page.getByRole('dialog', { name: /Tự động YCX Realtime/ })).toBeVisible();
 });

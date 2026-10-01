@@ -6919,3 +6919,8 @@ code chịu được cả mảng lẫn {Data}, STARTTIME dạng /Date()/ lẫn I
   sau 3s thì đổ ID từ API ngay. (2) `ManagerDownload/GetData` trả **HTTP 415** → đọc Lịch sử như làm tay: khung ẩn
   `/ManagerDownload`, tải lại ~5s/lần, đọc `kendoGrid.dataSource`; API (JSON rồi form, qua GM_xmlhttpRequest) chỉ dự
   phòng. 5 lỗi đọc liên tiếp → báo lỗi rõ. Dashboard đòi bản ≥ 7.14.
+- **7.15 — YCX Luỹ kế (2026-10-01):** nút "YCX Luỹ kế" trong khung Auto Sync Pro (`components/layout/GlobalAutoSyncDock.tsx`,
+  khung chung do chủ dự án gộp). Như Realtime nhưng Từ ngày = 01 đầu tháng, Đến ngày = hôm qua (dạng `dd/MM/yyyy` như
+  chọn tay trên ô kendo-date-picker), nạp như "Lũy kế / Quá khứ" (`handleFileProcessing(…, isHistorical=true)` → hỏi tên
+  gợi nhớ). Ngày 01: Luỹ kế chạy Realtime — quy tắc ở CẢ Dashboard (`resolveYcxMode`) lẫn userscript (`ycxResolveMode`).
+  *Tự chọn thêm:* Từ ngày = 01 (chủ dự án chỉ nói "Đến ngày = hôm qua"; để Từ ngày mặc định hôm nay thì khoảng ngày ngược).
