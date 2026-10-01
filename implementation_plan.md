@@ -6837,7 +6837,24 @@ Mọi nơi gọi chỉ còn 1 dòng kiểu: `exportImage(ref.current, { title: '
 là tái phát lỗi cũ → bước 0 (ảnh mốc) + giữ test e2e iOS sẵn có (`check-thuong-iphone-khong-cat`, `ios-report-bi-check-thuong`,
 `xuat-anh-hang-loat-ket-qua`, `tax-qr-and-export`). Chuyển từng khu vực một, khu nào lệch thì dừng ở khu đó.
 
-### Cần chủ dự án chốt (có mặc định đề xuất — không trả lời thì làm theo mặc định)
+### ĐÃ CHỐT (chủ dự án 2026-10-01)
+1. Hàng loạt trên máy tính: **luôn tải từng ảnh**, dù bao nhiêu ảnh (KHÔNG gói ZIP).
+2. **Bật chân ảnh** "Dashboard YCX · xuất HH:mm dd/mm", chữ xám nhỏ.
+3. Bề rộng ảnh tối thiểu **680px**.
+
+### (lịch sử) Câu hỏi đã gửi chủ dự án
 1. Hàng loạt trên **máy tính**: tải từng ảnh (như nay) hay **gói 1 file ZIP**? → đề xuất: ≤ 5 ảnh tải từng ảnh, > 5 ảnh gói ZIP.
 2. **Chân ảnh** "Dashboard YCX · xuất 14:32 01/10"? → đề xuất: bật, chữ xám 11px.
 3. Bề rộng tối thiểu ảnh: giữ 680px (đọc vừa điện thoại) như bản gốc → đề xuất: giữ.
+
+### Tiến độ thực hiện
+- **XA-1 (xong 2026-10-01)** — `components/shared/export/`: `captureEngine.ts` (bộ chụp gốc chuyển nguyên logic + 3 phần mới),
+  `exportLayout.ts` (co cột vừa nội dung: ô dữ liệu không xuống dòng, tiêu đề xuống dòng ở khoảng trắng chỉ khi dài hơn dữ
+  liệu, bảng `min-content`, ảnh = bảng rộng nhất, tối thiểu 680px; chân ảnh), `exportProgress.ts` (kho trạng thái trên
+  globalThis + API `startExportJob` + tương thích `show/update/hideExportOverlay`), `ExportProgressHost.tsx` (bảng chờ/tiến
+  trình tự gắn vào body, có Huỷ & tổng kết). `services/uiService.ts` (Phân tích, Thuế) nay chỉ re-export → 2 khu này đã
+  dùng bộ chung. Kiểm: `tests/e2e/xuat-anh-chung.spec.ts` 5/5; ảnh thật "Chi tiết theo kho" trước 1.969px cột thừa trắng →
+  sau 1.450px cột vừa nội dung; các e2e xuất ảnh cũ xanh.
+  Kèm theo (commit Mac c594ab1d làm đỏ CI): 3 unit test `getMonthProgress` cập nhật theo quy tắc mới "mùng 1 lấy trọn tháng
+  trước"; khung AUTO SYNC đổi màu orange/teal → amber/emerald (lint-ratchet), chữ 9.5–10.5px → 11px (chuẩn cỡ chữ tối
+  thiểu); **khung AUTO SYNC tự thu gọn ở màn < 1536px** vì bản mở rộng che nút xuất ảnh/cài đặt góc phải bảng (laptop 1280px).

@@ -74,10 +74,11 @@ describe('getIndividualMonthProgress — ĐÃ VÁ LỖI MÙNG 1 (2026-09-10)', (
         expect(getIndividualMonthProgress(new Date(2026, 8, 10)).daysPassed).toBe(9);
     });
 
-    it('🔴 ngày MÙNG 1 phải cho daysPassed = 1, KHÔNG phải 0', () => {
+    it('🔴 ngày MÙNG 1 KHÔNG được cho daysPassed = 0 — lấy trọn tháng trước', () => {
         // Trước bản vá, hàm này trả 0 ⇒ calculateRunRate trả 0 ⇒ mọi %DKHT = 0 ⇒ TOÀN BỘ hạng mục
-        // rơi vào "NoSale" đúng ngày đầu tháng. Test này khoá lại để không tái diễn.
-        expect(getIndividualMonthProgress(new Date(2026, 8, 1)).daysPassed).toBe(1);
+        // rơi vào "NoSale" đúng ngày đầu tháng. Từ commit c594ab1d (chủ dự án, 2026-10-01) mùng 1 lấy
+        // trọn tháng trước: mùng 1/9 → 31/31 ngày tháng 8.
+        expect(getIndividualMonthProgress(new Date(2026, 8, 1))).toMatchObject({ daysPassed: 31, daysInMonth: 31 });
     });
 
     it('nay dùng CHUNG một hàm với bảng Tổng hợp — không thể lệch nhau nữa', () => {

@@ -65,11 +65,14 @@ describe('resolveEmployeeTarget — dò target qua 3 tầng nới lỏng', () =>
 
 describe('getMonthProgress — nhịp thời gian cho run rate', () => {
     it('daysPassed = hôm nay - 1 (dữ liệu chốt tới hết hôm qua)', () => {
-        expect(getMonthProgress(new Date(2026, 8, 10))).toEqual({ daysPassed: 9, daysInMonth: 30 });
+        // toMatchObject: từ commit c594ab1d hàm trả thêm isPastMonth/day/month/year
+        expect(getMonthProgress(new Date(2026, 8, 10))).toMatchObject({ daysPassed: 9, daysInMonth: 30 });
     });
 
-    it('ngày mùng 1 KHÔNG cho ra 0 (tránh chia cho 0)', () => {
-        expect(getMonthProgress(new Date(2026, 8, 1)).daysPassed).toBe(1);
+    it('ngày mùng 1 KHÔNG cho ra 0 (tránh chia cho 0) — lấy TRỌN tháng trước', () => {
+        // Quy tắc mới của chủ dự án (commit c594ab1d, 2026-10-01): mùng 1 thì dữ liệu luỹ kế là cả tháng
+        // trước → mùng 1/9 tính đủ 31/31 ngày tháng 8 (trước đây 1 ngày). Vẫn KHÔNG bao giờ ra 0.
+        expect(getMonthProgress(new Date(2026, 8, 1))).toMatchObject({ daysPassed: 31, daysInMonth: 31 });
     });
 
     it('tháng 2 năm nhuận ra 29 ngày', () => {

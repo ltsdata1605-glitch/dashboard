@@ -121,7 +121,8 @@ export async function openCompetitionTable(page: Page) {
         await page.waitForTimeout(400);
     }
 
-    await page.getByRole('button', { name: /Realtime/i }).first().click();
+    // exact: từ 2026-10-01 trang có thêm nút nổi "Tự động Realtime" (khung AUTO SYNC) — /Realtime/ bấm nhầm nút đó
+    await page.getByRole('button', { name: 'Realtime', exact: true }).first().click();
     await page.getByText('NHÓM THI ĐUA').waitFor({ timeout: 20_000 });
     await page.waitForTimeout(800);
 }

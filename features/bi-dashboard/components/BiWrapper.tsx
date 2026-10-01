@@ -69,12 +69,19 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     // Quản lý tự động đồng bộ tập trung tại BiWrapper để modal và nút nổi hoạt động xuyên suốt cả 3 tab
     const [activeSupermarket] = useIndexedDBState<string>('dashboard-active-supermarket', 'Tổng');
     const { handleStartAutoSync, renderAutoSyncModal } = useBiAutoSync(activeSupermarket);
-    const [isDockCollapsed, setIsDockCollapsed] = useIndexedDBState<boolean>('bi-dock-collapsed', false);
+    const [dockThuGonLuu, setIsDockCollapsed] = useIndexedDBState<boolean>('bi-dock-collapsed', false);
+    // Màn < 1536px: khung AUTO SYNC mở rộng (224px) đè lên góc phải bảng 960px — che nút xuất ảnh/cài đặt
+    // (đo thật ở 1280px, 2026-10-01). Nên ở màn hẹp mặc định THU GỌN thành cột icon; bấm mở thì chỉ mở tạm.
+    const [manHep, setManHep] = useState(window.innerWidth < 1536);
+    const [dockMoTam, setDockMoTam] = useState(false);
+    const isDockCollapsed = manHep ? !dockMoTam : dockThuGonLuu;
+    const moDock = () => (manHep ? setDockMoTam(true) : setIsDockCollapsed(false));
+    const thuGonDock = () => (manHep ? setDockMoTam(false) : setIsDockCollapsed(true));
 
 
     useEffect(() => {
         setMounted(true);
-        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        const handleResize = () => { setIsMobile(window.innerWidth < 1024); setManHep(window.innerWidth < 1536); };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -225,7 +232,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                         <div className="preserve-rounded flex flex-col items-center gap-2">
                             <button
                                 type="button"
-                                onClick={() => setIsDockCollapsed(false)}
+                                onClick={moDock}
                                 title="Mở rộng bảng Auto Sync"
                                 className="preserve-rounded p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             >
@@ -235,7 +242,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={() => handleStartAutoSync('realtime')}
                                 title="Tự động Realtime"
-                                className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                                className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                             >
                                 <Zap className="w-4 h-4 fill-amber-200" />
                             </button>
@@ -243,7 +250,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={() => handleStartAutoSync('luyke')}
                                 title="Tự động Luỹ kế"
-                                className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-600 to-teal-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                                className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                             >
                                 <TrendingUp className="w-4 h-4" />
                             </button>
@@ -257,13 +264,13 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
                                     </span>
-                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                    <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                                         Auto Sync Pro
                                     </span>
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setIsDockCollapsed(true)}
+                                    onClick={thuGonDock}
                                     title="Thu gọn bảng"
                                     className="preserve-rounded p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                                 >
@@ -276,7 +283,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={() => handleStartAutoSync('realtime')}
                                 title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 active:from-orange-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_6px_20px_rgba(245,158,11,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_6px_20px_rgba(245,158,11,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                             >
                                 {/* Dải ánh kim phản chiếu quét qua khi hover */}
                                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
@@ -291,7 +298,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
                                         Tự động Realtime
                                     </span>
-                                    <span className="text-[10px] font-semibold text-amber-100/90 leading-none mt-1">
+                                    <span className="text-[11px] font-semibold text-amber-100/90 leading-none mt-1">
                                         ⚡ Tức thì hôm nay
                                     </span>
                                 </div>
@@ -302,7 +309,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={() => handleStartAutoSync('luyke')}
                                 title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 active:from-teal-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(16,185,129,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(16,185,129,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                             >
                                 {/* Dải ánh kim phản chiếu quét qua khi hover */}
                                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
@@ -317,14 +324,14 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
                                         Tự động Luỹ kế
                                     </span>
-                                    <span className="text-[10px] font-semibold text-emerald-100/90 leading-none mt-1">
+                                    <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1">
                                         📈 Cả tháng đến nay
                                     </span>
                                 </div>
                             </button>
 
                             {/* Footer micro-tag */}
-                            <div className="preserve-rounded flex items-center justify-center gap-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-800/80 text-[9.5px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide">
+                            <div className="preserve-rounded flex items-center justify-center gap-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide">
                                 <Sparkles className="w-3 h-3 text-amber-500/80" />
                                 <span>Tampermonkey • Sẵn sàng</span>
                             </div>

@@ -146,7 +146,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 size="none"
                                 onClick={() => onStartAutoSync('realtime')}
                                 title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[10.5px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-amber-600/30 whitespace-nowrap"
+                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-amber-600/30 whitespace-nowrap"
                             >
                                 <Zap className="h-3 w-3 text-amber-100 fill-amber-200 shrink-0" />
                                 <span>Tự động Realtime</span>
@@ -158,7 +158,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 size="none"
                                 onClick={() => onStartAutoSync('luyke')}
                                 title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[10.5px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-emerald-600/30 whitespace-nowrap"
+                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-emerald-600/30 whitespace-nowrap"
                             >
                                 <TrendingUp className="h-3 w-3 text-emerald-100 shrink-0" />
                                 <span>Tự động Luỹ kế</span>
