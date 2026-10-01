@@ -228,7 +228,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                 variant="primary"
                                 onClick={() => fileInputRef.current?.click()}
                                 disabled={isProcessing}
-                                className="px-5 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all"
+                                className="px-5 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-md hover:shadow-lg transition-all"
                             >
                                 <UploadIcon className="w-4 h-4 mr-2" />
                                 {isProcessing ? 'Đang xử lý...' : 'Chọn file từ thiết bị'}
