@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.14
+// @version      7.15
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -31,6 +31,9 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.15 — YCX LUỸ KẾ (chủ dự án 2026-10-01): như Realtime nhưng Từ ngày = 01 đầu tháng, Đến ngày = HÔM QUA.
+ *   Hôm nay ngày 01 (chưa có ngày nào để luỹ kế) → chạy như Realtime. URL ycx_ycx=luyke.
+ *
  * BẢN 7.14 — SỬA TỰ ĐỘNG YCX THEO LẦN CHẠY THẬT ĐẦU TIÊN (chủ dự án 2026-10-01):
  * - Ô Kho treo lâu: cây chọn kho nằm trong cửa sổ Kendo (bị chuyển ra cuối <body>), không nằm trong khối điều kiện →
  *   tìm cây qua isolate scope của directive; không thấy cây sau 3s thì đổ danh sách kho từ API ngay.
@@ -485,7 +488,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.14';
+  const SCRIPT_VERSION_FALLBACK = '7.15';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -3949,7 +3952,34 @@
     console.log(`[YCX] ${label}: ${Array.isArray(cond.OBJECTVALUE) ? cond.OBJECTVALUE.length : 1} mục (${daChon ? 'cây trên trang' : 'API'})`);
   }
 
-  async function ycxApplyConditions(scope) {
+  /** Chế độ thật sẽ chạy: Luỹ kế vào ngày 01 → Realtime (cùng quy tắc với Dashboard). */
+  function ycxResolveMode(mode, now) {
+    const d = now || new Date();
+    return mode === 'luyke' && d.getDate() !== 1 ? 'luyke' : 'realtime';
+  }
+
+  /** Luỹ kế: Từ 01 đầu tháng → Đến HÔM QUA, dạng dd/MM/yyyy (đúng định dạng ô ngày của trang khi chọn tay). */
+  function ycxLuyKeRange(now) {
+    const d = now || new Date();
+    const fmt = (x) => `${pad2(x.getDate())}/${pad2(x.getMonth() + 1)}/${x.getFullYear()}`;
+    const from = new Date(d.getFullYear(), d.getMonth(), 1);
+    const to = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
+    return { from: fmt(from), to: fmt(to), fromDate: from, toDate: to };
+  }
+
+  /** Đặt một ô ngày (kendo-date-picker ng-model="item.OBJECTVALUE"): đổi cả ô hiển thị lẫn model. */
+  function ycxSetDate(scope, cond, text, date) {
+    try {
+      const $ = ycxWin().jQuery || ycxWin().$;
+      const el = ycxCondEl(cond);
+      const input = el && el.querySelector('input[data-role="datepicker"], input[kendo-date-picker]');
+      const w = input && $ ? $(input).data('kendoDatePicker') : null;
+      if (w) w.value(date);
+    } catch (_) { /* không có widget — đặt model là đủ */ }
+    ycxApply(scope, () => { cond.OBJECTVALUE = text; });
+  }
+
+  async function ycxApplyConditions(scope, mode) {
     const conds = scope.ListCondition;
     const find = (p) => conds.find((c) => c.PARAMNAME === p);
 
@@ -3988,7 +4018,16 @@
         return ids;
       });
     }
-    // Ngày: để mặc định (trang tự đặt hôm nay khi tải)
+    // Ngày: Realtime để mặc định (trang tự đặt hôm nay khi tải); Luỹ kế: 01 đầu tháng → hôm qua
+    if (mode === 'luyke') {
+      const r = ycxLuyKeRange();
+      const tu = find('V_FROMDATE');
+      const den = find('V_TODATE');
+      if (!tu || !den) throw ycxErr('conditions', 'Báo cáo không có ô "Từ ngày" / "Đến ngày" — MWG đã đổi mẫu báo cáo 77?');
+      ycxSetDate(scope, tu, r.from, r.fromDate);
+      ycxSetDate(scope, den, r.to, r.toDate);
+      console.log(`[YCX] Luỹ kế: ${r.from} → ${r.to}`);
+    }
   }
 
   async function ycxClickExport(scope) {
@@ -4067,13 +4106,13 @@
     }
   }
 
-  function ycxFileName(url) {
+  function ycxFileName(url, mode) {
     try {
       const last = decodeURIComponent(new URL(url).pathname.split('/').pop() || '');
       if (/\.(xlsx|xls|csv)$/i.test(last)) return last;
     } catch (_) { /* bỏ qua */ }
     const d = new Date();
-    return `YCX-Realtime-${pad2(d.getDate())}-${pad2(d.getMonth() + 1)}-${d.getFullYear()}-${pad2(d.getHours())}${pad2(d.getMinutes())}.xlsx`;
+    return `YCX-${mode === 'luyke' ? 'LuyKe' : 'Realtime'}-${pad2(d.getDate())}-${pad2(d.getMonth() + 1)}-${d.getFullYear()}-${pad2(d.getHours())}${pad2(d.getMinutes())}.xlsx`;
   }
 
   async function ycxRunJob(job) {
@@ -4083,8 +4122,10 @@
     try {
       await report('open', 'Đã mở báo cáo 77, chờ form điều kiện…');
       const scope = await ycxWaitScope(60000);
-      await report('conditions', 'Chọn điều kiện: Kho tạo · Tất cả ngành hàng · Tất cả kho · ngày hôm nay…');
-      await ycxApplyConditions(scope);
+      const mode = ycxResolveMode(job.mode);
+      const ngay = mode === 'luyke' ? (() => { const r = ycxLuyKeRange(); return `${r.from} → ${r.to}`; })() : 'ngày hôm nay';
+      await report('conditions', `${mode === 'luyke' ? 'Luỹ kế' : 'Realtime'} — chọn điều kiện: ${ngay} · Kho tạo · Tất cả ngành hàng · Tất cả kho…`);
+      await ycxApplyConditions(scope, mode);
 
       const userInput = document.querySelector('input[name="__UserName"]');
       let userName = '';
@@ -4106,8 +4147,8 @@
       const row = await ycxWaitFile(before, userName, startedAt, (m) => report('waiting', m));
       const url = new URL(row.LINKDOWNLOAD, location.href).href;
       await ycxWaitStable(url, (m) => report('waiting', m));
-      const fileName = ycxFileName(url);
-      await gmSet(GM_KEY_YCX_DONE, { source: YCX_SOURCE, type: 'done', jobId, url, fileName, reportName: row.DYNAMICREPORTNAME || '', at: Date.now() });
+      const fileName = ycxFileName(url, mode);
+      await gmSet(GM_KEY_YCX_DONE, { source: YCX_SOURCE, type: 'done', jobId, mode, url, fileName, reportName: row.DYNAMICREPORTNAME || '', at: Date.now() });
       await gmSet(GM_KEY_YCX_JOB, { ...job, status: 'done' });
       ycxBanner('Xong — đã gửi file về Dashboard, tab này sẽ tự đóng.', 'ok');
       setTimeout(() => { try { window.close(); } catch (_) { /* không đóng được thì thôi */ } }, 2500);
