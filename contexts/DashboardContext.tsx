@@ -20,7 +20,7 @@ export interface DashboardContextType {
     openPerformanceModal: (employeeName: string) => void;
     handleBatchExport: (employees: Employee[]) => void;
     handleBatchKhoExport: (element: HTMLElement | null, filenamePrefix: string, options?: ExportImageOptions) => Promise<void>;
-    handleExport: (element: HTMLElement | null, filename: string, options?: ExportImageOptions) => Promise<void>;
+    handleExport: (element: HTMLElement | null, filename: string, options?: ExportImageOptions) => Promise<Blob | null | void>;
     isProcessing: boolean;
     isExporting: boolean;
     pendingExport: PendingExport | null;

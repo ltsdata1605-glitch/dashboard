@@ -6868,3 +6868,13 @@ là tái phát lỗi cũ → bước 0 (ảnh mốc) + giữ test e2e iOS sẵn 
   đặt sẵn). Phần dùng chung nối vào: bảng tiến trình, co cột, chân ảnh, giao ảnh; bề rộng tối thiểu 720 → 680px. Ảnh "Siêu thị"
   (chụp như hiển thị) giữ y nguyên + chân ảnh; ảnh Thi đua giữ thiết kế, hẹp hơn chút. Co cột: GIỮ `min-width` do bộ quy tắc
   đặt (cột thanh tiến độ 105px — gỡ đi thì thanh `w-full` co về 0). 29/29 e2e xuất ảnh xanh.
+- **XA-3 (xong 2026-10-01)** — bộ quy tắc thứ 3 `raw` (giữ nguyên bố cục, chỉ phần dùng chung). Khai thác: bỏ html2canvas
+  + toast riêng → bộ chung (`raw`, chia sẻ). Check thưởng: giữ mẫu HTML bảng xếp hạng, chụp qua bộ chung, dòng chân 9px
+  cũ → chân ảnh chung ("Top N dẫn đầu · Dashboard YCX · xuất…"). Mọi vòng hàng loạt qua `startExportJob` (thanh %,
+  tên mục, Huỷ, tổng kết): Phân tích theo NV / theo Kho (câu tổng kết describeBatchOutcome hiện trên bảng thay toast),
+  Đơn chờ xuất / chưa thu theo người lập, bảng 7 ngày, lịch doanh thu; Report BI: Trả chậm & Doanh thu theo bộ phận,
+  Thi đua nổi bật / nhóm / bảng tổng hợp / theo nhóm tiêu chí / so sánh cặp; Phân Ca tuần / từng NV; In Sticker theo
+  lô (bỏ hộp thoại kết quả thứ 2). `handleExport` (Phân tích) trả Blob để vòng hàng loạt biết mục lỗi.
+  Còn lại ngoài phạm vi: html2canvas ở In Sticker `printService` (trang IN PDF, không phải xuất ảnh).
+- **XA-4 (xong 2026-10-01)** — `components/shared/export/khongBanSao.test.ts` chặn import thư viện chụp ảnh ngoài thư mục
+  chung (đã thử cố ý vi phạm: test đỏ đúng file); CLAUDE.md mục 1 (thứ dùng chung thứ 4) + DESIGN_SYSTEM.md mục 5b.

@@ -106,7 +106,9 @@ export function startExportJob(opts: { title: string; total?: number; cancellabl
             store.state = { ...s, phase: 'finished', stage: message, done: huy ? s.done : s.total };
             emit();
             // Lẻ & thành công: tắt gần như ngay. Có lỗi / hàng loạt: để người dùng đọc tổng kết.
-            const keep = f.keepOpenMs ?? (s.total === 1 && !failed ? 600 : failed || huy ? 0 : 2500);
+            // Có câu tổng kết riêng mà chưa xuất đủ (vd lỗi cả lượt) → cũng giữ lại để người dùng đọc
+            const thieu = ok < s.total && !huy;
+            const keep = f.keepOpenMs ?? (s.total === 1 && !failed ? 600 : failed || huy || (f.message && thieu) ? 0 : 2500);
             if (keep > 0) {
                 store.hideTimer = setTimeout(() => { if (store.state?.id === id) setState(null); }, keep);
             }

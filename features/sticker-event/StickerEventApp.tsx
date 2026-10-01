@@ -27,8 +27,8 @@ import SuperAdminModal from './SuperAdminModal';
 import UserGuideModal from './UserGuideModal';
 import { Info, Printer, FolderOpen } from 'lucide-react';
 import { auth } from './firebase';
-import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from './services/uiService';
-import { exportProductsInBatches, describeBatchExportResult } from './services/batchImageExportService';
+import { exportElementAsImage, downloadBlob } from './services/uiService';
+import { exportProductsInBatches } from './services/batchImageExportService';
 
 // Custom Hooks
 import { useStickerEventAuth } from './hooks/useStickerEventAuth';
@@ -694,13 +694,11 @@ export default function App(): React.JSX.Element {
                       return;
                     }
                     try {
-                      const res = await exportProductsInBatches(sortedProducts, {
+                      // Kết quả (số ảnh xuất ĐƯỢC, ảnh lỗi) hiện trên bảng tiến trình chung — không mở hộp thoại thứ 2
+                      await exportProductsInBatches(sortedProducts, {
                         chunkSize: 50,
                         storeId: userData?.storeId,
                       });
-                      // Báo đúng số ảnh xuất ĐƯỢC — trước đây ảnh lỗi vẫn bị đếm là thành công.
-                      const { title, message } = describeBatchExportResult(res);
-                      showAlert(message, title);
                     } catch (err) {
                       console.error('Export image error:', err);
                       showAlert('Không thể xuất ảnh. Vui lòng thử lại.', 'Lỗi');

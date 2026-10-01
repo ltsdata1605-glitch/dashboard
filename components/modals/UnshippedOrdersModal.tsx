@@ -6,14 +6,14 @@ import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
+import { startExportJob } from '../shared/export';
 import { Button } from '../shared/ui/Button';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 
 interface UnshippedOrdersModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onExport: (element: HTMLElement, filename: string, options?: ExportImageOptions) => Promise<void>;
+    onExport: (element: HTMLElement, filename: string, options?: ExportImageOptions) => Promise<Blob | null | void>;
     onlyOverdue?: boolean;
 }
 
@@ -115,11 +115,9 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         const elementToExport = modalBodyRef.current;
         if (elementToExport) {
             setIsExporting(true);
-            showExportOverlay('Đang xuất ảnh toàn bộ...');
             renderCustomersSync(getAllCustomerIds());
             await onExport(elementToExport, `Đơn Hàng Chờ Xuất (Tất Cả).png`, { forceOpenDetails: true, forcedWidth: 960 });
             setIsExporting(false);
-            hideExportOverlay();
         }
     };
 
@@ -128,21 +126,26 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         setIsExporting(true);
         renderCustomersSync(getAllCustomerIds());
         const total = creatorData.length;
-        showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
+        // Bảng tiến trình chung: %, tên người lập, Huỷ, tổng kết mục lỗi
+        const job = startExportJob({ title: 'Đơn hàng chờ xuất — xuất theo người lập', total });
         for (let i = 0; i < creatorData.length; i++) {
+            if (job.cancelled) break;
             const creator = creatorData[i];
-            updateExportOverlay(`Đang xuất: ${creator.name}`, `${i + 1}/${total}`);
+            job.item(i, `Đang xuất: ${creator.name}`);
             const creatorElement = creatorRefs.current[creator.name];
-            if (creatorElement) {
+            if (!creatorElement) {
+                job.result(creator.name, 'failed', 'Không tìm thấy khối dữ liệu');
+            } else {
                 const filename = `Đơn Hàng Chờ Xuất - ${sanitizeFilename(creator.name)}.png`;
-                await onExport(creatorElement, filename, {
+                const blob = await onExport(creatorElement, filename, {
                     forceOpenDetails: true,
                     forcedWidth: 960,
                 });
+                job.result(creator.name, blob === null ? 'failed' : 'ok', blob === null ? 'Không tạo được ảnh' : undefined);
             }
         }
+        job.finish();
         setIsExporting(false);
-        hideExportOverlay();
     };
 
     const handleExportCreator = async (e: React.MouseEvent, creatorName: string) => {
@@ -150,7 +153,6 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         const creatorElement = creatorRefs.current[creatorName];
         if (creatorElement) {
             setIsExporting(true);
-            showExportOverlay(`Đang xuất: ${creatorName}`);
             renderCustomersSync(getCreatorCustomerIds(creatorName));
             const filename = `Đơn Hàng Chờ Xuất - ${sanitizeFilename(creatorName)}.png`;
             await onExport(creatorElement, filename, {
@@ -158,7 +160,6 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 forcedWidth: 960,
             });
             setIsExporting(false);
-            hideExportOverlay();
         }
     };
 

@@ -4,7 +4,8 @@ import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
 import { offerBatchShare, type BatchShareFile } from '../components/shared/ui/BatchShareToast';
 import { isMobileLikeDevice } from '../utils/dataUtils';
-import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles } from '../services/uiService';
+import { startExportJob, type ExportJob } from '../components/shared/export';
 import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
@@ -43,10 +44,18 @@ interface ExportLogicProps {
 }
 
 /** Báo kết quả batch theo số ảnh xuất được THẬT (audit A03/A04). */
-const reportBatchOutcome = (items: BatchItemOutcome[], fatalError?: unknown) => {
-    const { type, message } = describeBatchOutcome(items, fatalError);
-    if (type === 'success') toast.success(message, { id: 'batch-export-result', duration: 4000 });
-    else toast.error(message, { id: 'batch-export-result', duration: 12000 });
+/**
+ * Tổng kết lượt hàng loạt — hiện NGAY TRÊN bảng tiến trình chung (components/shared/export), cùng câu chữ
+ * describeBatchOutcome như trước (trước đây là toast riêng). Người dùng bấm Huỷ → câu "Đã huỷ — xuất được x/N".
+ */
+const reportBatchOutcome = (job: ExportJob, items: BatchItemOutcome[], fatalError?: unknown) => {
+    if (job.cancelled && !fatalError) { job.finish(); return; }
+    job.finish({ message: describeBatchOutcome(items, fatalError).message });
+};
+/** Ghi kết quả một mục vào cả danh sách tổng kết lẫn bảng tiến trình. */
+const ghiKetQua = (job: ExportJob, outcomes: BatchItemOutcome[], o: BatchItemOutcome) => {
+    outcomes.push(o);
+    job.result(o.label, o.ok ? 'ok' : 'failed', o.error);
 };
 
 /**
@@ -99,10 +108,12 @@ export const useExportLogic = ({
         processedFilterStateRef.current = processedFilterState;
     }, [filterState, processedFilterState]);
 
-    const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: ExportImageOptions = {}) => {
-        if (element) {
+    const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: ExportImageOptions = {}): Promise<Blob | null> => {
+        // Trả về ảnh đã dựng (null = lỗi) để luồng hàng loạt biết mục nào hỏng
+        if (!element) return null;
+        {
             setIsExporting(true);
-            showExportOverlay('Đang xuất ảnh...');
+            // Bảng chờ do bộ xuất ảnh chung tự mở (tiêu đề theo tên báo cáo) — không dùng lớp phủ cũ nữa
             await new Promise(resolve => setTimeout(resolve, 150));
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
@@ -111,7 +122,6 @@ export const useExportLogic = ({
             };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
-            hideExportOverlay();
             if (blob) {
                 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
                 if (!isMobile) {
@@ -120,6 +130,7 @@ export const useExportLogic = ({
                     await shareBlob(blob, filename);
                 }
             }
+            return blob;
         }
     }, []);
 
@@ -145,7 +156,7 @@ export const useExportLogic = ({
         if (!employeesToExport.length || !productConfig || !processedData) return;
         setIsExporting(true);
         const total = employeesToExport.length;
-        showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
+        const job = startExportJob({ title: 'Xuất ảnh hàng loạt theo nhân viên', total });
 
         const outcomes: BatchItemOutcome[] = [];
         const gomAnh = taoBoGomAnh();
@@ -166,8 +177,9 @@ export const useExportLogic = ({
             const activeRoot = root;
 
             for (let i = 0; i < employeesToExport.length; i++) {
+                if (job.cancelled) break;
                 const employee = employeesToExport[i];
-                updateExportOverlay(`Đang xuất: ${employee.name}`, `${i + 1}/${total}`);
+                job.item(i, `Đang xuất: ${employee.name}`);
                 try {
                     await new Promise<void>(resolve => {
                         activeRoot.render(
@@ -186,7 +198,7 @@ export const useExportLogic = ({
                     });
                     const modalContent = container.querySelector('.modal-content');
                     if (!modalContent) {
-                        outcomes.push({ label: employee.name, ok: false, error: 'Không dựng được nội dung' });
+                        ghiKetQua(job, outcomes, { label: employee.name, ok: false, error: 'Không dựng được nội dung' });
                     } else {
                         const filename = `Phân Tích Hiệu Quả - ${sanitizeFilename(employee.name)}.png`;
                         // Bề rộng ảnh khớp với xuất lẻ ở PerformanceModal.handleExport: 800px, nới thêm
@@ -195,13 +207,13 @@ export const useExportLogic = ({
                         const categoryHeaderCells = modalContent.querySelectorAll(`.${CATEGORY_TABLE_CLASS} thead tr:last-child th`);
                         const blob = await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length), mode: gomAnh.mode });
                         gomAnh.them(blob, filename);
-                        outcomes.push(blob
+                        ghiKetQua(job, outcomes, blob
                             ? { label: employee.name, ok: true }
                             : { label: employee.name, ok: false, error: 'Không tạo được ảnh' });
                     }
                 } catch (itemError) {
                     console.error(`[Batch NV] Lỗi khi xuất ${employee.name}:`, itemError);
-                    outcomes.push({ label: employee.name, ok: false, error: getErrorMessage(itemError) });
+                    ghiKetQua(job, outcomes, { label: employee.name, ok: false, error: getErrorMessage(itemError) });
                 }
                 // Memory pressure relief: clear render + yield to GC between exports
                 activeRoot.render(null);
@@ -212,11 +224,10 @@ export const useExportLogic = ({
             fatalError = error;
         } finally {
             setIsExporting(false);
-            hideExportOverlay();
             try { root?.unmount(); } catch { /* đã unmount */ }
             offscreenContainer?.remove();
         }
-        reportBatchOutcome(outcomes, fatalError);
+        reportBatchOutcome(job, outcomes, fatalError);
         gomAnh.giao();
     }, [productConfig, processedData]);
 
@@ -251,20 +262,20 @@ export const useExportLogic = ({
         const outcomes: BatchItemOutcome[] = [];
         const gomAnh = taoBoGomAnh();
         let fatalError: unknown;
+        const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
+        const total = khosToExport.length + 1; // +1 for warehouse summary
+        const job = startExportJob({ title: 'Xuất báo cáo theo kho', total });
         try {
-            const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
-            const total = khosToExport.length + 1; // +1 for warehouse summary
-            showExportOverlay('Đang xuất báo cáo kho...', `1/${total}`);
 
             if (!document.getElementById('business-overview') || !document.getElementById('warehouse-summary-view')) {
                 throw new Error('Không tìm thấy thành phần cần xuất (#business-overview or #warehouse-summary-view).');
             }
 
             // Export warehouse summary once (all khos, no highlight)
-            updateExportOverlay('Đang xuất: Tổng hợp kho', `1/${total}`);
+            job.item(0, 'Đang xuất: Tổng hợp kho');
             handleFilterChange({ kho: [] }); // Reset to show all
             if (!(await waitForKhoData([]))) {
-                outcomes.push({ label: 'Tổng hợp kho', ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
+                ghiKetQua(job, outcomes, { label: 'Tổng hợp kho', ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
             } else {
                 // Tìm lại phần tử mỗi lượt — React có thể đã dựng lại nút DOM sau khi đổi bộ lọc.
                 const warehouseElement = document.getElementById('warehouse-summary-view');
@@ -273,17 +284,18 @@ export const useExportLogic = ({
                     mode: gomAnh.mode,
                 }) : null;
                 gomAnh.them(blob, 'Báo Cáo Kho Tổng Hợp.png');
-                outcomes.push({ label: 'Tổng hợp kho', ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
+                ghiKetQua(job, outcomes, { label: 'Tổng hợp kho', ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
             }
             await new Promise(resolve => setTimeout(resolve, 800));
 
             // Then export business overview per kho
             for (let i = 0; i < khosToExport.length; i++) {
+                if (job.cancelled) break;
                 const kho = khosToExport[i];
-                updateExportOverlay(`Đang xuất: ${kho}`, `${i + 2}/${total}`);
+                job.item(i + 1, `Đang xuất: ${kho}`);
                 handleFilterChange({ kho: [kho] });
                 if (!(await waitForKhoData([kho]))) {
-                    outcomes.push({ label: kho, ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
+                    ghiKetQua(job, outcomes, { label: kho, ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
                     continue;
                 }
 
@@ -294,7 +306,7 @@ export const useExportLogic = ({
                     mode: gomAnh.mode,
                 }) : null;
                 gomAnh.them(blob, `Tổng Quan Kinh Doanh - ${kho}.png`);
-                outcomes.push({ label: kho, ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
+                ghiKetQua(job, outcomes, { label: kho, ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
 
                 await new Promise(resolve => setTimeout(resolve, 800));
             }
@@ -306,9 +318,8 @@ export const useExportLogic = ({
             handleFilterChange({ kho: originalKho });
             await new Promise(resolve => setTimeout(resolve, 1500)); 
             setIsExporting(false);
-            hideExportOverlay();
         }
-        reportBatchOutcome(outcomes, fatalError);
+        reportBatchOutcome(job, outcomes, fatalError);
         gomAnh.giao();
     }, [uniqueFilterOptions, filterState, handleFilterChange, setStatus]);
 

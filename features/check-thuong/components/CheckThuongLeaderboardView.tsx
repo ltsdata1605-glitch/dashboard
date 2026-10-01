@@ -123,7 +123,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
         }
 
         setIsExporting(true);
-        const toastId = toast.loading(`Đang tạo ảnh Top ${exportLimit} siêu thị...`);
+        const toastId = 'xuat-anh-top'; // bảng chờ chung hiện tiến trình; toast chỉ báo kết quả
         try {
             const ketQua = await exportLeaderboardToImage({
                 stores: filteredStores,
@@ -150,7 +150,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
         }
 
         setIsExporting(true);
-        const toastId = toast.loading(`Đang tạo ảnh Top ${topStores.length} kênh ${channel}...`);
+        const toastId = 'xuat-anh-top'; // bảng chờ chung hiện tiến trình; toast chỉ báo kết quả
         try {
             const ketQua = await exportLeaderboardToImage({
                 stores: topStores,

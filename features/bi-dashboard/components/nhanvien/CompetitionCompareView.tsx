@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { startExportJob } from '../../../../components/shared/export';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
 import { getCartoonAvatar } from '../../utils/cartoonAvatars';
@@ -309,17 +310,23 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         const originalEmpAId = empAId;
         const originalEmpBId = empBId;
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        const job = startExportJob({ title: 'Xuất ảnh so sánh từng cặp', total: autoPairs.length });
         try {
-            for (const pair of autoPairs) {
+            for (const [i, pair] of autoPairs.entries()) {
+                if (job.cancelled) break;
+                const nhan = `${pair.a.name} vs ${pair.b.name}`;
+                job.item(i, nhan);
                 setEmpAId(pair.a.originalName);
                 setEmpBId(pair.b.originalName);
                 await new Promise(resolve => setTimeout(resolve, 300));
                 const filename = `So Sánh - ${pair.a.name.replace(/[\\/:*?"<>|]/g, '')} vs ${pair.b.name.replace(/[\\/:*?"<>|]/g, '')}.png`;
                 const action = await handleExportPNG(filename, autoAction);
+                job.result(nhan, action === null ? 'failed' : action === 'cancel' ? 'skipped' : 'ok', action === null ? 'Không tạo được ảnh' : undefined);
                 if (action === 'cancel') break;
                 autoAction = action;
             }
         } finally {
+            job.finish();
             setEmpAId(originalEmpAId);
             setEmpBId(originalEmpBId);
             setIsBatchExporting(false);

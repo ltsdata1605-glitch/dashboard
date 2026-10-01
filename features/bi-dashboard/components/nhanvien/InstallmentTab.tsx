@@ -1,5 +1,6 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { startExportJob } from '../../../../components/shared/export';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
@@ -346,16 +347,22 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
         setExportDeptProgress({ current: 0, total: allDepts.length });
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
         
+        // Bảng tiến trình chung (components/shared/export): %, tên bộ phận, Huỷ, tổng kết
+        const job = startExportJob({ title: 'Xuất ảnh Trả chậm theo bộ phận', total: allDepts.length });
         for (let i = 0; i < allDepts.length; i++) {
+            if (job.cancelled) break;
             const dept = allDepts[i] as string;
+            job.item(i, dept);
             setExportDeptFilter(dept);
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
             const safeDeptName = dept.replace(/[\\/:*?"<>|]/g, '');
             const action = await handleExportPNG(`Trả Chậm - ${safeDeptName} - ${supermarketName}.png`, autoAction);
+            job.result(dept, action === null ? 'failed' : action === 'cancel' ? 'skipped' : 'ok', action === null ? 'Không tạo được ảnh' : undefined);
             if (action === 'cancel') break;
             autoAction = action;
         }
+        job.finish();
         setExportDeptFilter(null);
         setIsExportingByDept(false);
     };

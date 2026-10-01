@@ -44,8 +44,13 @@ export interface ExportImageOptions {
     progressTitle?: string;
     /** Không tự hiện bảng tiến trình (nơi gọi tự quản lý) */
     silent?: boolean;
-    /** Bộ quy tắc trình bày: 'standard' (Phân tích, Phân Ca, In Sticker, Thuế…) hoặc 'bi' (Report BI — presetBi.ts) */
-    preset?: 'standard' | 'bi';
+    /**
+     * Bộ quy tắc trình bày: 'standard' (Phân tích, Phân Ca, In Sticker, Thuế…), 'bi' (Report BI — presetBi.ts),
+     * 'raw' (giữ NGUYÊN bố cục: mẫu HTML đã thiết kế sẵn của Check thưởng, chụp màn Khai thác).
+     */
+    preset?: 'standard' | 'bi' | 'raw';
+    /** Màu nền ảnh (mặc định trắng) */
+    backgroundColor?: string;
     /** [bi] Bỏ bo góc mọi khung */
     squareBorders?: boolean;
     /** [bi] Thu gọn lưới thẻ KPI */
@@ -109,7 +114,9 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     const stage = (t: string) => { if (own) own.stage(t); };
     let ok = false;
     try {
-        const core = options.preset === 'bi' ? (await import('./presetBi')).exportBiCore : exportElementAsImageCore;
+        const core = options.preset === 'bi' ? (await import('./presetBi')).exportBiCore
+            : options.preset === 'raw' ? exportRawCore
+                : exportElementAsImageCore;
         const blob = await core(element, filename, options, stage);
         ok = !!blob;
         return blob;
@@ -118,6 +125,67 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             own.result(tieuDeTuTenFile(filename), ok ? 'ok' : 'failed', ok ? undefined : 'Không dựng được ảnh');
             own.finish();
         }
+    }
+}
+
+/**
+ * Bộ quy tắc 'raw': KHÔNG đổi bố cục (không co chữ / bỏ bo góc / ép lưới…). Chỉ phần dùng chung: bản sao
+ * off-screen đúng bề rộng khối gốc, co cột nếu nơi gọi bật `fitColumns`, chân ảnh, chờ phông/ảnh, đổi màu
+ * oklch, độ nét có trần canvas iOS, giao ảnh.
+ */
+async function exportRawCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
+    const isMobileDevice = isMobileLikeDevice();
+    const { elementsToHide = ['.hide-on-export'], mode = 'download', footer = true } = options;
+    const clone = element.cloneNode(true) as HTMLElement;
+    elementsToHide.forEach((sel) => clone.querySelectorAll(sel).forEach((e) => e.remove()));
+    options.onCloneReady?.(clone);
+
+    const box = document.createElement('div');
+    box.style.cssText = 'position:absolute;left:-9999px;top:0;background:#fff';
+    for (let a: HTMLElement | null = element; a; a = a.parentElement) {
+        a.classList.forEach((c) => { if (/-root$/.test(c)) box.classList.add(c); });
+    }
+    const w0 = Math.ceil(options.forcedWidth || element.offsetWidth || element.getBoundingClientRect().width || EXPORT_MIN_WIDTH);
+    clone.style.setProperty('width', `${w0}px`, 'important');
+    clone.style.setProperty('max-width', 'none', 'important');
+    clone.style.setProperty('margin', '0', 'important');
+    box.appendChild(clone);
+    document.body.appendChild(box);
+    try {
+        stage('Đang chụp ảnh…');
+        let width = w0;
+        if (options.fitColumns) {
+            const fitted = fitTablesToContent(clone);
+            if (fitted > 0) {
+                width = Math.max(EXPORT_MIN_WIDTH, fitted);
+                clone.style.setProperty('width', `${width}px`, 'important');
+            }
+        }
+        if (footer) appendExportFooter(clone, typeof footer === 'string' ? footer : undefined);
+        await document.fonts.ready;
+        await waitForImages(clone);
+        fixOklchColors(clone);
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const height = Math.ceil(clone.offsetHeight || clone.getBoundingClientRect().height);
+        let scale = options.scale ?? (isMobileDevice ? 1.5 : 2);
+        if (height * scale > 32000) scale = Math.max(1, 32000 / height);
+        if (isMobileDevice) scale = Math.min(scale, capPixelRatioForArea(width, height, scale));
+        options.onBeforeCapture?.(clone, { width, height });
+        const htmlToImage = await import('html-to-image');
+        const blob = await htmlToImage.toBlob(clone, {
+            pixelRatio: scale, width, height, backgroundColor: options.backgroundColor || '#ffffff', cacheBust: true,
+        });
+        if (!blob) throw new Error('Không thể tạo ảnh từ DOM (kết quả trả về trống).');
+        if (mode === 'blob-only') return blob;
+        stage(isMobileDevice ? 'Đang mở chia sẻ…' : 'Đang lưu ảnh…');
+        if (mode === 'share') await shareBlob(blob, filename);
+        else downloadBlob(blob, filename);
+        return blob;
+    } catch (error) {
+        console.error(`Lỗi khi xuất ảnh: ${filename}`, error);
+        return null;
+    } finally {
+        box.remove();
     }
 }
 

@@ -133,7 +133,9 @@ test('xuất hàng loạt NV: tải chunk lỗi → lớp phủ tắt, báo lỗ
     await page.route('**/components/modals/PerformanceModal.tsx*', r => r.abort('internetdisconnected'));
 
     await page.locator('#employee-analysis-section').getByTitle('Xuất hàng loạt báo cáo chi tiết').first().click();
-    await expect(page.getByText(/Xuất ảnh hàng loạt bị lỗi/)).toBeVisible({ timeout: 15_000 });
+    // Từ 2026-10-01 tổng kết hiện trên bảng tiến trình chung (components/shared/export) — có nút Đóng, không kẹt
+    await expect(page.getByTestId('export-progress-stage')).toContainText(/Xuất ảnh hàng loạt bị lỗi/, { timeout: 15_000 });
+    await page.getByTestId('export-progress').getByRole('button', { name: 'Đóng' }).click();
     await expect(page.locator('#export-overlay')).toHaveCount(0, { timeout: 5_000 });
 });
 
@@ -153,6 +155,9 @@ test('xuất hàng loạt NV: 1 ảnh lỗi giữa batch → báo 2/3 ảnh kèm
 
     await page.locator('#employee-analysis-section').getByTitle('Xuất hàng loạt báo cáo chi tiết').first().click();
     await expect(page.locator('#export-overlay')).toHaveCount(1, { timeout: 10_000 });
-    await expect(page.locator('#export-overlay')).toHaveCount(0, { timeout: 120_000 });
-    await expect(page.getByText(/Đã xuất 2\/3 ảnh\. Chưa xuất được: /)).toBeVisible({ timeout: 5_000 });
+    // Tổng kết trên bảng tiến trình chung: câu chữ cũ + danh sách NV lỗi, chờ người dùng bấm Đóng
+    await expect(page.getByTestId('export-progress-stage')).toContainText(/Đã xuất 2\/3 ảnh\. Chưa xuất được: /, { timeout: 120_000 });
+    await expect(page.getByTestId('export-progress-failed')).toHaveCount(1);
+    await page.getByTestId('export-progress').getByRole('button', { name: 'Đóng' }).click();
+    await expect(page.locator('#export-overlay')).toHaveCount(0);
 });

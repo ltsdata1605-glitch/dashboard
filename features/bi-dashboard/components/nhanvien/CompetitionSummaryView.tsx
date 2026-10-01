@@ -1,5 +1,6 @@
 
 import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { startExportJob } from '../../../../components/shared/export';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
@@ -417,8 +418,11 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
         setExportGroupProgress({ current: 0, total: allAvailableGroups.length });
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
 
+        const job = startExportJob({ title: 'Xuất ảnh thi đua theo nhóm tiêu chí', total: allAvailableGroups.length });
         for (let i = 0; i < allAvailableGroups.length; i++) {
+            if (job.cancelled) break;
             const group = allAvailableGroups[i];
+            job.item(i, group);
             setExportGroupFilter(group);
             setExportGroupProgress({ current: i + 1, total: allAvailableGroups.length });
             await new Promise(r => setTimeout(r, 450));
@@ -426,9 +430,11 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             const nameToUse = tableName || 'Thi Đua';
             const filename = `Thi Đua - ${nameToUse.replace(/[\\/:*?"<>|]/g, '')} - ${safeGroupName} - ${supermarketName}.png`;
             const action = await handleExportPNG(filename, autoAction);
+            job.result(group, action === null ? 'failed' : action === 'cancel' ? 'skipped' : 'ok', action === null ? 'Không tạo được ảnh' : undefined);
             if (action === 'cancel') break;
             autoAction = action;
         }
+        job.finish();
         setExportGroupFilter(null);
         setIsExportingByGroup(false);
     };

@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, forwardRef, useEffect } from 'react';
+import { startExportJob } from '../shared/export';
 import { Icon } from '../common/Icon';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig, HeadToHeadConditionalFormatRule } from '../../types';
 import { exportElementAsImage } from '../../services/uiService';
@@ -230,20 +231,28 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
         setIsBatchExporting(true);
         await new Promise(resolve => setTimeout(resolve, 100));
 
+        const job = startExportJob({ title: 'Xuất ảnh các bảng 7 ngày', total: tables.length });
         for (let i = 0; i < tables.length; i++) {
+            if (job.cancelled) break;
             const tableElement = elements[i] as HTMLElement;
             const tableConfig = tables[i];
+            const nhan = tableConfig?.tableName || `Bảng ${i + 1}`;
+            job.item(i, nhan);
             if (tableElement && tableConfig) {
                 const prefix = getExportFilenamePrefix(filterState.kho);
                 const safeTabName = sanitizeFilename(tableConfig.tableName).trim();
-                await exportElementAsImage(tableElement, `${prefix} - 7 Ngày - ${safeTabName}.png`, {
+                const blob = await exportElementAsImage(tableElement, `${prefix} - 7 Ngày - ${safeTabName}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     isCompactTable: true,
                     fitAllColumns: true
                 });
+                job.result(nhan, blob ? 'ok' : 'failed', blob ? undefined : 'Không tạo được ảnh');
                 await new Promise(resolve => setTimeout(resolve, 300));
+            } else {
+                job.result(nhan, 'failed', 'Bảng chưa hiển thị');
             }
         }
+        job.finish();
         setIsBatchExporting(false);
     };
 

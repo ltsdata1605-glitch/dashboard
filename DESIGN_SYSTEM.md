@@ -159,6 +159,15 @@ Vùng cuộn ngang phải nằm trong container riêng có `overflow-x: auto` �
 
 ---
 
+## 5b. ẢNH XUẤT — một chuẩn cho mọi khu vực (2026-10-01)
+
+- Dùng `components/shared/export` (không tự chụp). Bảng co **vừa nội dung**: ô dữ liệu một dòng, tiêu đề xuống dòng
+  ở khoảng trắng chỉ khi dài hơn dữ liệu; ảnh rộng bằng bảng rộng nhất, **tối thiểu 680px**. Ô cần xuống dòng có chủ
+  đích: class `export-wrap`. Phần tử không được lọt vào ảnh: class `hide-on-export`.
+- Chân ảnh chung: "Dashboard YCX · xuất HH:mm dd/mm", 11px, `slate-400`, căn phải.
+- Chờ & tiến trình: MỘT bảng chung (modal `rounded-md`, spinner/thanh `sky`, xong `emerald`, có lỗi `amber`/`rose`,
+  chữ ≥ 11px). Hàng loạt có thanh %, tên mục đang xuất, thời gian còn lại, nút Huỷ, tổng kết mục lỗi.
+
 ## 6. TRÊN ĐIỆN THOẠI — cùng chuẩn, không phải chuẩn thứ hai
 
 Bảng nhiều cột không bóp lại được. Trên màn hẹp, mỗi dòng rút về **tên · số chính · %**, giữ nguyên

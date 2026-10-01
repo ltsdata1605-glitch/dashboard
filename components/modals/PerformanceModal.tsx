@@ -5,7 +5,6 @@ import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO, getCategoryExportWidth } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
-import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import EmployeeCategoryTable, { useCategoryColumns } from './EmployeeCategoryTable';
@@ -16,7 +15,7 @@ interface PerformanceModalProps {
     isOpen: boolean;
     onClose: () => void;
     employeeName: string;
-    onExport: (element: HTMLElement, filename: string, options?: ExportImageOptions) => Promise<void>;
+    onExport: (element: HTMLElement, filename: string, options?: ExportImageOptions) => Promise<Blob | null | void>;
     isBatchExporting?: boolean;
     fullSellerArray?: Employee[];
     validSalesData?: DataRow[];
@@ -255,7 +254,6 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         const elementToExport = modalBodyRef.current;
         if (elementToExport) {
             setIsExporting(true);
-            showExportOverlay(`Đang xuất: ${employeeName}`);
             // Bề rộng ảnh bám theo nội dung: 800px (640px trên điện thoại) là vừa đủ cho bảng
             // "Chi Tiết Theo Khách Hàng" sau khi tên sản phẩm được rút gọn (xem
             // EXPORT_PRODUCT_NAME_MAX_LENGTH), nhưng bảng Phụ kiện/ĐGD nhiều cột có thể cần rộng
@@ -264,7 +262,6 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             const forcedWidth = getCategoryExportWidth(categoryColumns.length, isMobileViewport ? 640 : 800);
             await onExport(elementToExport, `Phân Tích Hiệu Quả - ${employeeName}.png`, { forceOpenDetails: true, forcedWidth });
             setIsExporting(false);
-            hideExportOverlay();
         }
     };
 

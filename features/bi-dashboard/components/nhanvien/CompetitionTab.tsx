@@ -1,5 +1,6 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { startExportJob } from '../../../../components/shared/export';
 import { createPortal } from 'react-dom';
 import Card from '../Card';
 import toast from 'react-hot-toast';
@@ -292,17 +293,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         setExportProgress({ current: 0, total: targets.length });
 
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        const job = startExportJob({ title: 'Xuất ảnh nhân viên nổi bật', total: targets.length });
 
         try {
             for (let i = 0; i < targets.length; i++) {
+                if (job.cancelled) break;
                 const empId = targets[i];
                 const emp = allEmployees.find(e => e.originalName === empId);
                 const empName = emp ? emp.name : empId;
                 setIsolatedHighlightEmployee(empId);
                 setExportTitleOverride(`${empName} - NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`);
                 await new Promise(resolve => setTimeout(resolve, 800));
+                job.item(i, empName);
                 const safeName = `${empName.replace(/[\\/:*?"<>|]/g, '')} - Nổi Bật.png`;
                 const action = await exportGroupViewToPNG(safeName, groupViewRef, autoAction);
+                job.result(empName, action === null ? 'failed' : action === 'cancel' ? 'skipped' : 'ok', action === null ? 'Không tạo được ảnh' : undefined);
                 if (action === 'cancel') break;
                 autoAction = action;
                 setExportProgress(prev => ({ ...prev, current: i + 1 }));
@@ -311,6 +316,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             console.error("Batch highlight export failed", err);
             toast.error("Có lỗi xảy ra khi xuất hàng loạt.");
         } finally {
+            job.finish();
             setIsolatedHighlightEmployee(null);
             setExportTitleOverride(null);
             setIsExportingHighlights(false);
@@ -325,18 +331,23 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         setExportProgress({ current: 0, total: cards.length + 1 });
 
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        const job = startExportJob({ title: 'Xuất ảnh nhóm thi đua', total: cards.length + 1 });
 
         try {
+            job.item(0, 'Tổng hợp nhóm thi đua');
             const action1 = await exportGroupViewToPNG(`Tổng Hợp Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef, autoAction);
+            job.result('Tổng hợp nhóm thi đua', action1 === null ? 'failed' : action1 === 'cancel' ? 'skipped' : 'ok');
             if (action1 === 'cancel') throw new Error('cancelled');
             autoAction = action1;
             setExportProgress(prev => ({ ...prev, current: prev.current + 1 }));
             await new Promise(resolve => setTimeout(resolve, 600)); 
             
             for (let i = 0; i < cards.length; i++) {
+                if (job.cancelled) break;
                 const card = cards[i] as HTMLElement;
                 const titleElement = card.querySelector('h4');
                 const title = titleElement ? titleElement.innerText : `Nhóm ${i}`;
+                job.item(i + 1, title);
                 
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
                 const blob = await exportElementAsImage(card, safeName, {
@@ -372,6 +383,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     }
                 });
                 
+                job.result(title, blob ? 'ok' : 'failed', blob ? undefined : 'Không tạo được ảnh');
                 if (blob) {
                     if (autoAction === 'download') {
                         downloadBlob(blob, safeName);
@@ -393,6 +405,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 toast.error("Xuất hàng loạt thất bại.");
             }
         } finally {
+            job.finish();
             setIsBatchExporting(false);
             setExportProgress({ current: 0, total: 0 });
         }
@@ -406,29 +419,32 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         setExportProgress({ current: 0, total: summaryTables.length });
 
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        // Bảng tiến trình chung thay cho toast "Đang xuất bảng…" / "Đã xuất thành công toàn bộ…"
+        const job = startExportJob({ title: 'Xuất ảnh các bảng tổng hợp', total: summaryTables.length });
 
         try {
             for (let i = 0; i < summaryTables.length; i++) {
+                if (job.cancelled) break;
                 const tableConfig = summaryTables[i];
                 const viewRef = summaryViewRefs.current[tableConfig.id];
+                job.item(i, tableConfig.name);
                 if (viewRef) {
-                    toast.loading(`Đang xuất bảng: ${tableConfig.name}...`, { id: 'summary-batch-export' });
                     await new Promise(resolve => setTimeout(resolve, 500));
                     const safeName = `${tableConfig.name.replace(/[\s/]/g, '_')}`;
                     const action = await viewRef.handleExportPNG(safeName, autoAction);
-                    if (action === 'cancel') {
-                        toast.dismiss('summary-batch-export');
-                        break;
-                    }
+                    job.result(tableConfig.name, action === null ? 'failed' : action === 'cancel' ? 'skipped' : 'ok', action === null ? 'Không tạo được ảnh' : undefined);
+                    if (action === 'cancel') break;
                     autoAction = action;
+                } else {
+                    job.result(tableConfig.name, 'failed', 'Bảng chưa hiển thị');
                 }
                 setExportProgress(prev => ({ ...prev, current: i + 1 }));
             }
-            toast.success("Đã xuất thành công toàn bộ các bảng tổng hợp!", { id: 'summary-batch-export' });
         } catch (err) {
             console.error("Batch summary export failed", err);
-            toast.error("Có lỗi xảy ra khi xuất hàng loạt.", { id: 'summary-batch-export' });
+            toast.error("Có lỗi xảy ra khi xuất hàng loạt.");
         } finally {
+            job.finish();
             setIsBatchExporting(false);
             setExportProgress({ current: 0, total: 0 });
         }

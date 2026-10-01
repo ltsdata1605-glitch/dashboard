@@ -99,6 +99,14 @@ Dự án thực tế gồm 4 khu vực "mini-app" song song hoạt động độ
 **Quy tắc cách ly bắt buộc:**
 - ❌ Các thư mục `features/*` **không được import chéo lẫn nhau** và **không được import** `hooks/*` hoặc `services/*` ở thư mục gốc.
 - ✅ Cả 4 khu vực chỉ được dùng chung đúng 3 thứ: các UI component trong `components/shared/ui/*`, các hàm thuần tiện ích trong `utils/dataUtils.ts`, và `utils/localDbScope.ts` *(bổ sung 2026-09-23)*.
+- ✅ **Thứ dùng chung thứ 4 (bổ sung 2026-10-01): `components/shared/export/` — bộ xuất ảnh DUY NHẤT.** Mọi nơi xuất
+  ảnh (1 ảnh hay hàng loạt) dùng `exportElementAsImage` / `startExportJob` từ đây. 3 bộ quy tắc trình bày: `standard`
+  (Phân tích, Phân Ca, In Sticker, Thuế), `bi` (Report BI — `presetBi.ts`, thiết kế riêng có chủ đích), `raw` (giữ
+  nguyên bố cục: Check thưởng, Khai thác). Phần dùng chung tự có: co cột vừa nội dung, chân ảnh "Dashboard YCX · xuất
+  HH:mm dd/mm", tối thiểu 680px, bảng chờ/tiến trình (Huỷ + tổng kết), trần canvas iOS, giao ảnh. Hàng loạt trên máy
+  tính luôn tải TỪNG ảnh (không ZIP — chủ dự án chốt). CẤM import `html-to-image`/`html2canvas` ở nơi khác
+  (`components/shared/export/khongBanSao.test.ts` đỏ ngay; ngoại lệ duy nhất: `sticker-event/services/printService.ts`
+  dựng trang IN). Chi tiết: `implementation_plan.md` mục "Hợp nhất xuất ảnh".
   `utils/localDbScope.ts` quyết định **tên IndexedDB theo tài khoản đang đăng nhập** (xem mục 1.2).
   Nó BẮT BUỘC dùng chung chứ không được chép thành bản zone-local như `dbService.ts`: 3 khu vực
   phải mở ĐÚNG CÙNG MỘT database, chỉ cần một bản tính tên lệch là Report BI ghi một nơi còn Phân

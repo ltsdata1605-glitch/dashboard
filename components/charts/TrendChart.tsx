@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { startExportJob } from '../shared/export';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
 import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
 import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } from '../../types';
@@ -49,7 +50,7 @@ const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payl
 
 interface TrendChartInnerProps {
   trendData: TrendData | undefined;
-  handleExport: (element: HTMLElement | null, filename: string, options?: ExportImageOptions) => Promise<void>;
+  handleExport: (element: HTMLElement | null, filename: string, options?: ExportImageOptions) => Promise<Blob | null | void>;
   isExporting: boolean;
   filterState: FilterState;
   baseFilteredData: DataRow[];
@@ -282,10 +283,15 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       if (displayMode === 'calendar') {
           const targets = document.querySelectorAll('.calendar-export-target');
           if (targets.length > 0) {
+              const job = targets.length > 1 ? startExportJob({ title: 'Xuất ảnh lịch doanh thu', total: targets.length }) : null;
               for (let i = 0; i < targets.length; i++) {
-                  await handleExport(targets[i] as HTMLElement, `${prefix} - Lịch Doanh Thu (${i + 1}).png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
+                  if (job?.cancelled) break;
+                  job?.item(i, `Lịch ${i + 1}`);
+                  const blob = await handleExport(targets[i] as HTMLElement, `${prefix} - Lịch Doanh Thu (${i + 1}).png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
+                  job?.result(`Lịch ${i + 1}`, blob === null ? 'failed' : 'ok');
                   await new Promise(r => setTimeout(r, 1000));
               }
+              job?.finish();
           }
       } else {
           handleExport(chartCardRef.current, `${prefix} - Xu Hướng Doanh Thu.png`, { captureAsDisplayed: true });

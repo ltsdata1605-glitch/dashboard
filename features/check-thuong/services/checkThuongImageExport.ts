@@ -1,6 +1,6 @@
 import { CheckThuongStoreSummary } from '../types';
-import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
 import { deliverImage, type DeliveryResult } from '../../../components/shared/ui/imageDelivery';
+import { exportElementAsImage, startExportJob, exportFooterText } from '../../../components/shared/export';
 
 export interface ExportImageOptions {
     stores: CheckThuongStoreSummary[];
@@ -139,38 +139,21 @@ export async function exportLeaderboardToImage({
             </tbody>
         </table>
 
-        <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: #94a3b8; font-family: inherit;">
-            <span>Check Thưởng • ĐMX & TGDD</span>
-            <span>Hiển thị Top ${listToExport.length} dẫn đầu</span>
-        </div>
     `;
 
     wrapper.appendChild(captureTarget);
     document.body.appendChild(wrapper);
 
+    // Kế hoạch "Hợp nhất xuất ảnh" (2026-10-01): chụp qua bộ xuất ảnh CHUNG, bộ quy tắc 'raw' (giữ nguyên mẫu
+    // bảng xếp hạng đã thiết kế) → cùng bảng chờ, chân ảnh, độ nét có trần canvas iOS (audit A08) như mọi nơi.
+    // Dòng chân cũ 9px "Check Thưởng • … / Hiển thị Top N" thay bằng chân ảnh chung (vẫn ghi Top N).
+    const job = startExportJob({ title: `Xuất ảnh Top ${listToExport.length}${channel && channel !== 'ALL' ? ` kênh ${channel}` : ''}` });
+    let ok = false;
     try {
-        // Đợi fonts tải xong hoàn toàn
-        if (document.fonts) {
-            await document.fonts.ready;
-        }
-        // Đợi 1 tick để DOM tính toán đầy đủ layout
-        await new Promise((resolve) => setTimeout(resolve, 150));
-
-        const fullWidth = captureTarget.offsetWidth || TARGET_WIDTH;
-        const fullHeight = captureTarget.offsetHeight || captureTarget.scrollHeight;
-
-        const htmlToImage = await import('html-to-image');
-        // Audit A08 (2026-09-30): Blob thay data URL (data URL của ảnh Top lớn chiếm gấp ~1,4 lần bộ
-        // nhớ và phải giải mã lại); tỉ lệ 2.5 cho độ nét điện thoại nhưng có trần diện tích canvas iOS.
-        const pixelRatio = isMobileLikeDevice() ? capPixelRatioForArea(fullWidth, fullHeight, 2.5) : 2.5;
-        const blob = await htmlToImage.toBlob(captureTarget, {
-            pixelRatio,
-            backgroundColor: '#ffffff',
-            width: fullWidth,
-            height: fullHeight,
-            cacheBust: true
+        const blob = await exportElementAsImage(captureTarget, 'check-thuong.png', {
+            preset: 'raw', mode: 'blob-only', scale: 2.5,
+            footer: `Top ${listToExport.length} dẫn đầu · ${exportFooterText()}`,
         });
-
         if (!blob || blob.size < 500) {
             throw new Error('Không thể tạo dữ liệu ảnh (kết quả rỗng)');
         }
@@ -178,8 +161,13 @@ export async function exportLeaderboardToImage({
         const channelSlug = (channel && channel !== 'ALL') ? `Kenh_${channel.replace(/[^a-zA-Z0-9]/g, '_')}_` : '';
         // Trước đây luôn tải file (a.click) — trên iPhone không mở được Lưu ảnh/LINE/Zalo. Nay giao
         // ảnh qua khâu chung: máy tính tải về, điện thoại mở bảng chia sẻ.
-        return await deliverImage(blob, `Top_${listToExport.length}_${channelSlug}Thuong_Cao_${dateFileStr}.png`);
+        job.stage('Đang lưu ảnh…');
+        const ketQua = await deliverImage(blob, `Top_${listToExport.length}_${channelSlug}Thuong_Cao_${dateFileStr}.png`);
+        ok = true;
+        return ketQua;
     } finally {
+        job.result(`Top ${listToExport.length}`, ok ? 'ok' : 'failed');
+        job.finish();
         if (wrapper.parentNode) {
             wrapper.parentNode.removeChild(wrapper);
         }

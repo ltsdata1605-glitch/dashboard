@@ -1,5 +1,6 @@
 import { Product } from '../types';
-import { exportElementAsImage, downloadBlob, showExportOverlay, updateExportOverlay, hideExportOverlay } from './uiService';
+import { exportElementAsImage, downloadBlob } from './uiService';
+import { startExportJob } from '../../../components/shared/export';
 import { formatCurrency, calculateDiscountPercent } from '../utils/format';
 
 export interface BatchExportOptions {
@@ -285,6 +286,10 @@ export async function runBatchExportLoop(
         capture: (batch: BatchLike) => Promise<Blob | null>;
         deliver: (blob: Blob, filename: string) => void | Promise<void>;
         onItemStart?: (batch: BatchLike) => void;
+        /** Báo kết quả từng ảnh (bảng tiến trình chung) */
+        onItemDone?: (batch: BatchLike, ok: boolean, error?: string) => void;
+        /** true → dừng trước ảnh kế tiếp (người dùng bấm Huỷ) */
+        shouldStop?: () => boolean;
         pauseBetweenMs?: number;
         sleep?: (ms: number) => Promise<void>;
     },
@@ -294,6 +299,7 @@ export async function runBatchExportLoop(
     const totalCount = batches.reduce((sum, b) => sum + b.chunk.length, 0);
 
     for (const batch of batches) {
+        if (deps.shouldStop?.()) break;
         deps.onItemStart?.(batch);
         const base = {
             batchNum: batch.batchIndex + 1,
@@ -313,6 +319,8 @@ export async function runBatchExportLoop(
         } catch (err) {
             items.push({ ...base, ok: false, error: err instanceof Error ? err.message : String(err) });
         }
+        const last = items[items.length - 1];
+        deps.onItemDone?.(batch, last.ok, last.error);
 
         if (batch.batchIndex < batch.totalBatches - 1 && deps.pauseBetweenMs) {
             await sleep(deps.pauseBetweenMs);
@@ -371,21 +379,19 @@ export async function exportProductsInBatches(
     const totalCount = products.length;
     const totalBatches = batches.length;
 
-    showExportOverlay(
-        `Đang chuẩn bị xuất ${totalBatches} ảnh...`,
-        `Tổng cộng ${totalCount} sản phẩm (mỗi ảnh ${CHUNK_SIZE} dòng)`
-    );
+    // Bảng tiến trình chung (components/shared/export): %, dải dòng đang xuất, Huỷ, tổng kết ảnh lỗi
+    const job = startExportJob({ title: `Xuất ${totalBatches} ảnh — ${totalCount} sản phẩm`, total: totalBatches });
+    const nhanLo = (b: BatchLike) => `Ảnh ${b.batchIndex + 1} · dòng ${b.startIndex}–${b.endIndex}`;
 
     try {
         return await runBatchExportLoop(batches, {
             onItemStart: (batch) => {
                 const batchNum = batch.batchIndex + 1;
-                updateExportOverlay(
-                    `Đang xuất ảnh ${batchNum}/${totalBatches}...`,
-                    `Đang xử lý dòng ${batch.startIndex} - ${batch.endIndex} (${batch.chunk.length} sản phẩm)`
-                );
+                job.item(batch.batchIndex, nhanLo(batch));
                 options.onProgress?.(batchNum, totalBatches, batch.startIndex, batch.endIndex);
             },
+            onItemDone: (batch, ok, error) => job.result(nhanLo(batch), ok ? 'ok' : 'failed', error),
+            shouldStop: () => job.cancelled,
             capture: async (batch) => {
                 // Dựng DOM container
                 const container = createBatchExportElement(
@@ -425,6 +431,6 @@ export async function exportProductsInBatches(
             pauseBetweenMs: 450,
         });
     } finally {
-        hideExportOverlay();
+        job.finish();
     }
 }
