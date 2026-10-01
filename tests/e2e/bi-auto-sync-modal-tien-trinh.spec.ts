@@ -24,6 +24,11 @@ test('hiện khung tiến trình như tab MWG; bước xác định theo TÊN (T
     await expect(khung).toContainText('1/4 (25%)');
     await expect(khung).toContainText('Đang tải dữ liệu Doanh thu hợp nhất');
 
+    // Thứ tự dòng = thứ tự chạy thật của userscript: Hợp nhất → Thi đua → Ngành hàng → Nhân viên
+    const tieuDe = await page.getByRole('dialog').locator('div.flex.items-center.justify-between.p-3 .text-xs.font-bold').allTextContents();
+    // (selector bắt cả số trong vòng tròn — bỏ ô rỗng/ô số)
+    expect(tieuDe.map(t => t.trim()).filter(t => t && !/^\d+$/.test(t))).toEqual(['Doanh thu hợp nhất', 'Báo cáo Thi đua', 'Ngành hàng BI', 'Doanh thu nhân viên']);
+
     await bom(page, 2, 'Thi đua', 'Đang tải 39 chương trình Thi đua qua API...');
     await expect(khung).toContainText('2/4 (50%)');
     await expect(khung.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '50');

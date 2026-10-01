@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.5
+// @version      7.6
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -27,6 +27,8 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.6 — Bảng tiến trình Realtime xếp dòng theo thứ tự chạy thật: Hợp nhất → Thi đua → Ngành hàng → Nhân viên.
+ *
  * BẢN 7.5 — CẬP NHẬT XONG TỰ CHẠY TIẾP:
  * - Tampermonkey không nạp bản mới vào trang đang mở → Dashboard tự tải lại khi người dùng quay lại tab, rồi tự chạy
  *   tiếp lượt Tự động. Lượt này không có cú bấm nên Dashboard nhờ userscript mở tab MWG bằng GM_openInTab
@@ -454,7 +456,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.5';
+  const SCRIPT_VERSION_FALLBACK = '7.6';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -2496,11 +2498,13 @@
 
   // ====== BẢNG TIẾN TRÌNH TRÊN TRANG MWG (bản 7.3) — cùng giao diện modal "Tự động Cập nhật" của Dashboard YCX ======
   const ACP_SYNC_STEPS = {
+    // Thứ tự dòng = thứ tự CHẠY THẬT của Direct API (Hợp nhất → Thi đua → Ngành hàng → Nhân viên).
+    // `id` là mã bước theo tên (acpStepIdByName), KHÔNG phải số hiển thị — số trong vòng tròn = vị trí dòng.
     realtime: [
       { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
+      { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép bảng thi đua' },
       { id: 2, title: 'Ngành hàng BI', desc: 'Mở rộng cây [+] & sao chép ngành hàng' },
       { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
-      { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép bảng thi đua' },
     ],
     luyke: [
       { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
@@ -2546,13 +2550,13 @@
     const steps = ACP_SYNC_STEPS[isRealtime ? 'realtime' : 'luyke'];
     const percent = st.phase === 'done' ? 100 : (st.totalSteps > 0 ? Math.min(100, Math.round((st.step / st.totalSteps) * 100)) : 0);
 
-    const rows = steps.map((s) => {
+    const rows = steps.map((s, viTri) => {
       const isDone = st.phase === 'done' || (st.done.has(s.id) && st.current !== s.id);
       const isCur = st.phase === 'running' && st.current === s.id;
       const border = isCur ? '#7dd3fc' : isDone ? '#a7f3d0' : '#e2e8f0';
       const bg = isCur ? '#f0f9ff' : isDone ? '#f0fdf4' : '#f8fafc';
       const dotBg = isDone ? '#059669' : isCur ? '#0284c7' : '#e2e8f0';
-      const dot = isDone ? '✓' : isCur ? '<span class="acp-sync-spin"></span>' : String(s.id);
+      const dot = isDone ? '✓' : isCur ? '<span class="acp-sync-spin"></span>' : String(viTri + 1);
       const right = isDone ? '<span style="color:#059669;font-weight:700;font-size:12px;">Đã xong</span>'
         : isCur ? '<span style="color:#0284c7;font-weight:700;font-size:12px;">Đang xử lý...</span>' : '';
       return `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid ${border};background:${bg};border-radius:6px;margin-bottom:8px;">

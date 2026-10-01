@@ -6708,3 +6708,8 @@ Bản lọc trước (theo "trông như siêu thị") chưa đủ: chủ dự á
 KHÔNG lấy Thi đua, KHÔNG lấy bảng ánh xạ mã kho. Chưa có Doanh thu → dùng tạm Thi đua (đã lọc) + mã kho để trang không trống.
 Test cũ `dashboardHelpers.test.ts` (kỳ vọng tên chỉ có trong bảng mã kho vẫn vào danh sách) sửa theo quy tắc mới.
 Unit 947 xanh; e2e BI 7/7.
+
+## BI-Sync 7.6 — bảng tiến trình xếp dòng theo thứ tự chạy (2026-10-01)
+Chủ dự án: các dòng chạy theo thứ tự 1 → 3 → 4 → 2 trên màn hình, khó theo dõi. Direct API chạy Hợp nhất → Thi đua →
+Ngành hàng → Nhân viên, nên xếp dòng Realtime đúng thứ tự đó (bảng trên MWG — userscript 7.6 — và modal Dashboard);
+số trong vòng tròn = vị trí dòng. Luỹ kế giữ nguyên. Test kiểm thứ tự dòng ở cả hai nơi; 11/11 e2e bi-sync xanh.

@@ -19,11 +19,13 @@ interface BiAutoSyncModalProps {
     onReopenWorker?: () => void;
 }
 
+// Thứ tự dòng = thứ tự CHẠY THẬT của userscript (Direct API): Hợp nhất → Thi đua → Ngành hàng → Nhân viên.
+// `id` là mã bước theo tên (buocTheoTen), không phải số hiển thị — số trong vòng tròn = vị trí dòng.
 const STEPS_REALTIME = [
     { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
+    { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép bảng thi đua' },
     { id: 2, title: 'Ngành hàng BI', desc: 'Mở rộng cây [+] & sao chép ngành hàng' },
     { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
-    { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép bảng thi đua' },
 ];
 
 const STEPS_LUYKE = [
@@ -212,7 +214,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 {/* DANH SÁCH BƯỚC */}
                 {status !== 'not-installed' && (
                     <div className="space-y-2">
-                        {steps.map((step) => {
+                        {steps.map((step, viTri) => {
                             const isCompleted = status === 'success' || (daXong.has(step.id) && currentStep !== step.id);
                             const isCurrent = currentStep === step.id && status === 'running';
 
@@ -240,7 +242,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                             ) : isCurrent ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
                                             ) : (
-                                                step.id
+                                                viTri + 1
                                             )}
                                         </div>
                                         <div>

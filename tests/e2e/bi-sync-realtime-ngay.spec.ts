@@ -119,6 +119,11 @@ test('bảng tiến trình trên trang MWG: cùng giao diện modal Dashboard, s
     await expect(dong('Doanh thu hợp nhất')).toContainText('Đã xong');
     await expect(dong('Ngành hàng BI')).not.toContainText('Đã xong');
     await expect(bang).toContainText('2/4 (50%)');
+    // Thứ tự dòng = thứ tự chạy thật: Hợp nhất → Thi đua → Ngành hàng → Nhân viên; Thi đua mang số 2
+    const thuTu = await bang.locator('div[style*="font-weight:700;font-size:13px"]').allTextContents();
+    // (selector bắt cả ký hiệu trong vòng tròn: số / ✓ — bỏ đi)
+    expect(thuTu.map(t => t.trim()).filter(t => t && !/^(\d+|✓)$/.test(t))).toEqual(['Doanh thu hợp nhất', 'Báo cáo Thi đua', 'Ngành hàng BI', 'Doanh thu nhân viên']);
+    await expect(dong('Ngành hàng BI')).toContainText('3');
     await page.screenshot({ path: test.info().outputPath('mwg-dang-chay.png') });
 
     thaThiDua();
