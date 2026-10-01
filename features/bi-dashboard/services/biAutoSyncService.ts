@@ -226,19 +226,51 @@ export async function applyBiSyncResults(
     return { successCount, errors };
 }
 
+/** Đường dẫn userscript (cùng domain Dashboard) — mở link này thì Tampermonkey hiện trang Cài đặt / Cập nhật. */
+export const USERSCRIPT_URL = '/scripts/mwg-auto-thu-thap-diem-thuong.user.js';
+
+/** Bản tối thiểu khi KHÔNG đọc được bản mới nhất (mất mạng…): cần Bước 3 GROUPBY BICAT & DT quy đổi + Trả góp. */
+export const USERSCRIPT_MIN_VERSION = '6.3';
+
+/** So phiên bản theo SỐ từng đoạn ("7.10" > "7.9"; so chuỗi thì sai). Trả <0, 0, >0. */
+export function compareVersions(a: string, b: string): number {
+    const pa = String(a || '0').split('.').map(n => parseInt(n, 10) || 0);
+    const pb = String(b || '0').split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+        const d = (pa[i] || 0) - (pb[i] || 0);
+        if (d !== 0) return d;
+    }
+    return 0;
+}
+
+/** Đọc dòng `// @version` của userscript đang phát trên Dashboard (bản mới nhất). null nếu không đọc được. */
+export async function fetchLatestUserscriptVersion(): Promise<string | null> {
+    try {
+        const res = await fetch(`${USERSCRIPT_URL}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return null;
+        const m = (await res.text()).match(/^\/\/\s*@version\s+([\d.]+)/m);
+        return m ? m[1] : null;
+    } catch {
+        return null;
+    }
+}
+
 /**
- * Khởi chạy chuỗi tự động thu thập: Kiểm tra userscript, mở tab worker, bắn event
+ * Khởi chạy chuỗi tự động thu thập: Kiểm tra userscript, mở tab worker, bắn event.
+ * Userscript cũ hơn bản đang phát → TỰ MỞ trang cập nhật (Tampermonkey) và dừng, không chạy bằng bản cũ.
  */
 export async function startBiAutoSyncSession(mode: BiSyncMode): Promise<{ jobId: string; workerWindow: Window | null }> {
-    const isInstalled = await detectUserscript(800);
+    // Chạy song song để vẫn nằm trong thời hạn "người dùng vừa bấm" (trình duyệt mới cho mở tab mới)
+    const [isInstalled, latest] = await Promise.all([detectUserscript(800), fetchLatestUserscriptVersion()]);
     if (!isInstalled.installed) {
         throw new Error('USERSCRIPT_NOT_INSTALLED');
     }
 
-    // Bắt buộc userscript phải từ bản 6.3 trở lên để có Bước 3 GROUPBY BICAT & Bước 1 DT quy đổi + Trả góp
     const ver = isInstalled.version || '0';
-    if (ver < '6.3') {
-        throw new Error(`USERSCRIPT_OUTDATED:${ver}`);
+    const canDat = latest || USERSCRIPT_MIN_VERSION;
+    if (compareVersions(ver, canDat) < 0) {
+        try { window.open(USERSCRIPT_URL, '_blank'); } catch { /* trình duyệt chặn → modal có nút mở tay */ }
+        throw new Error(`USERSCRIPT_OUTDATED:${ver}:${latest || ''}`);
     }
 
     const jobId = makeJobId();

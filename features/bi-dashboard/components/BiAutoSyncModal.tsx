@@ -3,7 +3,7 @@ import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Check, Loader2, AlertCircle, ExternalLink, Zap, Clock, TrendingUp } from 'lucide-react';
-import { BiSyncMode, BiSyncProgress } from '../services/biAutoSyncService';
+import { BiSyncMode, BiSyncProgress, USERSCRIPT_URL } from '../services/biAutoSyncService';
 
 interface BiAutoSyncModalProps {
     isOpen: boolean;
@@ -11,6 +11,8 @@ interface BiAutoSyncModalProps {
     progress: BiSyncProgress | null;
     status: 'idle' | 'running' | 'success' | 'error' | 'not-installed' | 'outdated';
     currentVersion?: string;
+    /** Bản mới nhất đang phát trên Dashboard (đọc từ dòng @version) — rỗng nếu không đọc được */
+    latestVersion?: string;
     errorMessage?: string;
     onClose: () => void;
     onCancel?: () => void;
@@ -57,6 +59,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
     status,
     errorMessage,
     currentVersion,
+    latestVersion,
     onClose,
     onCancel,
     onReopenWorker,
@@ -140,21 +143,23 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                         <div className="flex items-start gap-3">
                             <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                             <div className="text-xs space-y-1.5">
-                                <p className="font-bold text-rose-900 dark:text-rose-200">
-                                    Cần cập nhật Userscript lên phiên bản mới v6.9
+                                <p className="font-bold text-rose-900 dark:text-rose-200" data-testid="bi-sync-can-cap-nhat">
+                                    Cần cập nhật Userscript{latestVersion ? ` lên bản mới nhất v${latestVersion}` : ''}
                                 </p>
                                 <p className="text-rose-800 dark:text-rose-300 leading-relaxed">
-                                    Trình duyệt của bạn đang chạy bản cũ {currentVersion ? `(v${currentVersion})` : ''}. Bản mới v6.9 ưu tiên chọn tab "Realtime" (nút màu xanh) đầu tiên, tự động chọn "DT quy đổi" & "Trả góp", hỗ trợ chuẩn xác dải ngày Realtime và Bước 3 GROUPBY BICAT trong 1 lần gọi.
+                                    Trình duyệt đang chạy bản cũ{currentVersion ? ` (v${currentVersion})` : ''}. Đã tự mở trang cập nhật ở tab mới:
+                                    bấm <b>Cập nhật</b> (Update) trong Tampermonkey, rồi quay lại bấm <b>Tự động</b> lần nữa.
+                                    Không thấy tab mới (trình duyệt chặn) thì bấm nút dưới đây.
                                 </p>
                                 <div className="pt-2 flex flex-wrap gap-2">
                                     <Button
                                         variant="unstyled"
                                         size="none"
-                                        onClick={() => window.open('/scripts/mwg-auto-thu-thap-diem-thuong.user.js', '_blank')}
+                                        onClick={() => window.open(USERSCRIPT_URL, '_blank')}
                                         className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
-                                        <span>👉 Bấm vào đây để Cài đặt / Cập nhật Userscript v6.9 ngay</span>
+                                        <span>Mở trang cập nhật Userscript{latestVersion ? ` v${latestVersion}` : ''}</span>
                                     </Button>
                                     <Button
                                         variant="secondary"
@@ -185,11 +190,11 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                     <Button
                                         variant="unstyled"
                                         size="none"
-                                        onClick={() => window.open('/scripts/mwg-auto-thu-thap-diem-thuong.user.js', '_blank')}
+                                        onClick={() => window.open(USERSCRIPT_URL, '_blank')}
                                         className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
                                     >
                                         <ExternalLink className="w-3.5 h-3.5" />
-                                        <span>Cài đặt Userscript v6.9 ngay</span>
+                                        <span>Cài đặt Userscript ngay</span>
                                     </Button>
                                     <Button
                                         variant="secondary"

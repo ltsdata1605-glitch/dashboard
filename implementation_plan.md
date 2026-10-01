@@ -6661,3 +6661,15 @@ Userscript 7.3: thay hộp nhỏ góc phải bằng bảng giữa màn hình cù
 Đang xử lý/Đã xong theo TÊN bước, thông điệp + thanh %, báo hoàn tất / lỗi). Hiện ngay khi job bắt đầu. Ở lại tab MWG
 lúc chạy (bỏ chuyển về Dashboard đầu job của 7.2); xong chờ 2 giây → về Dashboard → đóng tab. Lớp nền `pointer-events:none`.
 Test `bi-sync-realtime-ngay.spec.ts` thêm ca bảng (giữ API Thi đua để chụp lúc đang chạy) — 2/2; ảnh đã xem.
+
+## BI-Sync 7.4 — tự kiểm phiên bản userscript trước khi chạy Tự động (2026-10-01)
+Yêu cầu chủ dự án: bấm Tự động → tự kiểm bản mới nhất; máy chạy bản cũ hơn → tự chuyển tới trang cập nhật.
+Phát hiện kèm: userscript LUÔN báo `'6.4'` (hằng ghi cứng) nên Dashboard không biết bản thật; phép so `ver < '6.3'` so CHUỖI
+('10.0' < '6.3' = true). Sửa:
+- Userscript 7.4: `SCRIPT_VERSION` lấy từ `GM_info.script.version`; hằng dự phòng = @version (unit test kiểm).
+- `biAutoSyncService.ts`: `compareVersions` (so số từng đoạn), `fetchLatestUserscriptVersion` (đọc @version của
+  /scripts/…user.js, no-store); chạy song song với ping để còn trong hạn "vừa bấm" → cũ hơn thì `window.open` trang
+  userscript (Tampermonkey hiện Update) và dừng. Không đọc được bản mới nhất → giữ ngưỡng tối thiểu 6.3.
+- Modal: bỏ "v6.9" ghi cứng, hiện bản đang chạy / bản mới nhất + hướng dẫn; nút mở tay nếu trình duyệt chặn tab.
+Test: unit 4/4; e2e `bi-sync-kiem-phien-ban.spec.ts` 3/3 (code cũ đỏ ca bản cũ), thêm vào CI.
+Lưu ý: mọi máy đang chạy ≤ 7.3 sẽ bị yêu cầu cập nhật 1 lần (vì chúng báo 6.4) — đúng ý đồ.

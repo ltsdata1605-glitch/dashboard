@@ -519,6 +519,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const [autoSyncMode, setAutoSyncMode] = useState<BiSyncMode>('realtime');
     const [autoSyncStatus, setAutoSyncStatus] = useState<'idle' | 'running' | 'success' | 'error' | 'not-installed' | 'outdated'>('idle');
     const [autoSyncCurrentVersion, setAutoSyncCurrentVersion] = useState<string>('');
+    const [autoSyncLatestVersion, setAutoSyncLatestVersion] = useState<string>('');
     const [autoSyncProgress, setAutoSyncProgress] = useState<BiSyncProgress | null>(null);
     const [autoSyncError, setAutoSyncError] = useState<string>('');
     const workerWindowRef = React.useRef<Window | null>(null);
@@ -540,6 +541,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             } else if (msg.startsWith('USERSCRIPT_OUTDATED')) {
                 setAutoSyncStatus('outdated');
                 setAutoSyncCurrentVersion(msg.split(':')[1] || '');
+                setAutoSyncLatestVersion(msg.split(':')[2] || '');
             } else {
                 setAutoSyncStatus('error');
                 setAutoSyncError(msg || 'Không thể khởi chạy quy trình tự động.');
@@ -1126,6 +1128,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 progress={autoSyncProgress}
                 status={autoSyncStatus}
                 currentVersion={autoSyncCurrentVersion}
+                latestVersion={autoSyncLatestVersion}
                 errorMessage={autoSyncError}
                 onClose={() => setAutoSyncModalOpen(false)}
                 onCancel={() => {

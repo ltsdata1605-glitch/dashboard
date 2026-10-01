@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.3
+// @version      7.4
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -25,6 +25,10 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.4 — BÁO ĐÚNG PHIÊN BẢN CHO DASHBOARD:
+ * - SCRIPT_VERSION lấy từ GM_info (dòng @version), không còn ghi cứng '6.4'. Dashboard so với bản đang phát trên
+ *   dashboard.pro.vn; máy chạy bản cũ hơn → Dashboard tự mở trang cập nhật trước khi chạy Tự động.
+ *
  * BẢN 7.3 — BẢNG TIẾN TRÌNH ĐẦY ĐỦ NGAY TRÊN TRANG MWG:
  * - Thay hộp nhỏ góc phải bằng bảng giữa màn hình CÙNG GIAO DIỆN modal Dashboard: tiêu đề, nhãn "4 báo cáo",
  *   từng bước (Đang xử lý / Đã xong), thông điệp + thanh %; xong hiện thông báo hoàn tất.
@@ -440,7 +444,10 @@
   const GM_KEY_META = 'mwg_ycx_bridge_meta';
   const GM_KEY_RESULT = 'mwg_ycx_bridge_result';
   const JOB_TTL_MS = 15 * 60 * 1000;
-  const SCRIPT_VERSION = '6.4';
+  // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
+  // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
+  const SCRIPT_VERSION_FALLBACK = '7.4';
+  const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
   const BI_BRIDGE_SOURCE = 'ycx-bi-automation';
