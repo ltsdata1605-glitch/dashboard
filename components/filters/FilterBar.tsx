@@ -14,9 +14,19 @@ interface FilterBarProps {
     onToggleAdvanced: () => void;
     onNewFile?: () => void;
     onOpenHistory?: () => void;
+    hasSalesData?: boolean;
+    onClearSalesData?: () => void;
+    salesClearTitle?: string;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOpenHistory }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ 
+    onToggleAdvanced, 
+    onNewFile, 
+    onOpenHistory,
+    hasSalesData,
+    onClearSalesData,
+    salesClearTitle
+}) => {
     const {
         filterState,
         handleFilterChange,
@@ -183,6 +193,16 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     >
                         <Icon name="link" size={5} />
                     </a>
+                    {hasSalesData && onClearSalesData && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={onClearSalesData}
+                            title={salesClearTitle || "Xóa dữ liệu YCX"}
+                            className="flex items-center justify-center w-8 h-8 text-rose-500 hover:text-rose-600 rounded-lg transition-all active:scale-95 shrink-0"
+                        >
+                            <Icon name="trash-2" size={5} />
+                        </Button>
+                    )}
                     <Button
                         variant="unstyled" size="none"
                         onClick={onToggleAdvanced}

@@ -25,6 +25,10 @@ interface HeaderProps {
     onToggleFilters?: () => void;
     onSelectHistoryFile?: (files: File[]) => void;
     onOpenHistory?: () => void;
+    onClearSalesData?: () => void;
+    hasSalesData?: boolean;
+    salesClearTitle?: string;
+    isClearingSalesData?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -37,11 +41,16 @@ const Header: React.FC<HeaderProps> = ({
     fileInfo, 
     onToggleFilters,
     onSelectHistoryFile,
-    onOpenHistory
+    onOpenHistory,
+    onClearSalesData,
+    hasSalesData,
+    salesClearTitle,
+    isClearingSalesData
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
+    const [salesClearSuccess, setSalesClearSuccess] = useState(false);
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
     const { syncState, lastError } = useSync();
@@ -70,6 +79,14 @@ const Header: React.FC<HeaderProps> = ({
         onClearDepartments();
         setDeptClearSuccess(true);
         setTimeout(() => setDeptClearSuccess(false), 3000);
+    };
+
+    const handleSalesClear = () => {
+        if (onClearSalesData) {
+            onClearSalesData();
+            setSalesClearSuccess(true);
+            setTimeout(() => setSalesClearSuccess(false), 3000);
+        }
     };
 
     if (activeTab !== 'analysis') return null;
@@ -187,6 +204,22 @@ const Header: React.FC<HeaderProps> = ({
                     >
                         <Icon name="link" size={4} />
                     </a>
+
+                    <AnimatePresence mode="wait">
+                        {hasSalesData && (
+                            <motion.button
+                                initial={{ width: 0, opacity: 0 }}
+                                animate={{ width: 'auto', opacity: 1 }}
+                                exit={{ width: 0, opacity: 0 }}
+                                onClick={handleSalesClear}
+                                disabled={isClearingSalesData}
+                                className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 ${salesClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer'}`}
+                                title={salesClearTitle || "Xóa dữ liệu YCX"}
+                            >
+                                <Icon name={salesClearSuccess ? 'check' : (isClearingSalesData ? 'loader-2' : 'trash-2')} size={4} className={isClearingSalesData ? 'animate-spin' : ''} />
+                            </motion.button>
+                        )}
+                    </AnimatePresence>
 
                     <div className="border-l border-slate-100 dark:border-slate-700">
                         <FontSelector />
