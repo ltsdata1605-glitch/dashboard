@@ -58,14 +58,14 @@ const LoginView: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center bg-static-blobs">
+            <div className="min-h-dvh bg-slate-50 dark:bg-slate-950 flex items-center justify-center bg-static-blobs">
                 <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 bg-static-blobs">
+        <div className="min-h-dvh bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4 bg-static-blobs">
             {/* A22 (2026-09-30): thẻ phẳng thay kính mờ + bo 24px + bóng lớn */}
             <div className="max-w-md w-full bg-white rounded-md p-8 border border-slate-200 animate-fade-in-up">
                 <div className="flex justify-center mb-8">

@@ -247,7 +247,7 @@ function AppContent() {
     // Hiển thị màn hình Loading nếu Firebase Auth đang kiểm tra phiên làm việc
     if (isLoading) {
          return (
-             <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+             <div className="min-h-dvh bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
                  <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
              </div>
          );
@@ -272,7 +272,7 @@ function AppContent() {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
+        <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
             {!isFullscreenMobileTool && <MobileBottomNav />}
             <div className="flex-grow flex flex-col min-w-0 w-full relative">

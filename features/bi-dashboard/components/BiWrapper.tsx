@@ -130,7 +130,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     ];
 
     return (
-        <div data-density="compact" className="flex flex-col w-full min-h-screen bi-report-module">
+        <div data-density="compact" className="flex flex-col w-full min-h-dvh bi-report-module">
             <style>{`
                 /* Chế độ mật độ gọn trên điện thoại: xem features/bi-dashboard/biDensity.css (A20).
                    Lịch sử thang chữ: bản cũ ép chữ xuống 8–9px ("High-Density Typography"), phá quy tắc

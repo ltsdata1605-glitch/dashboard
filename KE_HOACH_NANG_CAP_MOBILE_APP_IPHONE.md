@@ -134,14 +134,14 @@ graph TD
 ```
 
 ### 📋 Giai đoạn 1: Chuẩn hoá WebKit & PWA cho iPhone (Thời gian dự kiến: 2 - 3 ngày)
-- [ ] Tạo file `public/manifest.json` chuẩn PWA với `display: standalone`, `orientation: portrait`.
-- [ ] Thiết kế và tạo bộ Icon iOS (`apple-touch-icon`) các kích thước: 180x180, 167x167, 152x152, 120x120 tại `public/icons/`.
-- [ ] Tạo màn hình Splash Screen native cho tất cả các dòng iPhone (iPhone 13, 14, 15, 16 Pro/Pro Max) qua media query `<link rel="apple-touch-startup-image">`.
-- [ ] Thêm các thẻ meta Apple trong `index.html`:
+- [x] Tạo file `public/manifest.webmanifest` chuẩn PWA với `display: standalone`. *(2026-10-01: dùng `orientation: any` thay `portrait` — bảng 48 cột cần xoay ngang; iOS vốn bỏ qua trường này, chỉ Android khoá.)*
+- [x] Thiết kế và tạo bộ Icon iOS (`apple-touch-icon`) các kích thước: 180x180, 167x167, 152x152, 120x120 tại `public/icons/`.
+- [x] Tạo màn hình Splash Screen native cho tất cả các dòng iPhone (iPhone 13, 14, 15, 16 Pro/Pro Max) qua media query `<link rel="apple-touch-startup-image">`.
+- [x] Thêm các thẻ meta Apple trong `index.html` *(status-bar-style dùng `default`, không dùng `black-translucent` — xem chú thích trong index.html)*:
   - `<meta name="apple-mobile-web-app-capable" content="yes">`
   - `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
   - `<meta name="apple-mobile-web-app-title" content="Dashboard YCX">`
-- [ ] Chuẩn hoá CSS: Áp dụng `min-h-[100dvh]`, chống auto-zoom bàn phím, tinh chỉnh `touch-action: manipulation`.
+- [x] Chuẩn hoá CSS: Áp dụng `min-h-dvh`, tinh chỉnh `touch-action: manipulation`. *(Chống auto-zoom: viewport đã có sẵn `maximum-scale=1` — iOS không tự phóng khi focus ô nhập nữa, nên KHÔNG ép mọi ô nhập lên 16px để khỏi vỡ các ô nhập gọn hiện có.)*
 
 ### 📋 Giai đoạn 2: Tối ưu hoá Trải nghiệm UI/UX Mobile-First (Thời gian dự kiến: 3 - 4 ngày)
 - [ ] Cải tiến thanh điều hướng `MobileBottomNav.tsx`:

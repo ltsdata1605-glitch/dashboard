@@ -584,7 +584,7 @@ const App: React.FC = () => {
   }, [staffListForExport, staffList, departmentFilter]);
   const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
   return (
-    <div className="phanca-root phan-ca-layout min-h-screen bg-slate-50 pb-20">
+    <div className="phanca-root phan-ca-layout min-h-dvh bg-slate-50 pb-20">
       {/* Bảng chờ / tiến trình xuất ảnh: dùng bảng chung components/shared/export (tự gắn vào trang) */}
       <PhanCaToolbar
           hasStaff={hasStaff}

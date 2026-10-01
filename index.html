@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -62,13 +62,41 @@
     ">
     <title>Dashboard YCX - Bảo mật tuyệt đối</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <!-- Cài lên màn hình chính iPhone (PWA) — KE_HOACH_NANG_CAP_MOBILE_APP_IPHONE.md Giai đoạn 1.
+      Icon + splash sinh bằng `node scripts/pwa/tao-icon-splash.mjs` (đổi logo thì chạy lại).
+      status-bar-style = "default" (KHÔNG dùng black-translucent): black-translucent cho nội dung chui
+      xuống dưới thanh trạng thái/Dynamic Island — thanh trên của app có đệm safe-area, nhưng các màn
+      toàn màn hình (In Sticker, Phân Ca…) thì chưa, sẽ bị tai thỏ che mất nút. -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Dashboard YCX">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/apple-touch-icon-167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/apple-touch-icon-152.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/apple-touch-icon-120.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iphone-640x1136.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iphone-750x1334.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1242x2208.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1125x2436.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/iphone-828x1792.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1242x2688.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1170x2532.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1284x2778.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1179x2556.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1290x2796.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1206x2622.png">
+    <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1320x2868.png">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-screen antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">
+<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-dvh antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">
     <!-- Global Background Effects -->
     <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
         <div class="absolute inset-0 bg-grid-pattern opacity-40"></div>

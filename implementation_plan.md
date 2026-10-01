@@ -6943,3 +6943,22 @@ trình duyệt (máy bật, tab mở, đã đăng nhập MWG, có Tampermonkey),
   lưu saveSetting; GlobalAutoSyncDock quét 30s/lần, cửa sổ 10 phút, dấu chạy ở localStorage (1 tab chạy). Chạy không cú bấm:
   YCX/Đổ thưởng mở tab nhờ `open-worker` (7.16 thêm report 77 + newinsite), BI dùng `tuChayTiep`, Đổ thưởng chạy kỳ "Hiện tại".
 - Test: `tests/e2e/line-gui-anh-va-hen-gio.spec.ts` (bot giả qua `__YCX_TEST_LINE__`, chỉ bản dev), unit `services/autoSyncSchedule.test.ts`.
+
+## PWA cho iPhone — Giai đoạn 1 (2026-10-01, KE_HOACH_NANG_CAP_MOBILE_APP_IPHONE.md)
+
+Mục tiêu: "Thêm vào MH chính" trên iPhone ra app toàn màn hình có icon + màn khởi động, không còn thanh Safari.
+
+| File | Thay đổi |
+|---|---|
+| `public/manifest.webmanifest` | MỚI. `display: standalone`, `start_url/scope: /`, icon 192/512/maskable |
+| `public/icons/*.png`, `public/splash/*.png` | MỚI. 7 icon + 12 splash (SE → 16 Pro Max), sinh bằng `scripts/pwa/tao-icon-splash.mjs` từ `favicon.svg` |
+| `index.html` | link manifest, meta `apple-mobile-web-app-*`, `theme-color`, 5 `apple-touch-icon`, 12 `apple-touch-startup-image`; viewport thêm `interactive-widget=resizes-content`; body `min-h-dvh` |
+| `styles.css` | `touch-action: manipulation` cho phần tử bấm được (bỏ trễ chạm đúp) |
+| 8 file `.tsx` (App, Login, Settings, UserManagement, BiWrapper, PhanCaView, sticker Login/ErrorBoundary) | `min-h-screen` → `min-h-dvh` (đổi class, không đổi logic) |
+| `tests/e2e/pwa-iphone.spec.ts` | MỚI. Kiểm từng icon/splash tải được + đúng kích thước px khai báo, manifest hợp lệ, không vi phạm CSP |
+
+Quyết định: status bar `default` (không `black-translucent` vì các màn toàn màn hình chưa có đệm tai thỏ);
+KHÔNG thêm Service Worker (app đang chủ ý no-cache + `reload-on-chunk-error.js`, SW dễ giữ bản cũ — iOS
+không cần SW để cài lên MH chính); KHÔNG ép ô nhập 16px (viewport `maximum-scale=1` đã chặn auto-zoom).
+Rủi ro cần thử trên iPhone thật: đăng nhập Google trong chế độ app (popup → nếu lỗi dùng nút "Đăng nhập
+chuyển hướng"). Giai đoạn 3–5 (Capacitor/Xcode/TestFlight) cần máy Mac + tài khoản Apple Developer.

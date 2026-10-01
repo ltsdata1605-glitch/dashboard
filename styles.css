@@ -390,6 +390,20 @@ body:has([data-modal-overlay]) .mobile-chrome {
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 90%, transparent 100%);
 }
 
+/* Phần tử bấm được: bỏ cử chỉ chạm-đúp-phóng-to để trình duyệt khỏi chờ ~300ms xem có chạm lần 2
+   không (KE_HOACH_NANG_CAP_MOBILE_APP_IPHONE.md Giai đoạn 1). Chỉ gắn vào phần tử tương tác — gắn
+   lên html/body sẽ lan xuống cả vùng vẽ/canvas vốn tự đặt touch-action riêng. */
+a,
+button,
+input,
+select,
+textarea,
+label,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+}
+
 /* Touch ripple feedback */
 .touch-feedback {
   -webkit-tap-highlight-color: transparent;
