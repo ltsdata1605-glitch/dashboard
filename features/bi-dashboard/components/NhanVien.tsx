@@ -1,4 +1,5 @@
-import { useWorker } from "../hooks/useWorker";import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useWorker } from "../hooks/useWorker";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { ArchiveBoxIcon, BuildingStorefrontIcon } from './Icons';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
@@ -39,13 +40,33 @@ interface NhanVienProps {
 export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [activeTab, setActiveTab] = useIndexedDBState<Tab>('nhanvien-active-tab', 'revenue');
     const [visitedTabs, setVisitedTabs] = useState<Set<Tab>>(() => new Set<Tab>(['revenue']));
+    const pendingSwitchTabRef = useRef<Tab | null>(null);
+
+    // Lắng nghe sự kiện chuyển sub-tab từ bên ngoài (ví dụ bấm nút Tự động Đổ Thưởng từ Auto Sync dock)
+    useEffect(() => {
+        const handleSwitch = (e: any) => {
+            const target = e.detail?.tab as Tab;
+            if (target && NAV_TABS.some(t => t.tab === target)) {
+                pendingSwitchTabRef.current = target;
+                setActiveTab(target);
+            }
+        };
+        window.addEventListener('nhanvien-switch-tab', handleSwitch);
+        return () => window.removeEventListener('nhanvien-switch-tab', handleSwitch);
+    }, [setActiveTab]);
 
     // Mặc định luôn mở tab Doanh thu khi người dùng chuyển sang màn hình Nhân viên
+    // (trừ khi có sự kiện chuyển tab cụ thể như đổ thưởng đang chờ)
     useEffect(() => {
         if (isActive) {
-            setActiveTab('revenue');
+            if (pendingSwitchTabRef.current) {
+                setActiveTab(pendingSwitchTabRef.current);
+                pendingSwitchTabRef.current = null;
+            } else if (!activeTab) {
+                setActiveTab('revenue');
+            }
         }
-    }, [isActive, setActiveTab]);
+    }, [isActive, activeTab, setActiveTab]);
 
     // Cache IndexedDB của người dùng cũ có thể còn giữ tab đã bị gỡ (vd 'crossSelling' — tab Bán
     // kèm, xoá 2026-09-10). Ép về Doanh thu thay vì để màn hình trống không hiểu vì sao.

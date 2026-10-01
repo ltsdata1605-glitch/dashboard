@@ -46,6 +46,22 @@ export const AutoBonusPanel: React.FC<{
     // modal cài đặt biết gọi lại đúng luồng nào sau khi userscript đã được cài xong.
     const pendingRetryRef = useRef<PendingRetry>(null);
 
+    // Lắng nghe sự kiện kích hoạt Tự động Đổ Thưởng từ khung AUTO SYNC dock
+    useEffect(() => {
+        const handleTrigger = () => {
+            setShowPicker(true);
+        };
+        window.addEventListener('ycx-trigger-auto-bonus', handleTrigger);
+        return () => window.removeEventListener('ycx-trigger-auto-bonus', handleTrigger);
+    }, []);
+
+    // Bắn sự kiện cập nhật trạng thái tiến trình đổ thưởng để khung AUTO SYNC dock hiển thị
+    useEffect(() => {
+        window.dispatchEvent(new CustomEvent('ycx-auto-bonus-status-changed', {
+            detail: { isBusy, status, progress, monthStatus, monthProgress }
+        }));
+    }, [isBusy, status, progress, monthStatus, monthProgress]);
+
     // Chống bắn toast lặp lại nếu component re-render nhiều lần trong lúc status vẫn
     // đang ở 'done'/'error' — chỉ bắn đúng 1 lần mỗi lượt chạy. 2 ref riêng cho 2 luồng
     // độc lập (job đơn / chạy Năm) vì cả hai có thể lần lượt "done" trong cùng phiên.

@@ -951,6 +951,58 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         });
     }
 
+    // 9. FIT CỘT NHÂN VIÊN — Khống chế độ rộng cột Nhân viên vừa khít nội dung (185px)
+    // Ngăn chặn trình duyệt dãn rộng quá mức làm đẩy mất các cột dữ liệu bên phải
+    clone.querySelectorAll('table').forEach((table) => {
+        const allTh = Array.from(table.querySelectorAll('thead th'));
+        const hasEmployeeHeader = allTh.some(th => {
+            const text = th.textContent?.trim().toLowerCase() || '';
+            return text.includes('nhân viên') || text.includes('nhan vien');
+        });
+
+        if (hasEmployeeHeader || table.getAttribute('data-testid') === 'bonus-compare-table') {
+            // Định hình lại colgroup nếu có
+            const colgroupCols = table.querySelectorAll('colgroup col');
+            if (colgroupCols.length > 0 && colgroupCols[0] instanceof HTMLElement) {
+                colgroupCols[0].style.setProperty('width', '185px', 'important');
+                colgroupCols[0].style.setProperty('min-width', '175px', 'important');
+                colgroupCols[0].style.setProperty('max-width', '200px', 'important');
+            }
+
+            // Đặt kích thước cố định cho tất cả th Nhân viên
+            allTh.forEach(th => {
+                const text = th.textContent?.trim().toLowerCase() || '';
+                if (text.includes('nhân viên') || text.includes('nhan vien')) {
+                    if (th instanceof HTMLElement) {
+                        th.style.setProperty('width', '185px', 'important');
+                        th.style.setProperty('min-width', '175px', 'important');
+                        th.style.setProperty('max-width', '200px', 'important');
+                        th.style.setProperty('white-space', 'nowrap', 'important');
+                    }
+                }
+            });
+
+            // Đặt kích thước cố định cho cột đầu tiên của mọi hàng tbody và tfoot (trừ hàng gom nhóm có colspan)
+            table.querySelectorAll('tbody tr, tfoot tr').forEach(row => {
+                const firstCell = row.firstElementChild;
+                if (firstCell instanceof HTMLElement && (firstCell.tagName === 'TD' || firstCell.tagName === 'TH')) {
+                    const colSpan = parseInt(firstCell.getAttribute('colspan') || '1', 10);
+                    if (colSpan === 1) {
+                        firstCell.style.setProperty('width', '185px', 'important');
+                        firstCell.style.setProperty('min-width', '175px', 'important');
+                        firstCell.style.setProperty('max-width', '200px', 'important');
+                        firstCell.style.setProperty('white-space', 'nowrap', 'important');
+
+                        // Đảm bảo tên nhân viên và avatar không đẩy cột phình to
+                        firstCell.querySelectorAll<HTMLElement>('.truncate, span, div').forEach(el => {
+                            el.style.setProperty('white-space', 'nowrap', 'important');
+                        });
+                    }
+                }
+            });
+        }
+    });
+
     // PRE-CLONE FIX: Capture Recharts dimensions BEFORE moving clone off-screen
     // Recharts ResponsiveContainer reads dimensions from DOM. Once off-screen, it renders at 0x0.
     // We must bake in explicit dimensions from the live element.
@@ -1020,9 +1072,14 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
     }
 
     // Remove redundant inner borders ONLY on table overflow wrappers inside cards (keep card borders intact)
+    // ĐỒNG THỜI: Gỡ bỏ overflow-hidden và overflow-x: auto trên các wrapper bọc table để không cắt mất các cột bên phải
     clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
         if (el instanceof HTMLElement && el.querySelector('table')) {
             el.style.setProperty('border', 'none', 'important');
+            el.style.setProperty('overflow', 'visible', 'important');
+            el.style.setProperty('overflow-x', 'visible', 'important');
+            el.style.setProperty('overflow-y', 'visible', 'important');
+            el.style.setProperty('max-width', 'none', 'important');
             if (!captureAsDisplayed) {
                 el.style.setProperty('box-shadow', 'none', 'important');
             }
@@ -1447,9 +1504,28 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         const tables = fittedWidth > 0 ? [] : Array.from(clone.querySelectorAll('table'));
         tables.forEach((t) => {
             const prevW = t.style.width;
+            const prevMaxW = t.style.maxWidth;
             t.style.setProperty('width', 'max-content', 'important');
-            const w = Math.ceil(t.getBoundingClientRect().width || t.scrollWidth || 0);
+            t.style.setProperty('max-width', 'none', 'important');
+
+            // Tính tổng chiều rộng các cột từ header/data row
+            let colsSum = 0;
+            const colSampleRow = t.querySelector('thead tr:last-child') || t.querySelector('thead tr') || t.querySelector('tbody tr');
+            if (colSampleRow) {
+                Array.from(colSampleRow.children).forEach(cell => {
+                    if (cell instanceof HTMLElement) {
+                        colsSum += Math.ceil(cell.getBoundingClientRect().width || cell.offsetWidth || 0);
+                    }
+                });
+            }
+
+            const w = Math.ceil(Math.max(
+                t.getBoundingClientRect().width || 0,
+                t.scrollWidth || 0,
+                colsSum
+            ));
             t.style.setProperty('width', prevW || '100%', 'important');
+            t.style.setProperty('max-width', prevMaxW || '100%', 'important');
             maxTableWidth = Math.max(maxTableWidth, w);
         });
 
@@ -1460,7 +1536,8 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         // (Bề rộng tối thiểu trước đây 720px riêng cho Report BI — nay 680px chung toàn dự án, chủ dự án chốt 2026-10-01)
         const naturalTableWidth = fittedWidth > 0
             ? Math.max(EXPORT_MIN_WIDTH, fittedWidth)
-            : maxTableWidth > 0 ? Math.max(EXPORT_MIN_WIDTH, maxTableWidth + 16) : 0;
+            // (commit Mac 21964bfe: +48px đệm an toàn cho px-4 và viền mép phải)
+            : maxTableWidth > 0 ? Math.max(EXPORT_MIN_WIDTH, maxTableWidth + 48) : 0;
         const optimalWidth = naturalTableWidth > 0
             ? naturalTableWidth
             : Math.max(EXPORT_MIN_WIDTH, Math.min(Math.ceil(rect.width || 0), 1000));

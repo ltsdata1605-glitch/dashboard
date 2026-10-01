@@ -224,11 +224,11 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                 className={`cursor-pointer transition-colors ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/50'}`}
                 onClick={() => onEmployeeClick(r.emp)}
             >
-                <td className="px-2 py-[3px] border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                <td className="px-2 py-[3px] border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]">
                     <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 whitespace-nowrap">
                         <MedalBadge rank={rank} />
                         <AvatarDisplay employeeName={r.emp.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(r.emp)} />
-                        <span className={`text-[12px] sm:text-[13px] font-bold whitespace-nowrap ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
+                        <span className={`text-[12px] sm:text-[13px] font-bold whitespace-nowrap truncate max-w-[125px] ${r.dTong == null ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>{r.emp.name}</span>
                     </div>
                 </td>
                 {criterionCells(r.cur?.erp ?? null, r.prev?.erp ?? null, r.dErp, GROUP_STYLE.erp.cur)}
@@ -242,9 +242,22 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
     return (
         <div>
             <table className="w-full border-collapse compact-export-table" data-testid="bonus-compare-table">
+                <colgroup>
+                    <col style={{ width: '185px', minWidth: '170px', maxWidth: '200px' }} />
+                    <col style={{ width: '60px', minWidth: '54px' }} />
+                    <col style={{ width: '56px', minWidth: '50px' }} />
+                    <col style={{ width: '56px', minWidth: '50px' }} />
+                    <col style={{ width: '60px', minWidth: '54px' }} />
+                    <col style={{ width: '56px', minWidth: '50px' }} />
+                    <col style={{ width: '56px', minWidth: '50px' }} />
+                    <col style={{ width: '62px', minWidth: '58px' }} />
+                    <col style={{ width: '58px', minWidth: '52px' }} />
+                    <col style={{ width: '58px', minWidth: '52px' }} />
+                    <col style={{ width: '52px', minWidth: '48px' }} />
+                </colgroup>
                 <thead className="sticky top-0 z-10">
                     <tr>
-                        <th rowSpan={2} className="px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[3px] border-l-slate-300 dark:border-l-slate-600 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 align-middle select-none" onClick={() => handleSort('name')}>Nhân viên{sortMark('name')}</th>
+                        <th rowSpan={2} className="px-2 h-7 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-l-[3px] border-l-slate-300 dark:border-l-slate-600 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 align-middle select-none whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]" onClick={() => handleSort('name')}>Nhân viên{sortMark('name')}</th>
                         <th colSpan={3} className={`${groupTh} ${GROUP_STYLE.erp.head}`}>ERP</th>
                         <th colSpan={3} className={`${groupTh} ${GROUP_STYLE.tnong.head}`}>T.Nóng</th>
                         <th colSpan={4} className={`${groupTh} ${GROUP_STYLE.tong.head} border-b-emerald-300 dark:border-b-emerald-800`}>Tổng</th>
@@ -278,7 +291,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                                     {deptRows.map(r => renderCompareRow(r, globalRankMap.get(r.emp.originalName) || 1))}
                                     {deptNames.length > 1 && (
                                         <tr className="bg-emerald-50/60 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-300 border-t border-b border-emerald-200 dark:border-emerald-800">
-                                            <td className="px-2 py-1 text-[12px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700">Tổng {deptName}</td>
+                                            <td className="px-2 py-1 text-[12px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700 w-[185px] min-w-[170px] max-w-[200px]">Tổng {deptName}</td>
                                             <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{fmtK(f, deptRows.reduce((s, r) => s + (r.cur?.erp || 0), 0))}</td>
                                             <td className={tdFoot}>{fmtK(f, deptRows.reduce((s, r) => s + (r.prev?.erp || 0), 0))}</td>
                                             <td className={`${tdFoot} ${deltaColor(deptBothRows.reduce((s, r) => s + (r.dErp || 0), 0))}`}>{deptBothRows.length > 0 ? fmtDeltaK(f, deptBothRows.reduce((s, r) => s + (r.dErp || 0), 0)) : '—'}</td>
@@ -298,7 +311,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
                 </tbody>
                 <tfoot>
                     <tr style={{ borderLeft: `3px solid ${stripeColor(totals.bothCount > 0 ? totals.dTong : null)}` }} className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800">
-                        <td className="px-2 py-1 text-[13px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700">Tổng cộng</td>
+                        <td className="px-2 py-1 text-[13px] uppercase tracking-wider text-center border-r border-slate-200 dark:border-slate-700 w-[185px] min-w-[170px] max-w-[200px]">Tổng cộng</td>
                         <td className={`${tdFoot} border-l-2 border-l-slate-300 dark:border-l-slate-600 text-sky-700 dark:text-sky-400`}>{fmtK(f, totals.curErp)}</td>
                         <td className={tdFoot}>{fmtK(f, totals.prevErp)}</td>
                         <td className={`${tdFoot} ${deltaColor(totals.dErp)}`}>{totals.bothCount > 0 ? fmtDeltaK(f, totals.dErp) : '—'}</td>

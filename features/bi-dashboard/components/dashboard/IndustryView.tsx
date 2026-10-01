@@ -143,17 +143,32 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         return starts;
     }, [headerGroups, orderedHeaders, visibleColumns]);
 
+    // Cột DTQĐ mặc định luôn được ưu tiên sắp xếp giảm dần
+    const defaultDtqdHeader = useMemo(() => {
+        return orderedHeaders.find(h => h === 'DTQĐ' || h === 'DT Realtime (QĐ)' || h.includes('DTQĐ')) || null;
+    }, [orderedHeaders]);
+
+    const activeSortColumn = sortConfig.column || defaultDtqdHeader;
+    const activeSortDirection = sortConfig.column ? sortConfig.direction : 'desc';
+
     // --- Column Sort Handler ---
     const handleColumnSort = useCallback((headerName: string) => {
         setSortConfig(prev => {
-            if (prev.column === headerName) {
-                // Cycle: asc -> desc -> none
-                if (prev.direction === 'asc') return { column: headerName, direction: 'desc' };
-                if (prev.direction === 'desc') return { column: null, direction: null };
+            const currentCol = prev.column || defaultDtqdHeader;
+            const currentDir = prev.column ? prev.direction : 'desc';
+
+            if (currentCol === headerName) {
+                // Đang ở cột này: đảo chiều hoặc quay về mặc định
+                if (currentDir === 'desc') {
+                    return { column: headerName, direction: 'asc' };
+                }
+                // Nếu đang asc: quay về mặc định (DTQĐ desc)
+                return { column: null, direction: null };
             }
-            return { column: headerName, direction: 'asc' };
+            // Chọn cột mới: bắt đầu từ giảm dần (desc)
+            return { column: headerName, direction: 'desc' };
         });
-    }, []);
+    }, [defaultDtqdHeader]);
 
     // --- Sort rows helper ---
     const sortRows = useCallback(<T extends unknown[]>(rows: T[], getValues: (row: T) => string[]): T[] => {
@@ -656,7 +671,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             )}
                                             {headerGroups.map((g, idx) => {
                                                 if (g.isSingle) {
-                                                    const isSorted = sortConfig.column === g.singleHeader;
+                                                    const isSorted = g.singleHeader === activeSortColumn;
                                                     return (
                                                         <th
                                                             key={`group-${idx}`}
@@ -674,6 +689,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
                                                         >
                                                             <span>{renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}</span>
+                                                            {isSorted && (
+                                                                <span className="ml-1 text-[10px] text-sky-600 dark:text-sky-400 font-black">
+                                                                    {activeSortDirection === 'asc' ? '▲' : '▼'}
+                                                                </span>
+                                                            )}
                                                         </th>
                                                     );
                                                 }
@@ -702,7 +722,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
                                                 if (isSingleGroup) return null;
                                                 const g = COLUMN_GROUPS[h] || { text: GROUP_TONE_TEXT, bg: GROUP_TONE_BG };
-                                                const isSorted = sortConfig.column === h;
+                                                const isSorted = h === activeSortColumn;
                                                 return (
                                                     <th
                                                         key={h}
@@ -721,6 +741,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
                                                     >
                                                         <span>{renderHeaderText(headerMapping[h] || h)}</span>
+                                                        {isSorted && (
+                                                            <span className="ml-1 text-[10px] text-sky-600 dark:text-sky-400 font-black">
+                                                                {activeSortDirection === 'asc' ? '▲' : '▼'}
+                                                            </span>
+                                                        )}
                                                     </th>
                                                 );
                                             })}

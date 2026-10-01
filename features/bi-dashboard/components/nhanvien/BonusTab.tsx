@@ -80,7 +80,9 @@ export const BonusView: React.FC<{
         try {
             const safeName = customFilename || `Báo Cáo Thưởng - ${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only',
+                elementsToHide: ['.no-print', '.export-button-component'],
+                isCompactTable: true,
             });
             if (blob) showExportOptions(blob, safeName);
         } catch (err) {

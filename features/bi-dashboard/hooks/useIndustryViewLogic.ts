@@ -69,16 +69,14 @@ export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndust
             row[0] && !hiddenIndustriesSet.has(row[0])
         );
 
-        const targetHeaderName = (isRealtime && headers.includes('% HT Target Ngày (QĐ)')) ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
-        const htTargetIndex = headers.indexOf(targetHeaderName);
-        if (htTargetIndex !== -1) {
-            const hasValidHt = otherRows.some(r => {
-                const val = parseNumber(r[htTargetIndex]);
-                return !isNaN(val) && val > 0;
+        // Luôn sắp xếp theo cột DTQĐ giảm dần theo yêu cầu nghiệp vụ
+        const dtqdIndex = headers.findIndex(h => h === 'DTQĐ' || h === 'DT Realtime (QĐ)' || h.includes('DTQĐ'));
+        if (dtqdIndex !== -1) {
+            otherRows.sort((a, b) => {
+                const valA = parseNumber(a[dtqdIndex]);
+                const valB = parseNumber(b[dtqdIndex]);
+                return valB - valA;
             });
-            if (hasValidHt) {
-                otherRows.sort((a, b) => parseNumber(b[htTargetIndex]) - parseNumber(a[htTargetIndex]));
-            }
         }
         
         const finalRows = totalRow ? [...otherRows, totalRow] : otherRows;
@@ -120,18 +118,25 @@ export function useIndustryViewLogic(realtimeData: ReturnType<typeof parseIndust
                 children: node.children.filter((child) => !hiddenSubSet.has(child.name))
             }));
 
-        const targetHeaderName = (isRealtime && headers.includes('% HT Target Ngày (QĐ)')) ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
-        const htTargetIdx = headers.indexOf(targetHeaderName);
-        if (htTargetIdx >= 0) {
-            const hasValidHt = filteredTree.some(node => {
-                const val = parseNumber(node.values[htTargetIdx]);
-                return !isNaN(val) && val > 0;
+        // Luôn sắp xếp các ngành hàng và nhóm hàng con theo cột DTQĐ giảm dần
+        const dtqdIdx = headers.findIndex(h => h === 'DTQĐ' || h === 'DT Realtime (QĐ)' || h.includes('DTQĐ'));
+        if (dtqdIdx >= 0) {
+            filteredTree = [...filteredTree].sort((a, b) => {
+                const valA = parseNumber(a.values[dtqdIdx]);
+                const valB = parseNumber(b.values[dtqdIdx]);
+                return valB - valA;
             });
-            if (hasValidHt) {
-                filteredTree = [...filteredTree].sort(
-                    (a, b) => parseNumber(b.values[htTargetIdx]) - parseNumber(a.values[htTargetIdx])
-                );
-            }
+
+            // Sắp xếp các nhóm hàng con bên trong mỗi ngành theo DTQĐ giảm dần
+            filteredTree.forEach(node => {
+                if (node.children && node.children.length > 0) {
+                    node.children.sort((a, b) => {
+                        const valA = parseNumber(a.values[dtqdIdx]);
+                        const valB = parseNumber(b.values[dtqdIdx]);
+                        return valB - valA;
+                    });
+                }
+            });
         }
 
 
