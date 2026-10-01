@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.15
+// @version      7.16
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -25,12 +25,20 @@
 // @grant        window.close
 // @connect      report.mwgroup.vn
 // @connect      cdnv2.tgdd.vn
+// @connect      api.line.me
 // @connect      *
 // @updateURL    https://dashboard.pro.vn/scripts/mwg-auto-thu-thap-diem-thuong.user.js
 // @downloadURL  https://dashboard.pro.vn/scripts/mwg-auto-thu-thap-diem-thuong.user.js
 // ==/UserScript==
 
 /*
+ * BẢN 7.16 — HẸN GIỜ AUTO SYNC + GỬI ẢNH VÀO NHÓM LINE (chủ dự án 2026-10-01):
+ * - Hẹn giờ chạy không có cú bấm của người dùng → trình duyệt chặn window.open. 'ycx-bi-automation:open-worker' nay
+ *   mở được thêm báo cáo 77 report.mwgroup.vn (YCX) và trang thưởng nhân viên newinsite (Đổ thưởng) bằng GM_openInTab.
+ * - Cầu gửi LINE 'ycx-line-push:send' → GM_xmlhttpRequest POST https://api.line.me/v2/bot/message/push (trang web
+ *   không gọi thẳng được vì CORS). CHỈ đúng endpoint push, 'to' phải là ID nhóm/người LINE, tin chỉ loại text/image
+ *   với ảnh https — không phải proxy mở cho mọi request. Trả kết quả qua 'ycx-line-push:result'.
+ *
  * BẢN 7.15 — YCX LUỸ KẾ (chủ dự án 2026-10-01): như Realtime nhưng Từ ngày = 01 đầu tháng, Đến ngày = HÔM QUA.
  *   Hôm nay ngày 01 (chưa có ngày nào để luỹ kế) → chạy như Realtime. URL ycx_ycx=luyke.
  *
@@ -488,7 +496,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.15';
+  const SCRIPT_VERSION_FALLBACK = '7.16';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -1377,12 +1385,54 @@
     // window.open của trang bị chặn popup, GM_openInTab thì không. CHỈ mở trang báo cáo MWG.
     window.addEventListener('ycx-bi-automation:open-worker', (e) => {
       const url = e && e.detail && e.detail.url;
-      if (typeof url !== 'string' || !/^https:\/\/baocao\.dienmayxanh\.com\//.test(url)) return;
+      // 7.16: thêm báo cáo 77 (Tự động YCX hẹn giờ) và trang thưởng nhân viên (Đổ thưởng hẹn giờ)
+      const URL_CHO_PHEP = [
+        /^https:\/\/baocao\.dienmayxanh\.com\//,
+        /^https:\/\/report\.mwgroup\.vn\/home\/dashboard\/77\?/,
+        /^https:\/\/newinsite\.thegioididong\.com\/office\/thuong-nhan-vien/,
+      ];
+      if (typeof url !== 'string' || !URL_CHO_PHEP.some((re) => re.test(url))) return;
       try {
         GM_openInTab(url, { active: true, insert: true, setParent: true });
         window.dispatchEvent(new CustomEvent('ycx-bi-automation:open-worker-ok', { detail: { url } }));
       } catch (err) {
         console.warn('[BI Bridge] GM_openInTab lỗi:', err);
+      }
+    });
+
+    // 7.16: Cầu gửi tin vào nhóm LINE (ảnh báo cáo). Chỉ đúng endpoint push, chỉ tin text/image (ảnh https).
+    window.addEventListener('ycx-line-push:send', (e) => {
+      const d = e && e.detail;
+      const traLoi = (ok, error, status) => window.dispatchEvent(new CustomEvent('ycx-line-push:result', {
+        detail: { source: 'ycx-line-push', requestId: d && d.requestId, ok, error: error || '', status: status || 0 },
+      }));
+      if (!d || d.source !== 'ycx-line-push' || typeof d.requestId !== 'string') return;
+      const token = typeof d.token === 'string' ? d.token.trim() : '';
+      const to = typeof d.to === 'string' ? d.to.trim() : '';
+      const msgs = Array.isArray(d.messages) ? d.messages : [];
+      const hopLe = msgs.length > 0 && msgs.length <= 5 && msgs.every((m) => m && (
+        (m.type === 'text' && typeof m.text === 'string' && m.text.length <= 5000)
+        || (m.type === 'image' && /^https:\/\//.test(m.originalContentUrl || '') && /^https:\/\//.test(m.previewImageUrl || ''))
+      ));
+      if (!token || !/^[CRU][0-9a-f]{32}$/.test(to) || !hopLe) { traLoi(false, 'Yêu cầu gửi LINE không hợp lệ'); return; }
+      try {
+        GM_xmlhttpRequest({
+          method: 'POST', url: 'https://api.line.me/v2/bot/message/push', timeout: 30000,
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          data: JSON.stringify({ to, messages: msgs.map((m) => (m.type === 'text'
+            ? { type: 'text', text: m.text }
+            : { type: 'image', originalContentUrl: m.originalContentUrl, previewImageUrl: m.previewImageUrl })) }),
+          onload: (r) => {
+            if (r.status >= 200 && r.status < 300) { traLoi(true, '', r.status); return; }
+            let msg = `HTTP ${r.status}`;
+            try { const j = JSON.parse(r.responseText || '{}'); if (j && j.message) msg = `${j.message} (HTTP ${r.status})`; } catch (_) { /* giữ mã lỗi */ }
+            traLoi(false, msg, r.status);
+          },
+          onerror: () => traLoi(false, 'Lỗi mạng khi gọi LINE (Tampermonkey có thể đang hỏi quyền truy cập api.line.me)'),
+          ontimeout: () => traLoi(false, 'LINE không phản hồi sau 30 giây'),
+        });
+      } catch (err) {
+        traLoi(false, (err && err.message) || String(err));
       }
     });
 
