@@ -118,7 +118,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
             title={
                 status === 'not-installed' ? (
                     <div className="flex items-center gap-2.5">
-                        <div className="p-2 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-xs">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-xs">
                             <ShieldCheck className="w-5 h-5" />
                         </div>
                         <div>
@@ -142,7 +142,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                 <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
                                     {isRealtime ? 'Tự động Cập nhật Realtime' : `Tự động Cập nhật Luỹ Kế${month && /^\d{6}$/.test(month) ? ` · tháng ${month.slice(4)}/${month.slice(0, 4)}` : ''}`}
                                 </h3>
-                                <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wide rounded-full border ${
+                                <span className={`px-2 py-0.5 text-[11px] font-black uppercase tracking-wide rounded-full border ${
                                     isRealtime
                                         ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
                                         : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'

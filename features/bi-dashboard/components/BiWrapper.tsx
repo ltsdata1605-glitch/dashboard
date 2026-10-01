@@ -289,11 +289,11 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={handleTriggerAutoBonus}
                                 title={bonusStatus.isBusy ? `Tự động Đổ Thưởng (${bonusStatus.label || 'Đang chạy'})` : 'Tự động Đổ Thưởng'}
-                                className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
-                                    bonusStatus.isBusy ? 'ring-2 ring-purple-400 animate-pulse' : ''
+                                className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-sky-600 via-sky-600 to-sky-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                                    bonusStatus.isBusy ? 'ring-2 ring-sky-400 animate-pulse' : ''
                                 }`}
                             >
-                                <Gift className="w-4 h-4 text-purple-100" />
+                                <Gift className="w-4 h-4 text-sky-100" />
                             </button>
                         </div>
                     ) : (
@@ -376,7 +376,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={handleTriggerAutoBonus}
                                 title="Tự động thu thập điểm và đổ thưởng nhân viên từ HRM qua Tampermonkey"
-                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:to-indigo-500 active:from-indigo-700 active:to-purple-700 border border-purple-300/40 dark:border-purple-400/30 shadow-[0_6px_20px_rgba(147,51,234,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:to-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(147,51,234,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                             >
                                 {/* Dải ánh kim phản chiếu quét qua khi hover */}
                                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
@@ -385,7 +385,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                     bonusStatus.isBusy ? 'animate-pulse' : ''
                                 }`}>
-                                    <Gift className="h-4 w-4 text-purple-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
+                                    <Gift className="h-4 w-4 text-sky-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
                                 </div>
 
                                 {/* Nhãn typography sắc nét */}
@@ -393,7 +393,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
                                         Tự động Đổ Thưởng
                                     </span>
-                                    <span className="text-[10px] font-semibold text-purple-100/90 leading-none mt-1">
+                                    <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1">
                                         {bonusStatus.isBusy ? `⚡ ${bonusStatus.label || 'Đang xử lý...'}` : '🎁 Thưởng nhân viên'}
                                     </span>
                                 </div>
@@ -404,7 +404,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 type="button"
                                 onClick={() => setShowGuideModal(true)}
                                 title="Bấm để xem hướng dẫn cài đặt tiện ích Tampermonkey hoặc kiểm tra kết nối"
-                                className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[10px] font-semibold text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
+                                className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-semibold text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
                             >
                                 <Sparkles className="w-3 h-3 text-amber-500/80 shrink-0" />
                                 <span>Tampermonkey • Hướng dẫn</span>
