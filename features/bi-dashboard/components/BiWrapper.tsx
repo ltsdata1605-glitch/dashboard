@@ -14,6 +14,9 @@ import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
 import type { ConfigTab } from './SupermarketConfig';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
+import { useIndexedDBState } from '../hooks/useIndexedDBState';
+import { useBiAutoSync } from '../hooks/useBiAutoSync';
+import { Zap, TrendingUp } from 'lucide-react';
 
 // Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
 import Dashboard from './Dashboard';
@@ -62,6 +65,10 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(readPendingAutoSync() ? ['dashboard', 'updater'] : ['dashboard']));
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+    // Quản lý tự động đồng bộ tập trung tại BiWrapper để modal và nút nổi hoạt động xuyên suốt cả 3 tab
+    const [activeSupermarket] = useIndexedDBState<string>('dashboard-active-supermarket', 'Tổng');
+    const { handleStartAutoSync, renderAutoSyncModal } = useBiAutoSync(activeSupermarket);
 
 
     useEffect(() => {
@@ -205,6 +212,36 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
 
 
+            {/* Floating Action Dock: 2 nút Tự động Realtime và Luỹ kế luôn nổi trên Laptop/Desktop xuyên suốt các tab Siêu thị, Nhân viên, Cập nhật */}
+            {activeTab === 'employees' && (
+                <aside
+                    aria-label="Thao tác tự động Report BI"
+                    className="hidden lg:flex flex-col gap-2.5 fixed right-3 xl:right-6 top-32 z-40 p-2 rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-xl shadow-slate-900/5 dark:shadow-black/20 no-print hide-on-export select-none animate-in fade-in slide-in-from-right-4 duration-300"
+                >
+                    {/* Nút Tự động Realtime */}
+                    <button
+                        type="button"
+                        onClick={() => handleStartAutoSync('realtime')}
+                        title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
+                        className="group flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-150 cursor-pointer border border-amber-400/40 whitespace-nowrap"
+                    >
+                        <Zap className="h-3.5 w-3.5 text-amber-100 fill-amber-200 shrink-0 group-hover:rotate-12 transition-transform duration-200" />
+                        <span>Tự động Realtime</span>
+                    </button>
+
+                    {/* Nút Tự động Luỹ kế */}
+                    <button
+                        type="button"
+                        onClick={() => handleStartAutoSync('luyke')}
+                        title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
+                        className="group flex items-center gap-2 px-3 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-150 cursor-pointer border border-emerald-400/40 whitespace-nowrap"
+                    >
+                        <TrendingUp className="h-3.5 w-3.5 text-emerald-100 shrink-0 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
+                        <span>Tự động Luỹ kế</span>
+                    </button>
+                </aside>
+            )}
+
             {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
             {/* KHUNG CHUNG 960px — Report BI / Check thưởng / Báo cáo khai thác dùng cùng khung: rộng tối đa
                 960px căn giữa, đệm ngang 32px ở desktop, KHÔNG đệm trên (bản cũ `lg:p-8` để 32px trống
@@ -216,7 +253,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                         {/* Dashboard view */}
                         {mountedViews.has('dashboard') && (
                             <div className={activeView === 'dashboard' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                                <Dashboard onNavigateToUpdater={handleNavigateToUpdater} isActive={isActive && activeView === 'dashboard'} />
+                                <Dashboard onNavigateToUpdater={handleNavigateToUpdater} isActive={isActive && activeView === 'dashboard'} onStartAutoSync={handleStartAutoSync} />
                             </div>
                         )}
 
@@ -237,6 +274,9 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     </Suspense>
                 </ErrorBoundary>
             </main>
+
+            {/* Modal tiến trình tự động đồng bộ Tampermonkey */}
+            {renderAutoSyncModal()}
 
         </div>
     );

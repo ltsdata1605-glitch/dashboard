@@ -232,7 +232,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             if (summaryLuyKeData) {
                 activeSupermarkets.forEach((sm, idx) => {
                     const baseTarget = parseBaseTargetQuyDoi(summaryLuyKeData, sm);
-                    const ratio = smTargets[idx] ?? 100;
+                    const ratio = smTargets[idx] ?? 130;
                     totalT += baseTarget * (ratio / 100);
                 });
             }

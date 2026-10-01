@@ -479,9 +479,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
             for (const supermarketName of supermarkets) {
                 const found = findTargetHero(supermarketName);
-                const quyDoi = found?.quyDoi ?? 40;
-                const traGop = found?.traGop ?? 45;
-                const totalTargetPercent = found?.total ?? 100;
+                const quyDoi = found?.quyDoi ?? 60;
+                const traGop = found?.traGop ?? 60;
+                const totalTargetPercent = found?.total ?? 130;
 
                 const targetObj = { quyDoi, traGop };
                 allTargets[supermarketName] = targetObj;
@@ -531,11 +531,11 @@ export const useDashboardLogic = (isActive?: boolean) => {
                 } else {
                     const allStoredTargets = Object.values(targetHeroMap).filter(t => t.quyDoi !== undefined || t.traGop !== undefined);
                     if (allStoredTargets.length > 0) {
-                        tongQuyDoi = allStoredTargets[0].quyDoi ?? 40;
-                        tongTraGop = allStoredTargets[0].traGop ?? 45;
+                        tongQuyDoi = allStoredTargets[0].quyDoi ?? 60;
+                        tongTraGop = allStoredTargets[0].traGop ?? 60;
                     } else {
-                        tongQuyDoi = 40;
-                        tongTraGop = 45;
+                        tongQuyDoi = 60;
+                        tongTraGop = 60;
                     }
                 }
             }
@@ -554,7 +554,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
             } else {
                 const baseTongTarget = parseBaseTargetQuyDoi(summaryLuyKe, 'Tổng');
                 const tongTargetToUse = (useAdjustedTarget && baseTongTarget > 0)
-                    ? Math.round(baseTongTarget * (tongExplicit?.total ?? 100) / 100)
+                    ? Math.round(baseTongTarget * (tongExplicit?.total ?? 130) / 100)
                     : baseTongTarget;
                 if (tongTargetToUse > 0) {
                     allMonthlyTargets['Tổng'] = tongTargetToUse;

@@ -126,7 +126,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
 
     // Target động từ tab Cập nhật (Target Trả chậm)
     const safeName = shortenSupermarketName(supermarketName);
-    const [storedTraGopTarget] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 45);
+    const [storedTraGopTarget] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 60);
     const [multiTraGopTarget, setMultiTraGopTarget] = useState<number | null>(null);
 
     useEffect(() => {
@@ -139,7 +139,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
             const results = await Promise.all(activeSupermarkets.map(async (sm) => {
                 const sName = shortenSupermarketName(sm);
                 const tg = await db.get<number>(`targethero-${sName}-tragop`);
-                return tg ?? 45;
+                return tg ?? 60;
             }));
             if (isMounted && results.length > 0) {
                 const avgTg = results.reduce((sum, r) => sum + r, 0) / results.length;
@@ -150,7 +150,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
         return () => { isMounted = false; };
     }, [activeSupermarkets]);
 
-    const effectiveTargetTraCham = targetTraGop ?? multiTraGopTarget ?? storedTraGopTarget ?? 45;
+    const effectiveTargetTraCham = targetTraGop ?? multiTraGopTarget ?? storedTraGopTarget ?? 60;
 
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'totalPercent', direction: 'desc' });
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('installment-view-mode', 'group');

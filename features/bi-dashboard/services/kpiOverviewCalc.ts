@@ -130,8 +130,8 @@ export function resolveRateTarget(
     return (overrides?.[activeSupermarket]) ?? systemTarget ?? fallback;
 }
 
-export const DEFAULT_HQQD_TARGET = 40;
-export const DEFAULT_TRA_CHAM_TARGET = 45;
+export const DEFAULT_HQQD_TARGET = 60;
+export const DEFAULT_TRA_CHAM_TARGET = 60;
 
 /**
  * Tỷ lệ thời gian bán hàng trong ngày (từ 8h00 đến 21h30).

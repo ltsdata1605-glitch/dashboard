@@ -132,9 +132,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         variant="underline"
                     />
 
-                    {/* 2 nút Tự động Realtime & Tự động Luỹ kế nhỏ gọn */}
+                    {/* 2 nút Tự động Realtime & Tự động Luỹ kế nhỏ gọn: chỉ hiển thị trên màn hình < lg (trên laptop đã có floating dock nổi bên phải) */}
                     {onStartAutoSync && (
-                        <div className="flex items-center gap-1.5 shrink-0 ml-auto pb-0.5">
+                        <div className="flex lg:hidden items-center gap-1.5 shrink-0 ml-auto pb-0.5">
                             {/* Nút Tự động Realtime */}
                             <Button
                                 variant="unstyled"

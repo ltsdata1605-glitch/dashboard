@@ -21,6 +21,7 @@ import { useBiAutoSync } from '../hooks/useBiAutoSync';
 interface DashboardProps {
     onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget'; supermarketName?: string; scrollToConfig?: boolean }) => void;
     isActive?: boolean;
+    onStartAutoSync?: (mode: 'realtime' | 'luyke') => void;
 }
 
 /**
@@ -65,7 +66,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
     </FeatureLandingLayout>
 );
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, onStartAutoSync }) => {
     const {
         activeMainTab, setActiveMainTab,
         activeSubTab, setActiveSubTab,
@@ -94,7 +95,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     const industryTableRef = useRef<HTMLDivElement>(null);
     const competitionViewRef = useRef<HTMLDivElement>(null);
     const pageRef = useRef<HTMLDivElement>(null);
-    const { handleStartAutoSync, renderAutoSyncModal } = useBiAutoSync(activeSupermarket);
+    // Nếu BiWrapper đã quản lý useBiAutoSync tập trung, dùng onStartAutoSync từ prop; fallback nếu dùng lẻ loi
+    const fallbackAutoSync = useBiAutoSync(onStartAutoSync ? null : activeSupermarket);
+    const handleStartAutoSync = onStartAutoSync || fallbackAutoSync.handleStartAutoSync;
     const exportOptions = useExportOptions();
     const exportOptionsContextValue = useMemo(
         () => ({ showExportOptions: exportOptions.showExportOptions }),
@@ -371,7 +374,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
                     canShare={exportOptions.canShare}
                     filename={exportOptions.pendingExport?.filename || ''}
                 />
-                {renderAutoSyncModal()}
+                {!onStartAutoSync && fallbackAutoSync.renderAutoSyncModal()}
             </div>
         </ExportOptionsProvider>
     );
