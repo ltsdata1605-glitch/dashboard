@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './phanca.css';
 import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
+import { startExportJob } from '../../components/shared/export';
 import { recalculateStatsForStaff, calculateTotalHours, calculateSpecialHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
 import { parseStaffFromExcelBuffer } from './utils/excelImport';
 import * as idb from './db/idb';
@@ -108,7 +109,6 @@ const App: React.FC = () => {
   const [isExportingImage, setIsExportingImage] = useState(false);
   const [staffListForExport, setStaffListForExport] = useState<StaffMember[] | null>(null);
   const [weeklyExportConfig, setWeeklyExportConfig] = useState<{start: number, end: number} | null>(null);
-  const [batchExportProgress, setBatchExportProgress] = useState<{ current: number, total: number, name: string } | null>(null);
   const [currentHighlightedId, setCurrentHighlightedId] = useState<string | null>(null);
   const [exportTitle, setExportTitle] = useState<string>('');
   const tableRef = useRef<HTMLTableElement>(null);
@@ -292,21 +292,27 @@ const App: React.FC = () => {
         weeks.push({ start: day, end: day + len - 1 });
         day += len;
     }
-    setBatchExportProgress({ current: 0, total: weeks.length, name: "Đang chuẩn bị xuất theo tuần..." });
+    // Bảng tiến trình chung (components/shared/export): thanh %, Huỷ, tổng kết tuần lỗi
+    const job = startExportJob({ title: 'Xuất lịch theo tuần', total: weeks.length });
     try {
         for (let i = 0; i < weeks.length; i++) {
+            if (job.cancelled) break;
             const week = weeks[i];
+            const nhan = `Tuần ${i + 1} (ngày ${week.start}–${week.end})`;
+            job.item(i, nhan);
             setWeeklyExportConfig(week);
             setExportTitle(`Lịch Tuần ${i + 1} - ${currentSupermarket}`);
-            setBatchExportProgress({ current: i + 1, total: weeks.length, name: `Đang xử lý Tuần ${i + 1}` });
             await new Promise(resolve => setTimeout(resolve, 800));
-            await exportToImage(exportContainerRef, `Lịch Tuần ${i + 1} - Tháng ${monthVal}-${yearVal}.png`);
+            try {
+                await exportToImage(exportContainerRef, `Lịch Tuần ${i + 1} - Tháng ${monthVal}-${yearVal}.png`);
+                job.result(nhan, 'ok');
+            } catch (err) {
+                job.result(nhan, 'failed', err instanceof Error ? err.message : undefined);
+            }
             await new Promise(resolve => setTimeout(resolve, 300));
         }
-    } catch (err) {
-        showToast("Lỗi khi xuất ảnh theo tuần.", 'error');
     } finally {
-        setBatchExportProgress(null);
+        job.finish();
         setWeeklyExportConfig(null);
         setStaffListForExport(null);
         setIsExportingImage(false);
@@ -325,24 +331,29 @@ const App: React.FC = () => {
             closeConfirm();
             setIsExportingImage(true);
             setWeeklyExportConfig(null);
-            setBatchExportProgress({ current: 0, total: list.length, name: "Khởi động xuất lịch cá nhân..." });
             const [yearVal, monthVal] = monthYear.split('-').map(Number);
+            const job = startExportJob({ title: 'Xuất lịch cá nhân', total: list.length });
             try {
                 for (let i = 0; i < list.length; i++) {
+                    if (job.cancelled) break;
                     const staff = list[i];
-                    setBatchExportProgress({ current: i + 1, total: list.length, name: `Đang xuất NV: ${staff.name.split(' - ')[1] || staff.name}` });
+                    const nhan = staff.name.split(' - ')[1] || staff.name;
+                    job.item(i, nhan);
                     setStaffListForExport([staff]);
                     setExportTitle(staff.name);
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     const sanitizedStaffName = staff.name.replace(/[\\/:*?"<>|]/g, '').trim();
-                    await exportToImage(exportContainerRef, `Lịch Cá Nhân - ${sanitizedStaffName} - Tháng ${monthVal}-${yearVal}.png`);
+                    try {
+                        await exportToImage(exportContainerRef, `Lịch Cá Nhân - ${sanitizedStaffName} - Tháng ${monthVal}-${yearVal}.png`);
+                        job.result(nhan, 'ok');
+                    } catch (err) {
+                        console.warn("Export error:", err);
+                        job.result(nhan, 'failed', err instanceof Error ? err.message : undefined);
+                    }
                     await new Promise(resolve => setTimeout(resolve, 400));
                 }
-            } catch (err) {
-                console.warn("Export error:", err);
-                showToast("Lỗi khi xuất ảnh cá nhân.", 'error');
             } finally {
-                setBatchExportProgress(null);
+                job.finish();
                 setStaffListForExport(null);
                 setIsExportingImage(false);
                 setExportTitle('');
@@ -574,22 +585,7 @@ const App: React.FC = () => {
   const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
   return (
     <div className="phanca-root phan-ca-layout min-h-screen bg-slate-50 pb-20">
-      {/* EXPORT OVERLAY */}
-      {batchExportProgress && (
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">
-              <div className="bg-white p-10 shadow-xl flex flex-col items-center max-w-md w-full border border-slate-200">
-                <div className="spinner !w-14 !h-14 !border-[5px] mb-6"></div>
-                <p className="text-xl font-extrabold text-slate-800 mb-3">Đang xử lý dữ liệu</p>
-                <div className="w-full bg-slate-100 h-2 mb-3 overflow-hidden">
-                    <div className="bg-sky-600 h-full transition-all duration-500" style={{ width: `${(batchExportProgress.current / batchExportProgress.total) * 100}%` }}></div>
-                </div>
-                <p className="text-slate-400 font-semibold text-sm mb-5">{batchExportProgress.current} / {batchExportProgress.total}</p>
-                <div className="bg-sky-50 text-sky-700 font-bold px-5 py-3 w-full text-center truncate text-sm">
-                    {batchExportProgress.name}
-                </div>
-              </div>
-          </div>
-      )}
+      {/* Bảng chờ / tiến trình xuất ảnh: dùng bảng chung components/shared/export (tự gắn vào trang) */}
       <PhanCaToolbar
           hasStaff={hasStaff}
           onImportClick={handleImportClick}

@@ -6858,3 +6858,13 @@ là tái phát lỗi cũ → bước 0 (ảnh mốc) + giữ test e2e iOS sẵn 
   Kèm theo (commit Mac c594ab1d làm đỏ CI): 3 unit test `getMonthProgress` cập nhật theo quy tắc mới "mùng 1 lấy trọn tháng
   trước"; khung AUTO SYNC đổi màu orange/teal → amber/emerald (lint-ratchet), chữ 9.5–10.5px → 11px (chuẩn cỡ chữ tối
   thiểu); **khung AUTO SYNC tự thu gọn ở màn < 1536px** vì bản mở rộng che nút xuất ảnh/cài đặt góc phải bảng (laptop 1280px).
+- **XA-2 (xong 2026-10-01)** — Phân Ca & In Sticker: 2 bản sao (~1.050 dòng mỗi bản) thực chất là bản gốc ĐỜI CŨ (thiếu vá
+  cột STT/thanh tiến độ/tên NV), bản vá riêng duy nhất `.phanca-root` → bộ chung mang theo mọi class `*-root` của tổ tiên;
+  `uiService.ts` của 2 khu chỉ còn re-export. Phân Ca: lớp phủ tự dựng → `startExportJob` (xuất theo tuần / từng NV có %
+  + Huỷ + tổng kết). Ảnh lịch tháng: trước 2.367px chữ nhỏ, tên NV đè cột → sau 1.839px cột vừa nội dung.
+  **Report BI**: bản sao KHÔNG phải bản cũ mà là bộ quy tắc trình bày RIÊNG có chủ đích (viền thẻ KPI theo màu vạch, thu gọn
+  thẻ ngành hàng `compactKpiCards`, cột tên ≥120/160px, bo góc chỉ bỏ khi `squareBorders`…) → chuyển nguyên vào
+  `components/shared/export/presetBi.ts`, chọn bằng `preset: 'bi'` (features/bi-dashboard/services/uiExport/imageExport.ts
+  đặt sẵn). Phần dùng chung nối vào: bảng tiến trình, co cột, chân ảnh, giao ảnh; bề rộng tối thiểu 720 → 680px. Ảnh "Siêu thị"
+  (chụp như hiển thị) giữ y nguyên + chân ảnh; ảnh Thi đua giữ thiết kế, hẹp hơn chút. Co cột: GIỮ `min-width` do bộ quy tắc
+  đặt (cột thanh tiến độ 105px — gỡ đi thì thanh `w-full` co về 0). 29/29 e2e xuất ảnh xanh.

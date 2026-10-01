@@ -54,7 +54,8 @@ export function fitTablesToContent(root: HTMLElement): number {
         table.querySelectorAll<HTMLElement>('th, td').forEach((cell) => {
             stripWidthClasses(cell);
             cell.style.setProperty('width', 'auto', 'important');
-            cell.style.setProperty('min-width', '0', 'important');
+            // GIỮ min-width mà bộ quy tắc trình bày đã đặt (cột thanh tiến độ 105px, cột tên…): xoá đi thì
+            // thanh tiến độ kiểu `w-full` co về 0 trong bảng min-content. Chỉ gỡ min-width từ class Tailwind.
             cell.style.setProperty('max-width', 'none', 'important');
             // Cột ghim chỉ có nghĩa khi cuộn — trong ảnh thì gỡ, tránh lệch nền/viền
             // (đọc class/inline thay vì getComputedStyle — bảng 48 cột × 100 dòng thì getComputedStyle từng ô rất chậm)

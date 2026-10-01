@@ -1,85 +1,18 @@
-import { isMobileLikeDevice, capPixelRatioForArea } from '../../../utils/dataUtils';
-import { deliverImage } from '../ui/imageDelivery';
-import { getActiveExportJob, startExportJob, type ExportJob } from './exportProgress';
+import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
+import type { ExportMode, ExportImageOptions } from './captureEngine';
+import { fixOklchColors, downloadBlob, shareBlob, EXPORT_MIN_WIDTH } from './captureEngine';
 import { fitTablesToContent, appendExportFooter } from './exportLayout';
-import './ExportProgressHost';
 
 /**
- * BỘ CHỤP ẢNH DUY NHẤT của toàn dự án (kế hoạch "Hợp nhất xuất ảnh", 2026-10-01).
+ * BỘ QUY TẮC TRÌNH BÀY "REPORT BI" của bộ xuất ảnh chung (kế hoạch "Hợp nhất xuất ảnh", 2026-10-01).
  *
- * Gốc: bản đầy đủ nhất trong 4 bản sao (services/uiService.ts — Phân tích), chuyển nguyên logic sang
- * đây. Thêm 3 thứ áp cho MỌI nơi:
- *  - co cột vừa nội dung trước khi chụp (exportLayout.fitTablesToContent) — mặc định bật;
- *  - chân ảnh "Dashboard YCX · xuất HH:mm dd/mm" (chủ dự án chốt bật);
- *  - báo tiến trình qua bảng chung (exportProgress / ExportProgressHost).
- * Bề rộng ảnh tối thiểu 680px (chủ dự án chốt) — đọc vừa trên điện thoại.
+ * Chuyển nguyên từ features/bi-dashboard/services/uiExport/imageExport.ts. KHÔNG gộp ép vào bộ quy tắc
+ * chuẩn (captureEngine.ts) vì đây là thiết kế riêng có chủ đích của chủ dự án cho Report BI (viền thẻ
+ * KPI theo màu vạch, thu gọn thẻ ngành hàng khi `compactKpiCards`, cột tên tối thiểu 120/160px, tiêu đề
+ * bảng xuống dòng tự nhiên, bo góc chỉ bỏ khi `squareBorders`…). Phần DÙNG CHUNG đã nối vào: bảng tiến
+ * trình (qua exportElementAsImage của captureEngine), co cột vừa nội dung, chân ảnh, bề rộng tối thiểu
+ * 680px (trước 720), khâu giao ảnh.
  */
-
-export type ExportMode = 'download' | 'share' | 'blob-only';
-
-export interface ExportImageOptions {
-    /** Bộ chọn phần tử bỏ khỏi ảnh. Mặc định ['.hide-on-export'] */
-    elementsToHide?: string[];
-    forceOpenDetails?: boolean;
-    /** Độ nét (pixelRatio). Mặc định 2 (điện thoại 1.5, tự hạ theo trần canvas iOS) */
-    scale?: number;
-    isCompactTable?: boolean;
-    /** Chụp đúng như đang hiển thị (khoá bề rộng theo khối gốc) — tắt co cột */
-    captureAsDisplayed?: boolean;
-    /** Ép bề rộng cố định (px) — tắt co cột */
-    forcedWidth?: number | null;
-    fitCategoryColumn?: boolean;
-    fitAllColumns?: boolean;
-    fitWidthToTable?: boolean;
-    /** Co mọi cột bảng vừa nội dung trước khi chụp. Mặc định BẬT (trừ captureAsDisplayed / forcedWidth) */
-    fitColumns?: boolean;
-    /** Chân ảnh. Mặc định bật; false để tắt, chuỗi để thay nội dung */
-    footer?: boolean | string;
-    mode?: ExportMode;
-    /** Sửa bản sao trước khi chụp */
-    onCloneReady?: ((clone: HTMLElement) => void) | null;
-    /** Gọi NGAY TRƯỚC khi chụp, bản sao đã đúng bố cục cuối (dùng cho test / chẩn đoán) */
-    onBeforeCapture?: ((clone: HTMLElement, size: { width: number; height: number }) => void) | null;
-    /** Tiêu đề hiện trên bảng tiến trình khi xuất lẻ (mặc định suy từ tên file) */
-    progressTitle?: string;
-    /** Không tự hiện bảng tiến trình (nơi gọi tự quản lý) */
-    silent?: boolean;
-    /** Bộ quy tắc trình bày: 'standard' (Phân tích, Phân Ca, In Sticker, Thuế…) hoặc 'bi' (Report BI — presetBi.ts) */
-    preset?: 'standard' | 'bi';
-    /** [bi] Bỏ bo góc mọi khung */
-    squareBorders?: boolean;
-    /** [bi] Thu gọn lưới thẻ KPI */
-    compactKpiCards?: boolean;
-    /** Cờ cũ của luồng hàng loạt — giữ để tương thích, không còn ý nghĩa */
-    isBatchExporting?: boolean;
-}
-
-export const EXPORT_MIN_WIDTH = 680;
-
-/** Tải file / chia sẻ (điện thoại) — dùng khâu giao chung imageDelivery. */
-export function downloadBlob(blob: Blob, filename: string, forceDownload = false) {
-    void deliverImage(blob, filename, { share: forceDownload ? false : undefined });
-}
-
-/** Trình duyệt chia sẻ được tệp ảnh không (Web Share API Level 2). */
-export function canShareFiles(): boolean {
-    if (!navigator.share || !navigator.canShare) return false;
-    try {
-        const testFile = new File(['test'], 'test.png', { type: 'image/png' });
-        return navigator.canShare({ files: [testFile] });
-    } catch {
-        return false;
-    }
-}
-
-/** Chia sẻ ảnh (LINE, Zalo, Lưu ảnh…). true = đã mở bảng chia sẻ và người dùng chọn đích. */
-export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
-    return (await deliverImage(blob, filename, { share: true })) === 'shared';
-}
-
-/** "bao-cao-kho_Hung-Vuong.png" → "bao cao kho Hung Vuong" — tiêu đề bảng tiến trình khi nơi gọi không đặt. */
-const tieuDeTuTenFile = (filename: string) =>
-    filename.replace(/\.png$/i, '').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim() || 'ảnh';
 
 const waitForImages = (element: HTMLElement): Promise<void[]> => {
     const images = Array.from(element.querySelectorAll('img'));
@@ -102,31 +35,10 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
     return Promise.all(promises);
 };
 
-export async function exportElementAsImage(element: HTMLElement, filename: string, options: ExportImageOptions = {}): Promise<Blob | null> {
-    // Bảng tiến trình: lượt lẻ tự mở bảng; nằm trong lượt hàng loạt (đã có bảng) thì chỉ đổi dòng trạng thái
-    const outer = getActiveExportJob();
-    const own: ExportJob | null = options.silent || outer ? null : startExportJob({ title: options.progressTitle || `Xuất ảnh ${tieuDeTuTenFile(filename)}` });
-    const stage = (t: string) => { if (own) own.stage(t); };
-    let ok = false;
-    try {
-        const core = options.preset === 'bi' ? (await import('./presetBi')).exportBiCore : exportElementAsImageCore;
-        const blob = await core(element, filename, options, stage);
-        ok = !!blob;
-        return blob;
-    } finally {
-        if (own) {
-            own.result(tieuDeTuTenFile(filename), ok ? 'ok' : 'failed', ok ? undefined : 'Không dựng được ảnh');
-            own.finish();
-        }
-    }
-}
-
-async function exportElementAsImageCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
+export async function exportBiCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
     const isMobileDevice = isMobileLikeDevice();
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, fitWidthToTable = false, mode = 'download' as ExportMode, onCloneReady = null, footer = true } = options;
-    // Co cột vừa nội dung: mặc định BẬT, trừ khi nơi gọi khoá bề rộng (chụp như đang hiển thị / ép bề rộng)
-    const doFit = options.fitColumns ?? (!captureAsDisplayed && !forcedWidth);
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
 
@@ -156,7 +68,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         if (cls.includes('lg:hidden') && !cls.includes('export-always-show')) {
             el.remove();
         }
-        // Show desktop-only chart containers (they have hidden lg:block)  
+        // Show desktop-only chart containers (they have hidden lg:block)
         if (cls.includes('hidden') && cls.includes('lg:block')) {
             el.style.setProperty('display', 'block', 'important');
         }
@@ -170,13 +82,13 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     clone.querySelectorAll<HTMLElement>('.hidden').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
         const cls = el.getAttribute('class') || '';
-        
+
         // Check if there are any responsive display classes that override 'hidden' on larger viewports
         const hasResponsiveOverride = /\b(sm|md|lg|xl|2xl):(block|flex|grid|inline|inline-block|table|table-row|table-cell)\b/.test(cls);
-        
+
         // If it has no responsive override and is not forced display, it's truly hidden and safe to remove
         const isForcedDisplay = el.style.display === 'block' || el.style.display === 'flex' || el.style.display === 'grid' || el.style.display === 'inline-block';
-        
+
         if (!isForcedDisplay && !hasResponsiveOverride) {
             el.remove();
         }
@@ -194,26 +106,43 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
     clone.querySelectorAll<HTMLElement>('td, span, button, div, th').forEach((el) => {
         if (!(el instanceof HTMLElement)) return;
+
+        // Skip table headers and elements inside thead to allow them to wrap naturally
+        if (el.closest('thead') || el.tagName.toUpperCase() === 'TH') {
+            return;
+        }
+
         const text = el.textContent?.trim() || '';
         const isInTable = !!el.closest('table, .compact-export-table');
 
         if (isInTable) {
             if (el.classList.contains('truncate')) {
                 el.classList.remove('truncate');
-                el.style.setProperty('white-space', 'normal', 'important');
-                el.style.setProperty('word-break', 'break-word', 'important');
+                if (!isEmployeeNamePattern(text)) {
+                    el.style.setProperty('white-space', 'normal', 'important');
+                    el.style.setProperty('word-break', 'break-word', 'important');
+                } else {
+                    el.style.setProperty('white-space', 'nowrap', 'important');
+                }
                 el.style.setProperty('overflow', 'visible', 'important');
+            }
+            if (isEmployeeNamePattern(text)) {
+                el.style.setProperty('white-space', 'nowrap', 'important');
+                el.style.setProperty('word-break', 'normal', 'important');
             }
             return;
         }
-        
-        // Target elements with truncate class or matching employee name pattern.
-        // Chỉ xét pattern tên nhân viên trên phần tử LÁ (không có element con): textContent của
-        // một div bọc gộp cả text các con, nên div cha/ông chứa 1 nhãn "12345 - Tên NV" ở đâu đó
-        // cũng khớp pattern và bị ép `white-space: nowrap` + `min-width: max-content`, khiến toàn
-        // bộ khối nội dung nở ngang vượt bề rộng chụp và bị cắt mất phần bên phải.
-        const matchesEmployeeName = isEmployeeNamePattern(text) && el.children.length === 0;
-        if (el.classList.contains('truncate') || matchesEmployeeName) {
+
+        // Target elements with truncate class or matching employee name pattern (chỉ áp dụng khi không phải captureAsDisplayed)
+        if (!captureAsDisplayed && (el.classList.contains('truncate') || isEmployeeNamePattern(text))) {
+            // KHÔNG can thiệp vào các thẻ KPI (industry-kpi-card, kpi-overview-card) để tránh làm bung vỡ lưới thẻ
+            if (el.closest('.industry-kpi-card, .kpi-overview-card, .kpi-card, .premium-card-shadow')) {
+                el.style.setProperty('overflow', 'hidden', 'important');
+                el.style.setProperty('text-overflow', 'ellipsis', 'important');
+                el.style.setProperty('white-space', 'nowrap', 'important');
+                return;
+            }
+
             el.classList.remove('truncate');
             el.style.setProperty('white-space', 'nowrap', 'important');
             el.style.setProperty('overflow', 'visible', 'important');
@@ -222,23 +151,27 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             el.style.setProperty('max-width', 'none', 'important');
             el.style.setProperty('min-width', 'max-content', 'important');
 
-            // Walk up parents to ensure width container doesn't force wrapping/clipping
-            let parent = el.parentElement;
-            while (parent && parent !== clone) {
-                if (parent instanceof HTMLElement) {
-                    const tagName = parent.tagName.toUpperCase();
-                    if (tagName === 'TABLE' || tagName === 'TBODY' || tagName === 'THEAD' || tagName === 'TR') {
-                        break;
+            // CHỈ walk up parents NẾU ĐANG NẰM TRONG TABLE VÀ KHÔNG ĐƯỢC VƯỢT RA NGOÀI TABLE
+            if (el.closest('table')) {
+                let parent = el.parentElement;
+                while (parent && parent !== clone) {
+                    if (parent instanceof HTMLElement) {
+                        const tagName = parent.tagName.toUpperCase();
+                        if (tagName === 'TABLE' || tagName === 'TBODY' || tagName === 'THEAD' || tagName === 'TR') {
+                            break;
+                        }
+                        if (parent.classList.contains('min-w-0') || parent.classList.contains('w-full') || parent.style.width === '100%') {
+                            parent.style.setProperty('min-width', 'max-content', 'important');
+                            parent.style.setProperty('width', 'auto', 'important');
+                        }
                     }
-                    if (parent.classList.contains('min-w-0') || parent.classList.contains('w-full') || parent.style.width === '100%') {
-                        parent.style.setProperty('min-width', 'max-content', 'important');
-                        parent.style.setProperty('width', 'auto', 'important');
-                    }
+                    parent = parent.parentElement;
                 }
-                parent = parent.parentElement;
             }
         }
     });
+
+
 
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
     // These are kept because they explicitly change how the data looks in the export format.
@@ -343,7 +276,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
                 row.style.setProperty('gap', '1rem', 'important');
             }
         });
-        
+
         // Also fix the header row above the content (both side headers)
         const industryHeaderRows = clone.querySelectorAll('.mb-3.flex.flex-row.items-center.gap-5');
         industryHeaderRows.forEach(row => {
@@ -353,7 +286,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
                 row.style.setProperty('align-items', 'flex-start', 'important');
             }
         });
-        
+
         // Make w-1/2 children full-width (use class list check since / in selectors can be tricky)
         clone.querySelectorAll('div').forEach(el => {
             if (el instanceof HTMLElement && el.classList.contains('w-1/2')) {
@@ -386,7 +319,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         });
     }
 
-    // 2b. Industry Grid Cards: Force desktop layout (4 cols, desktop gap) for all exports 
+    // 2b. Industry Grid Cards: Force desktop layout (4 cols, desktop gap) for all exports
     const industryCardGrids = clone.querySelectorAll('.industry-cards-grid');
     industryCardGrids.forEach(grid => {
         if (grid instanceof HTMLElement) {
@@ -429,20 +362,18 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         });
 
         const mainHeaderCell = clone.querySelector('thead tr:first-child th:first-child');
-        
+
         if (mainHeaderCell && mainHeaderCell instanceof HTMLElement) {
             mainHeaderCell.style.setProperty('position', 'relative', 'important');
             mainHeaderCell.style.setProperty('z-index', '9999', 'important');
 
             const isDark = document.documentElement.classList.contains('dark');
-            let bgColor = isDark ? '#1f2937' : '#f8fafc';
-            
-            if (lowerFilename.includes('chi-tiet-nganh-hang')) {
-                bgColor = isDark ? '#1f2937' : '#eef2ff';
-            } else if (lowerFilename.includes('bao-cao-kho')) {
-                bgColor = isDark ? '#881337' : '#fecdd3';
-            }
-            
+            // Chuẩn "Bảng điều khiển ca trực" (2026-09-11): MỘT tông xám cho mọi tiêu đề, kể cả
+            // khi xuất ảnh. Trước đây chỗ này ép ngược lại màu cũ theo tên file — indigo #eef2ff
+            // cho Ngành hàng, hồng #fecdd3 cho Báo cáo kho — nên màn hình đã chuẩn mà ảnh xuất ra
+            // thì chưa. Dùng đúng slate-100 (#f1f5f9) như GROUP_TONE_BG trên màn hình.
+            const bgColor = isDark ? '#1f2937' : '#f1f5f9';
+
             mainHeaderCell.style.setProperty('background-color', bgColor, 'important');
             mainHeaderCell.style.setProperty('background-image', 'none', 'important');
         }
@@ -455,6 +386,26 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         }
     }
 
+    // 4b. Cột Ngành Hàng: Fix nhỏ lại vừa với nội dung (chống khoảng trắng thừa) cho cả captureAsDisplayed và các chế độ xuất
+    clone.querySelectorAll('table').forEach(table => {
+        const firstTh = table.querySelector('thead tr th');
+        const isIndustryTable = firstTh && firstTh.textContent?.toUpperCase().includes('NGÀNH HÀNG');
+        if (isIndustryTable && firstTh instanceof HTMLElement) {
+            firstTh.style.setProperty('max-width', '220px', 'important');
+            firstTh.style.setProperty('width', 'auto', 'important');
+            firstTh.style.setProperty('white-space', 'nowrap', 'important');
+
+            table.querySelectorAll('tbody tr').forEach(tr => {
+                const firstTd = tr.querySelector('td');
+                if (firstTd instanceof HTMLElement && !(firstTd.colSpan > 1)) {
+                    firstTd.style.setProperty('max-width', '220px', 'important');
+                    firstTd.style.setProperty('width', 'auto', 'important');
+                    firstTd.style.setProperty('white-space', 'nowrap', 'important');
+                }
+            });
+        }
+    });
+
     // 5. Compact Warehouse Summary for Export
     if (lowerFilename.includes('bao-cao-kho')) {
         const headerContainer = clone.querySelector('.px-8.py-6');
@@ -462,7 +413,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             headerContainer.style.setProperty('padding-top', '15px', 'important');
             headerContainer.style.setProperty('padding-bottom', '10px', 'important');
         }
-        
+
         const tableContainer = clone.querySelector('.overflow-x-auto.p-4');
         if (tableContainer instanceof HTMLElement) {
             tableContainer.style.setProperty('padding-top', '0', 'important');
@@ -479,92 +430,198 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             (detail as HTMLDetailsElement).open = true;
         });
     }
-    
-    // Bỏ bo góc cho toàn bộ khung viền theo yêu cầu: "VIỀN KHÔNG CẦN BO GỐC"
-    clone.style.setProperty('border-radius', '0px', 'important');
-    clone.querySelectorAll<HTMLElement>('*').forEach(el => {
-        const cls = el.getAttribute('class') || '';
-        // Giữ lại pill tròn cho badge/icon nếu có class rounded-full, còn lại tất cả khung viền/card/container đều ép vuông vức 0px
-        if (!cls.includes('rounded-full')) {
-            el.style.setProperty('border-radius', '0px', 'important');
-        }
-    });
 
-    // 7. COMPACT EXPORT TABLE WIDTH CONSTRAINTS & WORD WRAP
-    clone.querySelectorAll('.compact-export-table, table').forEach(table => {
-        if (!(table instanceof HTMLElement)) return;
-        table.style.setProperty('table-layout', 'auto', 'important');
-        table.style.setProperty('width', '100%', 'important');
-        table.style.setProperty('min-width', 'auto', 'important');
-
-        // Tìm index của cột "NHÓM THI ĐUA" và các cột thanh tiến độ ProgressBar (%HT, %DKHT)
-        let nhomThiDuaColIdx = -1;
-        const progressBarColIndices = new Set<number>();
-        const ths = table.querySelectorAll('thead th');
-        // Cột đầu chỉ là cột STT khi tiêu đề của nó rỗng / "#" / "STT". Trước đây mọi cột đầu
-        // (idx === 0) đều bị ép 36px như STT — bảng "Chi tiết theo kho" (dọc) có cột đầu là NHÃN
-        // "NHÓM / CHỈ SỐ" (LỌC/H.BỤI, M/ICALL…) nên chữ tràn đè lên cột M.TIÊU khi xuất ảnh
-        // (chủ dự án báo 2026-09-22). Cột đầu mang nhãn chữ → xử lý như cột "NHÓM THI ĐUA":
-        // không xuống dòng, rộng theo nội dung.
-        const isSttHeaderText = (t: string) => t === '' || t === '#' || t === 'STT' || t === 'TT';
-        const firstThText = ths[0]?.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
-        const firstColIsStt = isSttHeaderText(firstThText);
-        if (!firstColIsStt && ths[0] && (ths[0] as HTMLTableCellElement).colSpan <= 1) nhomThiDuaColIdx = 0;
-        ths.forEach((th, idx) => {
-            const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
-            if (text.includes('NHÓM THI ĐUA') || text === 'NHÓM') {
-                nhomThiDuaColIdx = idx;
+    // Bỏ bo góc cho toàn bộ khung viền CHỈ KHI có tuỳ chọn squareBorders hoặc lowerFilename bao-cao-kho
+    if (!captureAsDisplayed && (options.squareBorders || lowerFilename.includes('bao-cao-kho'))) {
+        clone.style.setProperty('border-radius', '0px', 'important');
+        clone.querySelectorAll<HTMLElement>('*').forEach(el => {
+            const cls = el.getAttribute('class') || '';
+            // Giữ lại pill tròn cho badge/icon nếu có class rounded-full, còn lại tất cả khung viền/card/container đều ép vuông vức 0px
+            if (!cls.includes('rounded-full')) {
+                el.style.setProperty('border-radius', '0px', 'important');
             }
+        });
+    }
+
+    // 7. COMPACT EXPORT TABLE WIDTH CONSTRAINTS & WORD WRAP (Chỉ áp dụng khi có isCompactTable và không phải captureAsDisplayed)
+    const shouldCompactTable = captureAsDisplayed ? false : isCompactTable;
+    if (shouldCompactTable) {
+        clone.querySelectorAll('.compact-export-table, table').forEach(table => {
+            if (!(table instanceof HTMLElement)) return;
+            table.style.setProperty('table-layout', 'auto', 'important');
+            table.style.setProperty('width', '100%', 'important');
+            table.style.setProperty('min-width', '100%', 'important');
+
+            // Đảm bảo container/wrapper của bảng luôn chiếm đủ 100% khung card
+            const tableWrapper = table.closest('.overflow-x-auto, .custom-scrollbar');
+            if (tableWrapper instanceof HTMLElement) {
+                tableWrapper.style.setProperty('width', '100%', 'important');
+                tableWrapper.style.setProperty('min-width', '100%', 'important');
+                tableWrapper.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+
+        // Xây dựng ma trận thead để ánh xạ chính xác vị trí cột thị giác (visual column index)
+        const grid: HTMLTableCellElement[][] = [];
+        const theadRows = table.querySelectorAll('thead tr');
+        theadRows.forEach((row, rowIndex) => {
+            let colIndex = 0;
+            row.querySelectorAll<HTMLTableCellElement>('th').forEach(th => {
+                while (grid[rowIndex] && grid[rowIndex][colIndex]) {
+                    colIndex++;
+                }
+                const rowSpan = th.rowSpan || 1;
+                const colSpan = th.colSpan || 1;
+                for (let r = 0; r < rowSpan; r++) {
+                    if (!grid[rowIndex + r]) grid[rowIndex + r] = [];
+                    for (let c = 0; c < colSpan; c++) {
+                        grid[rowIndex + r][colIndex + c] = th;
+                    }
+                }
+                colIndex += colSpan;
+            });
+        });
+
+        const bottomRow = grid.length > 0 ? grid[grid.length - 1] : [];
+        const sttColIndices = new Set<number>();
+        const nameColIndices = new Set<number>();
+        const progressBarColIndices = new Set<number>();
+        const progressBarThSet = new Set<HTMLTableCellElement>();
+        const snugNumericColIndices = new Set<number>();
+
+        // Kiểm tra xem cột có chứa thanh tiến độ ProgressBar thực tế (w-10, h-1.5, progress) hay chỉ là text số phần trăm
+        const colHasProgressBar = (cIdx: number): boolean => {
+            const rows = table.querySelectorAll('tbody tr');
+            for (let r = 0; r < Math.min(rows.length, 15); r++) {
+                const cells = rows[r].querySelectorAll('td');
+                if (cells[cIdx]) {
+                    const cell = cells[cIdx];
+                    if (cell.querySelector('[role="progressbar"], .w-10, [class*="progress"], div.rounded-full.overflow-hidden, div.h-1, div.h-1\\.5, div.h-2')) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        bottomRow.forEach((th, colIdx) => {
+            if (!th) return;
+            const text = th.textContent?.trim().replace(/\s+/g, ' ').toUpperCase().normalize('NFC') || '';
+            // Cột STT CHỈ được nhận diện khi tiêu đề rõ ràng là # hoặc STT (không tự gán bừa col 0)
+            if (text === '#' || text === 'STT' || text === 'SỐ TT' || text === 'NO.') {
+                sttColIndices.add(colIdx);
+            } else if (
+                text.includes('NHÂN VIÊN') || text.includes('NHÓM THI ĐUA') || text.includes('HỌ VÀ TÊN') ||
+                text === 'NHÓM' || text === 'TÊN' || text.includes('SIÊU THỊ') || text.includes('DANH MỤC')
+            ) {
+                nameColIndices.add(colIdx);
+            }
+
             if (text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK')) {
-                progressBarColIndices.add(idx);
+                // CHỈ coi là cột ProgressBar nếu bên dưới có thanh tiến độ thật. Nếu chỉ là text % như bảng Tổng hợp thì co vừa khít số
+                if (colHasProgressBar(colIdx)) {
+                    progressBarColIndices.add(colIdx);
+                    progressBarThSet.add(th);
+                } else {
+                    snugNumericColIndices.add(colIdx);
+                }
+            }
+
+            if (
+                text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
+                text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') || text === 'THỰC' ||
+                text.includes('TAR') || text.includes('M.TIÊU') ||
+                text.includes('DTQĐ') || text.includes('D.KIẾN') ||
+                text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
+                text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
+                text.includes('HQQĐ') || text.includes('%QĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('%TC') || text.includes('THƯỞNG') ||
+                text === 'DT' || text === '%' || text === '%TT' || text === 'TB 3T'
+            ) {
+                snugNumericColIndices.add(colIdx);
             }
         });
 
+        // Nếu bảng không có cột STT và chưa nhận diện được cột Tên, mặc định cột 0 là cột Tên/Nội dung chính
+        if (nameColIndices.size === 0 && !sttColIndices.has(0) && bottomRow.length > 0) {
+            nameColIndices.add(0);
+        }
+
         // Xử lý các thẻ th của bảng
-        table.querySelectorAll('thead th').forEach((th, idx) => {
-            if (!(th instanceof HTMLElement)) return;
+        table.querySelectorAll<HTMLTableCellElement>('thead th').forEach((th) => {
             const text = th.textContent?.trim() || '';
-            const isSttCol = (idx === 0 && firstColIsStt) || text === '#' || text === 'STT';
-            const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
-            const isProgressBarCol = progressBarColIndices.has(idx);
+            const isMultiColGroup = (th.colSpan || 1) > 1;
+            const isSttHeader = !isMultiColGroup && (text === '#' || text.toUpperCase() === 'STT' || text.toUpperCase() === 'SỐ TT');
+            const isNameHeader = !isMultiColGroup && (
+                text.toUpperCase().includes('NHÂN VIÊN') ||
+                text.toUpperCase().includes('NHÓM THI ĐUA') ||
+                text.toUpperCase().includes('HỌ VÀ TÊN') ||
+                text.toUpperCase() === 'NHÓM' ||
+                text.toUpperCase() === 'TÊN' ||
+                text.toUpperCase().includes('SIÊU THỊ') ||
+                text.toUpperCase().includes('DANH MỤC')
+            );
+            const isProgressBarHeader = !isMultiColGroup && progressBarThSet.has(th);
+            const isSnugNumericHeader = !isMultiColGroup && (
+                !isProgressBarHeader && (
+                    text.includes('%HT') || text.includes('%DKHT') || text.includes('%HTDK') ||
+                    text.includes('LUỸ KẾ') || text.includes('LUY KE') || text.includes('L.KẾ') ||
+                    text.includes('THỰC HIỆN') || text.includes('REALTIME') || text.includes('T.HIỆN') || text === 'THỰC' ||
+                    text.includes('TAR') || text.includes('M.TIÊU') ||
+                    text.includes('DTQĐ') || text.includes('D.KIẾN') ||
+                    text.includes('C.LẠI') || text.includes('CÒN LẠI') || text.includes('CON LAI') ||
+                    text.includes('S.LƯỢNG') || text.includes('SỐ LƯỢNG') ||
+                    text.includes('HQQĐ') || text.includes('%QĐ') || text.includes('%T.CHẬM') || text.includes('%T.GÓP') || text.includes('%TC') || text.includes('THƯỞNG') ||
+                    text === 'DT' || text === '%' || text === '%TT' || text === 'TB 3T'
+                )
+            );
 
             // Ép cỡ chữ (11px) và line-height vừa đủ, cân đối với nội dung
             th.style.setProperty('font-size', '11px', 'important');
             th.style.setProperty('line-height', '1.25', 'important');
-            th.style.setProperty('padding', '3px 5px', 'important');
+            th.style.setProperty('padding', '3px 6px', 'important');
 
-            if (isSttCol) {
-                th.style.setProperty('min-width', '36px', 'important');
-                th.style.setProperty('width', '36px', 'important');
-                th.style.setProperty('max-width', '42px', 'important');
+            if (isMultiColGroup) {
+                // Nhóm header gộp cột (colSpan > 1, ví dụ: Doanh thu, Hiệu suất)
+                th.style.setProperty('width', 'auto', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
+            } else if (isSttHeader) {
+                th.style.setProperty('min-width', '32px', 'important');
+                th.style.setProperty('width', '32px', 'important');
+                th.style.setProperty('max-width', '40px', 'important');
                 th.style.setProperty('text-align', 'center', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
-            } else if (isNhomThiDuaCol) {
-                th.style.setProperty('min-width', '140px', 'important');
+            } else if (isNameHeader) {
+                // Cột Tên nhân viên / Nhóm thi đua / Siêu thị / Ngành hàng: vừa khít nội dung, không bè ngang
+                const isShortEntity = text.toUpperCase().includes('SIÊU THỊ') || text.toUpperCase().includes('NGÀNH') || text.toUpperCase().includes('DANH MỤC');
+                const minW = isShortEntity ? '120px' : '160px';
+                th.style.setProperty('width', 'auto', 'important');
+                th.style.setProperty('min-width', minW, 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
-                
-                // Bọc thẻ span con để tránh bug html2canvas/html-to-image ngắt dòng text thô
+
                 if (!th.querySelector('.export-nowrap-wrapper')) {
                     const content = th.innerHTML;
                     th.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
                 }
-            } else if (isProgressBarCol) {
-                // Cột có thanh tiến độ ProgressBar (%HT, %DKHT, ...) cần tối thiểu 105px đồng bộ với td để không bị lệch cột
+            } else if (isProgressBarHeader) {
                 th.style.setProperty('min-width', '105px', 'important');
                 th.style.setProperty('width', '105px', 'important');
                 th.style.setProperty('white-space', 'nowrap', 'important');
                 th.style.setProperty('max-width', 'none', 'important');
+            } else if (isSnugNumericHeader) {
+                th.style.setProperty('width', 'auto', 'important');
+                th.style.setProperty('min-width', '0px', 'important');
+                th.style.setProperty('max-width', 'none', 'important');
+                th.style.setProperty('white-space', 'nowrap', 'important');
             } else {
                 th.style.setProperty('white-space', 'normal', 'important');
                 th.style.setProperty('word-break', 'break-word', 'important');
-                th.style.setProperty('min-width', '55px', 'important');
+                th.style.setProperty('min-width', '40px', 'important');
             }
-            
+
             th.querySelectorAll('span').forEach(span => {
                 span.classList.remove('truncate');
                 span.style.setProperty('line-height', '1.25', 'important');
-                if (!isSttCol && !isNhomThiDuaCol && !isProgressBarCol) {
+                if (!isSttHeader && !isNameHeader && !isProgressBarHeader && !isSnugNumericHeader && !isMultiColGroup) {
                     span.style.setProperty('white-space', 'normal', 'important');
                     span.style.setProperty('word-break', 'break-word', 'important');
                 } else {
@@ -581,9 +638,10 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
             tr.querySelectorAll('td').forEach((td, idx) => {
                 if (!(td instanceof HTMLElement)) return;
-                const isSttCol = idx === 0 && firstColIsStt;
-                const isNhomThiDuaCol = idx === nhomThiDuaColIdx;
+                const isSttCol = sttColIndices.has(idx);
+                const isNameCol = nameColIndices.has(idx) || td.querySelector('[class*="avatar"], img') !== null;
                 const isProgressBarCol = progressBarColIndices.has(idx) || !!td.querySelector('.w-10') || !!td.querySelector('[class*="progress"]');
+                const isSnugNumericCol = snugNumericColIndices.has(idx);
 
                 // Ép cỡ chữ chuẩn 13px và padding 3px 5px giúp hàng gọn gàng, siêu sắc nét chuẩn như bảng Trả Góp
                 td.style.setProperty('font-size', '13px', 'important');
@@ -610,45 +668,61 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
                         }
                     }
 
-                    if (child.tagName === 'DIV' || child.tagName === 'P' || child.tagName === 'BUTTON') {
+                    if (child.tagName === 'DIV' || child.tagName === 'P') {
+                        child.style.setProperty('padding-top', '0px', 'important');
+                        child.style.setProperty('padding-bottom', '0px', 'important');
                         child.style.setProperty('margin-top', '0px', 'important');
                         child.style.setProperty('margin-bottom', '0px', 'important');
-                    }
-                    if (child.tagName === 'BUTTON') {
-                        child.style.setProperty('min-height', '0px', 'important');
-                        child.style.setProperty('height', 'auto', 'important');
-                        child.style.setProperty('vertical-align', 'baseline', 'important');
-                        child.style.setProperty('border', '0', 'important');
-                        child.style.setProperty('background', 'transparent', 'important');
                     }
                 });
 
                 if (isSttCol) {
-                    td.style.setProperty('min-width', '36px', 'important');
-                    td.style.setProperty('width', '36px', 'important');
-                    td.style.setProperty('max-width', '42px', 'important');
+                    td.style.setProperty('min-width', '32px', 'important');
+                    td.style.setProperty('width', '32px', 'important');
+                    td.style.setProperty('max-width', '40px', 'important');
                     td.style.setProperty('text-align', 'center', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
-                } else if (isNhomThiDuaCol) {
+                } else if (isNameCol) {
+                    // Cột Tên / Siêu thị / Ngành hàng: vừa khít nội dung, không ngắt dòng
+                    const colText = td.textContent?.trim() || '';
+                    const isShortEntity = isSttCol === false && (!colText.includes(' - ') || colText.length < 25);
+                    const minW = isShortEntity ? '120px' : '160px';
                     td.style.setProperty('white-space', 'nowrap', 'important');
-                    td.style.setProperty('min-width', '140px', 'important');
+                    td.style.setProperty('width', 'auto', 'important');
+                    td.style.setProperty('min-width', minW, 'important');
                     td.style.setProperty('max-width', 'none', 'important');
-                    
+
+                    // Các thẻ con bên trong cột tên (avatar, name span, wrapper)
+                    td.querySelectorAll<HTMLElement>('div, span, button, a').forEach(c => {
+                        c.style.setProperty('white-space', 'nowrap', 'important');
+                        c.style.setProperty('overflow', 'visible', 'important');
+                    });
+
                     // Bọc thẻ span con chống ngắt dòng
                     if (!td.querySelector('.export-nowrap-wrapper')) {
                         const content = td.innerHTML;
-                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-flex !important; align-items: center !important; width: max-content !important; min-width: ${minW} !important; line-height: 1.25 !important;">${content}</span>`;
                     }
                 } else if (isProgressBarCol) {
-                    // Cột có thanh tiến độ ProgressBar (%HT, %DKHT...): kích thước đồng bộ 105px với th, KHÔNG set max-width 80px và KHÔNG bọc wrap span inline-block
+                    // Cột có thanh tiến độ ProgressBar (%HT, %DKHT...): kích thước đồng bộ 105px với th
                     td.style.setProperty('min-width', '105px', 'important');
                     td.style.setProperty('width', '105px', 'important');
                     td.style.setProperty('max-width', 'none', 'important');
                     td.style.setProperty('white-space', 'nowrap', 'important');
+                } else if (isSnugNumericCol) {
+                    // Cột số liệu: fix vừa khít với nội dung số
+                    td.style.setProperty('white-space', 'nowrap', 'important');
+                    td.style.setProperty('width', 'auto', 'important');
+                    td.style.setProperty('min-width', '0px', 'important');
+                    td.style.setProperty('max-width', 'none', 'important');
+                    if (!td.querySelector('.export-nowrap-wrapper')) {
+                        const content = td.innerHTML;
+                        td.innerHTML = `<span class="export-nowrap-wrapper" style="white-space: nowrap !important; display: inline-block !important; width: max-content !important; line-height: 1.25 !important;">${content}</span>`;
+                    }
                 } else {
                     if (!td.classList.contains('sticky')) {
-                        td.style.setProperty('min-width', '45px', 'important');
-                        td.style.setProperty('max-width', '80px', 'important');
+                        td.style.setProperty('min-width', '35px', 'important');
+                        td.style.setProperty('max-width', 'none', 'important');
 
                         // Tự động nhận diện các ô số, phần trăm để chống ngắt dòng
                         const text = td.textContent?.trim() || '';
@@ -668,6 +742,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             });
         });
     });
+    }
 
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
     const scrollableContainers = clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
@@ -710,14 +785,13 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
     // 6. FIX CHART SVG RENDERING (convert Recharts SVGs to inline images for reliable export)
     // html-to-image has trouble with nested SVGs in foreignObject. Convert them to <img> tags.
-    const liveSvgs = element.querySelectorAll('svg');
     const cloneSvgs = clone.querySelectorAll('svg');
-    cloneSvgs.forEach((svg: SVGSVGElement, idx: number) => {
+    cloneSvgs.forEach((svg: SVGSVGElement) => {
         // Handle Google Charts SVGs
         if (svg.hasAttribute('aria-label') && svg.getAttribute('aria-label') === 'A chart.') {
             const currentWidthStr = svg.getAttribute('width');
             const currentHeightStr = svg.getAttribute('height');
-            
+
             if (currentWidthStr && currentWidthStr !== '100%') {
                 const w = parseFloat(currentWidthStr);
                 const h = parseFloat(currentHeightStr || '0');
@@ -737,7 +811,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     cloneRechartsSvgs.forEach((cloneSvg: Element, idx: number) => {
         const liveSvg = idx < liveRechartsSvgs.length ? liveRechartsSvgs[idx] : null;
         const sourceSvg = liveSvg || cloneSvg;
-        
+
         let w = parseFloat(sourceSvg.getAttribute('width') || '0');
         let h = parseFloat(sourceSvg.getAttribute('height') || '0');
         if (w <= 0 || h <= 0) return;
@@ -749,7 +823,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             if (!svgClone.hasAttribute('viewBox')) {
                 svgClone.setAttribute('viewBox', `0 0 ${w} ${h}`);
             }
-            // Inline computed styles for text elements (fonts, fills) 
+            // Inline computed styles for text elements (fonts, fills)
             const liveTexts = sourceSvg.querySelectorAll('text, tspan');
             svgClone.querySelectorAll('text, tspan').forEach((el: Element, idx: number) => {
                 const textEl = el as SVGElement;
@@ -758,7 +832,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
                     const computed = window.getComputedStyle(liveText);
                     if (computed.fontFamily) textEl.style.fontFamily = computed.fontFamily;
                     if (computed.fontSize) textEl.style.fontSize = computed.fontSize;
-                    
+
                     // Only apply fill if it's explicitly set in CSS, otherwise rely on the SVG 'fill' attribute
                     const fill = computed.getPropertyValue('fill');
                     if (fill && fill !== 'none' && fill !== 'rgba(0, 0, 0, 0)') {
@@ -793,7 +867,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         const stickyHeaders = clone.querySelectorAll('thead th:first-child');
         const stickyCells = clone.querySelectorAll('tbody td:first-child, tfoot td:first-child');
         const allFirstCols = [...Array.from(stickyHeaders), ...Array.from(stickyCells)];
-        
+
         allFirstCols.forEach(el => {
             if (el instanceof HTMLElement) {
                 // Remove Tailwind fixed-width classes
@@ -839,10 +913,10 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
                 el.style.setProperty('min-width', '0', 'important');
                 el.style.setProperty('white-space', 'nowrap', 'important');
                 // Remove any fixed width / padding classes safely
-                const classesToRemove = Array.from(el.classList).filter(cls => 
-                    cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') || 
-                    cls.startsWith('lg:w-') || cls.startsWith('md:w-') || cls.startsWith('px-') || 
-                    cls.startsWith('py-') || cls.startsWith('sm:px-') || cls.startsWith('sm:py-') || 
+                const classesToRemove = Array.from(el.classList).filter(cls =>
+                    cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') ||
+                    cls.startsWith('lg:w-') || cls.startsWith('md:w-') || cls.startsWith('px-') ||
+                    cls.startsWith('py-') || cls.startsWith('sm:px-') || cls.startsWith('sm:py-') ||
                     cls.startsWith('p-')
                 );
                 classesToRemove.forEach(cls => el.classList.remove(cls));
@@ -910,13 +984,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     captureContainer.style.position = 'absolute';
     captureContainer.style.left = '-9999px';
     captureContainer.style.top = '0';
-    // Bản sao gắn thẳng vào <body>, nằm NGOÀI các khối gốc của khu vực (vd .phanca-root) — biến CSS khai báo
-    // theo khối đó (--cell-kho-bg, --cell-gh-bg…) sẽ không còn, màu nền ô mất trong ảnh. Mang theo mọi class
-    // "*-root" của tổ tiên (bản vá riêng của Phân Ca, nay áp chung).
-    for (let a: HTMLElement | null = element; a; a = a.parentElement) {
-        a.classList.forEach((c) => { if (/-root$/.test(c)) captureContainer.classList.add(c); });
-    }
-    
+
     if (forcedWidth) {
         captureContainer.style.width = `${forcedWidth}px`;
         captureContainer.style.height = 'auto';
@@ -929,10 +997,8 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             el.style.setProperty('max-width', `${forcedWidth - 48}px`, 'important'); // 48px for padding
         });
     } else if (captureAsDisplayed) {
-        // Lock width to viewport display width, but allow full content height.
-        // offsetWidth (không phải clientWidth): clientWidth bỏ đường viền nên bản sao hẹp hơn khối
-        // gốc 2px, viền phải bị cắt mất trong ảnh (thấy ở ảnh xuất màn Tính Thuế).
-        const viewportWidth = element.offsetWidth || element.clientWidth;
+        // Lock width to viewport display width, but allow full content height
+        const viewportWidth = element.clientWidth;
         captureContainer.style.width = `${viewportWidth}px`;
         captureContainer.style.height = 'auto';
         clone.style.width = `${viewportWidth}px`;
@@ -943,8 +1009,35 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         captureContainer.style.width = 'fit-content';
         captureContainer.style.height = 'auto';
     }
-    
-    const shouldCompactTable = captureAsDisplayed ? false : isCompactTable;
+
+    // Remove artificial outer border box on clone root to prevent nested double borders,
+    // trừ trường hợp clone chính là thẻ card cần viền (competition-group-card)
+    if (!clone.classList.contains('competition-group-card')) {
+        clone.style.border = 'none';
+    }
+    if (!captureAsDisplayed) {
+        clone.style.borderRadius = '0';
+    }
+
+    // Remove redundant inner borders ONLY on table overflow wrappers inside cards (keep card borders intact)
+    clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
+        if (el instanceof HTMLElement && el.querySelector('table')) {
+            el.style.setProperty('border', 'none', 'important');
+            if (!captureAsDisplayed) {
+                el.style.setProperty('box-shadow', 'none', 'important');
+            }
+        }
+    });
+
+    if (!captureAsDisplayed) {
+        // Remove redundant box-shadows from all cloned children for crisp single-border rendering
+        clone.querySelectorAll<HTMLElement>('*').forEach((el) => {
+            if (el instanceof HTMLElement && el.style) {
+                el.style.setProperty('box-shadow', 'none', 'important');
+            }
+        });
+    }
+
     if (shouldCompactTable) {
         const tables = clone.querySelectorAll('table');
         tables.forEach(table => {
@@ -954,31 +1047,13 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
     captureContainer.appendChild(clone);
     document.body.appendChild(captureContainer);
-    
+
     // Clean scripts
     clone.querySelectorAll('script').forEach(s => s.remove());
 
     // ═══════════════════════════════════════════════════════════════════════
     // EXPORT PADDING OPTIMIZATION: Strip excessive inner padding for thin borders
     // ═══════════════════════════════════════════════════════════════════════
-    // Remove artificial outer border box on clone root to prevent nested double borders
-    clone.style.border = 'none';
-    clone.style.borderRadius = '0';
-
-    // Remove redundant inner borders on table overflow wrappers inside cards
-    clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
-        if (el instanceof HTMLElement) {
-            el.style.setProperty('border', 'none', 'important');
-            el.style.setProperty('box-shadow', 'none', 'important');
-        }
-    });
-
-    // Remove redundant box-shadows from all cloned children for crisp single-border rendering
-    clone.querySelectorAll<HTMLElement>('*').forEach((el) => {
-        if (el instanceof HTMLElement && el.style) {
-            el.style.setProperty('box-shadow', 'none', 'important');
-        }
-    });
 
     // Strip padding from .chart-card elements (they have p-6 = 24px by default)
     clone.querySelectorAll<HTMLElement>('.chart-card').forEach((el) => {
@@ -990,7 +1065,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         }
     });
 
-    // Strip padding from .surface-card elements 
+    // Strip padding from .surface-card elements
     clone.querySelectorAll<HTMLElement>('.surface-card').forEach((el) => {
         if (el instanceof HTMLElement) {
             el.style.setProperty('padding', '4px', 'important');
@@ -1029,6 +1104,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         kpiGrid.style.setProperty('gap', '6px', 'important');
         kpiGrid.style.setProperty('width', '100%', 'important');
 
+        // Thu gọn từng thẻ KPI & đảm bảo giữ viền sắc nét
         const isDarkMode = document.documentElement.classList.contains('dark');
         const cardBorderColor = isDarkMode ? '#334155' : '#cbd5e1';
         kpiGrid.children && Array.from(kpiGrid.children).forEach((child) => {
@@ -1038,13 +1114,28 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             child.style.setProperty('border', `1px solid ${cardBorderColor}`, 'important');
             child.style.setProperty('box-sizing', 'border-box', 'important');
 
+            // Cỡ số chính trong thẻ KPI
             child.querySelectorAll<HTMLElement>('.text-xl, .text-2xl, .text-3xl').forEach((numEl) => {
                 numEl.style.setProperty('font-size', '18px', 'important');
                 numEl.style.setProperty('line-height', '1.2', 'important');
             });
+            // Cỡ icon trong thẻ KPI
+            child.querySelectorAll<HTMLElement>('.w-6.h-6').forEach((iconWrap) => {
+                iconWrap.style.setProperty('width', '18px', 'important');
+                iconWrap.style.setProperty('height', '18px', 'important');
+            });
+            child.querySelectorAll<HTMLElement>('svg').forEach((svgEl) => {
+                svgEl.style.setProperty('width', '12px', 'important');
+                svgEl.style.setProperty('height', '12px', 'important');
+            });
+            // Cỡ chữ tiêu đề & nhãn
             child.querySelectorAll<HTMLElement>('span, div').forEach((textEl) => {
                 const textCls = textEl.getAttribute('class') || '';
-                if (textCls.includes('tracking-wider') || textCls.includes('uppercase') || textCls.includes('text-[11px]')) {
+                if (textCls.includes('tracking-wider') || textCls.includes('uppercase')) {
+                    textEl.style.setProperty('font-size', '9.5px', 'important');
+                    textEl.style.setProperty('line-height', '1.2', 'important');
+                }
+                if (textCls.includes('text-[11px]')) {
                     textEl.style.setProperty('font-size', '9.5px', 'important');
                     textEl.style.setProperty('line-height', '1.2', 'important');
                 }
@@ -1053,51 +1144,110 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     });
 
     // ═══════════════════════════════════════════════════════════════════════
-    // THU GỌN LƯỚI THẺ KPI NGÀNH HÀNG KHI XUẤT ẢNH
+    // THẺ KPI NGÀNH HÀNG KHI XUẤT ẢNH:
+    // 1. Loại bỏ thanh tiêu đề (CHỈ SỐ KPI NGÀNH HÀNG / các nút bấm)
+    // 2. Loại bỏ viền và nền bao quanh cụm thẻ KPI
     // ═══════════════════════════════════════════════════════════════════════
-    clone.querySelectorAll<HTMLElement>('.industry-kpi-container').forEach((container) => {
-        container.style.setProperty('padding', '6px 8px', 'important');
-        container.style.setProperty('margin-bottom', '6px', 'important');
+    clone.querySelectorAll<HTMLElement>('.industry-kpi-header').forEach((el) => {
+        el.remove();
     });
+
+    clone.querySelectorAll<HTMLElement>('.industry-kpi-container').forEach((container) => {
+        container.style.setProperty('border', 'none', 'important');
+        container.style.setProperty('background', 'transparent', 'important');
+        container.style.setProperty('background-color', 'transparent', 'important');
+        container.style.setProperty('box-shadow', 'none', 'important');
+        container.style.setProperty('padding', '0px', 'important');
+        container.style.setProperty('margin-bottom', '8px', 'important');
+        container.style.setProperty('width', '100%', 'important');
+        container.style.setProperty('max-width', '100%', 'important');
+        container.style.setProperty('box-sizing', 'border-box', 'important');
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // QUỸ THỜI GIAN: Chống ngắt/rớt dòng khi xuất ảnh
+    // ═══════════════════════════════════════════════════════════════════════
+    clone.querySelectorAll<HTMLElement>('*').forEach((el) => {
+        const text = el.textContent?.trim().toUpperCase() || '';
+        if (text === 'QUỸ THỜI GIAN' || text.startsWith('QUỸ THỜI GIAN')) {
+            el.style.setProperty('white-space', 'nowrap', 'important');
+            el.style.setProperty('word-break', 'keep-all', 'important');
+            el.style.setProperty('flex-shrink', '0', 'important');
+            if (el.parentElement) {
+                el.parentElement.style.setProperty('white-space', 'nowrap', 'important');
+                el.parentElement.style.setProperty('flex-shrink', '0', 'important');
+            }
+        }
+    });
+
+    if (!captureAsDisplayed && options.compactKpiCards) {
+        // ═══════════════════════════════════════════════════════════════════════
+        // THU GỌN LƯỚI THẺ KPI NGÀNH HÀNG KHI XUẤT ẢNH
+        // ═══════════════════════════════════════════════════════════════════════
+        clone.querySelectorAll<HTMLElement>('.industry-kpi-container').forEach((container) => {
+            container.style.setProperty('width', '100%', 'important');
+            container.style.setProperty('max-width', '100%', 'important');
+            container.style.setProperty('box-sizing', 'border-box', 'important');
+            container.style.setProperty('border', 'none', 'important');
+            container.style.setProperty('background', 'transparent', 'important');
+            container.style.setProperty('box-shadow', 'none', 'important');
+            container.style.setProperty('padding', '0px', 'important');
+            container.style.setProperty('margin-bottom', '4px', 'important');
+        });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-grid').forEach((grid) => {
         grid.style.setProperty('display', 'grid', 'important');
+        grid.style.setProperty('width', '100%', 'important');
+        grid.style.setProperty('max-width', '100%', 'important');
+        grid.style.setProperty('box-sizing', 'border-box', 'important');
         grid.style.setProperty('grid-template-columns', 'repeat(6, minmax(0, 1fr))', 'important');
-        grid.style.setProperty('gap', '4px', 'important');
+        grid.style.setProperty('gap', '3px', 'important');
     });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-card').forEach((card) => {
-        card.style.setProperty('padding', '4px 6px', 'important');
+        card.style.setProperty('width', '100%', 'important');
+        card.style.setProperty('max-width', '100%', 'important');
+        card.style.setProperty('min-width', '0px', 'important');
+        card.style.setProperty('box-sizing', 'border-box', 'important');
+        card.style.setProperty('padding', '3px 4px', 'important');
         card.style.setProperty('min-height', 'auto', 'important');
+        card.style.setProperty('overflow', 'hidden', 'important');
 
         // Tiêu đề thẻ (tên ngành/nhóm hàng)
         card.querySelectorAll<HTMLElement>('.industry-kpi-title').forEach((el) => {
-            el.style.setProperty('font-size', '9.5px', 'important');
+            el.style.setProperty('font-size', '9px', 'important');
             el.style.setProperty('line-height', '1.15', 'important');
-            el.style.setProperty('margin-bottom', '2px', 'important');
+            el.style.setProperty('margin-bottom', '1px', 'important');
+            el.style.setProperty('overflow', 'hidden', 'important');
+            el.style.setProperty('text-overflow', 'ellipsis', 'important');
+            el.style.setProperty('white-space', 'nowrap', 'important');
+            el.style.setProperty('display', 'block', 'important');
+            el.style.setProperty('width', '100%', 'important');
+            el.style.setProperty('min-width', '0px', 'important');
         });
 
         // Số chính (Doanh thu hoặc Số lượng lớn hơn)
         card.querySelectorAll<HTMLElement>('.industry-kpi-num').forEach((el) => {
-            el.style.setProperty('font-size', '13.5px', 'important');
+            el.style.setProperty('font-size', '12px', 'important');
             el.style.setProperty('line-height', '1.1', 'important');
+            el.style.setProperty('font-weight', '700', 'important');
         });
 
         // Nhãn số chính (SL hoặc DTQĐ)
         card.querySelectorAll<HTMLElement>('.industry-kpi-label').forEach((el) => {
-            el.style.setProperty('font-size', '8.5px', 'important');
+            el.style.setProperty('font-size', '8px', 'important');
             el.style.setProperty('line-height', '1', 'important');
         });
 
         // Số phụ (Doanh thu hoặc Số lượng nhỏ hơn)
         card.querySelectorAll<HTMLElement>('.industry-kpi-subnum').forEach((el) => {
-            el.style.setProperty('font-size', '10px', 'important');
+            el.style.setProperty('font-size', '9px', 'important');
             el.style.setProperty('line-height', '1.1', 'important');
         });
 
         // Nhãn số phụ (SL: hoặc DTQĐ:)
         card.querySelectorAll<HTMLElement>('.industry-kpi-sublabel').forEach((el) => {
-            el.style.setProperty('font-size', '8.5px', 'important');
+            el.style.setProperty('font-size', '8px', 'important');
             el.style.setProperty('line-height', '1', 'important');
         });
     });
@@ -1106,6 +1256,9 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     // THU GỌN 8 THẺ KPI TỔNG QUAN ĐỈNH MÀN HÌNH KHI XUẤT ẢNH
     // ═══════════════════════════════════════════════════════════════════════
     clone.querySelectorAll<HTMLElement>('.kpi-overview-container').forEach((container) => {
+        container.style.setProperty('width', '100%', 'important');
+        container.style.setProperty('max-width', '100%', 'important');
+        container.style.setProperty('box-sizing', 'border-box', 'important');
         container.style.setProperty('padding-left', '4px', 'important');
         container.style.setProperty('padding-right', '4px', 'important');
         container.style.setProperty('padding-top', '2px', 'important');
@@ -1115,102 +1268,163 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
     clone.querySelectorAll<HTMLElement>('.kpi-overview-grid').forEach((grid) => {
         grid.style.setProperty('display', 'grid', 'important');
+        grid.style.setProperty('width', '100%', 'important');
+        grid.style.setProperty('max-width', '100%', 'important');
+        grid.style.setProperty('box-sizing', 'border-box', 'important');
         grid.style.setProperty('grid-template-columns', 'repeat(4, minmax(0, 1fr))', 'important');
-        grid.style.setProperty('gap', '4px', 'important');
-        grid.style.setProperty('margin-bottom', '4px', 'important');
+        grid.style.setProperty('gap', '3px', 'important');
+        grid.style.setProperty('margin-bottom', '3px', 'important');
     });
 
     clone.querySelectorAll<HTMLElement>('.kpi-overview-card, .premium-card-shadow').forEach((card) => {
+        card.style.setProperty('box-sizing', 'border-box', 'important');
         // Thu gọn padding trong thẻ
         card.querySelectorAll<HTMLElement>('.px-3\\.5, .py-2, [class*="px-3"], [class*="py-2"]').forEach((inner) => {
-            inner.style.setProperty('padding-left', '6px', 'important');
-            inner.style.setProperty('padding-right', '6px', 'important');
-            inner.style.setProperty('padding-top', '4px', 'important');
-            inner.style.setProperty('padding-bottom', '4px', 'important');
+            inner.style.setProperty('padding-left', '5px', 'important');
+            inner.style.setProperty('padding-right', '5px', 'important');
+            inner.style.setProperty('padding-top', '3px', 'important');
+            inner.style.setProperty('padding-bottom', '3px', 'important');
         });
 
-        // Thu nhỏ con số chính (từ 30px-48px xuống 19px)
+        // Thu nhỏ con số chính (từ 30px-48px xuống 18px)
         card.querySelectorAll<HTMLElement>('[class*="text-\\[26px\\]"], [class*="text-\\[24px\\]"], [class*="text-\\[30px\\]"], [class*="text-\\[34px\\]"], [class*="text-\\[38px\\]"], [class*="text-\\[42px\\]"], [class*="text-\\[48px\\]"], [class*="text-2xl"], [class*="text-3xl"], [class*="text-4xl"]').forEach((numEl) => {
-            numEl.style.setProperty('font-size', '19px', 'important');
+            numEl.style.setProperty('font-size', '18px', 'important');
             numEl.style.setProperty('line-height', '1.15', 'important');
         });
 
         // Đơn vị (Tr, tỷ, %, SL)
         card.querySelectorAll<HTMLElement>('[class*="text-\\[14px\\]"], [class*="text-\\[15px\\]"], [class*="text-\\[16px\\]"], [class*="text-\\[17px\\]"], [class*="text-\\[19px\\]"]').forEach((unitEl) => {
-            unitEl.style.setProperty('font-size', '11.5px', 'important');
+            unitEl.style.setProperty('font-size', '11px', 'important');
             unitEl.style.setProperty('line-height', '1.15', 'important');
         });
 
         // Tiêu đề thẻ (DT THỰC, DTQĐ, HQQĐ...)
         card.querySelectorAll<HTMLElement>('h3, .kpi-overview-title').forEach((h3) => {
-            h3.style.setProperty('font-size', '10px', 'important');
+            h3.style.setProperty('font-size', '9.5px', 'important');
             h3.style.setProperty('line-height', '1.2', 'important');
         });
 
         // Icon thẻ
         card.querySelectorAll<HTMLElement>('svg').forEach((svg) => {
-            svg.style.setProperty('width', '13px', 'important');
-            svg.style.setProperty('height', '13px', 'important');
+            svg.style.setProperty('width', '12px', 'important');
+            svg.style.setProperty('height', '12px', 'important');
         });
 
         // Subtext / Trend / Footer
         card.querySelectorAll<HTMLElement>('.text-\\[11px\\], .text-xs, [class*="tracking-wide"], .kpi-overview-footer').forEach((subEl) => {
-            subEl.style.setProperty('font-size', '9px', 'important');
+            subEl.style.setProperty('font-size', '8.5px', 'important');
             subEl.style.setProperty('line-height', '1.15', 'important');
         });
     });
+    }
 
-    // Strip border-radius from the clone root itself
-    clone.style.borderRadius = '0';
-    clone.style.padding = '0';
+    // ═══════════════════════════════════════════════════════════════════════
+    // KPI CARDS: ĐẢM BẢO VIỀN TẤT CẢ CÁC THẺ KPI CÓ MÀU CÙNG TÔNG VỚI VẠCH TOP NHƯNG NHẠT HƠN
+    // ═══════════════════════════════════════════════════════════════════════
+    const isDarkTheme = document.documentElement.classList.contains('dark');
+    const colorBorderMap: Record<string, string> = {
+        emerald: isDarkTheme ? '#065f46' : '#86efac',
+        sky: isDarkTheme ? '#075985' : '#7dd3fc',
+        blue: isDarkTheme ? '#075985' : '#7dd3fc',
+        amber: isDarkTheme ? '#92400e' : '#fcd34d',
+        orange: isDarkTheme ? '#92400e' : '#fcd34d',
+        rose: isDarkTheme ? '#9f1239' : '#fda4af',
+        red: isDarkTheme ? '#9f1239' : '#fda4af',
+        indigo: isDarkTheme ? '#3730a3' : '#a5b4fc',
+        slate: isDarkTheme ? '#334155' : '#cbd5e1',
+    };
+    const defaultKpiBorder = isDarkTheme ? '#334155' : '#cbd5e1';
+    const warnKpiBorder = isDarkTheme ? '#9f1239' : '#fda4af'; // rose-300 cho thẻ chưa đạt
+    const warnKpiBg = isDarkTheme ? 'rgba(76, 5, 25, 0.25)' : 'rgba(255, 241, 242, 0.5)';
 
-    // FIT WIDTH TO TABLE — ảnh xuất ra cân xứng: cột co vừa nội dung (fitAllColumns) rồi ĐO bề rộng
-    // THẬT của bảng và ép cả khối (tiêu đề, quỹ thời gian, dải thẻ KPI `w-full`) về đúng bề rộng đó,
-    // thay vì để mỗi thứ tự giãn theo nội dung dài nhất (trước đây thẻ KPI/tiêu đề rộng hơn bảng).
-    // Phải chạy SAU khi clone đã nằm trong DOM thì đo mới ra số thật.
-    if (fitWidthToTable) {
-        const tableEl = clone.querySelector('table');
-        if (tableEl instanceof HTMLElement) {
-            const tableWidth = tableEl.getBoundingClientRect().width;
-            if (tableWidth > 0) {
-                // Cộng thêm phần đệm/viền của mọi khối bọc giữa bảng và gốc clone, nếu không bảng
-                // sẽ rộng hơn khung và bị cắt mép phải.
-                let extra = 0;
-                let node: HTMLElement | null = tableEl.parentElement;
-                while (node && node !== clone) {
-                    const cs = window.getComputedStyle(node);
-                    extra += parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0')
-                        + parseFloat(cs.borderLeftWidth || '0') + parseFloat(cs.borderRightWidth || '0');
-                    node = node.parentElement;
+    clone.querySelectorAll<HTMLElement>('div').forEach((el) => {
+        const cls = el.getAttribute('class') || '';
+        // Nhận diện KpiCard qua class premium-card-shadow hoặc cấu trúc thẻ card flex-col có vạch màu
+        const isKpiCard = cls.includes('premium-card-shadow') ||
+            (cls.includes('touch-feedback') && cls.includes('border') && cls.includes('flex-col')) ||
+            (el.firstElementChild instanceof HTMLElement && el.firstElementChild.className && (String(el.firstElementChild.className).includes('h-[3') || String(el.firstElementChild.className).includes('kpi-top-accent')));
+
+        if (isKpiCard) {
+            const text = el.textContent || '';
+            const isNotGood = text.includes('Chưa đạt') || text.includes('CHƯA ĐẠT') || cls.includes('border-rose') || cls.includes('bg-rose');
+
+            // Xác định màu vạch top bar
+            let topColorKey = el.dataset.kpiTopColor || '';
+            if (!topColorKey) {
+                const topBar = el.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+                    (el.firstElementChild instanceof HTMLElement && (String(el.firstElementChild.className || '').includes('h-[3') || String(el.firstElementChild.className || '').includes('kpi-top-accent')) ? el.firstElementChild : null);
+                const topCls = topBar?.getAttribute('class') || '';
+                if (topCls.includes('bg-emerald') || topCls.includes('bg-teal')) topColorKey = 'emerald';
+                else if (topCls.includes('bg-sky') || topCls.includes('bg-blue')) topColorKey = 'sky';
+                else if (topCls.includes('bg-amber') || topCls.includes('bg-orange')) topColorKey = 'amber';
+                else if (topCls.includes('bg-rose') || topCls.includes('bg-red')) topColorKey = 'rose';
+                else if (topCls.includes('bg-indigo')) topColorKey = 'indigo';
+                else if (topCls.includes('bg-slate')) topColorKey = 'slate';
+            }
+
+            const topColorMap: Record<string, string> = {
+                emerald: '#059669',
+                sky: '#0284c7',
+                blue: '#0284c7',
+                amber: '#d97706',
+                orange: '#d97706',
+                rose: '#e11d48',
+                red: '#e11d48',
+                indigo: '#4f46e5',
+                slate: '#475569',
+            };
+
+            const targetBorder = isNotGood
+                ? warnKpiBorder
+                : (colorBorderMap[topColorKey] || (!isDarkTheme && el.dataset.kpiBorder ? el.dataset.kpiBorder : defaultKpiBorder));
+
+            const topBorderColor = isNotGood
+                ? (topColorMap.rose || warnKpiBorder)
+                : (el.dataset.kpiTopBorder || topColorMap[topColorKey] || targetBorder);
+
+            el.style.setProperty('position', 'relative', 'important');
+            if (!captureAsDisplayed && options.squareBorders) {
+                el.style.setProperty('border-radius', '0px', 'important');
+            }
+            el.style.setProperty('box-sizing', 'border-box', 'important');
+            el.style.setProperty('border', `1.5px solid ${targetBorder}`, 'important');
+            el.style.setProperty('border-top', 'none', 'important');
+            el.style.setProperty('overflow', 'visible', 'important');
+
+            const topBar = el.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+                (el.firstElementChild instanceof HTMLElement && (String(el.firstElementChild.className || '').includes('h-[3') || String(el.firstElementChild.className || '').includes('progressFill') || String(el.firstElementChild.className || '').includes('kpi-top-accent')) ? el.firstElementChild : null);
+            if (topBar) {
+                topBar.style.setProperty('display', 'block', 'important');
+                topBar.style.setProperty('height', '3.5px', 'important');
+                topBar.style.setProperty('margin-top', '0px', 'important');
+                topBar.style.setProperty('margin-left', '-1.5px', 'important');
+                topBar.style.setProperty('margin-right', '-1.5px', 'important');
+                topBar.style.setProperty('width', 'calc(100% + 3px)', 'important');
+                topBar.style.setProperty('background-color', topBorderColor, 'important');
+                if (!captureAsDisplayed && options.squareBorders) {
+                    topBar.style.setProperty('border-radius', '0px', 'important');
                 }
-                const csClone = window.getComputedStyle(clone);
-                extra += parseFloat(csClone.paddingLeft || '0') + parseFloat(csClone.paddingRight || '0');
-                const finalW = Math.ceil(tableWidth + extra);
-                clone.style.setProperty('width', `${finalW}px`, 'important');
-                clone.style.setProperty('max-width', `${finalW}px`, 'important');
-                clone.style.setProperty('min-width', `${finalW}px`, 'important');
-                captureContainer.style.width = `${finalW}px`;
+            }
+
+            if (isNotGood) {
+                el.style.setProperty('background-color', warnKpiBg, 'important');
+            } else {
+                el.style.setProperty('background-color', isDarkTheme ? '#0f172a' : '#ffffff', 'important');
             }
         }
-    }
+    });
 
-    // CO CỘT VỪA NỘI DUNG (mặc định) — bảng rộng nhất quyết định bề rộng ảnh, tối thiểu 680px.
-    // Bảng hẹp hơn bề rộng ảnh thì giãn 100% để cột chia đều phần dư, không để khoảng trắng bên phải.
-    let fittedWidth = 0;
-    if (doFit) {
-        fittedWidth = fitTablesToContent(clone);
-        if (fittedWidth > 0) {
-            const w = Math.max(EXPORT_MIN_WIDTH, fittedWidth);
-            clone.style.setProperty('width', `${w}px`, 'important');
-            clone.style.setProperty('max-width', `${w}px`, 'important');
-            clone.style.setProperty('min-width', `${w}px`, 'important');
-            captureContainer.style.width = `${w}px`;
-            clone.querySelectorAll<HTMLElement>('table').forEach((t) => t.style.setProperty('width', '100%', 'important'));
-        }
+    // Strip border-radius from the clone root itself
+    if (!captureAsDisplayed) {
+        clone.style.borderRadius = '0';
     }
+    clone.style.padding = '0';
 
-    // Chân ảnh (chủ dự án chốt 2026-10-01: bật, chữ xám nhỏ)
-    if (footer) appendExportFooter(clone, typeof footer === 'string' ? footer : undefined);
+    // Co cột vừa nội dung (dùng chung) — mặc định bật, trừ chụp-như-hiển-thị / ép bề rộng
+    const doFit = options.fitColumns ?? (!captureAsDisplayed && !forcedWidth);
+    const fittedWidth = doFit ? fitTablesToContent(clone) : 0;
+    // Chân ảnh (dùng chung)
+    if (options.footer ?? true) appendExportFooter(clone, typeof options.footer === 'string' ? options.footer : undefined);
 
     try {
         stage('Đang chụp ảnh…');
@@ -1225,12 +1439,11 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
         // Use exact bounding dimensions of clone after DOM modifications
         const rect = clone.getBoundingClientRect();
-        const exportPadding = 4; // px on each side — must match the padding in htmlToImage style below
-        const contentHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || rect.height);
+        const exportPadding = 8; // px on each side — tạo khoảng đệm an toàn, giữ nguyên vẹn viền phải và viền xung quanh
+        
         // Đo chiều rộng chính xác nhất theo nội dung thực tế của bảng và thẻ
         let maxTableWidth = 0;
-        // Đã co cột ở trên thì bề rộng bảng là số đo thật — KHÔNG đo lại kiểu max-content (tiêu đề duỗi
-        // một hàng sẽ làm ảnh rộng hơn bảng, thừa trắng bên phải).
+        // Đã co cột (dùng chung) thì bề rộng bảng là số đo thật — không đo lại kiểu max-content
         const tables = fittedWidth > 0 ? [] : Array.from(clone.querySelectorAll('table'));
         tables.forEach((t) => {
             const prevW = t.style.width;
@@ -1241,32 +1454,78 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         });
 
         // Bề rộng tối ưu vừa xem trên điện thoại:
-        // Với báo cáo thông thường (Tổng quan siêu thị ~620px, Chi tiết ngành hàng ~580px):
-        // Chọn bề rộng ~680px để các thẻ KPI trên đỉnh và lưới 6 cột hiển thị cân đối nhất,
-        // các cột dữ liệu không bị bè ngang thừa khoảng trắng, mở trên điện thoại đọc rõ mồn một.
-        // Với bảng nhiều cột (Thi Đua 30+ cột), tự động mở rộng theo maxTableWidth để không mất cột.
-        const optimalWidth = fittedWidth > 0
+        // Với báo cáo có bảng (Chi tiết ngành hàng, Tổng quan siêu thị):
+        // Neo theo độ rộng thực tế của bảng (+ padding), tối thiểu 720px để 4 cột thẻ KPI đỉnh và 6 cột thẻ ngành hàng
+        // hiển thị gọn gàng, đẹp mắt, không bị kéo bè thừa khoảng trắng ở cột Ngành Hàng.
+        // (Bề rộng tối thiểu trước đây 720px riêng cho Report BI — nay 680px chung toàn dự án, chủ dự án chốt 2026-10-01)
+        const naturalTableWidth = fittedWidth > 0
             ? Math.max(EXPORT_MIN_WIDTH, fittedWidth)
-            : maxTableWidth > 0
-                ? Math.max(EXPORT_MIN_WIDTH, maxTableWidth + 16)
-                : Math.max(EXPORT_MIN_WIDTH, Math.min(Math.ceil(rect.width || 0), 1000));
+            : maxTableWidth > 0 ? Math.max(EXPORT_MIN_WIDTH, maxTableWidth + 16) : 0;
+        const optimalWidth = naturalTableWidth > 0
+            ? naturalTableWidth
+            : Math.max(EXPORT_MIN_WIDTH, Math.min(Math.ceil(rect.width || 0), 1000));
 
-        const contentWidth = captureAsDisplayed
-            ? (element.offsetWidth || element.clientWidth)
-            : (forcedWidth || optimalWidth);
+        let contentWidth = forcedWidth || optimalWidth;
+        if (captureAsDisplayed) {
+            if (naturalTableWidth > 0) {
+                // Xuất có bảng chi tiết ngành hàng: Chiều ngang Các thẻ KPI và cả trang được fix nhỏ lại cho vừa với độ rộng của bảng
+                contentWidth = naturalTableWidth;
+            } else {
+                contentWidth = Math.ceil(element.getBoundingClientRect().width || element.clientWidth);
+            }
+        }
 
         const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
-        let finalHeight = contentHeight + exportPadding * 2;
 
+        // Đảm bảo clone và captureContainer có bề rộng chuẩn xác, có box-sizing: border-box và padding an toàn
+        clone.style.setProperty('box-sizing', 'border-box', 'important');
+        clone.style.setProperty('padding', `${exportPadding}px`, 'important');
         clone.style.setProperty('width', `${finalWidth}px`, 'important');
         clone.style.setProperty('min-width', `${finalWidth}px`, 'important');
         clone.style.setProperty('max-width', `${finalWidth}px`, 'important');
         clone.style.setProperty('overflow', 'visible', 'important');
         if (captureContainer) {
+            captureContainer.style.setProperty('box-sizing', 'border-box', 'important');
             captureContainer.style.setProperty('width', `${finalWidth}px`, 'important');
             captureContainer.style.setProperty('min-width', `${finalWidth}px`, 'important');
             captureContainer.style.setProperty('max-width', `${finalWidth}px`, 'important');
         }
+
+        // Đảm bảo tất cả các khối con (title bar, header, table container) phủ kín 100% finalWidth
+        Array.from(clone.children).forEach((child) => {
+            if (child instanceof HTMLElement) {
+                child.style.setProperty('width', '100%', 'important');
+                child.style.setProperty('min-width', '100%', 'important');
+                child.style.setProperty('max-width', '100%', 'important');
+                child.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+        });
+        // Bảng đã co hẹp hơn khung ảnh → giãn 100% để cột chia đều phần dư, không trắng bên phải
+        if (fittedWidth > 0) clone.querySelectorAll<HTMLElement>('table').forEach((t) => t.style.setProperty('width', '100%', 'important'));
+        clone.querySelectorAll<HTMLElement>('.competition-group-card, .js-industry-view-container').forEach((card) => {
+            card.style.setProperty('width', '100%', 'important');
+            card.style.setProperty('max-width', '100%', 'important');
+            card.style.setProperty('box-sizing', 'border-box', 'important');
+            const titleBar = card.firstElementChild as HTMLElement;
+            if (titleBar) {
+                titleBar.style.setProperty('width', '100%', 'important');
+                titleBar.style.setProperty('min-width', '100%', 'important');
+                titleBar.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+        });
+        if (clone.classList.contains('competition-group-card')) {
+            const isDark = document.documentElement.classList.contains('dark');
+            clone.style.setProperty('border', `1px solid ${isDark ? '#334155' : '#cbd5e1'}`, 'important');
+            clone.style.setProperty('box-sizing', 'border-box', 'important');
+        }
+        clone.querySelectorAll('table').forEach((t) => {
+            t.style.setProperty('width', '100%', 'important');
+            t.style.setProperty('min-width', '100%', 'important');
+            t.style.setProperty('box-sizing', 'border-box', 'important');
+        });
+
+        // Đo chiều cao chính xác sau khi đã set width và layout hoàn chỉnh
+        const finalHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || clone.getBoundingClientRect().height);
 
         let finalScale = scale;
         if (finalHeight * scale > 32000) {
@@ -1296,9 +1555,12 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             height: finalHeight,
             style: {
                 margin: '0',
-                padding: '4px',
+                padding: `${exportPadding}px`,
+                boxSizing: 'border-box',
+                backgroundColor: isTransparentTable ? undefined : defaultBg,
             },
-            // GIỮ font embedding mặc định để text render đúng.
+            // GIỮ font embedding mặc định (skipFonts: false) để text render đúng.
+            // Trước đây tắt font để "tránh treo" nhưng điều này khiến text mất hoàn toàn.
         });
 
         if (!blob) {
@@ -1317,88 +1579,13 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             downloadBlob(blob, filename);
             return blob;
         }
-        
+
     } catch (error) {
         console.error(`Lỗi khi xuất ảnh: ${filename}`, error);
         return null;
     } finally {
         if (document.body.contains(captureContainer)) {
             document.body.removeChild(captureContainer);
-        }
-    }
-}
-
-/** Helper to convert oklch() color values to standard rgb/rgba/hex format for html2canvas */
-export function fixOklchColors(root: HTMLElement) {
-    const cvs = document.createElement('canvas');
-    cvs.width = 1;
-    cvs.height = 1;
-    const ctx = cvs.getContext('2d');
-    if (!ctx) return;
-
-    function resolveOklch(val: string): string | null {
-        if (!val || typeof val !== 'string' || val.indexOf('oklch') === -1) return null;
-        try {
-            // Sentinel KHÔNG được là đen — trước đây dùng '#000000' làm mốc rồi coi
-            // "fillStyle không đổi sau khi gán val" là "màu này vốn đen", nhưng nếu canvas
-            // không parse được cú pháp màu (vd biến thể oklch/color-mix mà html-to-image/một
-            // số trình duyệt export không hỗ trợ), gán thất bại cũng khiến fillStyle giữ
-            // nguyên '#000000' — bị hiểu nhầm thành "màu đen thật" và tô nhầm viền/nền/chữ
-            // thành đen khi xuất ảnh. Đổi sang màu không thể trùng màu thiết kế thật để phân
-            // biệt rạch ròi "parse được" vs "không parse được".
-            const SENTINEL = '#ff00fe';
-            ctx!.clearRect(0, 0, 1, 1);
-            ctx!.fillStyle = SENTINEL;
-            ctx!.fillStyle = val;
-            if (ctx!.fillStyle === SENTINEL) return null; // Không parse được — giữ nguyên màu gốc, không đoán mò.
-
-            ctx!.fillRect(0, 0, 1, 1);
-            const px = ctx!.getImageData(0, 0, 1, 1).data;
-            if (px[3] > 0) {
-                return 'rgba(' + px[0] + ',' + px[1] + ',' + px[2] + ',' + (px[3] / 255).toFixed(2) + ')';
-            }
-            return ctx!.fillStyle;
-        } catch (e) {
-            return null;
-        }
-    }
-
-    const els = [root, ...Array.from(root.querySelectorAll('*'))];
-    type ColorStyleProp = 'color' | 'backgroundColor' | 'borderColor' | 'borderTopColor' | 'borderRightColor' | 'borderBottomColor' | 'borderLeftColor' | 'outlineColor' | 'textDecorationColor' | 'caretColor';
-    const colorProps: [ColorStyleProp, string][] = [
-        ['color', 'color'],
-        ['backgroundColor', 'background-color'],
-        ['borderColor', 'border-color'],
-        ['borderTopColor', 'border-top-color'],
-        ['borderRightColor', 'border-right-color'],
-        ['borderBottomColor', 'border-bottom-color'],
-        ['borderLeftColor', 'border-left-color'],
-        ['outlineColor', 'outline-color'],
-        ['textDecorationColor', 'text-decoration-color'],
-        ['caretColor', 'caret-color']
-    ];
-
-    for (let i = 0; i < els.length; i++) {
-        const el = els[i];
-        if (!(el instanceof HTMLElement)) continue;
-        try {
-            const cs = window.getComputedStyle(el);
-            for (let j = 0; j < colorProps.length; j++) {
-                const val = cs[colorProps[j][0]];
-                if (val && typeof val === 'string' && val.indexOf('oklch') !== -1) {
-                    const rgb = resolveOklch(val);
-                    if (rgb) el.style.setProperty(colorProps[j][1], rgb, 'important');
-                }
-            }
-            const shadow = cs.boxShadow;
-            if (shadow && shadow.indexOf('oklch') !== -1) {
-                const fixed = shadow.replace(/oklch\([^)]+\)/g, (match) => {
-                    return resolveOklch(match) || 'transparent';
-                });
-                el.style.setProperty('box-shadow', fixed, 'important');
-            }
-        } catch (e) {
-            // ignore
         }
     }
 }
