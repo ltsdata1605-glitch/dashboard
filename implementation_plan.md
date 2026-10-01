@@ -6901,3 +6901,16 @@ userscript phía Dashboard tải file bằng GM_xmlhttpRequest (kèm cookie MWG)
 Phân tích nhận file → `handleFileProcessing([file], false, false)` (= Tệp Realtime). Khung "AUTO SYNC YCX" nổi bên phải
 (desktop, tự thu gọn < 1536px) + modal tiến trình 5 bước. Rủi ro: chưa thấy gói xuất/GetData thật (HAR không có) —
 code chịu được cả mảng lẫn {Data}, STARTTIME dạng /Date()/ lẫn ISO; lỗi thì báo rõ bước hỏng để chủ dự án gửi HAR bổ sung.
+
+**Kết quả (2026-10-01):**
+- Userscript **7.13**: `@match https://report.mwgroup.vn/*`, `@connect report.mwgroup.vn / cdnv2.tgdd.vn / *`. Nhánh trang
+  báo cáo `initYcxReportPage()` (chạy khi URL có `ycx_ycx`/`ycx_job`, hoặc có lượt đang chờ < 15 phút — để sống qua trang
+  đăng nhập). Đặt điều kiện: `V_STORESEARCHTYPE='2'`; Ngành hàng / Kho = "Tất cả" bằng `select_all()` của cây jstree trên
+  trang, không có cây sau 8s thì đổ ID lấy từ `Home/SearchMainGroup` / `Home/SearchStoreArea`. Gọi `scope.ExportData()`,
+  bắt `alert` của trang làm thông báo lỗi. Chụp mốc Lịch sử xuất excel TRƯỚC khi xuất → chỉ nhận dòng MỚI (không lấy nhầm
+  file cũ), chờ `LINKDOWNLOAD && !ISLOADING` (tối đa 20 phút), đo Content-Length ổn định như trang ManagerDownload.
+  Phía Dashboard `initYcxDashboardBridge()`: chỉ tab đã bấm mới tải file; mốc ban đầu như 7.12 (không phát lại lượt cũ).
+- Gốc: `services/ycxAutoSyncService.ts` + `components/analysis/YcxAutoSyncDock.tsx` (gắn ở `DashboardView`). Nhận file →
+  `handleFileProcessing([file], false, false)` = Tệp Realtime.
+- Test: `tests/e2e/ycx-tu-dong-report-mwg.spec.ts` (3 — trang 77 giả dựng theo HAR) và `ycx-tu-dong-phan-tich.spec.ts` (4).
+- CHƯA kiểm trên MWG thật: HAR chỉ có lúc tải trang, không có lượt Xuất excel / GetData / tải file thật.

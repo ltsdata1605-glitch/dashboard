@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.12
+// @version      7.13
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
+// @match        https://report.mwgroup.vn/*
 // @match        https://dashboard.pro.vn/*
 // @match        http://127.0.0.1:5173/*
 // @match        http://127.0.0.1:5174/*
@@ -22,11 +23,21 @@
 // @grant        GM_addValueChangeListener
 // @grant        GM_openInTab
 // @grant        window.close
+// @connect      report.mwgroup.vn
+// @connect      cdnv2.tgdd.vn
+// @connect      *
 // @updateURL    https://dashboard.pro.vn/scripts/mwg-auto-thu-thap-diem-thuong.user.js
 // @downloadURL  https://dashboard.pro.vn/scripts/mwg-auto-thu-thap-diem-thuong.user.js
 // ==/UserScript==
 
 /*
+ * BẢN 7.13 — TỰ ĐỘNG YCX REALTIME CHO PHÂN TÍCH (report.mwgroup.vn, báo cáo 77 "Chi tiết yêu cầu xuất"):
+ * - Dashboard (Phân tích → khung AUTO SYNC YCX) mở report.mwgroup.vn/home/dashboard/77?ycx_ycx=realtime&ycx_job=…
+ * - Trang báo cáo: Tìm theo (Kho) = Kho tạo, Ngành hàng = Tất cả, Kho = Tất cả, ngày mặc định (hôm nay) → gọi đúng hàm
+ *   Xuất excel của trang (scope.ExportData) → dò "Lịch sử xuất excel" (ManagerDownload/GetData) tới khi file xuất xong →
+ *   báo link cho Dashboard qua GM storage rồi tự đóng tab.
+ * - Dashboard tải file bằng GM_xmlhttpRequest (kèm phiên đăng nhập MWG) và giao cho trang như bấm "File YCX" → Realtime.
+ *
  * BẢN 7.9 — LUỸ KẾ THÊM TRẢ CHẬM THEO NHÂN VIÊN (tra-cham-matrix-get, VIEWLEVEL STAFF, từng siêu thị, MONTHKEY tháng chọn).
  *
  * BẢN 7.8 — LUỸ KẾ THEO THÁNG CHỌN + THI ĐUA LUỸ KẾ ĐÚNG KHUÔN:
@@ -468,7 +479,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.12';
+  const SCRIPT_VERSION_FALLBACK = '7.13';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -481,6 +492,17 @@
   const GM_KEY_BI_PROGRESS = 'ycx_bi_automation_progress';
   const GM_KEY_BI_DONE = 'ycx_bi_automation_done';
   const GM_KEY_BI_ERROR = 'ycx_bi_automation_error';
+
+  // ====== CẦU NỐI TỰ ĐỘNG YCX CHO PHÂN TÍCH (7.13) ======
+  const YCX_HOSTNAME = 'report.mwgroup.vn';
+  const YCX_REPORT_PATH = '/home/dashboard/77';
+  const YCX_SOURCE = 'ycx-ycx-auto';
+  const EVT_YCX_START = 'ycx-ycx-auto:start-job';
+  const GM_KEY_YCX_JOB = 'ycx_ycx_job';
+  const GM_KEY_YCX_PROGRESS = 'ycx_ycx_progress';
+  const GM_KEY_YCX_DONE = 'ycx_ycx_done';
+  const GM_KEY_YCX_ERROR = 'ycx_ycx_error';
+  const YCX_JOB_TTL_MS = 15 * 60 * 1000;
 
   // Feed "Vừa xong": cao cố định FEED_MAX_ROWS dòng, dòng mới trượt vào từ trên.
   const FEED_ROW_HEIGHT = 21;
@@ -1262,6 +1284,7 @@
 
   // ====== TRANG DASHBOARD: cầu nối CustomEvent (tầng A) <-> GM storage (tầng B) ======
   function initDashboardPage() {
+    initYcxDashboardBridge();
     let lastMetaSnapshot = null;
     let lastResultSnapshot = null;
 
@@ -3683,9 +3706,404 @@
     } catch (_) {}
   }
 
+  // ====== TỰ ĐỘNG YCX (7.13): report.mwgroup.vn báo cáo 77 → Lịch sử xuất excel → file về Dashboard Phân tích ======
+  // Trang báo cáo là AngularJS (ng-controller="DashboardController"); form điều kiện là scope.ListCondition, nút "Xuất
+  // excel" gọi scope.ExportData(). Script đặt điều kiện vào CHÍNH scope đó rồi gọi hàm của trang — trang tự dựng gói gửi
+  // đi & định dạng ngày như khi bấm tay, không đoán định dạng.
+  function ycxBanner(text, kind) {
+    try {
+      let el = document.getElementById('ycx-ycx-banner');
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'ycx-ycx-banner';
+        el.style.cssText = 'position:fixed;top:12px;right:12px;z-index:2147483646;max-width:380px;padding:10px 14px;border-radius:6px;'
+          + 'font:600 13px/1.4 system-ui,sans-serif;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.2)';
+        (document.body || document.documentElement).appendChild(el);
+      }
+      el.style.background = kind === 'error' ? COLOR_DANGER : kind === 'ok' ? COLOR_SUCCESS : COLOR_PRIMARY;
+      el.textContent = `Dashboard YCX · ${text}`;
+    } catch (_) { /* trang chưa có body */ }
+  }
+
+  function ycxErr(step, message) { const e = new Error(message); e.step = step; return e; }
+
+  // Cửa sổ THẬT của trang (Tampermonkey: unsafeWindow) — cần để chạm angular/jQuery/alert của trang
+  const ycxWin = () => (typeof unsafeWindow !== 'undefined' ? unsafeWindow : window);
+  const ycxPageFetch = (...a) => (ycxWin().fetch ? ycxWin().fetch.bind(ycxWin()) : fetch)(...a);
+
+  async function ycxPostJson(path, body) {
+    const res = await ycxPageFetch(`https://${YCX_HOSTNAME}${path}`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/plain, */*' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`${path} HTTP ${res.status}`);
+    return res.json();
+  }
+
+  /** Lấy danh sách các dòng ở "Lịch sử xuất excel" (trang ManagerDownload gọi y hệt: POST form userName). */
+  async function ycxFetchHistory(userName) {
+    const res = await ycxPageFetch(`https://${YCX_HOSTNAME}/ManagerDownload/GetData`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json, text/javascript, */*; q=0.01' },
+      body: `userName=${encodeURIComponent(userName || '')}`,
+    });
+    if (!res.ok) throw new Error(`Lịch sử xuất excel HTTP ${res.status}`);
+    const j = await res.json();
+    if (Array.isArray(j)) return j;
+    for (const k of ['Data', 'data', 'Items', 'items']) {
+      if (j && Array.isArray(j[k])) return j[k];
+      if (j && j[k] && Array.isArray(j[k].Data)) return j[k].Data;
+    }
+    return [];
+  }
+
+  function ycxRowKey(r) { return String(r.UNIQUEQUERYID || `${r.DYNAMICREPORTNAME}|${r.STARTTIME}`); }
+
+  /** STARTTIME: "/Date(1759300000000)/", ISO, hoặc "dd/MM/yyyy HH:mm:ss" → ms (0 nếu không đọc được). */
+  function ycxParseTime(v) {
+    if (v == null) return 0;
+    const s = String(v);
+    let m = s.match(/\/Date\((-?\d+)/);
+    if (m) return Number(m[1]);
+    m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0), +(m[6] || 0)).getTime();
+    const t = Date.parse(s);
+    return Number.isFinite(t) ? t : 0;
+  }
+
+  const ycxNorm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase();
+
+  function ycxHasValue(v) {
+    if (Array.isArray(v)) return v.length > 0;
+    if (typeof v === 'number') return true;
+    if (typeof v === 'string') return v !== '' && v !== '[object Object]';
+    return false;
+  }
+
+  async function ycxWaitScope(timeoutMs) {
+    const t0 = Date.now();
+    while (Date.now() - t0 < timeoutMs) {
+      try {
+        const ng = ycxWin().angular;
+        const el = document.querySelector('[ng-controller="DashboardController"]');
+        const scope = ng && el ? ng.element(el).scope() : null;
+        if (scope && Array.isArray(scope.ListCondition) && scope.ListCondition.length > 0 && typeof scope.ExportData === 'function'
+          && scope.objectDynamicReport && scope.objectDynamicReport.DYNAMICREPORTID) return scope;
+      } catch (_) { /* angular chưa sẵn */ }
+      await sleep(400);
+    }
+    const coForm = !!document.getElementById('reportId');
+    throw ycxErr('open', coForm
+      ? 'Trang báo cáo 77 mở nhưng form điều kiện không tải xong sau 60 giây — thử tải lại trang.'
+      : 'Không thấy form báo cáo — anh/chị đã đăng nhập report.mwgroup.vn chưa? Đăng nhập xong bấm lại "Tự động YCX".');
+  }
+
+  /** Phần tử DOM của một điều kiện (khối ng-repeat="item in ListCondition" có scope.item đúng điều kiện đó). */
+  function ycxCondEl(cond) {
+    const ng = ycxWin().angular;
+    const els = document.querySelectorAll('[ng-repeat="item in ListCondition"]');
+    for (const el of els) {
+      try { if (ng.element(el).scope().item === cond) return el; } catch (_) { /* bỏ qua */ }
+    }
+    return null;
+  }
+
+  function ycxApply(scope, fn) {
+    try { scope.$apply(fn); } catch (_) { fn(); try { scope.$evalAsync(() => {}); } catch (__) { /* bỏ qua */ } }
+  }
+
+  /** Bấm "Tất cả" của một ô chọn nhiều (cây jstree của trang); không được thì đổ danh sách lấy từ API làm dự phòng. */
+  async function ycxSelectAll(scope, cond, label, fallback) {
+    const el = ycxCondEl(cond);
+    const $ = ycxWin().jQuery || ycxWin().$;
+    const t0 = Date.now();
+    let daChon = false;
+    // Có cây (.jstree) mà chưa tải xong danh sách → chờ tới 30s; chưa thấy cây nào sau 8s → dùng đường dự phòng API
+    while (el && $ && Date.now() - t0 < (el.querySelector('.jstree') ? 30000 : 8000)) {
+      try {
+        const tree = el.querySelector('.jstree');
+        const inst = tree && $(tree).jstree ? $(tree).jstree(true) : null;
+        if (inst && inst.get_json && inst.get_json('#', { flat: true }).length > 1) { inst.select_all(); daChon = true; break; }
+      } catch (_) { /* cây chưa dựng */ }
+      await sleep(400);
+    }
+    if (daChon) {
+      const t1 = Date.now();
+      while (!ycxHasValue(cond.OBJECTVALUE) && Date.now() - t1 < 5000) await sleep(200);
+    }
+    if (!ycxHasValue(cond.OBJECTVALUE)) {
+      const ids = await fallback();
+      if (ids.length) ycxApply(scope, () => { cond.OBJECTVALUE = ids; });
+    }
+    if (!ycxHasValue(cond.OBJECTVALUE)) throw ycxErr('conditions', `Không chọn được "Tất cả" ở ô ${label}.`);
+  }
+
+  async function ycxApplyConditions(scope) {
+    const conds = scope.ListCondition;
+    const find = (p) => conds.find((c) => c.PARAMNAME === p);
+
+    // 1) Tìm theo (Kho) = Kho tạo (giá trị 2). Đặt cả ô combobox Kendo để màn hình khớp, rồi ép model.
+    const st = find('V_STORESEARCHTYPE');
+    if (!st) throw ycxErr('conditions', 'Báo cáo không có ô "Tìm theo (Kho)" — MWG đã đổi mẫu báo cáo 77?');
+    try {
+      const $ = ycxWin().jQuery || ycxWin().$;
+      const el = ycxCondEl(st);
+      const input = el && el.querySelector('input[data-role="combobox"], select[data-role="combobox"], input[data-role="dropdownlist"]');
+      const w = input && $ ? ($(input).data('kendoComboBox') || $(input).data('kendoDropDownList')) : null;
+      if (w) { w.value('2'); w.trigger('change'); }
+    } catch (_) { /* không có widget — đặt model là đủ */ }
+    ycxApply(scope, () => { st.OBJECTVALUE = '2'; });
+
+    // 2) Ngành hàng = Tất cả
+    const mg = find('V_MAINGROUPIDLIST');
+    if (mg) {
+      await ycxSelectAll(scope, mg, 'Ngành hàng', async () => {
+        const rows = await ycxPostJson('/Home/SearchMainGroup', { keyword: '', isRequire: 'false', isPermission: String(!!mg.ISPERMISSION), permissionValue: mg.PERMISSION || '', isCheckpermissionbykey: String(!!mg.ISCHECKPERMISSIONBYKEY) });
+        const list = Array.isArray(rows) ? rows : (rows && (rows.Data || rows.data)) || [];
+        return list.map((r) => r.MAINGROUPID).filter((x) => x != null && x !== 0);
+      });
+    }
+
+    // 3) Kho = Tất cả (trang bắt buộc chọn — để trống sẽ báo "Vui lòng chọn Kho là 'Tất cả'…")
+    const sk = find('V_STOREIDLIST');
+    if (sk) {
+      await ycxSelectAll(scope, sk, 'Kho', async () => {
+        let data = { isPermission: !!sk.ISPERMISSION, permissionValue: sk.PERMISSION || null, isActive: true, companyids: '', companybrandids: '', areaids: '' };
+        try { const iso = ycxWin().angular.element(ycxCondEl(sk).querySelector('searchstorebyarea')).isolateScope(); if (iso && iso.data) data = iso.data; } catch (_) { /* dùng mặc định */ }
+        const tree = await ycxPostJson('/Home/SearchStoreArea', data);
+        const ids = [];
+        const walk = (nodes) => (nodes || []).forEach((n) => { if (n.ISSTORE) ids.push(n.STOREGROUPID); walk(n.LISTCHILDREN); });
+        walk(Array.isArray(tree) ? tree : (tree && (tree.Data || tree.data)) || []);
+        return ids;
+      });
+    }
+    // Ngày: để mặc định (trang tự đặt hôm nay khi tải)
+  }
+
+  async function ycxClickExport(scope) {
+    const w = ycxWin();
+    const oldAlert = w.alert;
+    let alertMsg = null;
+    try { w.alert = function (m) { alertMsg = String(m); console.warn('[YCX] Trang báo:', m); }; } catch (_) { /* không ghi đè được */ }
+    try {
+      const SENTINEL = '__ycx_cho__';
+      ycxApply(scope, () => { scope.continueDownload = SENTINEL; });
+      ycxApply(scope, () => { scope.ExportData(); });
+      const t0 = Date.now();
+      while (Date.now() - t0 < 180000) {
+        if (alertMsg) throw ycxErr('export', `MWG báo: ${alertMsg}`);
+        if (scope.continueDownload !== SENTINEL) break;
+        await sleep(300);
+      }
+      if (scope.continueDownload === SENTINEL) throw ycxErr('export', 'Bấm Xuất excel nhưng MWG không phản hồi sau 3 phút.');
+      try { if (scope.popupdownload && scope.popupdownload.close) scope.popupdownload.close(); } catch (_) { /* bỏ qua */ }
+    } finally {
+      try { w.alert = oldAlert; } catch (_) { /* bỏ qua */ }
+    }
+  }
+
+  async function ycxWaitFile(before, userName, startedAt, onWait) {
+    const t0 = Date.now();
+    const TIMEOUT = 20 * 60 * 1000;
+    let lan = 0;
+    while (Date.now() - t0 < TIMEOUT) {
+      await sleep(lan++ === 0 ? 2500 : 4000);
+      let rows = [];
+      try { rows = await ycxFetchHistory(userName); } catch (e) { onWait(`Đọc Lịch sử xuất excel lỗi (${e.message}) — thử lại…`); continue; }
+      const moi = rows.filter((r) => !before.has(ycxRowKey(r))
+        // Chụp mốc trước khi xuất hỏng (không đọc được lịch sử) → nhận dòng bắt đầu sau lúc bấm (lệch giờ tối đa 2 phút)
+        || (before.size === 0 && ycxParseTime(r.STARTTIME) >= startedAt - 120000));
+      const dung = moi.filter((r) => /yeu cau xuat/.test(ycxNorm(r.DYNAMICREPORTNAME)));
+      const ung = (dung.length ? dung : moi).sort((a, b) => ycxParseTime(b.STARTTIME) - ycxParseTime(a.STARTTIME))[0];
+      const giay = Math.round((Date.now() - t0) / 1000);
+      if (!ung) { onWait(`Chờ yêu cầu xuất hiện trong Lịch sử xuất excel… (${giay}s)`); continue; }
+      if (ung.LINKDOWNLOAD && !ung.ISLOADING) return ung;
+      onWait(`MWG đang xuất file "${ung.DYNAMICREPORTNAME || 'Chi tiết yêu cầu xuất'}"… (${giay}s)`);
+    }
+    throw ycxErr('waiting', 'Chờ 20 phút mà MWG chưa xuất xong file — mở Lịch sử xuất excel để kiểm tra.');
+  }
+
+  function ycxGmHead(url) {
+    return new Promise((resolve) => {
+      try {
+        GM_xmlhttpRequest({
+          method: 'HEAD', url, timeout: 20000,
+          onload: (r) => { const m = /content-length:\s*(\d+)/i.exec(r.responseHeaders || ''); resolve(r.status < 400 ? (m ? Number(m[1]) : -1) : 0); },
+          onerror: () => resolve(-1), ontimeout: () => resolve(-1),
+        });
+      } catch (_) { resolve(-1); }
+    });
+  }
+
+  /** Như trang ManagerDownload: file trên máy chủ báo cáo phải có kích thước > 0 và không đổi qua 2 lần đo. */
+  async function ycxWaitStable(url, onWait) {
+    if (/cdnv2|render\/download/i.test(url)) return;
+    for (let i = 0; i < 30; i++) {
+      const a = await ycxGmHead(url);
+      if (a === -1) return; // không đo được (máy chủ chặn HEAD) — để bước tải tự xử lý
+      await sleep(600);
+      const b = await ycxGmHead(url);
+      if (a > 0 && a === b) return;
+      onWait('File đang được ghi xong trên máy chủ MWG…');
+      await sleep(2000);
+    }
+  }
+
+  function ycxFileName(url) {
+    try {
+      const last = decodeURIComponent(new URL(url).pathname.split('/').pop() || '');
+      if (/\.(xlsx|xls|csv)$/i.test(last)) return last;
+    } catch (_) { /* bỏ qua */ }
+    const d = new Date();
+    return `YCX-Realtime-${pad2(d.getDate())}-${pad2(d.getMonth() + 1)}-${d.getFullYear()}-${pad2(d.getHours())}${pad2(d.getMinutes())}.xlsx`;
+  }
+
+  async function ycxRunJob(job) {
+    const jobId = job.jobId;
+    const report = (step, message) => { ycxBanner(message); return gmSet(GM_KEY_YCX_PROGRESS, { source: YCX_SOURCE, type: 'progress', jobId, step, message, at: Date.now() }); };
+    await gmSet(GM_KEY_YCX_JOB, { ...job, status: 'running', claimedAt: Date.now() });
+    try {
+      await report('open', 'Đã mở báo cáo 77, chờ form điều kiện…');
+      const scope = await ycxWaitScope(60000);
+      await report('conditions', 'Chọn điều kiện: Kho tạo · Tất cả ngành hàng · Tất cả kho · ngày hôm nay…');
+      await ycxApplyConditions(scope);
+
+      const userInput = document.querySelector('input[name="__UserName"]');
+      let userName = '';
+      let before = new Set();
+      try {
+        let rows = await ycxFetchHistory('');
+        if (rows.length === 0 && userInput && userInput.value) { userName = userInput.value; rows = await ycxFetchHistory(userName); }
+        before = new Set(rows.map(ycxRowKey));
+      } catch (e) { console.warn('[YCX] Không chụp được mốc Lịch sử xuất excel:', e); }
+
+      await report('export', 'Bấm Xuất excel…');
+      const startedAt = Date.now();
+      await ycxClickExport(scope);
+      // Trang ManagerDownload để trống userName; nếu lượt đầu không thấy dòng nào thì dùng mã NV đăng nhập
+      if (!userName && before.size === 0 && userInput && userInput.value) {
+        try { if ((await ycxFetchHistory('')).length === 0) userName = userInput.value; } catch (_) { /* bỏ qua */ }
+      }
+      await report('waiting', 'Đã gửi yêu cầu — chờ MWG xuất file (Lịch sử xuất excel)…');
+      const row = await ycxWaitFile(before, userName, startedAt, (m) => report('waiting', m));
+      const url = new URL(row.LINKDOWNLOAD, location.href).href;
+      await ycxWaitStable(url, (m) => report('waiting', m));
+      const fileName = ycxFileName(url);
+      await gmSet(GM_KEY_YCX_DONE, { source: YCX_SOURCE, type: 'done', jobId, url, fileName, reportName: row.DYNAMICREPORTNAME || '', at: Date.now() });
+      await gmSet(GM_KEY_YCX_JOB, { ...job, status: 'done' });
+      ycxBanner('Xong — đã gửi file về Dashboard, tab này sẽ tự đóng.', 'ok');
+      setTimeout(() => { try { window.close(); } catch (_) { /* không đóng được thì thôi */ } }, 2500);
+    } catch (e) {
+      const message = (e && e.message) || String(e);
+      console.warn('[YCX] Lỗi:', e);
+      ycxBanner(message, 'error');
+      await gmSet(GM_KEY_YCX_ERROR, { source: YCX_SOURCE, type: 'error', jobId, step: (e && e.step) || 'export', message, at: Date.now() });
+      await gmSet(GM_KEY_YCX_JOB, { ...job, status: 'error' });
+    }
+  }
+
+  async function initYcxReportPage() {
+    const params = new URLSearchParams(location.search);
+    const urlJob = params.get('ycx_job');
+    const urlMode = params.get('ycx_ycx');
+    const laTrang77 = location.pathname.replace(/\/+$/, '').toLowerCase() === YCX_REPORT_PATH;
+    let job = await gmGet(GM_KEY_YCX_JOB, null);
+    if (urlJob && urlMode) {
+      if (!job || job.jobId !== urlJob) job = { jobId: urlJob, mode: urlMode, status: 'pending', createdAt: Date.now() };
+      if (job.status === 'done' || job.status === 'error') return; // tải lại tab cũ — không chạy lại
+    } else {
+      // Không có tham số (vd bị chuyển qua trang đăng nhập rồi về trang chủ): nhận lượt đang chờ còn mới
+      if (!job || job.status !== 'pending' || Date.now() - (job.createdAt || 0) > YCX_JOB_TTL_MS) return;
+    }
+    if (!laTrang77) {
+      if (!document.getElementById('reportId') && /login|dang-?nhap|account/i.test(location.pathname)) {
+        ycxBanner('Hãy đăng nhập — xong sẽ tự quay lại báo cáo 77.');
+        return;
+      }
+      location.href = `https://${YCX_HOSTNAME}${YCX_REPORT_PATH}?ycx_ycx=${encodeURIComponent(job.mode || 'realtime')}&ycx_job=${encodeURIComponent(job.jobId)}`;
+      return;
+    }
+    if (!urlJob && job.status === 'running') return;
+    ycxRunJob(job);
+  }
+
+  // ====== TỰ ĐỘNG YCX (7.13) — phía Dashboard: chuyển tiến trình, tải file bằng phiên MWG rồi giao ArrayBuffer cho trang ======
+  function initYcxDashboardBridge() {
+    const post = (msg) => window.postMessage({ source: YCX_SOURCE, ...msg }, '*');
+    // Chỉ tab ĐÃ bấm bắt đầu mới tải file (mở 2 tab Dashboard thì không tải 2 lần)
+    const jobCuaTab = new Set();
+    const daTai = new Set();
+
+    window.addEventListener(EVT_YCX_START, (e) => {
+      const d = e.detail;
+      if (!d || d.source !== YCX_SOURCE || typeof d.jobId !== 'string') return;
+      jobCuaTab.add(d.jobId);
+      gmSet(GM_KEY_YCX_JOB, { jobId: d.jobId, mode: d.mode || 'realtime', status: 'pending', createdAt: Date.now() })
+        .catch((err) => console.warn('[YCX auto] Lỗi ghi job GM:', err));
+    });
+
+    function taiFile(done) {
+      if (!done || !jobCuaTab.has(done.jobId) || daTai.has(done.jobId)) return;
+      daTai.add(done.jobId);
+      post({ type: 'progress', jobId: done.jobId, step: 'download', message: 'Đang tải file từ MWG về Dashboard…' });
+      let lanCuoi = 0;
+      try {
+        GM_xmlhttpRequest({
+          method: 'GET', url: done.url, responseType: 'arraybuffer', timeout: 10 * 60 * 1000,
+          onprogress: (p) => {
+            if (Date.now() - lanCuoi < 400) return;
+            lanCuoi = Date.now();
+            const mb = (p.loaded / 1048576).toFixed(1);
+            const pct = p.lengthComputable && p.total ? ` (${Math.round((p.loaded / p.total) * 100)}%)` : '';
+            post({ type: 'progress', jobId: done.jobId, step: 'download', message: `Đang tải file… ${mb} MB${pct}` });
+          },
+          onload: (r) => {
+            const buf = r.response;
+            if (r.status >= 200 && r.status < 300 && buf && buf.byteLength > 0) {
+              post({ type: 'file', jobId: done.jobId, fileName: done.fileName || 'YCX-Realtime.xlsx', buffer: buf });
+            } else {
+              post({ type: 'error', jobId: done.jobId, step: 'download', message: `Tải file lỗi (HTTP ${r.status}) — phiên MWG hết hạn? Mở report.mwgroup.vn đăng nhập lại rồi thử lại.` });
+            }
+          },
+          onerror: () => post({ type: 'error', jobId: done.jobId, step: 'download', message: 'Không tải được file từ MWG (lỗi mạng hoặc Tampermonkey chưa cho phép truy cập tên miền tải file).' }),
+          ontimeout: () => post({ type: 'error', jobId: done.jobId, step: 'download', message: 'Tải file quá 10 phút — thử lại.' }),
+        });
+      } catch (err) {
+        post({ type: 'error', jobId: done.jobId, step: 'download', message: `Không tải được file: ${err && err.message ? err.message : err}` });
+      }
+    }
+
+    const chuyen = {
+      [GM_KEY_YCX_PROGRESS]: (v) => { if (v && jobCuaTab.has(v.jobId)) post({ ...v, type: 'progress' }); },
+      [GM_KEY_YCX_ERROR]: (v) => { if (v && jobCuaTab.has(v.jobId)) post({ ...v, type: 'error' }); },
+      [GM_KEY_YCX_DONE]: (v) => taiFile(v),
+    };
+    try {
+      Object.keys(chuyen).forEach((k) => GM_addValueChangeListener(k, (_n, _o, v) => chuyen[k](v)));
+    } catch (_) { /* chỉ còn poll */ }
+    // Poll dự phòng; mốc ban đầu = giá trị đang có (như 7.12) để không phát lại lượt cũ
+    const moc = {};
+    const sanSang = Promise.all(Object.keys(chuyen).map(async (k) => {
+      try { const v = await gmGet(k, null); moc[k] = v ? JSON.stringify(v) : null; } catch (_) { moc[k] = null; }
+    }));
+    setInterval(async () => {
+      await sanSang;
+      for (const k of Object.keys(chuyen)) {
+        try {
+          const v = await gmGet(k, null);
+          const s = v ? JSON.stringify(v) : null;
+          if (s && s !== moc[k]) { moc[k] = s; chuyen[k](v); }
+        } catch (_) { /* thử lại lượt sau */ }
+      }
+    }, 700);
+  }
+
   // ====== RẼ NHÁNH THEO DOMAIN ======
   if (location.hostname === MWG_HOSTNAME) {
     initMwgPage();
+  } else if (location.hostname === YCX_HOSTNAME) {
+    initYcxReportPage();
   } else if (BI_HOSTNAMES.includes(location.hostname)) {
     initBiPage();
   } else {

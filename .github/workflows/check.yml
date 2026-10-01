@@ -208,6 +208,14 @@ jobs:
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/xuat-anh-chung.spec.ts --output=test-results/xuat-anh-chung
 
+      - name: 'E2E: ycx-tu-dong-report-mwg'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/ycx-tu-dong-report-mwg.spec.ts --output=test-results/ycx-tu-dong-report-mwg
+
+      - name: 'E2E: ycx-tu-dong-phan-tich'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/ycx-tu-dong-phan-tich.spec.ts --output=test-results/ycx-tu-dong-phan-tich
+
       - name: 'E2E: xss-header-sanitization'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/xss-header-sanitization.spec.ts --output=test-results/xss-header-sanitization
