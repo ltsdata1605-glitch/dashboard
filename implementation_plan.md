@@ -6740,3 +6740,21 @@ Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện 
   nhẹ ("TĐ …", "CT …") vì bộ đọc sẽ lấy nhầm dòng phía trên làm tên. Lưu `config-<siêu thị>-thidua` (bỏ khoá phụ theo mã kho).
   Kiểm: 971 dòng mẫu thật qua bộ đọc thật → đủ 39 chương trình, tổng SIM tổng 338 / Bảo hiểm tổng 1.617,28 khớp API;
   `thiDuaNhanVienApi.test.ts` 6/6; e2e `bi-sync-luy-ke` + `bi-auto-luy-ke-dashboard` cập nhật.
+- 7.11 (cùng ngày): chủ dự án báo **cập nhật script xong, NHIỀU tab baocao cùng chạy lấy dữ liệu**. Dựng lại bằng e2e
+  (`bi-sync-cap-nhat-xong-tu-chay-tiep`, đếm số lần nhờ mở tab MWG): code cũ mở **4 tab**. 3 nguyên nhân chồng nhau:
+  (1) commit avatar thêm `hooks/useBiAutoSync` (nút nhanh ở Dashboard) cũng tự chạy tiếp lượt dở như DataUpdater → 2 nơi;
+  (2) React StrictMode chạy effect 2 lần → ×2; (3) userscript: MỌI tab baocao đang mở sẵn nghe `GM_KEY_BI_JOB` và cùng chạy job.
+  Sửa: `claimPendingAutoSync()` đọc+xoá lượt dở trong 1 bước (chỉ 1 nơi nhận) và chỉ DataUpdater tự chạy tiếp
+  (BiWrapper vốn mở thẳng mục Cập nhật khi có lượt dở); `startBiAutoSyncSession` chống mở trùng ≤ 8s (khoá trên
+  globalThis); kết quả chỉ nơi đã bấm chạy mới lưu (hết lưu 2 lần / 2 toast); userscript 7.11 chỉ tab có `ycx_mode`
+  trong URL mới nhận job qua kênh GM. Kiểm: e2e nay đúng 1 tab; spec mới `bi-sync-chi-tab-lam-viec` (code cũ đỏ, mới xanh).
+  Sau khi gộp commit Mac "nút nổi Tự động Realtime/Luỹ kế" (c8b65c71): nút nổi Luỹ kế chạy thẳng, BỎ QUA bước chọn tháng
+  (e2e `bi-auto-luy-ke-dashboard` đỏ). Tách bảng chọn tháng thành `LuyKeMonthPickerModal` dùng chung; `useBiAutoSync`
+  gọi 'luyke' không kèm tháng thì mở bảng chọn tháng; nhớ tháng khi lượt dở / mở lại tab MWG.
+- 7.12 (cùng ngày): chủ dự án báo **mỗi lần mở trang lại có pháo giấy + 4 toast "Tự động cập nhật thành công"** dù dữ liệu
+  cập nhật từ lâu. Nguyên nhân: cầu nối userscript trên trang Dashboard poll bộ nhớ Tampermonkey với mốc ban đầu `null`
+  → mở trang là PHÁT LẠI kết quả lượt cũ (qua 2 kênh event + postMessage), Dashboard lưu ĐÈ dữ liệu cũ + báo thành công;
+  3 nơi nghe × 2 kênh = 4 toast. Sửa 2 phía: userscript 7.12 chụp mốc giá trị đang có trước khi poll (chỉ phát cái mới);
+  Dashboard chỉ nhận kết quả có `jobId` đúng lượt CHÍNH nơi đó vừa khởi chạy, một lần. Kiểm: spec mới
+  `bi-sync-khong-phat-lai-ket-qua-cu` (userscript cũ đỏ — phát lại lượt cũ; mới xanh) + test "phát lại kết quả CŨ → không
+  toast, không ghi đè" trong `bi-auto-sync-xong-dong-modal`; 2 test cũ đổi sang jobId thật lấy từ sự kiện start-job.

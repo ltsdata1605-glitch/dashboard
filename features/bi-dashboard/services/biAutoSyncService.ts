@@ -350,6 +350,16 @@ export function savePendingAutoSync(p: PendingAutoSync): void {
 export function clearPendingAutoSync(): void {
     try { sessionStorage.removeItem(PENDING_KEY); } catch { /* bỏ qua */ }
 }
+/**
+ * Đọc VÀ xoá lượt dở trong cùng một bước (đồng bộ) — chỉ MỘT nơi được tự chạy tiếp. Trang Report BI có 2 nơi cùng
+ * nghe lượt dở (DataUpdater + nút nhanh ở Dashboard qua useBiAutoSync): cả 2 dùng readPendingAutoSync thì cả 2 tự chạy
+ * → mở 2+ tab MWG sau mỗi lần cập nhật userscript (chủ dự án gặp 2026-10-01). Lượt vẫn "cũ" thì nơi nhận sẽ ghi lại.
+ */
+export function claimPendingAutoSync(): PendingAutoSync | null {
+    const p = readPendingAutoSync();
+    clearPendingAutoSync();
+    return p;
+}
 
 /**
  * Mở tab MWG. Lượt tự chạy tiếp (sau tải lại) KHÔNG có cú bấm của người dùng → window.open bị trình duyệt chặn, nên
@@ -379,7 +389,25 @@ async function moTabMwg(url: string, nhoUserscript: boolean): Promise<Window | '
  * `tuChayTiep`: lượt chạy lại tự động sau khi tải trang (không có cú bấm) — không mở lại trang cập nhật, chờ ping lâu hơn
  * (userscript có thể chưa kịp nạp), mở tab MWG qua userscript.
  */
-export async function startBiAutoSyncSession(mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}): Promise<{ jobId: string; workerWindow: Window | null; workerOpened: boolean }> {
+type StartResult = { jobId: string; workerWindow: Window | null; workerOpened: boolean };
+/** Chống mở trùng: lượt đang khởi chạy / vừa khởi chạy (≤ 8s) thì trả lại đúng lượt đó, KHÔNG mở thêm tab MWG.
+ *  Đặt trên globalThis (không phải biến module) — bundler từng tách module thành 2 bản (xem contexts/AuthContext.tsx). */
+const START_DEDUPE_MS = 8000;
+type StartLock = { key: string; ts: number; promise: Promise<StartResult> };
+export function startBiAutoSyncSession(mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}): Promise<StartResult> {
+    const g = globalThis as unknown as { __ycxBiStartLock?: StartLock };
+    const key = `${mode}:${mode === 'luyke' ? (opts.month || '') : ''}`;
+    const cu = g.__ycxBiStartLock;
+    if (cu && cu.key === key && Date.now() - cu.ts < START_DEDUPE_MS) return cu.promise;
+    const promise = startBiAutoSyncSessionThat(mode, opts);
+    const lock: StartLock = { key, ts: Date.now(), promise };
+    g.__ycxBiStartLock = lock;
+    // Lỗi (vd bản cũ) thì bỏ khoá ngay để lần bấm sau kiểm lại từ đầu
+    promise.catch(() => { if (g.__ycxBiStartLock === lock) g.__ycxBiStartLock = undefined; });
+    return promise;
+}
+
+async function startBiAutoSyncSessionThat(mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string }): Promise<StartResult> {
     // Chạy song song để vẫn nằm trong thời hạn "người dùng vừa bấm" (trình duyệt mới cho mở tab mới)
     const [isInstalled, latest] = await Promise.all([detectUserscript(opts.tuChayTiep ? 4000 : 800), fetchLatestUserscriptVersion()]);
     if (!isInstalled.installed) {

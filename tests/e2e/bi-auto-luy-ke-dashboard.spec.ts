@@ -15,6 +15,7 @@ const BAN_MOI_NHAT = readFileSync(USERSCRIPT_FILE, 'utf-8').match(/^\/\/\s*@vers
 test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng siêu thị, modal đóng, có toast', async ({ page }) => {
     await page.context().route('https://baocao.dienmayxanh.com/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }));
     await page.addInitScript((v) => {
+        window.addEventListener('ycx-bi-automation:start-job', (e) => { (window as unknown as { __job?: string }).__job = (e as CustomEvent).detail?.jobId; });
         window.addEventListener('ycx-bonus-bridge:ping', (e) => {
             const nonce = (e as CustomEvent).detail?.nonce;
             window.dispatchEvent(new CustomEvent('ycx-bonus-bridge:pong', { detail: { source: 'ycx-bonus-bridge', type: 'pong', nonce, version: v } }));
@@ -43,7 +44,7 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
     const TD = 'Thi đua nhân viên theo chương trình\nBảo hiểm tổng\nDOANH THU\n95970 - Chế Thị Út\t154.94';
     const TC = 'Nhân viên\tDT Trả góp\tDT Siêu thị\tTỷ trọng\tHomeCredit(HC)\t%\n95970 - Chế Thị Út\t693.36\t1403.74\t49.39\t417.61\t60.23';
     await page.evaluate(({ NG, NV, TC, TD }) => {
-        const d = { source: 'ycx-bi-automation', type: 'done', jobId: 'job-lk', mode: 'luyke', results: {
+        const d = { source: 'ycx-bi-automation', type: 'done', jobId: (window as unknown as { __job?: string }).__job, mode: 'luyke', results: {
             summary: 'Siêu thị\tSỐ LƯỢNG\tDOANH THU QĐ\n1678 - ĐMM_AGI_TTO - Tri Tôn\t39\t111\nTổng (1 dòng)\t39\t111',
             competition: 'Máy Lạnh\nDOANH THU\tTARGET\t% HT THÁNG\nĐMM_AGI_TTO - Tri Tôn\t1\t2\t50',
             industryByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': NG, '1678': NG },

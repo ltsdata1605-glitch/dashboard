@@ -25,6 +25,7 @@ test('cập nhật userscript xong quay lại tab → tự tải lại và TỰ 
         });
         window.addEventListener('ycx-bi-automation:open-worker', (e) => {
             sessionStorage.setItem('__openWorker', (e as CustomEvent).detail.url);
+            sessionStorage.setItem('__soTabMwg', String(Number(sessionStorage.getItem('__soTabMwg') || 0) + 1));
             window.dispatchEvent(new CustomEvent('ycx-bi-automation:open-worker-ok'));
         });
     });
@@ -53,6 +54,9 @@ test('cập nhật userscript xong quay lại tab → tự tải lại và TỰ 
     await expect(modal).toBeVisible();
     await expect(page.getByTestId('bi-sync-can-cap-nhat')).toHaveCount(0);
     await expect(modal.getByTestId('bi-sync-tien-trinh')).toBeVisible();
+    // Chỉ MỘT tab MWG (chủ dự án 2026-10-01: cập nhật xong mở nhiều tab — trang có 2 nơi cùng tự chạy tiếp)
+    await page.waitForTimeout(3000);
+    expect(await page.evaluate(() => Number(sessionStorage.getItem('__soTabMwg')))).toBe(1);
     // Lượt dở đã được xoá → tải lại lần nữa không tự chạy lại
     expect(await page.evaluate(() => sessionStorage.getItem('ycx-bi-auto-pending'))).toBeNull();
 });

@@ -80,10 +80,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         }
         const dateStr = monthProgress.day && monthProgress.month ? `${monthProgress.day}/${monthProgress.month}` : getDateLabel(false);
         return `LUỸ KẾ ĐẾN NGÀY ${dateStr} - ${smLabel}`;
-    }, [activeMainTab, activeSupermarket, monthProgress]);rue)} - ${smLabel}`;
-        }
-        return `LUỸ KẾ ĐẾN NGÀY ${getDateLabel(false)} - ${smLabel}`;
-    }, [activeMainTab, activeSupermarket]);
+    }, [activeMainTab, activeSupermarket, monthProgress]);
 
     return (
         <div className="space-y-0">

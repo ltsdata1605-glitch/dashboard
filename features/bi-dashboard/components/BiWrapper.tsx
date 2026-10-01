@@ -16,7 +16,7 @@ import type { ConfigTab } from './SupermarketConfig';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { useBiAutoSync } from '../hooks/useBiAutoSync';
-import { Zap, TrendingUp } from 'lucide-react';
+import { Zap, TrendingUp, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react';
 
 // Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
 import Dashboard from './Dashboard';
@@ -69,6 +69,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     // Quản lý tự động đồng bộ tập trung tại BiWrapper để modal và nút nổi hoạt động xuyên suốt cả 3 tab
     const [activeSupermarket] = useIndexedDBState<string>('dashboard-active-supermarket', 'Tổng');
     const { handleStartAutoSync, renderAutoSyncModal } = useBiAutoSync(activeSupermarket);
+    const [isDockCollapsed, setIsDockCollapsed] = useIndexedDBState<boolean>('bi-dock-collapsed', false);
 
 
     useEffect(() => {
@@ -139,7 +140,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                    Lịch sử thang chữ: bản cũ ép chữ xuống 8–9px ("High-Density Typography"), phá quy tắc
                    sàn 11px của CLAUDE.md đúng trên điện thoại (đo iPhone 15 2026-09-26: 71 chỗ < 11px). */
 
-                /* KHÔNG BO GÓC cho tất cả bảng, viền, thẻ card trong toàn bộ phân hệ Report BI (giữ nguyên avatar tròn) */
+                /* KHÔNG BO GÓC cho tất cả bảng, viền, thẻ card trong toàn bộ phân hệ Report BI (giữ nguyên avatar tròn & floating dock) */
                 .bi-report-module table,
                 .bi-report-module thead,
                 .bi-report-module tbody,
@@ -149,7 +150,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 .bi-report-module td,
                 .bi-report-module .card,
                 .bi-report-module .rounded,
-                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]) {
+                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.preserve-rounded):not(.preserve-rounded *) {
                     border-radius: 0px !important;
                 }
             `}</style>
@@ -212,76 +213,126 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
 
 
-            {/* Floating Action Dock: 2 nút Tự động Realtime và Luỹ kế luôn nổi trên Laptop/Desktop với hiệu ứng 3D Tactile sống động */}
+            {/* Floating Action Dock: 2 nút Tự động Realtime và Luỹ kế luôn nổi trên Laptop/Desktop với thiết kế kính mờ cao cấp & hiệu ứng ánh kim */}
             {activeTab === 'employees' && (
                 <aside
                     aria-label="Thao tác tự động Report BI"
-                    className="hidden lg:flex flex-col gap-2.5 fixed right-4 xl:right-7 top-32 z-40 p-2.5 rounded-2xl bg-white/75 dark:bg-slate-900/80 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.1)] no-print hide-on-export select-none animate-in fade-in slide-in-from-right-6 duration-300"
+                    className={`preserve-rounded hidden lg:flex flex-col fixed right-4 xl:right-7 top-32 z-40 transition-all duration-300 ease-out no-print hide-on-export select-none animate-in fade-in slide-in-from-right-4 ${
+                        isDockCollapsed ? 'w-auto p-1.5' : 'w-[224px] p-3 gap-2.5'
+                    } rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.18),0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.1)]`}
                 >
-                    {/* Header trạng thái 3D nhỏ tinh tế */}
-                    <div className="flex items-center justify-between px-1.5 pt-0.5 pb-1 border-b border-slate-200/60 dark:border-slate-800">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                            Auto Sync
-                        </span>
-                        <span className="relative flex h-2 w-2" title="Sẵn sàng đồng bộ tự động">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                    </div>
-
-                    {/* Nút 1: Tự động Realtime - 3D Tactile Push Button */}
-                    <button
-                        type="button"
-                        onClick={() => handleStartAutoSync('realtime')}
-                        title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                        className="group relative overflow-hidden flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-extrabold text-xs text-white bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 border-t border-amber-200/70 shadow-[0_4px_0_#b45309,0_8px_16px_rgba(245,158,11,0.35),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:shadow-[0_6px_0_#b45309,0_12px_22px_rgba(245,158,11,0.45)] hover:-translate-y-0.5 active:translate-y-1 active:shadow-[0_0_0_#b45309,0_2px_4px_rgba(245,158,11,0.3)] transition-all duration-150 cursor-pointer whitespace-nowrap"
-                    >
-                        {/* Dải ánh kim phản chiếu lướt qua khi hover */}
-                        <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/35 to-transparent transform -skew-x-12 group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
-
-                        {/* Icon Box 3D với hiệu ứng phát sáng */}
-                        <div className="relative p-1.5 rounded-lg bg-black/15 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25),0_1px_0_rgba(255,255,255,0.3)] group-hover:scale-110 group-active:scale-95 transition-transform duration-200">
-                            <Zap className="h-4 w-4 text-amber-100 fill-amber-200 drop-shadow-[0_0_6px_rgba(254,240,138,0.9)] animate-pulse" />
+                    {isDockCollapsed ? (
+                        <div className="preserve-rounded flex flex-col items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsDockCollapsed(false)}
+                                title="Mở rộng bảng Auto Sync"
+                                className="preserve-rounded p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleStartAutoSync('realtime')}
+                                title="Tự động Realtime"
+                                className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            >
+                                <Zap className="w-4 h-4 fill-amber-200" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleStartAutoSync('luyke')}
+                                title="Tự động Luỹ kế"
+                                className="preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-teal-600 to-teal-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                            >
+                                <TrendingUp className="w-4 h-4" />
+                            </button>
                         </div>
+                    ) : (
+                        <>
+                            {/* Header trạng thái sắc nét với live pulse & nút thu gọn */}
+                            <div className="preserve-rounded flex items-center justify-between px-1 pb-2 border-b border-slate-200/70 dark:border-slate-800/80">
+                                <div className="flex items-center gap-2">
+                                    <span className="relative flex h-2.5 w-2.5" title="Sẵn sàng đồng bộ tự động">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                                    </span>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                                        Auto Sync Pro
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setIsDockCollapsed(true)}
+                                    title="Thu gọn bảng"
+                                    className="preserve-rounded p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                                >
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
 
-                        {/* Nhãn 3D sắc nét */}
-                        <div className="flex flex-col text-left">
-                            <span className="tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] leading-tight">
-                                Tự động Realtime
-                            </span>
-                            <span className="text-[9.5px] font-semibold text-amber-100/90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] leading-none mt-0.5">
-                                ⚡ Tức thì hôm nay
-                            </span>
-                        </div>
-                    </button>
+                            {/* Nút 1: Tự động Realtime - Thiết kế sang trọng, hiệu ứng kính & ánh sáng viền */}
+                            <button
+                                type="button"
+                                onClick={() => handleStartAutoSync('realtime')}
+                                title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
+                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 active:from-orange-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_6px_20px_rgba(245,158,11,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            >
+                                {/* Dải ánh kim phản chiếu quét qua khi hover */}
+                                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
 
-                    {/* Nút 2: Tự động Luỹ kế - 3D Tactile Push Button */}
-                    <button
-                        type="button"
-                        onClick={() => handleStartAutoSync('luyke')}
-                        title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                        className="group relative overflow-hidden flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-extrabold text-xs text-white bg-gradient-to-b from-emerald-500 via-emerald-600 to-teal-700 border-t border-emerald-200/70 shadow-[0_4px_0_#065f46,0_8px_16px_rgba(16,185,129,0.35),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:shadow-[0_6px_0_#065f46,0_12px_22px_rgba(16,185,129,0.45)] hover:-translate-y-0.5 active:translate-y-1 active:shadow-[0_0_0_#065f46,0_2px_4px_rgba(16,185,129,0.3)] transition-all duration-150 cursor-pointer whitespace-nowrap"
-                    >
-                        {/* Dải ánh kim phản chiếu lướt qua khi hover */}
-                        <div className="absolute -inset-full bg-gradient-to-r from-transparent via-white/35 to-transparent transform -skew-x-12 group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+                                {/* Icon badge với hiệu ứng kính mờ */}
+                                <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
+                                    <Zap className="h-4 w-4 text-amber-100 fill-amber-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.9)]" />
+                                </div>
 
-                        {/* Icon Box 3D với hiệu ứng phát sáng */}
-                        <div className="relative p-1.5 rounded-lg bg-black/15 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25),0_1px_0_rgba(255,255,255,0.3)] group-hover:scale-110 group-active:scale-95 transition-transform duration-200">
-                            <TrendingUp className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
-                        </div>
+                                {/* Nhãn typography sắc nét */}
+                                <div className="flex flex-col">
+                                    <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
+                                        Tự động Realtime
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-amber-100/90 leading-none mt-1">
+                                        ⚡ Tức thì hôm nay
+                                    </span>
+                                </div>
+                            </button>
 
-                        {/* Nhãn 3D sắc nét */}
-                        <div className="flex flex-col text-left">
-                            <span className="tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)] leading-tight">
-                                Tự động Luỹ kế
-                            </span>
-                            <span className="text-[9.5px] font-semibold text-emerald-100/90 drop-shadow-[0_1px_1px_rgba(0,0,0,0.2)] leading-none mt-0.5">
-                                📈 Cả tháng đến nay
-                            </span>
-                        </div>
-                    </button>
+                            {/* Nút 2: Tự động Luỹ kế - Thiết kế sang trọng ngọc bích */}
+                            <button
+                                type="button"
+                                onClick={() => handleStartAutoSync('luyke')}
+                                title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
+                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-teal-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 active:from-teal-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(16,185,129,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            >
+                                {/* Dải ánh kim phản chiếu quét qua khi hover */}
+                                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
+
+                                {/* Icon badge với hiệu ứng kính mờ */}
+                                <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
+                                    <TrendingUp className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(110,231,183,0.9)]" />
+                                </div>
+
+                                {/* Nhãn typography sắc nét */}
+                                <div className="flex flex-col">
+                                    <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
+                                        Tự động Luỹ kế
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-emerald-100/90 leading-none mt-1">
+                                        📈 Cả tháng đến nay
+                                    </span>
+                                </div>
+                            </button>
+
+                            {/* Footer micro-tag */}
+                            <div className="preserve-rounded flex items-center justify-center gap-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-800/80 text-[9.5px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide">
+                                <Sparkles className="w-3 h-3 text-amber-500/80" />
+                                <span>Tampermonkey • Sẵn sàng</span>
+                            </div>
+                        </>
+                    )}
                 </aside>
             )}
+
 
             {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
             {/* KHUNG CHUNG 960px — Report BI / Check thưởng / Báo cáo khai thác dùng cùng khung: rộng tối đa

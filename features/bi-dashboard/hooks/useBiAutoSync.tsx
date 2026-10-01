@@ -15,6 +15,7 @@ import {
     onBiError,
 } from '../services/biAutoSyncService';
 import { BiAutoSyncModal } from '../components/BiAutoSyncModal';
+import { LuyKeMonthPickerModal } from '../components/LuyKeMonthPickerModal';
 
 export function useBiAutoSync(activeSupermarket?: string | null) {
     const [autoSyncModalOpen, setAutoSyncModalOpen] = useState(false);
@@ -24,11 +25,22 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
     const [autoSyncLatestVersion, setAutoSyncLatestVersion] = useState<string>('');
     const [autoSyncProgress, setAutoSyncProgress] = useState<BiSyncProgress | null>(null);
     const [autoSyncError, setAutoSyncError] = useState<string>('');
+    // Mã lượt (jobId) CHÍNH nơi này đã khởi chạy — chỉ nhận kết quả đúng lượt đó (xem onBiDone bên dưới)
+    const jobDangChoRef = React.useRef<string | null>(null);
     const workerWindowRef = useRef<Window | null>(null);
     const pendingReloadsRef = useRef(0);
 
-    const handleStartAutoSync = useCallback(async (mode: BiSyncMode, opts: { tuChayTiep?: boolean } = {}) => {
+    // Luỹ kế phải chọn tháng trước (giống nút ở mục Cập nhật) — gọi 'luyke' không kèm tháng thì mở bảng chọn tháng
+    const [chonThangMo, setChonThangMo] = useState(false);
+    const [autoSyncMonth, setAutoSyncMonth] = useState<string>('');
+
+    const handleStartAutoSync = useCallback(async (mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}) => {
+        if (mode === 'luyke' && !opts.month && !opts.tuChayTiep) {
+            setChonThangMo(true);
+            return;
+        }
         setAutoSyncMode(mode);
+        setAutoSyncMonth(mode === 'luyke' ? (opts.month || '') : '');
         setAutoSyncProgress(null);
         setAutoSyncError('');
         setAutoSyncStatus('running');
@@ -36,7 +48,8 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         if (!opts.tuChayTiep) pendingReloadsRef.current = 0;
 
         try {
-            const { workerWindow, workerOpened } = await startBiAutoSyncSession(mode, opts);
+            const { jobId, workerWindow, workerOpened } = await startBiAutoSyncSession(mode, opts);
+            jobDangChoRef.current = jobId;
             workerWindowRef.current = workerWindow;
             clearPendingAutoSync();
             if (!workerOpened) {
@@ -51,7 +64,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
                 setAutoSyncStatus('outdated');
                 setAutoSyncCurrentVersion(msg.split(':')[1] || '');
                 setAutoSyncLatestVersion(msg.split(':')[2] || '');
-                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current });
+                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current, month: opts.month });
             } else {
                 clearPendingAutoSync();
                 setAutoSyncStatus('error');
@@ -60,15 +73,8 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         }
     }, []);
 
-    // Tự chạy tiếp nếu có phiên dở do vừa cập nhật userscript
-    const handleStartRef = useRef(handleStartAutoSync);
-    handleStartRef.current = handleStartAutoSync;
-    useEffect(() => {
-        const p = readPendingAutoSync();
-        if (!p) return;
-        pendingReloadsRef.current = p.reloads;
-        void handleStartRef.current(p.mode, { tuChayTiep: true });
-    }, []);
+    // KHÔNG tự chạy tiếp lượt dở ở đây: có lượt dở thì BiWrapper mở thẳng mục "Cập nhật" và DataUpdater chạy tiếp.
+    // Trước đây cả 2 nơi cùng chạy tiếp → mở 2+ tab MWG sau mỗi lần cập nhật userscript (chủ dự án gặp 2026-10-01).
 
     // Tự tải lại khi cập nhật xong Tampermonkey
     useEffect(() => {
@@ -91,6 +97,12 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         });
 
         const unsubDone = onBiDone(async (payload) => {
+            // Chỉ nhận kết quả của ĐÚNG lượt nơi này vừa khởi chạy, và chỉ một lần. Không chặn thì:
+            // - mở trang là userscript (≤ 7.11) phát lại kết quả CŨ còn trong bộ nhớ Tampermonkey → pháo giấy + toast
+            //   mỗi lần mở trang và GHI ĐÈ dữ liệu cũ lên (chủ dự án gặp 2026-10-01);
+            // - trang có nhiều nơi nghe (DataUpdater + nút nổi + nút nhanh) × 2 kênh (event + postMessage) → 4 toast.
+            if (!payload.jobId || payload.jobId !== jobDangChoRef.current) return;
+            jobDangChoRef.current = null;
             setAutoSyncStatus('success');
             setAutoSyncModalOpen(false);
             try { window.focus(); } catch {}
@@ -120,7 +132,14 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
     }, [activeSupermarket]);
 
     const renderAutoSyncModal = () => (
+        <>
+        <LuyKeMonthPickerModal
+            isOpen={chonThangMo}
+            onClose={() => setChonThangMo(false)}
+            onStart={(month) => { void handleStartAutoSync('luyke', { month }); }}
+        />
         <BiAutoSyncModal
+            month={autoSyncMonth}
             isOpen={autoSyncModalOpen}
             mode={autoSyncMode}
             status={autoSyncStatus}
@@ -135,13 +154,15 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
             }}
             onReopenWorker={() => {
                 try {
-                    const target = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${autoSyncMode}&job_id=${autoSyncProgress?.jobId || 'reopen'}#ycx_mode=${autoSyncMode}`;
+                    const extra = autoSyncMode === 'luyke' && autoSyncMonth ? `&ycx_month=${autoSyncMonth}` : '';
+                    const target = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${autoSyncMode}&job_id=${autoSyncProgress?.jobId || 'reopen'}${extra}#ycx_mode=${autoSyncMode}${extra}`;
                     window.open(target, 'mwg_bi_worker');
                 } catch (e) {
                     console.warn(e);
                 }
             }}
         />
+        </>
     );
 
     return {
