@@ -356,7 +356,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
             <div className="w-full overflow-hidden">
                     {/* ─── TABLE VIEW — styled like Chi Tiết Theo Kho ─── */}
-                    <div className="overflow-x-auto custom-scrollbar px-4 pb-4 pt-2">
+                    <div className="w-full overflow-x-auto custom-scrollbar px-4 pb-4 pt-2">
                         <table className="w-full min-w-full text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}

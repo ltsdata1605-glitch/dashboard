@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
+import { getCartoonAvatar } from '../../utils/cartoonAvatars';
 import { getBonusForEmployee } from '../../utils/bonusParser';
 import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -96,7 +97,7 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
             {avatarSrc ? (
                 <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             ) : (
-                <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
+                <img src={getCartoonAvatar(emp.originalName || emp.name).dataUrl} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
                 <CameraIcon className="w-4 h-4 drop-shadow-md" />

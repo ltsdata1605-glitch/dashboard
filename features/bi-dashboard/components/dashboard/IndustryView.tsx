@@ -562,7 +562,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0
             ${groupStartHeaders.has(headerName) ? GROUP_EDGE : ''}
             tabular-nums align-middle
-            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-slate-900' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}`}
+            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] max-w-[220px] truncate ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-slate-900' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-slate-900'}`}
             ${isHang ? 'py-1 text-[11px]' : 'py-1 text-[13px]'}
         `;
         
@@ -625,7 +625,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             >
 
                 <div className="overflow-hidden">
-                    <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
+                    <div className="w-full">
                             {/* ─── DESKTOP TABLE VIEW ─── */}
                             <div className="overflow-hidden px-4 pb-4">
                                 <IndustryKpiGrid
@@ -648,7 +648,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         border-b border-b-slate-200 dark:border-b-slate-700
                                                         border-r border-slate-200 dark:border-slate-700
                                                         sticky left-0 z-20 align-middle
-                                                        uppercase tracking-wider min-w-[120px]
+                                                        uppercase tracking-wider min-w-[120px] max-w-[220px]
                                                     `}
                                                 >
                                                     NGÀNH HÀNG

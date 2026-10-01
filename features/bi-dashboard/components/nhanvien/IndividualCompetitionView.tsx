@@ -9,6 +9,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString, isSameEmployee } from '../../utils/nhanVienHelpers';
+import { getCartoonAvatar } from '../../utils/cartoonAvatars';
 import { getDefaultGroupLabel, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import { getBonusForEmployee } from '../../utils/bonusParser';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -287,9 +288,7 @@ const EmployeeProfileCard: React.FC<{
                         {avatarSrc ? (
                             <img src={avatarSrc} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-white/20 flex items-center justify-center">
-                                <span className="text-2xl font-black text-white">{selectedEmployee.name.charAt(selectedEmployee.name.lastIndexOf(' ') + 1) || '?'}</span>
-                            </div>
+                            <img src={getCartoonAvatar(selectedEmployee.originalName || selectedEmployee.name).dataUrl} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white no-print">
                             <CameraIcon className="w-4 h-4 drop-shadow-md" />
