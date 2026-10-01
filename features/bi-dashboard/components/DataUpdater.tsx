@@ -530,7 +530,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const [autoSyncLatestVersion, setAutoSyncLatestVersion] = useState<string>('');
     const [autoSyncProgress, setAutoSyncProgress] = useState<BiSyncProgress | null>(null);
     const [autoSyncError, setAutoSyncError] = useState<string>('');
-    const daBamChayRef = React.useRef(false); // nơi này đã khởi chạy lượt đang chờ kết quả
+    // Mã lượt (jobId) CHÍNH nơi này đã khởi chạy — chỉ nhận kết quả đúng lượt đó (xem onBiDone bên dưới)
+    const jobDangChoRef = React.useRef<string | null>(null);
     const workerWindowRef = React.useRef<Window | null>(null);
 
     // Số lần đã tự tải lại cho lượt đang dở (xem readPendingAutoSync) — chặn vòng tải lại khi chưa cập nhật
@@ -547,11 +548,11 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         setAutoSyncError('');
         setAutoSyncStatus('running');
         setAutoSyncModalOpen(true);
-        daBamChayRef.current = true;
         if (!opts.tuChayTiep) pendingReloadsRef.current = 0;
 
         try {
-            const { workerWindow, workerOpened } = await startBiAutoSyncSession(mode, opts);
+            const { jobId, workerWindow, workerOpened } = await startBiAutoSyncSession(mode, opts);
+            jobDangChoRef.current = jobId;
             workerWindowRef.current = workerWindow;
             clearPendingAutoSync();
             if (!workerOpened) {
@@ -609,10 +610,12 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         });
 
         const unsubDone = onBiDone(async (payload) => {
-            // Chỉ nơi ĐÃ bấm chạy mới nhận kết quả — trang có 2 nơi nghe (DataUpdater + nút nhanh Dashboard),
-            // không chặn thì lưu 2 lần, 2 toast, 2 pháo giấy.
-            if (!daBamChayRef.current) return;
-            daBamChayRef.current = false;
+            // Chỉ nhận kết quả của ĐÚNG lượt nơi này vừa khởi chạy, và chỉ một lần. Không chặn thì:
+            // - mở trang là userscript (≤ 7.11) phát lại kết quả CŨ còn trong bộ nhớ Tampermonkey → pháo giấy + toast
+            //   mỗi lần mở trang và GHI ĐÈ dữ liệu cũ lên (chủ dự án gặp 2026-10-01);
+            // - trang có nhiều nơi nghe (DataUpdater + nút nổi + nút nhanh) × 2 kênh (event + postMessage) → 4 toast.
+            if (!payload.jobId || payload.jobId !== jobDangChoRef.current) return;
+            jobDangChoRef.current = null;
             setAutoSyncStatus('success');
             // Chạy xong thì ĐÓNG modal ngay (chủ dự án 2026-10-01: không cần bảng này ở Dashboard sau khi xong —
             // tiến trình đã xem trên trang MWG); kết quả báo bằng toast bên dưới.

@@ -6751,3 +6751,10 @@ Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện 
   Sau khi gộp commit Mac "nút nổi Tự động Realtime/Luỹ kế" (c8b65c71): nút nổi Luỹ kế chạy thẳng, BỎ QUA bước chọn tháng
   (e2e `bi-auto-luy-ke-dashboard` đỏ). Tách bảng chọn tháng thành `LuyKeMonthPickerModal` dùng chung; `useBiAutoSync`
   gọi 'luyke' không kèm tháng thì mở bảng chọn tháng; nhớ tháng khi lượt dở / mở lại tab MWG.
+- 7.12 (cùng ngày): chủ dự án báo **mỗi lần mở trang lại có pháo giấy + 4 toast "Tự động cập nhật thành công"** dù dữ liệu
+  cập nhật từ lâu. Nguyên nhân: cầu nối userscript trên trang Dashboard poll bộ nhớ Tampermonkey với mốc ban đầu `null`
+  → mở trang là PHÁT LẠI kết quả lượt cũ (qua 2 kênh event + postMessage), Dashboard lưu ĐÈ dữ liệu cũ + báo thành công;
+  3 nơi nghe × 2 kênh = 4 toast. Sửa 2 phía: userscript 7.12 chụp mốc giá trị đang có trước khi poll (chỉ phát cái mới);
+  Dashboard chỉ nhận kết quả có `jobId` đúng lượt CHÍNH nơi đó vừa khởi chạy, một lần. Kiểm: spec mới
+  `bi-sync-khong-phat-lai-ket-qua-cu` (userscript cũ đỏ — phát lại lượt cũ; mới xanh) + test "phát lại kết quả CŨ → không
+  toast, không ghi đè" trong `bi-auto-sync-xong-dong-modal`; 2 test cũ đổi sang jobId thật lấy từ sự kiện start-job.
