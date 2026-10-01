@@ -542,9 +542,11 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
         }
 
         // If line is an entity name (e.g. "TỔNG", "ĐML_STR_STR - 99 Hùng Vương", "DMX Cần Thơ", "1234 - ĐM...")
+        // ĐMM/ĐMS (vd "1678 - ĐMM_AGI_TTO - Tri Tôn", "7904 - ĐMS_AGI_TTO - Cô Tô"): trước 2026-10-01 thiếu 2 tiền tố
+        // này nên dòng có mã kho đầu bị BỎ HẲN (rơi xuống luật " - " vốn loại dòng bắt đầu bằng số).
         const isEntity = line.toUpperCase() === 'TỔNG' || 
-                         /^(?:ĐMX|DMX|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
-                         /^\d+\s*-\s*(?:ĐMX|DMX|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
+                         /^(?:ĐMX|DMX|ĐMM|DMM|ĐMS|DMS|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
+                         /^\d+\s*-\s*(?:ĐMX|DMX|ĐMM|DMM|ĐMS|DMS|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
                          (!isEmployeeName(line) && line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%') && !/^\d{3,8}\s*-/.test(line));
 
         if (isEntity) {
@@ -1676,6 +1678,13 @@ export const findMatchingSupermarketKey = (targetName: string, candidateKeys: st
     return candidateKeys.find(k => isSupermarketMatch(targetName, k));
 };
 
+/** Tên trông như tên siêu thị thật: có mã kho đầu dòng ("1678 - …"), "Siêu thị 910", hoặc tiền tố chuỗi (ĐMX, ĐML_, TGDĐ…). */
+const looksLikeStore = (name: string): boolean => {
+    const t = name.trim();
+    if (extractStoreCode(t)) return true;
+    return /^(?:ĐMX|DMX|ĐML|DML|ĐMM|DMM|ĐMS|DMS|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|BHX)(?:[\s_\-:\d]|$)/i.test(t);
+};
+
 /**
  * Gom và trích xuất danh sách siêu thị từ TẤT CẢ các nguồn dữ liệu:
  * - Doanh thu Luỹ kế (summaryLuyKe)
@@ -1703,6 +1712,8 @@ export const extractAllSupermarketList = (options: {
     } = options;
 
     const names: string[] = [];
+    // Tên lấy từ Thi đua phải qua kiểm thêm (xem looksLikeStore bên dưới) — gom riêng rồi lọc sau
+    const competitionNames: string[] = [];
 
     // 1. Từ Doanh thu LK
     if (summaryLuyKe) {
@@ -1716,14 +1727,14 @@ export const extractAllSupermarketList = (options: {
     if (competitionLuyKe) {
         try {
             const compData = parseCompetitionDataBySupermarket(competitionLuyKe);
-            names.push(...Object.keys(compData).filter(n => n && n !== 'TỔNG' && n !== 'Tổng' && !isEmployeeName(n)));
+            competitionNames.push(...Object.keys(compData).filter(n => n && n !== 'TỔNG' && n !== 'Tổng' && !isEmployeeName(n)));
         } catch { /* ignore */ }
     }
     // 4. Từ Thi đua RT
     if (competitionRealtime) {
         try {
             const compData = parseCompetitionDataBySupermarket(competitionRealtime);
-            names.push(...Object.keys(compData).filter(n => n && n !== 'TỔNG' && n !== 'Tổng' && !isEmployeeName(n)));
+            competitionNames.push(...Object.keys(compData).filter(n => n && n !== 'TỔNG' && n !== 'Tổng' && !isEmployeeName(n)));
         } catch { /* ignore */ }
     }
     // 5. Từ Bảng ánh xạ mã kho
@@ -1733,6 +1744,17 @@ export const extractAllSupermarketList = (options: {
     // 6. Từ Custom Supermarkets người dùng tự thêm
     if (customSupermarkets && customSupermarkets.length > 0) {
         names.push(...customSupermarkets);
+    }
+
+    // 7. Tên từ Thi đua: CHỈ nhận khi trông như tên siêu thị thật, hoặc khớp một siêu thị đã biết ở các nguồn trên.
+    // Lỗi thật 2026-10-01: bộ đọc Thi đua coi mọi dòng "X - Y" là siêu thị → tên chương trình như "T10 - Máy Lạnh",
+    // "PK - Sạc" lọt vào danh sách (hiển thị rút gọn thành "Máy Lạnh", "Sạc"); còn "Siêu thị" là chữ userscript tự
+    // điền khi API không trả tên nhóm. Siêu thị thật luôn có mã kho đầu dòng hoặc tiền tố chuỗi (ĐMX, ĐML_, TGDĐ…).
+    const known = [...names];
+    for (const n of competitionNames) {
+        const t = (n || '').trim();
+        if (!t || /^siêu\s*thị$/i.test(t)) continue;
+        if (looksLikeStore(t) || known.some(k => isSupermarketMatch(t, k, supermarketMap))) names.push(t);
     }
 
     // Khử trùng lặp thông minh theo shortenSupermarketName

@@ -6678,3 +6678,12 @@ Lưu ý: mọi máy đang chạy ≤ 7.3 sẽ bị yêu cầu cập nhật 1 l�
 Chủ dự án: không cần bảng "Đã xong" ở Dashboard sau khi chạy xong (đã theo dõi trên trang MWG). `DataUpdater.tsx` onBiDone →
 `setAutoSyncModalOpen(false)`; vẫn còn toast + pháo giấy. Modal vẫn hiện khi đang chạy / lỗi / cần cập nhật userscript.
 Test `bi-auto-sync-xong-dong-modal.spec.ts` (trang Report BI thật, userscript giả lập): đỏ code cũ, xanh code mới; thêm CI.
+
+## Report BI — danh sách siêu thị lẫn tên nhóm thi đua (2026-10-01)
+Triệu chứng: danh sách siêu thị có "Siêu thị", "T10 IPHONE 18 series…", "Máy Lạnh", "nồi chiên", "Sạc".
+Nguyên nhân (đã tái hiện bằng script): `parseCompetitionDataBySupermarket` coi MỌI dòng "X - Y" là siêu thị → tên chương
+trình như "PK - Sạc" thành siêu thị (hiển thị rút gọn "Sạc"); "Siêu thị" là chữ userscript tự điền khi API thiếu
+`salegroupname`. Kèm lỗi cũ: thiếu tiền tố ĐMM/ĐMS → dòng "1678 - ĐMM_AGI_TTO - Tri Tôn" bị BỎ HẲN khỏi Thi đua.
+Sửa `extractAllSupermarketList`: tên từ Thi đua chỉ nhận khi trông như siêu thị (mã kho / tiền tố chuỗi) hoặc khớp siêu thị
+đã biết từ Doanh thu / mã kho / tự thêm; bỏ chữ "Siêu thị" trơn. Bộ đọc nhận thêm ĐMM/ĐMS.
+Test `danhSachSieuThi.test.ts` 3/3; e2e BI (thi đua, nhân viên theo siêu thị, dữ liệu theo tài khoản) 6/6.
