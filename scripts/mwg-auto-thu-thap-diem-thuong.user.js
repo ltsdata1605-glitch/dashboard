@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.8
+// @version      7.9
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -27,6 +27,8 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.9 — LUỸ KẾ THÊM TRẢ CHẬM THEO NHÂN VIÊN (tra-cham-matrix-get, VIEWLEVEL STAFF, từng siêu thị, MONTHKEY tháng chọn).
+ *
  * BẢN 7.8 — LUỸ KẾ THEO THÁNG CHỌN + THI ĐUA LUỸ KẾ ĐÚNG KHUÔN:
  * - Nhận tháng (YYYYMM) từ Dashboard (URL ycx_month / job GM): 01 → hôm nay (tháng hiện tại) hoặc 01 → cuối tháng.
  * - Thi đua Luỹ kế: khuôn bảng MWG Luỹ kế (SLLK/DTLK, Target, % HT tháng, % HT dự kiến), loại tính theo competitiontype.
@@ -466,7 +468,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.8';
+  const SCRIPT_VERSION_FALLBACK = '7.9';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -2524,6 +2526,7 @@
       { id: 4, title: 'Báo cáo Thi đua', desc: 'Thi đua Luỹ kế toàn cụm' },
       { id: 2, title: 'Ngành hàng BI', desc: 'Cây ngành hàng Luỹ kế từng siêu thị' },
       { id: 3, title: 'Doanh thu nhân viên', desc: 'Doanh thu nhân viên Luỹ kế từng siêu thị' },
+      { id: 5, title: 'Báo cáo Trả chậm', desc: 'Trả chậm từng nhân viên theo đối tác' },
     ],
   };
   // Trạng thái bảng của job đang chạy (bước hiện tại, các bước đã xong)
@@ -2976,6 +2979,46 @@
     return lines.join('\n');
   }
 
+  // TRẢ CHẬM theo NHÂN VIÊN (tra-cham-matrix-get, VIEWLEVEL "STAFF", mẫu thật 09/2026): mỗi dòng API = 1 nhân viên × 1 đối tác.
+  // Ra đúng khuôn ô "Trả chậm" (parseInstallmentData, định dạng A): "<mã> - <tên>\tDT trả góp\tDT siêu thị\tTỷ trọng\t(DT,%)…"
+  // theo thứ tự đối tác ở dòng tiêu đề. Đối tác bộ đọc nhận ra (HomeCredit, FECredit, KREDIVO, HPL, SMARTPOS, Samsung,
+  // Shinhan, PAYLATER…) xếp TRƯỚC, đối tác lạ (vd "Kim Ngân Pay") xếp SAU — bộ đọc chỉ ghép cặp theo đối tác nó nhận ra,
+  // để lạ ở giữa thì mọi cột sau bị lệch. Số làm tròn 2 chữ số: "1.234" bị bộ đọc hiểu là 1234.
+  function acpSerializeInstallmentStaff(rows) {
+    const list = Array.isArray(rows) ? rows : [];
+    const known = ['HomeCredit', 'FECredit', 'Shinhan', 'SMARTPOS', 'HPL', 'KREDIVO', 'Samsung', 'TPBANK', 'PAYLATER', 'EVO', 'Payoo'];
+    const isKnown = (n) => known.some((k) => String(n).toUpperCase().includes(k.toUpperCase()));
+    const f2 = (v) => (Number(v) || 0).toFixed(2);
+    const emps = new Map();
+    const partners = [];
+    for (const r of list) {
+      const id = String(r.group_id || '');
+      if (!/^\d+$/.test(id)) continue; // bỏ "administrator - Admin"
+      if (!emps.has(id)) emps.set(id, { name: `${id} - ${r.group_name || ''}`.trim(), tg: r.total_revenue_tg, store: r.revenue_store, ratio: r.installment_ratio, byPartner: {} });
+      const pn = r.partnerinstallmentname;
+      if (pn) {
+        if (!partners.includes(pn)) partners.push(pn);
+        emps.get(id).byPartner[pn] = { dt: r.revenue_tg, pct: r.ratio_tg };
+      }
+    }
+    const order = partners.filter(isKnown).concat(partners.filter((p) => !isKnown(p)));
+    const lines = ['Nhân viên\tDT Trả góp\tDT Siêu thị\tTỷ trọng\t' + order.map((p) => `${p}\t%`).join('\t')];
+    let sumTg = 0, sumStore = 0;
+    const sumP = {};
+    for (const e of emps.values()) {
+      sumTg += Number(e.tg) || 0; sumStore += Number(e.store) || 0;
+      const cells = order.map((p) => {
+        const c = e.byPartner[p];
+        sumP[p] = (sumP[p] || 0) + (c ? Number(c.dt) || 0 : 0);
+        return c ? `${f2(c.dt)}\t${f2(c.pct)}` : '0.00\t0.00';
+      });
+      lines.push(`${e.name}\t${f2(e.tg)}\t${f2(e.store)}\t${f2(e.ratio)}\t${cells.join('\t')}`);
+    }
+    const tongCells = order.map((p) => `${f2(sumP[p] || 0)}\t${sumTg > 0 ? f2(((sumP[p] || 0) / sumTg) * 100) : '0.00'}`);
+    lines.push(`Tổng\t${f2(sumTg)}\t${f2(sumStore)}\t${sumStore > 0 ? f2((sumTg / sumStore) * 100) : '0.00'}\t${tongCells.join('\t')}`);
+    return lines.join('\n');
+  }
+
   // Luỹ kế: điền Target & % HT nếu API có (target_kfactor/target); Realtime giữ "—" như bảng MWG Realtime.
   function acpLkTargetCells(item, luyKe) {
     if (!luyKe) return ['—', '—'];
@@ -3111,7 +3154,7 @@
       const isLuyKe = mode === 'luyke';
       const modeLabel = isLuyKe ? 'Luỹ kế' : 'Realtime';
       {
-        const totalSteps = 4;
+        const totalSteps = isLuyKe ? 5 : 4; // Luỹ kế có thêm Trả chậm theo nhân viên
 
         // ƯU TIÊN SỐ 1: chọn đúng nút chế độ trên trang (bg-blue-600 text-white)
         await reportProgress(1, totalSteps, `Khởi tạo ${modeLabel}`, `Ưu tiên đầu tiên: Đang chọn "${isLuyKe ? 'Lũy kế' : 'Realtime'}"...`);
@@ -3285,6 +3328,27 @@
             }
             results.employee = Object.values(employeeByStore)[0] || '';
             results.employeeByStore = employeeByStore;
+
+            // BƯỚC 5 (chỉ Luỹ kế): Trả chậm theo NHÂN VIÊN từng siêu thị — tra-cham-matrix-get VIEWLEVEL STAFF
+            if (isLuyKe) {
+              const installmentByStore = {};
+              for (let i = 0; i < storeList.length; i++) {
+                const st = storeList[i];
+                await reportProgress(5, totalSteps, 'Trả chậm', `[${i + 1}/${storeList.length}] Đang tải trả chậm nhân viên cho ${st.name}...`);
+                const tcData = await acpFetchBiApi('tra-cham-matrix-get', {
+                  VIEWLEVEL: 'STAFF',
+                  RSMIDS: null,
+                  AMIDS: null,
+                  STOREIDS: String(st.id),
+                  MONTHKEY: monthKey,
+                }, token);
+                const serializedTc = acpSerializeInstallmentStaff(tcData);
+                installmentByStore[st.name] = serializedTc;
+                installmentByStore[st.id] = serializedTc;
+              }
+              results.installmentByStore = installmentByStore;
+              console.log('[BI-Sync] [API] Bước 5 Xong: Trả chậm cho', Object.keys(installmentByStore).length, 'siêu thị');
+            }
             console.log('[BI-Sync] [API] Bước 4 Xong: Doanh thu nhân viên cho', Object.keys(employeeByStore).length, 'siêu thị');
 
             await reportDone(results);
