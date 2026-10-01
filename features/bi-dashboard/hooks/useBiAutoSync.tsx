@@ -24,6 +24,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
     const [autoSyncLatestVersion, setAutoSyncLatestVersion] = useState<string>('');
     const [autoSyncProgress, setAutoSyncProgress] = useState<BiSyncProgress | null>(null);
     const [autoSyncError, setAutoSyncError] = useState<string>('');
+    const daBamChayRef = React.useRef(false); // nơi này đã khởi chạy lượt đang chờ kết quả
     const workerWindowRef = useRef<Window | null>(null);
     const pendingReloadsRef = useRef(0);
 
@@ -33,6 +34,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         setAutoSyncError('');
         setAutoSyncStatus('running');
         setAutoSyncModalOpen(true);
+        daBamChayRef.current = true;
         if (!opts.tuChayTiep) pendingReloadsRef.current = 0;
 
         try {
@@ -60,15 +62,8 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         }
     }, []);
 
-    // Tự chạy tiếp nếu có phiên dở do vừa cập nhật userscript
-    const handleStartRef = useRef(handleStartAutoSync);
-    handleStartRef.current = handleStartAutoSync;
-    useEffect(() => {
-        const p = readPendingAutoSync();
-        if (!p) return;
-        pendingReloadsRef.current = p.reloads;
-        void handleStartRef.current(p.mode, { tuChayTiep: true });
-    }, []);
+    // KHÔNG tự chạy tiếp lượt dở ở đây: có lượt dở thì BiWrapper mở thẳng mục "Cập nhật" và DataUpdater chạy tiếp.
+    // Trước đây cả 2 nơi cùng chạy tiếp → mở 2+ tab MWG sau mỗi lần cập nhật userscript (chủ dự án gặp 2026-10-01).
 
     // Tự tải lại khi cập nhật xong Tampermonkey
     useEffect(() => {
@@ -91,6 +86,10 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         });
 
         const unsubDone = onBiDone(async (payload) => {
+            // Chỉ nơi ĐÃ bấm chạy mới nhận kết quả — trang có 2 nơi nghe (DataUpdater + nút nhanh Dashboard),
+            // không chặn thì lưu 2 lần, 2 toast, 2 pháo giấy.
+            if (!daBamChayRef.current) return;
+            daBamChayRef.current = false;
             setAutoSyncStatus('success');
             setAutoSyncModalOpen(false);
             try { window.focus(); } catch {}

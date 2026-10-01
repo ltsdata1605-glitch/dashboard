@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.10
+// @version      7.11
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -468,7 +468,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.10';
+  const SCRIPT_VERSION_FALLBACK = '7.11';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -3666,7 +3666,10 @@
 
     try {
       GM_addValueChangeListener(GM_KEY_BI_JOB, (_n, _o, newVal) => {
-        if (newVal && newVal.status === 'pending' && !biJobRunning) {
+        // CHỈ tab làm việc (mở từ Dashboard, URL có ycx_mode) mới nhận job qua kênh này. Trước 7.11 MỌI tab baocao đang
+        // mở (Báo cáo, Trả chậm… người dùng để sẵn) đều chạy cùng job → nhiều tab cùng chạy (chủ dự án gặp 2026-10-01).
+        const laTabLamViec = /[?#&]ycx_mode=/.test(location.href);
+        if (laTabLamViec && newVal && newVal.status === 'pending' && !biJobRunning) {
           acpRunBiAutomation(newVal.jobId, newVal.mode, newVal.month);
         }
       });
