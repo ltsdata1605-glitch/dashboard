@@ -1010,7 +1010,7 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         expect(laptop?.children.length).toBe(2);
     });
 
-    it('extractAllSupermarketList gom đúng siêu thị từ LK, RT, Thi đua, mã kho và customSupermarkets', async () => {
+    it('extractAllSupermarketList gom đúng siêu thị từ Doanh thu LK, RT và customSupermarkets (không lấy mã kho khi đã có Doanh thu)', async () => {
         const { extractAllSupermarketList } = await import('./dashboardHelpers');
         const result = extractAllSupermarketList({
             summaryLuyKe: 'Tên miền\tDTLK\tDTQĐ\n910 - ĐML_STR_STR - 99 Hùng Vương\t100\t200\nTổng\t100\t200',
@@ -1023,7 +1023,9 @@ describe('Định dạng MỚI 17/9/2026: Doanh thu hợp nhất chứa bảng N
         expect(result).toContain('1032 - ĐML_STR_STR - Tân Phú');
         expect(result).toContain('ĐMX Cần Thơ');
         expect(result).toContain('3717 - An Giang');
-        expect(result).toContain('ĐMX Bình Dương');
+        // Quy tắc 2026-10-01 (chủ dự án): đã có Doanh thu hợp nhất thì CHỈ lấy siêu thị trong Doanh thu + tự thêm —
+        // tên chỉ có trong bảng ánh xạ mã kho KHÔNG vào danh sách (trước đây có).
+        expect(result).not.toContain('ĐMX Bình Dương');
         expect(result).not.toContain('Tổng');
     });
 

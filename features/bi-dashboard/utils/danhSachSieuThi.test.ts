@@ -22,16 +22,33 @@ describe('extractAllSupermarketList — không lẫn tên chương trình thi đ
         expect(ds).toEqual(['ĐMM_AGI_TTO - Tri Tôn']);
     });
 
-    it('siêu thị trong Thi đua khớp siêu thị ở Doanh thu → gộp một, giữ siêu thị không tiền tố nếu đã biết', () => {
+    it('đã có Doanh thu hợp nhất → CHỈ lấy siêu thị trong Doanh thu (+ siêu thị tự thêm), bỏ Thi đua và bảng mã kho', () => {
+        // Đúng định dạng userscript (acpSerializeSummaryRealtime) gửi về
+        const summaryRealtime = [
+            'Dashboards', 'Doanh thu hợp nhất', 'DT quy đổi', '127',
+            'Siêu thị\tSỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tDOANH THU\tTARGET\t% HT TARGET (LK)\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP',
+            '1678 - ĐMM_AGI_TTO - Tri Tôn\t39\t111\t100.0%\t77\t6,135\t0.0%\t0\t+0.0%\t45\t58.4%',
+            '7904 - ĐMS_AGI_TTO - Cô Tô\t6\t14\t100.0%\t11\t1,486\t0.0%\t0\t+0.0%\t11\t100.0%',
+            '8231 - ĐMS_AGI_TTO - Lương An Trà\t1\t2\t100.0%\t1\t1,274\t0.0%\t0\t+0.0%\t0\t0.0%',
+            'Tổng (1 dòng)\t46\t127\t100.0%\t89\t8,895\t0.0%\t0\t+0.0%\t56\t62.9%',
+        ].join('\n');
         const ds = extractAllSupermarketList({
-            summaryRealtime: 'Siêu thị\tSỐ LƯỢNG\tDOANH THU QĐ\n1678 - ĐMM_AGI_TTO - Tri Tôn\t3\t14\nTổng (1 dòng)\t3\t14',
-            competitionRealtime: 'Máy Lạnh\nDOANH THU\tTARGET\t% HT THÁNG\nĐMM_AGI_TTO - Tri Tôn\t1\t2\t50',
-            supermarketMap: { 'Lương An Trà': '3717' },
+            summaryRealtime,
+            // Thi đua có cả tên trông như siêu thị nhưng KHÔNG có trong Doanh thu → vẫn không lấy
+            competitionRealtime: 'T10 - Máy Lạnh\nDOANH THU\tTARGET\t% HT THÁNG\nĐML_STR_STR - 99 Hùng Vương\t1\t2\t50\nSiêu thị\t1\t2\t3',
+            competitionLuyKe: THI_DUA_LAN_TEN_CHUONG_TRINH,
+            supermarketMap: { 'Siêu thị cũ ngoài cụm': '9999' },
+            customSupermarkets: ['43 Mậu Thân'],
         });
-        expect(ds.some(n => n.includes('Tri Tôn'))).toBe(true);
-        expect(ds.filter(n => n.includes('Tri Tôn'))).toHaveLength(1);
-        expect(ds).toContain('Lương An Trà');
-        expect(ds.join('|')).not.toMatch(/Máy Lạnh|Sạc|nồi chiên|^Siêu thị$/);
+        expect(ds).toEqual(['1678 - ĐMM_AGI_TTO - Tri Tôn', '7904 - ĐMS_AGI_TTO - Cô Tô', '8231 - ĐMS_AGI_TTO - Lương An Trà', '43 Mậu Thân']);
+    });
+
+    it('CHƯA có Doanh thu → mới dùng tạm Thi đua (đã lọc) và bảng mã kho để trang không trống', () => {
+        const ds = extractAllSupermarketList({
+            competitionRealtime: 'T10 - Máy Lạnh\nDOANH THU\tTARGET\t% HT THÁNG\nĐML_STR_STR - 99 Hùng Vương\t1\t2\t50',
+            supermarketMap: { 'Lương An Trà': '8231' },
+        });
+        expect(ds).toEqual(['Lương An Trà', 'ĐML_STR_STR - 99 Hùng Vương']);
     });
 });
 

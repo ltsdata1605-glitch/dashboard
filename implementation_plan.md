@@ -6700,3 +6700,11 @@ Sửa:
   mở thẳng mục Cập nhật.
 - Userscript 7.5: @grant GM_openInTab + window.close; nhận open-worker CHỈ với URL baocao.dienmayxanh.com.
 Test `bi-sync-cap-nhat-xong-tu-chay-tiep.spec.ts` 2/2 (code cũ: đứng im không tải lại); thêm CI. Các test bi-sync khác 18/18.
+
+## Report BI — tên siêu thị CHỈ lấy từ Doanh thu hợp nhất (2026-10-01, quyết định chủ dự án)
+Bản lọc trước (theo "trông như siêu thị") chưa đủ: chủ dự án vẫn thấy tên nhóm thi đua trong danh sách và chốt quy tắc:
+"tên siêu thị chỉ được lấy từ dữ liệu ở Doanh thu hợp nhất, trong mục Siêu thị".
+`extractAllSupermarketList`: có Doanh thu (LK hoặc RT) → danh sách = siêu thị trong Doanh thu + siêu thị người dùng tự thêm;
+KHÔNG lấy Thi đua, KHÔNG lấy bảng ánh xạ mã kho. Chưa có Doanh thu → dùng tạm Thi đua (đã lọc) + mã kho để trang không trống.
+Test cũ `dashboardHelpers.test.ts` (kỳ vọng tên chỉ có trong bảng mã kho vẫn vào danh sách) sửa theo quy tắc mới.
+Unit 947 xanh; e2e BI 7/7.

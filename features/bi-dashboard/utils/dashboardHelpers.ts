@@ -1723,6 +1723,14 @@ export const extractAllSupermarketList = (options: {
     if (summaryRealtime) {
         names.push(...extractSupermarketList(summaryRealtime));
     }
+    // Chủ dự án 2026-10-01: "tên siêu thị CHỈ được lấy từ dữ liệu Doanh thu hợp nhất, mục Siêu thị". Đã có Doanh thu →
+    // danh sách = siêu thị trong Doanh thu + siêu thị người dùng tự thêm; KHÔNG lấy từ Thi đua (tên nhóm thi đua từng bị
+    // nhận nhầm là siêu thị) hay bảng ánh xạ mã kho. Chỉ khi chưa có Doanh thu mới dùng tạm các nguồn còn lại.
+    if (names.length > 0) {
+        names.push(...customSupermarkets);
+        return dedupeSupermarketNames(names, customSupermarkets, supermarketMap);
+    }
+
     // 3. Từ Thi đua LK
     if (competitionLuyKe) {
         try {
@@ -1757,7 +1765,11 @@ export const extractAllSupermarketList = (options: {
         if (looksLikeStore(t) || known.some(k => isSupermarketMatch(t, k, supermarketMap))) names.push(t);
     }
 
-    // Khử trùng lặp thông minh theo shortenSupermarketName
+    return dedupeSupermarketNames(names, customSupermarkets, supermarketMap);
+};
+
+/** Khử trùng lặp thông minh theo shortenSupermarketName, bỏ "Tổng", ngành hàng cha và tên nhân viên. */
+const dedupeSupermarketNames = (names: string[], customSupermarkets: string[], supermarketMap: Record<string, string>): string[] => {
     const uniqueShortNames = new Set<string>();
     const result: string[] = [];
     for (const name of names) {
