@@ -36,6 +36,11 @@ một câu báo trước rẻ hơn nhiều so với khôi phục. Mọi việc k
 
 **Mục này thay thế các câu "không phải việc agent tự chạy" ở bản CLAUDE.md cũ** (mục 1.1, dòng Deploy).
 
+**Tự push + deploy sau MỖI lần thay đổi (chủ dự án yêu cầu 2026-10-01 — "Luôn ghi nhớ"):** xong một thay đổi/nâng cấp
+và đã kiểm (`npm run check` + test liên quan) thì agent TỰ làm luôn, không chờ được nhắc: commit → push nhánh làm việc →
+fast-forward/merge vào `main` và push → `npm run build` → `./node_modules/.bin/gh-pages -d dist -m "<mô tả>"` → curl
+`https://dashboard.pro.vn` xác nhận `assets/index-*.js` (và `@version` userscript nếu có đổi) đã là bản mới.
+
 **Đồng bộ cloud → máy Mac của chủ dự án (bổ sung 2026-09-29):** máy Mac chạy
 `scripts/dong-bo-may-tinh/` (launchd, mỗi 5 phút) tự `git pull --ff-only` nhánh `main` khi máy sạch. Nghĩa
 là mọi thứ agent đẩy lên `main` sẽ tự về máy chủ dự án — vẫn phải đưa lên `main` (không chỉ nhánh

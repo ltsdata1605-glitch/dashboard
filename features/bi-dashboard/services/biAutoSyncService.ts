@@ -197,29 +197,53 @@ export async function applyBiSyncResults(
         }
     } else {
         // LUỸ KẾ
+        // Bản 7.7+ chạy Direct API → có industryByStore/employeeByStore: lưu theo TỪNG siêu thị như Realtime.
+        // Đường UI cũ (không có *ByStore) giữ cách lưu cũ theo siêu thị đang chọn.
+        const quaApi = Boolean(results.industryByStore || results.employeeByStore);
         // 1. Doanh thu hợp nhất Luỹ kế
         if (results.summary) {
             await saveBiField('summary-luy-ke', results.summary, 'summary-luy-ke-ts');
         }
         // 2. Siêu thị ngành hàng Luỹ kế
-        if (results.industry && safeName) {
+        if (results.industryByStore && Object.keys(results.industryByStore).length > 0) {
+            const daLuu = new Set<string>();
+            for (const [stKey, indText] of Object.entries(results.industryByStore)) {
+                const stSafeName = shortenSupermarketName(stKey);
+                if (stSafeName && !daLuu.has(stSafeName)) {
+                    daLuu.add(stSafeName);
+                    const key = `config-${stSafeName}-industry-luyke`;
+                    await saveBiField(key, indText, `${key}-ts`);
+                }
+            }
+        } else if (results.industry && safeName) {
             const key = `config-${safeName}-industry-luyke`;
             await saveBiField(key, results.industry, `${key}-ts`);
         }
         // 3. Doanh thu nhân viên Luỹ kế (danhSach)
-        if (results.employee && safeName) {
+        if (results.employeeByStore && Object.keys(results.employeeByStore).length > 0) {
+            const daLuu = new Set<string>();
+            for (const [stKey, empText] of Object.entries(results.employeeByStore)) {
+                const stSafeName = shortenSupermarketName(stKey);
+                if (stSafeName && !daLuu.has(stSafeName)) {
+                    daLuu.add(stSafeName);
+                    const key = `config-${stSafeName}-danhsach`;
+                    await saveBiField(key, empText, `${key}-ts`);
+                }
+            }
+        } else if (results.employee && safeName) {
             const key = `config-${safeName}-danhsach`;
             await saveBiField(key, results.employee, `${key}-ts`);
         }
-        // 4. Thi đua Luỹ kế -> Ghi vào CẢ Thi đua cụm và Thi đua siêu thị
+        // 4. Thi đua Luỹ kế (cụm). Đường UI cũ còn ghi thêm vào Thi đua siêu thị; dữ liệu API là bảng CỤM theo chương
+        // trình (không có nhân viên) nên KHÔNG ghi vào ô Thi đua nhân viên của siêu thị.
         if (results.competition) {
             await saveBiField('competition-luy-ke', results.competition, 'competition-luy-ke-ts');
-            if (safeName) {
+            if (!quaApi && safeName) {
                 const key = `config-${safeName}-thidua`;
                 await saveBiField(key, results.competition, `${key}-ts`);
             }
         }
-        // 5. Trả chậm Luỹ kế -> Ghi vào Trả chậm siêu thị
+        // 5. Trả chậm Luỹ kế (chỉ đường UI cũ có) -> Ghi vào Trả chậm siêu thị
         if (results.installment && safeName) {
             const key = `config-${safeName}-tragop`;
             await saveBiField(key, results.installment, `${key}-ts`);

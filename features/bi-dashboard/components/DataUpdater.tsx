@@ -658,7 +658,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     setCompetitionLuyKe(payload.results.competition);
                     setCompetitionLuyKeTs(nowTs);
                     addUpdate('competition-luy-ke', 'Tự động cập nhật Báo cáo Thi đua (Luỹ kế)', 'Thi Đua Cụm');
-                    if (targetSupermarket) {
+                    if (targetSupermarket && !payload.results.industryByStore && !payload.results.employeeByStore) {
                         addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-thidua`, `Tự động cập nhật Thi đua - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
                     }
                     if (canManageSharedBiData && user) {
@@ -667,6 +667,15 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             .catch(e => console.error('[AutoSync] Lỗi upload competition luy ke:', e));
                     }
                 }
+                // Bản 7.7+ (Direct API): Ngành hàng & Nhân viên Luỹ kế theo TỪNG siêu thị
+                Object.keys(payload.results.industryByStore || {}).forEach(stName => {
+                    if (/^\d+$/.test(stName)) return; // khoá phụ theo mã kho — đã có khoá theo tên
+                    addUpdate(`config-${shortenSupermarketName(stName)}-industry-luyke`, `Tự động cập nhật Ngành hàng BI Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                });
+                Object.keys(payload.results.employeeByStore || {}).forEach(stName => {
+                    if (/^\d+$/.test(stName)) return;
+                    addUpdate(`config-${shortenSupermarketName(stName)}-danhsach`, `Tự động cập nhật Doanh thu nhân viên Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                });
                 if (payload.results.installment && targetSupermarket) {
                     addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-tragop`, `Tự động cập nhật Trả chậm - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
                 }

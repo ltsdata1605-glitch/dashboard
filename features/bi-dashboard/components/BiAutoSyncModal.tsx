@@ -28,12 +28,12 @@ const STEPS_REALTIME = [
     { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
 ];
 
+// Luỹ kế (userscript 7.7+) chạy cùng Direct API như Realtime: 4 báo cáo, cùng thứ tự chạy.
 const STEPS_LUYKE = [
-    { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
-    { id: 2, title: 'Ngành hàng BI', desc: 'Mở rộng cây [+] & sao chép ngành hàng' },
-    { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
-    { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép thi đua (Cụm & Siêu thị)' },
-    { id: 5, title: 'Báo cáo Trả chậm', desc: 'Chọn tất cả & sao chép tỷ trọng trả chậm' },
+    { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn Lũy kế, bật Trả góp & DT quy đổi' },
+    { id: 4, title: 'Báo cáo Thi đua', desc: 'Thi đua Luỹ kế toàn cụm' },
+    { id: 2, title: 'Ngành hàng BI', desc: 'Cây ngành hàng Luỹ kế từng siêu thị' },
+    { id: 3, title: 'Doanh thu nhân viên', desc: 'Doanh thu nhân viên Luỹ kế từng siêu thị' },
 ];
 
 /** Sau khi xong, modal tự đóng sau ngần này giây (chủ dự án: "hoàn tất tự quay về trang gốc và tự đóng thông báo"). */
@@ -125,13 +125,13 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                     ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
                                     : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
                             }`}>
-                                {isRealtime ? '4 Báo cáo' : '5 Báo cáo'}
+                                {steps.length} Báo cáo
                             </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
                             {isRealtime
                                 ? 'Tự động mở trang MWG, check các tuỳ chọn và dán 4 báo cáo Realtime vào hệ thống'
-                                : 'Tự động mở trang MWG, check các tuỳ chọn và dán 5 báo cáo Luỹ kế (kèm Trả chậm & Thi đua) vào hệ thống'}
+                                : 'Tự động mở trang MWG, chọn Lũy kế và dán 4 báo cáo Luỹ kế vào hệ thống'}
                         </p>
                     </div>
                 </div>

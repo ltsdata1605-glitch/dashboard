@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.6
+// @version      7.7
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -27,6 +27,11 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.7 — TỰ ĐỘNG LUỸ KẾ CHẠY BẰNG DIRECT API NHƯ REALTIME:
+ * - Cùng 4 báo cáo (Doanh thu hợp nhất, Thi đua cụm, Ngành hàng BI & Nhân viên từng siêu thị); khác: chọn nút "Lũy kế",
+ *   dải ngày 01 đầu tháng → hôm nay, Thi đua TIMETYPE 2. Ngành hàng/Nhân viên Luỹ kế điền thêm Target & % HT nếu API có.
+ * - Không có token / API lỗi → đường UI Luỹ kế cũ (5 bước, kèm Trả chậm).
+ *
  * BẢN 7.6 — Bảng tiến trình Realtime xếp dòng theo thứ tự chạy thật: Hợp nhất → Thi đua → Ngành hàng → Nhân viên.
  *
  * BẢN 7.5 — CẬP NHẬT XONG TỰ CHẠY TIẾP:
@@ -456,7 +461,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.6';
+  const SCRIPT_VERSION_FALLBACK = '7.7';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -2507,11 +2512,10 @@
       { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
     ],
     luyke: [
-      { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn tất cả, bật Trả góp & DT quy đổi' },
-      { id: 2, title: 'Ngành hàng BI', desc: 'Mở rộng cây [+] & sao chép ngành hàng' },
-      { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
-      { id: 4, title: 'Báo cáo Thi đua', desc: 'Chọn tất cả & sao chép thi đua (Cụm & Siêu thị)' },
-      { id: 5, title: 'Báo cáo Trả chậm', desc: 'Chọn tất cả & sao chép tỷ trọng trả chậm' },
+      { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn Lũy kế, bật Trả góp & DT quy đổi' },
+      { id: 4, title: 'Báo cáo Thi đua', desc: 'Thi đua Luỹ kế toàn cụm' },
+      { id: 2, title: 'Ngành hàng BI', desc: 'Cây ngành hàng Luỹ kế từng siêu thị' },
+      { id: 3, title: 'Doanh thu nhân viên', desc: 'Doanh thu nhân viên Luỹ kế từng siêu thị' },
     ],
   };
   // Trạng thái bảng của job đang chạy (bước hiện tại, các bước đã xong)
@@ -2925,7 +2929,16 @@
     return blocks.join('\n');
   }
 
-  function acpSerializeIndustryRealtime(industryRows) {
+  // Luỹ kế: điền Target & % HT nếu API có (target_kfactor/target); Realtime giữ "—" như bảng MWG Realtime.
+  function acpLkTargetCells(item, luyKe) {
+    if (!luyKe) return ['—', '—'];
+    const target = Math.round(Number(item.target_kfactor || item.target || 0));
+    if (!(target > 0)) return ['—', '—'];
+    const ht = ((Number(item.revenue_kfactor || 0) / target) * 100).toFixed(1) + '%';
+    return [target.toLocaleString('en-US'), ht];
+  }
+
+  function acpSerializeIndustryRealtime(industryRows, luyKe) {
     const list = Array.isArray(industryRows) ? industryRows : [];
     const lines = [
       'NGÀNH HÀNG / NHÓM HÀNG\tSỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tDOANH THU\tTARGET\t% HT TARGET (LK)\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP'
@@ -2947,7 +2960,8 @@
         sumSl += sl; sumQd += qd; sumThuc += thuc; sumTb3t += tb3t; sumTg += tg;
       }
 
-      lines.push(`${name}\t${sl.toLocaleString('en-US')}\t${qd.toLocaleString('en-US')}\t100.0%\t${thuc.toLocaleString('en-US')}\t—\t—\t${tb3t.toLocaleString('en-US')}\t${tt}\t${tg.toLocaleString('en-US')}\t${pctTg}`);
+      const [tgtCell, htCell] = acpLkTargetCells(item, luyKe);
+      lines.push(`${name}\t${sl.toLocaleString('en-US')}\t${qd.toLocaleString('en-US')}\t100.0%\t${thuc.toLocaleString('en-US')}\t${tgtCell}\t${htCell}\t${tb3t.toLocaleString('en-US')}\t${tt}\t${tg.toLocaleString('en-US')}\t${pctTg}`);
     }
 
     const totalTtDiff = sumTb3t > 0 ? (((sumQd - sumTb3t) / sumTb3t) * 100).toFixed(1) : '0.0';
@@ -2958,7 +2972,7 @@
     return lines.join('\n');
   }
 
-  function acpSerializeStaffRealtime(staffRows) {
+  function acpSerializeStaffRealtime(staffRows, luyKe) {
     const list = Array.isArray(staffRows) ? staffRows : [];
     const lines = [
       'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ\t% TỈ TRỌNG\tDOANH THU\tTARGET\t% HT TARGET\tTB 3 THÁNG\t% TT\tDT TRẢ GÓP\t% TRẢ GÓP'
@@ -2974,7 +2988,8 @@
       const pctTg = thuc > 0 ? ((tg / thuc) * 100).toFixed(1) + '%' : '0.0%';
 
       sumSl += sl; sumQd += qd; sumThuc += thuc; sumTg += tg;
-      lines.push(`${name}\t${sl.toLocaleString('en-US')}\t${qd.toLocaleString('en-US')}\t—\t${thuc.toLocaleString('en-US')}\t—\t—\t—\t—\t${tg.toLocaleString('en-US')}\t${pctTg}`);
+      const [tgtCell, htCell] = acpLkTargetCells(item, luyKe);
+      lines.push(`${name}\t${sl.toLocaleString('en-US')}\t${qd.toLocaleString('en-US')}\t—\t${thuc.toLocaleString('en-US')}\t${tgtCell}\t${htCell}\t—\t—\t${tg.toLocaleString('en-US')}\t${pctTg}`);
     }
 
     const totalPctTg = sumThuc > 0 ? ((sumTg / sumThuc) * 100).toFixed(1) + '%' : '0.0%';
@@ -3043,12 +3058,18 @@
       // Đợi trang nạp ban đầu tắt hẳn loading
       await acpWaitForLoadingComplete(30000, 800, 500);
 
-      if (mode === 'realtime') {
+      // ====== BẢN 7.7: DIRECT API CHO CẢ REALTIME LẪN LUỸ KẾ (4 báo cáo) ======
+      // Khác nhau DUY NHẤT: nút chọn trên trang (Realtime / Lũy kế), dải ngày (hôm nay / 01 đầu tháng → hôm nay)
+      // và TIMETYPE Thi đua (1 = Realtime, 2 = Luỹ kế). API lỗi / không có token → chạy đường UI riêng của từng chế độ.
+      const isLuyKe = mode === 'luyke';
+      const modeLabel = isLuyKe ? 'Luỹ kế' : 'Realtime';
+      {
         const totalSteps = 4;
 
-        // ƯU TIÊN SỐ 1 KHI CHẠY REALTIME: Tự động chọn tab "Realtime" (bg-blue-600 text-white)
-        await reportProgress(1, totalSteps, 'Khởi tạo Realtime', 'Ưu tiên đầu tiên: Đang chọn tab "Realtime"...');
-        await ensureRealtimeTabActive();
+        // ƯU TIÊN SỐ 1: chọn đúng nút chế độ trên trang (bg-blue-600 text-white)
+        await reportProgress(1, totalSteps, `Khởi tạo ${modeLabel}`, `Ưu tiên đầu tiên: Đang chọn "${isLuyKe ? 'Lũy kế' : 'Realtime'}"...`);
+        if (isLuyKe) await ensureToggleActive('Lũy kế');
+        else await ensureRealtimeTabActive();
         await sleep(250);
 
         // TIẾP THEO: Đảm bảo tự động chọn "DT quy đổi" & bật nút "Trả góp"
@@ -3080,9 +3101,9 @@
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const dd = String(now.getDate()).padStart(2, '0');
             const todayKey = parseInt(`${yyyy}${mm}${dd}`, 10);
-            // REALTIME = CHỈ HÔM NAY. KHÔNG dùng ngày 01 đầu tháng: 01 → hôm nay là dải LUỸ KẾ
-            // (lỗi bản 6.8–7.0: chạy Realtime nhưng đổ số Luỹ kế).
-            const fromDateKey = todayKey;
+            // REALTIME = CHỈ HÔM NAY; LUỸ KẾ = 01 đầu tháng → hôm nay.
+            // (lỗi bản 6.8–7.0: Realtime dùng 01 → hôm nay nên đổ số Luỹ kế.)
+            const fromDateKey = isLuyKe ? parseInt(`${yyyy}${mm}01`, 10) : todayKey;
             const toDateKey = todayKey;
             const monthKey = parseInt(`${yyyy}${mm}`, 10);
 
@@ -3152,7 +3173,7 @@
               VIEWLEVEL: 'COMPANY',
               VIEWIDS: null,
               ISVIEWSTORE: 0,
-              TIMETYPE: 1, // 1 = Realtime (trang MWG: ?timetype=1); 2 = Luỹ kế — bản ≤ 7.0 gửi 2 nên ra số Luỹ kế
+              TIMETYPE: isLuyKe ? 2 : 1, // 1 = Realtime (trang MWG: ?timetype=1); 2 = Luỹ kế
               STOREIDS: activeStoreIds,
               PAGESIZE: 0,
             }, token);
@@ -3178,7 +3199,7 @@
                 PAGEINDEX: 1,
                 PAGESIZE: 0,
               }, token);
-              const serializedInd = acpSerializeIndustryRealtime(industryData);
+              const serializedInd = acpSerializeIndustryRealtime(industryData, isLuyKe);
               industryByStore[st.name] = serializedInd;
               industryByStore[st.id] = serializedInd;
             }
@@ -3204,7 +3225,7 @@
                 PAGEINDEX: 1,
                 PAGESIZE: 50,
               }, token);
-              const serializedStaff = acpSerializeStaffRealtime(staffData);
+              const serializedStaff = acpSerializeStaffRealtime(staffData, isLuyKe);
               employeeByStore[st.name] = serializedStaff;
               employeeByStore[st.id] = serializedStaff;
             }
@@ -3221,6 +3242,10 @@
           console.warn('[BI-Sync] Không bắt được Token, tự động kích hoạt UI Automation Fallback...');
         }
 
+      }
+
+      if (mode === 'realtime') {
+        const totalSteps = 4;
         // ====== NẾU KHÔNG CÓ TOKEN HOẶC API LỖI: CHẠY UI AUTOMATION FALLBACK ======
 
         // --- BƯỚC 1: Doanh thu hợp nhất Realtime ---
