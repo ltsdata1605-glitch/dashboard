@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon } from '../Icons';
-import { Info } from 'lucide-react';
+import { Info, Zap, TrendingUp } from 'lucide-react';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
@@ -24,6 +24,8 @@ interface DashboardHeaderProps {
     isExporting?: boolean;
     /** Slot for tab-specific controls (e.g. column settings dropdown) */
     toolbarSlot?: React.ReactNode;
+    /** Callback kích hoạt tự động thu thập từ Tampermonkey */
+    onStartAutoSync?: (mode: 'realtime' | 'luyke') => void;
     /** Content to render inside the header container (e.g. merged table) */
     children?: React.ReactNode;
 }
@@ -53,6 +55,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     onBatchExport, isBatchExporting,
     onExport, isExporting,
     toolbarSlot,
+    onStartAutoSync,
     children
 }) => {
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
@@ -121,13 +124,42 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none shadow-sm">
                 {/* Sub-tabs row */}
-                <div className="px-4 sm:px-5 pt-3 hide-on-export">
+                <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/60 hide-on-export flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
                     <Tabs
                         items={SUB_TABS.map(({ tab, label }) => ({ id: tab, label }))}
                         activeId={activeSubTab}
                         onChange={(id) => setActiveSubTab(id as SubTab)}
                         variant="underline"
                     />
+
+                    {/* 2 nút Tự động Realtime & Tự động Luỹ kế nhỏ gọn */}
+                    {onStartAutoSync && (
+                        <div className="flex items-center gap-1.5 shrink-0 ml-auto pb-0.5">
+                            {/* Nút Tự động Realtime */}
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                onClick={() => onStartAutoSync('realtime')}
+                                title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
+                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[10.5px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-amber-600/30 whitespace-nowrap"
+                            >
+                                <Zap className="h-3 w-3 text-amber-100 fill-amber-200 shrink-0" />
+                                <span>Tự động Realtime</span>
+                            </Button>
+
+                            {/* Nút Tự động Luỹ kế */}
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                onClick={() => onStartAutoSync('luyke')}
+                                title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
+                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[10.5px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-emerald-600/30 whitespace-nowrap"
+                            >
+                                <TrendingUp className="h-3 w-3 text-emerald-100 shrink-0" />
+                                <span>Tự động Luỹ kế</span>
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Content Title + Inline Actions + Quote + TimeProgressBar */}

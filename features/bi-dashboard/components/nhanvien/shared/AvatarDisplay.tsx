@@ -1,8 +1,10 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { UsersIcon, UploadIcon } from '../../Icons';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { UploadIcon } from '../../Icons';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { standardizeEmployeeName, extractEmployeeId } from '../../../utils/nhanVienHelpers';
+import { getCartoonAvatar } from '../../../utils/cartoonAvatars';
+import { AvatarPickerModal } from './AvatarPickerModal';
 import * as db from '../../../utils/db';
 
 interface AvatarDisplayProps {
@@ -17,7 +19,10 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
     const dbKey = `avatar-${canonicalName}`;
     const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
     const [fallbackSrc, setFallbackSrc] = useState<string | null>(null);
+    const [isPickerOpen, setIsPickerOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const defaultCartoon = useMemo(() => getCartoonAvatar(employeeName), [employeeName]);
 
     useEffect(() => {
         if (!avatarSrc && employeeName) {
@@ -75,13 +80,45 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
     }, [avatarSrc, employeeName, canonicalName, dbKey]);
 
     const activeSrc = avatarSrc || fallbackSrc;
+    const effectiveSrc = activeSrc || defaultCartoon.dataUrl;
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
+    const syncAvatarToDb = async (src: string | null) => {
+        const keysToUpdate: string[] = [dbKey, `avatar-${employeeName}`];
+        const empId = extractEmployeeId(employeeName);
+        if (empId) keysToUpdate.push(`avatar-${empId}`);
+
+        for (const k of keysToUpdate) {
+            try {
+                if (src) {
+                    await db.set(k as any, src);
+                } else {
+                    await db.deleteEntry(k as any);
+                }
+            } catch (e) {
+                // ignore
+            }
+        }
+    };
+
+    const handleSelectCartoonAvatar = async (dataUrl: string) => {
+        await setAvatarSrc(dataUrl);
+        setFallbackSrc(dataUrl);
+        await syncAvatarToDb(dataUrl);
+    };
+
+    const handleResetDefaultAvatar = async () => {
+        await setAvatarSrc(null);
+        setFallbackSrc(null);
+        await syncAvatarToDb(null);
+    };
+
+    const handleUploadFile = async (file: File): Promise<void> => {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
+            reader.onerror = reject;
             reader.onloadend = () => {
                 const img = new Image();
+                img.onerror = reject;
                 img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     const MAX_WIDTH = 128;
@@ -104,52 +141,65 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                     canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx?.drawImage(img, 0, 0, width, height);
-                    const compressedBase64 = canvas.toDataURL('image/webp', 0.8);
-                    setAvatarSrc(compressedBase64);
-                    // Also save to other variations for safety
-                    try {
-                        if (employeeName !== canonicalName) {
-                            await db.set(`avatar-${employeeName}` as any, compressedBase64);
-                        }
-                    } catch (e) {
-                        // ignore
-                    }
+                    const compressedBase64 = canvas.toDataURL('image/webp', 0.85);
+
+                    await setAvatarSrc(compressedBase64);
+                    setFallbackSrc(compressedBase64);
+                    await syncAvatarToDb(compressedBase64);
+                    resolve();
                 };
                 img.src = reader.result as string;
             };
             reader.readAsDataURL(file);
-        }
+        });
     };
+
     if (isHidden) return <div className="w-5 h-5 flex-shrink-0" />;
+
     return (
-        <div 
-            className="relative group w-5 h-5 flex-shrink-0"
-            onClick={(e) => e.stopPropagation()} 
-        >
-            {activeSrc ? (
-                <img 
-                    src={activeSrc} 
-                    alt={employeeName} 
-                    onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-                    className="w-full h-full rounded-full object-cover cursor-pointer" 
-                />
-            ) : (
-                <div 
-                    onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-                    className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center cursor-pointer hover:bg-slate-200"
-                >
-                    <UsersIcon className="h-3.5 w-3.5 text-slate-400" />
-                </div>
-            )}
-            <Button
-                variant="unstyled" size="none"
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity after:absolute after:-inset-2 after:content-[''] lg:after:hidden no-print border border-slate-200"
+        <>
+            <div 
+                className="relative group w-5 h-5 flex-shrink-0"
+                onClick={(e) => e.stopPropagation()} 
             >
-                <UploadIcon className="h-2 w-2 text-sky-600" />
-            </Button>
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
-        </div>
+                <img 
+                    src={effectiveSrc} 
+                    alt={employeeName} 
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (onClick) {
+                            onClick();
+                        } else {
+                            setIsPickerOpen(true);
+                        }
+                    }}
+                    title={activeSrc ? employeeName : `${employeeName} (Avatar hoạt hình: ${defaultCartoon.name})`}
+                    className="w-full h-full rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all shadow-2xs" 
+                />
+                
+                <Button
+                    variant="unstyled" size="none"
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                        setIsPickerOpen(true);
+                    }}
+                    title="Đổi avatar hoạt hình hoặc tải ảnh lên"
+                    className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity after:absolute after:-inset-2 after:content-[''] lg:after:hidden no-print border border-slate-200 dark:border-slate-700 shadow-xs"
+                >
+                    <UploadIcon className="h-2 w-2 text-sky-600 dark:text-sky-400" />
+                </Button>
+            </div>
+
+            <AvatarPickerModal
+                isOpen={isPickerOpen}
+                onClose={() => setIsPickerOpen(false)}
+                employeeName={employeeName}
+                currentAvatarSrc={activeSrc}
+                onSelectAvatar={handleSelectCartoonAvatar}
+                onResetDefault={handleResetDefaultAvatar}
+                onUploadFile={handleUploadFile}
+            />
+        </>
     );
 };
 
