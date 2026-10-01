@@ -555,6 +555,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
         const unsubDone = onBiDone(async (payload) => {
             setAutoSyncStatus('success');
+            try { window.focus(); } catch { /* trình duyệt có thể không cho tự lấy focus */ }
             const targetSupermarket = activeSupermarket || supermarkets[0] || null;
             const res = await applyBiSyncResults(payload.mode, payload.results, targetSupermarket);
 

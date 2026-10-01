@@ -6644,3 +6644,13 @@ Sửa: FROMDATE = TODATE = hôm nay; Thi đua TIMETYPE 1 (trang MWG dùng `?time
 Test `bi-sync-realtime-ngay.spec.ts` (nạp userscript thật, ghi payload mọi POST /kb-api/): ĐỎ mã cũ (FROMDATE 20260901),
 XANH mã mới; thêm vào CI. ⚠️ TIMETYPE 1 = Realtime là suy từ URL trang MWG, chưa đối chiếu payload thật — cần chủ dự
 án xác nhận 1 lần trên DevTools (Network → competition-bymsg-get).
+
+## BI-Sync — theo dõi tiến trình trong modal Dashboard, xong tự quay về & tự đóng (2026-10-01)
+Yêu cầu chủ dự án: bảng tiến trình trên tab MWG phải hiện trong modal "Tự động Cập nhật Realtime"; xong thì tự về trang gốc, tự đóng.
+- `BiAutoSyncModal.tsx`: khung tiến trình trực tiếp (bước x/y, %, tên bước, thông điệp, thanh tiến trình); bước xác định
+  THEO TÊN (`buocTheoTen`) — lỗi phát hiện kèm: Direct API báo 2 = Thi đua nhưng modal đánh số 2 = Ngành hàng → sáng nhầm dòng;
+  xong thì đếm ngược 3 giây rồi tự đóng; `window.confirm` → `ConfirmDialog` (quy tắc dự án); "4 báo cáo" → đúng số bước (Luỹ kế 5).
+- Userscript 7.2: Direct API lấy được token → `window.opener.focus()` về Dashboard (tab MWG chạy nền, không cần màn hình);
+  xong → focus Dashboard + đóng tab MWG sau 1,2s. Đường UI Fallback vẫn giữ tab MWG ở trước.
+- Test `bi-auto-sync-modal-tien-trinh.spec.ts` 3/3 (đỏ trên modal cũ 3/3), thêm vào CI. CHƯA kiểm được trên Chrome thật:
+  trình duyệt có thể chặn `opener.focus()` — khi đó đóng tab MWG vẫn đưa về tab đã mở nó.

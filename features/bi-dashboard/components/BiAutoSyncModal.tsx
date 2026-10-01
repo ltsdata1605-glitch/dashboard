@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Check, Loader2, AlertCircle, ExternalLink, Zap, Clock, TrendingUp } from 'lucide-react';
 import { BiSyncMode, BiSyncProgress } from '../services/biAutoSyncService';
 
@@ -31,6 +32,24 @@ const STEPS_LUYKE = [
     { id: 5, title: 'Báo cáo Trả chậm', desc: 'Chọn tất cả & sao chép tỷ trọng trả chậm' },
 ];
 
+/** Sau khi xong, modal tự đóng sau ngần này giây (chủ dự án: "hoàn tất tự quay về trang gốc và tự đóng thông báo"). */
+export const AUTO_CLOSE_SECONDS = 3;
+
+/**
+ * Bước trong modal xác định theo TÊN bước userscript gửi, KHÔNG theo số thứ tự: Direct API Engine báo
+ * 2 = Thi đua, 3 = Ngành hàng, 4 = Nhân viên, còn đường UI báo 2 = Ngành hàng, 4 = Thi đua → so theo số
+ * thì modal hiện "Ngành hàng đang xử lý" trong lúc thực ra đang lấy Thi đua.
+ */
+export function buocTheoTen(stepName: string | undefined): number | null {
+    const t = (stepName || '').toLowerCase();
+    if (t.includes('hợp nhất')) return 1;
+    if (t.includes('ngành hàng')) return 2;
+    if (t.includes('nhân viên')) return 3;
+    if (t.includes('thi đua')) return 4;
+    if (t.includes('trả chậm')) return 5;
+    return null; // "Khởi tạo …" — chưa vào bước nào
+}
+
 export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
     isOpen,
     mode,
@@ -44,20 +63,45 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
 }) => {
     const isRealtime = mode === 'realtime';
     const steps = isRealtime ? STEPS_REALTIME : STEPS_LUYKE;
-    const currentStep = progress ? progress.step : 1;
+    const currentStep = buocTheoTen(progress?.stepName);
+
+    // Các bước đã đi qua: bước đang chạy đổi sang bước khác thì bước cũ coi như xong
+    const [daXong, setDaXong] = useState<Set<number>>(new Set());
+    const buocTruoc = useRef<number | null>(null);
+    const jobTruoc = useRef<string | undefined>(undefined);
+    useEffect(() => {
+        if (progress?.jobId !== jobTruoc.current) {
+            jobTruoc.current = progress?.jobId;
+            buocTruoc.current = null;
+            setDaXong(new Set());
+        }
+        if (currentStep !== null && buocTruoc.current !== null && buocTruoc.current !== currentStep) {
+            const xong = buocTruoc.current;
+            setDaXong(prev => new Set(prev).add(xong));
+        }
+        if (currentStep !== null) buocTruoc.current = currentStep;
+    }, [progress?.jobId, currentStep]);
+
+    // Tự đóng sau khi hoàn tất, có đếm ngược để người dùng kịp thấy kết quả
+    const [conLai, setConLai] = useState(AUTO_CLOSE_SECONDS);
+    useEffect(() => {
+        if (!isOpen || status !== 'success') { setConLai(AUTO_CLOSE_SECONDS); return; }
+        if (conLai <= 0) { onClose(); return; }
+        const t = window.setTimeout(() => setConLai(n => n - 1), 1000);
+        return () => window.clearTimeout(t);
+    }, [isOpen, status, conLai, onClose]);
+
+    const [hoiHuy, setHoiHuy] = useState(false);
+    const phanTram = progress && progress.totalSteps > 0
+        ? Math.min(100, Math.round((progress.step / progress.totalSteps) * 100))
+        : 0;
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={() => {
-                if (status === 'running') {
-                    if (window.confirm('Quá trình tự động đang chạy. Bạn có chắc muốn huỷ không?')) {
-                        onCancel?.();
-                        onClose();
-                    }
-                } else {
-                    onClose();
-                }
+                if (status === 'running') setHoiHuy(true);
+                else onClose();
             }}
             title={
                 <div className="flex items-center gap-2.5">
@@ -164,9 +208,8 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 {status !== 'not-installed' && (
                     <div className="space-y-2">
                         {steps.map((step) => {
-                            const isCompleted = currentStep > step.id || status === 'success';
+                            const isCompleted = status === 'success' || (daXong.has(step.id) && currentStep !== step.id);
                             const isCurrent = currentStep === step.id && status === 'running';
-                            const isPending = currentStep < step.id && status !== 'success';
 
                             return (
                                 <div
@@ -229,11 +272,27 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     </div>
                 )}
 
-                {/* TRẠNG THÁI HIỆN TẠI & THÔNG ĐIỆP */}
-                {status === 'running' && progress?.message && (
-                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-500 shrink-0" />
-                        <span className="truncate">{progress.message}</span>
+                {/* TIẾN TRÌNH TRỰC TIẾP — cùng nội dung bảng tiến trình trên tab MWG, để theo dõi ngay tại Dashboard */}
+                {status === 'running' && (
+                    <div className="p-3 rounded border border-sky-200 bg-sky-50" data-testid="bi-sync-tien-trinh">
+                        <div className="flex items-center justify-between mb-1">
+                            <span className="text-xs font-bold text-sky-700 flex items-center gap-1.5">
+                                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                                Tự động cập nhật BI
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 tabular-nums">
+                                {progress ? `${progress.step}/${progress.totalSteps} (${phanTram}%)` : 'Đang mở trang MWG…'}
+                            </span>
+                        </div>
+                        {progress && (
+                            <>
+                                <div className="text-sm font-semibold text-slate-800">{progress.stepName}</div>
+                                <div className="text-xs text-slate-600 mb-2 break-words">{progress.message}</div>
+                            </>
+                        )}
+                        <div className="w-full h-1.5 bg-slate-200 rounded overflow-hidden" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={phanTram}>
+                            <div className="h-full bg-sky-600 transition-[width] duration-300" style={{ width: `${phanTram}%` }} />
+                        </div>
                     </div>
                 )}
 
@@ -241,7 +300,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 {status === 'success' && (
                     <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 text-emerald-800 dark:text-emerald-200 text-xs font-medium">
                         <Check className="w-5 h-5 text-emerald-600 shrink-0" />
-                        <span>Toàn bộ 4 báo cáo {isRealtime ? 'Realtime' : 'Luỹ kế'} đã được tự động dán và lưu trữ thành công vào hệ thống!</span>
+                        <span>Toàn bộ {steps.length} báo cáo {isRealtime ? 'Realtime' : 'Luỹ kế'} đã được tự động dán và lưu trữ thành công vào hệ thống!</span>
                     </div>
                 )}
 
@@ -258,8 +317,9 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
 
                 {/* FOOTER ACTIONS */}
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-[11px] text-slate-400">
+                    <div className="text-[11px] text-slate-400" aria-live="polite">
                         {status === 'running' && 'Không đóng tab MWG đang chạy ngầm...'}
+                        {status === 'success' && `Tự đóng sau ${conLai} giây…`}
                     </div>
                     <div className="flex items-center gap-2">
                         {status === 'running' && onReopenWorker && (
@@ -296,6 +356,16 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     </div>
                 </div>
             </div>
+            <ConfirmDialog
+                isOpen={hoiHuy}
+                onClose={() => setHoiHuy(false)}
+                onConfirm={() => { setHoiHuy(false); onCancel?.(); onClose(); }}
+                title="Huỷ cập nhật tự động?"
+                message="Quá trình tự động đang chạy. Bạn có chắc muốn huỷ không?"
+                confirmText="Huỷ cập nhật"
+                cancelText="Tiếp tục chạy"
+                variant="warning"
+            />
         </Modal>
     );
 };
