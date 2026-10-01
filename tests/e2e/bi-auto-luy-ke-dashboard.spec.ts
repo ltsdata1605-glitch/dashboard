@@ -40,17 +40,19 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
 
     const NG = 'NGÀNH HÀNG / NHÓM HÀNG\tSỐ LƯỢNG\tDOANH THU QĐ\n11 - Điện thoại\t3\t30\nTổng\t3\t30';
     const NV = 'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ\n276650 - Quách Trần Phương Thảo\t5\t50\nTổng\t5\t50';
+    const TD = 'Thi đua nhân viên theo chương trình\nBảo hiểm tổng\nDOANH THU\n95970 - Chế Thị Út\t154.94';
     const TC = 'Nhân viên\tDT Trả góp\tDT Siêu thị\tTỷ trọng\tHomeCredit(HC)\t%\n95970 - Chế Thị Út\t693.36\t1403.74\t49.39\t417.61\t60.23';
-    await page.evaluate(({ NG, NV, TC }) => {
+    await page.evaluate(({ NG, NV, TC, TD }) => {
         const d = { source: 'ycx-bi-automation', type: 'done', jobId: 'job-lk', mode: 'luyke', results: {
             summary: 'Siêu thị\tSỐ LƯỢNG\tDOANH THU QĐ\n1678 - ĐMM_AGI_TTO - Tri Tôn\t39\t111\nTổng (1 dòng)\t39\t111',
             competition: 'Máy Lạnh\nDOANH THU\tTARGET\t% HT THÁNG\nĐMM_AGI_TTO - Tri Tôn\t1\t2\t50',
             industryByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': NG, '1678': NG },
             employeeByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': NV, '1678': NV },
             installmentByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': TC, '1678': TC },
+            competitionByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': TD, '1678': TD },
         } };
         window.dispatchEvent(new CustomEvent('ycx-bi-automation:done', { detail: d }));
-    }, { NG, NV, TC });
+    }, { NG, NV, TC, TD });
     await expect(modal).toHaveCount(0, { timeout: 3000 });
     await expect(page.getByText(/Tự động cập nhật thành công .* Luỹ kế/)).toBeVisible();
 
@@ -63,8 +65,10 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
     expect(await doc('bi_config-Tri Tôn-tragop')).toBe(TC);
     expect(String(await doc('bi_summary-luy-ke'))).toContain('Tri Tôn');
     expect(String(await doc('bi_competition-luy-ke'))).toContain('Máy Lạnh');
-    // Thi đua CỤM không được ghi vào ô Thi đua nhân viên của siêu thị
-    expect(await doc('bi_config-Tri Tôn-thidua')).toBeUndefined();
+    // Ô Thi đua của siêu thị = Thi đua theo NHÂN VIÊN (competitionByStore), KHÔNG phải bảng Thi đua cụm
+    expect(await doc('bi_config-Tri Tôn-thidua')).toBe(TD);
+    // Khoá phụ theo mã kho không sinh ô rác "config-1678-thidua"
+    expect(await doc('bi_config-1678-thidua')).toBeUndefined();
     // Không đụng ô Realtime
     expect(await doc('bi_config-Tri Tôn-industry-realtime')).toBeUndefined();
 });

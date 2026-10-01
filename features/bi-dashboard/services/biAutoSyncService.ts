@@ -42,6 +42,7 @@ export interface BiSyncResults {
     industryByStore?: Record<string, string>; // Ngành hàng theo từng siêu thị
     employeeByStore?: Record<string, string>; // Doanh thu nhân viên theo từng siêu thị
     installmentByStore?: Record<string, string>; // Trả chậm theo nhân viên, từng siêu thị (Luỹ kế, userscript 7.9+)
+    competitionByStore?: Record<string, string>; // Thi đua theo nhân viên, từng siêu thị (Luỹ kế, userscript 7.10+)
 }
 
 export interface BiSyncJobDonePayload {
@@ -251,13 +252,25 @@ export async function applyBiSyncResults(
             const key = `config-${safeName}-danhsach`;
             await saveBiField(key, results.employee, `${key}-ts`);
         }
-        // 4. Thi đua Luỹ kế (cụm). Đường UI cũ còn ghi thêm vào Thi đua siêu thị; dữ liệu API là bảng CỤM theo chương
-        // trình (không có nhân viên) nên KHÔNG ghi vào ô Thi đua nhân viên của siêu thị.
+        // 4. Thi đua Luỹ kế (cụm). Đường UI cũ còn ghi thêm vào Thi đua siêu thị; dữ liệu API cụm là bảng theo chương
+        // trình (không có nhân viên) nên KHÔNG ghi vào ô Thi đua nhân viên — ô đó lấy từ competitionByStore (7.10+).
         if (results.competition) {
             await saveBiField('competition-luy-ke', results.competition, 'competition-luy-ke-ts');
             if (!quaApi && safeName) {
                 const key = `config-${safeName}-thidua`;
                 await saveBiField(key, results.competition, `${key}-ts`);
+            }
+        }
+        // 4b. Thi đua theo nhân viên từng siêu thị (7.10+) → ô "THI ĐUA" của Cấu hình siêu thị
+        if (results.competitionByStore && Object.keys(results.competitionByStore).length > 0) {
+            const daLuu = new Set<string>();
+            for (const [stKey, tdText] of Object.entries(results.competitionByStore)) {
+                const stSafeName = shortenSupermarketName(stKey);
+                if (stSafeName && !/^\d+$/.test(stSafeName) && !daLuu.has(stSafeName)) {
+                    daLuu.add(stSafeName);
+                    const key = `config-${stSafeName}-thidua`;
+                    await saveBiField(key, tdText, `${key}-ts`);
+                }
             }
         }
         // 5. Trả chậm Luỹ kế theo nhân viên — 7.9+ có installmentByStore (từng siêu thị); đường UI cũ theo siêu thị đang chọn

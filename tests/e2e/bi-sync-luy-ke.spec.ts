@@ -24,7 +24,7 @@ const FIXTURE = `<!doctype html><html><head><meta charset="utf-8"><title>Doanh t
 </body></html>`;
 
 type Call = { endpoint: string; body: Record<string, unknown> };
-type Done = { mode: string; results: { competition: string; industryByStore: Record<string, string>; employeeByStore: Record<string, string>; installmentByStore: Record<string, string> } };
+type Done = { mode: string; results: { competition: string; industryByStore: Record<string, string>; employeeByStore: Record<string, string>; installmentByStore: Record<string, string>; competitionByStore: Record<string, string> } };
 
 async function chayJobLuyKe(page: import('@playwright/test').Page, url: string): Promise<{ calls: Call[]; done: Done }> {
     const calls: Call[] = [];
@@ -42,7 +42,17 @@ async function chayJobLuyKe(page: import('@playwright/test').Page, url: string):
             if (endpoint.endsWith('revenue-consolidated-get') && body.GROUPBY === 'BICAT') data = [
                 { rowlevel: 'BICAT', rowcode: '11', rowname: 'Điện thoại', quantity: 3, revenue: 20, revenue_kfactor: 30, target_kfactor: 60, avg3month_kfactor: 25, revenue_tragop: 5 }];
             // Đúng hình dạng mẫu API thật 09/2026 (chủ dự án gửi): competitiontype 2 = số lượng, 3 = doanh thu
-            if (endpoint.endsWith('competition-bymsg-get')) data = [
+            // Thi đua cấp NHÂN VIÊN của 1 siêu thị (VIEWLEVEL STORE, mẫu thật kho 910 rút gọn). Kho 8231 giả làm trường hợp
+            // VIEWIDS = mã kho trả rỗng → userscript phải thử lại với VIEWIDS null.
+            if (endpoint.endsWith('competition-bymsg-get') && body.VIEWLEVEL === 'STORE') {
+                const kho = Number(body.STOREIDS);
+                data = kho === 8231 && body.VIEWIDS !== null ? [] : [
+                    { programid: 865, programname: 'Bảo hiểm tổng', competitiontype: 4, salegroupid: '95970', salegroupname: 'Chế Thị Út', revenue_kfactor: 0, quantity: 33, revenue: 154.94, target: null, storeid: kho },
+                    { programid: 865, programname: 'Bảo hiểm tổng', competitiontype: 4, salegroupid: '17952', salegroupname: 'Đinh Thị Mỹ Hương', revenue_kfactor: 0, quantity: 20, revenue: 114.84, target: null, storeid: kho },
+                    { programid: 865, programname: 'Bảo hiểm tổng', competitiontype: 4, salegroupid: 'online', salegroupname: 'Online', revenue_kfactor: 0, quantity: 1, revenue: 5, target: null, storeid: kho },
+                    { programid: 868, programname: 'SIM tổng', competitiontype: 2, salegroupid: '95970', salegroupname: 'Chế Thị Út', revenue_kfactor: 20.5, quantity: 12, revenue: 3.1, target: null, storeid: kho },
+                ];
+            } else if (endpoint.endsWith('competition-bymsg-get')) data = [
                 { programid: 867, programname: 'SIM MOBIFONE/VINAPHONE/SIM DMX', competitiontype: 2, salegroupname: 'ĐMM_AGI_TTO - Tri Tôn', revenue_kfactor: '160625.95', quantity: '94983.0000', revenue: '29472.64', target: '75241.0000', targetpercent_month: '126.24', targetpercent_predict: '126.24' },
                 { programid: 906, programname: 'T09 - T10 IPHONE 18 series, iPhone Duo', competitiontype: 3, salegroupname: 'ĐMM_AGI_TTO - Tri Tôn', quantity: '18406', revenue: '775137.49', target: '2114953.45', targetpercent_month: '36.65', targetpercent_predict: '124.05' },
             ];
@@ -82,10 +92,24 @@ test('Luỹ kế THÁNG ĐÃ QUA (09/2026): 01 → 30/09, MONTHKEY 202609, TIMET
         expect(c.body.FROMDATE, c.endpoint).toBe(20260901);
         expect(c.body.TODATE, `${c.endpoint}: tháng đã qua lấy tới NGÀY CUỐI tháng`).toBe(20260930);
     }
-    const thiDua = calls.filter(c => c.endpoint === 'reports/competition-bymsg-get');
+    const thiDua = calls.filter(c => c.endpoint === 'reports/competition-bymsg-get' && c.body.VIEWLEVEL === 'COMPANY');
     expect(thiDua).toHaveLength(1);
     expect(thiDua[0].body.TIMETYPE).toBe(2);
     expect(thiDua[0].body.MONTHKEY).toBe(202609);
+
+    // Thi đua theo NHÂN VIÊN: duyệt từng siêu thị (VIEWLEVEL STORE), Luỹ kế, đúng tháng; kho trả rỗng thì thử VIEWIDS null
+    const thiDuaNv = calls.filter(c => c.endpoint === 'reports/competition-bymsg-get' && c.body.VIEWLEVEL === 'STORE');
+    expect(thiDuaNv.map(c => `${c.body.STOREIDS}:${c.body.VIEWIDS}`)).toEqual(['1678:1678', '8231:8231', '8231:null']);
+    for (const c of thiDuaNv) {
+        expect(c.body.TIMETYPE).toBe(2);
+        expect(c.body.MONTHKEY).toBe(202609);
+    }
+    const td = done.results.competitionByStore['1678 - ĐMM_AGI_TTO - Tri Tôn'];
+    expect(td).toContain('Bảo hiểm tổng\nDOANH THU\n95970 - Chế Thị Út\t154.94\n17952 - Đinh Thị Mỹ Hương\t114.84');
+    expect(td).toContain('SIM tổng\nSỐ LƯỢNG\n95970 - Chế Thị Út\t12');
+    expect(td).not.toContain('Online');
+    expect(done.results.competitionByStore['8231 - ĐMS_AGI_TTO - Lương An Trà']).toContain('Bảo hiểm tổng');
+    await expect(page.locator('#acp-bi-sync-overlay')).toContainText('Thi đua & Trả chậm');
 
     // Trả chậm theo NHÂN VIÊN: từng siêu thị, VIEWLEVEL STAFF, đúng tháng
     const traCham = calls.filter(c => c.endpoint === 'reports/tra-cham-matrix-get');

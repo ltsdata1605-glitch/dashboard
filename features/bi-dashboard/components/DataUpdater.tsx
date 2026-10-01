@@ -686,6 +686,10 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     if (/^\d+$/.test(stName)) return;
                     addUpdate(`config-${shortenSupermarketName(stName)}-danhsach`, `Tự động cập nhật Doanh thu nhân viên Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
                 });
+                Object.keys(payload.results.competitionByStore || {}).forEach(stName => {
+                    if (/^\d+$/.test(stName)) return;
+                    addUpdate(`config-${shortenSupermarketName(stName)}-thidua`, `Tự động cập nhật Thi đua nhân viên Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
+                });
                 Object.keys(payload.results.installmentByStore || {}).forEach(stName => {
                     if (/^\d+$/.test(stName)) return;
                     addUpdate(`config-${shortenSupermarketName(stName)}-tragop`, `Tự động cập nhật Trả chậm Luỹ kế - ${stName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');

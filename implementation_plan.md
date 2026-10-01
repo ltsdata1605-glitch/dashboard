@@ -6730,3 +6730,13 @@ Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện 
   `acpSerializeInstallmentStaff` → khuôn ô Trả chậm (parseInstallmentData định dạng A); đối tác bộ đọc nhận ra xếp trước,
   đối tác lạ ("Kim Ngân Pay") xếp sau để không lệch cột; số 2 chữ số (bộ đọc hiểu "1.234" = 1234); bỏ dòng Admin.
   Luỹ kế = 5 báo cáo; lưu `config-<siêu thị>-tragop` theo từng siêu thị. Test `traChamApi.test.ts` (mẫu thật → bộ đọc thật) 3/3.
+- 7.10 (cùng ngày): ô **THI ĐUA & TRẢ CHẬM** của Cấu hình siêu thị cập nhật khi chạy Luỹ kế, duyệt TỪNG siêu thị như Ngành hàng BI.
+  Bước 5 đổi tên "Thi đua & Trả chậm": mỗi siêu thị gọi `competition-bymsg-get` {VIEWLEVEL `STORE`, STOREIDS kho, TIMETYPE 2,
+  MONTHKEY tháng chọn} + `tra-cham-matrix-get` STAFF. Mẫu thật gửi VIEWIDS "9567" (mã vùng người xem, không suy ra được) →
+  thử VIEWIDS = mã kho, rỗng thì VIEWIDS null; một kho lỗi thi đua không làm hỏng cả lượt. `acpSerializeCompetitionStaff`:
+  mỗi chương trình = dòng tên riêng + dòng "DOANH THU"/"SỐ LƯỢNG" + "<mã> - <tên>\t<giá trị>" (DT theo Tr, 2 số lẻ; type 2/6 số lượng);
+  bỏ "online" và nhân viên kho khác. ⚠️ Đặt tên chung dòng với "DOANH THU" bằng tab thì `parseCompetitionData` bỏ tên
+  (ra "Chương trình 0"); tên trùng kiểu "dòng rác trang" (bắt đầu "Siêu thị"/"Ngành hàng"…, chứa "chương trình") được đổi
+  nhẹ ("TĐ …", "CT …") vì bộ đọc sẽ lấy nhầm dòng phía trên làm tên. Lưu `config-<siêu thị>-thidua` (bỏ khoá phụ theo mã kho).
+  Kiểm: 971 dòng mẫu thật qua bộ đọc thật → đủ 39 chương trình, tổng SIM tổng 338 / Bảo hiểm tổng 1.617,28 khớp API;
+  `thiDuaNhanVienApi.test.ts` 6/6; e2e `bi-sync-luy-ke` + `bi-auto-luy-ke-dashboard` cập nhật.

@@ -36,7 +36,7 @@ const STEPS_LUYKE = [
     { id: 4, title: 'Báo cáo Thi đua', desc: 'Thi đua Luỹ kế toàn cụm' },
     { id: 2, title: 'Ngành hàng BI', desc: 'Cây ngành hàng Luỹ kế từng siêu thị' },
     { id: 3, title: 'Doanh thu nhân viên', desc: 'Doanh thu nhân viên Luỹ kế từng siêu thị' },
-    { id: 5, title: 'Báo cáo Trả chậm', desc: 'Trả chậm từng nhân viên theo đối tác' },
+    { id: 5, title: 'Thi đua & Trả chậm', desc: 'Thi đua + trả chậm từng nhân viên, từng siêu thị' },
 ];
 
 /** Sau khi xong, modal tự đóng sau ngần này giây (chủ dự án: "hoàn tất tự quay về trang gốc và tự đóng thông báo"). */
@@ -52,8 +52,8 @@ export function buocTheoTen(stepName: string | undefined): number | null {
     if (t.includes('hợp nhất')) return 1;
     if (t.includes('ngành hàng')) return 2;
     if (t.includes('nhân viên')) return 3;
+    if (t.includes('trả chậm')) return 5; // trước "thi đua": bước 5 Luỹ kế tên "Thi đua & Trả chậm"
     if (t.includes('thi đua')) return 4;
-    if (t.includes('trả chậm')) return 5;
     return null; // "Khởi tạo …" — chưa vào bước nào
 }
 
