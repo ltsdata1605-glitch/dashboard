@@ -6748,3 +6748,6 @@ Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện 
   (BiWrapper vốn mở thẳng mục Cập nhật khi có lượt dở); `startBiAutoSyncSession` chống mở trùng ≤ 8s (khoá trên
   globalThis); kết quả chỉ nơi đã bấm chạy mới lưu (hết lưu 2 lần / 2 toast); userscript 7.11 chỉ tab có `ycx_mode`
   trong URL mới nhận job qua kênh GM. Kiểm: e2e nay đúng 1 tab; spec mới `bi-sync-chi-tab-lam-viec` (code cũ đỏ, mới xanh).
+  Sau khi gộp commit Mac "nút nổi Tự động Realtime/Luỹ kế" (c8b65c71): nút nổi Luỹ kế chạy thẳng, BỎ QUA bước chọn tháng
+  (e2e `bi-auto-luy-ke-dashboard` đỏ). Tách bảng chọn tháng thành `LuyKeMonthPickerModal` dùng chung; `useBiAutoSync`
+  gọi 'luyke' không kèm tháng thì mở bảng chọn tháng; nhớ tháng khi lượt dở / mở lại tab MWG.

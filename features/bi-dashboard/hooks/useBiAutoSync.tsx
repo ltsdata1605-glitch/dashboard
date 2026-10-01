@@ -15,6 +15,7 @@ import {
     onBiError,
 } from '../services/biAutoSyncService';
 import { BiAutoSyncModal } from '../components/BiAutoSyncModal';
+import { LuyKeMonthPickerModal } from '../components/LuyKeMonthPickerModal';
 
 export function useBiAutoSync(activeSupermarket?: string | null) {
     const [autoSyncModalOpen, setAutoSyncModalOpen] = useState(false);
@@ -28,8 +29,17 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
     const workerWindowRef = useRef<Window | null>(null);
     const pendingReloadsRef = useRef(0);
 
-    const handleStartAutoSync = useCallback(async (mode: BiSyncMode, opts: { tuChayTiep?: boolean } = {}) => {
+    // Luỹ kế phải chọn tháng trước (giống nút ở mục Cập nhật) — gọi 'luyke' không kèm tháng thì mở bảng chọn tháng
+    const [chonThangMo, setChonThangMo] = useState(false);
+    const [autoSyncMonth, setAutoSyncMonth] = useState<string>('');
+
+    const handleStartAutoSync = useCallback(async (mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}) => {
+        if (mode === 'luyke' && !opts.month && !opts.tuChayTiep) {
+            setChonThangMo(true);
+            return;
+        }
         setAutoSyncMode(mode);
+        setAutoSyncMonth(mode === 'luyke' ? (opts.month || '') : '');
         setAutoSyncProgress(null);
         setAutoSyncError('');
         setAutoSyncStatus('running');
@@ -53,7 +63,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
                 setAutoSyncStatus('outdated');
                 setAutoSyncCurrentVersion(msg.split(':')[1] || '');
                 setAutoSyncLatestVersion(msg.split(':')[2] || '');
-                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current });
+                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current, month: opts.month });
             } else {
                 clearPendingAutoSync();
                 setAutoSyncStatus('error');
@@ -119,7 +129,14 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
     }, [activeSupermarket]);
 
     const renderAutoSyncModal = () => (
+        <>
+        <LuyKeMonthPickerModal
+            isOpen={chonThangMo}
+            onClose={() => setChonThangMo(false)}
+            onStart={(month) => { void handleStartAutoSync('luyke', { month }); }}
+        />
         <BiAutoSyncModal
+            month={autoSyncMonth}
             isOpen={autoSyncModalOpen}
             mode={autoSyncMode}
             status={autoSyncStatus}
@@ -134,13 +151,15 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
             }}
             onReopenWorker={() => {
                 try {
-                    const target = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${autoSyncMode}&job_id=${autoSyncProgress?.jobId || 'reopen'}#ycx_mode=${autoSyncMode}`;
+                    const extra = autoSyncMode === 'luyke' && autoSyncMonth ? `&ycx_month=${autoSyncMonth}` : '';
+                    const target = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${autoSyncMode}&job_id=${autoSyncProgress?.jobId || 'reopen'}${extra}#ycx_mode=${autoSyncMode}${extra}`;
                     window.open(target, 'mwg_bi_worker');
                 } catch (e) {
                     console.warn(e);
                 }
             }}
         />
+        </>
     );
 
     return {
