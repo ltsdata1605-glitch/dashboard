@@ -30,12 +30,13 @@ const STEPS_REALTIME = [
     { id: 3, title: 'Doanh thu nhân viên', desc: 'Sao chép chi tiết doanh số nhân viên' },
 ];
 
-// Luỹ kế (userscript 7.7+) chạy cùng Direct API như Realtime: 4 báo cáo, cùng thứ tự chạy.
+// Luỹ kế (userscript 7.9+) chạy cùng Direct API như Realtime + Trả chậm theo nhân viên: 5 báo cáo, đúng thứ tự chạy.
 const STEPS_LUYKE = [
     { id: 1, title: 'Doanh thu hợp nhất', desc: 'Chọn Lũy kế, bật Trả góp & DT quy đổi' },
     { id: 4, title: 'Báo cáo Thi đua', desc: 'Thi đua Luỹ kế toàn cụm' },
     { id: 2, title: 'Ngành hàng BI', desc: 'Cây ngành hàng Luỹ kế từng siêu thị' },
     { id: 3, title: 'Doanh thu nhân viên', desc: 'Doanh thu nhân viên Luỹ kế từng siêu thị' },
+    { id: 5, title: 'Báo cáo Trả chậm', desc: 'Trả chậm từng nhân viên theo đối tác' },
 ];
 
 /** Sau khi xong, modal tự đóng sau ngần này giây (chủ dự án: "hoàn tất tự quay về trang gốc và tự đóng thông báo"). */
@@ -134,7 +135,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                         <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
                             {isRealtime
                                 ? 'Tự động mở trang MWG, check các tuỳ chọn và dán 4 báo cáo Realtime vào hệ thống'
-                                : 'Tự động mở trang MWG, chọn Lũy kế và dán 4 báo cáo Luỹ kế vào hệ thống'}
+                                : 'Tự động mở trang MWG, chọn Lũy kế và dán 5 báo cáo Luỹ kế vào hệ thống'}
                         </p>
                     </div>
                 </div>

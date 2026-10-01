@@ -6726,3 +6726,7 @@ Yêu cầu chủ dự án: Luỹ kế lấy như Realtime nhưng chọn "Lũy k�
   1/1 → 12 năm trước); lưu 4 ô Luỹ kế theo TỪNG siêu thị; không ghi bảng Thi đua cụm vào ô Thi đua nhân viên.
 - CHƯA làm: Trả chậm — mẫu `tra-cham-matrix-get` là cấp VÙNG × đối tác; ô Trả chậm siêu thị cần cấp NHÂN VIÊN → chờ mẫu.
 Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện tại); Dashboard Luỹ kế 2/2 (đỏ trên code cũ); bi-sync 28/28.
+- 7.9 (cùng ngày): chủ dự án gửi mẫu Trả chậm cấp NHÂN VIÊN (`tra-cham-matrix-get` VIEWLEVEL `STAFF`, STOREIDS 1 kho).
+  `acpSerializeInstallmentStaff` → khuôn ô Trả chậm (parseInstallmentData định dạng A); đối tác bộ đọc nhận ra xếp trước,
+  đối tác lạ ("Kim Ngân Pay") xếp sau để không lệch cột; số 2 chữ số (bộ đọc hiểu "1.234" = 1234); bỏ dòng Admin.
+  Luỹ kế = 5 báo cáo; lưu `config-<siêu thị>-tragop` theo từng siêu thị. Test `traChamApi.test.ts` (mẫu thật → bộ đọc thật) 3/3.

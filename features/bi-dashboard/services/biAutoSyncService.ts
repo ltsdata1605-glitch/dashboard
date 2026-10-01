@@ -41,6 +41,7 @@ export interface BiSyncResults {
     installment?: string; // Trả chậm (Luỹ kế)
     industryByStore?: Record<string, string>; // Ngành hàng theo từng siêu thị
     employeeByStore?: Record<string, string>; // Doanh thu nhân viên theo từng siêu thị
+    installmentByStore?: Record<string, string>; // Trả chậm theo nhân viên, từng siêu thị (Luỹ kế, userscript 7.9+)
 }
 
 export interface BiSyncJobDonePayload {
@@ -259,8 +260,18 @@ export async function applyBiSyncResults(
                 await saveBiField(key, results.competition, `${key}-ts`);
             }
         }
-        // 5. Trả chậm Luỹ kế (chỉ đường UI cũ có) -> Ghi vào Trả chậm siêu thị
-        if (results.installment && safeName) {
+        // 5. Trả chậm Luỹ kế theo nhân viên — 7.9+ có installmentByStore (từng siêu thị); đường UI cũ theo siêu thị đang chọn
+        if (results.installmentByStore && Object.keys(results.installmentByStore).length > 0) {
+            const daLuu = new Set<string>();
+            for (const [stKey, tcText] of Object.entries(results.installmentByStore)) {
+                const stSafeName = shortenSupermarketName(stKey);
+                if (stSafeName && !daLuu.has(stSafeName)) {
+                    daLuu.add(stSafeName);
+                    const key = `config-${stSafeName}-tragop`;
+                    await saveBiField(key, tcText, `${key}-ts`);
+                }
+            }
+        } else if (results.installment && safeName) {
             const key = `config-${safeName}-tragop`;
             await saveBiField(key, results.installment, `${key}-ts`);
         }

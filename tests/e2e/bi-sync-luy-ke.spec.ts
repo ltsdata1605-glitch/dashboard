@@ -24,7 +24,7 @@ const FIXTURE = `<!doctype html><html><head><meta charset="utf-8"><title>Doanh t
 </body></html>`;
 
 type Call = { endpoint: string; body: Record<string, unknown> };
-type Done = { mode: string; results: { competition: string; industryByStore: Record<string, string>; employeeByStore: Record<string, string> } };
+type Done = { mode: string; results: { competition: string; industryByStore: Record<string, string>; employeeByStore: Record<string, string>; installmentByStore: Record<string, string> } };
 
 async function chayJobLuyKe(page: import('@playwright/test').Page, url: string): Promise<{ calls: Call[]; done: Done }> {
     const calls: Call[] = [];
@@ -46,6 +46,9 @@ async function chayJobLuyKe(page: import('@playwright/test').Page, url: string):
                 { programid: 867, programname: 'SIM MOBIFONE/VINAPHONE/SIM DMX', competitiontype: 2, salegroupname: 'ĐMM_AGI_TTO - Tri Tôn', revenue_kfactor: '160625.95', quantity: '94983.0000', revenue: '29472.64', target: '75241.0000', targetpercent_month: '126.24', targetpercent_predict: '126.24' },
                 { programid: 906, programname: 'T09 - T10 IPHONE 18 series, iPhone Duo', competitiontype: 3, salegroupname: 'ĐMM_AGI_TTO - Tri Tôn', quantity: '18406', revenue: '775137.49', target: '2114953.45', targetpercent_month: '36.65', targetpercent_predict: '124.05' },
             ];
+            // Trả chậm cấp NHÂN VIÊN (mẫu thật kho 910, rút gọn)
+            if (endpoint.endsWith('tra-cham-matrix-get')) data = [
+                { group_id: '95970', group_name: 'Chế Thị Út', partnerinstallmentname: 'HomeCredit(HC)', revenue_tg: '417.6129', ratio_tg: '60.23', total_revenue_tg: '693.3567', revenue_store: '1403.7400', installment_ratio: '49.39' }];
             return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data }) });
         }
         return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: FIXTURE });
@@ -84,7 +87,16 @@ test('Luỹ kế THÁNG ĐÃ QUA (09/2026): 01 → 30/09, MONTHKEY 202609, TIMET
     expect(thiDua[0].body.TIMETYPE).toBe(2);
     expect(thiDua[0].body.MONTHKEY).toBe(202609);
 
+    // Trả chậm theo NHÂN VIÊN: từng siêu thị, VIEWLEVEL STAFF, đúng tháng
+    const traCham = calls.filter(c => c.endpoint === 'reports/tra-cham-matrix-get');
+    expect(traCham.map(c => c.body.STOREIDS).sort()).toEqual(['1678', '8231']);
+    for (const c of traCham) {
+        expect(c.body.VIEWLEVEL).toBe('STAFF');
+        expect(c.body.MONTHKEY).toBe(202609);
+    }
+
     expect(done.mode).toBe('luyke');
+    expect(done.results.installmentByStore['1678 - ĐMM_AGI_TTO - Tri Tôn']).toContain('95970 - Chế Thị Út\t693.36\t1403.74\t49.39\t417.61\t60.23');
     // Thi đua Luỹ kế: SIM (type 2) theo SỐ LƯỢNG, iPhone (type 3) theo DOANH THU, có % HT dự kiến
     expect(done.results.competition).toContain('SIM MOBIFONE/VINAPHONE/SIM DMX\tSLLK\tTarget\t% HT Target Tháng\t% HT Dự Kiến');
     expect(done.results.competition).toContain('ĐMM_AGI_TTO - Tri Tôn\t94983\t75241\t126.24%\t126.24%');

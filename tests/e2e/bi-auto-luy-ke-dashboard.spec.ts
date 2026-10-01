@@ -36,19 +36,21 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
 
     const modal = page.getByRole('dialog', { name: /Tự động Cập nhật Luỹ Kế · tháng 08\/2026/i });
     await expect(modal).toBeVisible();
-    await expect(modal).toContainText('4 Báo cáo');
+    await expect(modal).toContainText('5 Báo cáo');
 
     const NG = 'NGÀNH HÀNG / NHÓM HÀNG\tSỐ LƯỢNG\tDOANH THU QĐ\n11 - Điện thoại\t3\t30\nTổng\t3\t30';
     const NV = 'NHÂN VIÊN\tSỐ LƯỢNG\tDOANH THU QĐ\n276650 - Quách Trần Phương Thảo\t5\t50\nTổng\t5\t50';
-    await page.evaluate(({ NG, NV }) => {
+    const TC = 'Nhân viên\tDT Trả góp\tDT Siêu thị\tTỷ trọng\tHomeCredit(HC)\t%\n95970 - Chế Thị Út\t693.36\t1403.74\t49.39\t417.61\t60.23';
+    await page.evaluate(({ NG, NV, TC }) => {
         const d = { source: 'ycx-bi-automation', type: 'done', jobId: 'job-lk', mode: 'luyke', results: {
             summary: 'Siêu thị\tSỐ LƯỢNG\tDOANH THU QĐ\n1678 - ĐMM_AGI_TTO - Tri Tôn\t39\t111\nTổng (1 dòng)\t39\t111',
             competition: 'Máy Lạnh\nDOANH THU\tTARGET\t% HT THÁNG\nĐMM_AGI_TTO - Tri Tôn\t1\t2\t50',
             industryByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': NG, '1678': NG },
             employeeByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': NV, '1678': NV },
+            installmentByStore: { '1678 - ĐMM_AGI_TTO - Tri Tôn': TC, '1678': TC },
         } };
         window.dispatchEvent(new CustomEvent('ycx-bi-automation:done', { detail: d }));
-    }, { NG, NV });
+    }, { NG, NV, TC });
     await expect(modal).toHaveCount(0, { timeout: 3000 });
     await expect(page.getByText(/Tự động cập nhật thành công .* Luỹ kế/)).toBeVisible();
 
@@ -58,6 +60,7 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
     }, key);
     await expect.poll(() => doc('bi_config-Tri Tôn-industry-luyke')).toBe(NG);
     expect(await doc('bi_config-Tri Tôn-danhsach')).toBe(NV);
+    expect(await doc('bi_config-Tri Tôn-tragop')).toBe(TC);
     expect(String(await doc('bi_summary-luy-ke'))).toContain('Tri Tôn');
     expect(String(await doc('bi_competition-luy-ke'))).toContain('Máy Lạnh');
     // Thi đua CỤM không được ghi vào ô Thi đua nhân viên của siêu thị
