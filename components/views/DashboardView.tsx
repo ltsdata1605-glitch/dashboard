@@ -160,6 +160,28 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     }, []);
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
 
+    const hasSalesData = !!(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)));
+
+    const handleSalesDataClear = () => {
+        if (logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)) {
+            if (window.confirm("Bạn có muốn xóa dữ liệu YCX Realtime hiện tại không?\n(Bấm OK để xóa Realtime, hoặc Cancel để chọn xóa toàn bộ tệp lưu trữ)")) {
+                handleClearRealtimeData();
+            } else if (window.confirm("Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu báo cáo tích lũy không?")) {
+                handleClearAllData();
+            }
+        } else if (logic.hasRealtimeData) {
+            handleClearRealtimeData();
+        } else {
+            handleClearAllData();
+        }
+    };
+
+    const salesClearTitle = logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)
+        ? "Xóa dữ liệu YCX (Realtime hoặc Lũy kế)"
+        : logic.hasRealtimeData
+            ? "Xóa dữ liệu YCX Realtime"
+            : "Xóa tất cả dữ liệu báo cáo tích lũy";
+
     const overdueUnshippedOrders = useMemo(() => {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -354,6 +376,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
                         onSelectHistoryFile={handleFileProcessing}
                         onOpenHistory={() => setIsFileHistoryModalOpen(true)}
+                        hasSalesData={hasSalesData}
+                        onClearSalesData={handleSalesDataClear}
+                        salesClearTitle={salesClearTitle}
                     />
 
                     {status.message && status.type === 'error' && <StatusDisplay status={status} />}
@@ -409,7 +434,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     {showDashboard && (
                         <>
                             <FilterProcessingOverlay isVisible={isFilterProcessing} />
-                            <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} onOpenHistory={() => setIsFileHistoryModalOpen(true)} />
+                            <FilterBar 
+                                onToggleAdvanced={() => setIsFilterSidebarOpen(true)} 
+                                onNewFile={handleNewFileClick} 
+                                onOpenHistory={() => setIsFileHistoryModalOpen(true)}
+                                hasSalesData={hasSalesData}
+                                onClearSalesData={handleSalesDataClear}
+                                salesClearTitle={salesClearTitle}
+                            />
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-0.5 lg:py-1 space-y-3 lg:space-y-4">
 
@@ -440,40 +472,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            {(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive))) && (
-                                                logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive) ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <Button
-                                                            variant="unstyled" size="none"
-                                                            onClick={handleClearRealtimeData}
-                                                            title="Xóa dữ liệu xem nhanh (Realtime)"
-                                                            className="flex items-center gap-1.5 px-2 py-1 bg-white/50 hover:bg-rose-50/80 dark:bg-slate-800/50 dark:hover:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-bold rounded-md border border-rose-200/60 dark:border-rose-800/50 text-[11px] uppercase tracking-widest transition-colors cursor-pointer"
-                                                        >
-                                                            <Icon name="trash-2" size={3.5} className="opacity-80 text-rose-500" />
-                                                            <span>XÓA REALTIME</span>
-                                                        </Button>
-                                                        <Button
-                                                            variant="unstyled" size="none"
-                                                            onClick={handleClearAllData}
-                                                            title="Xóa sạch toàn bộ dữ liệu Phân Tích trong 1 lần bấm"
-                                                            className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-md shadow-xs text-[11px] uppercase tracking-widest transition-colors cursor-pointer"
-                                                        >
-                                                            <Icon name="trash-2" size={3.5} />
-                                                            <span>XÓA TẤT CẢ</span>
-                                                        </Button>
-                                                    </div>
-                                                ) : (
-                                                    <Button
-                                                        variant="unstyled" size="none"
-                                                        onClick={() => logic.hasRealtimeData ? handleClearRealtimeData() : handleClearAllData()}
-                                                        title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
-                                                        className="flex items-center gap-1.5 px-2 py-1 bg-white/50 hover:bg-rose-50/80 dark:bg-slate-800/50 dark:hover:bg-rose-950/30 text-rose-700 dark:text-rose-400 font-bold rounded-md border border-rose-200/60 dark:border-rose-800/50 text-[11px] uppercase tracking-widest transition-colors cursor-pointer"
-                                                    >
-                                                        <Icon name="trash-2" size={3.5} className="opacity-80 text-rose-500" />
-                                                        <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA TẤT CẢ DỮ LIỆU"}</span>
-                                                    </Button>
-                                                )
-                                            )}
                                             {logic.fileInfo && (
                                                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
                                                     <Icon name="calendar-days" size={3.5} className="opacity-70" />
