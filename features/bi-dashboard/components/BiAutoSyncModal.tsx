@@ -13,6 +13,8 @@ interface BiAutoSyncModalProps {
     currentVersion?: string;
     /** Bản mới nhất đang phát trên Dashboard (đọc từ dòng @version) — rỗng nếu không đọc được */
     latestVersion?: string;
+    /** Luỹ kế: tháng đang lấy (YYYYMM) — hiện trên tiêu đề */
+    month?: string;
     errorMessage?: string;
     onClose: () => void;
     onCancel?: () => void;
@@ -62,6 +64,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
     errorMessage,
     currentVersion,
     latestVersion,
+    month,
     onClose,
     onCancel,
     onReopenWorker,
@@ -118,7 +121,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     <div>
                         <div className="flex items-center gap-2">
                             <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
-                                {isRealtime ? 'Tự động Cập nhật Realtime' : 'Tự động Cập nhật Luỹ Kế'}
+                                {isRealtime ? 'Tự động Cập nhật Realtime' : `Tự động Cập nhật Luỹ Kế${month && /^\d{6}$/.test(month) ? ` · tháng ${month.slice(4)}/${month.slice(0, 4)}` : ''}`}
                             </h3>
                             <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wide rounded-full border ${
                                 isRealtime

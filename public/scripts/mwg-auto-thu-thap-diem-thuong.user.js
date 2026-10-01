@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.7
+// @version      7.8
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -27,6 +27,11 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.8 — LUỸ KẾ THEO THÁNG CHỌN + THI ĐUA LUỸ KẾ ĐÚNG KHUÔN:
+ * - Nhận tháng (YYYYMM) từ Dashboard (URL ycx_month / job GM): 01 → hôm nay (tháng hiện tại) hoặc 01 → cuối tháng.
+ * - Thi đua Luỹ kế: khuôn bảng MWG Luỹ kế (SLLK/DTLK, Target, % HT tháng, % HT dự kiến), loại tính theo competitiontype.
+ * - Sửa cả Realtime: competitiontype 2/6 = số lượng (trước chỉ khi doanh thu = 0).
+ *
  * BẢN 7.7 — TỰ ĐỘNG LUỸ KẾ CHẠY BẰNG DIRECT API NHƯ REALTIME:
  * - Cùng 4 báo cáo (Doanh thu hợp nhất, Thi đua cụm, Ngành hàng BI & Nhân viên từng siêu thị); khác: chọn nút "Lũy kế",
  *   dải ngày 01 đầu tháng → hôm nay, Thi đua TIMETYPE 2. Ngành hàng/Nhân viên Luỹ kế điền thêm Target & % HT nếu API có.
@@ -461,7 +466,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.7';
+  const SCRIPT_VERSION_FALLBACK = '7.8';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -1354,6 +1359,7 @@
       gmSet(GM_KEY_BI_JOB, {
         jobId: detail.jobId,
         mode: detail.mode,
+        month: detail.month || null,
         status: 'pending',
         createdAt: Date.now(),
       }).catch((err) => console.warn('[BI Bridge] Lỗi ghi job GM:', err));
@@ -2452,7 +2458,9 @@
       const currentUrl = new URL(location.href);
       const mode = currentUrl.searchParams.get('ycx_mode');
       const jobId = currentUrl.searchParams.get('job_id');
-      const queryStr = (mode && jobId) ? `?ycx_mode=${mode}&job_id=${jobId}#ycx_mode=${mode}&job_id=${jobId}` : '';
+      const monthQ = currentUrl.searchParams.get('ycx_month');
+      const extra = monthQ ? `&ycx_month=${monthQ}` : '';
+      const queryStr = (mode && jobId) ? `?ycx_mode=${mode}&job_id=${jobId}${extra}#ycx_mode=${mode}&job_id=${jobId}${extra}` : '';
       location.href = `https://${location.hostname}${fallbackPath}${queryStr}`;
       return false;
     }
@@ -2599,7 +2607,7 @@
           <div style="width:40px;height:40px;border-radius:6px;background:${isRealtime ? '#f59e0b' : '#059669'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${isRealtime ? '⏱' : '📈'}</div>
           <div style="min-width:0;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <span style="font-weight:700;font-size:16px;">${isRealtime ? 'Tự động Cập nhật Realtime' : 'Tự động Cập nhật Luỹ Kế'}</span>
+              <span style="font-weight:700;font-size:16px;">${isRealtime ? 'Tự động Cập nhật Realtime' : 'Tự động Cập nhật Luỹ Kế' + (/^\d{6}$/.test(String(st.month || '')) ? ` · tháng ${String(st.month).slice(4)}/${String(st.month).slice(0, 4)}` : '')}</span>
               <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 8px;border-radius:999px;border:1px solid ${isRealtime ? '#fde68a' : '#a7f3d0'};background:${isRealtime ? '#fffbeb' : '#ecfdf5'};color:${isRealtime ? '#b45309' : '#047857'};">${steps.length} báo cáo</span>
             </div>
             <div style="font-size:12px;color:#64748b;">Đang lấy dữ liệu trên trang MWG và chuyển về Dashboard YCX — vui lòng không đóng tab này</div>
@@ -2619,8 +2627,8 @@
     acpRenderSyncPanel();
   }
 
-  function acpResetSyncPanel(mode) {
-    Object.assign(acpSyncPanel, { mode, current: null, done: new Set(), step: 0, totalSteps: 0, stepName: '', message: 'Đang khởi tạo...', phase: 'running', error: '' });
+  function acpResetSyncPanel(mode, month) {
+    Object.assign(acpSyncPanel, { mode, month: month || '', current: null, done: new Set(), step: 0, totalSteps: 0, stepName: '', message: 'Đang khởi tạo...', phase: 'running', error: '' });
   }
 
   // Trả focus về tab Dashboard YCX đã mở tab này (window.open). Trình duyệt có thể bỏ qua nếu không cho phép
@@ -2913,13 +2921,22 @@
     ].join('\n');
   }
 
+  // competitiontype (đối chiếu số liệu thật 09/2026): 2 & 6 tính theo SỐ LƯỢNG (vd SIM 94.983/75.241 = 126,24%),
+  // các loại khác theo DOANH THU. Trước 7.8 chỉ coi là số lượng khi doanh thu = 0 → SIM bị tính theo doanh thu.
+  function acpCompIsQty(item) {
+    const t = Number(item.competitiontype);
+    if (t === 2 || t === 6) return true;
+    if (t) return false;
+    return Number(item.quantity || 0) > 0 && Number(item.revenue || 0) === 0;
+  }
+
   function acpSerializeCompetitionRealtime(compData) {
     const list = Array.isArray(compData) ? compData : [];
     const blocks = [];
     for (const item of list) {
       const pName = item.programname || 'Chương trình';
       const sName = item.salegroupname || 'Siêu thị';
-      const isQtyOnly = Number(item.quantity || 0) > 0 && Number(item.revenue || 0) === 0;
+      const isQtyOnly = acpCompIsQty(item);
       const metricHeader = isQtyOnly ? 'SLLK' : 'DOANH THU';
       const metricVal = isQtyOnly ? Math.round(Number(item.quantity || 0)) : Math.round(Number(item.revenue || 0));
       const targetVal = Math.round(Number(item.target || 0));
@@ -2927,6 +2944,36 @@
       blocks.push(`${pName}\n${metricHeader}\tTARGET\t% HT THÁNG\n${sName}\t${metricVal}\t${targetVal}\t${htVal}`);
     }
     return blocks.join('\n');
+  }
+
+  // Thi đua LUỸ KẾ: đúng khuôn bảng MWG Luỹ kế mà ô "Thi đua Luỹ kế" đang đọc —
+  // "<chương trình>\t<SLLK|DTLK>\tTarget\t% HT Target Tháng\t% HT Dự Kiến\tTarget V.Trội\t%HTDK V.Trội",
+  // rồi dòng siêu thị, rồi dòng "Tổng" làm dòng đệm (bộ đọc coi dòng ngay trước header là tên chương trình).
+  function acpSerializeCompetitionLuyKe(compData) {
+    const list = Array.isArray(compData) ? compData : [];
+    const lines = ['Chương trình thi đua Luỹ kế'];
+    const pct = (v) => (v === null || v === undefined || v === '' ? '-' : `${Number(v).toFixed(2)}%`);
+    const byProgram = new Map();
+    for (const item of list) {
+      const key = item.programid || item.programname;
+      if (!byProgram.has(key)) byProgram.set(key, []);
+      byProgram.get(key).push(item);
+    }
+    for (const items of byProgram.values()) {
+      const first = items[0];
+      const isQty = acpCompIsQty(first);
+      lines.push(`${first.programname || 'Chương trình'}\t${isQty ? 'SLLK' : 'DTLK'}\tTarget\t% HT Target Tháng\t% HT Dự Kiến\tTarget V.Trội\t%HTDK V.Trội`);
+      let sumVal = 0, sumTarget = 0;
+      for (const item of items) {
+        const val = Math.round(Number(isQty ? item.quantity : item.revenue) || 0);
+        const target = Math.round(Number(item.target || 0));
+        sumVal += val; sumTarget += target;
+        lines.push(`${item.salegroupname || 'Tổng'}\t${val}\t${target}\t${pct(item.targetpercent_month)}\t${pct(item.targetpercent_predict)}\t-\t-`);
+      }
+      const htTong = sumTarget > 0 ? `${((sumVal / sumTarget) * 100).toFixed(2)}%` : '-';
+      lines.push(`Tổng\t${sumVal}\t${sumTarget}\t${htTong}\t${items.length === 1 ? pct(first.targetpercent_predict) : '-'}\t-\t-`);
+    }
+    return lines.join('\n');
   }
 
   // Luỹ kế: điền Target & % HT nếu API có (target_kfactor/target); Realtime giữ "—" như bảng MWG Realtime.
@@ -2997,11 +3044,11 @@
     return lines.join('\n');
   }
 
-  async function acpRunBiAutomation(jobId, mode) {
+  async function acpRunBiAutomation(jobId, mode, month) {
     if (biJobRunning) return;
     biJobRunning = true;
     // Hiện bảng tiến trình ngay khi bắt đầu, trước cả lượt chờ trang nạp xong
-    acpResetSyncPanel(mode);
+    acpResetSyncPanel(mode, month);
     try { acpRenderSyncPanel(); } catch (_) {}
     console.log(`[BI-Sync] Bắt đầu tự động cập nhật: mode=${mode}, jobId=${jobId}`);
 
@@ -3103,9 +3150,16 @@
             const todayKey = parseInt(`${yyyy}${mm}${dd}`, 10);
             // REALTIME = CHỈ HÔM NAY; LUỸ KẾ = 01 đầu tháng → hôm nay.
             // (lỗi bản 6.8–7.0: Realtime dùng 01 → hôm nay nên đổ số Luỹ kế.)
-            const fromDateKey = isLuyKe ? parseInt(`${yyyy}${mm}01`, 10) : todayKey;
-            const toDateKey = todayKey;
-            const monthKey = parseInt(`${yyyy}${mm}`, 10);
+            // Luỹ kế theo THÁNG Dashboard chọn (YYYYMM): tháng hiện tại → 01 đến hôm nay; tháng đã qua → 01 đến
+            // ngày cuối tháng (đúng payload trang MWG: 20260901 → 20260930, MONTHKEY 202609).
+            const thangNay = parseInt(`${yyyy}${mm}`, 10);
+            const thangLk = isLuyKe && /^\d{6}$/.test(String(month || '')) ? parseInt(String(month), 10) : thangNay;
+            const yLk = Math.floor(thangLk / 100), mLk = thangLk % 100;
+            const cuoiThang = new Date(yLk, mLk, 0).getDate();
+            const fromDateKey = isLuyKe ? thangLk * 100 + 1 : todayKey;
+            const toDateKey = isLuyKe ? (thangLk === thangNay ? todayKey : thangLk * 100 + cuoiThang) : todayKey;
+            const monthKey = isLuyKe ? thangLk : thangNay;
+            console.log(`[BI-Sync] ${modeLabel}: ${fromDateKey} → ${toDateKey}, MONTHKEY ${monthKey}`);
 
             // 1. Tự động lấy danh sách siêu thị chuẩn xác qua API filter-store-getbyasmlist của portal
             let storeList = await acpFetchStoresFromAsmApi(token);
@@ -3177,7 +3231,7 @@
               STOREIDS: activeStoreIds,
               PAGESIZE: 0,
             }, token);
-            results.competition = acpSerializeCompetitionRealtime(compData);
+            results.competition = isLuyKe ? acpSerializeCompetitionLuyKe(compData) : acpSerializeCompetitionRealtime(compData);
             console.log('[BI-Sync] [API] Bước 2 Xong: Thi đua', results.competition?.length);
 
             // BƯỚC 3: Doanh thu ngành hàng BI Realtime (Hình 2: revenue-consolidated-get GROUPBY BICAT trong 1 lần gọi)
@@ -3431,12 +3485,14 @@
     const urlObj = new URL(location.href);
     let mode = urlObj.searchParams.get('ycx_mode');
     let jobId = urlObj.searchParams.get('job_id');
+    let month = urlObj.searchParams.get('ycx_month');
 
     if (!mode || !jobId) {
       const hash = location.hash.replace(/^#/, '');
       const hashParams = new URLSearchParams(hash);
       mode = mode || hashParams.get('ycx_mode');
       jobId = jobId || hashParams.get('job_id');
+      month = month || hashParams.get('ycx_month');
     }
 
     if (!mode || !jobId) {
@@ -3445,15 +3501,16 @@
         if (savedJob && savedJob.status === 'pending' && Date.now() - savedJob.createdAt < 10 * 60 * 1000) {
           mode = savedJob.mode;
           jobId = savedJob.jobId;
+          month = month || savedJob.month || null;
         }
       } catch (_) {}
     }
 
     if (mode && jobId) {
       try {
-        await gmSet(GM_KEY_BI_JOB, { jobId, mode, status: 'running', startedAt: Date.now() });
+        await gmSet(GM_KEY_BI_JOB, { jobId, mode, month, status: 'running', startedAt: Date.now() });
       } catch (_) {}
-      acpRunBiAutomation(jobId, mode);
+      acpRunBiAutomation(jobId, mode, month);
     }
   }
 
@@ -3475,7 +3532,7 @@
     try {
       GM_addValueChangeListener(GM_KEY_BI_JOB, (_n, _o, newVal) => {
         if (newVal && newVal.status === 'pending' && !biJobRunning) {
-          acpRunBiAutomation(newVal.jobId, newVal.mode);
+          acpRunBiAutomation(newVal.jobId, newVal.mode, newVal.month);
         }
       });
     } catch (_) {}

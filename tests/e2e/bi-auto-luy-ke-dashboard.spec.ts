@@ -22,11 +22,19 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
     }, BAN_MOI_NHAT);
     await openReportBi(page);
     await page.getByRole('button', { name: /Cập nhật/i }).first().click();
-    const tabMwg = page.context().waitForEvent('page');
+    // Bấm "Tự động Luỹ kế" → hộp chọn tháng; chọn tháng 08/2026
     await page.getByRole('button', { name: /Tự động Luỹ kế/i }).click();
-    expect((await tabMwg).url()).toContain('ycx_mode=luyke');
+    const chon = page.getByRole('dialog', { name: /chọn tháng/i });
+    await expect(chon).toBeVisible();
+    await chon.getByRole('radio', { name: 'Chọn tháng' }).click();
+    await chon.getByLabel('Tháng luỹ kế', { exact: true }).fill('2026-08');
+    const tabMwg = page.context().waitForEvent('page');
+    await chon.getByTestId('bat-dau-luy-ke').click();
+    const urlMwg = (await tabMwg).url();
+    expect(urlMwg).toContain('ycx_mode=luyke');
+    expect(urlMwg).toContain('ycx_month=202608');
 
-    const modal = page.getByRole('dialog', { name: /Tự động Cập nhật Luỹ Kế/i });
+    const modal = page.getByRole('dialog', { name: /Tự động Cập nhật Luỹ Kế · tháng 08\/2026/i });
     await expect(modal).toBeVisible();
     await expect(modal).toContainText('4 Báo cáo');
 
@@ -56,4 +64,25 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
     expect(await doc('bi_config-Tri Tôn-thidua')).toBeUndefined();
     // Không đụng ô Realtime
     expect(await doc('bi_config-Tri Tôn-industry-realtime')).toBeUndefined();
+});
+
+test('"Tháng hiện tại": ngày 1 lấy tháng trước, ngày khác lấy tháng này — truyền đúng ycx_month sang MWG', async ({ page }) => {
+    await page.context().route('https://baocao.dienmayxanh.com/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }));
+    await page.addInitScript((v) => {
+        window.addEventListener('ycx-bonus-bridge:ping', (e) => {
+            const nonce = (e as CustomEvent).detail?.nonce;
+            window.dispatchEvent(new CustomEvent('ycx-bonus-bridge:pong', { detail: { source: 'ycx-bonus-bridge', type: 'pong', nonce, version: v } }));
+        });
+    }, BAN_MOI_NHAT);
+    await openReportBi(page);
+    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: /Tự động Luỹ kế/i }).click();
+    const mongDoi = await page.evaluate(() => {
+        const n = new Date(); const d = new Date(n.getFullYear(), n.getMonth(), 1);
+        if (n.getDate() === 1) d.setMonth(d.getMonth() - 1);
+        return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
+    });
+    const tabMwg = page.context().waitForEvent('page');
+    await page.getByTestId('bat-dau-luy-ke').click();
+    expect((await tabMwg).url()).toContain(`ycx_month=${mongDoi}`);
 });

@@ -23,20 +23,29 @@ const FIXTURE = `<!doctype html><html><head><meta charset="utf-8"><title>Doanh t
 </script>
 </body></html>`;
 
-test('Tự động Luỹ kế: chọn "Lũy kế", dải 01 → hôm nay, Thi đua TIMETYPE 2, Ngành hàng & Nhân viên theo từng siêu thị có Target', async ({ page }) => {
-    const calls: { endpoint: string; body: Record<string, unknown> }[] = [];
+type Call = { endpoint: string; body: Record<string, unknown> };
+type Done = { mode: string; results: { competition: string; industryByStore: Record<string, string>; employeeByStore: Record<string, string> } };
+
+async function chayJobLuyKe(page: import('@playwright/test').Page, url: string): Promise<{ calls: Call[]; done: Done }> {
+    const calls: Call[] = [];
     await page.route('https://baocao.dienmayxanh.com/**', async (route) => {
-        const url = route.request().url();
-        if (url.includes('/kb-api/')) {
-            const endpoint = url.split('/kb-api/')[1];
-            calls.push({ endpoint, body: JSON.parse(route.request().postData() || '{}') });
+        const u = route.request().url();
+        if (u.includes('/kb-api/')) {
+            const endpoint = u.split('/kb-api/')[1];
+            const body = JSON.parse(route.request().postData() || '{}');
+            calls.push({ endpoint, body });
             let data: unknown[] = [];
             if (endpoint.endsWith('filter-store-getbyasmlist')) data = [
                 { id: 1678, Value: '1678 - ĐMM_AGI_TTO - Tri Tôn' }, { id: 8231, Value: '8231 - ĐMS_AGI_TTO - Lương An Trà' }];
             if (endpoint.endsWith('revenue-consolidated-staff-get')) data = [
                 { rowcode: '276650', rowname: 'Quách Trần Phương Thảo', quantity: 5, revenue: 40, revenue_kfactor: 50, target_kfactor: 100, revenue_tragop: 10 }];
-            if (endpoint.endsWith('revenue-consolidated-get') && JSON.parse(route.request().postData() || '{}').GROUPBY === 'BICAT') data = [
+            if (endpoint.endsWith('revenue-consolidated-get') && body.GROUPBY === 'BICAT') data = [
                 { rowlevel: 'BICAT', rowcode: '11', rowname: 'Điện thoại', quantity: 3, revenue: 20, revenue_kfactor: 30, target_kfactor: 60, avg3month_kfactor: 25, revenue_tragop: 5 }];
+            // Đúng hình dạng mẫu API thật 09/2026 (chủ dự án gửi): competitiontype 2 = số lượng, 3 = doanh thu
+            if (endpoint.endsWith('competition-bymsg-get')) data = [
+                { programid: 867, programname: 'SIM MOBIFONE/VINAPHONE/SIM DMX', competitiontype: 2, salegroupname: 'ĐMM_AGI_TTO - Tri Tôn', revenue_kfactor: '160625.95', quantity: '94983.0000', revenue: '29472.64', target: '75241.0000', targetpercent_month: '126.24', targetpercent_predict: '126.24' },
+                { programid: 906, programname: 'T09 - T10 IPHONE 18 series, iPhone Duo', competitiontype: 3, salegroupname: 'ĐMM_AGI_TTO - Tri Tôn', quantity: '18406', revenue: '775137.49', target: '2114953.45', targetpercent_month: '36.65', targetpercent_predict: '124.05' },
+            ];
             return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data }) });
         }
         return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: FIXTURE });
@@ -51,33 +60,51 @@ test('Tự động Luỹ kế: chọn "Lũy kế", dải 01 → hôm nay, Thi đ
         w.GM_addValueChangeListener = () => 0;
         localStorage.setItem('oidc.user:test', JSON.stringify({ access_token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl' }));
     });
-    await page.goto(BI_URL);
+    await page.goto(url);
     await page.addScriptTag({ content: readFileSync(USERSCRIPT_PATH, 'utf-8') });
-
     await page.waitForFunction(() => Boolean((window as unknown as { __gm: Map<string, unknown> }).__gm.get('ycx_bi_automation_done')), undefined, { timeout: 60_000 });
+    const done = await page.evaluate(() => (window as unknown as { __gm: Map<string, unknown> }).__gm.get('ycx_bi_automation_done')) as Done;
+    return { calls, done };
+}
+
+test('Luỹ kế THÁNG ĐÃ QUA (09/2026): 01 → 30/09, MONTHKEY 202609, TIMETYPE 2; Thi đua đúng khuôn Luỹ kế', async ({ page }) => {
+    const { calls, done } = await chayJobLuyKe(page, `${BI_URL}&ycx_month=202609`);
 
     expect(await page.evaluate(() => (window as unknown as { __clicks: string[] }).__clicks)).toContain('lk');
-    await expect(page.locator('#acp-bi-sync-overlay')).toContainText('Tự động Cập nhật Luỹ Kế');
+    await expect(page.locator('#acp-bi-sync-overlay')).toContainText('Tự động Cập nhật Luỹ Kế · tháng 09/2026');
 
-    const { homNay, dauThang } = await page.evaluate(() => {
-        const d = new Date(); const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0');
-        return { homNay: Number(`${y}${m}${String(d.getDate()).padStart(2, '0')}`), dauThang: Number(`${y}${m}01`) };
-    });
     const theoNgay = calls.filter(c => 'FROMDATE' in c.body);
     expect(theoNgay.length).toBe(2 + 2 * 2); // hợp nhất (card + bảng) + ngành hàng & nhân viên × 2 siêu thị
     for (const c of theoNgay) {
-        expect(c.body.FROMDATE, `${c.endpoint}: Luỹ kế bắt đầu từ 01 đầu tháng`).toBe(dauThang);
-        expect(c.body.TODATE).toBe(homNay);
+        expect(c.body.FROMDATE, c.endpoint).toBe(20260901);
+        expect(c.body.TODATE, `${c.endpoint}: tháng đã qua lấy tới NGÀY CUỐI tháng`).toBe(20260930);
     }
     const thiDua = calls.filter(c => c.endpoint === 'reports/competition-bymsg-get');
     expect(thiDua).toHaveLength(1);
-    expect(thiDua[0].body.TIMETYPE, 'Thi đua Luỹ kế: TIMETYPE 2').toBe(2);
+    expect(thiDua[0].body.TIMETYPE).toBe(2);
+    expect(thiDua[0].body.MONTHKEY).toBe(202609);
 
-    const done = await page.evaluate(() => (window as unknown as { __gm: Map<string, unknown> }).__gm.get('ycx_bi_automation_done')) as
-        { mode: string; results: { industryByStore: Record<string, string>; employeeByStore: Record<string, string> } };
     expect(done.mode).toBe('luyke');
+    // Thi đua Luỹ kế: SIM (type 2) theo SỐ LƯỢNG, iPhone (type 3) theo DOANH THU, có % HT dự kiến
+    expect(done.results.competition).toContain('SIM MOBIFONE/VINAPHONE/SIM DMX\tSLLK\tTarget\t% HT Target Tháng\t% HT Dự Kiến');
+    expect(done.results.competition).toContain('ĐMM_AGI_TTO - Tri Tôn\t94983\t75241\t126.24%\t126.24%');
+    expect(done.results.competition).toContain('T09 - T10 IPHONE 18 series, iPhone Duo\tDTLK');
+    expect(done.results.competition).toContain('ĐMM_AGI_TTO - Tri Tôn\t775137\t2114953\t36.65%\t124.05%');
+    // Ngành hàng & Nhân viên theo từng siêu thị, có Target & % HT
     expect(Object.keys(done.results.industryByStore)).toEqual(expect.arrayContaining(['1678 - ĐMM_AGI_TTO - Tri Tôn', '8231 - ĐMS_AGI_TTO - Lương An Trà']));
-    // Luỹ kế điền Target & % HT (Realtime để "—")
     expect(done.results.industryByStore['1678 - ĐMM_AGI_TTO - Tri Tôn']).toContain('11 - Điện thoại\t3\t30\t100.0%\t20\t60\t50.0%');
     expect(done.results.employeeByStore['1678 - ĐMM_AGI_TTO - Tri Tôn']).toContain('276650 - Quách Trần Phương Thảo\t5\t50\t—\t40\t100\t50.0%');
+});
+
+test('Luỹ kế THÁNG HIỆN TẠI (không truyền tháng): 01 → hôm nay của tháng này', async ({ page }) => {
+    const { calls } = await chayJobLuyKe(page, BI_URL);
+    const { homNay, dauThang, thang } = await page.evaluate(() => {
+        const d = new Date(); const y = d.getFullYear(); const m = String(d.getMonth() + 1).padStart(2, '0');
+        return { homNay: Number(`${y}${m}${String(d.getDate()).padStart(2, '0')}`), dauThang: Number(`${y}${m}01`), thang: Number(`${y}${m}`) };
+    });
+    for (const c of calls.filter(c => 'FROMDATE' in c.body)) {
+        expect(c.body.FROMDATE).toBe(dauThang);
+        expect(c.body.TODATE).toBe(homNay);
+    }
+    expect(calls.find(c => c.endpoint === 'reports/competition-bymsg-get')!.body.MONTHKEY).toBe(thang);
 });

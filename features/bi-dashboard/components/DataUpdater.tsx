@@ -24,6 +24,8 @@ import {
     savePendingAutoSync,
     clearPendingAutoSync,
     PENDING_MAX_RELOADS,
+    thangLuyKeMacDinh,
+    nhanThang,
     applyBiSyncResults,
     onBiProgress,
     onBiDone,
@@ -531,8 +533,16 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     // Số lần đã tự tải lại cho lượt đang dở (xem readPendingAutoSync) — chặn vòng tải lại khi chưa cập nhật
     const pendingReloadsRef = React.useRef(0);
 
-    const handleStartAutoSync = async (mode: BiSyncMode, opts: { tuChayTiep?: boolean } = {}) => {
+    // Luỹ kế: chọn tháng trước khi chạy (Tháng hiện tại — ngày 1 thì lùi tháng trước — hoặc tháng bất kỳ)
+    const [chonThangMo, setChonThangMo] = useState(false);
+    const [kieuThang, setKieuThang] = useState<'hien-tai' | 'tuy-chon'>('hien-tai');
+    const [thangTuyChon, setThangTuyChon] = useState(() => { const m = thangLuyKeMacDinh(); return `${m.slice(0, 4)}-${m.slice(4)}`; });
+    const [autoSyncMonth, setAutoSyncMonth] = useState<string>('');
+    const thangDangChon = kieuThang === 'hien-tai' ? thangLuyKeMacDinh() : thangTuyChon.replace('-', '');
+
+    const handleStartAutoSync = async (mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}) => {
         setAutoSyncMode(mode);
+        setAutoSyncMonth(mode === 'luyke' ? (opts.month || thangLuyKeMacDinh()) : '');
         setAutoSyncProgress(null);
         setAutoSyncError('');
         setAutoSyncStatus('running');
@@ -557,7 +567,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 setAutoSyncCurrentVersion(msg.split(':')[1] || '');
                 setAutoSyncLatestVersion(msg.split(':')[2] || '');
                 // Nhớ lượt dở: cập nhật xong quay lại tab → tự tải lại để nạp bản mới → tự chạy tiếp
-                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current });
+                savePendingAutoSync({ mode, ts: Date.now(), reloads: pendingReloadsRef.current, month: opts.month });
             } else {
                 clearPendingAutoSync();
                 setAutoSyncStatus('error');
@@ -573,7 +583,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         const p = readPendingAutoSync();
         if (!p) return;
         pendingReloadsRef.current = p.reloads;
-        void handleStartRef.current(p.mode, { tuChayTiep: true });
+        void handleStartRef.current(p.mode, { tuChayTiep: true, month: p.month });
     }, []);
 
     // Đang báo "cần cập nhật": người dùng quay lại tab (sau khi bấm Update trong Tampermonkey) → tự tải lại trang,
@@ -794,7 +804,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     <Button
                         variant="unstyled"
                         size="none"
-                        onClick={() => handleStartAutoSync('luyke')}
+                        onClick={() => setChonThangMo(true)}
                         title="Tự động thu thập 4 bảng dữ liệu Luỹ kế từ MWG qua Tampermonkey"
                         className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-emerald-600/30"
                     >
@@ -1175,6 +1185,65 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 </Modal>
             )}
 
+            {/* Chọn tháng cho Tự động Luỹ kế */}
+            <Modal
+                isOpen={chonThangMo}
+                onClose={() => setChonThangMo(false)}
+                title="Tự động Luỹ kế — chọn tháng"
+                maxWidth="sm"
+                footer={
+                    <div className="flex justify-end gap-2">
+                        <Button variant="secondary" size="sm" onClick={() => setChonThangMo(false)}>Huỷ</Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            data-testid="bat-dau-luy-ke"
+                            disabled={!/^\d{6}$/.test(thangDangChon)}
+                            onClick={() => { setChonThangMo(false); void handleStartAutoSync('luyke', { month: thangDangChon }); }}
+                        >
+                            Bắt đầu — tháng {nhanThang(thangDangChon)}
+                        </Button>
+                    </div>
+                }
+            >
+                <div className="space-y-3">
+                    <div className="flex gap-2" role="radiogroup" aria-label="Kiểu tháng luỹ kế">
+                        <Button
+                            variant={kieuThang === 'hien-tai' ? 'primary' : 'outline'}
+                            size="sm"
+                            role="radio"
+                            aria-checked={kieuThang === 'hien-tai'}
+                            onClick={() => setKieuThang('hien-tai')}
+                        >
+                            Tháng hiện tại
+                        </Button>
+                        <Button
+                            variant={kieuThang === 'tuy-chon' ? 'primary' : 'outline'}
+                            size="sm"
+                            role="radio"
+                            aria-checked={kieuThang === 'tuy-chon'}
+                            onClick={() => setKieuThang('tuy-chon')}
+                        >
+                            Chọn tháng
+                        </Button>
+                    </div>
+                    {kieuThang === 'hien-tai' ? (
+                        <p className="text-xs text-slate-600">
+                            Lấy luỹ kế tháng <b>{nhanThang(thangLuyKeMacDinh())}</b>
+                            {new Date().getDate() === 1 ? ' — hôm nay là ngày 1 nên lấy trọn tháng trước.' : ' (từ ngày 01 đến hôm nay).'}
+                        </p>
+                    ) : (
+                        <Input
+                            type="month"
+                            aria-label="Tháng luỹ kế"
+                            value={thangTuyChon}
+                            max={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; })()}
+                            onChange={(e) => setThangTuyChon(e.target.value)}
+                        />
+                    )}
+                </div>
+            </Modal>
+
             {/* Modal tiến trình Tự động cập nhật Realtime / Luỹ kế qua Tampermonkey */}
             <BiAutoSyncModal
                 isOpen={autoSyncModalOpen}
@@ -1183,6 +1252,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 status={autoSyncStatus}
                 currentVersion={autoSyncCurrentVersion}
                 latestVersion={autoSyncLatestVersion}
+                month={autoSyncMonth}
                 errorMessage={autoSyncError}
                 onClose={() => { setAutoSyncModalOpen(false); clearPendingAutoSync(); }}
                 onCancel={() => {

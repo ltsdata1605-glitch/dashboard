@@ -53,13 +53,29 @@ function makeJobId(): string {
     return `bi-job-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function sendStartBiJob(jobId: string, mode: BiSyncMode): void {
+/**
+ * Tháng Luỹ kế mặc định (YYYYMM) khi chọn "Tháng hiện tại": tháng này; riêng NGÀY 1 thì lấy tháng TRƯỚC
+ * (chủ dự án 2026-10-01: ngày 1 chưa có số luỹ kế tháng mới → đổ dữ liệu tháng liền kề trước đó).
+ */
+export function thangLuyKeMacDinh(now: Date = new Date()): string {
+    const d = new Date(now.getFullYear(), now.getMonth(), 1);
+    if (now.getDate() === 1) d.setMonth(d.getMonth() - 1);
+    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/** "202609" → "09/2026" để hiển thị. */
+export function nhanThang(yyyymm: string): string {
+    return /^\d{6}$/.test(yyyymm) ? `${yyyymm.slice(4)}/${yyyymm.slice(0, 4)}` : yyyymm;
+}
+
+export function sendStartBiJob(jobId: string, mode: BiSyncMode, month?: string): void {
     window.dispatchEvent(new CustomEvent(EVT_BI_START_JOB, {
         detail: {
             source: 'ycx-bi-automation',
             type: 'start-job',
             jobId,
             mode,
+            month: month || null,
             createdAt: Date.now(),
         }
     }));
@@ -291,7 +307,7 @@ const PENDING_TTL_MS = 10 * 60 * 1000;
 /** Tự tải lại tối đa ngần này lần cho một lượt dở (chưa cập nhật mà cứ quay lại tab thì không tải lại mãi). */
 export const PENDING_MAX_RELOADS = 2;
 
-export interface PendingAutoSync { mode: BiSyncMode; ts: number; reloads: number }
+export interface PendingAutoSync { mode: BiSyncMode; ts: number; reloads: number; month?: string }
 
 export function readPendingAutoSync(): PendingAutoSync | null {
     try {
@@ -339,7 +355,7 @@ async function moTabMwg(url: string, nhoUserscript: boolean): Promise<Window | '
  * `tuChayTiep`: lượt chạy lại tự động sau khi tải trang (không có cú bấm) — không mở lại trang cập nhật, chờ ping lâu hơn
  * (userscript có thể chưa kịp nạp), mở tab MWG qua userscript.
  */
-export async function startBiAutoSyncSession(mode: BiSyncMode, opts: { tuChayTiep?: boolean } = {}): Promise<{ jobId: string; workerWindow: Window | null; workerOpened: boolean }> {
+export async function startBiAutoSyncSession(mode: BiSyncMode, opts: { tuChayTiep?: boolean; month?: string } = {}): Promise<{ jobId: string; workerWindow: Window | null; workerOpened: boolean }> {
     // Chạy song song để vẫn nằm trong thời hạn "người dùng vừa bấm" (trình duyệt mới cho mở tab mới)
     const [isInstalled, latest] = await Promise.all([detectUserscript(opts.tuChayTiep ? 4000 : 800), fetchLatestUserscriptVersion()]);
     if (!isInstalled.installed) {
@@ -356,10 +372,13 @@ export async function startBiAutoSyncSession(mode: BiSyncMode, opts: { tuChayTie
     }
 
     const jobId = makeJobId();
-    sendStartBiJob(jobId, mode);
+    // Luỹ kế: tháng chọn (YYYYMM); không truyền → tháng mặc định (ngày 1 thì tháng trước)
+    const month = mode === 'luyke' ? (opts.month && /^\d{6}$/.test(opts.month) ? opts.month : thangLuyKeMacDinh()) : undefined;
+    sendStartBiJob(jobId, mode, month);
 
     // Mở tab worker kèm URL query + hash để userscript trên tab MWG đọc được ngay lập tức
-    const targetUrl = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${mode}&job_id=${jobId}#ycx_mode=${mode}&job_id=${jobId}`;
+    const extra = month ? `&ycx_month=${month}` : '';
+    const targetUrl = `https://baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=${mode}&job_id=${jobId}${extra}#ycx_mode=${mode}&job_id=${jobId}${extra}`;
     const tab = await moTabMwg(targetUrl, Boolean(opts.tuChayTiep));
     const workerWindow = tab && tab !== 'userscript' ? tab : null;
     return { jobId, workerWindow, workerOpened: Boolean(tab) };

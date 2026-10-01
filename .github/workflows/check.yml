@@ -192,6 +192,10 @@ jobs:
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/bi-sync-cap-nhat-xong-tu-chay-tiep.spec.ts --output=test-results/bi-sync-cap-nhat-xong-tu-chay-tiep
 
+      - name: 'E2E: bi-sync-luy-ke'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/bi-sync-luy-ke.spec.ts tests/e2e/bi-auto-luy-ke-dashboard.spec.ts --output=test-results/bi-sync-luy-ke
+
       - name: 'E2E: xss-header-sanitization'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/xss-header-sanitization.spec.ts --output=test-results/xss-header-sanitization

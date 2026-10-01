@@ -6713,3 +6713,16 @@ Unit 947 xanh; e2e BI 7/7.
 Chủ dự án: các dòng chạy theo thứ tự 1 → 3 → 4 → 2 trên màn hình, khó theo dõi. Direct API chạy Hợp nhất → Thi đua →
 Ngành hàng → Nhân viên, nên xếp dòng Realtime đúng thứ tự đó (bảng trên MWG — userscript 7.6 — và modal Dashboard);
 số trong vòng tròn = vị trí dòng. Luỹ kế giữ nguyên. Test kiểm thứ tự dòng ở cả hai nơi; 11/11 e2e bi-sync xanh.
+
+## Tự động Luỹ kế — Direct API + chọn tháng (userscript 7.7 → 7.8, 2026-10-01)
+Yêu cầu chủ dự án: Luỹ kế lấy như Realtime nhưng chọn "Lũy kế", dán vào ô Luỹ kế; cho chọn tháng hiện tại hoặc tháng bất kỳ;
+"tháng hiện tại" mà hôm nay là ngày 1 → lấy tháng liền trước. Chủ dự án gửi mẫu API thật (Doanh thu hợp nhất, Thi đua, Trả chậm).
+- Userscript: khối Direct API dùng chung 2 chế độ (Luỹ kế: bấm "Lũy kế", FROMDATE 01, TODATE = hôm nay nếu tháng hiện tại /
+  cuối tháng nếu tháng cũ, MONTHKEY = tháng chọn, Thi đua TIMETYPE 2). Tháng nhận qua URL `ycx_month` / job GM.
+  Thi đua Luỹ kế đúng khuôn bảng MWG Luỹ kế (SLLK/DTLK, Target, % HT tháng, % HT dự kiến `targetpercent_predict`);
+  loại theo `competitiontype` (2, 6 = số lượng — đối chiếu mẫu: SIM 94.983/75.241 = 126,24%) — sửa luôn Realtime.
+  Ngành hàng/Nhân viên Luỹ kế điền Target & % HT (`target_kfactor`). API lỗi → đường UI Luỹ kế cũ.
+- Dashboard: hộp "Tự động Luỹ kế — chọn tháng" (Tháng hiện tại / Chọn tháng); `thangLuyKeMacDinh()` (ngày 1 → tháng trước,
+  1/1 → 12 năm trước); lưu 4 ô Luỹ kế theo TỪNG siêu thị; không ghi bảng Thi đua cụm vào ô Thi đua nhân viên.
+- CHƯA làm: Trả chậm — mẫu `tra-cham-matrix-get` là cấp VÙNG × đối tác; ô Trả chậm siêu thị cần cấp NHÂN VIÊN → chờ mẫu.
+Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện tại); Dashboard Luỹ kế 2/2 (đỏ trên code cũ); bi-sync 28/28.
