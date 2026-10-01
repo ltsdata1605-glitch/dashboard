@@ -6758,3 +6758,86 @@ Test: unit tháng 4/4; e2e userscript Luỹ kế 2/2 (tháng cũ, tháng hiện 
   Dashboard chỉ nhận kết quả có `jobId` đúng lượt CHÍNH nơi đó vừa khởi chạy, một lần. Kiểm: spec mới
   `bi-sync-khong-phat-lai-ket-qua-cu` (userscript cũ đỏ — phát lại lượt cũ; mới xanh) + test "phát lại kết quả CŨ → không
   toast, không ghi đè" trong `bi-auto-sync-xong-dong-modal`; 2 test cũ đổi sang jobId thật lấy từ sự kiện start-job.
+
+---
+
+## Kế hoạch: HỢP NHẤT XUẤT ẢNH toàn dự án (lập 2026-10-01, chưa thực hiện)
+
+Yêu cầu chủ dự án: gom mọi tính năng xuất ảnh về MỘT nơi quản lý; đồng nhất cách xuất; có hiệu ứng chờ; xuất hàng
+loạt có tiến trình; ảnh xuất chuyên nghiệp; **bảng/cột phải được co giãn vừa nội dung trước khi chụp**.
+
+### Hiện trạng (đo trên code 2026-10-01)
+
+**4 bản sao bộ máy chụp `exportElementAsImage`** (cùng gốc, đã trôi khác nhau — tổng ~5.100 dòng):
+
+| Bản | File | Dòng | Khác bản gốc |
+|---|---|---|---|
+| Gốc (Phân tích, Thuế) | `services/uiService.ts` | 1405 | — (bản đầy đủ nhất: có `fitWidthToTable`) |
+| Report BI | `features/bi-dashboard/services/uiExport/imageExport.ts` | 1566 | ~1.019 dòng; **KHÔNG có `fitWidthToTable`** dù `Dashboard.tsx` có truyền → lựa chọn bị bỏ qua âm thầm |
+| Phân Ca | `features/phan-ca/services/uiService.ts` | 1066 | ~515 dòng |
+| In Sticker | `features/sticker-event/services/uiService.ts` | 1056 | ~501 dòng (gần như bản Phân Ca) |
+
+**3 cách riêng khác:** Check thưởng tự dựng HTML bảng xếp hạng rồi `html-to-image` (`checkThuongImageExport.ts`);
+Khai thác dùng **`html2canvas`** (thư viện thứ 2, chỉ nơi này dùng); Thuế dùng bản gốc `captureAsDisplayed`.
+Đã chung được 1 khâu: **giao ảnh** (`components/shared/ui/imageDelivery.ts → deliverImage`, audit A05–A08).
+
+**Điểm xuất trên giao diện (~30):** Phân tích ~13 (9 component + 4 luồng trong `hooks/useExportLogic.ts`, gồm 2 luồng hàng
+loạt theo NV / theo Kho); Report BI ~10 (Dashboard, Doanh thu, Trả chậm, Thưởng, 5 view Thi đua; hàng loạt: Highlight,
+thẻ cá nhân, bảng tổng hợp, theo bộ phận); Phân Ca 3 (1 ảnh, theo tuần, theo nhân viên — 2 cái sau là hàng loạt);
+In Sticker 2 (1 ảnh, hàng loạt theo lô); Check thưởng 1; Khai thác 2; Thuế 1.
+
+**Không đồng nhất ở đâu:**
+- *Hiệu ứng chờ*: 3 kiểu lớp phủ tự dựng bằng DOM (`showExportOverlay` ở gốc/Phân Ca/Sticker), Report BI chỉ đổi icon nút
+  thành spinner (nhiều nút không có gì), Khai thác dùng `toast.loading`, Phân Ca 1 ảnh không có gì.
+- *Hàng loạt*: Phân tích có lớp phủ "3/12" + tổng kết lỗi (`services/batchExportResult.ts`); Report BI chỉ có tooltip
+  "Đang xuất 3/12" trên nút + toast; Phân Ca không có tiến trình; Sticker có lớp phủ riêng. Không nơi nào **huỷ** được.
+- *Co cột*: chỉ ~8 nơi bật `fitAllColumns/isCompactTable`, mỗi bản sao co theo một cách; nơi không bật thì ảnh mang
+  nguyên bề rộng màn hình (cột thừa khoảng trắng hoặc bị cắt, cột ghim `sticky` lệch).
+- *Tên file*, độ nét (scale 1.5/2), nền, lề, chân trang: mỗi nơi một kiểu.
+
+**Ngoài phạm vi:** `sticker-event/services/printService.ts` (dựng tem để IN, không phải xuất ảnh báo cáo);
+`tax-calculator/services/screenshotBookmarklet.ts` (bookmarklet chụp trang MWG); icon Camera ở `line-bot` (trang trí).
+
+### Kiến trúc đích
+
+Thư mục mới **`components/shared/export/`** — được mọi khu vực import mà không phá quy tắc cách ly (ESLint chỉ chặn
+`features/*` ↔ `features/*` và `features/*` → `hooks/`, `services/` gốc). Bổ sung vào CLAUDE.md mục 1 như thứ dùng chung
+thứ 4 (sau `components/shared/ui`, `utils/dataUtils`, `utils/localDbScope`).
+
+| Module | Việc |
+|---|---|
+| `captureEngine.ts` | **Bộ máy chụp duy nhất** (html-to-image), gộp từ bản gốc + vá riêng của 3 bản kia; kiểu `ExportImageOptions` rõ ràng (bỏ `any`). Nhận phần tử DOM hoặc chuỗi HTML (cho Check thưởng). |
+| `tableFit.ts` | **Co cột vừa nội dung — MẶC ĐỊNH BẬT cho mọi bảng**: `table-layout:auto`, bảng `width:max-content`, bỏ `w-*/min-w-*`, ô `nowrap`, gỡ `sticky`/`overflow` của khung cuộn để không mất cột, rồi ĐO bề rộng thật và ép cả khối (tiêu đề, thẻ KPI) về đúng bề rộng bảng (= `fitWidthToTable` hiện có). Tắt bằng `fitColumns: 'none'` cho biểu đồ / bố cục cố định. |
+| `exportFrame.ts` | Khung ảnh thống nhất: nền trắng, lề đều, phông UTM Avo nhúng sẵn (dựng CSS phông 1 lần, dùng lại — nhanh hơn), độ nét 2× (điện thoại tự hạ theo `capPixelRatioForArea` để không vượt trần canvas iOS), chân ảnh tuỳ chọn "Dashboard YCX · xuất HH:mm dd/mm". |
+| `filename.ts` | Tên file chuẩn `<Báo cáo>_<Siêu thị/Phạm vi>_<dd-mm-yyyy>_<HHmm>.png`, bỏ dấu cho an toàn hệ điều hành. |
+| `exportJob.ts` | Chạy 1 ảnh / hàng loạt: tuần tự, nhả luồng giữa các ảnh, **huỷ được** (AbortSignal), kết quả từng mục (gộp `batchExportResult.ts`), báo tiến trình qua callback. |
+| `ExportProgress.tsx` + `useImageExport()` | **Một giao diện chờ duy nhất** (theo DESIGN_SYSTEM: modal `rounded-md`, màu sky/emerald/rose): 1 ảnh → "Đang chuẩn bị… → Đang chụp… → Đang lưu/chia sẻ"; hàng loạt → thanh tiến trình "3/12 — Nguyễn Văn A", thời gian còn lại ước tính, nút **Huỷ**, cuối cùng bảng tổng kết (đã xong / lỗi + nút thử lại mục lỗi). Thay 3 lớp phủ DOM + các spinner rời. |
+| Giao ảnh | Giữ `deliverImage` + `BatchShareToast`/`ShareRetryToast` hiện có (đã kiểm chứng iOS). Hàng loạt trên máy tính: tải lần lượt hoặc gói 1 file ZIP (chốt ở dưới). |
+
+Mọi nơi gọi chỉ còn 1 dòng kiểu: `exportImage(ref.current, { title: 'Thi đua', scope: 'Hùng Vương' })` hoặc
+`exportBatch(items, render)`. Một luật ESLint mới cấm import `html-to-image`/`html2canvas` ngoài `components/shared/export/`
+để không ai đẻ thêm bản sao.
+
+### Các bước (mỗi bước: commit → check + test → push main → deploy → kiểm bản live)
+
+0. **Lưới an toàn trước khi động vào code** — Playwright "ảnh chuẩn" cho từng điểm xuất (~30): bấm xuất → bắt blob →
+   kiểm kích thước, **không cột nào bị cắt** (bề rộng ảnh ≥ bề rộng bảng đã co), chụp ảnh lưu làm mốc so trước/sau.
+   Dùng dữ liệu giả sẵn có (`openReportBi`, seed Phân tích).
+1. **Dựng `components/shared/export/`** (engine + tableFit + frame + filename + exportJob) và unit test; CHƯA đổi nơi gọi.
+   Gộp các bản vá khác nhau giữa 4 bản sao: đọc diff từng khối, giữ bản đúng, ghi lý do vào chú thích.
+2. **Giao diện chờ & tiến trình** `ExportProgress` + `useImageExport` (+ Huỷ, tổng kết, thử lại mục lỗi).
+3. **Chuyển Phân tích** (~13 điểm, gồm 2 luồng hàng loạt) — so ảnh với mốc bước 0.
+4. **Chuyển Report BI** (~10 điểm + 4 luồng hàng loạt) — sửa luôn lỗi `fitWidthToTable` bị bỏ qua.
+5. **Chuyển Phân Ca, In Sticker, Check thưởng, Khai thác, Thuế** — Khai thác bỏ `html2canvas` (gỡ khỏi `package.json`,
+   bundle nhẹ hơn); Phân Ca có tiến trình cho xuất theo tuần / theo nhân viên.
+6. **Dọn**: xoá 4 bản sao (~5.100 dòng) và 3 lớp phủ DOM, thêm luật ESLint chặn import thư viện chụp ngoài engine,
+   cập nhật CLAUDE.md / DESIGN_SYSTEM.md (mục "Xuất ảnh").
+
+**Rủi ro & cách giữ:** 4 bản sao trôi khác nhau vì từng vá lỗi thật (iOS cắt ảnh, phông giả đậm, cột ghim…) — gộp sai
+là tái phát lỗi cũ → bước 0 (ảnh mốc) + giữ test e2e iOS sẵn có (`check-thuong-iphone-khong-cat`, `ios-report-bi-check-thuong`,
+`xuat-anh-hang-loat-ket-qua`, `tax-qr-and-export`). Chuyển từng khu vực một, khu nào lệch thì dừng ở khu đó.
+
+### Cần chủ dự án chốt (có mặc định đề xuất — không trả lời thì làm theo mặc định)
+1. Hàng loạt trên **máy tính**: tải từng ảnh (như nay) hay **gói 1 file ZIP**? → đề xuất: ≤ 5 ảnh tải từng ảnh, > 5 ảnh gói ZIP.
+2. **Chân ảnh** "Dashboard YCX · xuất 14:32 01/10"? → đề xuất: bật, chữ xám 11px.
+3. Bề rộng tối thiểu ảnh: giữ 680px (đọc vừa điện thoại) như bản gốc → đề xuất: giữ.
