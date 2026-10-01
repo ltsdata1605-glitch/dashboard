@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { Check, Loader2, AlertCircle, ExternalLink, Zap, Clock, TrendingUp } from 'lucide-react';
+import { Check, Loader2, AlertCircle, ExternalLink, Zap, Clock, TrendingUp, ShieldCheck } from 'lucide-react';
 import { BiSyncMode, BiSyncProgress, USERSCRIPT_URL } from '../services/biAutoSyncService';
+import { TampermonkeyInstallGuideContent } from './common/TampermonkeyInstallGuideContent';
 
 interface BiAutoSyncModalProps {
     isOpen: boolean;
@@ -19,6 +20,7 @@ interface BiAutoSyncModalProps {
     onClose: () => void;
     onCancel?: () => void;
     onReopenWorker?: () => void;
+    onRetry?: () => void;
 }
 
 // Thứ tự dòng = thứ tự CHẠY THẬT của userscript (Direct API): Hợp nhất → Thi đua → Ngành hàng → Nhân viên.
@@ -69,6 +71,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
     onClose,
     onCancel,
     onReopenWorker,
+    onRetry,
 }) => {
     const isRealtime = mode === 'realtime';
     const steps = isRealtime ? STEPS_REALTIME : STEPS_LUYKE;
@@ -113,34 +116,50 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 else onClose();
             }}
             title={
-                <div className="flex items-center gap-2.5">
-                    <div className={`p-2 rounded-xl text-white shadow-xs ${
-                        isRealtime ? 'bg-amber-500 shadow-amber-500/20' : 'bg-emerald-600 shadow-emerald-500/20'
-                    }`}>
-                        {isRealtime ? <Clock className="w-5 h-5" /> : <TrendingUp className="w-5 h-5" />}
-                    </div>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
-                                {isRealtime ? 'Tự động Cập nhật Realtime' : `Tự động Cập nhật Luỹ Kế${month && /^\d{6}$/.test(month) ? ` · tháng ${month.slice(4)}/${month.slice(0, 4)}` : ''}`}
-                            </h3>
-                            <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wide rounded-full border ${
-                                isRealtime
-                                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
-                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-                            }`}>
-                                {steps.length} Báo cáo
-                            </span>
+                status === 'not-installed' ? (
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-xs">
+                            <ShieldCheck className="w-5 h-5" />
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-                            {isRealtime
-                                ? 'Tự động mở trang MWG, check các tuỳ chọn và dán 4 báo cáo Realtime vào hệ thống'
-                                : 'Tự động mở trang MWG, chọn Lũy kế và dán 5 báo cáo Luỹ kế vào hệ thống'}
-                        </p>
+                        <div>
+                            <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
+                                Cài đặt Tampermonkey — Tự động {isRealtime ? 'Realtime' : 'Luỹ kế'}
+                            </h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                Làm theo hướng dẫn 3 bước dưới đây để kết nối Dashboard với hệ thống báo cáo MWG
+                            </p>
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    <div className="flex items-center gap-2.5">
+                        <div className={`p-2 rounded-xl text-white shadow-xs ${
+                            isRealtime ? 'bg-amber-500 shadow-amber-500/20' : 'bg-emerald-600 shadow-emerald-500/20'
+                        }`}>
+                            {isRealtime ? <Clock className="w-5 h-5" /> : <TrendingUp className="w-5 h-5" />}
+                        </div>
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
+                                    {isRealtime ? 'Tự động Cập nhật Realtime' : `Tự động Cập nhật Luỹ Kế${month && /^\d{6}$/.test(month) ? ` · tháng ${month.slice(4)}/${month.slice(0, 4)}` : ''}`}
+                                </h3>
+                                <span className={`px-2 py-0.5 text-[10px] font-black uppercase tracking-wide rounded-full border ${
+                                    isRealtime
+                                        ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                                }`}>
+                                    {steps.length} Báo cáo
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                {isRealtime
+                                    ? 'Tự động mở trang MWG, check các tuỳ chọn và dán 4 báo cáo Realtime vào hệ thống'
+                                    : 'Tự động mở trang MWG, chọn Lũy kế và dán 5 báo cáo Luỹ kế vào hệ thống'}
+                            </p>
+                        </div>
+                    </div>
+                )
             }
-            maxWidth="md"
+            maxWidth={status === 'not-installed' ? 'lg' : 'md'}
         >
             <div className="space-y-4 py-1">
                 {/* TRƯỜNG HỢP CẦN CẬP NHẬT USERSCRIPT */}
@@ -180,39 +199,12 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     </div>
                 )}
 
-                {/* TRƯỜNG HỢP CHƯA CÀI USERSCRIPT */}
+                {/* TRƯỜNG HỢP CHƯA CÀI USERSCRIPT - HƯỚNG DẪN 3 BƯỚC CHI TIẾT */}
                 {status === 'not-installed' && (
-                    <div className="space-y-3 p-4 bg-amber-50 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800/50">
-                        <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                            <div className="text-xs space-y-1.5">
-                                <p className="font-bold text-slate-800 dark:text-slate-100">
-                                    Chưa phát hiện tiện ích Tampermonkey trên trình duyệt
-                                </p>
-                                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                                    Để chạy tính năng tự động thu thập từ hệ thống báo cáo MWG, bạn cần cài đặt Tampermonkey và nạp Userscript của Dashboard YCX (hoàn toàn an toàn & bảo mật).
-                                </p>
-                                <div className="pt-2 flex flex-wrap gap-2">
-                                    <Button
-                                        variant="unstyled"
-                                        size="none"
-                                        onClick={() => window.open(USERSCRIPT_URL, '_blank')}
-                                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1.5 transition-colors"
-                                    >
-                                        <ExternalLink className="w-3.5 h-3.5" />
-                                        <span>Cài đặt Userscript ngay</span>
-                                    </Button>
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={onClose}
-                                    >
-                                        Đóng
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <TampermonkeyInstallGuideContent
+                        onRetry={onRetry}
+                        onClose={onClose}
+                    />
                 )}
 
                 {/* DANH SÁCH BƯỚC */}
@@ -326,46 +318,48 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     </div>
                 )}
 
-                {/* FOOTER ACTIONS */}
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-[11px] text-slate-400" aria-live="polite">
-                        {status === 'running' && 'Không đóng tab MWG đang chạy ngầm...'}
-                        {status === 'success' && `Tự đóng sau ${conLai} giây…`}
+                {/* FOOTER ACTIONS (Chỉ hiện khi đang chạy hoặc xong/lỗi, không hiện khi not-installed) */}
+                {status !== 'not-installed' && (
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div className="text-[11px] text-slate-400" aria-live="polite">
+                            {status === 'running' && 'Không đóng tab MWG đang chạy ngầm...'}
+                            {status === 'success' && `Tự đóng sau ${conLai} giây…`}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {status === 'running' && onReopenWorker && (
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={onReopenWorker}
+                                    className="text-xs"
+                                    title="Bấm nếu vô tình đóng mất tab báo cáo MWG"
+                                >
+                                    Mở lại tab MWG
+                                </Button>
+                            )}
+                            {status === 'running' && (
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={onCancel}
+                                    className="text-xs text-rose-600 hover:bg-rose-50"
+                                >
+                                    Huỷ
+                                </Button>
+                            )}
+                            {(status === 'success' || status === 'error') && (
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={onClose}
+                                    className="text-xs"
+                                >
+                                    Hoàn tất & Đóng
+                                </Button>
+                            )}
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {status === 'running' && onReopenWorker && (
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={onReopenWorker}
-                                className="text-xs"
-                                title="Bấm nếu vô tình đóng mất tab báo cáo MWG"
-                            >
-                                Mở lại tab MWG
-                            </Button>
-                        )}
-                        {status === 'running' && (
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={onCancel}
-                                className="text-xs text-rose-600 hover:bg-rose-50"
-                            >
-                                Huỷ
-                            </Button>
-                        )}
-                        {(status === 'success' || status === 'error') && (
-                            <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={onClose}
-                                className="text-xs"
-                            >
-                                Hoàn tất & Đóng
-                            </Button>
-                        )}
-                    </div>
-                </div>
+                )}
             </div>
             <ConfirmDialog
                 isOpen={hoiHuy}

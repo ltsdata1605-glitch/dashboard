@@ -147,6 +147,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
             currentVersion={autoSyncCurrentVersion}
             latestVersion={autoSyncLatestVersion}
             errorMessage={autoSyncError}
+            onRetry={() => { void handleStartAutoSync(autoSyncMode, { month: autoSyncMonth }); }}
             onClose={() => { setAutoSyncModalOpen(false); clearPendingAutoSync(); }}
             onCancel={() => {
                 setAutoSyncStatus('idle');

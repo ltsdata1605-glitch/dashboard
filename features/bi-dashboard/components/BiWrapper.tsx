@@ -16,7 +16,8 @@ import type { ConfigTab } from './SupermarketConfig';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { useBiAutoSync } from '../hooks/useBiAutoSync';
-import { Zap, TrendingUp, Sparkles, ChevronRight, ChevronLeft } from 'lucide-react';
+import { Zap, TrendingUp, Sparkles, ChevronRight, ChevronLeft, Gift } from 'lucide-react';
+import { TampermonkeyInstallGuideModal } from './common/TampermonkeyInstallGuideModal';
 
 // Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
 import Dashboard from './Dashboard';
@@ -77,7 +78,37 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const isDockCollapsed = manHep ? !dockMoTam : dockThuGonLuu;
     const moDock = () => (manHep ? setDockMoTam(true) : setIsDockCollapsed(false));
     const thuGonDock = () => (manHep ? setDockMoTam(false) : setIsDockCollapsed(true));
+    const [showGuideModal, setShowGuideModal] = useState(false);
+    const [bonusStatus, setBonusStatus] = useState<{ isBusy: boolean; label?: string }>({ isBusy: false });
 
+    // Lắng nghe trạng thái tiến trình Tự động Đổ Thưởng từ AutoBonusPanel
+    useEffect(() => {
+        const handleBonusStatus = (e: any) => {
+            const d = e.detail;
+            if (d?.isBusy) {
+                let lbl = 'Đang chạy...';
+                if (d.progress) lbl = `${d.progress.done}/${d.progress.total}`;
+                else if (d.monthProgress) lbl = `Kỳ ${d.monthProgress.monthIndex + 1}/${d.monthProgress.monthTotal}`;
+                setBonusStatus({ isBusy: true, label: lbl });
+            } else {
+                setBonusStatus({ isBusy: false });
+            }
+        };
+        window.addEventListener('ycx-auto-bonus-status-changed', handleBonusStatus);
+        return () => window.removeEventListener('ycx-auto-bonus-status-changed', handleBonusStatus);
+    }, []);
+
+    // Kích hoạt tính năng Tự động Đổ Thưởng từ khung AUTO SYNC dock
+    const handleTriggerAutoBonus = useCallback(() => {
+        if (activeView !== 'employee') {
+            setActiveView('employee');
+            setMountedViews(prev => new Set(prev).add('employee'));
+        }
+        window.dispatchEvent(new CustomEvent('nhanvien-switch-tab', { detail: { tab: 'bonus' } }));
+        setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus'));
+        }, 80);
+    }, [activeView]);
 
     useEffect(() => {
         setMounted(true);
@@ -254,6 +285,16 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                             >
                                 <TrendingUp className="w-4 h-4" />
                             </button>
+                            <button
+                                type="button"
+                                onClick={handleTriggerAutoBonus}
+                                title={bonusStatus.isBusy ? `Tự động Đổ Thưởng (${bonusStatus.label || 'Đang chạy'})` : 'Tự động Đổ Thưởng'}
+                                className={`preserve-rounded p-2.5 rounded-xl bg-gradient-to-br from-purple-600 via-indigo-600 to-violet-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
+                                    bonusStatus.isBusy ? 'ring-2 ring-purple-400 animate-pulse' : ''
+                                }`}
+                            >
+                                <Gift className="w-4 h-4 text-purple-100" />
+                            </button>
                         </div>
                     ) : (
                         <>
@@ -330,11 +371,44 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 </div>
                             </button>
 
-                            {/* Footer micro-tag */}
-                            <div className="preserve-rounded flex items-center justify-center gap-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide">
-                                <Sparkles className="w-3 h-3 text-amber-500/80" />
-                                <span>Tampermonkey • Sẵn sàng</span>
-                            </div>
+                            {/* Nút 3: Tự động Đổ Thưởng - Thiết kế sang trọng tím/indigo huyền bí */}
+                            <button
+                                type="button"
+                                onClick={handleTriggerAutoBonus}
+                                title="Tự động thu thập điểm và đổ thưởng nhân viên từ HRM qua Tampermonkey"
+                                className="preserve-rounded group relative overflow-hidden flex items-center gap-3 px-3 py-2.5 rounded-xl font-bold text-white bg-gradient-to-r from-purple-600 via-indigo-600 to-violet-600 hover:from-purple-500 hover:to-indigo-500 active:from-indigo-700 active:to-purple-700 border border-purple-300/40 dark:border-purple-400/30 shadow-[0_6px_20px_rgba(147,51,234,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            >
+                                {/* Dải ánh kim phản chiếu quét qua khi hover */}
+                                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
+
+                                {/* Icon badge với hiệu ứng kính mờ */}
+                                <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
+                                    bonusStatus.isBusy ? 'animate-pulse' : ''
+                                }`}>
+                                    <Gift className="h-4 w-4 text-purple-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
+                                </div>
+
+                                {/* Nhãn typography sắc nét */}
+                                <div className="flex flex-col">
+                                    <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm">
+                                        Tự động Đổ Thưởng
+                                    </span>
+                                    <span className="text-[10px] font-semibold text-purple-100/90 leading-none mt-1">
+                                        {bonusStatus.isBusy ? `⚡ ${bonusStatus.label || 'Đang xử lý...'}` : '🎁 Thưởng nhân viên'}
+                                    </span>
+                                </div>
+                            </button>
+
+                            {/* Footer micro-tag: bấm để xem hướng dẫn cài đặt & kiểm tra kết nối */}
+                            <button
+                                type="button"
+                                onClick={() => setShowGuideModal(true)}
+                                title="Bấm để xem hướng dẫn cài đặt tiện ích Tampermonkey hoặc kiểm tra kết nối"
+                                className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[10px] font-semibold text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
+                            >
+                                <Sparkles className="w-3 h-3 text-amber-500/80 shrink-0" />
+                                <span>Tampermonkey • Hướng dẫn</span>
+                            </button>
                         </>
                     )}
                 </aside>
@@ -376,6 +450,12 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
             {/* Modal tiến trình tự động đồng bộ Tampermonkey */}
             {renderAutoSyncModal()}
+
+            {/* Modal hướng dẫn cài đặt Tampermonkey mở theo yêu cầu từ Floating Dock */}
+            <TampermonkeyInstallGuideModal
+                isOpen={showGuideModal}
+                onClose={() => setShowGuideModal(false)}
+            />
 
         </div>
     );

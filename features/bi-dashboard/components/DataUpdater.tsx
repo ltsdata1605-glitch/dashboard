@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, PlusIcon } from './Icons';
-import { Link2, Pencil, X, RotateCcw, Zap, TrendingUp, Clock } from 'lucide-react';
+import { Link2, Pencil, X, RotateCcw, Clock } from 'lucide-react';
 import SupermarketConfig from './SupermarketConfig';
 import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
@@ -804,30 +804,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     </h2>
                 </div>
                 <div className="flex flex-none items-center justify-end gap-2 ml-auto">
-                    {/* Nút Tự động Realtime */}
-                    <Button
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => handleStartAutoSync('realtime')}
-                        title="Tự động thu thập 4 bảng dữ liệu Realtime từ MWG qua Tampermonkey"
-                        className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-amber-600/30"
-                    >
-                        <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-100 fill-amber-200" />
-                        <span className="text-[11px] sm:text-xs tracking-wide font-medium">Tự động Realtime</span>
-                    </Button>
-
-                    {/* Nút Tự động Luỹ kế */}
-                    <Button
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => setChonThangMo(true)}
-                        title="Tự động thu thập 4 bảng dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                        className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg sm:rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-xs hover:shadow-sm active:scale-95 transition-all border border-emerald-600/30"
-                    >
-                        <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-100" />
-                        <span className="text-[11px] sm:text-xs tracking-wide font-medium">Tự động Luỹ kế</span>
-                    </Button>
-
                     <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         <Button
                             variant="unstyled"
@@ -1218,6 +1194,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 latestVersion={autoSyncLatestVersion}
                 month={autoSyncMonth}
                 errorMessage={autoSyncError}
+                onRetry={() => { void handleStartAutoSync(autoSyncMode, { month: autoSyncMonth }); }}
                 onClose={() => { setAutoSyncModalOpen(false); clearPendingAutoSync(); }}
                 onCancel={() => {
                     setAutoSyncStatus('idle');

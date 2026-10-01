@@ -1,42 +1,38 @@
-# Task Plan: Rà soát, dọn dẹp và tối ưu toàn bộ dự án
+# Task Plan: Hướng dẫn cài đặt Tampermonkey siêu chi tiết từng bước cho người không rành máy tính
 
-## 1. Mục tiêu & Phạm vi
-Thực hiện 4 nhiệm vụ trọng tâm:
-1. **Xoá file thừa**: Các file rác, file nháp, file backup cũ không dùng, file trùng lặp (ví dụ `bg_phieutgd.png` ở root).
-2. **Xoá code thừa, code cũ**: Các function/component/module chết, imports không còn sử dụng, dead exports.
-3. **Dọn dẹp & tối ưu hiệu năng**: Tối ưu tốc độ tải và chạy, bundle size, loại bỏ re-render thừa, tinh gọn code theo clean-code và react-best-practices.
-4. **Khắc phục triệt để lỗi icon không hiển thị**: Bổ sung đầy đủ các icon còn thiếu vào `ICON_MAP` (`lock`, `calendar-check`, `calendar-x`, `sliders-horizontal`, `line-chart`, `layout`, `grid`, `compass`, v.v.) và cơ chế fallback an toàn, không để xuất hiện ô xám/icon vỡ.
+## 1. Yêu cầu của người dùng
+- Khi máy chưa cài Tampermonkey hoặc chưa cài userscript:
+  + Tab Nhân viên > Thưởng > Tự động chưa thể tự động đổ thưởng.
+  + Nút Tự động Realtime và Luỹ kế chưa thể chạy tự động.
+- Khi người dùng chưa cài, hệ thống phải **tự động xuất hiện 1 modal hướng dẫn chi tiết từng bước** để bất kể ai, kể cả người không rành máy tính, đều có thể cài đặt thành công 100%.
 
----
+## 2. Kế hoạch thực hiện chi tiết
 
-## 2. Kế hoạch từng giai đoạn
+### Bước 1: Xây dựng Component Hướng Dẫn Cài Đặt Tampermonkey (`TampermonkeyInstallGuideContent.tsx`)
+- [x] Tạo component `features/bi-dashboard/components/common/TampermonkeyInstallGuideContent.tsx`:
+  - **Bước 1**: Cài đặt tiện ích Tampermonkey
+    + Nút bấm mở Chrome Web Store.
+    + Hướng dẫn click nút "Thêm vào Chrome".
+    + Hộp cảnh báo nổi bật: Bật "Chế độ dành cho nhà phát triển" (Developer mode) kèm nút **"Sao chép link chrome://extensions"** 1-click.
+  - **Bước 2**: Cài đặt Script Tự Động của Dashboard YCX
+    + Nút bấm mở file script `.user.js`.
+    + Hướng dẫn nhận diện nút "Cài đặt" (Install) của Tampermonkey.
+  - **Bước 3**: Kiểm tra kết nối & Bắt đầu tự động
+    + Nút kiểm tra tự động kết nối qua `detectUserscript()`.
+    + Bắn pháo hoa `confetti()` và toast chúc mừng khi kết nối thành công, tự động tiếp tục quy trình người dùng đang chờ.
+  - Nút chuyển sang "Dùng thủ công" nếu đang vội.
 
-### Giai đoạn 1: Rà soát & Khắc phục triệt để lỗi Icon không hiển thị (Mục 4)
-- [x] Đã quét toàn bộ codebase tìm các icon bị thiếu:
-  - `lock` trong `PivotTable.tsx`
-  - `calendar-check`, `calendar-x` trong `HeadToHeadTab.tsx`
-  - `sliders-horizontal` trong `FilterSection.tsx`
-  - `line-chart`, `layout`, `grid`, `compass` trong `HeadToHeadConfigModal.tsx` và `CustomExploitationTabModal.tsx`
-- [x] Bổ sung các icon trên vào `components/common/Icon.tsx` (import tường minh từ `lucide-react` để giữ tree-shaking).
-- [x] Bổ sung cơ chế Fallback Component (HelpCircle) thay cho ô vuông xám `<span className="bg-slate-200">`.
-- [x] Kiểm tra lại tất cả các màn hình có sử dụng icon.
+### Bước 2: Nâng cấp `AutoBonusInstallGuideModal.tsx` (Tab Nhân viên > Thưởng > Tự động)
+- [x] Nhúng `TampermonkeyInstallGuideContent` vào `AutoBonusInstallGuideModal.tsx`, mở rộng độ rộng modal (`maxWidth="lg"`), tối ưu trải nghiệm người dùng.
 
-### Giai đoạn 2: Quét và Xoá File thừa (Mục 1)
-- [x] Xoá file ngoài root: `bg_phieutgd.png` (bản sao 51KB ở root, file thật ở `public/frame/bg_phieutgd.png`).
-- [x] Xoá file log thừa: `firestore-debug.log`.
-- [x] Xoá modal chết mồ côi: `features/bi-dashboard/components/dashboard/competition/CompetitionCommentaryModal.tsx` (282 dòng không có caller).
+### Bước 3: Nâng cấp `BiAutoSyncModal.tsx` & `useBiAutoSync.tsx` (Tự động Realtime & Luỹ kế)
+- [x] Khi `status === 'not-installed'`, hiển thị toàn bộ giao diện 3 bước của `TampermonkeyInstallGuideContent`.
+- [x] Bổ sung prop `onRetry` trong `BiAutoSyncModalProps`.
+- [x] Trong `useBiAutoSync.tsx` và `DataUpdater.tsx`, truyền callback `onRetry` để chạy lại `handleStartAutoSync`.
 
-### Giai đoạn 3: Rà soát Code thừa & Code cũ không còn sử dụng (Mục 2)
-- [x] Xoá hằng số chết `SAMPLE_INPUT` (100 dòng text mẫu) trong `utils/couponSampleData.ts`.
-- [x] Xoá import thừa `lazy`, `ClipboardCheck` trong `App.tsx`.
-- [x] Xoá 8 icon import thừa trong `Sidebar.tsx` (`ChevronLeft`, `ChevronRight`, `Search`, `Bell`, `Moon`, `Sun`, `MessageSquare`, `X`).
-- [x] Xoá icon import thừa `Shield` trong `MobileBottomNav.tsx`.
+### Bước 4: Tích hợp vào Floating Action Dock (`BiWrapper.tsx`)
+- [x] Thêm khả năng mở modal hướng dẫn cài đặt khi bấm vào huy hiệu "Tampermonkey • Hướng dẫn" ở chân dock.
 
-### Giai đoạn 4: Tối ưu hoá hiệu năng & dọn dẹp cấu trúc (Mục 3)
-- [x] Rà soát bundle: giữ nguyên tree-shaking icon map tường minh.
-- [x] Đã kiểm tra và xác nhận 0 `console.log` debug rác còn sót trong source code.
-- [x] Tối ưu hóa bundle và giảm re-render với React.memo cho views/navbars.
-
-### Giai đoạn 5: Kiểm tra xác minh (Verification & Testing)
-- [x] `npm run typecheck` đạt 0 lỗi (Exit code 0).
-- [x] Targeted vitest: 50/50 tests passed (260ms).
+### Bước 5: Kiểm tra xác minh (Verification)
+- [x] Chạy `npm run typecheck` đạt 0 lỗi.
+- [x] Chạy targeted unit tests liên quan đạt 22/22 passed.

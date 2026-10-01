@@ -69,7 +69,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
         <table className="w-full border-collapse compact-export-table">
             <thead className="sticky top-0 z-10">
                 <tr>
-                    <th rowSpan={2} className="px-2 py-2 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle">Nhân viên</th>
+                    <th rowSpan={2} className="px-2 py-2 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]">Nhân viên</th>
                     <th
                         rowSpan={2}
                         onClick={() => {
@@ -221,7 +221,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                                     </tr>
                                     {/* TỔNG CỘNG row */}
                                     <tr key="total-row" className="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800 border-b border-slate-200 dark:border-slate-700">
-                                        <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 text-left">{item.name}</td>
+                                        <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 text-left whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]">{item.name}</td>
                                         <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-300">
                                             {f.format(Math.ceil(Number(item.sumTong) / 1000))}
                                         </td>
@@ -255,7 +255,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
                         }
                         return (
                             <tr key={`${item.type}-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-extrabold text-slate-800 dark:text-slate-200 border-t border-slate-200 dark:border-slate-700">
-                                <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700">{item.name}</td>
+                                <td className="px-2 py-1 text-[13px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700 whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]">{item.name}</td>
                                 <td className="px-2 py-1 text-center tabular-nums text-[13px] font-extrabold border-r border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400">
                                     {f.format(Math.ceil(Number(item.sumTong) / 1000))}
                                 </td>
@@ -299,7 +299,7 @@ export const BonusDailyTable: React.FC<BonusDailyTableProps> = ({
 
                     return (
                         <tr key={item.originalName} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-all ${isHighlighted ? 'bg-amber-50/70 dark:bg-amber-900/10' : ''}`}>
-                            <td className="px-2 py-1 border-r border-slate-200 dark:border-slate-700">
+                            <td className="px-2 py-1 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]">
                                 <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => onEmployeeClick(item as Employee)} onKeyDown={onActivateKey(() => onEmployeeClick(item as Employee))}>
                                     {item.rank && <MedalBadge rank={item.rank} />}
                                     <AvatarDisplay employeeName={item.originalName!} supermarketName={supermarketName} />
