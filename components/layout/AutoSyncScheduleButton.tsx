@@ -6,9 +6,40 @@ import { Select } from '../shared/ui/Select';
 import { Icon } from '../common/Icon';
 import { useAuth } from '../../contexts/AuthContext';
 import {
-    SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, autoAreasFor, getSchedule, loadSchedules, nextScheduleTime, normalizeTime,
-    onSchedulesChanged, setSchedule, type ScheduleEntry, type ScheduleKey,
+    SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, autoAreasFor, getSchedule, loadSchedules, nextScheduleLabel, normalizeTime,
+    onScheduleLog, onSchedulesChanged, readScheduleLog, setSchedule, type ScheduleEntry, type ScheduleKey, type ScheduleLogEntry,
 } from '../../services/autoSyncSchedule';
+
+const NHAN_LOG: Record<ScheduleLogEntry['status'], { chu: string; vien: string }> = {
+    started: { chu: 'Đã bắt đầu', vien: 'border-sky-500' },
+    done: { chu: 'Xong', vien: 'border-emerald-500' },
+    missed: { chu: 'Bỏ lỡ', vien: 'border-amber-500' },
+    error: { chu: 'Lỗi', vien: 'border-rose-500' },
+};
+
+/** Nhật ký các lượt hẹn giờ gần nhất của nút (đã chạy / bỏ lỡ / lỗi) — để biết vì sao một khung giờ không chạy */
+function ScheduleLog({ scheduleKey }: { scheduleKey: ScheduleKey }) {
+    const [log, setLog] = useState<ScheduleLogEntry[]>(() => readScheduleLog());
+    useEffect(() => onScheduleLog(() => setLog(readScheduleLog())), []);
+    const cua = log.filter((x) => x.key === scheduleKey).slice(-6).reverse();
+    if (cua.length === 0) return <p className="text-[12px] text-slate-500">Chưa có lượt hẹn giờ nào.</p>;
+    const p2 = (n: number) => String(n).padStart(2, '0');
+    return (
+        <ul className="space-y-1" data-testid={`sched-log-${scheduleKey}`}>
+            {cua.map((x) => {
+                const d = new Date(x.at);
+                return (
+                    <li key={`${x.at}-${x.status}`} className={`border-l-[3px] ${NHAN_LOG[x.status].vien} bg-slate-50 px-2 py-1 text-[12px] text-slate-700`}>
+                        <span className="font-bold tabular-nums">{x.time}</span>
+                        <span className="text-slate-500"> · {p2(d.getDate())}/{p2(d.getMonth() + 1)} {p2(d.getHours())}:{p2(d.getMinutes())}</span>
+                        <span className="font-semibold"> — {NHAN_LOG[x.status].chu}</span>
+                        {x.note && <span className="text-slate-500">: {x.note}</span>}
+                    </li>
+                );
+            })}
+        </ul>
+    );
+}
 import type { LineGroupRef } from '../../services/lineReportDelivery';
 
 /**
@@ -96,7 +127,7 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
     // Cập nhật "giờ kế tiếp" mỗi phút
     useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 60_000); return () => clearInterval(t); }, []);
 
-    const keTiep = nextScheduleTime(entry);
+    const keTiep = nextScheduleLabel(entry);
     const luu = (e: ScheduleEntry) => { void setSchedule(scheduleKey, e); };
     const them = () => {
         const t = normalizeTime(nhap);
@@ -158,10 +189,15 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                         <p className="mb-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">Tự xuất ảnh & gửi LINE sau khi đổ dữ liệu</p>
                         <AutoSendAreas scheduleKey={scheduleKey} entry={entry} luu={luu} />
                     </div>
+                    <div className="border-t border-slate-200 pt-3">
+                        <p className="mb-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">Lượt gần đây</p>
+                        <ScheduleLog scheduleKey={scheduleKey} />
+                    </div>
                     <p className="text-[12px] text-slate-500">
                         Chạy trong trình duyệt: máy phải bật, Chrome đang mở tab dashboard.pro.vn, đã đăng nhập MWG và có
-                        Tampermonkey. Lỡ giờ quá {SCHEDULE_WINDOW_MIN} phút (máy tắt / ngủ) thì bỏ qua khung đó. Nên đặt các nút
-                        lệch nhau ít nhất 5 phút.
+                        Tampermonkey. Lỡ giờ quá {SCHEDULE_WINDOW_MIN} phút (máy ngủ / tab bị ngủ) thì bỏ qua khung đó và ghi
+                        "Bỏ lỡ" ở trên. Để tab không bị ngủ: Chrome → Cài đặt → <b>Hiệu suất</b> → "Luôn giữ các trang web này
+                        hoạt động" → thêm <b>dashboard.pro.vn</b>; Mac → tắt ngủ máy khi cắm sạc. Nên đặt các nút lệch nhau ít nhất 5 phút.
                     </p>
                 </div>
             </Modal>

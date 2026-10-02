@@ -7075,3 +7075,25 @@ xuất ảnh & gửi vào nhóm LINE nào sau khi lượt đó đổ dữ liệu
 **Kiểm:** `tests/e2e/line-gui-anh-va-hen-gio.spec.ts` thêm 3 test: ảnh HD (PNG gốc, xem trước ≤1MB, số mảnh), hẹn giờ
 YCX chọn "Chi tiết theo kho" → chỉ gửi khu vực đó vào đúng nhóm (nút khác đặt đích LINE không bị gửi), hẹn giờ BI Luỹ
 kế → tự chụp Thi đua Tổng & Doanh thu Tổng → gửi LINE. Chưa thử với bot/nhóm LINE thật.
+
+## Hẹn giờ "chưa hoạt động" — nhịp Worker, báo khung bị lỡ, nhật ký chạy (2026-10-02)
+
+**Chủ dự án báo:** BI Realtime "Hẹn 15:00" không chạy. **Đo:** e2e mô phỏng đúng tình huống (tab đang mở, tới 15:00) →
+chạy đúng, mở tab baocao qua userscript. Nên nguyên nhân thật nằm ở điều kiện chạy: bộ hẹn giờ cũ chỉ dựa vào
+`setInterval` 30s của trang — Chrome làm chậm mạnh timer tab nền, Energy/Memory Saver cho tab ngủ, máy Mac ngủ → lỡ
+khung giờ và **không có dấu vết gì** (không biết là lỡ hay lỗi). Thêm nữa nhãn "Hẹn 15:00" vẫn hiện sau khi 15:00 đã
+qua (thật ra là ngày mai) → dễ tưởng nó sắp chạy.
+
+**Sửa:**
+- Nhịp 20s từ Web Worker (`services/scheduleHeartbeat.worker.ts`; timer worker không bị intensive throttling) + kiểm
+  ngay khi tab hiện lại / focus / có mạng / `resume` (tab thức dậy).
+- `missedSchedules()`: khung hết hạn trong lúc trang không kiểm được (mốc lần kiểm trước `ycx-sched-last-tick`) →
+  toast "Bỏ lỡ khung HH:mm — dashboard không hoạt động N phút" + ghi nhật ký. Vẫn không chạy bù (chủ dự án chốt).
+- Nhật ký `ycx-sched-log` (localStorage, chung mọi tab, 40 dòng): Đã bắt đầu / Xong / Bỏ lỡ / Lỗi — hiện ở mục "Lượt
+  gần đây" trong hộp Hẹn giờ của từng nút. YCX ghi Xong khi nạp file, Lỗi khi userscript/tab hỏng; BI ghi Xong khi
+  userscript báo done.
+- Nhãn "Hẹn mai 15:00" khi các khung hôm nay đã qua; nhãn tự cập nhật mỗi phút.
+- Lời nhắc trong hộp: Chrome → Cài đặt → Hiệu suất → "Luôn giữ các trang web này hoạt động" → thêm dashboard.pro.vn.
+
+**Kiểm:** `tests/e2e/hen-gio-bi-va-bo-lo.spec.ts` (BI Realtime tới giờ mở tab + nhật ký; tab ngủ 14:59→15:30 → báo
+Bỏ lỡ, không mở tab), unit `missedSchedules` / `nextScheduleLabel`.

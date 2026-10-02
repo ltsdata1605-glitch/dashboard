@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { dueSchedules, nextScheduleTime, normalizeTime, type Schedules } from './autoSyncSchedule';
+import { dueSchedules, missedSchedules, nextScheduleTime, normalizeTime, type Schedules } from './autoSyncSchedule';
 import { reportKeyFromFilename } from './analysisExportDestinations';
 
 /** Hẹn giờ Auto Sync (2026-10-01): đến hạn trong 10 phút sau giờ hẹn, mỗi khung 1 lần/ngày. */
@@ -33,5 +33,33 @@ describe('khoá đích xuất ảnh theo tên file', () => {
     it('bỏ tiền tố kho, đuôi file, số thứ tự', () => {
         expect(reportKeyFromFilename('[910_1678] - Tổng Quan Doanh Thu.png')).toBe('Tổng Quan Doanh Thu');
         expect(reportKeyFromFilename('[TAT-CA-KHU-VUC] - Lịch Doanh Thu (3).png')).toBe('Lịch Doanh Thu');
+    });
+});
+
+describe('missedSchedules — khung giờ bị lỡ khi trang không chạy (2026-10-02)', () => {
+    const s = { 'bi-realtime': { enabled: true, times: ['15:00', '17:00'] } };
+    const at = (hm: string) => new Date(`2026-10-02T${hm}:00`);
+    it('tab ngủ 14:58 → 15:30: 15:00 bị lỡ, 17:00 chưa tới', () => {
+        expect(missedSchedules(s, at('14:58').getTime(), at('15:30'), () => false).map((x) => x.time)).toEqual(['15:00']);
+    });
+    it('trang vẫn kiểm đều (lần trước 15:09) → 15:00 chưa hết hạn ở lần kiểm 15:09, hết hạn 15:10 → lỡ nếu chưa chạy', () => {
+        expect(missedSchedules(s, at('15:09').getTime(), at('15:10'), () => false).map((x) => x.time)).toEqual(['15:00']);
+        expect(missedSchedules(s, at('15:09').getTime(), at('15:10'), () => true)).toEqual([]);
+    });
+    it('vẫn trong 10 phút → chưa tính lỡ (dueSchedules còn chạy được)', () => {
+        expect(missedSchedules(s, at('14:58').getTime(), at('15:05'), () => false)).toEqual([]);
+    });
+    it('lần đầu mở (chưa có mốc) hoặc mốc quá 1 ngày → không báo lỡ', () => {
+        expect(missedSchedules(s, 0, at('15:30'), () => false)).toEqual([]);
+        expect(missedSchedules(s, at('15:30').getTime() - 25 * 3600_000, at('15:30'), () => false)).toEqual([]);
+    });
+});
+
+describe('nextScheduleLabel', () => {
+    it('các khung hôm nay đã qua → "mai HH:mm"', async () => {
+        const { nextScheduleLabel } = await import('./autoSyncSchedule');
+        const e = { enabled: true, times: ['09:00', '15:00'] };
+        expect(nextScheduleLabel(e, new Date('2026-10-02T10:00:00'))).toBe('15:00');
+        expect(nextScheduleLabel(e, new Date('2026-10-02T16:00:00'))).toBe('mai 09:00');
     });
 });

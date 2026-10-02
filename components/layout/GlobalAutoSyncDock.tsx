@@ -8,7 +8,7 @@ import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import AutoSyncScheduleButton from './AutoSyncScheduleButton';
 import {
-    claimScheduleRun, dueSchedules, getAutoSend, getSchedules, loadSchedules, nextScheduleTime, onSchedulesChanged, scheduleHasRun,
+    claimScheduleRun, dueSchedules, getAutoSend, logSchedule, missedSchedules, readLastTick, writeLastTick, getSchedules, loadSchedules, nextScheduleLabel, onSchedulesChanged, scheduleHasRun,
     BI_AUTO_AREAS, SCHEDULE_LABELS, type AutoSendItem, type ScheduleKey, type Schedules,
 } from '../../services/autoSyncSchedule';
 import { useAuth } from '../../contexts/AuthContext';
@@ -99,12 +99,23 @@ export default function GlobalAutoSyncDock() {
     const ycxAutoSendRef = useRef<AutoSendItem[]>([]);
     /** Lượt BI hẹn giờ đang chờ đổ dữ liệu xong để tự xuất & gửi LINE */
     const biAutoSendRef = useRef<{ mode: 'realtime' | 'luyke'; items: AutoSendItem[]; at: number } | null>(null);
+    /** Lượt hẹn giờ đang chạy — để ghi kết quả (xong / lỗi) vào nhật ký hẹn giờ */
+    const lichDangChayRef = useRef<{ key: ScheduleKey; time: string; at: number } | null>(null);
+    const ghiKetQuaLich = (prefix: 'bi-' | 'ycx-', status: 'done' | 'error', note?: string) => {
+        const l = lichDangChayRef.current;
+        if (!l || !l.key.startsWith(prefix) || Date.now() - l.at > 60 * 60_000) return;
+        lichDangChayRef.current = null;
+        logSchedule({ key: l.key, time: l.time, status, note });
+    };
     const [lich, setLich] = useState<Schedules>(() => getSchedules());
     useEffect(() => {
         void loadSchedules().then(() => setLich({ ...getSchedules() }));
         return onSchedulesChanged(() => setLich({ ...getSchedules() }));
     }, []);
-    const nhanHen = (k: ScheduleKey) => { const t = nextScheduleTime(lich[k]); return t ? `⏰ Hẹn ${t}` : null; };
+    // Cập nhật nhãn "Hẹn …" mỗi phút (khung giờ qua thì chuyển sang khung kế / ngày mai)
+    const [, nhipPhut] = useState(0);
+    useEffect(() => { const t = setInterval(() => nhipPhut((n) => n + 1), 60_000); return () => clearInterval(t); }, []);
+    const nhanHen = (k: ScheduleKey) => { const t = nextScheduleLabel(lich[k]); return t ? `⏰ Hẹn ${t}` : null; };
     const ycxStopRef = useRef<(() => void) | null>(null);
 
     useEffect(() => {
@@ -190,6 +201,7 @@ export default function GlobalAutoSyncDock() {
         setYcxMode(mode);
         setYcxModalOpen(true);
         if (!ycxScriptDu) {
+            ghiKetQuaLich('ycx-', 'error', 'Tampermonkey chưa có userscript đủ mới');
             setYcxPhase('idle');
             void kiemTraYcxScript();
             return;
@@ -218,10 +230,12 @@ export default function GlobalAutoSyncDock() {
                 setYcxPhase('error');
                 setYcxMessage(m.message);
                 ghiYcxLog(`Lỗi: ${m.message}`);
+                ghiKetQuaLich('ycx-', 'error', m.message);
             } else if (m.type === 'file') {
                 setYcxStep('load');
                 setYcxMessage(`Đã tải "${m.fileName}" (${(m.buffer.byteLength / 1048576).toFixed(1)} MB) — đang nạp vào Phân tích…`);
                 ghiYcxLog(`Đã nhận file ${m.fileName}`);
+                ghiKetQuaLich('ycx-', 'done', `đã nạp ${m.fileName}`);
                 ycxStopRef.current?.();
                 ycxStopRef.current = null;
                 const file = ycxBufferToFile(m.buffer, m.fileName);
@@ -246,6 +260,7 @@ export default function GlobalAutoSyncDock() {
 
         void startYcxJob(jobId, mode, { auto: opts.auto }).then((ok) => {
             if (ok) return;
+            ghiKetQuaLich('ycx-', 'error', 'không mở được tab report.mwgroup.vn');
             setYcxPhase('error');
             setYcxMessage(opts.auto
                 ? 'Hẹn giờ không mở được tab report.mwgroup.vn — cần userscript bản 7.16 trở lên (Tampermonkey).'
@@ -285,6 +300,8 @@ export default function GlobalAutoSyncDock() {
     };
 
     // Lượt BI hẹn giờ đổ dữ liệu xong → nhờ Report BI xuất các khu vực đã chọn rồi gửi từng ảnh vào nhóm LINE của nó
+    const ghiKetQuaLichRef = useRef(ghiKetQuaLich);
+    ghiKetQuaLichRef.current = ghiKetQuaLich;
     const activeTabRef = useRef(activeTab);
     activeTabRef.current = activeTab;
     const setActiveTabRef = useRef(setActiveTab);
@@ -293,6 +310,7 @@ export default function GlobalAutoSyncDock() {
     authRef.current = { uid: user?.uid || '', departmentId };
     useEffect(() => {
         const xuLy = (mode: unknown) => {
+            ghiKetQuaLichRef.current('bi-', 'done', 'đã cập nhật dữ liệu Report BI');
             const cho = biAutoSendRef.current;
             if (!cho || (mode && mode !== cho.mode)) return;
             biAutoSendRef.current = null;
@@ -337,16 +355,52 @@ export default function GlobalAutoSyncDock() {
         return () => { window.removeEventListener('ycx-bi-automation:done', onDone); window.removeEventListener('message', onMsg); };
     }, []);
     useEffect(() => {
+        let daTai = false;
+        void loadSchedules().then(() => { daTai = true; });
         const tick = () => {
-            // Mỗi lượt chỉ chạy 1 nút — nút khác đến hạn cùng lúc sẽ chạy ở lượt sau (30s), đỡ giành tab
-            const den = dueSchedules(getSchedules(), new Date(), scheduleHasRun)[0];
+            if (!daTai) return; // chưa đọc xong lịch đã lưu → đừng kết luận "bỏ lỡ"
+            const now = new Date();
+            // Khung giờ hết hạn trong lúc trang không chạy được (tab bị Chrome cho ngủ, máy ngủ/tắt) → ghi & báo rõ,
+            // trước đây im lặng nên không ai biết vì sao không chạy (chủ dự án báo 2026-10-02)
+            const truoc = readLastTick();
+            writeLastTick(now.getTime());
+            for (const lo of missedSchedules(getSchedules(), truoc, now, scheduleHasRun)) {
+                if (!claimScheduleRun(lo.marker)) continue;
+                const phut = Math.round((now.getTime() - truoc) / 60_000);
+                logSchedule({ key: lo.key, time: lo.time, status: 'missed', note: `trang không hoạt động ${phut} phút (tab ngủ / máy ngủ / chưa mở dashboard)` });
+                toast.error(`Bỏ lỡ khung ${lo.time} — ${SCHEDULE_LABELS[lo.key]}: lúc đó dashboard không hoạt động (tab bị trình duyệt cho ngủ hoặc máy ngủ).`, { duration: 15000 });
+            }
+            // Mỗi lượt chỉ chạy 1 nút — nút khác đến hạn cùng lúc sẽ chạy ở lượt sau, đỡ giành tab
+            const den = dueSchedules(getSchedules(), now, scheduleHasRun)[0];
             if (!den || !claimScheduleRun(den.marker)) return;
+            logSchedule({ key: den.key, time: den.time, status: 'started', note: document.visibilityState === 'visible' ? undefined : 'tab đang nằm nền' });
+            lichDangChayRef.current = { key: den.key, time: den.time, at: Date.now() };
             toast(`⏰ ${den.time} — tự chạy ${SCHEDULE_LABELS[den.key]}`, { duration: 6000 });
-            chayTheoLichRef.current(den.key);
+            try { chayTheoLichRef.current(den.key); } catch (e) {
+                logSchedule({ key: den.key, time: den.time, status: 'error', note: e instanceof Error ? e.message : String(e) });
+            }
         };
         const t0 = setTimeout(tick, 5000);
         const t = setInterval(tick, 30_000);
-        return () => { clearTimeout(t0); clearInterval(t); };
+        // Nhịp từ Web Worker: timer của trang bị Chrome làm chậm khi tab nằm nền, timer trong worker thì không
+        let w: Worker | null = null;
+        try {
+            w = new Worker(new URL('../../services/scheduleHeartbeat.worker.ts', import.meta.url), { type: 'module' });
+            w.onmessage = tick;
+        } catch { /* trình duyệt không cho worker → còn setInterval */ }
+        // Tab được mở lại / máy thức dậy / có mạng lại → kiểm ngay, không chờ nhịp kế
+        const onWake = () => { if (document.visibilityState === 'visible') tick(); };
+        document.addEventListener('visibilitychange', onWake);
+        window.addEventListener('focus', tick);
+        window.addEventListener('online', tick);
+        document.addEventListener('resume', tick);
+        return () => {
+            clearTimeout(t0); clearInterval(t); w?.terminate();
+            document.removeEventListener('visibilitychange', onWake);
+            window.removeEventListener('focus', tick);
+            window.removeEventListener('online', tick);
+            document.removeEventListener('resume', tick);
+        };
     }, []);
 
     const ycxDangChay = ycxPhase === 'running';

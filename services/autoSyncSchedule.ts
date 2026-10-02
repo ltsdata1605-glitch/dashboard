@@ -132,3 +132,62 @@ export function nextScheduleTime(e: ScheduleEntry | undefined, now: Date = new D
     const sau = e.times.find((t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m >= phut; });
     return sau || e.times[0];
 }
+
+// ─── Nhật ký chạy & khung giờ bị lỡ (2026-10-02, chủ dự án báo "hẹn giờ chưa hoạt động") ───
+// Lỡ khung giờ trước đây im lặng hoàn toàn → không ai biết vì sao. Nay ghi lại mọi lượt (chạy / lỡ / lỗi) ở localStorage
+// (chung mọi tab) và hiện trong hộp Hẹn giờ của từng nút.
+export type ScheduleLogStatus = 'started' | 'missed' | 'error' | 'done';
+export interface ScheduleLogEntry { key: ScheduleKey; time: string; date: string; at: number; status: ScheduleLogStatus; note?: string }
+const LOG_KEY = 'ycx-sched-log';
+const LOG_EVT = 'ycx-auto-sync-schedule-log';
+const LAST_TICK_KEY = 'ycx-sched-last-tick';
+
+export function readScheduleLog(): ScheduleLogEntry[] {
+    try { const v = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+}
+export function logSchedule(e: Omit<ScheduleLogEntry, 'at' | 'date'> & { at?: number }): void {
+    const at = e.at ?? Date.now();
+    const entry: ScheduleLogEntry = { ...e, at, date: ymd(new Date(at)) };
+    try { localStorage.setItem(LOG_KEY, JSON.stringify([...readScheduleLog(), entry].slice(-40))); } catch { /* Private Mode */ }
+    window.dispatchEvent(new Event(LOG_EVT));
+}
+export function onScheduleLog(cb: () => void): () => void {
+    const onStorage = (ev: StorageEvent) => { if (ev.key === LOG_KEY) cb(); };
+    window.addEventListener(LOG_EVT, cb);
+    window.addEventListener('storage', onStorage);
+    return () => { window.removeEventListener(LOG_EVT, cb); window.removeEventListener('storage', onStorage); };
+}
+
+/**
+ * Khung giờ đã QUÁ hạn chạy (≥ SCHEDULE_WINDOW_MIN phút) mà chưa chạy, nằm trong khoảng từ lần kiểm trước tới nay —
+ * tức là lúc đó trang không chạy được (tab bị trình duyệt cho ngủ, máy ngủ/tắt, chưa mở dashboard). Hàm thuần.
+ */
+export function missedSchedules(s: Schedules, lastTick: number, now: Date, hasRun: (marker: string) => boolean): { key: ScheduleKey; time: string; marker: string }[] {
+    const out: { key: ScheduleKey; time: string; marker: string }[] = [];
+    if (!lastTick || now.getTime() - lastTick > 24 * 3600_000) return out;
+    (Object.keys(s) as ScheduleKey[]).forEach((key) => {
+        const e = s[key];
+        if (!e?.enabled) return;
+        e.times.forEach((t) => {
+            const [h, m] = t.split(':').map(Number);
+            const moc = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m).getTime();
+            const hetHan = moc + SCHEDULE_WINDOW_MIN * 60_000;
+            // Hết hạn sau lần kiểm trước và trước bây giờ = trong khoảng đó trang không kiểm được lần nào
+            if (hetHan > lastTick && hetHan <= now.getTime() && moc <= now.getTime()) {
+                const marker = markerKey(key, now, t);
+                if (!hasRun(marker)) out.push({ key, time: t, marker });
+            }
+        });
+    });
+    return out;
+}
+export function readLastTick(): number { try { return Number(localStorage.getItem(LAST_TICK_KEY)) || 0; } catch { return 0; } }
+export function writeLastTick(t: number): void { try { localStorage.setItem(LAST_TICK_KEY, String(t)); } catch { /* Private Mode */ } }
+
+/** Nhãn giờ chạy kế tiếp: "15:00" (hôm nay) hoặc "mai 15:00" (các khung hôm nay đã qua) — trước ghi "15:00" dù là ngày mai */
+export function nextScheduleLabel(e: ScheduleEntry | undefined, now: Date = new Date()): string | null {
+    const t = nextScheduleTime(e, now);
+    if (!t) return null;
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m < now.getHours() * 60 + now.getMinutes() ? `mai ${t}` : t;
+}
