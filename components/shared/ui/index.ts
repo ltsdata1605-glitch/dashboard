@@ -6,6 +6,10 @@
 // Core utilities
 export { cn, onActivateKey } from './utils';
 
+// Icon dùng chung (chuẩn hoá icon 2026-10-02) — gọi theo TÊN CHỨC NĂNG, size theo token
+export { AppIcon, ICON_REGISTRY, ICON_SIZES, ICON_STROKE_WIDTH, ICON_TEXT_GAP_CLASS, LineIcon } from './icon';
+export type { AppIconProps, IconName, IconSize } from './icon';
+
 // Existing components
 export { Select } from './Select';
 export type { SelectProps } from './Select';

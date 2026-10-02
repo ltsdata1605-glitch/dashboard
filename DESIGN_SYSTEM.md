@@ -143,6 +143,69 @@ nút xác nhận tác vụ rủi ro truyền biến màu `danger`.
 ### 4.5 Trạng thái tải
 Dùng `<Skeleton />`, không hiển thị chữ "Loading...".
 
+### 4.6 Icon — một chức năng, một icon, một thang size (2026-10-02)
+
+**Gọi icon duy nhất qua** `<AppIcon name="<chức năng>" size="<token>" />` hoặc `<Button icon="<chức năng>">`
+(`components/shared/ui/icon/`). Registry (`iconRegistry.ts`) là **nơi duy nhất** được import `lucide-react`.
+Không dùng thư viện icon khác, không vẽ SVG icon mới (ngoại lệ: logo thương hiệu, hiện chỉ có LINE).
+
+**Thang size** (`iconTokens.ts` là nguồn duy nhất; mốc laptop/mobile = `lg` 1024px, iPad dọc nhận size mobile):
+
+| Token | Laptop | Mobile | Dùng cho |
+|---|---:|---:|---|
+| `xs` | 12 | 14 | badge, chữ phụ, link ngoài |
+| `sm` | 14 | 16 | dòng bảng 26px, input/tìm kiếm/bộ lọc, nút trong dòng dữ liệu |
+| `md` | 16 | 18 | **mặc định** — nút thường, nút chỉ có icon |
+| `lg` | 20 | 22 | thanh điều hướng trái/dưới, tab, menu |
+| `xl` | 24 | 24 | hành động chính, header modal lớn |
+| `state` | 32 | 32 | empty state — không dùng trong nút |
+| `hero` | 48 | 40 | landing, minh hoạ |
+
+**Quy tắc:** nét luôn `2` (đang chọn phân biệt bằng màu, không bằng nét) · icon cạnh chữ cách `6px` (`gap-1.5`)
+và căn bằng `inline-flex items-center` · cùng một nhóm action thì cùng token · nút chỉ có icon trên điện thoại
+có vùng bấm ≥ 44px (`Button size="icon"` đã có sẵn) · size px riêng (`px={…}`) chỉ khi có lý do, ghi chú tại chỗ ·
+không đặt size bằng `w-*`/`h-*` trên icon. `lint-ratchet` đếm `iconDirectImport`, `iconNumericSize`,
+`iconLegacyCall` — chỉ được giảm.
+
+**Icon chuẩn theo chức năng** (đầy đủ trong `iconRegistry.ts`):
+
+| Chức năng | Tên gọi | Icon lucide | Ghi chú |
+|---|---|---|---|
+| Xuất 1 ảnh | `exportImage` | Camera | chủ dự án chốt "CHUẨN" |
+| Xuất ảnh hàng loạt | `exportBatch` | Images | |
+| Tải file xuống | `download` | Download | |
+| Nhập / tải file lên | `upload` | Upload | đồng bộ cloud: `cloudUpload` / `cloudDownload` |
+| Tìm kiếm | `search` | Search | không kết quả: `searchEmpty` |
+| Bộ lọc | `filter` | Filter | tuỳ chỉnh hiển thị/cột: `viewOptions` (SlidersHorizontal) |
+| Làm mới dữ liệu | `refresh` | RefreshCw | |
+| Đặt lại / hoàn tác | `reset` | RotateCcw | khác `refresh` |
+| Thêm | `add` | Plus | |
+| Sửa | `edit` | Pencil | |
+| Xoá | `delete` | Trash2 | |
+| Sao chép / Dán | `copy` / `paste` | Copy / ClipboardPaste | |
+| Lưu | `save` | Save | |
+| Đóng | `close` | X | |
+| Quay lại / Tiếp | `back` / `next` | ArrowLeft / ArrowRight | |
+| Cài đặt | `settings` | Settings | |
+| Thêm tuỳ chọn | `more` | EllipsisVertical | |
+| Thành công | `success` | CircleCheck | |
+| Lỗi | `error` | CircleX | |
+| Cảnh báo | `warning` | TriangleAlert | lưu ý nhẹ: `alert` (CircleAlert) |
+| Thông tin | `info` | Info | |
+| Đang tải | `loading` | LoaderCircle | luôn kèm `spin` |
+| Checkbox | `checkboxOn` / `checkboxOff` | SquareCheck / Square | |
+| Realtime | `live` | Radio | |
+| Cùng kỳ / thời gian | `clock` | Clock | |
+| Lịch | `calendar` | Calendar | |
+| Xem nhóm / danh sách | `viewGrid` / `viewList` | LayoutGrid / List | |
+| Người dùng / nhóm | `user` / `users` | User / Users | |
+| Tiền / thưởng | `money` | CircleDollarSign | |
+| Nav: Phân tích YCX | `navAnalysis` | ChartSpline | |
+| Nav: Report BI | `navReportBi` | ChartColumn | |
+| Nav: Báo cáo | `navReports` | FileText | |
+| Nav: Check thưởng | `navRewardCheck` | BadgeCheck | |
+| Nav: Khác / công cụ | `navTools` | Wrench | |
+
 ---
 
 ## 5. BẢNG NHIỀU CỘT — mẫu bắt buộc

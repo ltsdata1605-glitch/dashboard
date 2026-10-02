@@ -94,7 +94,9 @@ test('đích xuất ảnh: chọn nhóm LINE ở nút → bấm xuất là GỬI
     const modal = page.getByTestId('export-dest-modal');
     await expect(modal).toContainText('bot Bot Test');
     await page.screenshot({ path: test.info().outputPath('1-chon-dich.png') });
-    await modal.getByRole('button', { name: /Nhóm Siêu Thị 910/ }).click();
+    // Hộp chọn NHIỀU nhóm (2026-10-02): tích dòng nhóm rồi bấm Lưu
+    await modal.getByText('Nhóm Siêu Thị 910', { exact: true }).click();
+    await modal.getByRole('button', { name: /^Lưu/ }).click();
     await expect(modal).toHaveCount(0);
     await expect(nutDich).toHaveAttribute('title', /gửi nhóm LINE Nhóm Siêu Thị 910/);
 
@@ -211,7 +213,8 @@ test('ảnh nét (2026-10-02): function có ghép HD → ảnh GỐC là PNG ngu
     await chuanBi(page, { hd: true });
     await napDuLieu(page);
     await page.getByTestId('export-dest-Tổng Quan Doanh Thu').click();
-    await page.getByTestId('export-dest-modal').getByRole('button', { name: /Nhóm Siêu Thị 910/ }).click();
+    await page.getByTestId('export-dest-modal').getByText('Nhóm Siêu Thị 910', { exact: true }).click();
+    await page.getByTestId('export-dest-modal').getByRole('button', { name: /^Lưu/ }).click();
     await page.getByTitle('Chỉ Xuất Ảnh Tổng Quan').click();
     await expect(page.getByText(/Đã gửi "Tổng Quan Doanh Thu" vào nhóm LINE/)).toBeVisible({ timeout: 60_000 });
     const hd = await page.evaluate(() => (window as unknown as { __YCX_TEST_LINE_HD__: { parts: number; contentType: string; chars: number }[] }).__YCX_TEST_LINE_HD__);

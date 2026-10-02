@@ -1,7 +1,6 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
-// Icon LINE chính thức nằm ở bộ xuất ảnh dùng chung (mọi khu vực dùng chung 1 icon cho nút "Gửi nhóm LINE")
-import { LineIcon } from '../shared/export/LineIcon';
+import { LineIcon } from '../shared/ui/icon/brandIcons';
 import {
   Activity, AlertCircle, AlertTriangle, Apple, ArchiveRestore, AreaChart, ArrowDown, ArrowRight, ArrowUp, Award, Backpack, Banknote,
   BarChart2, BarChart3, BarChartHorizontal, BatteryCharging, Bell, BellOff, Box, Briefcase, Bug, Cable,
@@ -29,6 +28,8 @@ interface IconProps {
   size?: number;
 }
 
+// LineIcon đã chuyển sang components/shared/ui/icon/brandIcons.tsx (dùng chung hợp lệ cho cả 5 khu
+// vực); re-export để các chỗ đang import từ đây vẫn chạy.
 export { LineIcon };
 
 // Map tường minh thay vì `import * as LucideIcons` — wildcard namespace import khiến Rollup
@@ -98,8 +99,11 @@ const ICON_MAP: Record<string, LucideIcon | React.ComponentType<any>> = {
 };
 
 /**
- * A wrapper component for Lucide icons that uses the lucide-react library.
- * This replaces the previous approach of using global lucide.createIcons().
+ * @deprecated Dùng `<AppIcon name="…" size="…" />` từ `components/shared/ui` (chuẩn hoá icon
+ * 2026-10-02). Component này gọi icon theo TÊN HÌNH và `size` tính bằng ĐƠN VỊ TAILWIND
+ * (`size={4}` = 16px) — trong khi lucide dùng px (`size={16}` = 16px): hai đơn vị cùng tên `size`
+ * là nguyên nhân icon "nhảy" size giữa các màn. Giữ nguyên hành vi cho tới khi các khu vực
+ * chuyển xong (lint-ratchet đếm `iconLegacyCall` — chỉ được giảm), rồi xoá.
  */
 export const Icon: React.FC<IconProps> = ({ name, className = '', size = 5 }) => {
   const IconComponent = ICON_MAP[name];

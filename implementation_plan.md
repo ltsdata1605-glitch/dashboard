@@ -7148,6 +7148,46 @@ Test: `tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts` (bấm qua lại không s�
 - Chưa làm (ngoài 3 mục): các `?action=` công khai của webhook (lưu media, gửi thử bằng token trong body) không xác thực
   người gọi; `features/tax-calculator`, `check-thuong` cũng chưa có trong bảng/luật cách ly.
 
+
+---
+
+# Chuẩn hoá icon toàn dự án (bắt đầu 2026-10-02)
+
+## Bối cảnh / audit
+Chủ dự án báo icon không đồng nhất (cùng chức năng khác icon, size lệch, laptop/mobile không có chuẩn). Đo trên code:
+4 cách gọi icon song song — `<Icon name>` (components/common/Icon.tsx, ~500 lần, `size` = ĐƠN VỊ TAILWIND),
+lucide import thẳng (64 file, `size` = px), 2 file SVG tự vẽ (`features/bi-dashboard/components/Icons.tsx` 32 icon,
+`features/sticker-event/Icons.tsx` 42 icon nét 1.5), `<svg>` viết thẳng (25 file). 27 giá trị `size={…}` khác nhau.
+Ví dụ: xuất ảnh có 7 biến thể (camera/images/ImageDown/Image/ExportIcon…), sửa 6 biến thể, tải lên 7 biến thể.
+
+## Quyết định của chủ dự án (2026-10-02)
+1. Thang size đã chỉnh theo design system (nút 16/18px). 2. Xuất ảnh giữ **Camera** (hàng loạt: Images).
+3. Thanh "Cùng kỳ / Còn lại / Realtime" (Report BI): chỉ đồng bộ ICON bên trong (đồng hồ, checkbox thật, icon
+Realtime) về cỡ `md` như máy ảnh — không đổi kiểu nút. 4. Mốc laptop/mobile = `lg` (1024px). 5. Phạm vi: toàn bộ
+gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.tsx` SVG tự vẽ sau khi chuyển xong.
+
+## Thiết kế
+- `components/shared/ui/icon/`: `iconTokens.ts` (thang size — nguồn duy nhất), `iconRegistry.ts` (tên chức năng →
+  lucide; nơi duy nhất import lucide), `AppIcon.tsx` (size qua biến CSS `--ycx-icon-m/-d`, `.ycx-icon` trong
+  `styles.css` chọn theo `@media (min-width: 64rem)` — không hook JS, không render lại khi xoay máy), `brandIcons.tsx`
+  (logo LINE chuyển từ components/common/Icon.tsx).
+- `Button`: thêm `icon` / `iconRight` (tên chức năng) — tự size theo nút, `gap-1.5`; spinner đang tải dùng `loading`.
+  `leftIcon`/`rightIcon` (ReactNode) giữ để không vỡ chỗ cũ, đánh dấu deprecated.
+- `components/common/Icon.tsx`: giữ NGUYÊN hành vi (đổi một lúc 500 chỗ là migrate, không phải nền móng), deprecated.
+- `scripts/lint-ratchet.cjs`: 3 chỉ số mới, baseline lần đầu: `iconDirectImport` 748, `iconNumericSize` 971,
+  `iconLegacyCall` 733.
+
+## Giai đoạn
+- [x] **0** — registry, tokens, AppIcon, Button `icon`, ratchet, test `tests/unit/icon-registry.test.ts`, tài liệu
+  (DESIGN_SYSTEM.md 4.6, CLAUDE.md mục 2). Không đổi pixel nào của UI hiện có ngoài spinner đang tải của `Button`
+  (16px → 16px laptop / 18px mobile).
+- [ ] **1** — Điều hướng: Sidebar, MobileBottomNav, Header, Tabs (icon nav theo bảng `nav*`).
+- [ ] **2** — Nút/toolbar (gồm thanh Cùng kỳ/Còn lại/Realtime), nút trong bảng.
+- [ ] **3** — Form/tìm kiếm/bộ lọc, Modal, Tooltip, EmptyState, ConfirmDialog.
+- [ ] **4** — Phân tích, Report BI, Báo cáo, Check thưởng; xoá `features/bi-dashboard/components/Icons.tsx`.
+- [ ] **5** — Landing, bộ xuất ảnh, In Sticker (xoá `features/sticker-event/Icons.tsx`), Phân Ca, Bot LINE, Khai thác;
+  xoá `components/common/Icon.tsx` khi `iconLegacyCall` về 0.
+
 ---
 
 # Gửi nhóm LINE từ MỌI nút xuất ảnh (2026-10-02)

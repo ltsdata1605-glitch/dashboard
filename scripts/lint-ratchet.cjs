@@ -152,6 +152,49 @@ function countMissingMobileToolbar(content) {
   return hasDesktopPortal && !hasMobileToolbar ? 1 : 0;
 }
 
+/**
+ * CHUẨN HOÁ ICON (thêm 2026-10-02) — 3 chỉ số, chỉ được GIẢM. Chuẩn: mọi icon đi qua
+ * `components/shared/ui/icon` (`<AppIcon name="…" size="…" />`), xem DESIGN_SYSTEM.md mục "Icon".
+ *
+ * - iconDirectImport: số icon import thẳng từ 'lucide-react' (đếm theo TÊN được import, không theo
+ *   dòng, để thấy tiến độ từng icon). Riêng thư mục registry được phép → không đếm.
+ * - iconNumericSize: số `size={<số>}` — size viết tay. Đếm MỌI prop `size` dạng số vì đó đúng là
+ *   chỗ 2 đơn vị lẫn nhau (`<Icon size={4}>` = 16px, lucide `size={16}` = 16px).
+ * - iconLegacyCall: số lần gọi icon kiểu cũ — `<Icon name=` (components/common/Icon.tsx) và tên
+ *   import từ 2 file SVG tự vẽ `…/Icons` (bi-dashboard, sticker-event).
+ */
+const ICON_REGISTRY_DIR = 'components/shared/ui/icon/';
+const LUCIDE_IMPORT_PATTERN = /import\s+(type\s+)?\{([^}]*)\}\s*from\s*['"]lucide-react['"]/g;
+const NUMERIC_SIZE_PATTERN = /\bsize=\{\s*\d+(?:\.\d+)?\s*\}/g;
+const LEGACY_ICON_CALL_PATTERN = /<Icon\s+name=/g;
+const LOCAL_SVG_ICONS_IMPORT_PATTERN = /import\s*\{([^}]*)\}\s*from\s*['"][^'"]*\/Icons['"]/g;
+
+function countImportedNames(list) {
+  return list.split(',').map((x) => x.trim()).filter((x) => x && !x.startsWith('type ')).length;
+}
+
+function countIconDirectImport(content, file = '') {
+  if (file.startsWith(ICON_REGISTRY_DIR)) return 0;
+  let total = 0;
+  for (const m of content.matchAll(LUCIDE_IMPORT_PATTERN)) {
+    if (m[1]) continue; // `import type { LucideIcon }` không kéo icon nào vào bundle
+    total += countImportedNames(m[2]);
+  }
+  return total;
+}
+
+function countIconNumericSize(content) {
+  return (content.match(NUMERIC_SIZE_PATTERN) || []).length;
+}
+
+function countIconLegacyCall(content) {
+  let total = (content.match(LEGACY_ICON_CALL_PATTERN) || []).length;
+  for (const m of content.matchAll(LOCAL_SVG_ICONS_IMPORT_PATTERN)) total += countImportedNames(m[1]);
+  return total;
+}
+
+const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall'];
+
 function computeViolations() {
   const files = walk(ROOT, []);
   const result = {};
@@ -161,8 +204,11 @@ function computeViolations() {
       nonSemanticColor: countOffPaletteColors(content),
       indigoAlias: countIndigoAlias(content),
       missingMobileToolbar: countMissingMobileToolbar(content),
+      iconDirectImport: countIconDirectImport(content, relPath(file)),
+      iconNumericSize: countIconNumericSize(content),
+      iconLegacyCall: countIconLegacyCall(content),
     };
-    if (counts.nonSemanticColor || counts.indigoAlias || counts.missingMobileToolbar) {
+    if (METRIC_KEYS.some((k) => counts[k])) {
       result[relPath(file)] = counts;
     }
   }
@@ -199,7 +245,7 @@ function main() {
   let improved = false;
 
   for (const [file, counts] of Object.entries(current)) {
-    const base = baseline[file] || { nonSemanticColor: 0, indigoAlias: 0, missingMobileToolbar: 0 };
+    const base = baseline[file] || Object.fromEntries(METRIC_KEYS.map((k) => [k, 0]));
     const merged = { ...base };
     for (const key of Object.keys(counts)) {
       const baseVal = base[key] || 0;
@@ -243,4 +289,8 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar };
+module.exports = {
+  countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar,
+  countIconDirectImport, countIconNumericSize, countIconLegacyCall,
+  computeViolations, saveBaseline, METRIC_KEYS,
+};
