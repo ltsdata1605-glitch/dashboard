@@ -109,16 +109,16 @@ describe('autoNavigationService', () => {
 
         expect(mockStorage.get('bi_active_view')).toBe('dashboard');
         expect(configStore.getState().cache['dashboard-main-tab']).toBe('cumulative');
-        expect(configStore.getState().cache['dashboard-sub-tab']).toBe('revenue');
+        expect(configStore.getState().cache['dashboard-sub-tab']).toBe('competition');
 
         expect(events).toContainEqual({ type: 'app-switch-tab', detail: { tab: 'employees' } });
         expect(events).toContainEqual({ type: 'bi-switch-view', detail: { view: 'dashboard' } });
-        expect(events).toContainEqual({ type: 'dashboard-switch-tab', detail: { mainTab: 'cumulative', subTab: 'revenue' } });
+        expect(events).toContainEqual({ type: 'dashboard-switch-tab', detail: { mainTab: 'cumulative', subTab: 'competition' } });
 
         expect(currentUrl.searchParams.get('tab')).toBe('employees');
         expect(currentUrl.searchParams.get('view')).toBe('dashboard');
         expect(currentUrl.searchParams.get('mode')).toBe('cumulative');
-        expect(currentUrl.searchParams.get('sub')).toBe('revenue');
+        expect(currentUrl.searchParams.get('sub')).toBe('competition');
     });
 
     it('navigates to Đỗ Thưởng (Nhân viên > Doanh thu) correctly and sets detailed URL parameters', async () => {
