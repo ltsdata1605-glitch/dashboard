@@ -54,12 +54,20 @@ const TabSpinner = () => (
  * 
  * Each sub-view is also lazy-loaded so initial mount only loads the active view's chunk.
  */
+const BI_VIEW_KEY = 'bi_active_view';
+function readSavedBiView(): 'dashboard' | 'employee' {
+    try { return localStorage.getItem(BI_VIEW_KEY) === 'employee' ? 'employee' : 'dashboard'; } catch { return 'dashboard'; }
+}
+
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
     // Còn lượt "Tự động" dở (vừa tải lại sau khi cập nhật userscript) → mở thẳng mục Cập nhật để DataUpdater chạy tiếp
-    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater'>(() => (readPendingAutoSync() ? 'updater' : 'dashboard'));
+    // Không có lượt dở → mở lại đúng mục lần trước (Siêu thị/Nhân viên): app cài trên iPhone bị iOS
+    // giải phóng khỏi RAM khi ở nền, mở lại luôn chạy từ đầu (Đợt A, kế hoạch iPhone). Mục Cập nhật
+    // không nhớ — chỉ vào đó có chủ đích.
+    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater'>(() => (readPendingAutoSync() ? 'updater' : readSavedBiView()));
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
-    const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(readPendingAutoSync() ? ['dashboard', 'updater'] : ['dashboard']));
+    const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(readPendingAutoSync() ? ['dashboard', 'updater'] : ['dashboard', readSavedBiView()]));
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
@@ -89,6 +97,9 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
     const handleTabChange = useCallback((id: string, options?: { configTab?: ConfigTab; supermarketName?: string; scrollToConfig?: boolean }) => {
         setActiveView(id as 'dashboard' | 'employee' | 'updater');
+        if (id === 'dashboard' || id === 'employee') {
+            try { localStorage.setItem(BI_VIEW_KEY, id); } catch { /* chế độ riêng tư */ }
+        }
         if (id === 'updater') {
             const targetTab = options?.configTab ?? 'data';
             db.set('supermarket-config-active-tab', targetTab);
@@ -217,7 +228,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 960px căn giữa, đệm ngang 32px ở desktop, KHÔNG đệm trên (bản cũ `lg:p-8` để 32px trống
                 giữa thanh tiêu đề app và tiêu đề "SIÊU THỊ" — chủ dự án yêu cầu bỏ 2026-09-21). Từng view
                 con đã có `pt-2` ở hàng tiêu đề riêng. Đổi khung này thì đổi cả 2 nơi kia cho khớp. */}
-            <main className="p-0 sm:px-4 sm:pb-4 lg:px-8 lg:pb-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
+            <main data-bi-view={activeView} className="p-0 sm:px-4 sm:pb-4 lg:px-8 lg:pb-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
                 <ErrorBoundary name="Báo cáo BI">
                     <Suspense fallback={<TabSpinner />}>
                         {/* Dashboard view */}

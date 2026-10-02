@@ -23,6 +23,16 @@ import {
 const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
 const STICKER_SAVED_LISTS_KEY = 'stickerSavedLists';
+const STICKER_LAST_SUB_KEY = 'sticker_last_sub';
+const STICKER_SUBS = ['draw', 'gia-soc', 'gio-vang', 'event'];
+function readLastStickerSub(): string {
+    try {
+        const v = localStorage.getItem(STICKER_LAST_SUB_KEY);
+        return v && STICKER_SUBS.includes(v) ? v : 'draw';
+    } catch {
+        return 'draw';
+    }
+}
 
 /** ID cố định cho entry lịch sử mặc định — không xoá được. */
 export const DEFAULT_HISTORY_ID = '__default_draw_template__';
@@ -355,6 +365,9 @@ export function useStickerPrinterData() {
 
     // Helper to switch and apply sub tab correctly without cross-tab leak
     const applySubTab = useCallback((sub: string) => {
+        if (STICKER_SUBS.includes(sub)) {
+            try { localStorage.setItem(STICKER_LAST_SUB_KEY, sub); } catch { /* chế độ riêng tư */ }
+        }
         if (sub === 'gia-soc') {
             setStickerMode('sticker');
             setStickerType('gia_soc');
@@ -397,8 +410,9 @@ export function useStickerPrinterData() {
         const urlParams = new URLSearchParams(window.location.search);
         let sub = urlParams.get('sub');
         if (!sub) {
-            sub = 'draw';
-            updateSubQueryParam('draw');
+            // URL không ghi tab con (mở app từ màn hình chính luôn vào "/") → về tab con lần trước.
+            sub = readLastStickerSub();
+            updateSubQueryParam(sub);
         }
         applySubTab(sub);
         

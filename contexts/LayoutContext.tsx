@@ -42,6 +42,10 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             
             setActiveTabRaw(initialTab);
             
+            // Mở bằng link có ?tab=… → lưu luôn tab đó. Trước đây chỉ lưu khi BẤM đổi tab, nên mở
+            // link rồi thoát → app cài trên iPhone mở lại (luôn vào "/") lại về tab cũ hơn.
+            if (urlTab && urlTab !== savedTab) saveSetting('active_tab', urlTab).catch(() => {});
+
             // Sync URL with initial tab if not present
             if (!urlTab) {
                 const newUrl = new URL(window.location.href);

@@ -6962,3 +6962,17 @@ KHÔNG thêm Service Worker (app đang chủ ý no-cache + `reload-on-chunk-erro
 không cần SW để cài lên MH chính); KHÔNG ép ô nhập 16px (viewport `maximum-scale=1` đã chặn auto-zoom).
 Rủi ro cần thử trên iPhone thật: đăng nhập Google trong chế độ app (popup → nếu lỗi dùng nút "Đăng nhập
 chuyển hướng"). Giai đoạn 3–5 (Capacitor/Xcode/TestFlight) cần máy Mac + tài khoản Apple Developer.
+
+## iPhone Giai đoạn 2 — Đợt A: mở lại app đúng chỗ cũ + nhắc cài app (2026-10-02)
+
+Quy tắc mới (chủ dự án chốt): **bảng luôn là bảng** — ghi vào CLAUDE.md mục 2, DESIGN_SYSTEM.md mục 6.
+
+- Tab chính VỐN đã lưu (`active_tab`, IndexedDB) — nhưng chỉ khi BẤM đổi tab. Mở bằng link `?tab=…`
+  không lưu → app cài trên iPhone mở lại (luôn vào "/") về tab cũ hơn. Sửa ở `contexts/LayoutContext.tsx`.
+- Report BI: mục Siêu thị/Nhân viên lưu `localStorage.bi_active_view` (`BiWrapper.tsx`; mục Cập nhật không nhớ).
+  Tab con trong Nhân viên vốn đã lưu (`nhanvien-active-tab`…).
+- In Sticker: tab con lưu `localStorage.sticker_last_sub` ở `applySubTab`; URL có `sub=` thì theo URL.
+- Bộ lọc Phân Tích vốn đã lưu (`dashboard_global_filters_v2`); ngày được CỐ Ý đặt lại khi mở — giữ nguyên.
+- Thẻ nhắc cài app: `components/layout/InstallAppHint.tsx` + `installHint.ts` (hàm thuần). Chỉ Safari iPhone
+  (loại Zalo/FB/LINE/Chrome iOS), chưa standalone, ẩn ở In Sticker/Phân Ca, × → 14 ngày.
+- Test: `tests/unit/install-hint.test.ts`, `tests/e2e/mo-lai-app-dung-cho-cu.spec.ts`.

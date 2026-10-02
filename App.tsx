@@ -50,6 +50,7 @@ import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 import GlobalAutoSyncDock from './components/layout/GlobalAutoSyncDock';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
+import InstallAppHint from './components/layout/InstallAppHint';
 
 /**
  * TabContent — Isolated component that handles tab switching.
@@ -275,6 +276,7 @@ function AppContent() {
         <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
             {!isFullscreenMobileTool && <MobileBottomNav />}
+            <InstallAppHint hidden={isFullscreenMobileTool} />
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
