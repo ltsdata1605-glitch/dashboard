@@ -1,7 +1,7 @@
 import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
 import type { ExportMode, ExportImageOptions } from './captureEngine';
 import { fixOklchColors, downloadBlob, shareBlob, EXPORT_MIN_WIDTH } from './captureEngine';
-import { fitTablesToContent, appendExportFooter } from './exportLayout';
+import { fitTablesToContent, appendExportFooter, fixCircularAvatars } from './exportLayout';
 
 /**
  * BỘ QUY TẮC TRÌNH BÀY "REPORT BI" của bộ xuất ảnh chung (kế hoạch "Hợp nhất xuất ảnh", 2026-10-01).
@@ -436,8 +436,13 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         clone.style.setProperty('border-radius', '0px', 'important');
         clone.querySelectorAll<HTMLElement>('*').forEach(el => {
             const cls = el.getAttribute('class') || '';
-            // Giữ lại pill tròn cho badge/icon nếu có class rounded-full, còn lại tất cả khung viền/card/container đều ép vuông vức 0px
-            if (!cls.includes('rounded-full')) {
+            // Giữ lại pill tròn cho badge/icon nếu có class rounded-full/preserve-rounded, không ép vuông vức các khối avatar
+            const isAvatarOrRounded = cls.includes('rounded-full') ||
+                cls.includes('preserve-rounded') ||
+                el.closest('.rounded-full, .preserve-rounded') !== null ||
+                (el.style.clipPath && el.style.clipPath.includes('circle')) ||
+                el.querySelector('img.rounded-full, img[class*="rounded-full"], [data-avatar]') !== null;
+            if (!isAvatarOrRounded) {
                 el.style.setProperty('border-radius', '0px', 'important');
             }
         });
@@ -695,7 +700,14 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
                     // Các thẻ con bên trong cột tên (avatar, name span, wrapper)
                     td.querySelectorAll<HTMLElement>('div, span, button, a').forEach(c => {
                         c.style.setProperty('white-space', 'nowrap', 'important');
-                        c.style.setProperty('overflow', 'visible', 'important');
+                        const isAvatarOrRounded = c.classList.contains('rounded-full') || 
+                            c.classList.contains('preserve-rounded') || 
+                            c.getAttribute('class')?.includes('rounded-full') ||
+                            (c.style.clipPath && c.style.clipPath.includes('circle')) ||
+                            c.querySelector('img.rounded-full, img[class*="rounded-full"], [data-avatar]') !== null;
+                        if (!isAvatarOrRounded) {
+                            c.style.setProperty('overflow', 'visible', 'important');
+                        }
                     });
 
                     // Bọc thẻ span con chống ngắt dòng
@@ -1623,6 +1635,7 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         const defaultBg = isDark ? '#0f172a' : '#ffffff';
         const isTransparentTable = lowerFilename.includes('bao-cao-kho') || lowerFilename.includes('chi-tiet-nganh-hang');
 
+        fixCircularAvatars(clone);
         options.onBeforeCapture?.(clone, { width: finalWidth, height: finalHeight });
         const htmlToImage = await import('html-to-image');
         let blob: Blob | null = null;

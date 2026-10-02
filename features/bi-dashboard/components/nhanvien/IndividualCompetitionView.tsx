@@ -281,14 +281,41 @@ const EmployeeProfileCard: React.FC<{
                 <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="flex items-center gap-4 relative z-10">
                     <div 
-                        className="relative group w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 cursor-pointer hover:border-white transition-all"
+                        className="relative group w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 cursor-pointer hover:border-white transition-all preserve-rounded"
+                        style={{
+                            borderRadius: '50%',
+                            clipPath: 'circle(50% at 50% 50%)',
+                            WebkitClipPath: 'circle(50% at 50% 50%)'
+                        }}
                         onClick={() => fileInputRef.current?.click()}
                         title="Bấm để tải lên hoặc đổi ảnh đại diện"
                     >
                         {avatarSrc ? (
-                            <img src={avatarSrc} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
+                            <img 
+                                src={avatarSrc} 
+                                alt={selectedEmployee.name} 
+                                data-avatar="true"
+                                style={{
+                                    borderRadius: '50%',
+                                    clipPath: 'circle(50% at 50% 50%)',
+                                    WebkitClipPath: 'circle(50% at 50% 50%)',
+                                    objectFit: 'cover'
+                                }}
+                                className="w-full h-full rounded-full object-cover" 
+                            />
                         ) : (
-                            <img src={getCartoonAvatar(selectedEmployee.originalName || selectedEmployee.name).dataUrl} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
+                            <img 
+                                src={getCartoonAvatar(selectedEmployee.originalName || selectedEmployee.name).dataUrl} 
+                                alt={selectedEmployee.name} 
+                                data-avatar="true"
+                                style={{
+                                    borderRadius: '50%',
+                                    clipPath: 'circle(50% at 50% 50%)',
+                                    WebkitClipPath: 'circle(50% at 50% 50%)',
+                                    objectFit: 'cover'
+                                }}
+                                className="w-full h-full rounded-full object-cover" 
+                            />
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white no-print">
                             <CameraIcon className="w-4 h-4 drop-shadow-md" />

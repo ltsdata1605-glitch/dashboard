@@ -162,20 +162,36 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                 className="relative group w-5 h-5 flex-shrink-0"
                 onClick={(e) => e.stopPropagation()} 
             >
-                <img 
-                    src={effectiveSrc} 
-                    alt={employeeName} 
-                    onClick={(e) => { 
-                        e.stopPropagation(); 
-                        if (onClick) {
-                            onClick();
-                        } else {
-                            setIsPickerOpen(true);
-                        }
+                <div
+                    className="w-full h-full rounded-full overflow-hidden flex items-center justify-center shrink-0 preserve-rounded"
+                    style={{
+                        borderRadius: '50%',
+                        clipPath: 'circle(50% at 50% 50%)',
+                        WebkitClipPath: 'circle(50% at 50% 50%)'
                     }}
-                    title={activeSrc ? employeeName : `${employeeName} (Avatar hoạt hình: ${defaultCartoon.name})`}
-                    className="w-full h-full rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all shadow-2xs" 
-                />
+                >
+                    <img 
+                        src={effectiveSrc} 
+                        alt={employeeName} 
+                        data-avatar="true"
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            if (onClick) {
+                                onClick();
+                            } else {
+                                setIsPickerOpen(true);
+                            }
+                        }}
+                        title={activeSrc ? employeeName : `${employeeName} (Avatar hoạt hình: ${defaultCartoon.name})`}
+                        style={{
+                            borderRadius: '50%',
+                            clipPath: 'circle(50% at 50% 50%)',
+                            WebkitClipPath: 'circle(50% at 50% 50%)',
+                            objectFit: 'cover'
+                        }}
+                        className="w-full h-full rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all shadow-2xs" 
+                    />
+                </div>
                 
                 <Button
                     variant="unstyled" size="none"

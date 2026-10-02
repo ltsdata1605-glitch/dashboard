@@ -74,7 +74,14 @@ export function fitTablesToContent(root: HTMLElement): number {
                 c.style.setProperty('white-space', ws, 'important');
                 c.style.setProperty('text-overflow', 'clip', 'important');
                 if (!isHeader) {
-                    c.style.setProperty('overflow', 'visible', 'important');
+                    const isAvatarOrRounded = c.classList.contains('rounded-full') ||
+                        c.classList.contains('preserve-rounded') ||
+                        c.getAttribute('class')?.includes('rounded-full') ||
+                        (c.style.clipPath && c.style.clipPath.includes('circle')) ||
+                        c.querySelector('img.rounded-full, img[class*="rounded-full"], [data-avatar]') !== null;
+                    if (!isAvatarOrRounded) {
+                        c.style.setProperty('overflow', 'visible', 'important');
+                    }
                     c.style.setProperty('word-break', 'normal', 'important');
                 } else {
                     c.style.setProperty('word-break', 'keep-all', 'important');
@@ -126,3 +133,50 @@ export function appendExportFooter(root: HTMLElement, text: string = exportFoote
     root.appendChild(f);
     return f;
 }
+
+/**
+ * Đảm bảo mọi avatar và phần tử tròn (.rounded-full, .preserve-rounded, ảnh đại diện)
+ * được bo tròn tuyệt đối (50%) và có clip-path dạng circle() chuẩn SVG foreignObject.
+ * Tránh lỗi SVG foreignObject của trình duyệt bỏ qua border-radius trên thẻ img
+ * hoặc lỗi cú pháp calc(infinity * 1px) của Tailwind CSS v4.
+ */
+export function fixCircularAvatars(root: HTMLElement): void {
+    // 1. Xử lý tất cả các thẻ ảnh có ý định bo tròn hoặc là avatar
+    root.querySelectorAll<HTMLElement>('img.rounded-full, img[class*="rounded-full"], [data-avatar] img, .preserve-rounded img, img[alt*="avatar"], img[src*="avatar"]').forEach((img) => {
+        img.style.setProperty('border-radius', '50%', 'important');
+        img.style.setProperty('clip-path', 'circle(50% at 50% 50%)', 'important');
+        img.style.setProperty('-webkit-clip-path', 'circle(50% at 50% 50%)', 'important');
+        img.style.setProperty('object-fit', 'cover', 'important');
+        img.style.setProperty('display', 'block', 'important');
+
+        // Bọc hoặc cha trực tiếp
+        const parent = img.parentElement;
+        if (parent) {
+            parent.style.setProperty('border-radius', '50%', 'important');
+            parent.style.setProperty('clip-path', 'circle(50% at 50% 50%)', 'important');
+            parent.style.setProperty('-webkit-clip-path', 'circle(50% at 50% 50%)', 'important');
+            parent.style.setProperty('overflow', 'hidden', 'important');
+        }
+    });
+
+    // 2. Xử lý các phần tử container tròn hoặc pill badge
+    root.querySelectorAll<HTMLElement>('.rounded-full, [class*="rounded-full"], .preserve-rounded').forEach((el) => {
+        const hasImg = !!el.querySelector('img');
+        const w = el.offsetWidth || parseFloat(el.style.width) || 0;
+        const h = el.offsetHeight || parseFloat(el.style.height) || 0;
+        const isSquare = hasImg || (w > 0 && h > 0 && Math.abs(w - h) <= 6);
+
+        if (isSquare) {
+            el.style.setProperty('border-radius', '50%', 'important');
+            el.style.setProperty('clip-path', 'circle(50% at 50% 50%)', 'important');
+            el.style.setProperty('-webkit-clip-path', 'circle(50% at 50% 50%)', 'important');
+            if (hasImg) {
+                el.style.setProperty('overflow', 'hidden', 'important');
+            }
+        } else {
+            // Pill badge (vd % đạt, trạng thái) -> thay calc(infinity * 1px) bằng 9999px chuẩn
+            el.style.setProperty('border-radius', '9999px', 'important');
+        }
+    });
+}
+

@@ -1,7 +1,7 @@
 import { isMobileLikeDevice, capPixelRatioForArea } from '../../../utils/dataUtils';
 import { deliverImage } from '../ui/imageDelivery';
 import { getActiveExportJob, startExportJob, type ExportJob } from './exportProgress';
-import { fitTablesToContent, appendExportFooter } from './exportLayout';
+import { fitTablesToContent, appendExportFooter, fixCircularAvatars } from './exportLayout';
 import './ExportProgressHost';
 
 /**
@@ -170,6 +170,7 @@ async function exportRawCore(element: HTMLElement, filename: string, options: Ex
         let scale = options.scale ?? (isMobileDevice ? 1.5 : 2);
         if (height * scale > 32000) scale = Math.max(1, 32000 / height);
         if (isMobileDevice) scale = Math.min(scale, capPixelRatioForArea(width, height, scale));
+        fixCircularAvatars(clone);
         options.onBeforeCapture?.(clone, { width, height });
         const htmlToImage = await import('html-to-image');
         const blob = await htmlToImage.toBlob(clone, {
@@ -552,8 +553,13 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     clone.style.setProperty('border-radius', '0px', 'important');
     clone.querySelectorAll<HTMLElement>('*').forEach(el => {
         const cls = el.getAttribute('class') || '';
-        // Giữ lại pill tròn cho badge/icon nếu có class rounded-full, còn lại tất cả khung viền/card/container đều ép vuông vức 0px
-        if (!cls.includes('rounded-full')) {
+        // Giữ lại pill tròn cho badge/icon nếu có class rounded-full/preserve-rounded, không ép vuông vức các khối avatar
+        const isAvatarOrRounded = cls.includes('rounded-full') ||
+            cls.includes('preserve-rounded') ||
+            el.closest('.rounded-full, .preserve-rounded') !== null ||
+            (el.style.clipPath && el.style.clipPath.includes('circle')) ||
+            el.querySelector('img.rounded-full, img[class*="rounded-full"], [data-avatar]') !== null;
+        if (!isAvatarOrRounded) {
             el.style.setProperty('border-radius', '0px', 'important');
         }
     });
@@ -1355,6 +1361,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         const defaultBg = isDark ? '#0f172a' : '#ffffff';
         const isTransparentTable = lowerFilename.includes('bao-cao-kho') || lowerFilename.includes('chi-tiet-nganh-hang');
 
+        fixCircularAvatars(clone);
         options.onBeforeCapture?.(clone, { width: finalWidth, height: finalHeight });
         const htmlToImage = await import('html-to-image');
         let blob: Blob | null = null;
