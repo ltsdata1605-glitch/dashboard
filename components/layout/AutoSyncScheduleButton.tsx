@@ -2,11 +2,82 @@ import React, { useEffect, useState } from 'react';
 import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import { Input } from '../shared/ui/Input';
+import { Select } from '../shared/ui/Select';
 import { Icon } from '../common/Icon';
+import { useAuth } from '../../contexts/AuthContext';
 import {
-    SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, getSchedule, loadSchedules, nextScheduleTime, normalizeTime,
+    SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, autoAreasFor, getSchedule, loadSchedules, nextScheduleTime, normalizeTime,
     onSchedulesChanged, setSchedule, type ScheduleEntry, type ScheduleKey,
 } from '../../services/autoSyncSchedule';
+import type { LineGroupRef } from '../../services/lineReportDelivery';
+
+/**
+ * Chọn khu vực tự xuất ảnh & gửi nhóm LINE sau khi lượt hẹn giờ đổ dữ liệu xong (2026-10-02). Mỗi khu vực một nhóm.
+ * Không chọn khu vực nào → giữ cách cũ (nút xuất ảnh nào đặt đích "nhóm LINE" thì tự gửi — chỉ YCX Realtime).
+ */
+function AutoSendAreas({ scheduleKey, entry, luu }: { scheduleKey: ScheduleKey; entry: ScheduleEntry; luu: (e: ScheduleEntry) => void }) {
+    const { user, departmentId } = useAuth();
+    const areas = autoAreasFor(scheduleKey);
+    const [groups, setGroups] = useState<LineGroupRef[] | null>(null);
+    const [loi, setLoi] = useState('');
+
+    useEffect(() => {
+        if (areas.length === 0) return;
+        let huy = false;
+        (async () => {
+            try {
+                const { resolveLineBot, listLineGroups } = await import('../../services/lineReportDelivery');
+                const bot = await resolveLineBot(user?.uid || '', departmentId);
+                if (huy) return;
+                if (!bot) { setLoi('Tài khoản chưa có Bot LINE — vào mục Bot LINE để kết nối bot.'); setGroups([]); return; }
+                const g = await listLineGroups(bot.botId);
+                if (!huy) { setGroups(g); if (g.length === 0) setLoi('Bot chưa ở nhóm LINE nào — thêm bot vào nhóm rồi nhắn 1 tin trong nhóm.'); }
+            } catch (e) {
+                if (!huy) { setLoi(e instanceof Error ? e.message : String(e)); setGroups([]); }
+            }
+        })();
+        return () => { huy = true; };
+    }, [areas.length, user?.uid, departmentId]);
+
+    if (areas.length === 0) {
+        return <p className="text-[12px] text-slate-500">Nút này chưa có khu vực nào tự xuất ảnh được.</p>;
+    }
+    const chon = entry.autoSend || [];
+    const datNhom = (area: string, groupId: string) => {
+        const g = groups?.find((x) => x.groupId === groupId);
+        const con = chon.filter((x) => x.area !== area);
+        luu({ ...entry, autoSend: g ? [...con, { area, groupId: g.groupId, groupName: g.groupName }] : con });
+    };
+    const options = [{ value: '', label: 'Không gửi' }, ...(groups || []).map((g) => ({ value: g.groupId, label: g.groupName }))];
+    // Nhóm đã lưu nhưng bot không còn thấy (đổi bot / rời nhóm) vẫn hiện để không âm thầm mất
+    chon.forEach((c) => { if (!options.some((o) => o.value === c.groupId)) options.push({ value: c.groupId, label: `${c.groupName} (không thấy)` }); });
+
+    return (
+        <div className="space-y-1.5" data-testid={`sched-autosend-${scheduleKey}`}>
+            {groups === null && <p className="text-[12px] text-slate-500">Đang tải danh sách nhóm LINE…</p>}
+            {loi && <p className="border-l-[3px] border-amber-500 bg-amber-50 px-3 py-1.5 text-[12px] text-amber-800">{loi}</p>}
+            {areas.map((a) => {
+                const cur = chon.find((x) => x.area === a.id);
+                return (
+                    <div key={a.id} className={`flex items-center gap-2 border-l-[3px] px-2 py-1 ${cur ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-slate-50'}`}>
+                        <span className={`min-w-0 flex-1 text-[12px] ${cur ? 'font-semibold text-emerald-800' : 'text-slate-700'}`}>{a.label}</span>
+                        <div className="w-44 shrink-0">
+                            <Select
+                                aria-label={`Nhóm LINE cho ${a.label}`}
+                                data-testid={`sched-area-${a.id}`}
+                                value={cur?.groupId || ''}
+                                disabled={!groups || groups.length === 0}
+                                onChange={(e) => datNhom(a.id, e.target.value)}
+                                options={options}
+                                className="h-8 min-h-0 py-0 text-[12px]"
+                            />
+                        </div>
+                    </div>
+                );
+            })}
+        </div>
+    );
+}
 
 /**
  * Nút đồng hồ nằm ngay trên nút Auto Sync (góc phải) — đặt các khung giờ tự chạy cho riêng nút đó (2026-10-01).
@@ -30,7 +101,7 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
     const them = () => {
         const t = normalizeTime(nhap);
         if (!t) return;
-        luu({ enabled: true, times: [...entry.times, t] });
+        luu({ ...entry, enabled: true, times: [...entry.times, t] });
         setNhap('');
     };
 
@@ -52,7 +123,7 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                 <Icon name="clock" size={3} />
                 {keTiep && !compact && <span>{keTiep}</span>}
             </Button>
-            <Modal isOpen={open} onClose={() => setOpen(false)} title="Hẹn giờ tự chạy" subTitle={ten} maxWidth="sm">
+            <Modal isOpen={open} onClose={() => setOpen(false)} title="Hẹn giờ tự chạy" subTitle={ten} maxWidth="md">
                 <div className="space-y-3 text-[13px] text-slate-700" data-testid={`sched-modal-${scheduleKey}`}>
                     <div className="flex items-center justify-between">
                         <span className="font-semibold">Tự chạy theo khung giờ</span>
@@ -82,6 +153,10 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                         <Button variant="primary" size="sm" onClick={them} disabled={!normalizeTime(nhap)}>
                             <Icon name="plus" size={3.5} /> Thêm giờ
                         </Button>
+                    </div>
+                    <div className="border-t border-slate-200 pt-3">
+                        <p className="mb-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">Tự xuất ảnh & gửi LINE sau khi đổ dữ liệu</p>
+                        <AutoSendAreas scheduleKey={scheduleKey} entry={entry} luu={luu} />
                     </div>
                     <p className="text-[12px] text-slate-500">
                         Chạy trong trình duyệt: máy phải bật, Chrome đang mở tab dashboard.pro.vn, đã đăng nhập MWG và có

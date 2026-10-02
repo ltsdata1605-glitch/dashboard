@@ -1612,7 +1612,17 @@ export const lineBotWebhook = onRequest(
                         return;
                     }
                     const data = snap.data() || {};
-                    const base64Data = String(data.base64 || '').trim();
+                    // Ảnh HD (2026-10-02): bản gốc > 1MB không vừa 1 document → chia `parts` mảnh `<id>_p<i>`, ghép lại ở đây
+                    let base64Data = String(data.base64 || '').trim();
+                    const parts = Number(data.parts || 0);
+                    if (!base64Data && parts > 0 && parts <= 40) {
+                        const snaps = await Promise.all(Array.from({ length: parts }, (_, i) => db.collection('bot_media').doc(`${mediaId}_p${i}`).get()));
+                        if (snaps.some((s) => !s.exists)) {
+                            res.status(404).send('Media part missing');
+                            return;
+                        }
+                        base64Data = snaps.map((s) => String(s.data()?.base64 || '')).join('');
+                    }
                     const contentType = String(data.contentType || 'image/jpeg');
                     if (!base64Data) {
                         res.status(404).send('Image data empty');
@@ -1630,6 +1640,11 @@ export const lineBotWebhook = onRequest(
                     res.status(500).send('Error loading media');
                     return;
                 }
+            }
+            // Trang web dò xem function đã có ghép ảnh HD chưa (bản cũ trả câu chữ bên dưới → trang chỉ gửi bản ≤1MB)
+            if (req.query.caps !== undefined) {
+                res.status(200).json({ hdMedia: true });
+                return;
             }
             res.status(200).send('LINE Bot Webhook is active!');
             return;
@@ -1842,6 +1857,9 @@ export const lineBotWebhook = onRequest(
             const token = String(req.body?.token || '').trim();
             const to = String(req.body?.to || '').trim();
             const imageUrl = String(req.body?.imageUrl || '').trim();
+            // Bản xem trước ≤1MB riêng (2026-10-02) — ảnh gốc HD có thể tới 10MB, LINE không cho làm ảnh xem trước
+            const previewRaw = String(req.body?.previewUrl || '').trim();
+            const previewUrl = /^https:\/\//.test(previewRaw) ? previewRaw : imageUrl;
             const text = String(req.body?.text || '').trim().slice(0, 1000);
             if (!token || !/^[CRU][0-9a-f]{32}$/.test(to) || !/^https:\/\//.test(imageUrl)) {
                 res.status(200).json({ success: false, error: 'Thiếu Token, ID nhóm LINE hoặc đường dẫn ảnh' });
@@ -1850,7 +1868,7 @@ export const lineBotWebhook = onRequest(
             try {
                 const messages: any[] = [];
                 if (text) messages.push({ type: 'text', text });
-                messages.push({ type: 'image', originalContentUrl: imageUrl, previewImageUrl: imageUrl });
+                messages.push({ type: 'image', originalContentUrl: imageUrl, previewImageUrl: previewUrl });
                 const lineRes = await fetch('https://api.line.me/v2/bot/message/push', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

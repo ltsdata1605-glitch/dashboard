@@ -48,7 +48,8 @@ import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
-import { registerAutoExport, runLineAutoExports } from '../../services/analysisExportDestinations';
+import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo } from '../../services/analysisExportDestinations';
+import type { AutoSendItem } from '../../services/autoSyncSchedule';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Icon } from '../common/Icon';
@@ -163,15 +164,20 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     // Mốc nạp YCX Realtime từ Auto Sync — đợi dữ liệu hiện xong thì tự gửi ảnh LINE (null = không chờ)
     const choGuiLineRef = useRef<number | null>(null);
+    /** Khu vực tự gửi của lượt hẹn giờ (rỗng = cách cũ: các nút đặt đích "nhóm LINE", chỉ Realtime) */
+    const khuVucGuiRef = useRef<AutoSendItem[]>([]);
     // Lắng nghe file YCX từ GlobalAutoSyncDock (chức năng Tự động YCX Realtime)
     useEffect(() => {
         // mode 'luyke' (YCX Luỹ kế) → nạp như "Lũy kế / Quá khứ" (isHistorical); còn lại → "Tệp Realtime"
         const pendingFile = (window as any).__pendingYcxAutoSyncFile;
         if (pendingFile) {
             const laLuyKe = (window as any).__pendingYcxAutoSyncMode === 'luyke';
+            const autoSend: AutoSendItem[] = (window as any).__pendingYcxAutoSend || [];
             delete (window as any).__pendingYcxAutoSyncFile;
             delete (window as any).__pendingYcxAutoSyncMode;
-            if (!laLuyKe) choGuiLineRef.current = Date.now();
+            delete (window as any).__pendingYcxAutoSend;
+            khuVucGuiRef.current = autoSend;
+            if (!laLuyKe || autoSend.length) choGuiLineRef.current = Date.now();
             handleFileProcessing([pendingFile], false, laLuyKe);
         }
 
@@ -180,8 +186,12 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             if (file) {
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
-                // YCX Realtime tự động → nạp xong thì tự xuất & gửi các ảnh đã đặt đích "nhóm LINE"
-                if (e.detail?.mode !== 'luyke') choGuiLineRef.current = Date.now();
+                delete (window as any).__pendingYcxAutoSend;
+                // YCX Realtime tự động → nạp xong thì tự xuất & gửi các ảnh đã đặt đích "nhóm LINE";
+                // lượt hẹn giờ có chọn khu vực (cả Luỹ kế) → xuất đúng các khu vực đó vào nhóm đã chọn
+                const autoSend: AutoSendItem[] = Array.isArray(e.detail?.autoSend) ? e.detail.autoSend : [];
+                khuVucGuiRef.current = autoSend;
+                if (e.detail?.mode !== 'luyke' || autoSend.length) choGuiLineRef.current = Date.now();
                 handleFileProcessing([file], false, e.detail?.mode === 'luyke');
             }
         };
@@ -197,11 +207,13 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         const t = setTimeout(async () => {
             if (choGuiLineRef.current !== moc) return;
             choGuiLineRef.current = null;
-            const kq = await runLineAutoExports();
+            const khuVuc = khuVucGuiRef.current;
+            khuVucGuiRef.current = [];
+            const kq = khuVuc.length ? await runLineAutoExportsTo(khuVuc) : await runLineAutoExports();
             if (kq.length === 0) return;
             const hong = kq.filter((r) => !r.ok);
             if (hong.length) toast.error(`Tự gửi LINE: ${kq.length - hong.length}/${kq.length} ảnh — lỗi: ${hong.map((r) => r.key).join(', ')}`, { duration: 10000 });
-            else toast.success(`Tự gửi LINE: đã gửi ${kq.length} ảnh sau khi cập nhật YCX Realtime`);
+            else toast.success(`Tự gửi LINE: đã gửi ${kq.length} ảnh sau khi cập nhật YCX`);
         }, 2500);
         return () => clearTimeout(t);
     }, [appState, processedData, isProcessing, isFilterProcessing]);

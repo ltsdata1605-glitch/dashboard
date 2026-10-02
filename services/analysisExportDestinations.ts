@@ -16,7 +16,7 @@ type DestMap = Record<string, { groupId: string; groupName: string }>;
 const SETTING_KEY = 'analysis_export_destinations';
 const EVT = 'ycx-export-destinations-changed';
 
-interface Store { map: DestMap; loaded: Promise<void> | null; runners: Map<string, () => Promise<unknown>> }
+interface Store { map: DestMap; loaded: Promise<void> | null; runners: Map<string, () => Promise<unknown>>; runTarget?: { groupId: string; groupName: string } | null }
 const G = globalThis as unknown as { __ycxExportDest?: Store };
 const store: Store = G.__ycxExportDest || (G.__ycxExportDest = { map: {}, loaded: null, runners: new Map() });
 
@@ -38,6 +38,8 @@ export function loadExportDestinations(): Promise<void> {
 }
 
 export function getExportDestination(reportKey: string): ExportDestination {
+    // Đang chạy lượt hẹn giờ có danh sách khu vực riêng → gửi đúng nhóm của khu vực đó, bỏ qua đích đặt ở nút
+    if (store.runTarget?.groupId) return { kind: 'line', groupId: store.runTarget.groupId, groupName: store.runTarget.groupName };
     const d = store.map[reportKey];
     return d?.groupId ? { kind: 'line', groupId: d.groupId, groupName: d.groupName } : { kind: 'download' };
 }
@@ -70,6 +72,22 @@ export async function runLineAutoExports(): Promise<{ key: string; ok: boolean; 
     for (const [key, run] of store.runners) {
         if (getExportDestination(key).kind !== 'line') continue;
         try { await run(); out.push({ key, ok: true }); } catch (e) { out.push({ key, ok: false, error: e instanceof Error ? e.message : String(e) }); }
+    }
+    return out;
+}
+
+/**
+ * Lượt HẸN GIỜ có danh sách khu vực riêng (2026-10-02): xuất đúng các khu vực đã chọn, mỗi khu vực gửi vào nhóm LINE
+ * đã chọn cho nó — không phụ thuộc đích đặt ở từng nút. Khu vực chưa hiển thị (đang ẩn / chưa mở) báo lỗi rõ tên.
+ */
+export async function runLineAutoExportsTo(items: { area: string; groupId: string; groupName: string }[]): Promise<{ key: string; ok: boolean; error?: string }[]> {
+    await loadExportDestinations();
+    const out: { key: string; ok: boolean; error?: string }[] = [];
+    for (const it of items) {
+        const run = store.runners.get(it.area);
+        if (!run) { out.push({ key: it.area, ok: false, error: 'khu vực chưa hiển thị trên Phân tích' }); continue; }
+        store.runTarget = { groupId: it.groupId, groupName: it.groupName };
+        try { await run(); out.push({ key: it.area, ok: true }); } catch (e) { out.push({ key: it.area, ok: false, error: e instanceof Error ? e.message : String(e) }); } finally { store.runTarget = null; }
     }
     return out;
 }

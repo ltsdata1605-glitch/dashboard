@@ -7046,3 +7046,32 @@ thị (9567) là nhân viên → nếu API trả dòng đó thì ô bị ghi rá
 có dòng siêu thị ngay, 1 kho phải khoan COMPANY → AREA → STORE); `thiDuaNhanVienApi.test.ts` thêm ca dòng siêu thị 9567.
 **Chưa kiểm được trên MWG thật** (không có phiên đăng nhập): tên `columnname` các tầng giữa là suy đoán — nếu vẫn
 không ra, Console trang baocao có dòng `[BI-Sync] [API] Thi đua nhân viên …` / `Không lấy được Thi đua nhân viên cho …`.
+
+## Ảnh gửi LINE nét hơn + hẹn giờ chọn khu vực tự xuất & gửi LINE (2026-10-02)
+
+**Yêu cầu chủ dự án:** (1) ảnh xuất gửi LINE "cao và nét"; (2) trong hộp "Hẹn giờ tự chạy" chọn được khu vực nào sẽ tự
+xuất ảnh & gửi vào nhóm LINE nào sau khi lượt đó đổ dữ liệu xong.
+
+**(1) Ảnh nét — nguyên nhân mờ:** bản cũ nén mọi ảnh thành 1 JPEG ≤ ~700KB, thu về ≤1600px để vừa 1 document Firestore
+(1MB), và dùng chính ảnh đó làm cả ảnh gốc lẫn ảnh xem trước. Sửa:
+- Chụp 3x (máy tính) khi đích là LINE (`useExportLogic` — `LINE_EXPORT_SCALE_DESKTOP`; Report BI tự xuất cũng 3x).
+- Ảnh XEM TRƯỚC (khung chat, LINE giới hạn 1MB): JPEG ≤ 2048px, q 0.92 → 0.78.
+- Ảnh GỐC (bấm vào mới tải, LINE cho ≤ 10MB): PNG nguyên bản ≤ 9,5MB (quá thì JPEG 0.95), chia mảnh 900k ký tự
+  `bot_media/<id>_p<i>` + document đầu `<id>` {parts}. `lineBotWebhook` GET ghép mảnh; `?caps` trả `{hdMedia:true}`.
+- Trang dò `?caps` trước khi gửi bản HD: function CHƯA deploy → gửi như cũ (gốc = xem trước), không bao giờ gửi URL HD
+  mà function cũ không phục vụ được. ⚠️ Cần `npm run deploy:functions` (container không đăng nhập Firebase CLI).
+- `pushImage` của function nhận thêm `previewUrl`.
+
+**(2) Khu vực theo hẹn giờ:** `ScheduleEntry.autoSend = [{area, groupId, groupName}]` (`services/autoSyncSchedule.ts`,
+`autoAreasFor`). Hộp hẹn giờ: mỗi khu vực một ô chọn nhóm LINE ("Không gửi" = bỏ). Đổ Thưởng chưa có khu vực.
+- YCX (Phân tích): khu vực = 4 nút đã `registerAutoExport`. Lượt hẹn giờ mang `autoSend` qua `ycx-auto-sync-file` →
+  DashboardView `runLineAutoExportsTo` (đích ép `runTarget`, bỏ qua đích đặt ở nút). Có chọn khu vực thì chạy cả Luỹ kế.
+  Không chọn khu vực nào → giữ cách cũ (nút đặt đích LINE, chỉ Realtime).
+- Report BI: 5 khu vực mục Siêu thị (Doanh thu / Thi đua — Tổng hoặc từng siêu thị; Ngành hàng từng siêu thị). Khung
+  Auto Sync Pro nghe `ycx-bi-automation:done` của lượt hẹn giờ → 6s sau gửi `ycx-bi-auto-export:request` → BiWrapper mở
+  mục Siêu thị, Dashboard chụp từng khu vực (đổi Realtime/Luỹ kế, tab con, siêu thị như xuất hàng loạt) → trả
+  `ycx-bi-auto-export:done` {images, errors} → khung gửi LINE. Hai khu vực chỉ nói chuyện qua sự kiện (CLAUDE.md mục 1).
+
+**Kiểm:** `tests/e2e/line-gui-anh-va-hen-gio.spec.ts` thêm 3 test: ảnh HD (PNG gốc, xem trước ≤1MB, số mảnh), hẹn giờ
+YCX chọn "Chi tiết theo kho" → chỉ gửi khu vực đó vào đúng nhóm (nút khác đặt đích LINE không bị gửi), hẹn giờ BI Luỹ
+kế → tự chụp Thi đua Tổng & Doanh thu Tổng → gửi LINE. Chưa thử với bot/nhóm LINE thật.

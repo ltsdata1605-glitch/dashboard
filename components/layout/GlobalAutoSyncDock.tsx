@@ -8,9 +8,10 @@ import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import AutoSyncScheduleButton from './AutoSyncScheduleButton';
 import {
-    claimScheduleRun, dueSchedules, getSchedules, loadSchedules, nextScheduleTime, onSchedulesChanged, scheduleHasRun,
-    SCHEDULE_LABELS, type ScheduleKey, type Schedules,
+    claimScheduleRun, dueSchedules, getAutoSend, getSchedules, loadSchedules, nextScheduleTime, onSchedulesChanged, scheduleHasRun,
+    BI_AUTO_AREAS, SCHEDULE_LABELS, type AutoSendItem, type ScheduleKey, type Schedules,
 } from '../../services/autoSyncSchedule';
+import { useAuth } from '../../contexts/AuthContext';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useIndexedDBState } from '../../features/bi-dashboard/hooks/useIndexedDBState';
 import { useBiAutoSync } from '../../features/bi-dashboard/hooks/useBiAutoSync';
@@ -27,8 +28,32 @@ type ScriptState = { checked: boolean; installed: boolean; version?: string };
 
 const TEN_YCX: Record<YcxMode, string> = { realtime: 'YCX Realtime', luyke: 'YCX Luỹ kế' };
 
+/** Ảnh Report BI do features/bi-dashboard dựng theo yêu cầu (sự kiện — 2 khu vực không import nhau) */
+type BiAutoImage = { area: string; label: string; blob: Blob };
+
+/** Nhờ Report BI xuất các khu vực đã chọn (chuyển sang mục Siêu thị, đúng Realtime/Luỹ kế) — chờ tối đa 5 phút */
+function yeuCauAnhBi(mode: 'realtime' | 'luyke', areas: string[]): Promise<{ images: BiAutoImage[]; errors: { area: string; error: string }[] }> {
+    return new Promise((resolve) => {
+        const requestId = `bi-ae-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const on = (e: Event) => {
+            const d = (e as CustomEvent).detail as { requestId?: string; images?: BiAutoImage[]; errors?: { area: string; error: string }[] } | null;
+            if (d?.requestId !== requestId) return;
+            window.removeEventListener('ycx-bi-auto-export:done', on);
+            clearTimeout(t);
+            resolve({ images: d.images || [], errors: d.errors || [] });
+        };
+        const t = setTimeout(() => {
+            window.removeEventListener('ycx-bi-auto-export:done', on);
+            resolve({ images: [], errors: [{ area: 'Report BI', error: 'không phản hồi sau 5 phút' }] });
+        }, 5 * 60_000);
+        window.addEventListener('ycx-bi-auto-export:done', on);
+        window.dispatchEvent(new CustomEvent('ycx-bi-auto-export:request', { detail: { requestId, mode, areas } }));
+    });
+}
+
 export default function GlobalAutoSyncDock() {
     const { activeTab, setActiveTab } = useActiveTab();
+    const { user, departmentId } = useAuth();
 
     // ─── Bi Auto Sync Setup ───
     const [activeSupermarket] = useIndexedDBState<string>('dashboard-active-supermarket', 'Tổng');
@@ -57,6 +82,10 @@ export default function GlobalAutoSyncDock() {
     const [ycxMode, setYcxMode] = useState<YcxMode>('realtime');
     const [ycxYeuCau, setYcxYeuCau] = useState<YcxMode>('realtime');
     const ycxJobRef = useRef<string | null>(null);
+    /** Khu vực tự gửi LINE của lượt YCX đang chạy (lượt hẹn giờ — rỗng khi bấm tay) */
+    const ycxAutoSendRef = useRef<AutoSendItem[]>([]);
+    /** Lượt BI hẹn giờ đang chờ đổ dữ liệu xong để tự xuất & gửi LINE */
+    const biAutoSendRef = useRef<{ mode: 'realtime' | 'luyke'; items: AutoSendItem[]; at: number } | null>(null);
     const [lich, setLich] = useState<Schedules>(() => getSchedules());
     useEffect(() => {
         void loadSchedules().then(() => setLich({ ...getSchedules() }));
@@ -162,7 +191,8 @@ export default function GlobalAutoSyncDock() {
         return () => window.removeEventListener('ycx-trigger-bi-auto-sync', handleBiTrigger);
     }, [handleStartBiSync]);
 
-    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime', opts: { auto?: boolean } = {}) => {
+    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime', opts: { auto?: boolean; autoSend?: AutoSendItem[] } = {}) => {
+        ycxAutoSendRef.current = opts.autoSend || [];
         // Luỹ kế = 01 → hôm qua; hôm nay ngày 01 thì chưa có ngày nào để luỹ kế → chạy Realtime (chủ dự án chốt)
         const mode = resolveYcxMode(requested);
         setYcxYeuCau(requested);
@@ -212,7 +242,10 @@ export default function GlobalAutoSyncDock() {
                 // mode: Realtime → "Tệp Realtime", Luỹ kế → "Lũy kế / Quá khứ"
                 (window as any).__pendingYcxAutoSyncFile = file;
                 (window as any).__pendingYcxAutoSyncMode = mode;
-                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode } }));
+                // Lượt hẹn giờ có khu vực tự gửi LINE riêng → Phân tích xuất đúng các khu vực đó sau khi nạp xong
+                const autoSend = ycxAutoSendRef.current;
+                (window as any).__pendingYcxAutoSend = autoSend;
+                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoSend } }));
 
                 if (activeTab !== 'analysis') {
                     setActiveTab('analysis');
@@ -250,12 +283,61 @@ export default function GlobalAutoSyncDock() {
     // ─── Hẹn giờ tự chạy cho 5 nút (services/autoSyncSchedule.ts) ───
     const chayTheoLichRef = useRef<(k: ScheduleKey) => void>(() => {});
     chayTheoLichRef.current = (k: ScheduleKey) => {
-        if (k === 'bi-realtime') handleStartBiSync('realtime', true);
-        else if (k === 'bi-luyke') handleStartBiSync('luyke', true);
+        const autoSend = getAutoSend(k);
+        if (k === 'bi-realtime' || k === 'bi-luyke') {
+            const mode = k === 'bi-realtime' ? 'realtime' : 'luyke';
+            biAutoSendRef.current = autoSend.length ? { mode, items: autoSend, at: Date.now() } : null;
+            handleStartBiSync(mode, true);
+        }
         else if (k === 'bonus') handleTriggerAutoBonus(true);
-        else if (k === 'ycx-realtime') handleTriggerYcxSync('realtime', { auto: true });
-        else if (k === 'ycx-luyke') handleTriggerYcxSync('luyke', { auto: true });
+        else if (k === 'ycx-realtime') handleTriggerYcxSync('realtime', { auto: true, autoSend });
+        else if (k === 'ycx-luyke') handleTriggerYcxSync('luyke', { auto: true, autoSend });
     };
+
+    // Lượt BI hẹn giờ đổ dữ liệu xong → nhờ Report BI xuất các khu vực đã chọn rồi gửi từng ảnh vào nhóm LINE của nó
+    const authRef = useRef({ uid: '', departmentId: null as string | null | undefined });
+    authRef.current = { uid: user?.uid || '', departmentId };
+    useEffect(() => {
+        const xuLy = (mode: unknown) => {
+            const cho = biAutoSendRef.current;
+            if (!cho || (mode && mode !== cho.mode)) return;
+            biAutoSendRef.current = null;
+            if (Date.now() - cho.at > 60 * 60_000) return;
+            // Đợi Report BI ghi xong dữ liệu vào các ô rồi mới chụp
+            setTimeout(async () => {
+                const tId = toast.loading(`Đang tự xuất ${cho.items.length} khu vực Report BI để gửi LINE…`);
+                const { images, errors } = await yeuCauAnhBi(cho.mode, cho.items.map((x) => x.area));
+                const { sendReportImageToLine } = await import('../../services/lineReportDelivery');
+                let ok = 0;
+                const hong: string[] = errors.map((x) => `${x.area}: ${x.error}`);
+                const p2 = (n: number) => String(n).padStart(2, '0');
+                for (const img of images) {
+                    const dich = cho.items.find((x) => x.area === img.area);
+                    if (!dich) continue;
+                    const now = new Date();
+                    try {
+                        await sendReportImageToLine({
+                            blob: img.blob, groupId: dich.groupId, fileName: `${img.label}.png`,
+                            caption: `📊 ${img.label} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`,
+                            uid: authRef.current.uid, departmentId: authRef.current.departmentId,
+                        });
+                        ok++;
+                    } catch (err) {
+                        hong.push(`${img.label}: ${err instanceof Error ? err.message : String(err)}`);
+                    }
+                }
+                const ten = (id: string) => BI_AUTO_AREAS.find((a) => a.id === id)?.label || id;
+                if (hong.length) toast.error(`Tự gửi LINE (Report BI): ${ok} ảnh — lỗi: ${hong.map((h) => h.replace(/^bi-[a-z-]+/, ten)).join('; ')}`, { id: tId, duration: 12000 });
+                else toast.success(`Tự gửi LINE (Report BI): đã gửi ${ok} ảnh`, { id: tId });
+            }, 6000);
+        };
+        // Userscript báo xong bằng CustomEvent hoặc postMessage (như onBiDone của Report BI)
+        const onDone = (e: Event) => { const d = (e as CustomEvent).detail; if (d?.source === 'ycx-bi-automation' && d.type === 'done') xuLy(d.mode); };
+        const onMsg = (e: MessageEvent) => { const d = e.data; if (d && d.source === 'ycx-bi-automation' && d.type === 'done') xuLy(d.mode); };
+        window.addEventListener('ycx-bi-automation:done', onDone);
+        window.addEventListener('message', onMsg);
+        return () => { window.removeEventListener('ycx-bi-automation:done', onDone); window.removeEventListener('message', onMsg); };
+    }, []);
     useEffect(() => {
         const tick = () => {
             // Mỗi lượt chỉ chạy 1 nút — nút khác đến hạn cùng lúc sẽ chạy ở lượt sau (30s), đỡ giành tab

@@ -9,7 +9,9 @@
 import { getSetting, saveSetting } from './dbService';
 
 export type ScheduleKey = 'bi-realtime' | 'bi-luyke' | 'bonus' | 'ycx-realtime' | 'ycx-luyke';
-export interface ScheduleEntry { enabled: boolean; times: string[] }
+/** Một khu vực sẽ tự xuất ảnh & gửi vào nhóm LINE sau khi lượt hẹn giờ đổ dữ liệu xong (2026-10-02) */
+export interface AutoSendItem { area: string; groupId: string; groupName: string }
+export interface ScheduleEntry { enabled: boolean; times: string[]; autoSend?: AutoSendItem[] }
 export type Schedules = Partial<Record<ScheduleKey, ScheduleEntry>>;
 
 export const SCHEDULE_LABELS: Record<ScheduleKey, string> = {
@@ -19,6 +21,31 @@ export const SCHEDULE_LABELS: Record<ScheduleKey, string> = {
     'ycx-realtime': 'YCX Realtime (Phân tích)',
     'ycx-luyke': 'YCX Luỹ kế (Phân tích)',
 };
+
+/**
+ * Khu vực Report BI (mục Siêu thị) tự xuất được — chuỗi id là GIAO THỨC với features/bi-dashboard (sự kiện
+ * `ycx-bi-auto-export:request`), hai bên không import nhau (CLAUDE.md mục 1).
+ */
+export const BI_AUTO_AREAS: { id: string; label: string }[] = [
+    { id: 'bi-doanh-thu-tong', label: 'Siêu thị › Doanh thu — Tổng' },
+    { id: 'bi-doanh-thu-tung-st', label: 'Siêu thị › Doanh thu — từng siêu thị' },
+    { id: 'bi-nganh-hang-tung-st', label: 'Siêu thị › Ngành hàng — từng siêu thị' },
+    { id: 'bi-thi-dua-tong', label: 'Siêu thị › Thi đua — Tổng' },
+    { id: 'bi-thi-dua-tung-st', label: 'Siêu thị › Thi đua — từng siêu thị' },
+];
+/** Khu vực Phân tích (khoá = tên báo cáo trong tên file ảnh, khớp registerAutoExport) */
+export const ANALYSIS_AREAS: { id: string; label: string }[] = [
+    { id: 'Tổng Quan Doanh Thu', label: 'Phân tích › Tổng quan doanh thu (thẻ KPI)' },
+    { id: 'Toàn Bộ Bản Tin', label: 'Phân tích › Toàn bộ bản tin' },
+    { id: 'Chi Tiết Theo Kho', label: 'Phân tích › Chi tiết theo kho' },
+    { id: 'Xu Hướng Doanh Thu', label: 'Phân tích › Xu hướng doanh thu' },
+];
+/** Khu vực chọn được cho từng nút. Đổ Thưởng chưa có ảnh nào tự xuất được → rỗng. */
+export function autoAreasFor(key: ScheduleKey): { id: string; label: string }[] {
+    if (key === 'bi-realtime' || key === 'bi-luyke') return BI_AUTO_AREAS;
+    if (key === 'ycx-realtime' || key === 'ycx-luyke') return ANALYSIS_AREAS;
+    return [];
+}
 
 const SETTING_KEY = 'auto_sync_schedules';
 const EVT = 'ycx-auto-sync-schedules-changed';
@@ -47,11 +74,16 @@ export function loadSchedules(): Promise<void> {
 }
 export function getSchedules(): Schedules { return store.value; }
 export function getSchedule(key: ScheduleKey): ScheduleEntry { return store.value[key] || { enabled: false, times: [] }; }
+/** Khu vực tự gửi LINE của một nút (rỗng = dùng đích đặt ở từng nút xuất ảnh như cũ) */
+export function getAutoSend(key: ScheduleKey): AutoSendItem[] { return store.value[key]?.autoSend || []; }
 
 export async function setSchedule(key: ScheduleKey, entry: ScheduleEntry): Promise<void> {
     await loadSchedules();
     const times = Array.from(new Set(entry.times.map(normalizeTime).filter((x): x is string => !!x))).sort();
-    store.value = { ...store.value, [key]: { enabled: entry.enabled && times.length > 0, times } };
+    const hopLe = new Set(autoAreasFor(key).map((a) => a.id));
+    const autoSend = (entry.autoSend || []).filter((x) => hopLe.has(x.area) && x.groupId)
+        .filter((x, i, arr) => arr.findIndex((y) => y.area === x.area) === i);
+    store.value = { ...store.value, [key]: { enabled: entry.enabled && times.length > 0, times, ...(autoSend.length ? { autoSend } : {}) } };
     window.dispatchEvent(new Event(EVT));
     await saveSetting(SETTING_KEY, store.value);
 }

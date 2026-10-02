@@ -129,6 +129,13 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         });
     }, []);
 
+    // Lượt hẹn giờ cần tự xuất ảnh mục Siêu thị (khung Auto Sync Pro gửi yêu cầu) → mở mục Siêu thị để Dashboard chụp được
+    useEffect(() => {
+        const onReq = () => handleTabChange('dashboard');
+        window.addEventListener('ycx-bi-auto-export:request', onReq);
+        return () => window.removeEventListener('ycx-bi-auto-export:request', onReq);
+    }, [handleTabChange]);
+
     const handleNavigateToUpdater = useCallback((options?: { configTab?: ConfigTab; supermarketName?: string; scrollToConfig?: boolean }) => {
         handleTabChange('updater', options);
     }, [handleTabChange]);
