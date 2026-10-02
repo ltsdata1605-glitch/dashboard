@@ -245,15 +245,17 @@ async function pushViaCloudFunction(token: string, to: string, imageUrl: string,
     if (!data.success) throw new Error(data.error || 'Gửi ảnh LINE thất bại');
 }
 
-/** Gửi 1 ảnh báo cáo (kèm 1 dòng chú thích) vào nhóm LINE. Ném lỗi có câu chữ đọc được nếu không gửi được. */
-export async function sendReportImageToLine(params: {
-    blob: Blob; groupId: string; caption: string; fileName: string; uid: string; departmentId?: string | null;
-}): Promise<void> {
+/** Gửi 1 ảnh báo cáo (kèm 1 dòng chú thích) vào NHIỀU nhóm LINE. Nén và tải ảnh lên bot_media 1 lần, rồi gửi tới từng nhóm. */
+export async function sendReportImageToLineGroups(params: {
+    blob: Blob; groups: { groupId: string; groupName: string }[]; caption: string; fileName: string; uid: string; departmentId?: string | null;
+}): Promise<{ ok: number; errors: string[] }> {
     const bot = await resolveLineBot(params.uid, params.departmentId);
     if (!bot) throw new Error('Chưa cấu hình Bot LINE — vào mục Bot LINE để kết nối bot trước');
+    if (!params.groups || params.groups.length === 0) return { ok: 0, errors: [] };
+
+    // Tải ảnh lên 1 lần duy nhất cho toàn bộ danh sách nhóm
     const img = await prepareLineImage(params.blob);
     const url = await uploadLineImage(img.base64, params.fileName.replace(/\.png$/i, '.jpg'));
-    // Ảnh gốc nét (2026-10-02): LINE hiện bản xem trước trong khung chat, bấm vào mới tải bản gốc ≤ 10MB
     let goc = url;
     if (await lineHdSupported()) {
         try {
@@ -263,15 +265,45 @@ export async function sendReportImageToLine(params: {
             console.warn('[LINE] Không tải được bản HD — gửi bản xem trước làm ảnh gốc', e);
         }
     }
+
     const ver = await userscriptVersion();
-    if (ver && cmp(ver, LINE_PUSH_MIN_USERSCRIPT) >= 0) {
-        const messages: LineMsg[] = [];
-        if (params.caption) messages.push({ type: 'text', text: params.caption.slice(0, 1000) });
-        messages.push({ type: 'image', originalContentUrl: goc, previewImageUrl: url });
-        await pushViaUserscript(bot.token, params.groupId, messages);
-        return;
+    const useUserscript = Boolean(ver && cmp(ver, LINE_PUSH_MIN_USERSCRIPT) >= 0);
+    const messages: LineMsg[] = [];
+    if (params.caption) messages.push({ type: 'text', text: params.caption.slice(0, 1000) });
+    messages.push({ type: 'image', originalContentUrl: goc, previewImageUrl: url });
+
+    let ok = 0;
+    const errors: string[] = [];
+    for (const g of params.groups) {
+        try {
+            if (useUserscript) {
+                await pushViaUserscript(bot.token, g.groupId, messages);
+            } else {
+                await pushViaCloudFunction(bot.token, g.groupId, goc, params.caption, url);
+            }
+            ok++;
+        } catch (err) {
+            errors.push(`${g.groupName || g.groupId}: ${err instanceof Error ? err.message : String(err)}`);
+        }
     }
-    await pushViaCloudFunction(bot.token, params.groupId, goc, params.caption, url);
+    return { ok, errors };
+}
+
+/** Gửi 1 ảnh báo cáo (kèm 1 dòng chú thích) vào 1 nhóm LINE. Ném lỗi có câu chữ đọc được nếu không gửi được. */
+export async function sendReportImageToLine(params: {
+    blob: Blob; groupId: string; caption: string; fileName: string; uid: string; departmentId?: string | null;
+}): Promise<void> {
+    const res = await sendReportImageToLineGroups({
+        blob: params.blob,
+        groups: [{ groupId: params.groupId, groupName: params.groupId }],
+        caption: params.caption,
+        fileName: params.fileName,
+        uid: params.uid,
+        departmentId: params.departmentId,
+    });
+    if (res.errors.length > 0) {
+        throw new Error(res.errors[0]);
+    }
 }
 
 /** Cho test e2e: bỏ bộ nhớ đệm bot */
