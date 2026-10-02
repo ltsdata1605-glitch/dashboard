@@ -276,7 +276,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             </div>
             {/* Table — Thưởng design */}
             <div className="flex-1">
-                <table className="w-full border-collapse">
+                <table className="table-pin-first w-full border-collapse">
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider bg-sky-600 dark:bg-sky-700 text-white">
                             <th className="text-left px-3 py-3 sm:py-3.5 border-b border-r border-sky-500/40 text-white min-w-[170px]">

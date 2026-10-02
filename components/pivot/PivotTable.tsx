@@ -360,7 +360,7 @@ const PivotTable: React.FC = () => {
                         />
                     ) : (
                         <div className="overflow-x-auto border border-slate-200">
-                            <table className="w-full border-collapse compact-export-table">
+                            <table className="table-pin-first w-full border-collapse compact-export-table">
                                 <thead>
                                     <tr>
                                         <th className="px-2 py-1 text-left text-[11px] font-bold tracking-wider uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">
@@ -402,7 +402,7 @@ const PivotTable: React.FC = () => {
                     />
                 ) : (
                     <div className="overflow-x-auto border border-slate-200">
-                        <table className="w-full border-collapse compact-export-table">
+                        <table className="table-pin-first w-full border-collapse compact-export-table">
                             <thead>
                                 <tr>
                                     <th className="px-2 py-1 text-left text-[11px] font-bold tracking-wider uppercase text-slate-700 bg-slate-50 border-b-2 border-b-slate-100 border-r border-slate-200 min-w-[160px]">

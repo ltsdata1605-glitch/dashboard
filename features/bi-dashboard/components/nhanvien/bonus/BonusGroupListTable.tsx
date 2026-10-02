@@ -72,7 +72,7 @@ export const BonusGroupListTable: React.FC<BonusGroupListTableProps> = ({
         return getCellColor(val, columnThresholds[type], hasData);
     }, [columnThresholds]);
     return (
-        <table className="w-full border-collapse compact-export-table">
+        <table className="table-pin-first w-full border-collapse compact-export-table">
             <thead className="sticky top-0 z-10">
                 {/* Tier 1: Group Headers */}
                 <tr>

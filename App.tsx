@@ -51,6 +51,7 @@ import NotificationDropdown from './components/layout/NotificationDropdown';
 import GlobalAutoSyncDock from './components/layout/GlobalAutoSyncDock';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 import InstallAppHint from './components/layout/InstallAppHint';
+import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
 
 /**
  * TabContent — Isolated component that handles tab switching.
@@ -172,6 +173,9 @@ function AppContent() {
     // hình quý giá của cả hai (bug user báo cáo). Ẩn thanh điều hướng chính khi đang ở các tab
     // này; đổi lại logo/tiêu đề ở top bar (vẫn hiện, không bị ẩn) trở thành nút "Về Dashboard".
     const isFullscreenMobileTool = activeTab === 'tools-print-sticker' || activeTab === 'tools-phanca';
+
+    // Viền mờ "còn cột bên phải" cho mọi bảng cuộn ngang (Đợt C, kế hoạch iPhone)
+    React.useEffect(() => installTableScrollCue(), []);
 
     React.useEffect(() => {
         // Preload the CURRENT tab's chunk in background so switching away and back feels instant.

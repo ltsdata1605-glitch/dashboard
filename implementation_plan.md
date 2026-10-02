@@ -6988,3 +6988,20 @@ Quy tắc mới (chủ dự án chốt): **bảng luôn là bảng** — ghi và
 - `FilterSection` KHÔNG phải modal (khối lọc nằm trong trang) → không đụng.
 - Test: `tests/e2e/modal-sheet-vuot-dong.spec.ts` dựng Modal THẬT qua `tests/e2e/helpers/sheetHarness.tsx`
   (dev server Vite nạp file), không cần dữ liệu mẫu.
+
+## iPhone Giai đoạn 2 — Đợt C: bảng dễ xem hơn trên iPhone, VẪN LÀ BẢNG (2026-10-02)
+
+- Viền mờ "còn cột bên phải": `components/shared/ui/tableScrollCue.ts`, gắn MỘT lần ở `App.tsx`. Tự tìm khung
+  cuộn ngang chứa `<table>` (MutationObserver, gộp 300ms), bật `data-xcue-right`; CSS `styles.css` mờ 32px mép
+  phải. Áp cho MỌI bảng, cả máy tính. Loại trừ bản sao xuất ảnh (`.clone-no-scrollbar`) — ảnh xuất không mờ.
+- Ghim cột tên: class `table-pin-first` (styles.css, chỉ < 1024px) — ô ghim lấy nền của dòng (`background: inherit`
+  trong @layer base để utility bg-* của <tr> thắng). Gắn cho: BI Doanh thu, Trả chậm, Thưởng (Compare/Monthly/
+  Daily/GroupList), Thi đua nhóm; Phân Tích Pivot (2 bảng). Bảng mở đầu bằng cột #/STT không ghim (vô ích).
+  Bảng đã ghim sẵn (SummaryTable, WarehouseSummary, HeadToHead, IndustryAnalysis, Performance…) giữ nguyên.
+- KHÔNG ghim đầu bảng theo trang: bảng trong khung `overflow-x:auto` thì `sticky top` chỉ bám khung đó (giới hạn
+  CSS) — muốn bám trang phải cho bảng khung cuộn dọc riêng = cuộn lồng trên điện thoại, tệ hơn. Bảng vốn có khung
+  cuộn dọc thì đã có thead sticky.
+- Đánh đổi đã biết: vạch trạng thái màu ở mép trái dòng (border của <tr>) trôi đi khi cuộn ngang; về đầu thì hiện lại.
+- Test: `tests/e2e/bang-iphone-ghim-cot-vien-mo.spec.ts`.
+- 9 test BI có sẵn (`bi-competition`, `bi-bonus-compare`, `bi-competition-bonus-col`, `bi-competition-export-fit`)
+  ĐỎ TỪ TRƯỚC (đã kiểm bằng git stash): `helpers/seed.ts → pasteIntoTile` chờ `textarea` mà màn Cập nhật không còn mở.

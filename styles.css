@@ -704,3 +704,42 @@ summary,
     transition-duration: 0s !important;
   }
 }
+/* VIỀN MỜ "CÒN CỘT BÊN PHẢI" — thuộc tính do components/shared/ui/tableScrollCue.ts bật/tắt theo vị trí
+   cuộn. Mờ dần 32px mép phải (không mờ hẳn: cột cuối vẫn đọc được). Loại trừ bản sao dùng để xuất ảnh
+   (class clone-no-scrollbar) — ảnh xuất không bao giờ bị mờ mép. */
+[data-xcue-right]:not(.clone-no-scrollbar):not(.clone-no-scrollbar *) {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), rgba(0, 0, 0, 0.18));
+  mask-image: linear-gradient(to right, #000 calc(100% - 32px), rgba(0, 0, 0, 0.18));
+}
+
+/* GHIM CỘT ĐẦU trên màn hẹp (Đợt C, kế hoạch iPhone; DESIGN_SYSTEM.md mục 5) — bảng nào có cột đầu là TÊN
+   (nhân viên/siêu thị/nhóm) thì gắn class `table-pin-first` lên <table>. Cuộn ngang xem số, tên đứng yên.
+   Chỉ dòng ĐẦU của thead (ô tên thường rowSpan=2 — ô đầu của dòng thead thứ 2 là cột số, không ghim).
+   Vị trí/viền đặt ngoài layer để thắng utility `relative`… của ô; NỀN đặt trong @layer base để màu
+   nền của dòng (utility bg-* trên <tr>) vẫn thắng — ô ghim lấy đúng màu dòng, dòng không màu thì trắng. */
+@media (max-width: 1023px) {
+  .table-pin-first > thead > tr:first-child > th:first-child,
+  .table-pin-first > tbody > tr > td:first-child,
+  .table-pin-first > tfoot > tr > td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    box-shadow: inset -2px 0 0 #cbd5e1;
+  }
+  .table-pin-first > thead > tr:first-child > th:first-child {
+    z-index: 3;
+  }
+}
+@layer base {
+  @media (max-width: 1023px) {
+    .table-pin-first > tbody > tr,
+    .table-pin-first > tfoot > tr {
+      background-color: #fff;
+    }
+    .table-pin-first > thead > tr:first-child > th:first-child,
+    .table-pin-first > tbody > tr > td:first-child,
+    .table-pin-first > tfoot > tr > td:first-child {
+      background: inherit;
+    }
+  }
+}

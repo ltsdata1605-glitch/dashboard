@@ -469,7 +469,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
             {/* 4. Bảng dữ liệu */}
             <div className="w-full overflow-hidden px-4 pb-4">
                 <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <table className="w-full border-collapse border border-slate-200 dark:border-slate-700">
+                    <table className="table-pin-first w-full border-collapse border border-slate-200 dark:border-slate-700">
                         <thead className="sticky top-0 z-10">
                             {/* Tier 1: Group Headers */}
                             <tr>

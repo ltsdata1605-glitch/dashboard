@@ -241,7 +241,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
 
     return (
         <div>
-            <table className="w-full border-collapse compact-export-table" data-testid="bonus-compare-table">
+            <table className="table-pin-first w-full border-collapse compact-export-table" data-testid="bonus-compare-table">
                 <colgroup>
                     <col style={{ width: '185px', minWidth: '170px', maxWidth: '200px' }} />
                     <col style={{ width: '60px', minWidth: '54px' }} />

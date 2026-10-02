@@ -246,7 +246,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
     return (
         <div>
             {yearToggleHeader}
-            <table className="w-full border-collapse compact-export-table">
+            <table className="table-pin-first w-full border-collapse compact-export-table">
                 <thead className="sticky top-0 z-10">
                     <tr>
                         <th className="px-2 py-1.5 text-left text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 whitespace-nowrap w-[185px] min-w-[170px] max-w-[200px]">Nhân viên</th>

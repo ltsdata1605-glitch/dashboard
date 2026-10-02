@@ -484,7 +484,7 @@ const RevenueView: React.FC<{
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <div className="border border-slate-200 dark:border-slate-700">
-                                <table className="w-full border-collapse">
+                                <table className="table-pin-first w-full border-collapse">
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
                                         <tr>
