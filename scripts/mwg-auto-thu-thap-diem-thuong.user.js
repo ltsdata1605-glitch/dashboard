@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.16
+// @version      7.17
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,12 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.17 — LUỸ KẾ: Ô THI ĐUA NHÂN VIÊN THẬT SỰ ĐƯỢC CẬP NHẬT (chủ dự án 2026-10-02):
+ * - Trang MWG khoan xuống nhân viên bằng mã NỘI BỘ của dòng siêu thị (910 → VIEWIDS "9567"), không bằng mã kho. Bản
+ *   7.10–7.16 gửi mã kho → API rỗng → ô THI ĐUA không bao giờ đổi. Nay tự dò mã đó (acpFetchCompetitionStaff), nhớ theo kho.
+ * - Chỉ nhận dòng columnname STAFFUSER làm nhân viên (dòng siêu thị 9567 cũng là số). Trả chậm: lỗi/rỗng ở 1 siêu thị
+ *   không ghi đè ô đang có và không làm hỏng cả lượt.
+ *
  * BẢN 7.16 — HẸN GIỜ AUTO SYNC + GỬI ẢNH VÀO NHÓM LINE (chủ dự án 2026-10-01):
  * - Hẹn giờ chạy không có cú bấm của người dùng → trình duyệt chặn window.open. 'ycx-bi-automation:open-worker' nay
  *   mở được thêm báo cáo 77 report.mwgroup.vn (YCX) và trang thưởng nhân viên newinsite (Đổ thưởng) bằng GM_openInTab.
@@ -496,7 +502,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.16';
+  const SCRIPT_VERSION_FALLBACK = '7.17';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -3068,6 +3074,88 @@
     return lines.join('\n');
   }
 
+  // Dòng Thi đua có phải dòng NHÂN VIÊN không. API ghi rõ ở `columnname` ("STAFFUSER"); dòng siêu thị/khu vực có
+  // salegroupid cũng là SỐ (vd 9567) nên chỉ nhìn "salegroupid toàn số" là nhận nhầm 1 dòng siêu thị thành nhân viên.
+  function acpCompIsStaffRow(r) {
+    if (!r) return false;
+    const col = String(r.columnname || '').toUpperCase();
+    if (col) return col === 'STAFFUSER';
+    return /^\d+$/.test(String(r.salegroupid || r.staffuser || ''));
+  }
+
+  // Thi đua theo NHÂN VIÊN của 1 siêu thị (bản 7.17). Trang MWG: chọn Siêu thị 910 → bảng hiện 1 dòng siêu thị → bấm
+  // vào thì gọi {VIEWLEVEL:"STORE", VIEWIDS:"9567", STOREIDS:"910"} — 9567 là salegroupid của DÒNG SIÊU THỊ, không
+  // phải mã kho. Bản 7.10–7.16 gửi VIEWIDS = mã kho nên nhận về rỗng → ô Thi đua nhân viên không bao giờ được cập nhật.
+  // Cách dò (dừng ở lần đầu ra dòng STAFFUSER):
+  //  1. Mã đã nhớ từ lần trước (GM, theo kho) — thường chỉ tốn 1 lượt gọi.
+  //  2. Bảng Thi đua lọc đúng siêu thị (ISVIEWSTORE 1 rồi 0): lấy salegroupid các dòng KHÔNG phải nhân viên, mỗi mã thử
+  //     VIEWLEVEL STORE; chưa ra thì khoan tiếp 1 tầng theo `columnname` của dòng đó (Miền → … → Siêu thị), tối đa 5 tầng.
+  //  3. Cách cũ: VIEWIDS = mã kho, rồi VIEWIDS null.
+  async function acpFetchCompetitionStaff(st, monthKey, token) {
+    const storeId = String(st.id);
+    const goi = (viewLevel, viewIds, isViewStore) => acpFetchBiApi('competition-bymsg-get', {
+      MONTHKEY: monthKey,
+      VIEWLEVEL: viewLevel,
+      VIEWIDS: viewIds == null ? null : String(viewIds),
+      ISVIEWSTORE: isViewStore ? 1 : 0,
+      TIMETYPE: 2,
+      STOREIDS: storeId,
+      PAGESIZE: 0,
+    }, token).then((d) => (Array.isArray(d) ? d : []), () => []);
+    const coNhanVien = (rows) => rows.some(acpCompIsStaffRow);
+    const daThu = new Set();
+    const cacheKey = `BI_COMP_STORE_VIEWID_${storeId}`;
+    const thuStore = async (vid) => {
+      const k = vid == null ? 'null' : String(vid);
+      if (daThu.has(k)) return null;
+      daThu.add(k);
+      const rows = await goi('STORE', vid, false);
+      if (!coNhanVien(rows)) return null;
+      if (vid != null) { try { gmSet(cacheKey, String(vid)); } catch (_) {} }
+      console.log(`[BI-Sync] [API] Thi đua nhân viên ${st.name}: VIEWIDS ${k} → ${rows.length} dòng`);
+      return rows;
+    };
+    // Dòng nhóm (không phải nhân viên, không phải "online") — ưu tiên dòng ghi đúng mã kho này
+    const dongNhom = (rows) => {
+      const g = rows.filter((r) => !acpCompIsStaffRow(r) && r.salegroupid != null && /^\d+$/.test(String(r.salegroupid)));
+      const seen = new Set();
+      const out = [];
+      for (const r of g.filter((x) => String(x.storeid) === storeId).concat(g)) {
+        const k = `${r.columnname || ''}|${r.salegroupid}`;
+        if (!seen.has(k)) { seen.add(k); out.push(r); }
+      }
+      return out.slice(0, 4);
+    };
+
+    let cached = null;
+    try { cached = await gmGet(cacheKey, null); } catch (_) {}
+    if (cached) { const r = await thuStore(cached); if (r) return r; }
+
+    for (const isViewStore of [true, false]) {
+      let tang = [{ level: 'COMPANY', vid: null }];
+      for (let sau = 0; sau < 5 && tang.length > 0; sau++) {
+        const tiep = [];
+        for (const t of tang) {
+          const rows = t.level === 'COMPANY' ? await goi('COMPANY', null, isViewStore) : await goi(t.level, t.vid, isViewStore);
+          if (coNhanVien(rows)) {
+            if (t.level === 'STORE' && t.vid != null) { try { gmSet(cacheKey, String(t.vid)); } catch (_) {} }
+            return rows;
+          }
+          for (const r of dongNhom(rows)) {
+            const hit = await thuStore(r.salegroupid);
+            if (hit) return hit;
+            const lv = String(r.columnname || '').toUpperCase();
+            if (lv && lv !== 'STORE' && lv !== t.level) tiep.push({ level: lv, vid: r.salegroupid });
+          }
+        }
+        tang = tiep.slice(0, 4);
+      }
+    }
+
+    for (const vid of [storeId, null]) { const r = await thuStore(vid); if (r) return r; }
+    return [];
+  }
+
   // THI ĐUA theo NHÂN VIÊN của 1 siêu thị (competition-bymsg-get VIEWLEVEL "STORE" + STOREIDS, mẫu thật 09/2026 — 971 dòng
   // = 39 chương trình × nhân viên). Ra đúng khuôn ô "Thi đua" của siêu thị (parseCompetitionData, định dạng BI mới): mỗi
   // chương trình = dòng TÊN riêng, dòng "DOANH THU"|"SỐ LƯỢNG" riêng, rồi "<mã> - <tên>\t<giá trị>" từng nhân viên.
@@ -3081,7 +3169,7 @@
     const byProgram = new Map();
     for (const r of list) {
       const id = String(r.salegroupid || r.staffuser || '');
-      if (!/^\d+$/.test(id)) continue;
+      if (!/^\d+$/.test(id) || !acpCompIsStaffRow(r)) continue;
       if (storeId && r.storeid != null && String(r.storeid) !== String(storeId)) continue;
       const key = r.programid || r.programname;
       if (!byProgram.has(key)) byProgram.set(key, []);
@@ -3469,41 +3557,39 @@
               for (let i = 0; i < storeList.length; i++) {
                 const st = storeList[i];
                 await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải thi đua nhân viên cho ${st.name}...`);
-                // Trang MWG gửi VIEWIDS là mã vùng của người xem (mẫu: "9567"), STOREIDS mới là siêu thị. Không có mã vùng
-                // → thử VIEWIDS = mã siêu thị, rỗng thì thử VIEWIDS null. Một siêu thị lỗi không được làm hỏng cả lượt.
+                // Trang MWG KHÔNG khoan xuống nhân viên bằng mã kho: chọn siêu thị 910 thì nó gọi VIEWLEVEL STORE với
+                // VIEWIDS "9567" — mã NỘI BỘ của dòng siêu thị trong bảng Thi đua (bản 7.17). acpFetchCompetitionStaff
+                // tự dò mã đó như trang làm. Một siêu thị lỗi không được làm hỏng cả lượt.
                 try {
-                  let compStaff = [];
-                  for (const vid of [String(st.id), null]) {
-                    compStaff = await acpFetchBiApi('competition-bymsg-get', {
-                      MONTHKEY: monthKey,
-                      VIEWLEVEL: 'STORE',
-                      VIEWIDS: vid,
-                      ISVIEWSTORE: 0,
-                      TIMETYPE: 2,
-                      STOREIDS: String(st.id),
-                      PAGESIZE: 0,
-                    }, token);
-                    if (Array.isArray(compStaff) && compStaff.length > 0) break;
-                  }
+                  const compStaff = await acpFetchCompetitionStaff(st, monthKey, token);
                   const serializedTd = acpSerializeCompetitionStaff(compStaff, st.id);
                   if (serializedTd) {
                     competitionByStore[st.name] = serializedTd;
                     competitionByStore[st.id] = serializedTd;
+                  } else {
+                    console.warn('[BI-Sync] [API] Không lấy được Thi đua nhân viên cho', st.name);
                   }
                 } catch (e) {
                   console.warn('[BI-Sync] [API] Thi đua nhân viên lỗi cho', st.name, e);
                 }
                 await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải trả chậm nhân viên cho ${st.name}...`);
-                const tcData = await acpFetchBiApi('tra-cham-matrix-get', {
-                  VIEWLEVEL: 'STAFF',
-                  RSMIDS: null,
-                  AMIDS: null,
-                  STOREIDS: String(st.id),
-                  MONTHKEY: monthKey,
-                }, token);
-                const serializedTc = acpSerializeInstallmentStaff(tcData);
-                installmentByStore[st.name] = serializedTc;
-                installmentByStore[st.id] = serializedTc;
+                try {
+                  const tcData = await acpFetchBiApi('tra-cham-matrix-get', {
+                    VIEWLEVEL: 'STAFF',
+                    RSMIDS: null,
+                    AMIDS: null,
+                    STOREIDS: String(st.id),
+                    MONTHKEY: monthKey,
+                  }, token);
+                  // Không có nhân viên nào (API rỗng) → KHÔNG ghi đè ô Trả chậm đang có bằng bảng trống
+                  if (Array.isArray(tcData) && tcData.some((r) => /^\d+$/.test(String(r.group_id || '')))) {
+                    const serializedTc = acpSerializeInstallmentStaff(tcData);
+                    installmentByStore[st.name] = serializedTc;
+                    installmentByStore[st.id] = serializedTc;
+                  }
+                } catch (e) {
+                  console.warn('[BI-Sync] [API] Trả chậm nhân viên lỗi cho', st.name, e);
+                }
               }
               results.installmentByStore = installmentByStore;
               results.competitionByStore = competitionByStore;
