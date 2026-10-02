@@ -3,7 +3,8 @@ import {
     navigateToBiRealtime,
     navigateToBiLuyKe,
     navigateToDoThuong,
-    navigateToYcxAnalysis
+    navigateToYcxAnalysis,
+    updateUrlParams
 } from './autoNavigationService';
 import { configStore } from '../store/configStore';
 
@@ -27,6 +28,13 @@ if (typeof (globalThis as any).CustomEvent === 'undefined') {
     };
 }
 
+let currentUrl = new URL('https://dashboard.pro.vn/?tab=analysis');
+const mockHistory = {
+    replaceState: vi.fn((_state: any, _title: string, url: string) => {
+        currentUrl = new URL(url, 'https://dashboard.pro.vn');
+    })
+};
+
 const listeners = new Map<string, Set<(e: any) => void>>();
 const mockWindow = {
     dispatchEvent: vi.fn((e: any) => {
@@ -42,7 +50,11 @@ const mockWindow = {
     }),
     removeEventListener: vi.fn((type: string, cb: any) => {
         listeners.get(type)?.delete(cb);
-    })
+    }),
+    get location() {
+        return currentUrl;
+    },
+    history: mockHistory,
 };
 (globalThis as any).window = mockWindow;
 
@@ -56,9 +68,10 @@ describe('autoNavigationService', () => {
         vi.clearAllMocks();
         mockStorage.clear();
         listeners.clear();
+        currentUrl = new URL('https://dashboard.pro.vn/?tab=analysis');
     });
 
-    it('navigates to BI Realtime correctly', async () => {
+    it('navigates to BI Realtime correctly and sets detailed URL parameters', async () => {
         const events: { type: string; detail: any }[] = [];
         const capture = (e: any) => {
             events.push({ type: e.type, detail: e.detail });
@@ -76,9 +89,14 @@ describe('autoNavigationService', () => {
         expect(events).toContainEqual({ type: 'app-switch-tab', detail: { tab: 'employees' } });
         expect(events).toContainEqual({ type: 'bi-switch-view', detail: { view: 'dashboard' } });
         expect(events).toContainEqual({ type: 'dashboard-switch-tab', detail: { mainTab: 'realtime', subTab: 'revenue' } });
+
+        expect(currentUrl.searchParams.get('tab')).toBe('employees');
+        expect(currentUrl.searchParams.get('view')).toBe('dashboard');
+        expect(currentUrl.searchParams.get('mode')).toBe('realtime');
+        expect(currentUrl.searchParams.get('sub')).toBe('revenue');
     });
 
-    it('navigates to BI Luỹ kế correctly', async () => {
+    it('navigates to BI Luỹ kế correctly and sets detailed URL parameters', async () => {
         const events: { type: string; detail: any }[] = [];
         const capture = (e: any) => {
             events.push({ type: e.type, detail: e.detail });
@@ -96,9 +114,14 @@ describe('autoNavigationService', () => {
         expect(events).toContainEqual({ type: 'app-switch-tab', detail: { tab: 'employees' } });
         expect(events).toContainEqual({ type: 'bi-switch-view', detail: { view: 'dashboard' } });
         expect(events).toContainEqual({ type: 'dashboard-switch-tab', detail: { mainTab: 'cumulative', subTab: 'revenue' } });
+
+        expect(currentUrl.searchParams.get('tab')).toBe('employees');
+        expect(currentUrl.searchParams.get('view')).toBe('dashboard');
+        expect(currentUrl.searchParams.get('mode')).toBe('cumulative');
+        expect(currentUrl.searchParams.get('sub')).toBe('revenue');
     });
 
-    it('navigates to Đỗ Thưởng (Nhân viên > Doanh thu) correctly', async () => {
+    it('navigates to Đỗ Thưởng (Nhân viên > Doanh thu) correctly and sets detailed URL parameters', async () => {
         const events: { type: string; detail: any }[] = [];
         const capture = (e: any) => {
             events.push({ type: e.type, detail: e.detail });
@@ -115,6 +138,11 @@ describe('autoNavigationService', () => {
         expect(events).toContainEqual({ type: 'app-switch-tab', detail: { tab: 'employees' } });
         expect(events).toContainEqual({ type: 'bi-switch-view', detail: { view: 'employee' } });
         expect(events).toContainEqual({ type: 'nhanvien-switch-tab', detail: { tab: 'revenue' } });
+
+        expect(currentUrl.searchParams.get('tab')).toBe('employees');
+        expect(currentUrl.searchParams.get('view')).toBe('employee');
+        expect(currentUrl.searchParams.get('sub')).toBe('revenue');
+        expect(currentUrl.searchParams.has('mode')).toBe(false);
     });
 
     it('navigates to YCX Analysis correctly', () => {
@@ -127,5 +155,27 @@ describe('autoNavigationService', () => {
         navigateToYcxAnalysis();
 
         expect(events).toContainEqual({ type: 'app-switch-tab', detail: { tab: 'analysis' } });
+        expect(currentUrl.searchParams.get('tab')).toBe('analysis');
+        expect(currentUrl.searchParams.has('view')).toBe(false);
+        expect(currentUrl.searchParams.has('mode')).toBe(false);
+        expect(currentUrl.searchParams.has('sub')).toBe(false);
+    });
+
+    it('updates query parameters cleanly via updateUrlParams', () => {
+        updateUrlParams({
+            tab: 'employees',
+            view: 'dashboard',
+            mode: 'realtime',
+            sub: 'competition'
+        });
+
+        expect(currentUrl.searchParams.get('tab')).toBe('employees');
+        expect(currentUrl.searchParams.get('view')).toBe('dashboard');
+        expect(currentUrl.searchParams.get('mode')).toBe('realtime');
+        expect(currentUrl.searchParams.get('sub')).toBe('competition');
+
+        // Test deleting a param by passing null
+        updateUrlParams({ mode: null });
+        expect(currentUrl.searchParams.has('mode')).toBe(false);
     });
 });

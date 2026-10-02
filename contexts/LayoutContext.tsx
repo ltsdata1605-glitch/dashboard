@@ -71,8 +71,10 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         try {
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set('tab', tab);
-            // If switching away from print sticker, clean up sub tab parameter
-            if (tab !== 'tools-print-sticker') {
+            // Nếu rời khỏi tab employees và tools-print-sticker thì dọn sạch các query con
+            if (tab !== 'employees' && tab !== 'tools-print-sticker') {
+                newUrl.searchParams.delete('view');
+                newUrl.searchParams.delete('mode');
                 newUrl.searchParams.delete('sub');
             }
             window.history.replaceState(null, '', newUrl.toString());

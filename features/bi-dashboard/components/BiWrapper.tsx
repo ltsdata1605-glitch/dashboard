@@ -55,8 +55,19 @@ const TabSpinner = () => (
  * Each sub-view is also lazy-loaded so initial mount only loads the active view's chunk.
  */
 const BI_VIEW_KEY = 'bi_active_view';
-function readSavedBiView(): 'dashboard' | 'employee' {
-    try { return localStorage.getItem(BI_VIEW_KEY) === 'employee' ? 'employee' : 'dashboard'; } catch { return 'dashboard'; }
+function readSavedBiView(): 'dashboard' | 'employee' | 'updater' {
+    if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlView = urlParams.get('view');
+        if (urlView === 'dashboard' || urlView === 'employee' || urlView === 'updater') {
+            return urlView;
+        }
+    }
+    try {
+        const saved = localStorage.getItem(BI_VIEW_KEY);
+        if (saved === 'employee' || saved === 'updater' || saved === 'dashboard') return saved;
+    } catch { return 'dashboard'; }
+    return 'dashboard';
 }
 
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
@@ -96,9 +107,22 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     }, []);
 
     const handleTabChange = useCallback((id: string, options?: { configTab?: ConfigTab; supermarketName?: string; scrollToConfig?: boolean }) => {
-        setActiveView(id as 'dashboard' | 'employee' | 'updater');
-        if (id === 'dashboard' || id === 'employee') {
+        const nextView = id as 'dashboard' | 'employee' | 'updater';
+        setActiveView(nextView);
+        if (id === 'dashboard' || id === 'employee' || id === 'updater') {
             try { localStorage.setItem(BI_VIEW_KEY, id); } catch { /* chế độ riêng tư */ }
+        }
+        // Đồng bộ lên URL query param ?view=... khi đang ở tab employees
+        if (typeof window !== 'undefined') {
+            const url = new URL(window.location.href);
+            if (url.searchParams.get('tab') === 'employees') {
+                url.searchParams.set('view', id);
+                if (id === 'updater') {
+                    url.searchParams.delete('mode');
+                    url.searchParams.delete('sub');
+                }
+                window.history.replaceState(null, '', url.toString());
+            }
         }
         if (id === 'updater') {
             const targetTab = options?.configTab ?? 'data';
@@ -128,6 +152,16 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
             return next;
         });
     }, []);
+
+    // Đảm bảo URL có ?view=... khi xem phân hệ Report BI
+    useEffect(() => {
+        if (!isActive || typeof window === 'undefined') return;
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('tab') === 'employees' && !url.searchParams.get('view')) {
+            url.searchParams.set('view', activeView);
+            window.history.replaceState(null, '', url.toString());
+        }
+    }, [isActive, activeView]);
 
     // Lượt hẹn giờ cần tự xuất ảnh mục Siêu thị (khung Auto Sync Pro gửi yêu cầu) → mở mục Siêu thị để Dashboard chụp được
     useEffect(() => {
