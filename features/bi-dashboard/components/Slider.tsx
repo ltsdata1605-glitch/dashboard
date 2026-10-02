@@ -41,7 +41,7 @@ const Slider: React.FC<SliderProps> = ({
                     ) : (
                         <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-700 focus-within:border-sky-500 transition-colors">
                             <input 
-                                type="number"
+                                type="number" inputMode="decimal"
                                 value={value}
                                 onChange={(e) => {
                                     const val = parseFloat(e.target.value);

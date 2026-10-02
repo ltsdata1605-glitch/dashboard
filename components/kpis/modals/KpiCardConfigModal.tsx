@@ -501,7 +501,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         <div className="mt-2 sm:mt-3 animate-fade-in pl-4 sm:pl-6 border-l-2 border-emerald-200 dark:border-emerald-800/50 ml-1 sm:ml-1.5">
                                             <label className="block text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5">Chỉ tiêu ({editingCard.format === 'percentage' ? '%' : 'VNĐ'})</label>
                                             <Input 
-                                                type="number"
+                                                type="number" inputMode="decimal"
                                                 value={editingCard.customTargetValue ?? ''}
                                                 onChange={(e) => updateEditingCard({ customTargetValue: e.target.value ? Number(e.target.value) : undefined })}
                                                 placeholder={editingCard.format === 'percentage' ? "Ví dụ: 80" : "Ví dụ: 10000000"}

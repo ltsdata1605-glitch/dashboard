@@ -83,7 +83,7 @@ const Controls: React.FC<ControlsProps> = ({
               Bắt đầu
             </label>
             <Input
-              type="number"
+              type="number" inputMode="decimal"
               id="cfgStartDay"
               className="h-9 w-16 text-sm text-center"
               value={startDay}
@@ -99,7 +99,7 @@ const Controls: React.FC<ControlsProps> = ({
               Số ngày
             </label>
             <Input
-              type="number"
+              type="number" inputMode="decimal"
               id="cfgDuration"
               className="h-9 w-16 text-sm text-center"
               value={duration}

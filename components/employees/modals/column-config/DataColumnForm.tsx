@@ -97,12 +97,12 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                         {priceCondition !== 'none' && (
                             <div className="flex-grow flex items-center gap-2">
                                 <div className="relative flex-grow">
-                                    <Input type="number" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="h-8 sm:h-10 text-xs sm:text-sm" />
+                                    <Input type="number" inputMode="decimal" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="h-8 sm:h-10 text-xs sm:text-sm" />
                                 </div>
                                 {priceCondition === 'between' && (
                                     <div className="flex items-center gap-2 flex-grow">
                                         <span className="text-slate-400 text-xs sm:text-sm font-medium">~</span>
-                                        <Input type="number" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="h-8 sm:h-10 text-xs sm:text-sm" />
+                                        <Input type="number" inputMode="decimal" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="h-8 sm:h-10 text-xs sm:text-sm" />
                                     </div>
                                 )}
                             </div>

@@ -7005,3 +7005,20 @@ Quy tắc mới (chủ dự án chốt): **bảng luôn là bảng** — ghi và
 - Test: `tests/e2e/bang-iphone-ghim-cot-vien-mo.spec.ts`.
 - 9 test BI có sẵn (`bi-competition`, `bi-bonus-compare`, `bi-competition-bonus-col`, `bi-competition-export-fit`)
   ĐỎ TỪ TRƯỚC (đã kiểm bằng git stash): `helpers/seed.ts → pasteIntoTile` chờ `textarea` mà màn Cập nhật không còn mở.
+
+## iPhone Giai đoạn 2 — Đợt D: ô nhập số, chụp phiếu lương, dải nút tự căn giữa (2026-10-02)
+
+- `inputMode="decimal"` cho 30 ô `type="number"` (script codemod, rà từng ô: đều là số dương). CỐ Ý BỎ QUA
+  `AlertRulesPanel` + `FormattingRulesForm` (ngưỡng có thể âm — bàn phím số iPhone không có dấu trừ).
+  Thêm `inputMode` cho 2 ô chữ thực chất là số: Tổng mục tiêu (`numeric`), Mục tiêu GTĐH (`decimal`).
+  KHÔNG đổi ô "Mã kho" đăng ký In Sticker (chưa chắc mã kho luôn là số).
+- Tính Thuế: nút "Chụp" (lg:hidden) cạnh "Tải ảnh" ở đợt 1 và đợt 2 — input riêng `capture="environment"`, CÙNG
+  handler. Không gắn capture vào ô tải ảnh cũ (iPhone sẽ bỏ mất lựa chọn Thư viện ảnh). 375px: chữ "Chụp" ngắn
+  để không tràn (đã đo).
+- `components/shared/ui/useCenterActiveInStrip.ts`: mục đang chọn (`data-active="true"`) tự vào giữa dải bằng
+  `scrollTo` NGANG — thay `scrollIntoView` cũ trong `Tabs.tsx` (cuộn cả trang dọc trên iPhone). Thêm snap
+  `proximity`. Áp: `Tabs` (3 kiểu) + dải góc nhìn Thi đua (`CompetitionTab.tsx`).
+- Test: `tests/unit/center-active-strip.test.ts`, `tests/e2e/o-nhap-va-dai-chon-iphone.spec.ts` (+ `helpers/tabsHarness.tsx`).
+  `tax-qr-and-export.spec.ts` sửa chọn ô tải ảnh theo id thay vì thứ tự.
+- Đỏ TỪ TRƯỚC (đã kiểm bằng git stash, không liên quan): `bi-auto-sync-xong-dong-modal`, `iframe-tabs-csp` (xlsx
+  check-thuong), `sticker-nut-va-quet-ma` ×2, `sticker-toc-do-quet-ma` ×2.

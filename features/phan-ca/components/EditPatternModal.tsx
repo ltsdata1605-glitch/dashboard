@@ -354,7 +354,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                     <td key={slot} className="p-1">
                                         <input
                                             id={`pattern-req-input-${slot}`}
-                                            type="number"
+                                            type="number" inputMode="decimal"
                                             value={departmentRequirements[selectedDept]?.[slot] || ''}
                                             onChange={(e) => handleRequirementChange(slot, e.target.value)}
                                             onKeyDown={(e) => {

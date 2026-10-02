@@ -24,6 +24,7 @@ import {
   Square,
   Info,
   ExternalLink,
+  Camera,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { TaxCalculationInput, BonusItem, SalarySlipDay5Data, SalarySlipDay20Data } from '../types/tax.types';
@@ -628,9 +629,33 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 />
               )}
 
+              {/* Điện thoại: thêm nút "Chụp" (phiếu lương) mở THẲNG camera sau (capture). Không gắn capture vào
+                  ô tải ảnh sẵn có — gắn vào đó thì iPhone bỏ mất lựa chọn "Thư viện ảnh". */}
+              <div className="flex items-stretch gap-1">
+              <label
+                htmlFor="capture-slot-day5"
+                aria-label="Chụp phiếu lương bằng camera"
+                className={`lg:hidden flex-1 min-w-0 min-h-11 flex items-center justify-center gap-1 px-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors border ${
+                  uploadingSlot === 'day5'
+                    ? 'text-slate-400 border-slate-200 cursor-not-allowed'
+                    : 'text-sky-700 border-sky-200 bg-sky-50 hover:bg-sky-100'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Chụp</span>
+              </label>
+              <input
+                id="capture-slot-day5"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                disabled={uploadingSlot === 'day5'}
+                onChange={handleUploadDay5}
+                className="sr-only"
+              />
               <label
                 htmlFor="upload-slot-day5"
-                className={`w-full flex items-center justify-center gap-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors ${
+                className={`flex-none px-2 lg:px-0 lg:flex-1 min-w-0 flex items-center justify-center gap-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors ${
                   uploadingSlot === 'day5'
                     ? 'text-slate-400 cursor-not-allowed'
                     : 'text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30'
@@ -641,7 +666,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 ) : (
                   <UploadCloud className="w-3 h-3" />
                 )}
-                <span>{uploadingSlot === 'day5' ? 'AI đang đọc ảnh...' : 'hoặc tải ảnh (AI)'}</span>
+                <span className="whitespace-nowrap">{uploadingSlot === 'day5' ? 'AI đang đọc ảnh...' : <><span className="lg:hidden">Tải ảnh</span><span className="hidden lg:inline">hoặc tải ảnh (AI)</span></>}</span>
               </label>
               <input
                 id="upload-slot-day5"
@@ -651,6 +676,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 onChange={handleUploadDay5}
                 className="sr-only"
               />
+              </div>
             </div>
           </div>
 
@@ -749,9 +775,33 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 />
               )}
 
+              {/* Điện thoại: thêm nút "Chụp" (phiếu lương) mở THẲNG camera sau (capture). Không gắn capture vào
+                  ô tải ảnh sẵn có — gắn vào đó thì iPhone bỏ mất lựa chọn "Thư viện ảnh". */}
+              <div className="flex items-stretch gap-1">
+              <label
+                htmlFor="capture-slot-day20"
+                aria-label="Chụp phiếu lương bằng camera"
+                className={`lg:hidden flex-1 min-w-0 min-h-11 flex items-center justify-center gap-1 px-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors border ${
+                  uploadingSlot === 'day20'
+                    ? 'text-slate-400 border-slate-200 cursor-not-allowed'
+                    : 'text-sky-700 border-sky-200 bg-sky-50 hover:bg-sky-100'
+                }`}
+              >
+                <Camera className="w-3.5 h-3.5 shrink-0" />
+                <span className="whitespace-nowrap">Chụp</span>
+              </label>
+              <input
+                id="capture-slot-day20"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                disabled={uploadingSlot === 'day20'}
+                onChange={handleUploadDay20}
+                className="sr-only"
+              />
               <label
                 htmlFor="upload-slot-day20"
-                className={`w-full flex items-center justify-center gap-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors ${
+                className={`flex-none px-2 lg:px-0 lg:flex-1 min-w-0 flex items-center justify-center gap-1 py-1 text-[11px] font-medium rounded-md cursor-pointer transition-colors ${
                   uploadingSlot === 'day20'
                     ? 'text-slate-400 cursor-not-allowed'
                     : 'text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/30'
@@ -762,7 +812,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 ) : (
                   <UploadCloud className="w-3 h-3" />
                 )}
-                <span>{uploadingSlot === 'day20' ? 'AI đang đọc ảnh...' : 'hoặc tải ảnh (AI)'}</span>
+                <span className="whitespace-nowrap">{uploadingSlot === 'day20' ? 'AI đang đọc ảnh...' : <><span className="lg:hidden">Tải ảnh</span><span className="hidden lg:inline">hoặc tải ảnh (AI)</span></>}</span>
               </label>
               <input
                 id="upload-slot-day20"
@@ -772,6 +822,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                 onChange={handleUploadDay20}
                 className="sr-only"
               />
+              </div>
             </div>
           </div>
         </div>
@@ -1061,7 +1112,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                   </span>
                 </div>
                 <input
-                  type="number"
+                  type="number" inputMode="decimal"
                   min="0"
                   max="20"
                   value={input.dependents === 0 ? '' : input.dependents}

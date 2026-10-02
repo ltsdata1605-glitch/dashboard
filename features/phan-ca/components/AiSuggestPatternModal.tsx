@@ -294,7 +294,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                 {specialShifts[role].shifts.map((shift, index) => (
                     <div key={index} className="flex items-center gap-2">
                         <input type="text" value={shift.code} onChange={e => handleSpecialShiftChange(role, index, 'code', e.target.value)} placeholder="Mã ca" className="config-input w-1/2 !text-sm !py-1" />
-                        <input type="number" value={shift.count} onChange={e => handleSpecialShiftChange(role, index, 'count', e.target.value)} min="1" className="config-input w-1/2 !text-sm !py-1" />
+                        <input type="number" inputMode="decimal" value={shift.count} onChange={e => handleSpecialShiftChange(role, index, 'count', e.target.value)} min="1" className="config-input w-1/2 !text-sm !py-1" />
                         <Button variant="ghost" onClick={() => removeSpecialShift(role, index)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 p-1">&times;</Button>
                     </div>
                 ))}
@@ -339,13 +339,13 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                     <div className="space-y-4">
                         <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Giờ công MAX/tháng</label>
-                            <input type="number" value={maxHours} onChange={e => setMaxHours(parseInt(e.target.value))} className="config-input w-full" />
+                            <input type="number" inputMode="decimal" value={maxHours} onChange={e => setMaxHours(parseInt(e.target.value))} className="config-input w-full" />
                         </div>
                         <div className="p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">Số lượng nhân sự Nam/Nữ</label>
                             <div className="flex gap-2">
-                                 <input type="number" value={numNam} onChange={e => setNumNam(parseInt(e.target.value))} className="config-input w-1/2" placeholder="Nam" title="Nam" />
-                                 <input type="number" value={numNu} onChange={e => setNumNu(parseInt(e.target.value))} className="config-input w-1/2" placeholder="Nữ" title="Nữ" />
+                                 <input type="number" inputMode="decimal" value={numNam} onChange={e => setNumNam(parseInt(e.target.value))} className="config-input w-1/2" placeholder="Nam" title="Nam" />
+                                 <input type="number" inputMode="decimal" value={numNu} onChange={e => setNumNu(parseInt(e.target.value))} className="config-input w-1/2" placeholder="Nữ" title="Nữ" />
                             </div>
                         </div>
 
@@ -358,7 +358,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                         <label className="text-xs font-medium text-slate-600 dark:text-slate-400 block">Ca {slot}</label>
                                         <div className="flex items-center">
                                             <input
-                                                type="number"
+                                                type="number" inputMode="decimal"
                                                 value={hourConfig[slot]}
                                                 onChange={(e) => handleHourConfigChange(slot, e.target.value)}
                                                 className="config-input w-full !py-1 !text-sm"
@@ -384,7 +384,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                 <div key={slot}>
                                     <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Ca {slot}</label>
                                     <input
-                                        type="number"
+                                        type="number" inputMode="decimal"
                                         value={slotRequirements[slot as keyof DailyRequirements]}
                                         onChange={e => setSlotRequirements(prev => ({...prev, [slot]: parseInt(e.target.value)}))}
                                         className="config-input w-full mt-1"

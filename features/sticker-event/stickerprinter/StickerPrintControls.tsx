@@ -225,7 +225,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             Số bắt đầu
                                         </label>
                                         <Input
-                                            type="number"
+                                            type="number" inputMode="decimal"
                                             min="1"
                                             value={localStartNumber}
                                             onChange={(e) => setLocalStartNumber(Math.max(1, parseInt(e.target.value) || 1))}
@@ -237,7 +237,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             Số lượng cần in
                                         </label>
                                         <Input
-                                            type="number"
+                                            type="number" inputMode="decimal"
                                             min="1"
                                             value={localTotalTickets}
                                             onChange={(e) => setLocalTotalTickets(Math.max(1, parseInt(e.target.value) || 1))}

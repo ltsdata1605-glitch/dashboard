@@ -75,14 +75,12 @@ const openTaxWithBothSlips = async (page: import('@playwright/test').Page) => {
     await expect(page.getByRole('button', { name: /Tải ảnh/i }).first()).toBeVisible({ timeout: 30_000 });
 
     const png = makePng();
-    const fileInputs = page.locator('input[type="file"]');
-    const count = await fileInputs.count();
-    await fileInputs.nth(0).setInputFiles(png);
+    // Chọn ô theo id, KHÔNG theo thứ tự: trên điện thoại mỗi đợt có thêm ô "Chụp" (capture-slot-*)
+    // đứng trước ô tải ảnh — chọn theo thứ tự từng làm test nạp nhầm 2 lần vào đợt 1 (2026-10-02).
+    await page.locator('#upload-slot-day5').setInputFiles(png);
     await expect(page.getByText(/Đã nhận diện Bảng lương Đợt 1|TRƯƠNG HOÀNG PHÚC/).first())
         .toBeVisible({ timeout: 15_000 });
-    if (count > 1) {
-        await fileInputs.nth(1).setInputFiles(png);
-    }
+    await page.locator('#upload-slot-day20').setInputFiles(png);
     await page.waitForTimeout(1500);
 };
 

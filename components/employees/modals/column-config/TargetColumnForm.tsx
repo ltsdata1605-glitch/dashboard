@@ -35,6 +35,7 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                         <div className="relative">
                             <Input 
                                 type="text" 
+                                inputMode="numeric"
                                 value={targetValue} 
                                 onChange={(e) => {
                                     const raw = e.target.value.replace(/[^\d]/g, '');

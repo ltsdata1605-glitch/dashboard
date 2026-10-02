@@ -118,7 +118,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                         <td className="sticky left-[96px] bg-white z-10 border-r border-b border-slate-200 px-1 py-2 text-center">
                                             <input
                                                 id={`req-input-${slot}`}
-                                                type="number"
+                                                type="number" inputMode="decimal"
                                                 value={requirements[slot] || ''}
                                                 onChange={(e) => handleRequirementChange(slot, e.target.value)}
                                                 onKeyDown={(e) => {

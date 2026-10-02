@@ -19,6 +19,7 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
+import { useCenterActiveInStrip } from '../../../../components/shared/ui/useCenterActiveInStrip';
 import { Input } from '../../../../components/shared/ui/Input';
 import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
@@ -94,6 +95,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [exportProgress, setExportProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
     const [isEmployeeFilterOpen, setIsEmployeeFilterOpen] = useState(false);
     const [employeeFilterSearch, setEmployeeFilterSearch] = useState('');
+    // Dải góc nhìn (Tổng/Nhóm/…/phiên bản đã lưu): mục đang chọn tự cuộn vào giữa trên điện thoại
+    const viewStripRef = useRef<HTMLDivElement>(null);
+    useCenterActiveInStrip(viewStripRef, `${activeVersionName ?? ''}|${activeCompetitionTab}`);
     const employeeFilterRef = useRef<HTMLDivElement>(null);
     const employeeFilterPanelRef = useRef<HTMLDivElement>(null);
     const [employeeFilterPanelStyle, setEmployeeFilterPanelStyle] = useState<React.CSSProperties>({});
@@ -596,7 +600,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
             {/* 2. Thanh Tab chuyển đổi các góc nhìn thi đua chuẩn như tab trên */}
             <div className="flex flex-wrap justify-between items-center px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700/60 no-print gap-2">
-                <div className="flex items-center overflow-x-auto no-scrollbar gap-1 sm:gap-2">
+                <div ref={viewStripRef} className="flex items-center overflow-x-auto no-scrollbar snap-x snap-proximity gap-1 sm:gap-2">
                     {([['tatca', 'Tổng'], ['nhom', 'Nhóm'], ['tong', 'Tuỳ chỉnh'], ['canhan', 'Cá nhân'], ['sosanh', 'So sánh']] as const).map(([key, label]) => {
                         const isActive = activeVersionName === null && activeCompetitionTab === key;
                         return (
@@ -604,8 +608,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 variant="unstyled"
                                 size="none"
                                 key={key}
+                                data-active={isActive ? 'true' : undefined}
+                                aria-current={isActive ? 'true' : undefined}
                                 onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }}
-                                className={`relative flex items-center gap-1.5 px-3 sm:px-3.5 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
+                                className={`relative flex items-center gap-1.5 px-3 sm:px-3.5 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer snap-center ${
                                     isActive
                                         ? 'text-sky-700 dark:text-sky-400 font-bold'
                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
@@ -627,9 +633,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 key={version.name}
                                 role="button"
                                 tabIndex={0}
+                                data-active={isActive ? 'true' : undefined}
+                                aria-current={isActive ? 'true' : undefined}
                                 onClick={() => onVersionTabClick(version)}
                                 onKeyDown={onActivateKey(() => onVersionTabClick(version))}
-                                className={`relative flex items-center gap-1.5 pl-3 pr-6 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer ${
+                                className={`relative flex items-center gap-1.5 pl-3 pr-6 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors snap-center shrink-0 cursor-pointer ${
                                     isActive
                                         ? 'text-sky-700 dark:text-sky-400 font-bold'
                                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'

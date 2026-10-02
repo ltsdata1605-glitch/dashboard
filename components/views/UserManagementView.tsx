@@ -993,7 +993,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                     {/* Nhập trực tiếp số ngày (vd: 30) */}
                                                     <div className="relative flex items-center">
                                                         <input
-                                                            type="number"
+                                                            type="number" inputMode="decimal"
                                                             min="1"
                                                             placeholder="+ngày"
                                                             title="Nhập số ngày hết hạn (vd: 30)"
@@ -1122,7 +1122,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     </label>
                                     <div className="relative">
                                         <Input
-                                            type="number"
+                                            type="number" inputMode="decimal"
                                             min={1}
                                             value={extendDays || ''}
                                             onChange={e => handleDaysInputChange(e.target.value)}

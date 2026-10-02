@@ -438,7 +438,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                                 Mục<br/>Tiêu
                                                             </div>
                                                             <Input 
-                                                                type="number" 
+                                                                type="number" inputMode="decimal" 
                                                                 value={row.targetValue === undefined ? '' : row.targetValue} 
                                                                 onChange={e => updateRow(section.id, row.id, 'targetValue', e.target.value ? Number(e.target.value) : undefined)}
                                                                 className="w-full h-8 text-sm font-black text-amber-700 dark:text-amber-400 border-none bg-transparent shadow-none focus-visible:ring-0 text-right pr-1"

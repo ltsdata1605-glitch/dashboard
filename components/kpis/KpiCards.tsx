@@ -42,7 +42,7 @@ const KpiTargetEditor: React.FC<{
         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
             <input
                 ref={inputRef}
-                type="number"
+                type="number" inputMode="decimal"
                 min="0"
                 step="any"
                 value={value}

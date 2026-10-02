@@ -1,6 +1,7 @@
-import React, { useCallback, useRef, useEffect } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { cn } from './utils';
 import { Button } from './Button';
+import { useCenterActiveInStrip } from './useCenterActiveInStrip';
 
 /* ─── Tabs ─── */
 
@@ -36,21 +37,8 @@ export const Tabs = React.memo<TabsProps>(({
   className,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const activeRef = useRef<HTMLButtonElement>(null);
-
-  // Scroll active tab into view on mobile
-  useEffect(() => {
-    if (activeRef.current && containerRef.current) {
-      const container = containerRef.current;
-      const active = activeRef.current;
-      const containerRect = container.getBoundingClientRect();
-      const activeRect = active.getBoundingClientRect();
-
-      if (activeRect.left < containerRect.left || activeRect.right > containerRect.right) {
-        active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    }
-  }, [activeId]);
+  // Mục đang chọn luôn nằm giữa dải khi dải cuộn ngang (điện thoại) — chỉ cuộn ngang, trang không nhảy.
+  useCenterActiveInStrip(containerRef, activeId);
 
   const handleClick = useCallback((id: string) => {
     onChange(id);
@@ -69,7 +57,7 @@ export const Tabs = React.memo<TabsProps>(({
       <div
         ref={containerRef}
         className={cn(
-          'flex overflow-x-auto no-scrollbar border-b border-slate-200 dark:border-slate-700/60',
+          'flex overflow-x-auto no-scrollbar snap-x snap-proximity border-b border-slate-200 dark:border-slate-700/60',
           fullWidth && 'w-full',
           className
         )}
@@ -80,11 +68,12 @@ export const Tabs = React.memo<TabsProps>(({
             <Button
               variant="unstyled" size="none"
               key={item.id}
-              ref={isActive ? activeRef : undefined}
+              data-active={isActive ? 'true' : undefined}
+              aria-current={isActive ? 'true' : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'relative flex items-center gap-1.5 px-3 font-medium whitespace-nowrap transition-colors shrink-0',
+                'relative flex items-center gap-1.5 px-3 font-medium whitespace-nowrap transition-colors shrink-0 snap-center',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
@@ -121,7 +110,7 @@ export const Tabs = React.memo<TabsProps>(({
       <div
         ref={containerRef}
         className={cn(
-          'flex gap-1 overflow-x-auto no-scrollbar',
+          'flex gap-1 overflow-x-auto no-scrollbar snap-x snap-proximity',
           fullWidth && 'w-full',
           className
         )}
@@ -132,11 +121,12 @@ export const Tabs = React.memo<TabsProps>(({
             <Button
               variant="unstyled" size="none"
               key={item.id}
-              ref={isActive ? activeRef : undefined}
+              data-active={isActive ? 'true' : undefined}
+              aria-current={isActive ? 'true' : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0',
+                'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0 snap-center',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
@@ -169,7 +159,7 @@ export const Tabs = React.memo<TabsProps>(({
     <div
       ref={containerRef}
       className={cn(
-        'inline-flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 overflow-x-auto no-scrollbar',
+        'inline-flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 overflow-x-auto no-scrollbar snap-x snap-proximity',
         fullWidth && 'w-full',
         className
       )}
@@ -180,11 +170,12 @@ export const Tabs = React.memo<TabsProps>(({
           <Button
             variant="unstyled" size="none"
             key={item.id}
-            ref={isActive ? activeRef : undefined}
+            data-active={isActive ? 'true' : undefined}
+            aria-current={isActive ? 'true' : undefined}
             onClick={() => handleClick(item.id)}
             disabled={item.disabled}
             className={cn(
-              'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0',
+              'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0 snap-center',
               sizeClasses[size],
               fullWidth && 'flex-1 justify-center',
               isActive

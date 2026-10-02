@@ -103,6 +103,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                             <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu GTĐH (Đvt: Triệu VNĐ)</label>
                             <input 
                                 type="text"
+                                inputMode="decimal"
                                 value={targetValue}
                                 onChange={(e) => {
                                     // Allow numbers and dot for decimal

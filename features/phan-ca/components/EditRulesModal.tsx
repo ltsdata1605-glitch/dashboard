@@ -105,7 +105,7 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
                 Ca {shift}:
               </label>
               <input
-                type="number"
+                type="number" inputMode="decimal"
                 className="flex-grow config-input"
                 value={rules[ruleKey][shift] || 0}
                 onChange={(e) => handleInputChange(shift, e.target.value)}

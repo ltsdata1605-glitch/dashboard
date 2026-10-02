@@ -137,7 +137,7 @@ export const ColorSettingsModal: React.FC<{
                         <div className="flex items-center gap-2 min-w-[100px]">
                             <span className="text-[11px] font-bold text-slate-400 uppercase">Tốt (≥)</span>
                             <input 
-                                type="number" 
+                                type="number" inputMode="decimal" 
                                 value={config.good.threshold} 
                                 onChange={e => setTemp({...temp, [key]: {...config, good: {...config.good, threshold: Number(e.target.value)}}})} 
                                 className="w-12 p-1 text-xs border rounded bg-white dark:bg-slate-800" 
@@ -152,7 +152,7 @@ export const ColorSettingsModal: React.FC<{
                         <div className="flex items-center gap-2 min-w-[100px]">
                             <span className="text-[11px] font-bold text-slate-400 uppercase">TB (≥)</span>
                             <input 
-                                type="number" 
+                                type="number" inputMode="decimal" 
                                 value={config.average.threshold} 
                                 onChange={e => setTemp({...temp, [key]: {...config, average: {...config.average, threshold: Number(e.target.value)}}})} 
                                 className="w-12 p-1 text-xs border rounded bg-white dark:bg-slate-800" 

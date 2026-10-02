@@ -136,7 +136,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                     <MinusCircleIcon className="h-5 w-5" />
                 </Button>
                 <input
-                    type="number"
+                    type="number" inputMode="decimal"
                     value={result.quantity}
                     onChange={(e) => {
                         const val = parseInt(e.target.value);

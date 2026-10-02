@@ -137,7 +137,7 @@ const Legend: React.FC<LegendProps> = ({
                                     <div className="flex items-center gap-1 ml-1 pl-1.5 border-l border-sky-200 dark:border-sky-700">
                                         <span className="font-bold text-sky-600 dark:text-sky-400">+</span>
                                         <input
-                                            type="number"
+                                            type="number" inputMode="decimal"
                                             min={1}
                                             max={50}
                                             value={sbhGenderBoost.hours}

@@ -102,7 +102,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 <option value={4}>Quý 4</option>
                             </Select>
                             <Input 
-                                type="number" 
+                                type="number" inputMode="decimal" 
                                 value={selectedMonth.split('-')[0]} 
                                 onChange={e => {
                                     const m = selectedMonth.split('-')[1] || '01';

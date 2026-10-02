@@ -843,7 +843,7 @@ const CompetitionTarget: React.FC<{
                                 <div className="flex items-center justify-center">
                                     <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm shrink-0`}>
                                         <input
-                                            type="number"
+                                            type="number" inputMode="decimal"
                                             value={Math.round(ratio).toString()}
                                             onFocus={(e) => e.target.select()}
                                             onChange={(e) => {
