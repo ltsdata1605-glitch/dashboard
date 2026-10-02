@@ -144,14 +144,18 @@ graph TD
 - [x] Chuẩn hoá CSS: Áp dụng `min-h-dvh`, tinh chỉnh `touch-action: manipulation`. *(Chống auto-zoom: viewport đã có sẵn `maximum-scale=1` — iOS không tự phóng khi focus ô nhập nữa, nên KHÔNG ép mọi ô nhập lên 16px để khỏi vỡ các ô nhập gọn hiện có.)*
 
 ### 📋 Giai đoạn 2: Tối ưu hoá Trải nghiệm UI/UX Mobile-First (Thời gian dự kiến: 3 - 4 ngày)
-- [ ] Cải tiến thanh điều hướng `MobileBottomNav.tsx`:
+> **2026-10-02: đã làm 4 đợt A→D** (chi tiết, file, test: `implementation_plan.md` các mục "iPhone Giai đoạn 2").
+> Chủ dự án chốt **bỏ Giai đoạn 3–5** (native/Capacitor) — rung phản hồi (Haptic) vì thế không làm được trên web Safari.
+- [x] **Đợt A** — mở lại app đúng tab/mục cũ (Report BI, In Sticker, link `?tab=`) + thẻ nhắc "Cài lên màn hình chính".
+- [ ] ~~Cải tiến thanh điều hướng `MobileBottomNav.tsx`:
   - Thiết kế bo cong công thái học, hỗ trợ đầy đủ safe area đáy cho iPhone không có phím Home vật lý.
-  - Thêm hiệu ứng rung nhẹ (Haptic) khi bấm đổi tab.
-- [ ] Xây dựng Component **BottomSheetModal** (vuốt chạm đóng mở mượt mà) thay cho Modal desktop ở các màn hình:
-  - Bộ lọc Tuỳ chỉnh (`FilterSection`).
+  - Thêm hiệu ứng rung nhẹ (Haptic) khi bấm đổi tab.~~ *(thanh đáy đã có safe-area từ trước; Haptic cần native — bỏ)*
+- [x] **Đợt B** — KHÔNG tạo component mới: `Modal` dùng chung có sẵn `position="bottom"` → thêm thanh nắm + vuốt xuống để đóng. ~~Xây dựng Component **BottomSheetModal** (vuốt chạm đóng mở mượt mà) thay cho Modal desktop ở các màn hình:
+  - Bộ lọc Tuỳ chỉnh (`FilterSection`) — *không phải modal (khối lọc nằm trong trang), không áp dụng.*
   - Hộp thoại Xuất ảnh (`ExportOptionsModal`).
   - Cấu hình thẻ KPI & Bảng thi đua.
-- [ ] Tối ưu hoá hiển thị bảng biểu trên màn hình hẹp (GIỮ dạng bảng — không card mode; sticky cột tên nhân viên/ngành hàng, sticky đầu bảng, viền mờ báo còn cột).
+- [x] **Đợt C** — Tối ưu hoá hiển thị bảng biểu trên màn hình hẹp (GIỮ dạng bảng — không card mode; sticky cột tên nhân viên/ngành hàng, sticky đầu bảng, viền mờ báo còn cột). *(Đầu bảng dính theo TRANG không làm được với bảng cuộn ngang — giới hạn CSS; xem implementation_plan.md.)*
+- [x] **Đợt D** — bàn phím số (`inputMode`), nút "Chụp" phiếu lương mở camera, dải tab tự căn giữa mục đang chọn.
 
 ### 📋 Giai đoạn 3: Tích hợp Capacitor 7 cho iOS (Thời gian dự kiến: 2 - 3 ngày)
 - [ ] Cài đặt gói Capacitor core & cli:
