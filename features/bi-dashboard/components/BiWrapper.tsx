@@ -73,9 +73,8 @@ function readSavedBiView(): 'dashboard' | 'employee' | 'updater' {
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
     // Còn lượt "Tự động" dở (vừa tải lại sau khi cập nhật userscript) → mở thẳng mục Cập nhật để DataUpdater chạy tiếp
-    // Không có lượt dở → mở lại đúng mục lần trước (Siêu thị/Nhân viên): app cài trên iPhone bị iOS
-    // giải phóng khỏi RAM khi ở nền, mở lại luôn chạy từ đầu (Đợt A, kế hoạch iPhone). Mục Cập nhật
-    // không nhớ — chỉ vào đó có chủ đích.
+    // Không có lượt dở → `?view=` trên URL (deep link) nếu có, không thì mục lần trước (localStorage): app cài trên
+    // iPhone bị iOS giải phóng khỏi RAM khi ở nền, mở lại luôn chạy từ "/" (Đợt A, kế hoạch iPhone).
     const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater'>(() => (readPendingAutoSync() ? 'updater' : readSavedBiView()));
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(readPendingAutoSync() ? ['dashboard', 'updater'] : ['dashboard', readSavedBiView()]));
