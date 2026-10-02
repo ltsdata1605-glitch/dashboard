@@ -23,6 +23,7 @@ import {
     listenYcxJob, newYcxJobId, resolveYcxMode, startYcxJob, ycxBufferToFile, ycxSteps,
     type YcxMode, type YcxStep,
 } from '../../services/ycxAutoSyncService';
+import { navigateToYcxAnalysis } from '../../features/bi-dashboard/services/autoNavigationService';
 
 type YcxPhase = 'idle' | 'running' | 'error' | 'done';
 type ScriptState = { checked: boolean; installed: boolean; version?: string };
@@ -239,7 +240,8 @@ export default function GlobalAutoSyncDock() {
                 window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoSend } }));
 
                 toast.success(`Đã tự động tải và nạp file ${TEN_YCX[mode]}!`);
-                // Tự động mở tab Phân tích khi chạy xong
+                // Tự động mở tab Phân tích khi chạy xong (?tab=analysis)
+                navigateToYcxAnalysis();
                 setActiveTab('analysis');
             }
         });

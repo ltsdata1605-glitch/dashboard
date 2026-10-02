@@ -64,8 +64,8 @@ export async function navigateToBiRealtime() {
 
 /**
  * 2. BI Luỹ kế:
- * Mở tab Report BI (URL: ?tab=employees&view=dashboard&mode=cumulative&sub=revenue),
- * phân hệ Siêu thị (dashboard), chế độ Luỹ kế (cumulative), tab con Doanh thu (revenue).
+ * Mở tab Report BI (URL: ?tab=employees&view=dashboard&mode=cumulative&sub=competition),
+ * phân hệ Siêu thị (dashboard), chế độ Luỹ kế (cumulative), tab con Thi đua (competition).
  */
 export async function navigateToBiLuyKe() {
     try {
@@ -73,21 +73,21 @@ export async function navigateToBiLuyKe() {
     } catch {}
 
     await db.set('dashboard-main-tab', 'cumulative');
-    await db.set('dashboard-sub-tab', 'revenue');
+    await db.set('dashboard-sub-tab', 'competition');
     configStore.setCache('dashboard-main-tab', 'cumulative');
-    configStore.setCache('dashboard-sub-tab', 'revenue');
+    configStore.setCache('dashboard-sub-tab', 'competition');
 
     updateUrlParams({
         tab: 'employees',
         view: 'dashboard',
         mode: 'cumulative',
-        sub: 'revenue',
+        sub: 'competition',
     });
 
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('app-switch-tab', { detail: { tab: 'employees' } }));
         window.dispatchEvent(new CustomEvent('bi-switch-view', { detail: { view: 'dashboard' } }));
-        window.dispatchEvent(new CustomEvent('dashboard-switch-tab', { detail: { mainTab: 'cumulative', subTab: 'revenue' } }));
+        window.dispatchEvent(new CustomEvent('dashboard-switch-tab', { detail: { mainTab: 'cumulative', subTab: 'competition' } }));
     }
 }
 
