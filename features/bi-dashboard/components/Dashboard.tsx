@@ -272,6 +272,46 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         return () => window.removeEventListener('dashboard-switch-tab', onSwitchTab);
     }, [setActiveMainTab, setActiveSubTab]);
 
+    // Đọc URL query parameters (?mode=... & ?sub=...) khi xem phân hệ Siêu thị
+    useEffect(() => {
+        if (isActive === false || typeof window === 'undefined') return;
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'employees' && (urlParams.get('view') === 'dashboard' || !urlParams.get('view'))) {
+            const m = urlParams.get('mode');
+            if ((m === 'realtime' || m === 'cumulative') && m !== activeMainTab) {
+                setActiveMainTab(m);
+            }
+            const s = urlParams.get('sub');
+            if ((s === 'revenue' || s === 'competition') && s !== activeSubTab) {
+                setActiveSubTab(s);
+            }
+        }
+    }, [isActive, activeMainTab, activeSubTab, setActiveMainTab, setActiveSubTab]);
+
+    // Đồng bộ URL query parameters khi người dùng chuyển mode hoặc subtab trong Siêu thị
+    useEffect(() => {
+        if (isActive === false || typeof window === 'undefined') return;
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('tab') === 'employees' && (url.searchParams.get('view') === 'dashboard' || !url.searchParams.get('view'))) {
+            let changed = false;
+            if (url.searchParams.get('view') !== 'dashboard') {
+                url.searchParams.set('view', 'dashboard');
+                changed = true;
+            }
+            if (url.searchParams.get('mode') !== activeMainTab) {
+                url.searchParams.set('mode', activeMainTab);
+                changed = true;
+            }
+            if (url.searchParams.get('sub') !== activeSubTab) {
+                url.searchParams.set('sub', activeSubTab);
+                changed = true;
+            }
+            if (changed) {
+                window.history.replaceState(null, '', url.toString());
+            }
+        }
+    }, [isActive, activeMainTab, activeSubTab]);
+
     if (isActive === false) {
         return <div className="hidden" />;
     }

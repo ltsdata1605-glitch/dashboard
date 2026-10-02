@@ -76,6 +76,38 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [activeTab, setActiveTab]);
 
+    // Đọc URL param ?sub=... khi mở vào màn hình Nhân viên
+    useEffect(() => {
+        if (!isActive || typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('tab') === 'employees' && params.get('view') === 'employee') {
+            const sub = params.get('sub');
+            if (sub && NAV_TABS.some(t => t.tab === sub) && sub !== activeTab) {
+                setActiveTab(sub as Tab);
+            }
+        }
+    }, [isActive, activeTab, setActiveTab]);
+
+    // Đồng bộ URL ?sub=... khi tab Nhân viên thay đổi
+    useEffect(() => {
+        if (!isActive || typeof window === 'undefined') return;
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('tab') === 'employees' && url.searchParams.get('view') === 'employee') {
+            let changed = false;
+            if (url.searchParams.get('sub') !== activeTab) {
+                url.searchParams.set('sub', activeTab);
+                changed = true;
+            }
+            if (url.searchParams.has('mode')) {
+                url.searchParams.delete('mode');
+                changed = true;
+            }
+            if (changed) {
+                window.history.replaceState(null, '', url.toString());
+            }
+        }
+    }, [isActive, activeTab]);
+
     useEffect(() => {
         if (activeTab) {
             setVisitedTabs(prev => {
