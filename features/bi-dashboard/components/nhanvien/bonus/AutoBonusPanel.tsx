@@ -1,161 +1,102 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../../../../../components/shared/ui/Button';
-import { UseBonusAutoBridgeResult } from '../../../hooks/useBonusAutoBridge';
-import { UseMultiMonthBonusRunResult, ComparePeriodsInput } from '../../../hooks/useMultiMonthBonusRun';
-import { AutoBonusInstallGuideModal } from './AutoBonusInstallGuideModal';
-import { AutoBonusErrorDetailModal } from './AutoBonusErrorDetailModal';
-import { MultiMonthResultDetailModal } from './MultiMonthResultDetailModal';
-import { AutoBonusRangePickerModal } from './AutoBonusRangePickerModal';
-import { showAutoBonusResultToast, showAutoBonusErrorToast, showMultiMonthResultToast } from './AutoBonusToasts';
-import { getCurrentRangeDefault } from '../../../utils/bonusDateRange';
+import { UseBonusAutoBridgeResult, BonusAutoStatus } from '../../../hooks/useBonusAutoBridge';
+import { UseMultiMonthBonusRunResult, MultiMonthStatus, MultiMonthProgress } from '../../../hooks/useMultiMonthBonusRun';
 
-type PendingRetry =
-    | { type: 'single'; label: string }
-    | { type: 'year'; year: number; label: string }
-    | { type: 'compare'; periods: ComparePeriodsInput; label: string }
-    | null;
+export interface AutoBonusPanelProps {
+    autoBridge?: UseBonusAutoBridgeResult;
+    multiMonthRun?: UseMultiMonthBonusRunResult;
+    employeeCount?: number;
+    onUseManual?: () => void;
+    onPeriodLabelChange?: (label: string) => void;
+    onCompareDone?: () => void;
+}
 
 /**
- * Nút "Tự động" + trạng thái ngắn gọn cạnh nút "Cập nhật thưởng" (Thủ công). Sở hữu
- * toàn bộ UI phụ trợ: popup "Chọn thời gian đổ thưởng" (Hiện tại/Tháng/Năm/Khoảng thời
- * gian), modal hướng dẫn cài đặt lần đầu (dùng chung cho cả job đơn lẫn chạy Năm), toast
- * kết quả của từng luồng, và modal chi tiết tương ứng. Khi chạy xong có ít nhất 1 kết quả
- * thành công, báo `onPeriodLabelChange` để BonusTab đổi tiêu đề báo cáo đúng theo kỳ vừa chọn.
- * Lượt "So sánh cùng kỳ" xong đủ 2 kỳ -> gọi thêm `onCompareDone` để BonusTab tự chuyển sang
- * chế độ xem So sánh.
+ * Thanh trạng thái + nút bấm "⚡ Tự động" hiển thị bên cạnh "Cập nhật thưởng" trong BonusTab.
+ * Toàn bộ logic chạy nền và modal đã được nâng cấp tập trung tại GlobalAutoBonusManager (toàn cục),
+ * giúp tính năng hoạt động xuyên suốt ở mọi trang/tab mà không cần chuyển màn hình.
  */
-export const AutoBonusPanel: React.FC<{
-    autoBridge: UseBonusAutoBridgeResult;
-    multiMonthRun: UseMultiMonthBonusRunResult;
-    employeeCount: number;
-    onUseManual: () => void;
-    onPeriodLabelChange: (label: string) => void;
-    onCompareDone?: () => void;
-}> = ({ autoBridge, multiMonthRun, employeeCount, onUseManual, onPeriodLabelChange, onCompareDone }) => {
-    const { status, progress, stalled, startAuto, summary, errorMessage, dismiss } = autoBridge;
-    const {
-        status: monthStatus, progress: monthProgress, stalled: monthStalled, startYear, startCompare,
-        summary: monthSummary, errorMessage: monthErrorMessage, dismiss: monthDismiss, stop: stopYear,
-        resume, canResume, resumeInfo,
-    } = multiMonthRun;
+export const AutoBonusPanel: React.FC<AutoBonusPanelProps> = ({
+    onUseManual,
+    onPeriodLabelChange,
+    onCompareDone,
+}) => {
+    const [state, setState] = useState<{
+        isBusy: boolean;
+        status: BonusAutoStatus;
+        progress: { done: number; total: number; currentEmployeeId?: string } | null;
+        monthStatus: MultiMonthStatus;
+        monthProgress: MultiMonthProgress | null;
+        canResume?: boolean;
+        resumeInfo?: { label: string; remainingCount: number } | null;
+    }>({
+        isBusy: false,
+        status: 'idle',
+        progress: null,
+        monthStatus: 'idle',
+        monthProgress: null,
+        canResume: false,
+        resumeInfo: null,
+    });
 
-    const isBusy = status === 'detecting' || status === 'running' || monthStatus === 'detecting' || monthStatus === 'running';
-    const [showPicker, setShowPicker] = useState(false);
-    const [showDetail, setShowDetail] = useState(false);
-    const [showMonthDetail, setShowMonthDetail] = useState(false);
-    // Nhớ lượt vừa yêu cầu (job đơn hay chạy Năm, năm nào) — để nút "Kiểm tra lại" trong
-    // modal cài đặt biết gọi lại đúng luồng nào sau khi userscript đã được cài xong.
-    const pendingRetryRef = useRef<PendingRetry>(null);
-
-    // Lắng nghe sự kiện kích hoạt Tự động Đổ Thưởng từ khung AUTO SYNC dock
     useEffect(() => {
-        const handleTrigger = (e: Event) => {
-            // Hẹn giờ (khung Auto Sync Pro, 2026-10-01): chạy thẳng kỳ "Hiện tại" như bấm nút Chạy ở tab Hiện tại
-            if ((e as CustomEvent).detail?.auto) {
-                window.dispatchEvent(new CustomEvent('ycx-auto-bonus-trigger-ack'));
-                if (isBusyRef.current) return;
-                const r = getCurrentRangeDefault();
-                const [d, m] = r.toDate.split('/').map(Number);
-                handleRunSingleRef.current({ fromDate: r.fromDate, toDate: r.toDate, label: `ĐẾN NGÀY ${d}/${m}` });
-                return;
+        const handleStatus = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            if (detail) {
+                setState({
+                    isBusy: !!detail.isBusy,
+                    status: detail.status || 'idle',
+                    progress: detail.progress || null,
+                    monthStatus: detail.monthStatus || 'idle',
+                    monthProgress: detail.monthProgress || null,
+                    canResume: detail.canResume,
+                    resumeInfo: detail.resumeInfo || null,
+                });
             }
-            setShowPicker(true);
         };
-        window.addEventListener('ycx-trigger-auto-bonus', handleTrigger);
-        return () => window.removeEventListener('ycx-trigger-auto-bonus', handleTrigger);
-    }, []);
 
-    // Bắn sự kiện cập nhật trạng thái tiến trình đổ thưởng để khung AUTO SYNC dock hiển thị
-    useEffect(() => {
-        window.dispatchEvent(new CustomEvent('ycx-auto-bonus-status-changed', {
-            detail: { isBusy, status, progress, monthStatus, monthProgress }
-        }));
-    }, [isBusy, status, progress, monthStatus, monthProgress]);
+        const handleCompare = () => {
+            onCompareDone?.();
+        };
 
-    // Chống bắn toast lặp lại nếu component re-render nhiều lần trong lúc status vẫn
-    // đang ở 'done'/'error' — chỉ bắn đúng 1 lần mỗi lượt chạy. 2 ref riêng cho 2 luồng
-    // độc lập (job đơn / chạy Năm) vì cả hai có thể lần lượt "done" trong cùng phiên.
-    const firedRef = useRef<'done' | 'error' | null>(null);
-    useEffect(() => {
-        if (status === 'done' && firedRef.current !== 'done') {
-            firedRef.current = 'done';
-            if (summary) {
-                if (summary.successCount > 0 && pendingRetryRef.current?.type === 'single') {
-                    onPeriodLabelChange(pendingRetryRef.current.label);
-                }
-                showAutoBonusResultToast(summary, {
-                    onViewDetail: () => setShowDetail(true),
-                    onDismissed: () => dismiss(),
-                });
+        const handleLabel = (e: Event) => {
+            const label = (e as CustomEvent).detail?.label;
+            if (label && onPeriodLabelChange) {
+                onPeriodLabelChange(label);
             }
-        } else if (status === 'error' && firedRef.current !== 'error') {
-            firedRef.current = 'error';
-            showAutoBonusErrorToast(errorMessage || 'Chế độ Tự động gặp lỗi không xác định.', () => dismiss());
-        } else if (status !== 'done' && status !== 'error') {
-            firedRef.current = null;
-        }
-    }, [status, summary, errorMessage, dismiss, onPeriodLabelChange]);
+        };
 
-    const monthFiredRef = useRef<'done' | 'error' | null>(null);
-    useEffect(() => {
-        if (monthStatus === 'done' && monthFiredRef.current !== 'done') {
-            monthFiredRef.current = 'done';
-            if (monthSummary) {
-                // Chỉ đổi tiêu đề nếu THÁNG HIỆN TẠI trong lượt Năm này thực sự thành công —
-                // đây là tháng duy nhất handleSaveBonusMonthly có mirror sang bonus-data-*,
-                // nên tiêu đề "NĂM ... LUỸ KẾ" chỉ đúng khi dữ liệu "hôm nay" cũng đã cập nhật.
-                const now = new Date();
-                const currentYYYYMM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                const currentMonthResult = monthSummary.monthResults.find(m => m.yyyymm === currentYYYYMM);
-                if (currentMonthResult && currentMonthResult.successCount > 0 && pendingRetryRef.current?.type === 'year') {
-                    onPeriodLabelChange(pendingRetryRef.current.label);
-                }
-                // So sánh cùng kỳ: chỉ đổi tiêu đề + chuyển chế độ xem khi CẢ 2 kỳ đều có dữ liệu —
-                // thiếu 1 kỳ thì bảng so sánh không có gì để so, giữ nguyên chế độ đang xem.
-                if (monthSummary.kind === 'compare' && pendingRetryRef.current?.type === 'compare') {
-                    const bothOk = monthSummary.monthResults.length === 2 && monthSummary.monthResults.every(m => m.successCount > 0);
-                    if (bothOk) {
-                        onPeriodLabelChange(pendingRetryRef.current.label);
-                        onCompareDone?.();
-                    }
-                }
-                showMultiMonthResultToast(monthSummary, {
-                    onViewDetail: () => setShowMonthDetail(true),
-                    onDismissed: () => monthDismiss(),
-                });
-            }
-        } else if (monthStatus === 'error' && monthFiredRef.current !== 'error') {
-            monthFiredRef.current = 'error';
-            showAutoBonusErrorToast(monthErrorMessage || 'Chạy Năm gặp lỗi không xác định.', () => monthDismiss());
-        } else if (monthStatus !== 'done' && monthStatus !== 'error') {
-            monthFiredRef.current = null;
-        }
-    }, [monthStatus, monthSummary, monthErrorMessage, monthDismiss, onPeriodLabelChange, onCompareDone]);
+        const handleManual = () => {
+            onUseManual?.();
+        };
 
-    const handleRunSingle = (range: { fromDate: string; toDate: string; label: string }) => {
-        pendingRetryRef.current = { type: 'single', label: range.label };
-        startAuto(range);
-    };
-    const handleRunSingleRef = useRef(handleRunSingle);
-    handleRunSingleRef.current = handleRunSingle;
-    const isBusyRef = useRef(isBusy);
-    isBusyRef.current = isBusy;
-    const handleRunYear = (year: number, label: string, fromMonthIndex0?: number, toMonthIndex0?: number) => {
-        pendingRetryRef.current = { type: 'year', year, label };
-        startYear(year, fromMonthIndex0, toMonthIndex0);
-    };
-    const handleRunCompare = (periods: ComparePeriodsInput, label: string) => {
-        pendingRetryRef.current = { type: 'compare', periods, label };
-        startCompare(periods);
-    };
-    const handleRetry = () => {
-        const pending = pendingRetryRef.current;
-        if (pending?.type === 'year') startYear(pending.year);
-        else if (pending?.type === 'compare') startCompare(pending.periods);
-        else startAuto();
+        window.addEventListener('ycx-auto-bonus-status-changed', handleStatus);
+        window.addEventListener('ycx-auto-bonus-compare-done', handleCompare);
+        window.addEventListener('ycx-auto-bonus-period-label-changed', handleLabel);
+        window.addEventListener('ycx-open-manual-bonus', handleManual);
+
+        return () => {
+            window.removeEventListener('ycx-auto-bonus-status-changed', handleStatus);
+            window.removeEventListener('ycx-auto-bonus-compare-done', handleCompare);
+            window.removeEventListener('ycx-auto-bonus-period-label-changed', handleLabel);
+            window.removeEventListener('ycx-open-manual-bonus', handleManual);
+        };
+    }, [onCompareDone, onPeriodLabelChange, onUseManual]);
+
+    const handleTrigger = () => {
+        window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus'));
     };
 
-    const isNotInstalled = status === 'not-installed' || monthStatus === 'not-installed';
+    const handleResume = () => {
+        window.dispatchEvent(new CustomEvent('ycx-resume-auto-bonus'));
+    };
+
+    const handleStop = () => {
+        window.dispatchEvent(new CustomEvent('ycx-stop-auto-bonus'));
+    };
+
+    const { isBusy, status, progress, monthStatus, monthProgress, canResume, resumeInfo } = state;
     const isDetecting = status === 'detecting' || monthStatus === 'detecting';
 
     return (
@@ -163,7 +104,7 @@ export const AutoBonusPanel: React.FC<{
             <Button
                 variant="unstyled" size="none"
                 disabled={isBusy}
-                onClick={() => setShowPicker(true)}
+                onClick={handleTrigger}
                 className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-md transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100 shrink-0"
             >
                 <span>⚡ Tự động</span>
@@ -171,7 +112,7 @@ export const AutoBonusPanel: React.FC<{
             {!isBusy && canResume && resumeInfo && (
                 <Button
                     variant="unstyled" size="none"
-                    onClick={resume}
+                    onClick={handleResume}
                     title={resumeInfo.label}
                     className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-md transition-all active:scale-95 shrink-0"
                 >
@@ -185,45 +126,16 @@ export const AutoBonusPanel: React.FC<{
                 <span className="text-[11px] text-sky-600 dark:text-sky-400 font-bold tabular-nums">
                     Đang chạy: {progress.done}/{progress.total}
                     {progress.currentEmployeeId ? ` (${progress.currentEmployeeId})` : ''}
-                    {stalled ? ' — chưa có cập nhật mới, kiểm tra tab MWG đã đăng nhập/còn mở chưa' : ''}
                 </span>
             )}
             {monthStatus === 'running' && monthProgress && (
                 <span className="text-[11px] text-sky-600 dark:text-sky-400 font-bold tabular-nums flex items-center gap-2">
                     <span>
                         {monthProgress.kind === 'compare' ? 'Kỳ' : 'Tháng'} {monthProgress.monthIndex + 1}/{monthProgress.monthTotal} ({monthProgress.monthLabel}) — nhân viên {monthProgress.employeeDone}/{monthProgress.employeeTotal}
-                        {monthStalled ? ' — chưa có cập nhật mới, kiểm tra tab MWG đã đăng nhập/còn mở chưa' : ''}
                     </span>
-                    <Button variant="unstyled" size="none" onClick={stopYear} className="text-rose-600 dark:text-rose-400 hover:underline font-bold">Dừng lại</Button>
+                    <Button variant="unstyled" size="none" onClick={handleStop} className="text-rose-600 dark:text-rose-400 hover:underline font-bold">Dừng lại</Button>
                 </span>
             )}
-
-            <AutoBonusRangePickerModal
-                isOpen={showPicker}
-                onClose={() => setShowPicker(false)}
-                employeeCount={employeeCount}
-                onRunSingle={handleRunSingle}
-                onRunYear={handleRunYear}
-                onRunCompare={handleRunCompare}
-                canResume={canResume}
-                resumeInfo={resumeInfo}
-                onResume={resume}
-            />
-            <AutoBonusInstallGuideModal
-                isNotInstalled={isNotInstalled}
-                isDetecting={isDetecting}
-                onRetry={handleRetry}
-                onDismiss={() => { dismiss(); monthDismiss(); }}
-                onUseManual={onUseManual}
-            />
-            <AutoBonusErrorDetailModal isOpen={showDetail} onClose={() => { setShowDetail(false); dismiss(); }} summary={summary} />
-            <MultiMonthResultDetailModal
-                isOpen={showMonthDetail}
-                onClose={() => { setShowMonthDetail(false); monthDismiss(); }}
-                summary={monthSummary}
-                resumeInfo={resumeInfo}
-                onResume={resume}
-            />
         </div>
     );
 };

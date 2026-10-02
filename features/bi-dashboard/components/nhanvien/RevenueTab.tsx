@@ -555,12 +555,15 @@ const RevenueView: React.FC<{
                                             <th colSpan={isRealtimeMode ? 4 : 5} className="export-col-revenue px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
                                                 Doanh thu
                                             </th>
+                                            <th colSpan={2} className="export-col-competition px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
+                                                Thi đua
+                                            </th>
                                             {isShowRemaining && (
                                                 <th colSpan={2} className="export-col-revenue px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700">
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={isRealtimeMode ? 4 : 5} className="export-col-performance px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                                            <th colSpan={isRealtimeMode ? 2 : 3} className="export-col-performance px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                                                 Hiệu suất
                                             </th>
                                         </tr>
@@ -574,6 +577,9 @@ const RevenueView: React.FC<{
                                                 <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('duKien')}>D.Kiến</th>
                                             )}
                                             <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('pctDkht')}>{isRealtimeMode ? '%HT' : '%D.KIẾN'}</th>
+                                            {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN */}
+                                            <th className="export-col-competition px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_dat')}>Đạt</th>
+                                            <th className="export-col-competition px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_pct_dat')}>%Đạt</th>
                                             {isShowRemaining && (
                                                 <>
                                                     <th className="export-col-revenue px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
@@ -583,11 +589,7 @@ const RevenueView: React.FC<{
                                             {/* NỔI BẬT 2: HQQĐ */}
                                             <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 bg-emerald-100 dark:bg-emerald-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             {/* NỔI BẬT 3: %T.Chậm */}
-                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors" onClick={() => handleSort('installment')}>%T.Chậm</th>
-                                            {/* NỔI BẬT 4: Đạt (Thi đua) */}
-                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_dat')}>Đạt</th>
-                                            {/* NỔI BẬT 5: %Đạt (Thi đua) */}
-                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors`} onClick={() => handleSort('comp_pct_dat')}>%Đạt</th>
+                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors`} onClick={() => handleSort('installment')}>%T.Chậm</th>
                                             {!isRealtimeMode && (
                                                 <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                             )}
@@ -630,6 +632,25 @@ const RevenueView: React.FC<{
                                                         <div className="font-bold">{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</div>
                                                         <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
                                                     </td>
+                                                    {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN */}
+                                                    <td className={`export-col-competition px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                        {row.comp_total ? (
+                                                            <span className={isGrandTotal ? 'text-emerald-700 dark:text-emerald-400 font-extrabold' : (competitionStats?.storeDatPercent !== undefined && (row.comp_pct_dat || 0) < competitionStats.storeDatPercent ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400')}>
+                                                                {isGrandTotal ? `${row.comp_dat ?? 0}/${row.comp_total}` : (row.comp_dat !== undefined ? (Number.isInteger(row.comp_dat) ? `${row.comp_dat}/${row.comp_total}` : `${row.comp_dat.toFixed(1)}/${row.comp_total}`) : '-')}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                                                        )}
+                                                    </td>
+                                                    <td className={`export-col-competition px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                        {row.comp_total ? (
+                                                            <span className={isGrandTotal ? 'text-emerald-700 dark:text-emerald-400 font-extrabold' : (competitionStats?.storeDatPercent !== undefined && (row.comp_pct_dat || 0) < competitionStats.storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold')}>
+                                                                {roundUp(row.comp_pct_dat || 0)}%
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                                                        )}
+                                                    </td>
                                                     {isShowRemaining && (
                                                         <>
                                                             <td className={`export-col-revenue px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-amber-50/10 dark:bg-amber-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
@@ -646,29 +667,9 @@ const RevenueView: React.FC<{
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={Number(prev?.hqqd) * 100} isPercent />
                                                     </td>
                                                     {/* NỔI BẬT 3: %T.Chậm */}
-                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
+                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
                                                         <div className="font-bold">{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
-                                                    </td>
-                                                    {/* NỔI BẬT 4: Đạt (Thi đua) */}
-                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
-                                                        {row.comp_total ? (
-                                                            <span className={isGrandTotal ? 'text-emerald-700 dark:text-emerald-400 font-extrabold' : (competitionStats?.storeDatPercent !== undefined && (row.comp_pct_dat || 0) < competitionStats.storeDatPercent ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400')}>
-                                                                {isGrandTotal ? `${row.comp_dat ?? 0}/${row.comp_total}` : (row.comp_dat !== undefined ? (Number.isInteger(row.comp_dat) ? `${row.comp_dat}/${row.comp_total}` : `${row.comp_dat.toFixed(1)}/${row.comp_total}`) : '-')}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
-                                                        )}
-                                                    </td>
-                                                    {/* NỔI BẬT 5: %Đạt (Thi đua) */}
-                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
-                                                        {row.comp_total ? (
-                                                            <span className={isGrandTotal ? 'text-emerald-700 dark:text-emerald-400 font-extrabold' : (competitionStats?.storeDatPercent !== undefined && (row.comp_pct_dat || 0) < competitionStats.storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold')}>
-                                                                {roundUp(row.comp_pct_dat || 0)}%
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
-                                                        )}
                                                     </td>
                                                     {!isRealtimeMode && (
                                                         <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>

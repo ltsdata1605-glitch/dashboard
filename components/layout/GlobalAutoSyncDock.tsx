@@ -16,6 +16,7 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { useIndexedDBState } from '../../features/bi-dashboard/hooks/useIndexedDBState';
 import { useBiAutoSync } from '../../features/bi-dashboard/hooks/useBiAutoSync';
 import { TampermonkeyInstallGuideModal } from '../../features/bi-dashboard/components/common/TampermonkeyInstallGuideModal';
+import { GlobalAutoBonusManager } from '../../features/bi-dashboard/components/nhanvien/bonus/GlobalAutoBonusManager';
 import {
     YCX_MIN_USERSCRIPT_VERSION, YCX_REPORT_URL, YCX_USERSCRIPT_URL,
     compareVersions, detectYcxUserscript, fetchLatestYcxUserscriptVersion,
@@ -144,41 +145,19 @@ export default function GlobalAutoSyncDock() {
     const ycxScriptDu = ycxScript.installed && compareVersions(ycxScript.version || '0', YCX_MIN_USERSCRIPT_VERSION) >= 0;
 
     // ─── Handlers ───
-    // auto === true: lượt hẹn giờ — AutoBonusPanel chạy thẳng kỳ "Hiện tại" (không mở hộp chọn kỳ). Mục Thưởng có thể
-    // chưa tải xong → bắn lại tới khi panel xác nhận (tối đa ~15s).
+    // auto === true: lượt hẹn giờ — chạy thẳng kỳ "Hiện tại".
+    // Chạy tại chỗ từ mọi trang/tab mà KHÔNG bắt buộc chuyển màn hình.
     const handleTriggerAutoBonus = useCallback((auto?: unknown) => {
         const tuDong = auto === true;
-        if (activeTab !== 'employees') {
-            setActiveTab('employees');
-        }
-        window.dispatchEvent(new CustomEvent('nhanvien-switch-tab', { detail: { tab: 'bonus' } }));
-        if (!tuDong) {
-            setTimeout(() => {
-                window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus'));
-            }, 150);
-            return;
-        }
-        let daNhan = false;
-        const onAck = () => { daNhan = true; };
-        window.addEventListener('ycx-auto-bonus-trigger-ack', onAck, { once: true });
-        let lan = 0;
-        const thu = () => {
-            if (daNhan || lan++ > 15) { window.removeEventListener('ycx-auto-bonus-trigger-ack', onAck); return; }
-            window.dispatchEvent(new CustomEvent('nhanvien-switch-tab', { detail: { tab: 'bonus' } }));
-            window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus', { detail: { auto: true } }));
-            setTimeout(thu, 1000);
-        };
-        setTimeout(thu, 300);
-    }, [activeTab, setActiveTab]);
+        window.dispatchEvent(new CustomEvent('ycx-trigger-auto-bonus', { detail: { auto: tuDong } }));
+    }, []);
 
-    // auto: lượt hẹn giờ — không có cú bấm nên mở tab MWG nhờ userscript (tuChayTiep), Luỹ kế lấy tháng mặc định
+    // auto: lượt hẹn giờ — không có cú bấm nên mở tab MWG nhờ userscript (tuChayTiep), Luỹ kế lấy tháng mặc định.
+    // Chạy tại chỗ từ mọi trang/tab mà KHÔNG chuyển sang mục Nhân viên.
     const handleStartBiSync = useCallback((mode: 'realtime' | 'luyke', auto = false) => {
-        if (activeTab !== 'employees') {
-            setActiveTab('employees');
-        }
         if (auto) void startBiSync(mode, { tuChayTiep: true });
         else startBiSync(mode);
-    }, [activeTab, setActiveTab, startBiSync]);
+    }, [startBiSync]);
 
     useEffect(() => {
         const handleBiTrigger = (e: any) => {
@@ -238,7 +217,7 @@ export default function GlobalAutoSyncDock() {
                 setYcxPhase('done');
                 setYcxModalOpen(false);
 
-                // Lưu file tạm vào global để DashboardView nhận ngay cả khi đang chuyển tab.
+                // Lưu file tạm vào global để DashboardView nhận ngay cả khi đang ở tab khác.
                 // mode: Realtime → "Tệp Realtime", Luỹ kế → "Lũy kế / Quá khứ"
                 (window as any).__pendingYcxAutoSyncFile = file;
                 (window as any).__pendingYcxAutoSyncMode = mode;
@@ -247,10 +226,7 @@ export default function GlobalAutoSyncDock() {
                 (window as any).__pendingYcxAutoSend = autoSend;
                 window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoSend } }));
 
-                if (activeTab !== 'analysis') {
-                    setActiveTab('analysis');
-                    toast.success(`Đã tự động tải file ${TEN_YCX[mode]} và chuyển sang Phân Tích!`);
-                }
+                toast.success(`Đã tự động tải và nạp file ${TEN_YCX[mode]}!`);
             }
         });
 
@@ -261,7 +237,7 @@ export default function GlobalAutoSyncDock() {
                 ? 'Hẹn giờ không mở được tab report.mwgroup.vn — cần userscript bản 7.16 trở lên (Tampermonkey).'
                 : 'Trình duyệt chặn mở tab mới — cho phép cửa sổ bật lên (pop-up) cho dashboard.pro.vn rồi bấm lại.');
         });
-    }, [ycxScriptDu, kiemTraYcxScript, activeTab, setActiveTab]);
+    }, [ycxScriptDu, kiemTraYcxScript]);
 
     const huyYcx = () => {
         ycxStopRef.current?.();
@@ -688,8 +664,9 @@ export default function GlobalAutoSyncDock() {
                 </div>
             </Modal>
 
-            {/* Modals hỗ trợ từ BI Auto Sync & Tampermonkey */}
+            {/* Modals hỗ trợ từ BI Auto Sync, Đổ Thưởng & Tampermonkey */}
             {renderAutoSyncModal()}
+            <GlobalAutoBonusManager />
             <TampermonkeyInstallGuideModal
                 isOpen={showGuideModal}
                 onClose={() => setShowGuideModal(false)}
