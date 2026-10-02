@@ -160,7 +160,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                 </div>
 
                                 <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
-                                    <span className="truncate">Gần nhất: {sched.lastRunAt ? new Date(sched.lastRunAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Chưa chạy'}</span>
+                                    <span className="truncate" title={sched.lastAutoRunResult || undefined}>Gần nhất: {sched.lastRunAt ? new Date(sched.lastRunAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Chưa chạy'}{sched.lastAutoRunResult ? ` · ${sched.lastAutoRunResult}` : ''}</span>
 
                                     <div className="flex items-center gap-0.5 shrink-0">
                                         <Button

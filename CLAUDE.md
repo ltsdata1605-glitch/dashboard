@@ -87,7 +87,7 @@ là mọi thứ agent đẩy lên `main` sẽ tự về máy chủ dự án — 
 
 ## 1. Kiến trúc — 4 khu vực song song (QUAN TRỌNG NHẤT)
 
-Dự án thực tế gồm 4 khu vực "mini-app" song song hoạt động độc lập, không phải 1 hệ thống duy nhất:
+Dự án thực tế gồm 5 khu vực "mini-app" song song hoạt động độc lập, không phải 1 hệ thống duy nhất *(sửa 2026-10-02: bản cũ ghi 4 — `features/line-bot` chạy thật từ lâu nhưng thiếu trong bảng và nằm ngoài luật ESLint cách ly)*:
 
 | Khu vực | Thư mục chứa | Mount point (`App.tsx`) | Ghi chú / Cách ly |
 |---|---|---|---|
@@ -95,10 +95,11 @@ Dự án thực tế gồm 4 khu vực "mini-app" song song hoạt động độ
 | **bi-dashboard** | `features/bi-dashboard/` | `<BiWrapper />` (tab `employees`) | Hoàn toàn tách biệt khỏi các khu vực còn lại. |
 | **phan-ca** | `features/phan-ca/` | `<PhanCaView />` (tab `tools-phanca`) | Hoàn toàn tách biệt khỏi các khu vực còn lại. |
 | **sticker-event** | `features/sticker-event/` | `<StickerPrinterView />` (tab `tools-print-sticker`) | Hoàn toàn tách biệt khỏi các khu vực còn lại. |
+| **line-bot** | `features/line-bot/` | `<LineBotView />` (tab `tools-line-bot`) | Tách biệt; được dùng `services/firebase.ts` (chỉ `db`) như ngoại lệ của bi-dashboard. **Có backend riêng**: `functions/src/lineBotWebhook.ts` (webhook + các lệnh `?action=`), `lineBotScheduler.ts` (lịch 6h/22h + `lineBotUserSchedules` 5 phút/lần), dữ liệu `line_bots/{uid}/…` trong database `(default)` → rules ở `firestore.rules`. 🔴 Webhook BẮT BUỘC kiểm chữ ký `x-line-signature` bằng `channelSecret` của bot (`functions/src/lineSignature.ts`) TRƯỚC mọi xử lý sự kiện — thiếu secret là từ chối. |
 
 **Quy tắc cách ly bắt buộc:**
 - ❌ Các thư mục `features/*` **không được import chéo lẫn nhau** và **không được import** `hooks/*` hoặc `services/*` ở thư mục gốc.
-- ✅ Cả 4 khu vực chỉ được dùng chung đúng 3 thứ: các UI component trong `components/shared/ui/*`, các hàm thuần tiện ích trong `utils/dataUtils.ts`, và `utils/localDbScope.ts` *(bổ sung 2026-09-23)*.
+- ✅ Cả 5 khu vực chỉ được dùng chung đúng 3 thứ: các UI component trong `components/shared/ui/*`, các hàm thuần tiện ích trong `utils/dataUtils.ts`, và `utils/localDbScope.ts` *(bổ sung 2026-09-23)*.
 - ✅ **Thứ dùng chung thứ 4 (bổ sung 2026-10-01): `components/shared/export/` — bộ xuất ảnh DUY NHẤT.** Mọi nơi xuất
   ảnh (1 ảnh hay hàng loạt) dùng `exportElementAsImage` / `startExportJob` từ đây. 3 bộ quy tắc trình bày: `standard`
   (Phân tích, Phân Ca, In Sticker, Thuế), `bi` (Report BI — `presetBi.ts`, thiết kế riêng có chủ đích), `raw` (giữ
@@ -124,7 +125,7 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 
 | Thành phần | Vị trí | Vai trò |
 |---|---|---|
-| Cloud Functions | `functions/` (project Node/TypeScript riêng, KHÔNG thuộc build Vite) | App gốc: `resolveSession`, `requestAccess`, `adminUpdateUser`, `listManagedUsers`, `generateWithGemini`, `demoteExpiredUsers`. In Sticker: `stickerRegister`, `stickerResolveSession`, `stickerAdminUpdateUser`, `stickerStaffAuth` |
+| Cloud Functions | `functions/` (project Node/TypeScript riêng, KHÔNG thuộc build Vite) | App gốc: `resolveSession`, `requestAccess`, `adminUpdateUser`, `listManagedUsers`, `generateWithGemini`, `demoteExpiredUsers`. In Sticker: `stickerRegister`, `stickerResolveSession`, `stickerAdminUpdateUser`, `stickerStaffAuth`. Bot LINE: `lineBotWebhook`, `dailyMorningInventoryReport` (6h), `dailyEveningUsageSummary` (22h), `lineBotUserSchedules` (5 phút/lần — tự gửi lịch "Gửi Notify"), `pmhRelayPoll`, `pmhRelayComplete` |
 | Firestore Rules — database `(default)` | `firestore.rules` (repo root) | Chặn client (kể cả admin) ghi trực tiếp field nhạy cảm vào `users/{uid}` |
 | Firestore Rules — database In Sticker | `firestore.stickerevent.rules` (repo root) | Rules RIÊNG cho database `ai-studio-16672ec9-…`. *(bổ sung vào bảng 2026-09-17: bảng cũ chỉ ghi 1 file rules, khiến dễ tưởng cả dự án chỉ có `firestore.rules` — thêm collection cho In Sticker mà sửa sai file thì rules không có tác dụng gì.)* |
 

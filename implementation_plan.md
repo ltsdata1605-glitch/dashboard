@@ -7101,3 +7101,21 @@ kế → tự chụp Thi đua Tổng & Doanh thu Tổng → gửi LINE. Chưa th
   link giữ ở "chờ" — effect ghi URL không ghi đè cho tới khi state đúng là giá trị đó (kho IndexedDB nạp bất đồng bộ
   từng làm `sub=bonus` bị ghi đè thành `revenue`).
 - Test: `tests/e2e/bi-deep-link-khong-vong-lap.spec.ts` (gạt chế độ, bấm 4 tab con, 2 kiểu deep link).
+
+## Bot LINE — 3 lỗ hổng chủ dự án nêu (2026-10-02)
+
+1. 🔴 **Kiểm chữ ký `x-line-signature`** — `functions/src/lineSignature.ts` (HMAC-SHA256 base64 trên `req.rawBody`, so
+   sánh hằng thời gian). `lineBotWebhook.ts`: kiểm NGAY sau khi tải cấu hình bot, TRƯỚC mọi xử lý sự kiện. Thiếu
+   `channelSecret` → bỏ qua sự kiện (200 + log lỗi); chữ ký sai → 401. Các lệnh `?action=` của Dashboard không phải
+   sự kiện LINE → không đổi. Cài đặt Bot hiện cảnh báo đỏ khi chưa nhập secret.
+   ⚠️ THỨ TỰ TRIỂN KHAI: nhập Channel secret (Bot LINE › Cấu Hình Bot › Lưu) TRƯỚC, rồi mới `npm run deploy:functions`.
+2. 🟠 **Lịch "Gửi Notify" tự gửi** — `lineBotUserSchedules` (5 phút/lần, giờ VN) trong `lineBotScheduler.ts`; logic thuần
+   `lineBotScheduleDue.ts` (khe ngày+giờ, trễ ≤ 20 phút, `lastAutoRunSlot` chống trùng, giữ chỗ bằng transaction, ONCE
+   tự tắt). "Tất cả các nhóm" = mọi nhóm ĐÃ LƯU (không dùng broadcast của LINE — gửi tới mọi người kết bạn, không phải
+   nhóm); nút "Gửi ngay" đổi theo cho thống nhất. Giao diện không bao giờ ghi `lastAutoRunSlot/lastAutoRunResult`.
+3. 🟡 `features/line-bot` vào bảng mục 1 + 1.1 của CLAUDE.md VÀ vào `FEATURES` của `eslint.config.js` (trước đó nằm
+   ngoài luật cách ly; ngoại lệ `services/firebase` như bi-dashboard). 0 vi phạm.
+- Test: `tests/unit/line-bot-signature.test.ts`, `line-bot-webhook-chu-ky.test.ts` (hàm webhook THẬT + Firestore giả;
+  đã kiểm ngược: bỏ đoạn kiểm chữ ký → 4/5 đỏ), `line-bot-schedule-due.test.ts`, `line-bot-notify-may-chu.test.ts`.
+- Chưa làm (ngoài 3 mục): các `?action=` công khai của webhook (lưu media, gửi thử bằng token trong body) không xác thực
+  người gọi; `features/tax-calculator`, `check-thuong` cũng chưa có trong bảng/luật cách ly.

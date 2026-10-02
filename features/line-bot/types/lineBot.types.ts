@@ -85,6 +85,10 @@ export interface BotSchedule {
     messageTemplate: string; // Nội dung hỗ trợ biến {ton_kho}, {date}, {bot_name}
     active: boolean;
     lastRunAt?: string;
+    /** Do máy chủ ghi (lineBotUserSchedules): khe "YYYY-MM-DD HH:mm" đã tự gửi — chống gửi trùng. */
+    lastAutoRunSlot?: string;
+    /** Do máy chủ ghi: kết quả lần tự gửi gần nhất, vd "Đã gửi 3/3 nhóm lúc 2026-10-02 06:00". */
+    lastAutoRunResult?: string;
     createdAt: string;
     updatedAt: string;
 }

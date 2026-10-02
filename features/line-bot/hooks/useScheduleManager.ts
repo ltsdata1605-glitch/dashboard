@@ -134,19 +134,15 @@ export function useScheduleManager(botToken?: string, overrideUserId?: string) {
             const dateStr = new Date().toLocaleDateString('vi-VN');
             let content = schedule.messageTemplate.replace(/{date}/g, dateStr);
 
-            // Gửi tới các nhóm hoặc broadcast
-            const targets = schedule.targetType === 'ALL_GROUPS' || !schedule.targetGroupIds.length
-                ? []
-                : schedule.targetGroupIds;
+            // Cùng cách với máy chủ (functions/src/lineBotScheduler.ts → lineBotUserSchedules): "Tất cả các nhóm" = mọi
+            // nhóm ĐÃ LƯU. Trước 2026-10-02 nhánh này gọi broadcast của LINE — gửi tới mọi người kết bạn với bot chứ không
+            // phải các nhóm, lệch với nhãn trên giao diện.
+            const targets = schedule.targetType === 'SPECIFIC_GROUPS'
+                ? schedule.targetGroupIds
+                : groups.filter(g => g.active !== false).map(g => g.groupId).filter(Boolean);
 
             if (targets.length === 0) {
-                // Gửi broadcast
-                const res = await lineMessagingService.sendBroadcast(botToken, content);
-                if (res.success) {
-                    toast.success(`Đã kích hoạt gửi lịch "${schedule.name}" thành công!`);
-                } else {
-                    toast.error(`Gửi thất bại: ${res.error}`);
-                }
+                toast.error('Chưa có nhóm LINE nào để gửi — thêm nhóm hoặc mời bot vào nhóm trước.');
             } else {
                 let successCount = 0;
                 for (const groupId of targets) {
@@ -166,7 +162,7 @@ export function useScheduleManager(botToken?: string, overrideUserId?: string) {
         } finally {
             setIsTriggering(null);
         }
-    }, [botToken, userId, loadSchedules]);
+    }, [botToken, userId, loadSchedules, groups]);
 
     return {
         schedules,

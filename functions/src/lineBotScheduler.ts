@@ -2,6 +2,7 @@
  * Cloud Scheduler cho BOT LINE:
  * 1. 06h00 sáng: Báo cáo thống kê tồn kho "tk" (chỉ gửi trong nhóm được cấu hình khi còn tồn coupon).
  * 2. 22h00 tối: Báo cáo tổng kết tổng số coupon đã sử dụng trong ngày & danh sách người dùng (dạng Thẻ Flex).
+ * 3. 5 phút/lần: gửi các lịch "Gửi Notify" người dùng tạo (lineBotUserSchedules, 2026-10-02).
  */
 
 import { onSchedule } from 'firebase-functions/v2/scheduler';
@@ -11,6 +12,7 @@ import {
     createInventoryReportFlexMessage,
     getVietnamTodayString
 } from './lineBotWebhook';
+import { dueSlot, renderTemplate, vnNow, type ScheduleLike } from './lineBotScheduleDue';
 
 const SCHEDULER_REGION = 'asia-southeast1';
 
@@ -463,6 +465,97 @@ export const dailyEveningUsageSummary = onSchedule(
             }
         } catch (error) {
             console.error('[Scheduler 22:00 Error]', error);
+        }
+    }
+);
+
+/**
+ * 3. LỊCH "GỬI NOTIFY" DO NGƯỜI DÙNG TẠO (Bot LINE › Gửi Notify) — chạy 5 phút/lần (2026-10-02).
+ * Trước đây lịch chỉ được LƯU, tin chỉ đi khi bấm tay "Gửi ngay". Giờ máy chủ tự gửi đúng giờ (giờ Việt Nam):
+ * - Quyết định đến giờ: `dueSlot()` ở lineBotScheduleDue.ts (khe `ngày giờ`, trễ tối đa 20 phút, không gửi trùng).
+ * - Giữ chỗ khe bằng transaction TRƯỚC khi gửi → hai lượt chạy chồng nhau không gửi 2 lần.
+ * - Đối tượng: SPECIFIC_GROUPS → targetGroupIds; ALL_GROUPS → mọi nhóm đã lưu (groups, active ≠ false). KHÔNG dùng
+ *   broadcast của LINE (gửi tới MỌI người kết bạn với bot, không phải các nhóm, và tốn hạn mức tin).
+ * - ONCE: gửi xong tự tắt lịch.
+ * - Chi phí đọc Firestore mỗi lượt: 1 truy vấn bot + 1 truy vấn lịch đang bật mỗi bot (+ nhóm/coupon chỉ khi có lịch đến giờ).
+ */
+export const lineBotUserSchedules = onSchedule(
+    {
+        schedule: '*/5 * * * *',
+        timeZone: 'Asia/Ho_Chi_Minh',
+        region: SCHEDULER_REGION
+    },
+    async () => {
+        const now = vnNow();
+        try {
+            const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
+            for (const botDoc of botsSnap.docs) {
+                const uid = botDoc.id;
+                const config = botDoc.data() || {};
+                const token = String(config.channelAccessToken || '');
+                if (!token) continue;
+
+                const schedSnap = await botDoc.ref.collection('schedules').where('active', '==', true).get();
+                const due = schedSnap.docs
+                    .map((d) => ({ ref: d.ref, data: d.data() as ScheduleLike & Record<string, any> }))
+                    .map((x) => ({ ...x, slot: dueSlot(x.data, now) }))
+                    .filter((x): x is typeof x & { slot: string } => !!x.slot);
+                if (due.length === 0) continue;
+
+                let allGroupIds: string[] | null = null;
+                let tonKho: number | null = null;
+
+                for (const { ref, data, slot } of due) {
+                    // Giữ chỗ khe: chỉ lượt nào ghi được lastAutoRunSlot mới gửi
+                    const claimed = await db.runTransaction(async (tx) => {
+                        const fresh = await tx.get(ref);
+                        const cur = (fresh.data() || {}) as ScheduleLike;
+                        if (cur.active === false || cur.lastAutoRunSlot === slot) return false;
+                        tx.update(ref, {
+                            lastAutoRunSlot: slot,
+                            lastRunAt: new Date().toISOString(),
+                            ...(cur.repeatType === 'ONCE' ? { active: false } : {}),
+                        });
+                        return true;
+                    });
+                    if (!claimed) continue;
+
+                    let targets: string[];
+                    if (data.targetType === 'SPECIFIC_GROUPS') {
+                        targets = (Array.isArray(data.targetGroupIds) ? data.targetGroupIds : []).filter(Boolean);
+                    } else {
+                        if (!allGroupIds) {
+                            const gSnap = await botDoc.ref.collection('groups').get();
+                            allGroupIds = gSnap.docs
+                                .filter((g) => g.data()?.active !== false)
+                                .map((g) => String(g.data()?.groupId || g.id))
+                                .filter(Boolean);
+                        }
+                        targets = allGroupIds;
+                    }
+
+                    const template = String(data.messageTemplate || '');
+                    if (tonKho === null && template.includes('{ton_kho}')) {
+                        const cSnap = await botDoc.ref.collection('coupons').get();
+                        tonKho = cSnap.docs.filter((c) => { const st = c.data()?.status; return st === 'UNUSED' || !st; }).length;
+                    }
+                    const text = renderTemplate(template, { date: now.date, botName: config.botName, tonKho }).slice(0, 5000);
+                    if (!text.trim() || targets.length === 0) {
+                        await ref.update({ lastAutoRunResult: `Bỏ qua: ${!text.trim() ? 'nội dung trống' : 'không có nhóm nhận'}` });
+                        console.warn(`[Scheduler Notify] Bot ${uid} lịch ${ref.id}: bỏ qua (${!text.trim() ? 'nội dung trống' : 'không có nhóm'}).`);
+                        continue;
+                    }
+
+                    let ok = 0;
+                    for (const groupId of targets) {
+                        if (await pushLineMessages(token, groupId, [{ type: 'text', text }])) ok++;
+                    }
+                    await ref.update({ lastAutoRunResult: `Đã gửi ${ok}/${targets.length} nhóm lúc ${slot}` });
+                    console.info(`[Scheduler Notify] Bot ${uid} lịch "${data.name || ref.id}" (${slot}): gửi ${ok}/${targets.length} nhóm.`);
+                }
+            }
+        } catch (error) {
+            console.error('[Scheduler Notify Error]', error);
         }
     }
 );
