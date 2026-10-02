@@ -10,8 +10,11 @@
  */
 import { getSetting, saveSetting } from './dbService';
 
-export type ExportDestination = { kind: 'download' } | { kind: 'line'; groupId: string; groupName: string };
-type DestMap = Record<string, { groupId: string; groupName: string }>;
+export interface LineGroupTarget { groupId: string; groupName: string }
+export type ExportDestination =
+    | { kind: 'download' }
+    | { kind: 'line'; groups?: LineGroupTarget[]; groupId?: string; groupName?: string };
+type DestMap = Record<string, { groups?: LineGroupTarget[]; groupId?: string; groupName?: string }>;
 
 const SETTING_KEY = 'analysis_export_destinations';
 const EVT = 'ycx-export-destinations-changed';
@@ -31,7 +34,10 @@ export function reportKeyFromFilename(filename: string): string {
 export function loadExportDestinations(): Promise<void> {
     if (!store.loaded) {
         store.loaded = getSetting<DestMap>(SETTING_KEY)
-            .then((m) => { store.map = m && typeof m === 'object' ? m : {}; window.dispatchEvent(new Event(EVT)); })
+            .then((m) => {
+                store.map = m && typeof m === 'object' ? m : {};
+                if (typeof window !== 'undefined') window.dispatchEvent(new Event(EVT));
+            })
             .catch(() => { /* chưa có cài đặt */ });
     }
     return store.loaded;
@@ -39,22 +45,50 @@ export function loadExportDestinations(): Promise<void> {
 
 export function getExportDestination(reportKey: string): ExportDestination {
     // Đang chạy lượt hẹn giờ có danh sách khu vực riêng → gửi đúng nhóm của khu vực đó, bỏ qua đích đặt ở nút
-    if (store.runTarget?.groupId) return { kind: 'line', groupId: store.runTarget.groupId, groupName: store.runTarget.groupName };
+    if (store.runTarget?.groupId) {
+        const single: LineGroupTarget = { groupId: store.runTarget.groupId, groupName: store.runTarget.groupName };
+        return { kind: 'line', groups: [single], groupId: single.groupId, groupName: single.groupName };
+    }
     const d = store.map[reportKey];
-    return d?.groupId ? { kind: 'line', groupId: d.groupId, groupName: d.groupName } : { kind: 'download' };
+    if (!d) return { kind: 'download' };
+    const groups: LineGroupTarget[] = (d.groups && Array.isArray(d.groups) && d.groups.length > 0)
+        ? d.groups
+        : (d.groupId ? [{ groupId: d.groupId, groupName: d.groupName || 'Nhóm LINE' }] : []);
+    if (groups.length === 0) return { kind: 'download' };
+    return {
+        kind: 'line',
+        groups,
+        groupId: groups[0].groupId,
+        groupName: groups.map(g => g.groupName).join(', ')
+    };
 }
 
 export async function setExportDestination(reportKey: string, dest: ExportDestination): Promise<void> {
     await loadExportDestinations();
     const next = { ...store.map };
-    if (dest.kind === 'line') next[reportKey] = { groupId: dest.groupId, groupName: dest.groupName };
-    else delete next[reportKey];
+    if (dest.kind === 'line') {
+        const groups: LineGroupTarget[] = (dest.groups && Array.isArray(dest.groups) && dest.groups.length > 0)
+            ? dest.groups
+            : (dest.groupId ? [{ groupId: dest.groupId, groupName: dest.groupName || 'Nhóm LINE' }] : []);
+        if (groups.length > 0) {
+            next[reportKey] = {
+                groups,
+                groupId: groups[0].groupId,
+                groupName: groups.map(g => g.groupName).join(', ')
+            };
+        } else {
+            delete next[reportKey];
+        }
+    } else {
+        delete next[reportKey];
+    }
     store.map = next;
-    window.dispatchEvent(new Event(EVT));
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event(EVT));
     await saveSetting(SETTING_KEY, next);
 }
 
 export function onExportDestinationsChanged(cb: () => void): () => void {
+    if (typeof window === 'undefined') return () => {};
     window.addEventListener(EVT, cb);
     return () => window.removeEventListener(EVT, cb);
 }
