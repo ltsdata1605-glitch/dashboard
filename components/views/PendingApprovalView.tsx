@@ -121,7 +121,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                     rel="noopener noreferrer"
                                     className="w-full py-2.5 px-6 rounded-xl bg-[#06C755] hover:bg-[#05b34c] text-white font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Icon name="message-circle" size={4} />
+                                    <Icon name="line" size={4} />
                                     Bấm vào đây để Nhắn Tin LINE
                                 </a>
                             </div>

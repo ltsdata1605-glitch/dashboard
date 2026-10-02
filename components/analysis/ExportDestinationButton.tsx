@@ -128,16 +128,16 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
             <Button
                 variant="unstyled" size="none" onClick={() => setOpen(true)} title={tieuDe} aria-label={`Đích xuất ảnh ${reportKey}`}
                 data-testid={`export-dest-${reportKey}`}
-                className={`relative hide-on-export flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded transition-colors ${laLine ? 'text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40' : 'text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'} ${className}`}
+                className={`relative hide-on-export flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded transition-colors ${laLine ? 'text-[#06C755] hover:bg-emerald-50 dark:hover:bg-emerald-950/40' : 'text-slate-400 hover:text-[#06C755] hover:bg-slate-100 dark:hover:bg-slate-800'} ${className}`}
             >
-                <Icon name="message-circle" size={4} />
+                <Icon name="line" size={4} />
                 {laLine && (
                     groupCount > 1 ? (
-                        <span className="absolute -top-1 -right-1 bg-emerald-600 text-white text-[9px] font-black px-1 min-w-[15px] h-[15px] rounded-full flex items-center justify-center shadow-sm">
+                        <span className="absolute -top-1 -right-1 bg-[#06C755] text-white text-[9px] font-black px-1 min-w-[15px] h-[15px] rounded-full flex items-center justify-center shadow-sm">
                             {groupCount}
                         </span>
                     ) : (
-                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-emerald-500" aria-hidden />
+                        <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-[#06C755]" aria-hidden />
                     )
                 )}
             </Button>
@@ -168,11 +168,12 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
 
                     <div className="border-t border-slate-100 dark:border-slate-800 pt-2">
                         <div className="flex items-center justify-between mb-2">
-                            <div>
-                                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                                <Icon name="line" size={4} className="text-[#06C755]" />
+                                <span className="text-[12px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                                     Gửi vào nhóm LINE{botName ? ` (bot ${botName})` : ''}
                                 </span>
-                                <span className="text-[11px] text-slate-400 ml-2">
+                                <span className="text-[11px] text-slate-400 font-normal">
                                     (Chọn 1 hoặc nhiều nhóm)
                                 </span>
                             </div>
@@ -249,7 +250,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                                     }`}>
                                                         {isSelected && <Icon name="check" size={3} className="stroke-[3]" />}
                                                     </div>
-                                                    <Icon name="message-circle" size={4} className={isSelected ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                                                    <Icon name="line" size={4} className={isSelected ? 'text-[#06C755]' : 'text-slate-400'} />
                                                     <span className="truncate">{g.groupName}</span>
                                                 </div>
                                                 {isSelected && (
@@ -266,8 +267,9 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <div className="text-[12px] text-slate-500 dark:text-slate-400">
                             {selectedGroups.length > 0 ? (
-                                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                                    Đã chọn {selectedGroups.length} nhóm LINE
+                                <span className="text-[#06C755] font-bold inline-flex items-center gap-1">
+                                    <Icon name="line" size={3.5} />
+                                    <span>Đã chọn {selectedGroups.length} nhóm LINE</span>
                                 </span>
                             ) : (
                                 <span>Đang chọn: <b>Tải về máy</b></span>
