@@ -272,21 +272,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         return () => window.removeEventListener('dashboard-switch-tab', onSwitchTab);
     }, [setActiveMainTab, setActiveSubTab]);
 
-    // Đọc URL query parameters (?mode=... & ?sub=...) khi xem phân hệ Siêu thị
+    // Đọc URL query parameters (?mode=... & ?sub=...) khi MỞ phân hệ Siêu thị và khi bấm Lùi/Tới của trình duyệt.
+    // KHÔNG chạy lại mỗi lần chế độ đổi (2026-10-02): trước đây deps có activeMainTab/activeSubTab → bấm "Thi đua"
+    // thì hiệu ứng này kéo về giá trị CŨ trong URL, hiệu ứng ghi URL bên dưới ghi giá trị mới → giật qua lại vô hạn →
+    // Report BI sập "Maximum update depth exceeded" (tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts).
+    const urlStateRef = useRef({ activeMainTab, activeSubTab, setActiveMainTab, setActiveSubTab });
+    urlStateRef.current = { activeMainTab, activeSubTab, setActiveMainTab, setActiveSubTab };
     useEffect(() => {
         if (isActive === false || typeof window === 'undefined') return;
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('tab') === 'employees' && (urlParams.get('view') === 'dashboard' || !urlParams.get('view'))) {
-            const m = urlParams.get('mode');
-            if ((m === 'realtime' || m === 'cumulative') && m !== activeMainTab) {
-                setActiveMainTab(m);
+        const docUrl = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'employees' && (urlParams.get('view') === 'dashboard' || !urlParams.get('view'))) {
+                const cur = urlStateRef.current;
+                const m = urlParams.get('mode');
+                if ((m === 'realtime' || m === 'cumulative') && m !== cur.activeMainTab) cur.setActiveMainTab(m);
+                const s = urlParams.get('sub');
+                if ((s === 'revenue' || s === 'competition') && s !== cur.activeSubTab) cur.setActiveSubTab(s);
             }
-            const s = urlParams.get('sub');
-            if ((s === 'revenue' || s === 'competition') && s !== activeSubTab) {
-                setActiveSubTab(s);
-            }
-        }
-    }, [isActive, activeMainTab, activeSubTab, setActiveMainTab, setActiveSubTab]);
+        };
+        docUrl();
+        window.addEventListener('popstate', docUrl);
+        return () => window.removeEventListener('popstate', docUrl);
+    }, [isActive]);
 
     // Đồng bộ URL query parameters khi người dùng chuyển mode hoặc subtab trong Siêu thị
     useEffect(() => {

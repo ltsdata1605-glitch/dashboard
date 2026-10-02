@@ -76,17 +76,23 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [activeTab, setActiveTab]);
 
-    // Đọc URL param ?sub=... khi mở vào màn hình Nhân viên
+    // Đọc URL param ?sub=... khi MỞ màn hình Nhân viên và khi bấm Lùi/Tới — không chạy lại mỗi lần đổi tab (vòng lặp
+    // đọc/ghi URL như ở Dashboard.tsx, 2026-10-02)
+    const subRef = useRef({ activeTab, setActiveTab });
+    subRef.current = { activeTab, setActiveTab };
     useEffect(() => {
         if (!isActive || typeof window === 'undefined') return;
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('tab') === 'employees' && params.get('view') === 'employee') {
-            const sub = params.get('sub');
-            if (sub && NAV_TABS.some(t => t.tab === sub) && sub !== activeTab) {
-                setActiveTab(sub as Tab);
+        const docUrl = () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('tab') === 'employees' && params.get('view') === 'employee') {
+                const sub = params.get('sub');
+                if (sub && NAV_TABS.some(t => t.tab === sub) && sub !== subRef.current.activeTab) subRef.current.setActiveTab(sub as Tab);
             }
-        }
-    }, [isActive, activeTab, setActiveTab]);
+        };
+        docUrl();
+        window.addEventListener('popstate', docUrl);
+        return () => window.removeEventListener('popstate', docUrl);
+    }, [isActive]);
 
     // Đồng bộ URL ?sub=... khi tab Nhân viên thay đổi
     useEffect(() => {

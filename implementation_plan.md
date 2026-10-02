@@ -7097,3 +7097,10 @@ qua (thật ra là ngày mai) → dễ tưởng nó sắp chạy.
 
 **Kiểm:** `tests/e2e/hen-gio-bi-va-bo-lo.spec.ts` (BI Realtime tới giờ mở tab + nhật ký; tab ngủ 14:59→15:30 → báo
 Bỏ lỡ, không mở tab), unit `missedSchedules` / `nextScheduleLabel`.
+
+### Lỗi sập Report BI khi chuyển chế độ (tìm ra khi điều tra hẹn giờ, 2026-10-02)
+Commit "deep link URL sync" (19a53367) thêm 2 hiệu ứng: đọc URL → đặt chế độ, và ghi chế độ → URL. Hiệu ứng ĐỌC có deps
+`activeMainTab/activeSubTab` nên chạy lại mỗi lần chế độ đổi và kéo về giá trị cũ còn trong URL, trong khi hiệu ứng GHI
+ghi giá trị mới → giật qua lại vô hạn → "Maximum update depth exceeded": **bấm "Thi đua"/"Luỹ kế" ở Report BI là sập**,
+lượt hẹn giờ BI tự chụp ảnh cũng sập theo. Sửa: chỉ đọc URL khi mở mục và khi `popstate` (Dashboard.tsx, NhanVien.tsx).
+Test: `tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts` (bấm qua lại không sập + mở link sâu đúng chế độ).
