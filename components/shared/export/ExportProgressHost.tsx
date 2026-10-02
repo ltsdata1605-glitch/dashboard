@@ -5,6 +5,11 @@ import {
     type ExportJobState, getExportState, subscribeExportState, registerExportHostMount,
     requestCancelExport, closeExportPanel,
 } from './exportProgress';
+import {
+    type LineSendState, getLineSendState, subscribeLineSend, registerLineSendHostMount,
+    cancelLineSend, retryFailedLineSends, closeLineSendPanel,
+} from './lineDelivery';
+import { LineIcon } from './LineIcon';
 
 /**
  * BẢNG TIẾN TRÌNH XUẤT ẢNH — một giao diện duy nhất cho mọi khu vực.
@@ -95,6 +100,88 @@ function Panel({ s }: { s: ExportJobState }) {
     );
 }
 
+/**
+ * THẺ "GỬI NHÓM LINE" — nổi ở góc dưới (không phủ kín màn hình như bảng xuất ảnh): việc gửi có thể kéo dài,
+ * người dùng vẫn xem/thao tác được, và thẻ không che bảng lỗi xuất ảnh. Trên điện thoại chừa chỗ thanh điều hướng
+ * dưới + vùng an toàn iPhone; danh sách lỗi tự cuộn để thẻ không tràn màn hình.
+ */
+function LineCard({ s }: { s: LineSendState }) {
+    const xong = s.phase === 'finished';
+    const total = s.items.length;
+    const daXuLy = s.items.filter((i) => i.status === 'ok' || i.status === 'failed' || i.status === 'skipped').length;
+    const ok = s.items.filter((i) => i.status === 'ok').length;
+    const loi = s.items.filter((i) => i.status === 'failed');
+    const dangGui = s.items.findIndex((i) => i.status === 'sending');
+    const coLoi = loi.length > 0 || Boolean(s.exportError) || (xong && total === 0);
+    const [dangThuLai, setDangThuLai] = useState(false);
+
+    let stage: string;
+    if (xong) stage = s.summary || '';
+    else if (s.cancelRequested) stage = 'Đang dừng sau ảnh hiện tại…';
+    else if (dangGui >= 0) stage = `Đang gửi nhóm LINE ${dangGui + 1}/${total}${s.phase === 'exporting' ? ' · vẫn đang xuất ảnh' : ''}`;
+    else if (s.phase === 'exporting') stage = total ? `Đang xuất ảnh… · đã gửi ${ok}/${total}` : 'Đang xuất ảnh…';
+    else stage = 'Đang gửi nhóm LINE…';
+    const pct = total ? Math.round((daXuLy / total) * 100) : 0;
+
+    return (
+        <div
+            role="status"
+            aria-live="polite"
+            data-testid="line-send-progress"
+            className="fixed z-[999991] left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+76px)] sm:left-auto sm:right-4 sm:bottom-4 sm:w-[360px] rounded-md border border-slate-200 bg-white shadow-xl"
+        >
+            <div className="flex items-start gap-3 px-3.5 pt-3">
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${xong ? (coLoi ? 'bg-amber-500 text-white' : 'bg-emerald-600 text-white') : 'bg-[#06C755] text-white'}`} aria-hidden>
+                    {xong ? <span className="text-sm font-bold">{coLoi ? '!' : '✓'}</span> : <LineIcon className="h-4.5 w-4.5" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-bold text-slate-800 truncate">Gửi nhóm LINE — {s.title}</p>
+                    <p className="text-[12px] text-slate-500 truncate">{s.groupsLabel}</p>
+                    <p className="text-[12px] font-semibold text-slate-700 tabular-nums" data-testid="line-send-stage">{stage}</p>
+                </div>
+            </div>
+            {total > 0 && (
+                <div className="px-3.5 pt-2">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div className={`h-full transition-all duration-300 ${xong ? (loi.length ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-[#06C755]'}`} style={{ width: `${xong ? 100 : pct}%` }} />
+                    </div>
+                    <div className="mt-1 text-right text-[11px] text-slate-500 tabular-nums" data-testid="line-send-count">{ok}/{total} ảnh đã gửi</div>
+                </div>
+            )}
+            {(s.exportError || loi.length > 0) && (
+                <ul className="mx-3.5 mt-2 max-h-28 overflow-auto border-l-[3px] border-rose-500 bg-rose-50 px-3 py-1.5 text-[12px] text-rose-700" data-testid="line-send-failed">
+                    {s.exportError && <li className="break-words">Lỗi xuất ảnh — {s.exportError}</li>}
+                    {loi.map((f) => <li key={f.id} className="break-words">Lỗi gửi LINE · {f.label}{f.error ? ` — ${f.error}` : ''}</li>)}
+                </ul>
+            )}
+            <div className="flex justify-end gap-2 px-3.5 py-2.5">
+                {!xong && (
+                    <Button size="sm" variant="secondary" className="min-h-10 sm:min-h-0" onClick={() => cancelLineSend(requestCancelExport)} disabled={s.cancelRequested}>
+                        {s.cancelRequested ? 'Đang dừng…' : 'Dừng gửi'}
+                    </Button>
+                )}
+                {xong && loi.length > 0 && (
+                    <Button
+                        size="sm" variant="primary" className="min-h-10 sm:min-h-0" disabled={dangThuLai} data-testid="line-send-retry"
+                        onClick={async () => { setDangThuLai(true); try { await retryFailedLineSends(); } finally { setDangThuLai(false); } }}
+                    >
+                        Thử lại {loi.length} ảnh lỗi
+                    </Button>
+                )}
+                {xong && (
+                    <Button size="sm" variant={loi.length ? 'secondary' : 'primary'} className="min-h-10 sm:min-h-0" onClick={closeLineSendPanel}>Đóng</Button>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function LineSendHost() {
+    const [s, setS] = useState<LineSendState | null>(getLineSendState());
+    useEffect(() => subscribeLineSend(setS), []);
+    return s ? <LineCard s={s} /> : null;
+}
+
 export function ExportProgressHost() {
     const [s, setS] = useState<ExportJobState | null>(getExportState());
     const [, tick] = useState(0);
@@ -119,7 +206,8 @@ function ensureExportHostMounted() {
     // Không bao giờ lọt vào ảnh chụp
     el.className = 'hide-on-export no-print';
     document.body.appendChild(el);
-    createRoot(el).render(<ExportProgressHost />);
+    createRoot(el).render(<><ExportProgressHost /><LineSendHost /></>);
 }
 
 registerExportHostMount(ensureExportHostMounted);
+registerLineSendHostMount(ensureExportHostMounted);

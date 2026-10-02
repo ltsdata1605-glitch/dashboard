@@ -5,12 +5,11 @@ import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport
 import { offerBatchShare, type BatchShareFile } from '../components/shared/ui/BatchShareToast';
 import { isMobileLikeDevice } from '../utils/dataUtils';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles } from '../services/uiService';
-import { startExportJob, type ExportJob } from '../components/shared/export';
+import { startExportJob, sendBlobToLine, isLineDeliveryActive, type ExportJob } from '../components/shared/export';
 import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
 import { getExportDestination, loadExportDestinations, reportKeyFromFilename, type ExportDestination } from '../services/analysisExportDestinations';
 import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
@@ -99,7 +98,6 @@ export const useExportLogic = ({
     isFilterProcessing,
     processedFilterState
 }: ExportLogicProps) => {
-    const { user, departmentId } = useAuth();
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
 
@@ -130,7 +128,9 @@ export const useExportLogic = ({
             const { destination = 'auto', throwOnLineError = false, lineTarget = null, ...rest } = options;
             await loadExportDestinations();
             const reportKey = reportKeyFromFilename(filename);
-            const dest: ExportDestination = lineTarget?.groupId
+            // Đang trong lượt nút "Gửi nhóm LINE" dùng chung: ảnh đi theo lựa chọn của lượt đó (khâu giao ảnh tự chuyển
+            // vào hàng đợi LINE) — không gửi thêm lần nữa theo đích đặt sẵn của nút
+            const dest: ExportDestination = isLineDeliveryActive() ? { kind: 'download' as const } : lineTarget?.groupId
                 ? { kind: 'line' as const, groups: [{ groupId: lineTarget.groupId, groupName: lineTarget.groupName }], groupId: lineTarget.groupId, groupName: lineTarget.groupName }
                 : destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
             const exportOptions = {
@@ -148,35 +148,16 @@ export const useExportLogic = ({
                     : (dest.groupId ? [{ groupId: dest.groupId, groupName: dest.groupName || 'Nhóm LINE' }] : []);
 
                 if (targetGroups.length > 0) {
-                    const groupTitle = targetGroups.length === 1
-                        ? `nhóm LINE ${targetGroups[0].groupName}`
-                        : `${targetGroups.length} nhóm LINE`;
-                    const tId = toast.loading(`Đang gửi "${reportKey}" vào ${groupTitle}…`);
+                    // Cùng hàng đợi + thẻ tiến trình "Gửi nhóm LINE" với mọi khu vực (components/shared/export/lineDelivery)
+                    let loi = '';
                     try {
-                        const { sendReportImageToLineGroups } = await import('../services/lineReportDelivery');
-                        const now = new Date();
-                        const p2 = (n: number) => String(n).padStart(2, '0');
-                        const caption = `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`;
-                        const res = await sendReportImageToLineGroups({
-                            blob,
-                            groups: targetGroups,
-                            fileName: filename,
-                            caption,
-                            uid: user?.uid || '',
-                            departmentId,
-                        });
-                        if (res.errors.length === 0) {
-                            toast.success(`Đã gửi "${reportKey}" vào ${groupTitle}`, { id: tId });
-                        } else if (res.ok > 0) {
-                            toast.error(`Đã gửi ${res.ok}/${targetGroups.length} nhóm. Lỗi: ${res.errors.join('; ')}`, { id: tId, duration: 8000 });
-                        } else {
-                            throw new Error(res.errors.join('; '));
-                        }
+                        const res = await sendBlobToLine({ blob, fileName: filename, title: reportKey, groups: targetGroups });
+                        if (res.failed > 0 || res.total === 0) loi = res.errors.join('; ') || 'Gửi nhóm LINE thất bại';
                     } catch (err) {
-                        const msg = getErrorMessage(err);
-                        toast.error(`Gửi LINE thất bại: ${msg}`, { id: tId, duration: 8000 });
-                        if (throwOnLineError) throw new Error(msg);
+                        loi = getErrorMessage(err);
+                        toast.error(`Gửi nhóm LINE thất bại: ${loi}`, { duration: 8000 });
                     }
+                    if (loi && throwOnLineError) throw new Error(loi);
                     return blob;
                 }
             }
@@ -190,7 +171,7 @@ export const useExportLogic = ({
             }
             return blob;
         }
-    }, [user?.uid, departmentId]);
+    }, []);
 
     const handlePendingDownload = useCallback(() => {
         if (pendingExport) {

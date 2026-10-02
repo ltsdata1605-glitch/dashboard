@@ -1,5 +1,6 @@
 import { isAbortError, isNotAllowedError, isMobileLikeDevice } from '../../../utils/dataUtils';
 import { offerShareRetry } from './ShareRetryToast';
+import { interceptImageDelivery } from '../export/lineDelivery';
 
 /**
  * GIAO ẢNH ĐÃ DỰNG cho người dùng — dùng chung cho mọi khu vực (audit A05–A08, 2026-09-30).
@@ -21,7 +22,9 @@ export type DeliveryResult =
     /** Người dùng đóng bảng chia sẻ */
     | 'cancelled'
     /** Safari từ chối vì dựng ảnh quá ~1s sau lượt chạm — đã hiện nút "Chia sẻ / Lưu ảnh" để chạm lại */
-    | 'retry-offered';
+    | 'retry-offered'
+    /** Ảnh được chuyển vào hàng đợi gửi nhóm LINE (nút "Gửi nhóm LINE"), không tải về */
+    | 'line';
 
 /** Tải file về máy. Thu hồi URL TRỄ: Safari iOS đọc blob URL không đồng bộ sau click(). */
 export function downloadBlobFile(blob: Blob, filename: string): void {
@@ -48,6 +51,9 @@ export async function deliverImage(
     filename: string,
     opts: { share?: boolean; title?: string } = {},
 ): Promise<DeliveryResult> {
+    // Đang trong lượt "Gửi nhóm LINE" (components/shared/export/lineDelivery.ts): ảnh vào hàng đợi gửi LINE.
+    // Phải gọi TRƯỚC mọi await — nơi gọi `void deliverImage(...)` không chờ hàm này.
+    if (interceptImageDelivery(blob, filename)) return 'line';
     const wantShare = opts.share ?? isMobileLikeDevice();
     if (!wantShare) {
         downloadBlobFile(blob, filename);

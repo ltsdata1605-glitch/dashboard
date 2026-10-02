@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react';
+import { deliverImage } from '../../../components/shared/ui/imageDelivery';
 
 interface ExportOptionsContextType {
     showExportOptions: (blob: Blob, filename: string) => Promise<'download' | 'share' | 'cancel'>;
@@ -14,14 +15,7 @@ export function useExportOptionsContext(): ExportOptionsContextType {
         // Fallback: direct download if no context
         return {
             showExportOptions: async (blob: Blob, filename: string): Promise<'download' | 'share' | 'cancel'> => {
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = filename;
-                link.href = url;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                await deliverImage(blob, filename, { share: false });
                 return 'download';
             }
         };

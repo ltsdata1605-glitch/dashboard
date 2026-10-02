@@ -100,24 +100,31 @@ const veCanvas = (bmp: ImageBitmap, w: number, h: number) => {
     return canvas;
 };
 
+/** Trả bộ nhớ canvas ngay (Safari iOS giữ bộ nhớ canvas tới khi GC — gửi nhiều ảnh liên tiếp dễ chạm trần) */
+const thaCanvas = (c: HTMLCanvasElement) => { c.width = 0; c.height = 0; };
+
 /**
  * Ảnh XEM TRƯỚC (LINE hiện trong khung chat, ≤ 1MB): JPEG vừa 1 document Firestore. Bề rộng tối đa 2048px, ưu tiên
  * giữ kích thước rồi mới hạ chất lượng — chữ trong bảng hỏng vì thu nhỏ nhiều hơn vì nén.
  */
 export async function prepareLineImage(blob: Blob): Promise<{ base64: string; width: number; height: number }> {
     const bmp = await createImageBitmap(blob);
-    let scale = Math.min(1, 2048 / bmp.width);
-    for (let lan = 0; lan < 10; lan++) {
-        const w = Math.max(1, Math.round(bmp.width * scale));
-        const h = Math.max(1, Math.round(bmp.height * scale));
-        const canvas = veCanvas(bmp, w, h);
-        for (const q of [0.92, 0.85, 0.78]) {
-            const base64 = canvas.toDataURL('image/jpeg', q).replace(/^data:image\/jpeg;base64,/, '');
-            if (base64.length <= MAX_BASE64) return { base64, width: w, height: h };
+    try {
+        let scale = Math.min(1, 2048 / bmp.width);
+        for (let lan = 0; lan < 10; lan++) {
+            const w = Math.max(1, Math.round(bmp.width * scale));
+            const h = Math.max(1, Math.round(bmp.height * scale));
+            const canvas = veCanvas(bmp, w, h);
+            try {
+                for (const q of [0.92, 0.85, 0.78]) {
+                    const base64 = canvas.toDataURL('image/jpeg', q).replace(/^data:image\/jpeg;base64,/, '');
+                    if (base64.length <= MAX_BASE64) return { base64, width: w, height: h };
+                }
+            } finally { thaCanvas(canvas); }
+            scale *= 0.85;
         }
-        scale *= 0.85;
-    }
-    throw new Error('Ảnh quá lớn để gửi LINE — thử xuất phần nhỏ hơn');
+        throw new Error('Ảnh quá lớn để gửi LINE — thử xuất phần nhỏ hơn');
+    } finally { bmp.close(); }
 }
 
 /**
@@ -129,16 +136,20 @@ export async function prepareLineHdImage(blob: Blob): Promise<{ base64: string; 
         return { base64: await blobToBase64(blob), contentType: /png/i.test(blob.type) ? 'image/png' : 'image/jpeg' };
     }
     const bmp = await createImageBitmap(blob);
-    let scale = 1;
-    for (let lan = 0; lan < 6; lan++) {
-        const canvas = veCanvas(bmp, Math.max(1, Math.round(bmp.width * scale)), Math.max(1, Math.round(bmp.height * scale)));
-        for (const q of [0.95, 0.9]) {
-            const base64 = canvas.toDataURL('image/jpeg', q).replace(/^data:image\/jpeg;base64,/, '');
-            if (base64.length * 0.75 <= HD_MAX_BYTES) return { base64, contentType: 'image/jpeg' };
+    try {
+        let scale = 1;
+        for (let lan = 0; lan < 6; lan++) {
+            const canvas = veCanvas(bmp, Math.max(1, Math.round(bmp.width * scale)), Math.max(1, Math.round(bmp.height * scale)));
+            try {
+                for (const q of [0.95, 0.9]) {
+                    const base64 = canvas.toDataURL('image/jpeg', q).replace(/^data:image\/jpeg;base64,/, '');
+                    if (base64.length * 0.75 <= HD_MAX_BYTES) return { base64, contentType: 'image/jpeg' };
+                }
+            } finally { thaCanvas(canvas); }
+            scale *= 0.85;
         }
-        scale *= 0.85;
-    }
-    throw new Error('Ảnh quá lớn để gửi LINE — thử xuất phần nhỏ hơn');
+        throw new Error('Ảnh quá lớn để gửi LINE — thử xuất phần nhỏ hơn');
+    } finally { bmp.close(); }
 }
 
 /** Cắt chuỗi base64 thành các mảnh vừa 1 document (hàm thuần — test được) */
@@ -248,10 +259,10 @@ async function pushViaCloudFunction(token: string, to: string, imageUrl: string,
 /** Gửi 1 ảnh báo cáo (kèm 1 dòng chú thích) vào NHIỀU nhóm LINE. Nén và tải ảnh lên bot_media 1 lần, rồi gửi tới từng nhóm. */
 export async function sendReportImageToLineGroups(params: {
     blob: Blob; groups: { groupId: string; groupName: string }[]; caption: string; fileName: string; uid: string; departmentId?: string | null;
-}): Promise<{ ok: number; errors: string[] }> {
+}): Promise<{ ok: number; errors: string[]; failedGroups: { group: LineGroupRef; error: string }[] }> {
     const bot = await resolveLineBot(params.uid, params.departmentId);
     if (!bot) throw new Error('Chưa cấu hình Bot LINE — vào mục Bot LINE để kết nối bot trước');
-    if (!params.groups || params.groups.length === 0) return { ok: 0, errors: [] };
+    if (!params.groups || params.groups.length === 0) return { ok: 0, errors: [], failedGroups: [] };
 
     // Tải ảnh lên 1 lần duy nhất cho toàn bộ danh sách nhóm
     const img = await prepareLineImage(params.blob);
@@ -274,6 +285,7 @@ export async function sendReportImageToLineGroups(params: {
 
     let ok = 0;
     const errors: string[] = [];
+    const failedGroups: { group: LineGroupRef; error: string }[] = [];
     for (const g of params.groups) {
         try {
             if (useUserscript) {
@@ -283,10 +295,12 @@ export async function sendReportImageToLineGroups(params: {
             }
             ok++;
         } catch (err) {
-            errors.push(`${g.groupName || g.groupId}: ${err instanceof Error ? err.message : String(err)}`);
+            const msg = err instanceof Error ? err.message : String(err);
+            errors.push(`${g.groupName || g.groupId}: ${msg}`);
+            failedGroups.push({ group: g, error: msg });
         }
     }
-    return { ok, errors };
+    return { ok, errors, failedGroups };
 }
 
 /** Gửi 1 ảnh báo cáo (kèm 1 dòng chú thích) vào 1 nhóm LINE. Ném lỗi có câu chữ đọc được nếu không gửi được. */

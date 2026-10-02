@@ -1,6 +1,7 @@
 import React from 'react';
 import toast from 'react-hot-toast';
 import { Button } from './Button';
+import { interceptImageDelivery } from '../export/lineDelivery';
 
 /**
  * CHIA SẺ MỘT LẦN cho cả lô ảnh xuất hàng loạt trên điện thoại (2026-09-30).
@@ -25,6 +26,10 @@ export function canShareBatch(files: BatchShareFile[]): boolean {
 }
 
 export function offerBatchShare(files: BatchShareFile[], onFallback: () => void): void {
+    // Lượt "Gửi nhóm LINE": cả lô vào hàng đợi gửi LINE; chỉ hiện nút chia sẻ khi người dùng chọn đồng thời tải về
+    let chiGuiLine = files.length > 0;
+    for (const f of files) chiGuiLine = interceptImageDelivery(f.blob, f.filename) && chiGuiLine;
+    if (chiGuiLine) return;
     if (!canShareBatch(files)) { onFallback(); return; }
     const shareData: ShareData = { files: files.map(toFile), title: `${files.length} ảnh` };
     toast(

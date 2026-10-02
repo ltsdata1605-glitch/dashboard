@@ -49,6 +49,7 @@ import CouponConverterView from './components/views/CouponConverterView';
 import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 import GlobalAutoSyncDock from './components/layout/GlobalAutoSyncDock';
+import { registerRootLineTransport } from './services/lineTransport';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 import InstallAppHint from './components/layout/InstallAppHint';
 import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
@@ -186,6 +187,9 @@ function AppContent() {
 
     // Viền mờ "còn cột bên phải" cho mọi bảng cuộn ngang (Đợt C, kế hoạch iPhone)
     React.useEffect(() => installTableScrollCue(), []);
+
+    // Cổng "Gửi nhóm LINE" dùng chung cho mọi khu vực (components/shared/export/lineDelivery.ts)
+    React.useEffect(() => registerRootLineTransport(user?.uid, departmentId), [user?.uid, departmentId]);
 
     React.useEffect(() => {
         // Preload the CURRENT tab's chunk in background so switching away and back feels instant.
