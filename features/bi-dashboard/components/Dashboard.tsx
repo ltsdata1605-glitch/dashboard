@@ -224,7 +224,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                 for (const area of d.areas || []) {
                     const kv = KHU_VUC[area];
                     if (!kv) { errors.push({ area, error: 'khu vực không rõ' }); continue; }
-                    const ds = kv.tong ? ['Tổng'] : r().supermarkets.filter(sm => sm !== 'Tổng');
+                    // Chỉ xuất 1 ảnh đang hiển thị/chọn, không xuất nhiều ảnh lặp qua mọi siêu thị
+                    const currentSm = r().activeSupermarket && r().activeSupermarket !== 'Tổng'
+                        ? r().activeSupermarket
+                        : (r().supermarkets.find(sm => sm !== 'Tổng') || 'Tổng');
+                    const ds = kv.tong ? ['Tổng'] : [currentSm];
                     if (ds.length === 0) errors.push({ area, error: 'chưa có siêu thị nào' });
                     for (const sm of ds) {
                         r().setActiveSubTab(kv.sub);
