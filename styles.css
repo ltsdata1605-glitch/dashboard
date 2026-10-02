@@ -66,6 +66,24 @@
 }
 
 @layer components {
+  /* ICON DÙNG CHUNG (chuẩn hoá icon 2026-10-02) — `components/shared/ui/icon/AppIcon.tsx`.
+     Px KHÔNG viết ở đây: AppIcon truyền `--ycx-icon-m` (mobile) và `--ycx-icon-d` (laptop) lấy từ
+     `iconTokens.ts`; CSS chỉ chọn biến theo mốc `lg` (64rem = 1024px, trùng breakpoint Tailwind).
+     Đặt trong @layer components để utility (`w-*`) vẫn đè được khi THẬT SỰ cần ngoại lệ. */
+  .ycx-icon {
+    width: var(--ycx-icon-m, 18px);
+    height: var(--ycx-icon-m, 18px);
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  @media (min-width: 64rem) {
+    .ycx-icon {
+      width: var(--ycx-icon-d, 16px);
+      height: var(--ycx-icon-d, 16px);
+    }
+  }
+
   .glass-card {
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300;
   }

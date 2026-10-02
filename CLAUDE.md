@@ -196,6 +196,12 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Màu ramp (Xoay vòng)**: Khi phân biệt trên 5 hạng mục dữ liệu, dùng pattern "6 họ semantic x 2 tầng sắc độ" (5 màu chuẩn + `indigo`, mỗi họ 2 sắc độ đậm/nhạt), không tự chế màu ngoài palette.
 - **UI Components**: Mọi phần tử tương tác (button, input, modal, confirm dialog, badge, select, dropdown) **bắt buộc** dùng components ở `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự dựng modal `fixed inset-0` mới.
 - **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`.
+- **Icon** *(chuẩn hoá 2026-10-02)*: mọi icon gọi qua `<AppIcon name="<chức năng>" size="<token>" />` hoặc
+  `<Button icon="…">` (`components/shared/ui/icon/` — thuộc `components/shared/ui/*` nên cả 5 khu vực dùng hợp lệ).
+  CẤM import `lucide-react` ngoài `iconRegistry.ts`, cấm `size={số}` trên icon, cấm vẽ SVG icon mới / dùng
+  `components/common/Icon.tsx` (đã deprecated — `size` của nó tính bằng đơn vị Tailwind, lẫn với px của lucide).
+  Thang size `xs…hero`, mốc laptop/mobile `lg`, bảng icon chuẩn theo chức năng: `DESIGN_SYSTEM.md` mục 4.6.
+  `lint-ratchet` đếm `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` — chỉ được giảm.
 - **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
 - **Bo góc** *(sửa 2026-09-10 theo chuẩn "Bảng điều khiển ca trực")*: `rounded` (4px — input/button),
   `rounded-md` (6px — modal/dropdown, thứ NỔI LÊN trên). Bảng và vùng dữ liệu: `rounded-none`.
