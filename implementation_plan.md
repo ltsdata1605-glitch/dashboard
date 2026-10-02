@@ -7022,3 +7022,27 @@ Quy tắc mới (chủ dự án chốt): **bảng luôn là bảng** — ghi và
   `tax-qr-and-export.spec.ts` sửa chọn ô tải ảnh theo id thay vì thứ tự.
 - Đỏ TỪ TRƯỚC (đã kiểm bằng git stash, không liên quan): `bi-auto-sync-xong-dong-modal`, `iframe-tabs-csp` (xlsx
   check-thuong), `sticker-nut-va-quet-ma` ×2, `sticker-toc-do-quet-ma` ×2.
+
+## Luỹ kế: ô THI ĐUA & TRẢ CHẬM nhân viên từng siêu thị thật sự cập nhật — userscript 7.17 (2026-10-02)
+
+**Triệu chứng (chủ dự án, ghi màn hình):** chạy Luỹ kế xong, ô *Cấu hình siêu thị & nhân viên › THI ĐUA* không đổi.
+
+**Nguyên nhân (đo trên ghi màn hình + request mẫu):** trang MWG chọn Siêu thị 910 thì bảng Thi đua hiện 1 dòng siêu
+thị; bấm vào mới khoan xuống nhân viên bằng `{VIEWLEVEL:"STORE", VIEWIDS:"9567", STOREIDS:"910"}` — breadcrumb hiện
+"Toàn công ty › 9567". **9567 là mã nội bộ của dòng siêu thị, không phải mã kho.** Bản 7.10–7.16 gửi VIEWIDS = mã kho
+(rồi null) → API không trả dòng nhân viên → không có gì để ghi. Thêm nữa, bộ lọc "salegroupid toàn số" coi dòng siêu
+thị (9567) là nhân viên → nếu API trả dòng đó thì ô bị ghi rác.
+
+**Sửa (`public/scripts/mwg-auto-thu-thap-diem-thuong.user.js`):**
+- `acpFetchCompetitionStaff(st, monthKey, token)`: dò mã như trang làm — (1) mã đã nhớ theo kho (GM
+  `BI_COMP_STORE_VIEWID_<kho>`, lần sau chỉ 1 lượt gọi); (2) bảng Thi đua lọc đúng kho (`ISVIEWSTORE` 1 rồi 0), lấy
+  `salegroupid` các dòng không phải nhân viên, thử `VIEWLEVEL STORE`; chưa ra thì khoan tiếp theo `columnname` (≤5 tầng,
+  ≤4 nhánh/tầng); (3) cách cũ VIEWIDS = mã kho / null. Dừng ở lần đầu thấy dòng `columnname = STAFFUSER`.
+- `acpCompIsStaffRow`: có `columnname` thì chỉ nhận `STAFFUSER`.
+- Trả chậm: mỗi kho bọc try/catch; API rỗng (không nhân viên) thì KHÔNG ghi đè ô đang có.
+- Phía Dashboard (`biAutoSyncService.applyBiSyncResults` → `config-<siêu thị>-thidua` / `-tragop`) đã đúng từ 7.10, không đổi.
+
+**Kiểm:** `tests/e2e/bi-sync-luy-ke.spec.ts` giả đúng hành vi MWG (chỉ trả nhân viên khi VIEWIDS là mã nội bộ; 1 kho
+có dòng siêu thị ngay, 1 kho phải khoan COMPANY → AREA → STORE); `thiDuaNhanVienApi.test.ts` thêm ca dòng siêu thị 9567.
+**Chưa kiểm được trên MWG thật** (không có phiên đăng nhập): tên `columnname` các tầng giữa là suy đoán — nếu vẫn
+không ra, Console trang baocao có dòng `[BI-Sync] [API] Thi đua nhân viên …` / `Không lấy được Thi đua nhân viên cho …`.

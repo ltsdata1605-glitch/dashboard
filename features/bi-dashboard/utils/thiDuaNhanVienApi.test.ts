@@ -12,6 +12,7 @@ import { parseCompetitionData, validateThiDuaData } from './nhanVienHelpers';
 const SRC = readFileSync(resolve(__dirname, '../../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js'), 'utf-8');
 const cat = (from: string, to: string) => SRC.slice(SRC.indexOf(from), SRC.indexOf(to));
 const serialize = new Function(`${cat('  function acpCompIsQty(item) {', '  function acpSerializeCompetitionRealtime(')}
+${cat('  function acpCompIsStaffRow(', '  // Thi đua theo NHÂN VIÊN của 1 siêu thị (bản 7.17)')}
 ${cat('  function acpSerializeCompetitionStaff(', '  // TRẢ CHẬM theo NHÂN VIÊN')}; return acpSerializeCompetitionStaff;`)() as (rows: unknown[], storeId?: unknown) => string;
 
 const dong = (programid: number, programname: string, competitiontype: number, salegroupid: string, salegroupname: string, quantity: number, revenue: number, storeid = 910) =>
@@ -74,5 +75,12 @@ describe('Thi đua theo nhân viên từ API → ô Thi đua của siêu thị',
 
     it('API rỗng → chuỗi rỗng (không ghi đè ô cũ)', () => {
         expect(serialize([], 910)).toBe('');
+    });
+    it('7.17: dòng SIÊU THỊ (columnname STORE, salegroupid số như 9567) không bị nhận nhầm là nhân viên', () => {
+        const coDongSieuThi = [{ ...MAU[0], columnname: 'STORE', salegroupid: '9567', salegroupname: 'ĐML_STR_STR - 99 Hùng Vương' }, ...MAU];
+        const t = serialize(coDongSieuThi, 910);
+        expect(t).not.toContain('9567');
+        expect(t).toBe(text);
+        expect(serialize([{ ...MAU[0], columnname: 'STORE', salegroupid: '9567' }], 910)).toBe('');
     });
 });
