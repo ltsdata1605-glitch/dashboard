@@ -663,9 +663,18 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 icon={<Columns3 className="h-4 w-4" />}
                 title="Xuất ảnh rút gọn (chỉ Nhân viên, %HT 100%, Hiệu quả)"
                 ariaLabel="Xuất ảnh rút gọn"
+                line={false}
             />
 
-            <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
+            <ExportButton
+                onExportPNG={async () => { await handleExportPNG(); }}
+                lineTitle="Thi đua tổng hợp"
+                lineSelfLabel="Bảng đầy đủ"
+                lineExtraChoices={[
+                    { id: 'gon', label: 'Bảng rút gọn', sublabel: 'Nhân viên, %HT 100%, Hiệu quả', run: handleExportSummaryPNG },
+                    ...(allAvailableGroups.length > 1 ? [{ id: 'nhom', label: 'Theo từng nhóm tiêu chí', sublabel: `${allAvailableGroups.length} ảnh`, run: handleBatchExportByGroup }] : []),
+                ]}
+            />
         </div>
     );
 

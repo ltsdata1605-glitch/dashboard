@@ -1,12 +1,13 @@
 import React from 'react';
 import { Trophy, ChevronRight, Camera } from 'lucide-react';
 import { CheckThuongStoreSummary } from '../types';
+import { LineSendButton } from '../../../components/shared/export/LineSendButton';
 
 interface CheckThuongChannelTopGridProps {
     stores: CheckThuongStoreSummary[];
     channels: string[];
     onSelectStore: (storeCode: string) => void;
-    onExportChannel?: (channel: string, topStores: CheckThuongStoreSummary[]) => void;
+    onExportChannel?: (channel: string, topStores: CheckThuongStoreSummary[]) => Promise<unknown> | void;
     isExporting?: boolean;
 }
 
@@ -184,6 +185,11 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                             >
                                 <Camera className={`w-3.5 h-3.5 ${theme.icon}`} />
                             </button>
+                            {onExportChannel && (
+                                <span onClick={(e) => e.stopPropagation()} className="contents">
+                                    <LineSendButton areaKey="ct:Top Thưởng Kênh" title={`Top 10 thưởng kênh ${channel}`} run={() => onExportChannel(channel, top10)} disabled={isExporting} className={`border rounded-none ${theme.button}`} />
+                                </span>
+                            )}
                         </div>
 
                         {/* BẢNG TOP 10 */}

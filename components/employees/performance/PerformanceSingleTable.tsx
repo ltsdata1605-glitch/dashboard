@@ -8,6 +8,7 @@ import {
 } from './PerformanceTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { Button } from '../../shared/ui/Button';
+import { LineSendButton } from '../../shared/export/LineSendButton';
 
 // Khớp object trả về bởi trueGrandTotal (useMemo) trong PerformanceTable.tsx
 interface GrandTotalData {
@@ -48,7 +49,7 @@ interface RenderSingleTableProps {
     setTempTarget: (v: string) => void;
     fullSellerArrayLength: number;
     showSortArrow: boolean;
-    onBatchExport: () => void;
+    onBatchExport: () => Promise<unknown> | void;
     kpiTargets?: { hieuQua: number, traGop: number };
 }
 
@@ -236,6 +237,16 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                             {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                         </Button>
+                        <LineSendButton
+                            areaKey="pt:Hiệu Suất Nhân Viên"
+                            title="Hiệu suất nhân viên"
+                            disabled={isExporting}
+                            className="lg:h-9 lg:w-9"
+                            choices={[
+                                { id: 'one', label: 'Tab đang xem', run: onSingleExport },
+                                { id: 'all', label: 'Cả 3 tab', sublabel: 'Doanh thu, Khai thác, Vượt trội', run: onBatchExport },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

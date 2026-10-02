@@ -438,10 +438,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         supermarkets={supermarkets}
                         activeSupermarket={activeSupermarket}
                         setActiveSupermarket={setActiveSupermarket}
-                        onBatchExport={() => {
-                            if (activeSubTab === 'competition') runBatchExport('competition');
-                            else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
-                        }}
+                        onBatchExport={() => (activeSubTab === 'competition'
+                            ? runBatchExport('competition')
+                            : runBatchExport(isRealtimeView ? 'realtime' : 'cumulative'))}
                         isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                         onExport={async () => {
                             setIsHeaderExporting(true);

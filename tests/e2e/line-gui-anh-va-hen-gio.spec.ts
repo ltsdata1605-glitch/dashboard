@@ -101,7 +101,9 @@ test('đích xuất ảnh: chọn nhóm LINE ở nút → bấm xuất là GỬI
     let taiVe = false;
     page.on('download', () => { taiVe = true; });
     await page.getByTitle('Chỉ Xuất Ảnh Tổng Quan').click();
-    await expect(page.getByText(/Đã gửi "Tổng Quan Doanh Thu" vào nhóm LINE Nhóm Siêu Thị 910/)).toBeVisible({ timeout: 30_000 });
+    // Gửi qua hàng đợi + thẻ tiến trình "Gửi nhóm LINE" dùng chung (components/shared/export/lineDelivery)
+    await expect(page.getByTestId('line-send-stage')).toHaveText('Đã gửi nhóm LINE thành công', { timeout: 30_000 });
+    await expect(page.getByTestId('line-send-progress')).toContainText('nhóm Nhóm Siêu Thị 910');
     const calls = await lineCalls(page);
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe('https://api.line.me/v2/bot/message/push');

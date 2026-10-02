@@ -13,6 +13,7 @@ import {
 } from '../../services/competitionGroupCalc';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
+import { LineSendButton } from '../../../../components/shared/export/LineSendButton';
 import { exportElementAsImage } from '../../services/uiService';
 import { MedalBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
@@ -258,10 +259,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             {/* Title bar — solid blue background with generous padding and subtle separator */}
             <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-4 sm:py-4.5 border-b border-sky-500/40 dark:border-sky-600/60">
                 <div className="flex justify-center items-center relative">
-                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center whitespace-normal px-8 py-0.5 leading-snug tracking-wider drop-shadow-xs" title={header.originalTitle}>
+                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center whitespace-normal px-16 py-0.5 leading-snug tracking-wider drop-shadow-xs" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                         <Button
                             type="button"
                             variant="unstyled" size="none"
@@ -271,6 +272,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         >
                             <CameraIcon className="h-4 w-4" />
                         </Button>
+                        <LineSendButton areaKey="bi:Thẻ nhóm thi đua" title={displayTitle} run={handleExportPNG} className="text-white hover:bg-white/20" />
                     </div>
                 </div>
             </div>

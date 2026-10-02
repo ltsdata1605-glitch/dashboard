@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
+import { LineSendButton, type LineSendChoice } from '../../../components/shared/export/LineSendButton';
 
 interface PhanCaToolbarProps {
     hasStaff: boolean;
@@ -11,13 +12,15 @@ interface PhanCaToolbarProps {
     onExportAll: () => void;
     onExportWeekly: () => void;
     onExportIndividual: () => void;
+    /** Các lượt xuất ảnh cho nút "Gửi nhóm LINE" */
+    lineChoices: LineSendChoice[];
     onExportExcel: () => void;
     onExportGoogleSheet: () => void;
 }
 
 export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
     hasStaff, onImportClick, onDeleteStaffList, onOpenEditPattern,
-    onExportAll, onExportWeekly, onExportIndividual, onExportExcel, onExportGoogleSheet,
+    onExportAll, onExportWeekly, onExportIndividual, onExportExcel, onExportGoogleSheet, lineChoices,
 }) => {
     const { activeTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
@@ -56,6 +59,9 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                     <Button variant="ghost" onClick={onExportIndividual} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 border-l border-slate-700 transition-colors" disabled={!hasStaff}>
                         Từng NV
                     </Button>
+                    <span className="flex items-center border-l border-slate-100 px-1">
+                        <LineSendButton areaKey="pc:Lịch Phân Ca" title="Lịch phân ca" choices={lineChoices} disabled={!hasStaff} />
+                    </span>
                     <Button variant="ghost" onClick={onExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border-l border-emerald-700 transition-colors" disabled={!hasStaff}>
                         Excel
                     </Button>
@@ -93,6 +99,7 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                 <Button variant="ghost" onClick={onExportIndividual} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-slate-800 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
                     Từng NV
                 </Button>
+                <LineSendButton areaKey="pc:Lịch Phân Ca" title="Lịch phân ca" choices={lineChoices} disabled={!hasStaff} className="h-11 w-11 rounded-md border border-slate-200 bg-white" />
                 <Button variant="ghost" onClick={onExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-emerald-600 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
                     Excel
                 </Button>

@@ -18,7 +18,11 @@ const docMemory = async (): Promise<Memory> => {
     return m && typeof m === 'object' ? m : {};
 };
 
-export function registerRootLineTransport(uid: string | null | undefined, departmentId?: string | null): () => void {
+/** CHỈ bản dev (test e2e, Chế độ Dùng Thử không có uid): bot/nhóm giả `__YCX_TEST_LINE__` của lineReportDelivery */
+const coBotGia = () => import.meta.env.DEV && Boolean((globalThis as { __YCX_TEST_LINE__?: unknown }).__YCX_TEST_LINE__);
+
+export function registerRootLineTransport(uidThat: string | null | undefined, departmentId?: string | null): () => void {
+    const uid = uidThat || (coBotGia() ? 'test-uid' : '');
     if (!uid) { registerLineTransport(null); return () => {}; }
     registerLineTransport({
         async loadGroups() {

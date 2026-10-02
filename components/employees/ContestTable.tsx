@@ -22,6 +22,7 @@ interface ContestTableProps {
 }
 
 import { DATA_STATUS_COLORS } from '../../constants';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 const getConditionalStyle = (value: number | undefined, column: ColumnConfig, average: number | undefined): React.CSSProperties => {
     if (value === undefined || !column.conditionalFormatting || column.conditionalFormatting.length === 0) {
@@ -422,6 +423,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                             {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={5} className="hidden lg:block" />}
                         </Button>
+                        <span onClick={(e) => e.stopPropagation()} className="contents">
+                            <LineSendButton areaKey="pt:Thi Đua Nhân Viên" title={config.tableName || 'Bảng thi đua'} run={handleExport} disabled={isExporting} className="lg:h-9 lg:w-9" />
+                        </span>
                     </div>
                 </div>
 

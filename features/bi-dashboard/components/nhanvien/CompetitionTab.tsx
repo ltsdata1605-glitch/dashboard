@@ -6,6 +6,7 @@ import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
+import { LineSendButton } from '../../../../components/shared/export/LineSendButton';
 import { UsersIcon, XIcon, SpinnerIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
@@ -701,7 +702,14 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             {highlightedEmployees.size > 0 && (
                                 <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
                             )}
-                            <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
+                            <ExportButton
+                                onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }}
+                                lineTitle="Nhóm thi đua"
+                                lineExtraChoices={[
+                                    { id: 'all', label: 'Tất cả nhóm', sublabel: 'Mỗi nhóm 1 ảnh', run: handleGroupBatchExport },
+                                    ...(highlightedEmployees.size > 0 ? [{ id: 'hl', label: `Nhân viên Highlight (${highlightedEmployees.size})`, sublabel: 'Mỗi nhân viên 1 ảnh', run: handleSmartBatchExport }] : []),
+                                ]}
+                            />
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
@@ -750,7 +758,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
-                            <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} />
+                            <ExportButton
+                                onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }}
+                                lineTitle="Thi đua cá nhân"
+                                lineExtraChoices={[{ id: 'all', label: 'Tất cả nhân viên', sublabel: 'Mỗi nhân viên 1 ảnh', run: () => individualViewRef.current?.performBatchExport() }]}
+                            />
                         </>
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
@@ -758,6 +770,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400">
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </Button>
+                            <LineSendButton areaKey="bi:Thi đua bảng tổng hợp" title="Các bảng tổng hợp thi đua" batchHint={`${summaryTables.length} ảnh`} run={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} className="rounded-full" />
                         </>
                     )}
                 </div>

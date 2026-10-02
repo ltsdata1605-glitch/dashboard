@@ -7147,3 +7147,50 @@ Test: `tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts` (bấm qua lại không s�
   đã kiểm ngược: bỏ đoạn kiểm chữ ký → 4/5 đỏ), `line-bot-schedule-due.test.ts`, `line-bot-notify-may-chu.test.ts`.
 - Chưa làm (ngoài 3 mục): các `?action=` công khai của webhook (lưu media, gửi thử bằng token trong body) không xác thực
   người gọi; `features/tax-calculator`, `check-thuong` cũng chưa có trong bảng/luật cách ly.
+
+---
+
+# Gửi nhóm LINE từ MỌI nút xuất ảnh (2026-10-02)
+
+Yêu cầu chủ dự án: mọi nơi xuất được ảnh đều gửi được ảnh đó vào nhóm LINE ("G line" = nhóm LINE qua Bot LINE đã cấu
+hình trong app), một hệ thống dùng chung, có tiến trình / báo lỗi / thử lại. Chủ dự án chốt: **mỗi lần gửi đúng 1 ảnh**
+(không gộp), mỗi khu vực **nhớ nhóm đã chọn lần trước**, **không** làm cho In Sticker và Tính thuế. Hai rủi ro bảo mật
+có sẵn (token bot đọc về trình duyệt; `bot_media` đọc công khai, không hết hạn) — tách việc riêng, chưa làm.
+
+## Kiến trúc
+
+| Thành phần | Vai trò |
+|---|---|
+| `components/shared/export/lineDelivery.ts` | Cổng gửi (`registerLineTransport`), **phạm vi gửi** `runWithLineDelivery(opts, hamXuat)`, hàng đợi tuần tự 1 ảnh/lần (nghỉ 300ms giữa ảnh), thử lại chỉ nhóm còn lỗi, dừng gửi, giải phóng blob, `sendBlobToLine` cho ảnh đã có |
+| `components/shared/ui/imageDelivery.ts` + `BatchShareToast.tsx` | Khâu giao ảnh chung gọi `interceptImageDelivery` TRƯỚC khi tải/chia sẻ → ảnh vào hàng đợi LINE thay vì tải về (hoặc cả hai nếu chọn "Đồng thời tải về") |
+| `components/shared/export/LineSendButton.tsx` | Nút duy nhất (icon LINE chính thức, `LineIcon.tsx`) + hộp chọn nhóm / chọn ảnh (`choices`) |
+| `components/shared/export/ExportProgressHost.tsx` | Thẻ "Gửi nhóm LINE" nổi góc dưới (không phủ kín màn hình), danh sách lỗi (lỗi xuất ≠ lỗi gửi), Thử lại / Dừng gửi / Đóng |
+| `services/lineTransport.ts` | Gốc cắm `lineReportDelivery` vào cổng chung (App.tsx), nhớ nhóm theo khu vực bằng `saveSetting('line_send_group_memory')` |
+
+**Vì sao chặn ở khâu giao ảnh**: mọi ảnh của dự án đều đi qua `deliverImage` / `offerBatchShare`. Mở "phạm vi gửi LINE"
+quanh đúng hàm xuất có sẵn của nút → không phải sửa vòng lặp xuất hàng loạt nào, không chụp lại ảnh lần 2, và Report BI /
+Khai thác / Phân Ca không phải import `services/` gốc (cách ly CLAUDE.md mục 1 giữ nguyên).
+
+**Điều kiện để một nút dùng được**: hàm `run` truyền vào phải trả về promise kết thúc SAU khi ảnh cuối được giao. Đã sửa
+3 chỗ trước đây không chờ: `PerformanceTable` (xuất 3 tab không `await`), Phân Ca "Tất cả" (setTimeout không chờ) và
+"Từng NV" (tách `runExportIndividual`).
+
+## Các nơi đã gắn nút
+
+- Report BI: header Doanh thu/Thi đua (ảnh đang xem / tất cả siêu thị), `ExportButton` chung (tự kèm nút LINE: Ngành
+  hàng, Thưởng, Trả chậm, Doanh thu NV, Thi đua tổng hợp, Nhóm thi đua, Cá nhân + lựa chọn hàng loạt cạnh nó), bảng tổng
+  hợp, so sánh cặp, từng thẻ nhóm.
+- Phân tích: lịch doanh thu (+ nháp, lịch đã lưu), chi tiết ngành hàng, bán kèm, bảng thi đua NV, tab tuỳ chỉnh, Top
+  NV (+ từng NV), khai thác ngành hàng (+ từng NV), 7 ngày (+ toàn bộ), hiệu suất (+ cả 3 tab), modal Hiệu suất NV,
+  Đơn chờ xuất / Đơn chưa thu (toàn bộ, theo người lập, từng người). 4 nút cũ có "đích LINE" + tự gửi sau Auto Sync
+  (`ExportDestinationButton`) giữ nguyên, nay gửi qua cùng hàng đợi/thẻ tiến trình.
+- Báo cáo khai thác: doanh số cá nhân, danh sách khách hàng.
+- Check thưởng: Top N, Top 10 từng kênh.
+- Phân Ca: lịch toàn bộ / theo tuần / từng NV.
+- Không có nút xuất: "Xuất theo kho" (`onBatchExport` của WarehouseSummary không được render), `IndustryGrid.handleExport`,
+  `HeadToHeadTable.handleExport` (mã chết).
+
+## Kiểm chứng
+- `tests/unit/line-delivery-queue.test.ts`: tuần tự 1 ảnh/lần, dedupe blob, 1 ảnh lỗi, thử lại đúng nhóm lỗi, timeout,
+  lỗi xuất, bấm liên tục, dừng gửi, chưa đăng nhập, đóng giải phóng.
+- `tests/e2e/gui-nhom-line-moi-nut.spec.ts`: 1 ảnh (không tải về, nhớ nhóm), hàng loạt 3 ảnh có 1 lỗi + thử lại, iPhone 390px.

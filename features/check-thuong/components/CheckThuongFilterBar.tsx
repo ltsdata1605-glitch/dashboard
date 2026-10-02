@@ -2,6 +2,7 @@ import React from 'react';
 import { Search, Filter, X, Camera, RotateCcw, Loader2 } from 'lucide-react';
 import { LeaderboardFilterState } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
+import { LineSendButton } from '../../../components/shared/export/LineSendButton';
 
 interface CheckThuongFilterBarProps {
     filters: LeaderboardFilterState;
@@ -13,7 +14,7 @@ interface CheckThuongFilterBarProps {
     onExportLimitChange: (limit: number) => void;
     onFilterChange: (updates: Partial<LeaderboardFilterState>) => void;
     onReset: () => void;
-    onExportImage: () => void;
+    onExportImage: () => Promise<unknown> | void;
 }
 
 export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
@@ -143,6 +144,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                         <span className="hidden sm:inline">Xuất ảnh ({exportLimit})</span>
                         <span className="sm:hidden">Ảnh</span>
                     </Button>
+                    <LineSendButton areaKey="ct:Top Thưởng" title={`Top ${exportLimit} siêu thị thưởng cao`} run={onExportImage} disabled={isExporting} className="border border-slate-200 bg-white rounded-none" />
                 </div>
             </div>
         </div>

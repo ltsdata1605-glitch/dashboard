@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CameraIcon, SpinnerIcon, ChevronDownIcon } from './Icons';
 import { Button, cn } from '../../../components/shared/ui/Button';
+import { LineSendButton, type LineSendChoice } from '../../../components/shared/export/LineSendButton';
 
 export interface ExportOptionItem {
   id: string;
@@ -18,6 +19,16 @@ interface ExportButtonProps {
   icon?: React.ReactNode;
   title?: string;
   ariaLabel?: string;
+  /** Tên báo cáo cho nút "Gửi nhóm LINE" đi kèm (mặc định = title). Nút LINE dùng lại đúng hàm xuất của nút này. */
+  lineTitle?: string;
+  /** Khoá nhớ nhóm LINE (mặc định suy từ lineTitle) */
+  lineKey?: string;
+  /** false = không kèm nút gửi LINE */
+  line?: boolean;
+  /** Thêm lựa chọn cho nút LINE (vd nút xuất hàng loạt đứng cạnh) — 1 nút LINE cho cả cụm */
+  lineExtraChoices?: LineSendChoice[];
+  /** Nhãn lựa chọn "ảnh của nút này" khi có lineExtraChoices */
+  lineSelfLabel?: string;
 }
 
 const ExportButton: React.FC<ExportButtonProps> = ({
@@ -28,6 +39,11 @@ const ExportButton: React.FC<ExportButtonProps> = ({
   icon,
   title = 'Xuất ảnh báo cáo (PNG)',
   ariaLabel = 'Xuất ảnh báo cáo',
+  lineTitle,
+  lineKey,
+  line = true,
+  lineExtraChoices,
+  lineSelfLabel = 'Ảnh đang xem',
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -87,8 +103,24 @@ const ExportButton: React.FC<ExportButtonProps> = ({
     }
   };
 
+  const tenLine = lineTitle || title;
+  const luaChonLine: LineSendChoice[] = [
+    ...(hasOptions ? options.map((o) => ({ id: o.id, label: o.label, sublabel: o.sublabel, run: o.onSelect }))
+      : onExportPNG ? [{ id: 'self', label: lineSelfLabel, run: onExportPNG }] : []),
+    ...(lineExtraChoices || []),
+  ];
+  const nutLine = line && luaChonLine.length > 0 ? (
+    <LineSendButton
+      areaKey={lineKey || `bi:${tenLine}`}
+      title={tenLine}
+      disabled={disabled || isLoading}
+      className="rounded-full"
+      choices={luaChonLine}
+    />
+  ) : null;
+
   return (
-    <div className="relative inline-flex items-center" ref={dropdownRef}>
+    <div className="relative inline-flex items-center gap-0.5" ref={dropdownRef}>
       <Button
         variant="unstyled"
         size="none"
@@ -115,6 +147,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
           </>
         )}
       </Button>
+      {nutLine}
 
       {hasOptions && isOpen && (
         <div className="absolute right-0 top-full mt-1.5 w-64 sm:w-72 bg-white dark:bg-slate-850 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/80 p-1.5 z-[200] animate-in fade-in zoom-in-95 duration-150">

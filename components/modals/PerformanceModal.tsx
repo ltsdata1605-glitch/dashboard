@@ -8,6 +8,7 @@ import { DashboardContext } from '../../contexts/DashboardContext';
 import { Button } from '../shared/ui/Button';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import EmployeeCategoryTable, { useCategoryColumns } from './EmployeeCategoryTable';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 
 
@@ -284,6 +285,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             <Button onClick={handleExport} disabled={isExporting} isLoading={isExporting} variant="secondary" size="icon" title="Xuất Ảnh Phân Tích" className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
                  {!isExporting && <Icon name="camera" size={4} />}
             </Button>
+            <LineSendButton areaKey="pt:Phân Tích Nhân Viên" title={`Phân tích nhân viên — ${employeeName}`} run={handleExport} disabled={isExporting} className="h-8 w-8 sm:h-[42px] sm:w-[42px] border border-slate-200 bg-white" />
         </div>
     );
     

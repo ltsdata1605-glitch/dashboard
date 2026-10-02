@@ -9,6 +9,7 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import { startExportJob } from '../shared/export';
 import { Button } from '../shared/ui/Button';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 interface UnshippedOrdersModalProps {
     isOpen: boolean;
@@ -527,6 +528,16 @@ Link: ${url}`;
             <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
                  <Icon name="camera" size={4} />
             </Button>
+            <LineSendButton
+                areaKey="pt:Đơn Chờ Xuất"
+                title="Đơn hàng chờ xuất"
+                disabled={isExporting}
+                className="h-10 w-10 border border-slate-200 bg-white"
+                choices={[
+                    { id: 'all', label: 'Toàn bộ danh sách', run: handleExportAll },
+                    { id: 'nv', label: 'Theo từng người lập', sublabel: 'Mỗi người 1 ảnh', run: handleBatchExport },
+                ]}
+            />
             <Button onClick={handleExportExcel} disabled={isExporting} variant="outline" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Excel
             </Button>
@@ -592,6 +603,15 @@ Link: ${url}`;
                                             <Button onClick={(e) => handleExportCreator(e, creator.name)} title={`Xuất ảnh của ${creator.name}`} variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hide-on-export ml-2">
                                                 <Icon name="camera" size={4} />
                                             </Button>
+                                            <span onClick={(e) => e.stopPropagation()} className="contents">
+                                                <LineSendButton
+                                                    areaKey="pt:Đơn Chờ Xuất"
+                                                    title={`Đơn hàng chờ xuất — ${creator.name}`}
+                                                    disabled={isExporting}
+                                                    className="h-7 w-7"
+                                                    run={() => handleExportCreator({ stopPropagation: () => {} } as React.MouseEvent, creator.name)}
+                                                />
+                                            </span>
                                             <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
                                                 <Icon name="chevron-down" />
                                             </div>

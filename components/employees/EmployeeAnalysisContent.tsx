@@ -9,6 +9,7 @@ import { Icon } from '../common/Icon';
 import type { ExploitationData, CustomContestTab, CustomExploitationTabConfig, DataRow, Employee, EmployeeData, ProductConfig, ContestTableConfig, ModalState } from '../../types';
 import { Button } from '../shared/ui/Button';
 import type { Tab } from './EmployeeAnalysisTabs';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 type ColorTheme = { header: string; activeTab: string; row: string; border: string };
 type FilteredEmployeeAnalysisData = EmployeeData & { filteredBaseData: DataRow[] };
@@ -250,6 +251,7 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                                         {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                                         {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={5} className="hidden lg:block" />}
                                     </Button>
+                                    <LineSendButton areaKey="pt:Tab Tuỳ Chỉnh" title={customTab.name} run={handleMainExport} disabled={isExporting} className="lg:h-9 lg:w-9" />
                                 </div>
                             </div>
                         </div>

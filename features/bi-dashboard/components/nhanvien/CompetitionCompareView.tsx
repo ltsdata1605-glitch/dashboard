@@ -8,6 +8,7 @@ import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Button } from '../../../../components/shared/ui/Button';
+import { LineSendButton } from '../../../../components/shared/export/LineSendButton';
 import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
@@ -389,6 +390,15 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <Button variant="unstyled" size="none" onClick={() => handleExportPNG()} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
                         <CameraIcon className="w-4 h-4" />
                     </Button>
+                    <LineSendButton
+                        areaKey="bi:So sánh thi đua"
+                        title="So sánh thi đua"
+                        disabled={isBatchExporting}
+                        choices={[
+                            { id: 'one', label: 'Cặp đang xem', run: () => handleExportPNG() },
+                            ...(autoPairs.length > 0 ? [{ id: 'all', label: 'Tất cả cặp so sánh', sublabel: `${autoPairs.length} ảnh`, run: performBatchExport }] : []),
+                        ]}
+                    />
                 </div>
             </div>
 

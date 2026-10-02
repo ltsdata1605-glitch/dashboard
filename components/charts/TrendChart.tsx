@@ -21,6 +21,7 @@ import { Select } from '../shared/ui/Select';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
 import { registerAutoExport } from '../../services/analysisExportDestinations';
 import { Button } from '../shared/ui/Button';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payload?: { payload: RechartsTrendData }[]; metricName: string }) => {
     if (!active || !payload?.length) return null;
@@ -589,6 +590,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4.5} className="hidden lg:block" />}
           </Button>
           {displayMode !== 'calendar' && <ExportDestinationButton reportKey="Xu Hướng Doanh Thu" />}
+          {displayMode === 'calendar' && <LineSendButton areaKey="pt:Lịch Doanh Thu" title="Lịch doanh thu" run={handleExportClick} disabled={isExporting} className="lg:h-9 lg:w-9" />}
         </div>
       </SectionHeader>
 
@@ -687,6 +689,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             <Icon name="camera" size={4} className="lg:hidden" />
                                             <Icon name="camera" size={5} className="hidden lg:block" />
                                         </Button>
+                                        <LineSendButton areaKey="pt:Lịch Doanh Thu Nháp" title="Lịch doanh thu (bảng nháp)" run={handleExportDraft} disabled={isExporting} className="border border-slate-200 bg-white shadow-sm rounded-lg" />
                                     </>
                                 }
                             />

@@ -11,7 +11,7 @@ type SortKey = keyof Employee | 'name' | 'percentHT' | 'dtVuot' | 'target' | 'dt
 interface PerformanceTableProps {
     employeeData: EmployeeData | null | undefined;
     onEmployeeClick: (employeeName: string) => void;
-    onExport?: () => void;
+    onExport?: () => Promise<unknown> | void;
     isExporting?: boolean;
 }
 
@@ -46,7 +46,8 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
             setActiveTab(tab);
             // Wait for tab switch and render
             await new Promise(resolve => setTimeout(resolve, 800));
-            if (onExport) onExport();
+            // Chờ ảnh tab này xong rồi mới đổi tab (trước đây không chờ: lượt xuất chồng lên lượt đổi tab)
+            if (onExport) await onExport();
             // Wait between exports
             await new Promise(resolve => setTimeout(resolve, 500));
         }

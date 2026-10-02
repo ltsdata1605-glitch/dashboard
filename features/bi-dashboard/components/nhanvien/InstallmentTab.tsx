@@ -457,7 +457,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
                     </Button>
-                    <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
+                    <ExportButton onExportPNG={async () => { await handleExportPNG(); }} lineTitle="Trả chậm" lineExtraChoices={[{ id: 'dept', label: 'Theo từng bộ phận', sublabel: 'Mỗi bộ phận 1 ảnh', run: handleBatchExportByDept }]} />
                 </div>
             </div>
 

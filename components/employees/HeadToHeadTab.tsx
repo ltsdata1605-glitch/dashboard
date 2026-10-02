@@ -14,12 +14,13 @@ import { Button } from '../shared/ui/Button';
 // Import refactored components
 import HeadToHeadTable from './head-to-head/HeadToHeadTable';
 import HeadToHeadConfigModal from './head-to-head/HeadToHeadConfigModal';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 interface HeadToHeadTabProps {
     baseFilteredData: DataRow[];
     productConfig: ProductConfig;
     employeeData: Employee[];
-    onExport?: () => void;
+    onExport?: () => Promise<unknown> | void;
     isExporting?: boolean;
     colorThemes: { header: string; row: string; border: string; activeTab?: string; }[];
 }
@@ -322,6 +323,16 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                             </Button>
                         )}
+                        <LineSendButton
+                            areaKey="pt:7 Ngày"
+                            title="Bảng 7 ngày"
+                            disabled={isExporting || isBatchExporting}
+                            className="lg:h-9 lg:w-9"
+                            choices={[
+                                ...(onExport ? [{ id: 'one', label: 'Bảng đang xem', run: onExport }] : []),
+                                ...(tables.length > 0 ? [{ id: 'all', label: 'Toàn bộ bảng 7 ngày', sublabel: `${tables.length} ảnh`, run: handleBatchExport }] : []),
+                            ]}
+                        />
                     </div>
                 </div>
 

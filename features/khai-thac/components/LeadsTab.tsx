@@ -9,6 +9,7 @@ import { LEAD_STATUSES } from '../types';
 import { COUNT_ITEMS } from '../catalog';
 import { BandHeader } from './GroupSection';
 import { shareElementAsImage } from '../utils/exportImage';
+import { LineSendButton } from '../../../components/shared/export/LineSendButton';
 
 interface LeadsTabProps {
     leads: Lead[];
@@ -143,6 +144,10 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                     onClick={() => shareElementAsImage(listRef.current, `khach-hang-${new Date().toISOString().slice(0, 10)}.png`, 'Danh sách khách hàng')}>
                                     Xuất ảnh
                                 </Button>
+                            )}
+                            {leads.length > 0 && (
+                                <LineSendButton areaKey="kt:Danh Sách Khách Hàng" title="Danh sách khách hàng" className="h-6 w-6"
+                                    run={() => shareElementAsImage(listRef.current, `khach-hang-${new Date().toISOString().slice(0, 10)}.png`, 'Danh sách khách hàng')} />
                             )}
                         </>
                     }

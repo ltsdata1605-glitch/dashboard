@@ -7,6 +7,7 @@ import type { DataRow, ProductConfig } from '../../types';
 import { COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 interface SavedCalendarCardProps {
     filter: {
@@ -156,6 +157,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                             >
                                 {isExporting ? <><Icon name="loader-2" size={4} className="animate-spin lg:hidden" /><Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                             </Button>
+                            <LineSendButton areaKey="pt:Lịch Doanh Thu Đã Lưu" title={badgeLabel ? `Lịch doanh thu — ${badgeLabel}` : 'Lịch doanh thu'} run={handleExport} disabled={isExporting} className="border border-slate-200 bg-white shadow-sm rounded-lg" />
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => onRemove(filter.id)}

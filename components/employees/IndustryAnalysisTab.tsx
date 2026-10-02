@@ -7,6 +7,7 @@ import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, So
 import { useIndustryAnalysisLogic } from './industry/useIndustryAnalysisLogic';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
 import { DATA_STATUS_COLORS } from '../../constants';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 // Dữ liệu 1 dòng hiển thị chi tiết: có thể là 1 nhân viên (ExploitationData mở rộng) hoặc groupTotals/grandTotal (Record<string, number>)
 // Không khai báo index signature ở đây để tránh phá vỡ khả năng gán từ các kiểu cụ thể hơn (employee/groupTotals/grandTotal)
@@ -23,9 +24,9 @@ interface DetailModeRowData {
 
 interface IndustryAnalysisTabProps {
     data: ExploitationData[];
-    onExport?: () => void;
+    onExport?: () => Promise<unknown> | void;
     isExporting?: boolean;
-    onBatchExport: (data: ExploitationData[]) => void;
+    onBatchExport: (data: ExploitationData[]) => Promise<unknown> | void;
     baseFilteredData?: DataRow[];
     productConfig?: ProductConfig;
     customExploitationTabs?: CustomExploitationTabConfig[];
@@ -331,6 +332,16 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                             </Button>
                         )}
+                        <LineSendButton
+                            areaKey="pt:Khai Thác Ngành Hàng"
+                            title="Khai thác ngành hàng"
+                            disabled={isExporting}
+                            className="lg:h-9 lg:w-9"
+                            choices={[
+                                ...(onExport ? [{ id: 'one', label: 'Bảng đang xem', run: onExport }] : []),
+                                { id: 'nv', label: 'Báo cáo chi tiết từng nhân viên', sublabel: `${data.length} ảnh`, run: () => onBatchExport(data) },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

@@ -269,13 +269,17 @@ const App: React.FC = () => {
     setWeeklyExportConfig(null);
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
     const filename = `Lịch Toàn Bộ - Tháng ${monthVal}-${yearVal}.png`;
-    setTimeout(() => {
-        exportToImage(exportContainerRef, filename).finally(() => {
-            setIsExportingImage(false);
-            setStaffListForExport(null);
-            setExportTitle('');
-        });
-    }, 400);
+    // Chờ được tới khi ảnh xong (nút "Gửi nhóm LINE" cần biết lúc nào lượt xuất kết thúc)
+    await new Promise(resolve => setTimeout(resolve, 400));
+    try {
+        await exportToImage(exportContainerRef, filename);
+    } catch (err) {
+        showToast(err instanceof Error ? err.message : 'Xuất ảnh thất bại', 'error');
+    } finally {
+        setIsExportingImage(false);
+        setStaffListForExport(null);
+        setExportTitle('');
+    }
   };
   const handleExportWeekly = async () => {
     const list = getSortedStaffForExport();
@@ -319,6 +323,38 @@ const App: React.FC = () => {
         setExportTitle('');
     }
   };
+  // Xuất lịch từng nhân viên — dùng chung cho nút "Từng NV" (sau hộp xác nhận) và nút "Gửi nhóm LINE"
+  const runExportIndividual = async (list: ReturnType<typeof getSortedStaffForExport>) => {
+    setIsExportingImage(true);
+    setWeeklyExportConfig(null);
+    const [yearVal, monthVal] = monthYear.split('-').map(Number);
+    const job = startExportJob({ title: 'Xuất lịch cá nhân', total: list.length });
+    try {
+        for (let i = 0; i < list.length; i++) {
+            if (job.cancelled) break;
+            const staff = list[i];
+            const nhan = staff.name.split(' - ')[1] || staff.name;
+            job.item(i, nhan);
+            setStaffListForExport([staff]);
+            setExportTitle(staff.name);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            const sanitizedStaffName = staff.name.replace(/[\\/:*?"<>|]/g, '').trim();
+            try {
+                await exportToImage(exportContainerRef, `Lịch Cá Nhân - ${sanitizedStaffName} - Tháng ${monthVal}-${yearVal}.png`);
+                job.result(nhan, 'ok');
+            } catch (err) {
+                console.warn("Export error:", err);
+                job.result(nhan, 'failed', err instanceof Error ? err.message : undefined);
+            }
+            await new Promise(resolve => setTimeout(resolve, 400));
+        }
+    } finally {
+        job.finish();
+        setStaffListForExport(null);
+        setIsExportingImage(false);
+        setExportTitle('');
+    }
+  };
   const handleExportIndividual = () => {
     const list = getSortedStaffForExport();
     if (list.length === 0) return showToast("Chưa có lịch để xuất.", 'error');
@@ -329,35 +365,7 @@ const App: React.FC = () => {
         confirmText: 'Đồng ý',
         onConfirm: async () => {
             closeConfirm();
-            setIsExportingImage(true);
-            setWeeklyExportConfig(null);
-            const [yearVal, monthVal] = monthYear.split('-').map(Number);
-            const job = startExportJob({ title: 'Xuất lịch cá nhân', total: list.length });
-            try {
-                for (let i = 0; i < list.length; i++) {
-                    if (job.cancelled) break;
-                    const staff = list[i];
-                    const nhan = staff.name.split(' - ')[1] || staff.name;
-                    job.item(i, nhan);
-                    setStaffListForExport([staff]);
-                    setExportTitle(staff.name);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    const sanitizedStaffName = staff.name.replace(/[\\/:*?"<>|]/g, '').trim();
-                    try {
-                        await exportToImage(exportContainerRef, `Lịch Cá Nhân - ${sanitizedStaffName} - Tháng ${monthVal}-${yearVal}.png`);
-                        job.result(nhan, 'ok');
-                    } catch (err) {
-                        console.warn("Export error:", err);
-                        job.result(nhan, 'failed', err instanceof Error ? err.message : undefined);
-                    }
-                    await new Promise(resolve => setTimeout(resolve, 400));
-                }
-            } finally {
-                job.finish();
-                setStaffListForExport(null);
-                setIsExportingImage(false);
-                setExportTitle('');
-            }
+            await runExportIndividual(list);
         }
     });
   };
@@ -594,6 +602,11 @@ const App: React.FC = () => {
           onExportAll={handleExportAll}
           onExportWeekly={handleExportWeekly}
           onExportIndividual={handleExportIndividual}
+          lineChoices={[
+              { id: 'all', label: 'Lịch toàn bộ', run: handleExportAll },
+              { id: 'tuan', label: 'Theo tuần', sublabel: 'Mỗi tuần 1 ảnh', run: handleExportWeekly },
+              { id: 'nv', label: 'Từng nhân viên', sublabel: 'Mỗi nhân viên 1 ảnh', run: () => runExportIndividual(getSortedStaffForExport()) },
+          ]}
           onExportExcel={handleExportExcel}
           onExportGoogleSheet={handleExportGoogleSheet}
       />

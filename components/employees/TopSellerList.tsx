@@ -7,12 +7,13 @@ import { saveTopSellerAnalysis } from '../../services/dbService';
 import { RankBadge } from './performance/PerformanceTableUtils';
 import { Button } from '../shared/ui/Button';
 import { onActivateKey } from '../shared/ui';
+import { LineSendButton } from '../shared/export/LineSendButton';
 
 interface TopSellerListProps {
     fullSellerArray: Employee[];
     onEmployeeClick: (employeeName: string) => void;
-    onBatchExport: (employees: Employee[]) => void;
-    onExport?: () => void;
+    onBatchExport: (employees: Employee[]) => Promise<unknown> | void;
+    onExport?: () => Promise<unknown> | void;
     isExporting?: boolean;
 }
 
@@ -129,6 +130,16 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
                         </Button>
                     )}
+                    <LineSendButton
+                        areaKey="pt:Top Nhân Viên"
+                        title="Top nhân viên"
+                        disabled={isExporting}
+                        className="lg:h-9 lg:w-9"
+                        choices={[
+                            ...(onExport ? [{ id: 'one', label: 'Bảng đang xem', run: onExport }] : []),
+                            { id: 'nv', label: 'Báo cáo chi tiết từng nhân viên', sublabel: `${sortedSellers.length} ảnh`, run: () => onBatchExport(sortedSellers) },
+                        ]}
+                    />
                 </div>
             </div>
             <div className="space-y-2 sm:space-y-4">

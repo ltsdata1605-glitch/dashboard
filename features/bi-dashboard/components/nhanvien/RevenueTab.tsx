@@ -524,7 +524,7 @@ const RevenueView: React.FC<{
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
                     </Button>
-                    <ExportButton options={exportOptions} />
+                    <ExportButton options={exportOptions} lineTitle="Doanh thu nhân viên" lineExtraChoices={[{ id: 'dept', label: 'Theo từng bộ phận', sublabel: 'Mỗi bộ phận 1 ảnh', run: handleBatchExportByDept }]} />
                 </div>
             </div>
 

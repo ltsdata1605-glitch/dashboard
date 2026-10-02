@@ -4,6 +4,7 @@ import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon } from '../
 import { Info, Zap, TrendingUp } from 'lucide-react';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
+import { LineSendButton } from '../../../../components/shared/export/LineSendButton';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import { MOBILE_GUTTER, TOUCH_TARGET } from '../../utils/mobileUi';
@@ -19,10 +20,10 @@ interface DashboardHeaderProps {
     supermarkets: string[];
     activeSupermarket: string;
     setActiveSupermarket: (sm: string) => void;
-    onBatchExport: () => void;
+    onBatchExport: () => Promise<unknown> | void;
     isBatchExporting: boolean;
     /** Single-table export callback */
-    onExport?: () => void;
+    onExport?: () => Promise<unknown> | void;
     isExporting?: boolean;
     /** Slot for tab-specific controls (e.g. column settings dropdown) */
     toolbarSlot?: React.ReactNode;
@@ -216,6 +217,18 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
                                 </Button>
                             )}
+
+                            {/* Gửi nhóm LINE: ảnh đang xem hoặc tất cả siêu thị (dùng lại đúng 2 hàm xuất ở trên) */}
+                            <LineSendButton
+                                areaKey={`bi:${activeSubTab}`}
+                                title={`${activeSubTab === 'competition' ? 'Thi đua' : 'Doanh thu'} ${activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}`}
+                                disabled={isBatchExporting || isExporting}
+                                className="rounded-full h-7.5 w-7.5 sm:h-8 sm:w-8"
+                                choices={[
+                                    ...(onExport ? [{ id: 'one', label: `Ảnh đang xem — ${activeSupermarket}`, run: onExport }] : []),
+                                    { id: 'all', label: 'Tất cả siêu thị', sublabel: `${supermarkets.length + 1} ảnh (Tổng + từng siêu thị)`, run: onBatchExport },
+                                ]}
+                            />
                         </div>
                     </div>
 

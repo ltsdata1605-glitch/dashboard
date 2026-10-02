@@ -4,6 +4,7 @@ import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
 import { onActivateKey } from '../../shared/ui';
 import type { FilterState } from '../../../types';
+import { LineSendButton } from '../../shared/export/LineSendButton';
 
 interface SummaryTableHeaderProps {
     displayTitle: string;
@@ -117,6 +118,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
 
                         <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>
                             {isCrossSellingMode ? (
+                                <div className="flex items-center gap-1 lg:gap-1.5">
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={handleExport}
@@ -127,6 +129,8 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                                     {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
                                 </Button>
+                                <LineSendButton areaKey="pt:Bán Kèm" title="Bán kèm" run={handleExport} disabled={isExporting} className="lg:h-9 lg:w-9" />
+                                </div>
                             ) : (
                                 <>
                                     <div className="flex items-center gap-1 lg:gap-1.5">
@@ -149,6 +153,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                                             {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
                                         </Button>
+                                        <LineSendButton areaKey="pt:Chi Tiết Ngành Hàng" title="Chi tiết ngành hàng" run={handleExport} disabled={isExporting} className="lg:h-9 lg:w-9" />
                                     </div>
 
                                     {activeFilterKey === 'columns' && (

@@ -9,6 +9,7 @@ import { summarize, isInRange, type RankedItem } from '../utils/aggregate';
 import { fmtTr } from '../utils/reportText';
 import { BandHeader } from './GroupSection';
 import { shareElementAsImage } from '../utils/exportImage';
+import { LineSendButton } from '../../../components/shared/export/LineSendButton';
 
 interface DashboardTabProps {
     reports: SavedReport[];
@@ -75,6 +76,8 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                     onClick={() => shareElementAsImage(captureRef.current, `bieu-do-${new Date().toISOString().slice(0, 10)}.png`, 'Báo cáo doanh số cá nhân')}>
                     Xuất ảnh
                 </Button>
+                <LineSendButton areaKey="kt:Doanh Số Cá Nhân" title="Báo cáo doanh số cá nhân"
+                    run={() => shareElementAsImage(captureRef.current, `bieu-do-${new Date().toISOString().slice(0, 10)}.png`, 'Báo cáo doanh số cá nhân')} />
             </div>
 
             <div ref={captureRef} className="space-y-3 bg-white lg:bg-transparent">
