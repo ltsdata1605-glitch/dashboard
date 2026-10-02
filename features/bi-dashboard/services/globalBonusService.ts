@@ -95,7 +95,7 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
                     employees.push({
                         name: emp.name || formatEmployeeName(emp.originalName),
                         originalName: emp.originalName,
-                        department: emp.department || '',
+                        department: (emp as any).department || '',
                     });
                 }
                 employeeSupermarketMap[emp.originalName] = originalSm;
@@ -143,7 +143,7 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
                         employees.push({
                             name: emp.name || formatEmployeeName(emp.originalName),
                             originalName: emp.originalName,
-                            department: emp.department || '',
+                            department: (emp as any).department || '',
                         });
                     }
                     if (!employeeSupermarketMap[emp.originalName]) {

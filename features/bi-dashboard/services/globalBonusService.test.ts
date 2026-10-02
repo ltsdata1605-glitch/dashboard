@@ -48,7 +48,7 @@ describe('globalBonusService', () => {
 
         await saveBonusBatchGlobal(entries, map, 'Hùng Vương');
 
-        const saved = await db.get('bonus-data-Hùng Vương');
+        const saved = (await db.get('bonus-data-Hùng Vương')) as Record<string, any>;
         expect(saved).toBeDefined();
         expect(saved['111395 - Nguyễn Văn A'].erp).toBe(10);
     });
@@ -64,7 +64,7 @@ describe('globalBonusService', () => {
 
         await saveBonusMonthlyGlobal(entries, '2026-05', map, 'Hùng Vương');
 
-        const saved = await db.get('bonus-monthly-Hùng Vương-2026-05');
+        const saved = (await db.get('bonus-monthly-Hùng Vương-2026-05')) as Record<string, any>;
         expect(saved).toBeDefined();
         expect(saved['111395 - Nguyễn Văn A'].erp).toBe(50);
     });
