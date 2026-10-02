@@ -22,6 +22,21 @@ function iconColorToTextClass(iconColor: string): string {
     }
 }
 
+/** Tách số và đơn vị tiền tệ để hiển thị đơn vị chữ nhỏ, màu xám ở chân số như KpiOverview */
+function splitCurrencyValue(formatted: string): { val: string; unit: string } {
+    if (!formatted || formatted === '-') return { val: formatted || '-', unit: '' };
+    const trimmed = formatted.trim();
+    const lastSpace = trimmed.lastIndexOf(' ');
+    if (lastSpace > 0) {
+        const valPart = trimmed.slice(0, lastSpace).trim();
+        const unitPart = trimmed.slice(lastSpace + 1).trim();
+        if (/\d/.test(valPart) && !/^\d+$/.test(unitPart)) {
+            return { val: valPart, unit: unitPart };
+        }
+    }
+    return { val: trimmed, unit: '' };
+}
+
 const KpiTargetEditor: React.FC<{
     value: string;
     onChange: (val: string) => void;
@@ -504,9 +519,27 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             progressPercent={progressPercent}
                             isGood={isGood}
                         >
-                            <div className={`text-[20px] sm:text-2xl lg:text-[34px] xl:text-[40px] 2xl:text-[44px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
-                                {displayValue}
-                            </div>
+                            {config.format === 'currency' ? (
+                                (() => {
+                                    const { val, unit } = splitCurrencyValue(displayValue);
+                                    return (
+                                        <div className="flex items-baseline gap-0.5 sm:gap-1.5 flex-nowrap overflow-hidden">
+                                            <span className={`text-[20px] sm:text-2xl lg:text-[34px] xl:text-[40px] 2xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
+                                                {val}
+                                            </span>
+                                            {unit && (
+                                                <span className="text-[12px] sm:text-[15px] lg:text-[17px] xl:text-[19px] font-black text-slate-400 dark:text-slate-500 shrink-0">
+                                                    {unit}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })()
+                            ) : (
+                                <div className={`text-[20px] sm:text-2xl lg:text-[34px] xl:text-[40px] 2xl:text-[44px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
+                                    {displayValue}
+                                </div>
+                            )}
                         </KpiCard>
                     </div>
                 );
