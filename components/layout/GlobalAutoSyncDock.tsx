@@ -40,14 +40,26 @@ function yeuCauAnhBi(mode: 'realtime' | 'luyke', areas: string[]): Promise<{ ima
             const d = (e as CustomEvent).detail as { requestId?: string; images?: BiAutoImage[]; errors?: { area: string; error: string }[] } | null;
             if (d?.requestId !== requestId) return;
             window.removeEventListener('ycx-bi-auto-export:done', on);
+            window.removeEventListener('ycx-bi-auto-export:ack', onAck);
             clearTimeout(t);
+            clearInterval(guiLai);
             resolve({ images: d.images || [], errors: d.errors || [] });
         };
+        // Report BI có thể chưa kịp mount (vừa mở mục) → gửi lại cùng requestId mỗi 2s tới khi nó xác nhận (≤ 40s)
+        let daNhan = false;
+        const onAck = (e: Event) => { if ((e as CustomEvent).detail?.requestId === requestId) daNhan = true; };
+        const guiLai = setInterval(() => {
+            if (daNhan) { clearInterval(guiLai); return; }
+            window.dispatchEvent(new CustomEvent('ycx-bi-auto-export:request', { detail: { requestId, mode, areas } }));
+        }, 2000);
+        setTimeout(() => clearInterval(guiLai), 40_000);
         const t = setTimeout(() => {
             window.removeEventListener('ycx-bi-auto-export:done', on);
-            resolve({ images: [], errors: [{ area: 'Report BI', error: 'không phản hồi sau 5 phút' }] });
+            window.removeEventListener('ycx-bi-auto-export:ack', onAck);
+            resolve({ images: [], errors: [{ area: 'Report BI', error: daNhan ? 'không phản hồi sau 5 phút' : 'mục Report BI không mở được' }] });
         }, 5 * 60_000);
         window.addEventListener('ycx-bi-auto-export:done', on);
+        window.addEventListener('ycx-bi-auto-export:ack', onAck);
         window.dispatchEvent(new CustomEvent('ycx-bi-auto-export:request', { detail: { requestId, mode, areas } }));
     });
 }
@@ -227,6 +239,8 @@ export default function GlobalAutoSyncDock() {
                 window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoSend } }));
 
                 toast.success(`Đã tự động tải và nạp file ${TEN_YCX[mode]}!`);
+                // Có khu vực tự gửi LINE → phải mở Phân tích để chụp được ảnh (tab ẩn không chụp được)
+                if (autoSend.length) setActiveTab('analysis');
             }
         });
 
@@ -237,7 +251,7 @@ export default function GlobalAutoSyncDock() {
                 ? 'Hẹn giờ không mở được tab report.mwgroup.vn — cần userscript bản 7.16 trở lên (Tampermonkey).'
                 : 'Trình duyệt chặn mở tab mới — cho phép cửa sổ bật lên (pop-up) cho dashboard.pro.vn rồi bấm lại.');
         });
-    }, [ycxScriptDu, kiemTraYcxScript]);
+    }, [ycxScriptDu, kiemTraYcxScript, setActiveTab]);
 
     const huyYcx = () => {
         ycxStopRef.current?.();
@@ -271,6 +285,10 @@ export default function GlobalAutoSyncDock() {
     };
 
     // Lượt BI hẹn giờ đổ dữ liệu xong → nhờ Report BI xuất các khu vực đã chọn rồi gửi từng ảnh vào nhóm LINE của nó
+    const activeTabRef = useRef(activeTab);
+    activeTabRef.current = activeTab;
+    const setActiveTabRef = useRef(setActiveTab);
+    setActiveTabRef.current = setActiveTab;
     const authRef = useRef({ uid: '', departmentId: null as string | null | undefined });
     authRef.current = { uid: user?.uid || '', departmentId };
     useEffect(() => {
@@ -282,7 +300,11 @@ export default function GlobalAutoSyncDock() {
             // Đợi Report BI ghi xong dữ liệu vào các ô rồi mới chụp
             setTimeout(async () => {
                 const tId = toast.loading(`Đang tự xuất ${cho.items.length} khu vực Report BI để gửi LINE…`);
+                // Lượt chạy không chuyển tab (để người dùng ở yên chỗ) — riêng lúc chụp phải mở Report BI, xong trả về tab cũ
+                const tabCu = activeTabRef.current;
+                if (tabCu !== 'employees') setActiveTabRef.current('employees');
                 const { images, errors } = await yeuCauAnhBi(cho.mode, cho.items.map((x) => x.area));
+                if (tabCu !== 'employees') setActiveTabRef.current(tabCu);
                 const { sendReportImageToLine } = await import('../../services/lineReportDelivery');
                 let ok = 0;
                 const hong: string[] = errors.map((x) => `${x.area}: ${x.error}`);

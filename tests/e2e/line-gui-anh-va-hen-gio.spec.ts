@@ -285,6 +285,9 @@ test('hẹn giờ Report BI Luỹ kế + khu vực: đổ dữ liệu xong → R
             { area: 'bi-doanh-thu-tong', groupId: nhom, groupName: 'Nhóm Siêu Thị 910' },
         ] });
     }, NHOM);
+    // Người dùng đang đứng ở Phân tích — lượt chạy không ép chuyển tab, chỉ mở Report BI lúc chụp rồi trả về
+    await page.locator('aside').first().locator('button:has(svg.lucide-chart-column), button:has(svg.lucide-bar-chart-3)').first().click();
+    await expect(page).toHaveURL(/tab=analysis|\/analysis/);
     // Bộ hẹn giờ quét mỗi 30s → chờ lượt chạy giữ chỗ khung giờ (dấu localStorage)
     await expect.poll(() => page.evaluate(() => Object.keys(localStorage).some((k) => k.startsWith('ycx-sched-ran:bi-luyke:'))), { timeout: 45_000 }).toBe(true);
     await page.waitForTimeout(1500);
@@ -295,5 +298,6 @@ test('hẹn giờ Report BI Luỹ kế + khu vực: đổ dữ liệu xong → R
     const chu = calls.map((c) => c.body.messages[0].text || '');
     expect(chu.some((t) => t.includes('Thi Đua Lũy Kế - Tổng'))).toBe(true);
     expect(chu.some((t) => t.includes('Doanh Thu Lũy Kế - Tổng'))).toBe(true);
+    await expect(page).toHaveURL(/tab=analysis|\/analysis/); // đã trả về tab người dùng đang xem
     await page.screenshot({ path: test.info().outputPath('bi-tu-gui.png') });
 });

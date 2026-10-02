@@ -201,10 +201,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
             'bi-thi-dua-tung-st': { sub: 'competition', tong: false, kind: 'competition', ten: 'Thi Đua' },
         };
         let dangChay = false;
+        const daNhan = new Set<string>();
         const onRequest = async (e: Event) => {
             const d = (e as CustomEvent).detail as { requestId?: string; mode?: string; areas?: string[] } | null;
-            if (!d?.requestId || dangChay) return;
+            if (!d?.requestId || dangChay || daNhan.has(d.requestId)) return;
+            daNhan.add(d.requestId);
             dangChay = true;
+            // Bên gốc gửi lại yêu cầu tới khi nhận xác nhận này (mục Report BI có thể vừa mới mount)
+            window.dispatchEvent(new CustomEvent('ycx-bi-auto-export:ack', { detail: { requestId: d.requestId } }));
             const images: { area: string; label: string; blob: Blob }[] = [];
             const errors: { area: string; error: string }[] = [];
             const r = () => autoRef.current;
