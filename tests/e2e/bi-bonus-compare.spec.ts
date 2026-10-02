@@ -94,7 +94,9 @@ test.describe('Report BI › Thưởng — menu chế độ xem + So sánh cùng
         for (const label of menuLabels) {
             await expect(page.getByRole('button', { name: new RegExp(label) })).toBeVisible();
         }
-        await expect(page.locator('[aria-current="true"]')).toContainText('Tổng hợp kỳ');
+        // Chỉ xét mục trong MENU chế độ (tab Thưởng / Dữ liệu cũng mang aria-current từ khi dải tab dùng chung)
+        const mucDangChon = page.locator('[aria-current="true"]').filter({ hasText: /Tổng hợp kỳ|Xem theo ngày|Luỹ kế tháng|So sánh cùng kỳ/ });
+        await expect(mucDangChon).toContainText('Tổng hợp kỳ');
         await page.waitForTimeout(400); // đợi hết animate-fade-in 0.2s để ảnh chụp không bị mờ
         await page.screenshot({ path: 'test-results/bonus-period-menu.png' });
 
@@ -103,7 +105,7 @@ test.describe('Report BI › Thưởng — menu chế độ xem + So sánh cùng
         await page.waitForTimeout(800);
         await expect(page.getByText(/Chưa có dữ liệu tháng nào|T\.Bình/).first()).toBeVisible();
         await page.getByTestId('bonus-period-mode-trigger').click();
-        await expect(page.locator('[aria-current="true"]')).toContainText('Luỹ kế tháng');
+        await expect(mucDangChon).toContainText('Luỹ kế tháng');
         await page.keyboard.press('Escape');
     });
 
