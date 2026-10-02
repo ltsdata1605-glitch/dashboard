@@ -76,21 +76,34 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [activeTab, setActiveTab]);
 
-    // Đọc URL param ?sub=... khi mở vào màn hình Nhân viên
+    // Đọc URL param ?sub=... CHỈ lúc mở vào màn hình Nhân viên (deep link). SỬA 2026-10-02: bản đầu phụ thuộc activeTab →
+    // bấm đổi tab con thì effect đọc URL (còn tab CŨ) kéo ngược về, effect đồng bộ bên dưới ghi lại → vòng lặp, không đổi
+    // được tab (xem chú thích cùng ngày ở Dashboard.tsx).
+    // Tab lấy từ URL đang CHỜ có hiệu lực (kho IndexedDB nạp bất đồng bộ có thể chưa nhận giá trị ở lần vẽ kế) — trong lúc
+    // chờ, effect đồng bộ bên dưới KHÔNG ghi URL, nếu không nó ghi đè `sub=` của deep link bằng tab cũ (đo 2026-10-02).
+    const urlSubPendingRef = useRef<Tab | null>(null);
+    const setActiveTabRef = useRef(setActiveTab);
+    setActiveTabRef.current = setActiveTab;
     useEffect(() => {
         if (!isActive || typeof window === 'undefined') return;
         const params = new URLSearchParams(window.location.search);
         if (params.get('tab') === 'employees' && params.get('view') === 'employee') {
             const sub = params.get('sub');
-            if (sub && NAV_TABS.some(t => t.tab === sub) && sub !== activeTab) {
-                setActiveTab(sub as Tab);
+            if (sub && NAV_TABS.some(t => t.tab === sub)) {
+                urlSubPendingRef.current = sub as Tab;
+                setActiveTabRef.current(sub as Tab);
             }
         }
-    }, [isActive, activeTab, setActiveTab]);
+    }, [isActive]);
 
     // Đồng bộ URL ?sub=... khi tab Nhân viên thay đổi
     useEffect(() => {
         if (!isActive || typeof window === 'undefined') return;
+        const pending = urlSubPendingRef.current;
+        if (pending) {
+            if (activeTab !== pending) { setActiveTabRef.current(pending); return; }
+            urlSubPendingRef.current = null;
+        }
         const url = new URL(window.location.href);
         if (url.searchParams.get('tab') === 'employees' && url.searchParams.get('view') === 'employee') {
             let changed = false;

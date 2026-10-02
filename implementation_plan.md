@@ -7090,3 +7090,14 @@ xuất ảnh & gửi vào nhóm LINE nào sau khi lượt đó đổ dữ liệu
 **Kiểm:** `tests/e2e/line-gui-anh-va-hen-gio.spec.ts` thêm 3 test: ảnh HD (PNG gốc, xem trước ≤1MB, số mảnh), hẹn giờ
 YCX chọn "Chi tiết theo kho" → chỉ gửi khu vực đó vào đúng nhóm (nút khác đặt đích LINE không bị gửi), hẹn giờ BI Luỹ
 kế → tự chụp Thi đua Tổng & Doanh thu Tổng → gửi LINE. Chưa thử với bot/nhóm LINE thật.
+
+## SỰ CỐ: Report BI sập trên trang thật — deep link `?view=&mode=&sub=` (2026-10-02, commit 19a5336, deploy 12:22)
+
+- Triệu chứng: Siêu thị → gạt Realtime/Luỹ kế → "Đã xảy ra lỗi tại Báo cáo BI — Maximum update depth exceeded";
+  Nhân viên: bấm tab con bị kéo ngược về tab cũ. 7 test BI đỏ trên `main` nguyên gốc (đã kiểm bằng git worktree).
+- Nguyên nhân: effect "đọc URL → state" phụ thuộc chính state đó (`activeMainTab/activeSubTab`, `activeTab`) → đổi state
+  thì effect đọc URL CŨ kéo state về, effect "state → URL" ghi lại → ping-pong vô hạn.
+- Sửa (`Dashboard.tsx`, `NhanVien.tsx`): đọc URL CHỈ khi màn hình được mở (`[isActive]`, setter qua ref); giá trị deep
+  link giữ ở "chờ" — effect ghi URL không ghi đè cho tới khi state đúng là giá trị đó (kho IndexedDB nạp bất đồng bộ
+  từng làm `sub=bonus` bị ghi đè thành `revenue`).
+- Test: `tests/e2e/bi-deep-link-khong-vong-lap.spec.ts` (gạt chế độ, bấm 4 tab con, 2 kiểu deep link).
