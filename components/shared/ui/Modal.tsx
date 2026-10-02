@@ -1,6 +1,6 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useDragControls, type PanInfo } from 'motion/react';
 import { cn } from './utils';
 import { Button } from './Button';
 import { Icon } from '../../common/Icon';
@@ -57,6 +57,24 @@ const getFocusable = (root: HTMLElement) =>
 const isTextEntry = (el: HTMLElement) =>
   el.isContentEditable || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' ||
   (el.tagName === 'INPUT' && !['button', 'checkbox', 'radio', 'submit', 'reset', 'file', 'range', 'color'].includes((el as HTMLInputElement).type));
+
+/** Màn hẹp hơn mốc `sm` (640px) — đúng mốc mà bố cục `position="bottom"` dán đáy màn hình. */
+const SHEET_QUERY = '(max-width: 639px)';
+function useIsSheetWidth() {
+  const [match, setMatch] = useState(() => typeof window.matchMedia === 'function' && window.matchMedia(SHEET_QUERY).matches);
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return;
+    const mq = window.matchMedia(SHEET_QUERY);
+    const onChange = () => setMatch(mq.matches);
+    mq.addEventListener?.('change', onChange);
+    return () => mq.removeEventListener?.('change', onChange);
+  }, []);
+  return match;
+}
+
+/** Kéo xuống quá ngưỡng này (px) hoặc vuốt nhanh quá vận tốc này (px/s) thì đóng — như sheet của iOS. */
+export const SHEET_CLOSE_OFFSET = 100;
+export const SHEET_CLOSE_VELOCITY = 500;
 
 const isCoarsePointer = () => typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
 
@@ -193,6 +211,22 @@ export function Modal({
   const dialogRef = useRef<HTMLDivElement>(null);
   useModalBehavior(isOpen, onClose, dialogRef);
 
+  // SHEET KIỂU iOS (Đợt B, kế hoạch iPhone): `position="bottom"` trên màn < 640px trượt lên từ đáy,
+  // có thanh nắm, VUỐT XUỐNG để đóng. Chỉ kéo được từ thanh nắm + hàng tiêu đề — kéo trong nội dung
+  // vẫn là cuộn nội dung (không giành cử chỉ cuộn, kể cả bảng/danh sách dài trong modal).
+  const isSheetWidth = useIsSheetWidth();
+  const isSheet = position === 'bottom' && isSheetWidth;
+  const dragControls = useDragControls();
+  const startSheetDrag = (e: React.PointerEvent) => {
+    if (!isSheet) return;
+    // Bấm vào nút/ô nhập trong hàng tiêu đề (nút đóng, controls) thì là bấm, không phải kéo.
+    if ((e.target as HTMLElement).closest('button, a, input, select, textarea, [role="button"]')) return;
+    dragControls.start(e);
+  };
+  const handleSheetDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.y > SHEET_CLOSE_OFFSET || info.velocity.y > SHEET_CLOSE_VELOCITY) onClose();
+  };
+
   // Scale theo DESIGN.md (sm/md/lg/xl) + `full` cho modal bảng dữ liệu lớn. Xem chú thích prop maxWidth.
   const maxWidthClasses = {
     'sm': 'max-w-[420px]',
@@ -242,10 +276,17 @@ export function Modal({
             aria-labelledby={showHeader && title ? titleId : undefined}
             aria-label={showHeader && title ? undefined : ariaLabel}
             tabIndex={-1}
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ duration: 0.2, type: 'spring', bounce: 0.25 }}
+            data-sheet={isSheet ? '' : undefined}
+            initial={isSheet ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 10 }}
+            animate={isSheet ? { y: 0 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={isSheet ? { y: '100%' } : { opacity: 0, scale: 0.95, y: 10 }}
+            transition={isSheet ? { type: 'tween', ease: [0.32, 0.72, 0, 1], duration: 0.28 } : { duration: 0.2, type: 'spring', bounce: 0.25 }}
+            drag={isSheet ? 'y' : false}
+            dragListener={false}
+            dragControls={dragControls}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 1 }}
+            onDragEnd={isSheet ? handleSheetDragEnd : undefined}
             className={cn(
               // `dvh` chứ không `vh`: trên Safari iOS `90vh` tính cả phần màn hình nằm dưới thanh địa chỉ
               // → đáy modal (nút Lưu/Huỷ ở footer) bị che khi thanh địa chỉ đang hiện.
@@ -257,13 +298,29 @@ export function Modal({
             )}
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
           >
+            {/* Thanh nắm của sheet — vùng kéo để đóng (cùng hàng tiêu đề bên dưới). */}
+            {isSheet && (
+              <div
+                data-sheet-handle=""
+                onPointerDown={startSheetDrag}
+                className={cn("flex-none flex justify-center pt-2 pb-1 cursor-grab", showHeader && "bg-slate-50/50")}
+                style={{ touchAction: 'none' }}
+                aria-hidden="true"
+              >
+                <div className="w-10 h-1.5 rounded-full bg-slate-300" />
+              </div>
+            )}
+
             {/* Header */}
             {showHeader && (
               // Điện thoại: hàng 1 = tiêu đề + nút đóng, hàng 2 = `controls` (tự xuống dòng). Trước đây tất
               // cả nằm 1 hàng không xuống dòng: modal "Chi tiết đơn hàng" (6 nút) đẩy nút ĐÓNG ra ngoài
               // màn hình iPhone và ép tiêu đề thành cột 1 chữ/dòng (dữ liệu thật 2026-09-28). Xuống dòng
               // thay vì cuộn ngang vì khung cuộn sẽ cắt mất menu thả xuống nằm trong `controls`.
-              <div className="flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-2 gap-y-2 bg-slate-50/50 dark:bg-slate-900/20">
+              <div
+                onPointerDown={startSheetDrag}
+                style={isSheet ? { touchAction: 'none' } : undefined}
+                className="flex-none px-3.5 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-700/50 flex flex-wrap sm:flex-nowrap items-center justify-between gap-x-2 gap-y-2 bg-slate-50/50 dark:bg-slate-900/20">
                 <div className="order-1 min-w-0 flex-1">
                   {subTitle && (
                     <p className="text-[11px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>

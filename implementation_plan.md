@@ -6976,3 +6976,15 @@ Quy tắc mới (chủ dự án chốt): **bảng luôn là bảng** — ghi và
 - Thẻ nhắc cài app: `components/layout/InstallAppHint.tsx` + `installHint.ts` (hàm thuần). Chỉ Safari iPhone
   (loại Zalo/FB/LINE/Chrome iOS), chưa standalone, ẩn ở In Sticker/Phân Ca, × → 14 ngày.
 - Test: `tests/unit/install-hint.test.ts`, `tests/e2e/mo-lai-app-dung-cho-cu.spec.ts`.
+
+## iPhone Giai đoạn 2 — Đợt B: sheet kiểu iOS, vuốt xuống để đóng (2026-10-02)
+
+- `components/shared/ui/Modal.tsx`: `position="bottom"` + màn < 640px (đúng mốc `sm` mà bố cục dán đáy vốn
+  dùng) → trượt lên từ đáy, thanh nắm, `drag="y"` của motion. CHỈ kéo từ thanh nắm + hàng tiêu đề
+  (`dragListener={false}` + `useDragControls`) — kéo trong nội dung vẫn là cuộn. Đóng khi kéo > 100px hoặc
+  vận tốc > 500px/s; ngắn hơn thì bật về. Máy tính không đổi gì.
+- Chuyển sang `position="bottom"`: KpiCardConfigModal, ColumnConfigModal, StructureModals (2), HeadToHeadConfigModal,
+  WarehouseSettingsModal, BI ColorSettingsModal, BI TileLinkModal (ExportOptionsModal vốn đã là bottom).
+- `FilterSection` KHÔNG phải modal (khối lọc nằm trong trang) → không đụng.
+- Test: `tests/e2e/modal-sheet-vuot-dong.spec.ts` dựng Modal THẬT qua `tests/e2e/helpers/sheetHarness.tsx`
+  (dev server Vite nạp file), không cần dữ liệu mẫu.

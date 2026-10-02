@@ -205,6 +205,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title="Cấu hình Dãy thẻ KPI"
             subTitle="Tuỳ chỉnh hiển thị thẻ tổng quan"

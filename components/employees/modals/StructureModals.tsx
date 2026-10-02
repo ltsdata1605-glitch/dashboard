@@ -39,6 +39,7 @@ export const TabModal: React.FC<{
     return (
           <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"}
             subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"}
@@ -104,6 +105,7 @@ export const TableModal: React.FC<{
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title={isEditing ? "Sửa Bảng Thi Đua" : "Tạo Bảng Thi Đua Mới"}
             subTitle={isEditing ? "Chỉnh sửa tên và cài đặt cho bảng này" : "Đặt tên cho bảng thi đua trong tab hiện tại"}

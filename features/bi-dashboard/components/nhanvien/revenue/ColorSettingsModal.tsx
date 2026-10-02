@@ -181,6 +181,7 @@ export const ColorSettingsModal: React.FC<{
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title="Cấu Hình Màu Hiển Thị"
             subTitle="Tùy chỉnh ngưỡng phần trăm"

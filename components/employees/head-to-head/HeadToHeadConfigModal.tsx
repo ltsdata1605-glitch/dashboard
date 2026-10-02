@@ -334,6 +334,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title={editingConfig ? "Chỉnh Sửa Bảng" : "Tạo Bảng Mới"}
             subTitle="Tùy chỉnh bảng so sánh hiệu suất trong 7 ngày"

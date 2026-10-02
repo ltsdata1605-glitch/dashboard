@@ -373,6 +373,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title="Cấu Hình Cột Báo Cáo"
             subTitle="Tùy chỉnh hiển thị dữ liệu kho"

@@ -287,6 +287,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title={editingColumn ? "Chỉnh Sửa Cột" : "Tạo Cột Mới"}
             subTitle="Cấu hình số liệu hiển thị trong bảng"

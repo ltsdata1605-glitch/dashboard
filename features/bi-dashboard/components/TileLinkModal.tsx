@@ -89,6 +89,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
     return (
         <Modal
             isOpen={isOpen}
+            position="bottom"
             onClose={onClose}
             title="Cấu hình liên kết báo cáo"
             subTitle={`${displayGroup} • ${displayName}`}
