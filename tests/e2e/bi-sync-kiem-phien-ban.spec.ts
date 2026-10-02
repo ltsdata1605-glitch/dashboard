@@ -20,11 +20,12 @@ async function mo(page: Page, version: string) {
 
 test('máy chạy bản cũ (vd 6.4 — bản ≤7.3 luôn tự báo 6.4) → tự mở trang cập nhật userscript, không chạy', async ({ page }) => {
     await mo(page, '6.4');
-    const tabMoi = page.context().waitForEvent('page');
+    // Bắt yêu cầu điều hướng, không đọc URL tab: Chrome coi `.user.js` là lượt cài userscript — không có Tampermonkey
+    // thì tải file về rồi đóng tab, URL tab thành ":" (xem bi-sync-cap-nhat-xong-tu-chay-tiep.spec.ts).
+    const moTrangCapNhat = page.context().waitForEvent('request', (r) =>
+        r.isNavigationRequest() && r.url().includes('/scripts/mwg-auto-thu-thap-diem-thuong.user.js'));
     await page.locator('#chay-tu-dong').click();
-    const tab = await tabMoi;
-    await tab.waitForLoadState('domcontentloaded').catch(() => {});
-    expect(tab.url()).toContain('/scripts/mwg-auto-thu-thap-diem-thuong.user.js');
+    await moTrangCapNhat;
     await expect(page.locator('#ket-qua')).toHaveText(`USERSCRIPT_OUTDATED:6.4:${BAN_MOI_NHAT}`);
     await expect(page.getByTestId('bi-sync-can-cap-nhat')).toHaveText(`Cần cập nhật Userscript lên bản mới nhất v${BAN_MOI_NHAT}`);
 });

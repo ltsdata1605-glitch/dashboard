@@ -14,6 +14,8 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * kiểm đúng nội dung gửi đi, không gửi thật.
  */
 const USERSCRIPT = readFileSync(resolve(fileURLToPath(new URL('.', import.meta.url)), '../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js'), 'utf-8');
+/** Bản đang phát — đọc từ @version, KHÔNG ghi cứng: nâng 7.16 → 7.17 từng làm 6 test đỏ chỉ vì chữ "bản 7.16". */
+const BAN_HIEN_TAI = USERSCRIPT.match(/^\/\/\s*@version\s+([\d.]+)/m)![1];
 const NHOM = 'C0123456789abcdef0123456789abcdef';
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 test.use({ bypassCSP: true });
@@ -131,7 +133,7 @@ test('Auto Sync YCX Realtime nạp xong → TỰ gửi các ảnh đã đặt "n
     }, NHOM);
 
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText('bản 7.16', { timeout: 8000 });
+    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 8000 });
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: 'Tự động YCX Realtime' }).click();
     const jobId = new URL((await popupP).url()).searchParams.get('ycx_job')!;
@@ -152,7 +154,7 @@ test('hẹn giờ: đặt 09:00 cho YCX Realtime trên nút → đến giờ t�
     test.setTimeout(120_000);
     await chuanBi(page, { homNay: '2026-10-15T08:58:00' });
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText('bản 7.16', { timeout: 8000 });
+    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 8000 });
 
     await page.getByTestId('sched-ycx-realtime').click();
     const modal = page.getByTestId('sched-modal-ycx-realtime');

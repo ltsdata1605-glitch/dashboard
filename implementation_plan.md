@@ -7058,3 +7058,7 @@ không ra, Console trang baocao có dòng `[BI-Sync] [API] Thi đua nhân viên 
 | `iframe-tabs-csp` (xlsx check-thuong) | MÔI TRƯỜNG: Chromium không tin chứng chỉ proxy → không tải được cdn.sheetjs.com | `E2E_IGNORE_HTTPS_ERRORS=1` (chỉ bật cho test cần CDN — xem chú thích config) |
 
 Máy cloud chạy e2e: `E2E_CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test …`. Máy chủ dự án/CI không đổi.
+- Lượt chạy TOÀN BỘ e2e trên máy cloud (2026-10-02): 199 qua / 43 bỏ qua / 8 đỏ → sửa tiếp:
+  6 test ghi cứng "bản 7.16" (`ycx-tu-dong-phan-tich` ×4, `line-gui-anh-va-hen-gio` ×2) → đọc từ `@version` của
+  userscript; `bi-sync-kiem-phien-ban` cùng lỗi `.user.js` → bắt yêu cầu điều hướng. `iframe-tabs-csp` cần
+  `E2E_IGNORE_HTTPS_ERRORS=1`. Sau sửa: cả 8 qua.
