@@ -16,7 +16,7 @@ test('Tabs: chọn mục khuất bên phải → dải tự cuộn đưa mục v
     const y0 = await page.evaluate(() => window.scrollY);
     await page.evaluate(() => (window as unknown as { __setTab: (id: string) => void }).__setTab('k8'));
     const active = page.getByRole('button', { name: 'Kho số 1008' });
-    await expect(active).toHaveAttribute('aria-current', 'true');
+    await expect(active).toHaveAttribute('data-active', 'true');
     await expect.poll(async () => {
         const b = (await active.boundingBox())!;
         return Math.abs(b.x + b.width / 2 - 195); // tâm nút gần tâm màn 390px

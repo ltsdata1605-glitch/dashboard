@@ -7046,3 +7046,15 @@ thị (9567) là nhân viên → nếu API trả dòng đó thì ô bị ghi rá
 có dòng siêu thị ngay, 1 kho phải khoan COMPANY → AREA → STORE); `thiDuaNhanVienApi.test.ts` thêm ca dòng siêu thị 9567.
 **Chưa kiểm được trên MWG thật** (không có phiên đăng nhập): tên `columnname` các tầng giữa là suy đoán — nếu vẫn
 không ra, Console trang baocao có dòng `[BI-Sync] [API] Thi đua nhân viên …` / `Không lấy được Thi đua nhân viên cho …`.
+
+## Sửa các test e2e đỏ từ trước (2026-10-02)
+
+| Test | Nguyên nhân thật | Sửa |
+|---|---|---|
+| 9 test BI (`bi-competition` ×4, `bi-bonus-compare` ×3, `bi-competition-bonus-col`, `bi-competition-export-fit`) | Ô "Cập nhật" giờ bấm là TỰ ĐỌC clipboard (`readText`); `helpers/seed.ts` vẫn chờ `textarea` | `pasteIntoTile` gắn clipboard giả rồi bấm ô; textarea còn là đường dự phòng |
+| `bi-bonus-compare` (menu chế độ xem) | Do Đợt D: `aria-current` gắn cho dải tab → test tìm mục đang chọn trong menu bắt trúng 3 chỗ | Dải tab chỉ dùng `data-active` (bỏ `aria-current`) |
+| `bi-sync-cap-nhat-xong-tu-chay-tiep` | Chrome coi `.user.js` là lượt cài userscript → không có Tampermonkey thì tải về, URL tab = ":" | Bắt yêu cầu điều hướng tới file thay vì đọc URL tab |
+| `sticker-nut-va-quet-ma` ×2, `sticker-toc-do-quet-ma` ×2 | MÔI TRƯỜNG: spec tự khai `launchOptions` đè mất đường dẫn Chromium của máy cloud | `playwright.config.ts` xuất `E2E_LAUNCH` (từ `E2E_CHROMIUM_PATH`), 2 spec trải vào |
+| `iframe-tabs-csp` (xlsx check-thuong) | MÔI TRƯỜNG: Chromium không tin chứng chỉ proxy → không tải được cdn.sheetjs.com | `E2E_IGNORE_HTTPS_ERRORS=1` (chỉ bật cho test cần CDN — xem chú thích config) |
+
+Máy cloud chạy e2e: `E2E_CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test …`. Máy chủ dự án/CI không đổi.

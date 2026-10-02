@@ -14,6 +14,13 @@ const DEV_URL = 'http://127.0.0.1:5173';
 /** Đặt E2E_BASE_URL để chạy test trên một server có sẵn (vd bản build `vite preview`) thay vì dev
  *  server. Hữu ích khi cần loại trừ nhiễu HMR của dev server đang mở sẵn trên máy. */
 const BASE_URL = process.env.E2E_BASE_URL || DEV_URL;
+/** Máy cloud (Claude Code trên web): Chromium cài sẵn ở /opt/pw-browsers/chromium lệch phiên bản với Playwright, và
+ *  proxy mạng dùng chứng chỉ riêng mà Chromium không tin (CDN như cdn.sheetjs.com báo ERR_CERT_AUTHORITY_INVALID).
+ *  Ở đó luôn đặt E2E_CHROMIUM_PATH=/opt/pw-browsers/chromium. CHỈ thêm E2E_IGNORE_HTTPS_ERRORS=1 khi chạy test cần tải
+ *  CDN (iframe-tabs-csp): bật nó là trình duyệt ra được mạng thật → test giả định "không có mạng" đổi kết quả
+ *  (đo 2026-10-02: sticker-nut-va-quet-ma tra mã sản phẩm ra dịch vụ thật, không còn thấy "THÀNH CÔNG").
+ *  Không đặt (máy chủ dự án, CI) → không đổi gì. Spec tự khai `launchOptions` phải trải `E2E_LAUNCH` vào. */
+export const E2E_LAUNCH = process.env.E2E_CHROMIUM_PATH ? { executablePath: process.env.E2E_CHROMIUM_PATH } : {};
 
 export default defineConfig({
     testDir: './tests/e2e',
@@ -30,6 +37,7 @@ export default defineConfig({
     reporter: process.env.CI ? [['github'], ['list']] : [['list']],
     use: {
         baseURL: BASE_URL,
+        ignoreHTTPSErrors: !!process.env.E2E_IGNORE_HTTPS_ERRORS,
         trace: 'retain-on-failure',
         screenshot: 'only-on-failure',
         video: 'off',
@@ -51,7 +59,7 @@ export default defineConfig({
                 // Locale UTF-8 cho trình duyệt: máy chạy locale POSIX (container cloud) thì Chromium bỏ tên
                 // file tải về có dấu tiếng Việt → "download" (đo 2026-09-28: "Bang_Tinh_Thue_TRƯƠNG…png").
                 // Máy người dùng / GitHub Actions vốn UTF-8 nên không đổi gì ở đó.
-                launchOptions: { env: { ...process.env, LC_ALL: process.env.LC_ALL || 'C.UTF-8' } },
+                launchOptions: { ...E2E_LAUNCH, env: { ...process.env, LC_ALL: process.env.LC_ALL || 'C.UTF-8' } },
             },
         },
     ],

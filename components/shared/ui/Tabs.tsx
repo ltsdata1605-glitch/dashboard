@@ -69,7 +69,6 @@ export const Tabs = React.memo<TabsProps>(({
               variant="unstyled" size="none"
               key={item.id}
               data-active={isActive ? 'true' : undefined}
-              aria-current={isActive ? 'true' : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
@@ -122,7 +121,6 @@ export const Tabs = React.memo<TabsProps>(({
               variant="unstyled" size="none"
               key={item.id}
               data-active={isActive ? 'true' : undefined}
-              aria-current={isActive ? 'true' : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
@@ -171,7 +169,6 @@ export const Tabs = React.memo<TabsProps>(({
             variant="unstyled" size="none"
             key={item.id}
             data-active={isActive ? 'true' : undefined}
-            aria-current={isActive ? 'true' : undefined}
             onClick={() => handleClick(item.id)}
             disabled={item.disabled}
             className={cn(
