@@ -1,8 +1,15 @@
 import { useMemo } from 'react';
 import { RevenueRow, BonusMetrics } from '../types/nhanVienTypes';
-import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
+import { standardizeEmployeeName, isSameEmployee } from '../utils/nhanVienHelpers';
 import { getBonusForEmployee } from '../utils/bonusParser';
 import { getMonthProgress } from '../services/metricService';
+
+export interface CompetitionStatsSummary {
+    datMap: Map<string, number>;
+    totalHeaders: number;
+    storeDatPercent: number;
+    storeColumnDatCount: number;
+}
 
 interface UseRevenueDataProps {
     rows: RevenueRow[];
@@ -19,6 +26,7 @@ interface UseRevenueDataProps {
     bonusData?: Record<string, BonusMetrics | null>;
     isRealtime?: boolean;
     dateContext?: { day?: number; month?: number; year?: number } | null;
+    competitionStats?: CompetitionStatsSummary | null;
 }
 
 export const useRevenueData = ({
@@ -35,7 +43,8 @@ export const useRevenueData = ({
     isActive,
     bonusData,
     isRealtime = false,
-    dateContext = null
+    dateContext = null,
+    competitionStats = null
 }: UseRevenueDataProps) => {
 
     const displayList = useMemo(() => {
@@ -147,6 +156,27 @@ export const useRevenueData = ({
             
             const bonus_tong = getBonusForEmployee(bonusData, emp.originalName, emp.name)?.tong || 0;
 
+            const totalHeaders = competitionStats?.totalHeaders || 0;
+            const datMap = competitionStats?.datMap;
+            let empCompDat: number | undefined;
+            if (datMap && totalHeaders > 0) {
+                if (emp.name && datMap.has(emp.name)) empCompDat = datMap.get(emp.name);
+                else if (emp.originalName && datMap.has(emp.originalName)) empCompDat = datMap.get(emp.originalName);
+                else if (emp.originalName) {
+                    const c = standardizeEmployeeName(emp.originalName);
+                    if (datMap.has(c)) empCompDat = datMap.get(c);
+                }
+                if (empCompDat === undefined && (emp.originalName || emp.name)) {
+                    for (const [k, v] of datMap.entries()) {
+                        if (isSameEmployee(k, emp.originalName) || isSameEmployee(k, emp.name)) {
+                            empCompDat = v;
+                            break;
+                        }
+                    }
+                }
+            }
+            const empCompPctDat = empCompDat !== undefined && totalHeaders > 0 ? (empCompDat / totalHeaders) * 100 : undefined;
+
             return { 
                 ...emp, 
                 calculatedTarget: empTarget, 
@@ -158,6 +188,9 @@ export const useRevenueData = ({
                 bonus_tong,
                 duKien: empDuKien,
                 pctDkht: empPctDkht,
+                comp_dat: empCompDat,
+                comp_pct_dat: empCompPctDat,
+                comp_total: totalHeaders > 0 ? totalHeaders : undefined,
                 prevCompData
             };
         };
@@ -175,6 +208,8 @@ export const useRevenueData = ({
                 else if (sortConfig.key === 'pctDkht') { valA = a.pctDkht; valB = b.pctDkht; }
                 else if (sortConfig.key === 'installment') { valA = a.calculatedInstallment; valB = b.calculatedInstallment; }
                 else if (sortConfig.key === 'hqqd') { valA = a.hieuQuaQD; valB = b.hieuQuaQD; }
+                else if (sortConfig.key === 'comp_dat') { valA = a.comp_dat ?? -1; valB = b.comp_dat ?? -1; }
+                else if (sortConfig.key === 'comp_pct_dat') { valA = a.comp_pct_dat ?? -1; valB = b.comp_pct_dat ?? -1; }
                 else { valA = (a as unknown as Record<string, unknown>)[sortConfig.key]; valB = (b as unknown as Record<string, unknown>)[sortConfig.key]; }
                 const compare = typeof valA === 'string' && typeof valB === 'string' ? valA.localeCompare(valB) : ((valA as number) || 0) - ((valB as number) || 0);
                 return sortConfig.direction === 'asc' ? compare : -compare;
@@ -203,6 +238,7 @@ export const useRevenueData = ({
                 const prevTarget = result.reduce((s, e) => s + (e.prevCompData?.target || 0), 0);
                 const prevDk = daysPassed > 0 ? (prevDtqd / daysPassed) * totalDays : 0;
 
+                const totalHeaders = competitionStats?.totalHeaders || 0;
                 result.push({
                     type: 'total',
                     name: 'TỔNG CỘNG',
@@ -218,6 +254,9 @@ export const useRevenueData = ({
                     remaining_total: Math.max(0, sumTarget - sumDtqd),
                     remaining_daily: Math.max(0, sumTarget - sumDtqd) / remainingDays,
                     bonus_tong: sumBonusTong,
+                    comp_dat: competitionStats?.storeColumnDatCount,
+                    comp_pct_dat: totalHeaders > 0 ? ((competitionStats?.storeColumnDatCount || 0) / totalHeaders) * 100 : undefined,
+                    comp_total: totalHeaders > 0 ? totalHeaders : undefined,
                     prevCompData: (prevDtlk || prevDtqd) ? {
                         dtlk: prevDtlk,
                         dtqd: prevDtqd,
@@ -265,6 +304,11 @@ export const useRevenueData = ({
             const avgBk = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + (e.pctBillBk || 0), 0) / deptEmployees.length : 0;
             const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
             const sumBonusTong = deptEmployees.reduce((s, e) => s + (e.bonus_tong || 0), 0);
+            const totalHeaders = competitionStats?.totalHeaders || 0;
+            const deptDatSum = deptEmployees.reduce((s, e) => s + (e.comp_dat || 0), 0);
+            const deptAvgDat = deptEmployees.length > 0 ? deptDatSum / deptEmployees.length : 0;
+            const deptPossible = deptEmployees.length * totalHeaders;
+            const deptPctDat = deptPossible > 0 ? (deptDatSum / deptPossible) * 100 : undefined;
 
             return {
                 name: deptName,
@@ -278,7 +322,9 @@ export const useRevenueData = ({
                 avgBk,
                 avgHqqd,
                 sumBonusTong,
-                sortValue: sortConfig.key === 'dtqd' ? sumDtqd : (sortConfig.key === 'dtlk' ? sumDtlk : (sortConfig.key === 'target' ? sumTarget : (sortConfig.key === 'duKien' ? sumDuKien : (sortConfig.key === 'name' ? deptName : (sortConfig.key === 'bonus_tong' ? sumBonusTong : sumDtqd)))))
+                deptAvgDat,
+                deptPctDat,
+                sortValue: sortConfig.key === 'comp_dat' ? deptAvgDat : (sortConfig.key === 'comp_pct_dat' ? (deptPctDat || 0) : (sortConfig.key === 'dtqd' ? sumDtqd : (sortConfig.key === 'dtlk' ? sumDtlk : (sortConfig.key === 'target' ? sumTarget : (sortConfig.key === 'duKien' ? sumDuKien : (sortConfig.key === 'name' ? deptName : (sortConfig.key === 'bonus_tong' ? sumBonusTong : sumDtqd)))))))
             };
         });
 
@@ -299,6 +345,7 @@ export const useRevenueData = ({
                 const prevDeptDtqd = group.employees.reduce((s, e) => s + (e.prevCompData?.dtqd || 0), 0);
                 const prevDeptTarget = group.employees.reduce((s, e) => s + (e.prevCompData?.target || 0), 0);
                 const prevDeptDk = daysPassed > 0 ? (prevDeptDtqd / daysPassed) * totalDays : 0;
+                const totalHeaders = competitionStats?.totalHeaders || 0;
 
                 finalOutput.push({ 
                     type: 'department', 
@@ -315,6 +362,9 @@ export const useRevenueData = ({
                     remaining_total: Math.max(0, group.sumTarget - group.sumDtqd),
                     remaining_daily: Math.max(0, group.sumTarget - group.sumDtqd) / remainingDays,
                     bonus_tong: group.sumBonusTong,
+                    comp_dat: totalHeaders > 0 ? group.deptAvgDat : undefined,
+                    comp_pct_dat: group.deptPctDat,
+                    comp_total: totalHeaders > 0 ? totalHeaders : undefined,
                     prevCompData: (prevDeptDtlk || prevDeptDtqd) ? {
                         dtlk: prevDeptDtlk,
                         dtqd: prevDeptDtqd,
@@ -354,6 +404,7 @@ export const useRevenueData = ({
                 ? (grandSumTarget > 0 ? (grandSumDtqd / grandSumTarget) * 100 : 0)
                 : (grandSumTarget > 0 ? (grandSumDuKien / grandSumTarget) * 100 : 0);
             const grandPrevDk = daysPassed > 0 ? (grandPrevDtqd / daysPassed) * totalDays : 0;
+            const totalHeaders = competitionStats?.totalHeaders || 0;
 
             finalOutput.push({
                 type: 'total',
@@ -370,6 +421,9 @@ export const useRevenueData = ({
                 remaining_total: Math.max(0, grandSumTarget - grandSumDtqd),
                 remaining_daily: Math.max(0, grandSumTarget - grandSumDtqd) / remainingDays,
                 bonus_tong: grandSumBonusTong,
+                comp_dat: competitionStats?.storeColumnDatCount,
+                comp_pct_dat: totalHeaders > 0 ? ((competitionStats?.storeColumnDatCount || 0) / totalHeaders) * 100 : undefined,
+                comp_total: totalHeaders > 0 ? totalHeaders : undefined,
                 prevCompData: (grandPrevDtlk || grandPrevDtqd) ? {
                     dtlk: grandPrevDtlk,
                     dtqd: grandPrevDtqd,
@@ -385,7 +439,7 @@ export const useRevenueData = ({
         }
 
         return finalOutput;
-    }, [rows, departmentNames, sortConfig, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData, isRealtime, dateContext]);
+    }, [rows, departmentNames, sortConfig, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData, isRealtime, dateContext, competitionStats]);
 
     return { displayList };
 };

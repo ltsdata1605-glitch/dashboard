@@ -21,6 +21,7 @@ interface RevenueDesktopRowProps {
     targetTraGop?: number;
     targetQuyDoi?: number;
     isRealtimeMode?: boolean;
+    storeDatPercent?: number;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -37,7 +38,8 @@ export const RevenueDesktopRow = React.memo(({
     isShowRemaining = false,
     targetTraGop = 45,
     targetQuyDoi = 40,
-    isRealtimeMode = false
+    isRealtimeMode = false,
+    storeDatPercent
 }: RevenueDesktopRowProps) => {
     const prev = row.prevCompData;
     const hasTarget = (row.calculatedTarget || 0) > 0;
@@ -106,9 +108,29 @@ export const RevenueDesktopRow = React.memo(({
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={Number(prev?.hqqd) * 100} isPercent />
             </td>
             {/* NỔI BẬT 3: %T.Chậm */}
-            <td className={`export-col-performance px-2 py-[3px] text-center font-bold tabular-nums bg-amber-50/50 dark:bg-amber-950/20 ${!isRealtimeMode ? 'border-r border-slate-100 dark:border-slate-700/50' : ''}`}>
+            <td className="export-col-performance px-2 py-[3px] text-center font-bold tabular-nums bg-amber-50/50 dark:bg-amber-950/20 border-r border-slate-100 dark:border-slate-700/50">
                 <Pill className="font-bold" color={getMetricColorByTarget(row.calculatedInstallment, targetTraGop)}>{roundUp(row.calculatedInstallment)}%</Pill>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
+            </td>
+            {/* NỔI BẬT 4: Đạt (Thi đua) */}
+            <td className="export-col-performance px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+                {row.comp_total ? (
+                    <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-bold'}>
+                        {row.comp_dat ?? 0}/{row.comp_total}
+                    </span>
+                ) : (
+                    <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                )}
+            </td>
+            {/* NỔI BẬT 5: %Đạt (Thi đua) */}
+            <td className={`export-col-performance px-1.5 py-[3px] text-center font-bold tabular-nums ${!isRealtimeMode ? 'border-r border-slate-100 dark:border-slate-700/50' : ''}`}>
+                {row.comp_total ? (
+                    <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold'}>
+                        {roundUp(row.comp_pct_dat || 0)}%
+                    </span>
+                ) : (
+                    <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                )}
             </td>
             {!isRealtimeMode && (
                 <td className={`export-col-performance px-2 py-[3px] text-center tabular-nums ${

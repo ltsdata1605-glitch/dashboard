@@ -202,7 +202,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [employeeCompetitionTargets, setEmployeeCompetitionTargets] = useState<Map<string, Map<string, number>>>(new Map());
 
     useEffect(() => {
-        if (activeTab !== 'competition') return;
+        if (activeTab !== 'competition' && activeTab !== 'revenue') return;
         const fetchTargets = async () => {
             if (activeSupermarkets.length === 0) return;
             const [competitionLuyKeData, competitionRealtimeData] = await Promise.all([
@@ -449,7 +449,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
                 {visitedTabs.has('revenue') && (
                     <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
-                        <RevenueView rows={revenueRows} realtimeRows={realtimeRevenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeSupermarkets={activeSupermarkets} departmentNames={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} />
+                        <RevenueView rows={revenueRows} realtimeRows={realtimeRevenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeSupermarkets={activeSupermarkets} departmentNames={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} isActive={isActive && activeTab === 'revenue'} bonusData={aggregatedData.bonusData} competitionData={competitionData} employeeCompetitionTargets={employeeCompetitionTargets} />
                     </div>
                 )}
                 {visitedTabs.has('installment') && (

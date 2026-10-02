@@ -1625,20 +1625,37 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
 
         options.onBeforeCapture?.(clone, { width: finalWidth, height: finalHeight });
         const htmlToImage = await import('html-to-image');
-        const blob = await htmlToImage.toBlob(clone, {
-            pixelRatio: finalScale,
-            backgroundColor: isTransparentTable ? undefined : defaultBg,
-            width: finalWidth,
-            height: finalHeight,
-            style: {
-                margin: '0',
-                padding: `${exportPadding}px`,
-                boxSizing: 'border-box',
+        let blob: Blob | null = null;
+        try {
+            blob = await htmlToImage.toBlob(clone, {
+                pixelRatio: finalScale,
                 backgroundColor: isTransparentTable ? undefined : defaultBg,
-            },
-            // GIỮ font embedding mặc định (skipFonts: false) để text render đúng.
-            // Trước đây tắt font để "tránh treo" nhưng điều này khiến text mất hoàn toàn.
-        });
+                width: finalWidth,
+                height: finalHeight,
+                style: {
+                    margin: '0',
+                    padding: `${exportPadding}px`,
+                    boxSizing: 'border-box',
+                    backgroundColor: isTransparentTable ? undefined : defaultBg,
+                },
+                // GIỮ font embedding mặc định (skipFonts: false) để text render đúng.
+            });
+        } catch (fontErr) {
+            console.warn('html-to-image in presetBi failed with fonts, retrying with skipFonts: true', fontErr);
+            blob = await htmlToImage.toBlob(clone, {
+                pixelRatio: finalScale,
+                backgroundColor: isTransparentTable ? undefined : defaultBg,
+                width: finalWidth,
+                height: finalHeight,
+                style: {
+                    margin: '0',
+                    padding: `${exportPadding}px`,
+                    boxSizing: 'border-box',
+                    backgroundColor: isTransparentTable ? undefined : defaultBg,
+                },
+                skipFonts: true,
+            });
+        }
 
         if (!blob) {
             throw new Error("Không thể tạo ảnh từ DOM (kết quả trả về trống).");

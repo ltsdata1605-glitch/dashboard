@@ -135,10 +135,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                 } else {
                     return await exportOptions.showExportOptions(blob, filename);
                 }
+            } else {
+                toast.error('Có lỗi xảy ra khi tạo ảnh. Vui lòng thử lại!');
             }
             return null;
         } catch (err) {
             console.error('Export error', err);
+            toast.error('Có lỗi xảy ra khi tạo ảnh. Vui lòng thử lại!');
             return null;
         }
     };
@@ -295,7 +298,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                         onExport={async () => {
                             setIsHeaderExporting(true);
-                            const exportTarget = (activeSubTab === 'revenue' && activeSupermarket !== 'Tổng' && pageRef.current) ? pageRef : printableRef;
+                            const exportTarget = printableRef;
                             const subTabLabel = activeSubTab === 'competition' ? 'Thi Đua' : 'Doanh Thu';
                             await handleExportPNG(exportTarget, `${subTabLabel} ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`, null, { captureAsDisplayed: true });
                             setIsHeaderExporting(false);
@@ -366,16 +369,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         </div>
                     )}
                 </div>
-                <ExportOptionsModal
-                    isOpen={!!exportOptions.pendingExport}
-                    onClose={exportOptions.handleClose}
-                    onDownload={exportOptions.handleDownload}
-                    onShare={exportOptions.handleShare}
-                    canShare={exportOptions.canShare}
-                    filename={exportOptions.pendingExport?.filename || ''}
-                />
-                {!onStartAutoSync && fallbackAutoSync.renderAutoSyncModal()}
             </div>
+            <ExportOptionsModal
+                isOpen={!!exportOptions.pendingExport}
+                onClose={exportOptions.handleClose}
+                onDownload={exportOptions.handleDownload}
+                onShare={exportOptions.handleShare}
+                canShare={exportOptions.canShare}
+                filename={exportOptions.pendingExport?.filename || ''}
+            />
+            {!onStartAutoSync && fallbackAutoSync.renderAutoSyncModal()}
         </ExportOptionsProvider>
     );
 };

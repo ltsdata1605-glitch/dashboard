@@ -70,6 +70,9 @@ export interface RevenueRow {
     bonus_tier?: 'top' | 'bot' | 'normal';
     duKien?: number;
     pctDkht?: number;
+    comp_dat?: number;
+    comp_total?: number;
+    comp_pct_dat?: number;
 }
 
 export interface CrossSellingRow {

@@ -35,8 +35,10 @@
  * BẢN 7.17 — LUỸ KẾ: Ô THI ĐUA NHÂN VIÊN THẬT SỰ ĐƯỢC CẬP NHẬT (chủ dự án 2026-10-02):
  * - Trang MWG khoan xuống nhân viên bằng mã NỘI BỘ của dòng siêu thị (910 → VIEWIDS "9567"), không bằng mã kho. Bản
  *   7.10–7.16 gửi mã kho → API rỗng → ô THI ĐUA không bao giờ đổi. Nay tự dò mã đó (acpFetchCompetitionStaff), nhớ theo kho.
+ * - Bóc tách storeid số và hỗ trợ định dạng trả về bọc data ({ success: true, data: [...] }) của API competition-bymsg-get.
  * - Chỉ nhận dòng columnname STAFFUSER làm nhân viên (dòng siêu thị 9567 cũng là số). Trả chậm: lỗi/rỗng ở 1 siêu thị
  *   không ghi đè ô đang có và không làm hỏng cả lượt.
+ * - Ghi đồng bộ đầy đủ các định dạng khóa (mã kho, tên rút gọn, tên đầy đủ, chữ hoa) để tự động điền 2 ô "THI ĐUA" & "TRẢ CHẬM" trong Cấu hình siêu thị & nhân viên.
  *
  * BẢN 7.16 — HẸN GIỜ AUTO SYNC + GỬI ẢNH VÀO NHÓM LINE (chủ dự án 2026-10-01):
  * - Hẹn giờ chạy không có cú bấm của người dùng → trình duyệt chặn window.open. 'ycx-bi-automation:open-worker' nay
@@ -3164,13 +3166,22 @@
   // → tên kiểu đó phải đổi nhẹ, nếu không nó lấy nhầm dòng nhân viên cuối của chương trình trước làm tên.
   // Doanh thu API tính bằng TRIỆU có lẻ (vd 154.94) — ô Thi đua hiển thị DT theo "Tr" → giữ 2 chữ số lẻ; số lượng số nguyên.
   // Bỏ dòng "online" (không phải nhân viên) và dòng của siêu thị khác nếu API có trả lẫn.
+  function acpShortenStoreName(name) {
+    if (!name || typeof name !== 'string') return '';
+    if (!name.includes(' - ')) return name.trim();
+    let shortName = name.split(' - ').pop().trim();
+    shortName = shortName.replace(/^(Thửa\s*)?\d+\s*/, '').replace(/Thử/g, '').trim();
+    return shortName;
+  }
+
   function acpSerializeCompetitionStaff(rows, storeId) {
-    const list = Array.isArray(rows) ? rows : [];
+    const list = Array.isArray(rows) ? rows : (rows && Array.isArray(rows.data) ? rows.data : []);
     const byProgram = new Map();
+    const targetStoreCode = String(storeId || '').match(/^\d+/)?.[0] || String(storeId || '');
     for (const r of list) {
       const id = String(r.salegroupid || r.staffuser || '');
       if (!/^\d+$/.test(id) || !acpCompIsStaffRow(r)) continue;
-      if (storeId && r.storeid != null && String(r.storeid) !== String(storeId)) continue;
+      if (targetStoreCode && r.storeid != null && String(r.storeid) !== targetStoreCode) continue;
       const key = r.programid || r.programname;
       if (!byProgram.has(key)) byProgram.set(key, []);
       byProgram.get(key).push(r);
@@ -3205,7 +3216,7 @@
   // Shinhan, PAYLATER…) xếp TRƯỚC, đối tác lạ (vd "Kim Ngân Pay") xếp SAU — bộ đọc chỉ ghép cặp theo đối tác nó nhận ra,
   // để lạ ở giữa thì mọi cột sau bị lệch. Số làm tròn 2 chữ số: "1.234" bị bộ đọc hiểu là 1234.
   function acpSerializeInstallmentStaff(rows) {
-    const list = Array.isArray(rows) ? rows : [];
+    const list = Array.isArray(rows) ? rows : (rows && Array.isArray(rows.data) ? rows.data : []);
     const known = ['HomeCredit', 'FECredit', 'Shinhan', 'SMARTPOS', 'HPL', 'KREDIVO', 'Samsung', 'TPBANK', 'PAYLATER', 'EVO', 'Payoo'];
     const isKnown = (n) => known.some((k) => String(n).toUpperCase().includes(k.toUpperCase()));
     const f2 = (v) => (Number(v) || 0).toFixed(2);
@@ -3554,38 +3565,73 @@
             if (isLuyKe) {
               const installmentByStore = {};
               const competitionByStore = {};
+
+              // 1. Thử tải gộp Thi đua nhân viên toàn cụm trước (như mẫu API 971 dòng trả theo storeid từng siêu thị)
+              let allCompStaff = [];
+              try {
+                const bulkComp = await acpFetchBiApi('competition-bymsg-get', {
+                  MONTHKEY: monthKey,
+                  VIEWLEVEL: 'STORE',
+                  VIEWIDS: null,
+                  ISVIEWSTORE: 0,
+                  TIMETYPE: 2,
+                  STOREIDS: activeStoreIds,
+                  PAGESIZE: 0,
+                }, token);
+                allCompStaff = Array.isArray(bulkComp) ? bulkComp : (bulkComp && Array.isArray(bulkComp.data) ? bulkComp.data : []);
+              } catch (e) {
+                console.warn('[BI-Sync] [API] Tải gộp thi đua nhân viên gặp lỗi, sẽ thử từng siêu thị:', e);
+              }
+
               for (let i = 0; i < storeList.length; i++) {
                 const st = storeList[i];
+                const stNumId = String(st.id || '').match(/^\d+/)?.[0] || String(st.id || '');
+                const shortSt = acpShortenStoreName(st.name);
+
                 await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải thi đua nhân viên cho ${st.name}...`);
                 // Trang MWG KHÔNG khoan xuống nhân viên bằng mã kho: chọn siêu thị 910 thì nó gọi VIEWLEVEL STORE với
                 // VIEWIDS "9567" — mã NỘI BỘ của dòng siêu thị trong bảng Thi đua (bản 7.17). acpFetchCompetitionStaff
                 // tự dò mã đó như trang làm. Một siêu thị lỗi không được làm hỏng cả lượt.
                 try {
                   const compStaff = await acpFetchCompetitionStaff(st, monthKey, token);
-                  const serializedTd = acpSerializeCompetitionStaff(compStaff, st.id);
+                  const serializedTd = acpSerializeCompetitionStaff(compStaff, stNumId || st.id);
                   if (serializedTd) {
                     competitionByStore[st.name] = serializedTd;
                     competitionByStore[st.id] = serializedTd;
+                    if (stNumId) competitionByStore[stNumId] = serializedTd;
+                    if (shortSt) {
+                      competitionByStore[shortSt] = serializedTd;
+                      competitionByStore[shortSt.toUpperCase()] = serializedTd;
+                    }
                   } else {
                     console.warn('[BI-Sync] [API] Không lấy được Thi đua nhân viên cho', st.name);
                   }
                 } catch (e) {
                   console.warn('[BI-Sync] [API] Thi đua nhân viên lỗi cho', st.name, e);
                 }
+
                 await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải trả chậm nhân viên cho ${st.name}...`);
                 try {
                   const tcData = await acpFetchBiApi('tra-cham-matrix-get', {
                     VIEWLEVEL: 'STAFF',
                     RSMIDS: null,
                     AMIDS: null,
-                    STOREIDS: String(st.id),
+                    STOREIDS: stNumId || String(st.id),
                     MONTHKEY: monthKey,
                   }, token);
+                  const tcList = Array.isArray(tcData) ? tcData : (tcData && Array.isArray(tcData.data) ? tcData.data : []);
                   // Không có nhân viên nào (API rỗng) → KHÔNG ghi đè ô Trả chậm đang có bằng bảng trống
-                  if (Array.isArray(tcData) && tcData.some((r) => /^\d+$/.test(String(r.group_id || '')))) {
-                    const serializedTc = acpSerializeInstallmentStaff(tcData);
-                    installmentByStore[st.name] = serializedTc;
-                    installmentByStore[st.id] = serializedTc;
+                  if (tcList.some((r) => /^\d+$/.test(String(r.group_id || '')))) {
+                    const serializedTc = acpSerializeInstallmentStaff(tcList);
+                    if (serializedTc) {
+                      installmentByStore[st.name] = serializedTc;
+                      installmentByStore[st.id] = serializedTc;
+                      if (stNumId) installmentByStore[stNumId] = serializedTc;
+                      if (shortSt) {
+                        installmentByStore[shortSt] = serializedTc;
+                        installmentByStore[shortSt.toUpperCase()] = serializedTc;
+                      }
+                    }
                   }
                 } catch (e) {
                   console.warn('[BI-Sync] [API] Trả chậm nhân viên lỗi cho', st.name, e);
@@ -3593,7 +3639,7 @@
               }
               results.installmentByStore = installmentByStore;
               results.competitionByStore = competitionByStore;
-              console.log('[BI-Sync] [API] Bước 5 Xong: Thi đua', Object.keys(competitionByStore).length / 2, '& Trả chậm', Object.keys(installmentByStore).length / 2, 'siêu thị');
+              console.log('[BI-Sync] [API] Bước 5 Xong: Thi đua & Trả chậm cho', storeList.length, 'siêu thị');
             }
             console.log('[BI-Sync] [API] Bước 4 Xong: Doanh thu nhân viên cho', Object.keys(employeeByStore).length, 'siêu thị');
 

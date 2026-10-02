@@ -4,11 +4,12 @@ import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton, { ExportOptionItem } from '../ExportButton';
 import { SpinnerIcon, UsersIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon, AlertTriangleIcon, ImagesIcon, ChartBarIcon, SparklesIcon } from '../Icons';
-import { RevenueRow, BonusMetrics } from '../../types/nhanVienTypes';
-import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
+import { RevenueRow, BonusMetrics, Criterion, Employee, CompetitionHeader } from '../../types/nhanVienTypes';
+import { roundUp, getYesterdayDateString, CompetitionEmployeeRow } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { parseRevenueData } from '../../utils/nhanVienHelpers';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
+import { resolveEmployeeTarget, computeDatMap, computeStoreDatPercent, computeStoreColumnDatCount, EmployeeDataMap } from '../../services/competitionSummaryCalc';
 
 
 import { DeltaBadge } from '../shared/Badges';
@@ -40,12 +41,16 @@ const RevenueView: React.FC<{
     employeeInstallmentMap: Map<string, number>;
     isActive?: boolean;
     bonusData?: Record<string, BonusMetrics | null>;
+    competitionData?: Record<Criterion, { headers: CompetitionHeader[]; employees: CompetitionEmployeeRow[] }> | null;
+    employeeCompetitionTargets?: Map<string, Map<string, number>>;
 }> = ({
     rows, realtimeRows = [], supermarketName, activeSupermarkets, departmentNames,
     highlightedEmployees, setHighlightedEmployees,
     supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap,
     isActive,
-    bonusData
+    bonusData,
+    competitionData,
+    employeeCompetitionTargets
 }) => {
     const [isRealtimeMode, setIsRealtimeMode] = useIndexedDBState<boolean>('nhanvien-revenue-realtime-mode', false);
     const activeRows = isRealtimeMode ? realtimeRows : rows;
@@ -160,6 +165,61 @@ const RevenueView: React.FC<{
         return toBoldVividColor(color);
     }, []);
 
+    const competitionStats = useMemo(() => {
+        if (!competitionData) return null;
+        const criteriaOrder: Criterion[] = ['SLLK', 'DTLK', 'DTQĐ'];
+        const allHeaders: CompetitionHeader[] = criteriaOrder.flatMap(c => competitionData[c]?.headers || []);
+        if (allHeaders.length === 0) return null;
+
+        const allCriterionEmployees = criteriaOrder.flatMap(c => competitionData[c]?.employees || []);
+        const uniqueEmployeesMap = new Map<string, CompetitionEmployeeRow>();
+        allCriterionEmployees.forEach(e => {
+            if (e && e.name) uniqueEmployeesMap.set(e.name, e);
+        });
+        const compEmployees: Employee[] = Array.from(uniqueEmployeesMap.values()).map(e => ({
+            name: e.name,
+            originalName: e.originalName || e.name,
+            department: e.department || '',
+        }));
+
+        const employeeDataMap: EmployeeDataMap = new Map();
+        criteriaOrder.forEach(criterion => {
+            const data = competitionData[criterion];
+            if (!data) return;
+            data.employees.forEach((employee) => {
+                if (!employeeDataMap.has(employee.name)) {
+                    employeeDataMap.set(employee.name, {
+                        name: employee.name,
+                        department: employee.department,
+                        values: {}
+                    });
+                }
+                const employeeRecord = employeeDataMap.get(employee.name)!;
+                data.headers.forEach((header, index: number) => {
+                    employeeRecord.values[header.title] = employee.values[index];
+                });
+            });
+        });
+
+        const targets = employeeCompetitionTargets || new Map();
+        const getTargetForEmployee = (origTitle?: string, empOrigName?: string) =>
+            resolveEmployeeTarget(targets, origTitle, empOrigName);
+
+        const daysPassed = timeProgressData.dayPassed;
+        const daysInMonth = timeProgressData.daysInMonth;
+        const datMap = computeDatMap(allHeaders, compEmployees, employeeDataMap, getTargetForEmployee, daysPassed, daysInMonth);
+        const totalHeaders = allHeaders.length;
+        const storeDatPercent = computeStoreDatPercent(compEmployees, totalHeaders, datMap);
+        const storeColumnDatCount = computeStoreColumnDatCount(allHeaders, compEmployees, employeeDataMap, getTargetForEmployee, daysPassed, daysInMonth);
+
+        return {
+            datMap,
+            totalHeaders,
+            storeDatPercent,
+            storeColumnDatCount
+        };
+    }, [competitionData, employeeCompetitionTargets, timeProgressData.dayPassed, timeProgressData.daysInMonth]);
+
     const { displayList } = useRevenueData({
         rows: activeRows,
         departmentNames,
@@ -174,7 +234,8 @@ const RevenueView: React.FC<{
         isActive,
         bonusData,
         isRealtime: isRealtimeMode,
-        dateContext: timeProgressData.progress
+        dateContext: timeProgressData.progress,
+        competitionStats
     });
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
@@ -499,7 +560,7 @@ const RevenueView: React.FC<{
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={isRealtimeMode ? 2 : 3} className="export-col-performance px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                                            <th colSpan={isRealtimeMode ? 4 : 5} className="export-col-performance px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                                                 Hiệu suất
                                             </th>
                                         </tr>
@@ -522,7 +583,11 @@ const RevenueView: React.FC<{
                                             {/* NỔI BẬT 2: HQQĐ */}
                                             <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 bg-emerald-100 dark:bg-emerald-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-200/80 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             {/* NỔI BẬT 3: %T.Chậm */}
-                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors`} onClick={() => handleSort('installment')}>%T.Chậm</th>
+                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-900 dark:text-amber-100 bg-amber-100 dark:bg-amber-950/70 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-amber-200/80 dark:hover:bg-amber-900/60 transition-colors" onClick={() => handleSort('installment')}>%T.Chậm</th>
+                                            {/* NỔI BẬT 4: Đạt (Thi đua) */}
+                                            <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('comp_dat')}>Đạt</th>
+                                            {/* NỔI BẬT 5: %Đạt (Thi đua) */}
+                                            <th className={`export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 ${!isRealtimeMode ? 'border-r' : ''} border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors`} onClick={() => handleSort('comp_pct_dat')}>%Đạt</th>
                                             {!isRealtimeMode && (
                                                 <th className="export-col-performance px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-200/70 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                             )}
@@ -581,9 +646,29 @@ const RevenueView: React.FC<{
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={Number(prev?.hqqd) * 100} isPercent />
                                                     </td>
                                                     {/* NỔI BẬT 3: %T.Chậm */}
-                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
+                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold bg-amber-50/60 dark:bg-amber-950/20`} style={{ color: getMetricColorByTarget(row.calculatedInstallment, targetTraGop) }}>
                                                         <div className="font-bold">{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
+                                                    </td>
+                                                    {/* NỔI BẬT 4: Đạt (Thi đua) */}
+                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                        {row.comp_total ? (
+                                                            <span className={isGrandTotal ? 'text-emerald-700 dark:text-emerald-400 font-extrabold' : (competitionStats?.storeDatPercent !== undefined && (row.comp_pct_dat || 0) < competitionStats.storeDatPercent ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400')}>
+                                                                {isGrandTotal ? `${row.comp_dat ?? 0}/${row.comp_total}` : (row.comp_dat !== undefined ? (Number.isInteger(row.comp_dat) ? `${row.comp_dat}/${row.comp_total}` : `${row.comp_dat.toFixed(1)}/${row.comp_total}`) : '-')}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                                                        )}
+                                                    </td>
+                                                    {/* NỔI BẬT 5: %Đạt (Thi đua) */}
+                                                    <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center ${!isRealtimeMode ? 'border-r' : ''} tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                        {row.comp_total ? (
+                                                            <span className={isGrandTotal ? 'text-emerald-700 dark:text-emerald-400 font-extrabold' : (competitionStats?.storeDatPercent !== undefined && (row.comp_pct_dat || 0) < competitionStats.storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold')}>
+                                                                {roundUp(row.comp_pct_dat || 0)}%
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                                                        )}
                                                     </td>
                                                     {!isRealtimeMode && (
                                                         <td className={`export-col-performance px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
@@ -610,6 +695,7 @@ const RevenueView: React.FC<{
                                                  targetTraGop={targetTraGop}
                                                  targetQuyDoi={targetQuyDoi}
                                                  isRealtimeMode={isRealtimeMode}
+                                                 storeDatPercent={competitionStats?.storeDatPercent}
                                              />
                                          );
                                     })}
