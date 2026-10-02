@@ -116,6 +116,14 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
 
             const modeLabel = payload.mode === 'realtime' ? 'Realtime' : 'Luỹ kế';
             toast.success(`✨ Tự động cập nhật thành công ${res.successCount} mục dữ liệu ${modeLabel}!`, { duration: 4000 });
+
+            // Tự động mở màn hình tương ứng khi chạy xong
+            const { navigateToBiRealtime, navigateToBiLuyKe } = await import('../services/autoNavigationService');
+            if (payload.mode === 'realtime') {
+                void navigateToBiRealtime();
+            } else {
+                void navigateToBiLuyKe();
+            }
         });
 
         const unsubError = onBiError((err) => {

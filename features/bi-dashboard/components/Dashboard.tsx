@@ -261,6 +261,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         return () => window.removeEventListener('ycx-bi-auto-export:request', onRequest);
     }, []);
 
+    // Lắng nghe chuyển tab chế độ (Realtime / Luỹ kế) và tab con (Doanh thu / Thi đua)
+    useEffect(() => {
+        const onSwitchTab = (e: Event) => {
+            const d = (e as CustomEvent).detail;
+            if (d?.mainTab) setActiveMainTab(d.mainTab);
+            if (d?.subTab) setActiveSubTab(d.subTab);
+        };
+        window.addEventListener('dashboard-switch-tab', onSwitchTab);
+        return () => window.removeEventListener('dashboard-switch-tab', onSwitchTab);
+    }, [setActiveMainTab, setActiveSubTab]);
+
     if (isActive === false) {
         return <div className="hidden" />;
     }

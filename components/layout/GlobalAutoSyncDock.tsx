@@ -239,8 +239,8 @@ export default function GlobalAutoSyncDock() {
                 window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoSend } }));
 
                 toast.success(`Đã tự động tải và nạp file ${TEN_YCX[mode]}!`);
-                // Có khu vực tự gửi LINE → phải mở Phân tích để chụp được ảnh (tab ẩn không chụp được)
-                if (autoSend.length) setActiveTab('analysis');
+                // Tự động mở tab Phân tích khi chạy xong
+                setActiveTab('analysis');
             }
         });
 
@@ -300,11 +300,11 @@ export default function GlobalAutoSyncDock() {
             // Đợi Report BI ghi xong dữ liệu vào các ô rồi mới chụp
             setTimeout(async () => {
                 const tId = toast.loading(`Đang tự xuất ${cho.items.length} khu vực Report BI để gửi LINE…`);
-                // Lượt chạy không chuyển tab (để người dùng ở yên chỗ) — riêng lúc chụp phải mở Report BI, xong trả về tab cũ
-                const tabCu = activeTabRef.current;
-                if (tabCu !== 'employees') setActiveTabRef.current('employees');
+                // Mở Report BI để chụp và giữ ở màn hình tương ứng theo yêu cầu
+                const { navigateToBiRealtime, navigateToBiLuyKe } = await import('../../features/bi-dashboard/services/autoNavigationService');
+                if (cho.mode === 'realtime') void navigateToBiRealtime();
+                else void navigateToBiLuyKe();
                 const { images, errors } = await yeuCauAnhBi(cho.mode, cho.items.map((x) => x.area));
-                if (tabCu !== 'employees') setActiveTabRef.current(tabCu);
                 const { sendReportImageToLine } = await import('../../services/lineReportDelivery');
                 let ok = 0;
                 const hong: string[] = errors.map((x) => `${x.area}: ${x.error}`);

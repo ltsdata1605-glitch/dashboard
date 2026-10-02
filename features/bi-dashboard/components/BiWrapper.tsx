@@ -136,6 +136,18 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         return () => window.removeEventListener('ycx-bi-auto-export:request', onReq);
     }, [handleTabChange]);
 
+    // Lắng nghe chuyển phân hệ (Siêu thị / Nhân viên / Cập nhật) từ bên ngoài hoặc sau khi chạy xong Auto Sync
+    useEffect(() => {
+        const onSwitchView = (e: Event) => {
+            const view = (e as CustomEvent).detail?.view;
+            if (view === 'dashboard' || view === 'employee' || view === 'updater') {
+                handleTabChange(view);
+            }
+        };
+        window.addEventListener('bi-switch-view', onSwitchView);
+        return () => window.removeEventListener('bi-switch-view', onSwitchView);
+    }, [handleTabChange]);
+
     const handleNavigateToUpdater = useCallback((options?: { configTab?: ConfigTab; supermarketName?: string; scrollToConfig?: boolean }) => {
         handleTabChange('updater', options);
     }, [handleTabChange]);

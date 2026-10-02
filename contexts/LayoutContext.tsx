@@ -81,6 +81,18 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
     }, []);
 
+    // Lắng nghe sự kiện chuyển tab toàn cục (từ Auto Sync, thông báo, hoặc các dịch vụ tự động)
+    useEffect(() => {
+        const handleNav = (e: Event) => {
+            const tab = (e as CustomEvent).detail?.tab;
+            if (tab && typeof tab === 'string') {
+                setActiveTab(tab);
+            }
+        };
+        window.addEventListener('app-switch-tab', handleNav);
+        return () => window.removeEventListener('app-switch-tab', handleNav);
+    }, [setActiveTab]);
+
     useEffect(() => {
         if (!isLoaded) return;
         saveSetting('sidebar_collapsed', isSidebarCollapsed).catch(() => {});
