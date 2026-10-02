@@ -170,6 +170,8 @@ Vùng cuộn ngang phải nằm trong container riêng có `overflow-x: auto` �
 
 ## 6. TRÊN ĐIỆN THOẠI — cùng chuẩn, không phải chuẩn thứ hai
 
+🔴 **Dữ liệu dạng bảng LUÔN hiển thị dạng bảng — trên mọi màn hình, kể cả iPhone** (chủ dự án chốt 2026-10-02: *"Vì tính chất dữ liệu nên phải xem trên dạng bảng"*). CẤM chuyển bảng sang dạng thẻ (card/bento) hay danh sách thẻ, kể cả dưới dạng nút chuyển "Bảng/Thẻ". Được phép làm bảng dễ xem hơn: ghim cột đầu, ghim đầu bảng, viền mờ báo còn cột, mật độ, cỡ chữ. "Rút về tên · số chính · %" bên dưới nghĩa là bớt cột của CHÍNH bảng đó, vẫn là dòng × cột.
+
 Bảng nhiều cột không bóp lại được. Trên màn hẹp, mỗi dòng rút về **tên · số chính · %**, giữ nguyên
 vạch trạng thái ở mép. Chữ nâng lên `14.5px`, vùng chạm tối thiểu `44px`. Muốn xem đủ cột thì xoay
 ngang — bảng vẫn cuộn được, không chặn.

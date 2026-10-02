@@ -211,6 +211,7 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Phông**: `UTM Avo` (tự host, `public/fonts/`) cho số và nội dung — **giữ nguyên, không đổi**: đây là
   phông Việt được chọn có chủ đích, đã tinh chỉnh ánh xạ trọng lượng để tránh giả đậm.
   `Roboto Condensed` (đã nạp sẵn trong `index.html`) cho nhãn cột viết hoa.
+- **Bảng luôn là bảng**: 🔴 **Dữ liệu dạng bảng LUÔN hiển thị dạng bảng — trên mọi màn hình, kể cả iPhone** (chủ dự án chốt 2026-10-02: *"Vì tính chất dữ liệu nên phải xem trên dạng bảng"*). CẤM chuyển bảng sang dạng thẻ (card/bento) hay danh sách thẻ, kể cả dưới dạng nút chuyển "Bảng/Thẻ". Được phép làm bảng dễ xem hơn: ghim cột đầu, ghim đầu bảng, viền mờ báo còn cột, mật độ, cỡ chữ.
 - **Bảng biểu (Tables)**: Viền mỏng `border-slate-200`, header bảng viết hoa `text-[11px] font-bold tracking-wider`.
   ⚠️ *Sửa 2026-09-10: mục này trước ghi `tracking-tight` là SAI.* Đo trên code thật: trong class mang
   dấu hiệu header bảng, `tracking-wider` **46 lần** vs `tracking-tight` **9 lần** — và `DESIGN_SYSTEM.md`

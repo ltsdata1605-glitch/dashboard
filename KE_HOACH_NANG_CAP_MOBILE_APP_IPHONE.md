@@ -88,8 +88,8 @@
   - Khống chế việc dựng canvas nền Safari, chia nhỏ theo batch 10-20 ảnh để giải phóng bộ nhớ (garbage collection), tránh bị WebKit crash tab.
 
 #### 2. Phân hệ Báo cáo Doanh thu & Bảng Phân Tích (Dashboard & BI)
-- **Chế độ Mobile Card View (Thay cho bảng cuộn ngang)**:
-  - Bổ sung toggle xem dạng **Thẻ chỉ số tóm tắt (Bento Card)** cho từng siêu thị/nhân viên trên iPhone: Mỗi nhân viên hiển thị 1 thẻ gồm avatar, tên, doanh thu, tiến độ %, xếp hạng huy chương.
+- ~~**Chế độ Mobile Card View / Bento Card**~~ — **BỎ** (chủ dự án chốt 2026-10-02: dữ liệu dạng bảng luôn giữ là bảng, xem CLAUDE.md mục 2).
+- **Bảng trên iPhone (giữ nguyên là bảng)**:
   - Bảng chi tiết: Cố định cột đầu (Tên/Mã), các cột số liệu vuốt ngang có vệt bóng mờ (`scroll shadow cue`) báo hiệu còn dữ liệu.
 - **Biểu đồ Touch-Friendly**:
   - Tối ưu tooltip của Recharts: Chạm giữ ngón tay để trượt xem doanh thu từng ngày mượt mà; hỗ trợ pinch-to-zoom (thu phóng trục thời gian).
@@ -151,7 +151,7 @@ graph TD
   - Bộ lọc Tuỳ chỉnh (`FilterSection`).
   - Hộp thoại Xuất ảnh (`ExportOptionsModal`).
   - Cấu hình thẻ KPI & Bảng thi đua.
-- [ ] Tối ưu hoá hiển thị bảng biểu trên màn hình hẹp (Card mode cho mobile, sticky cột tên nhân viên/ngành hàng).
+- [ ] Tối ưu hoá hiển thị bảng biểu trên màn hình hẹp (GIỮ dạng bảng — không card mode; sticky cột tên nhân viên/ngành hàng, sticky đầu bảng, viền mờ báo còn cột).
 
 ### 📋 Giai đoạn 3: Tích hợp Capacitor 7 cho iOS (Thời gian dự kiến: 2 - 3 ngày)
 - [ ] Cài đặt gói Capacitor core & cli:
