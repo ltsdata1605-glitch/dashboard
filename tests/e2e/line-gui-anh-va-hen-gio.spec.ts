@@ -14,8 +14,6 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * kiểm đúng nội dung gửi đi, không gửi thật.
  */
 const USERSCRIPT = readFileSync(resolve(fileURLToPath(new URL('.', import.meta.url)), '../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js'), 'utf-8');
-/** Bản đang phát — đọc từ @version, KHÔNG ghi cứng: nâng 7.16 → 7.17 từng làm 6 test đỏ chỉ vì chữ "bản 7.16". */
-const BAN_HIEN_TAI = USERSCRIPT.match(/^\/\/\s*@version\s+([\d.]+)/m)![1];
 const NHOM = 'C0123456789abcdef0123456789abcdef';
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 test.use({ bypassCSP: true });
@@ -43,18 +41,19 @@ function cauHinh(): Buffer {
     return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
 }
 
-type W = { __gm: Map<string, unknown>; __line: { url: string; headers: Record<string, string>; body: { to: string; messages: { type: string; text?: string; originalContentUrl?: string }[] } }[]; __tabs: string[] };
+type W = { __gm: Map<string, unknown>; __line: { url: string; headers: Record<string, string>; body: { to: string; messages: { type: string; text?: string; originalContentUrl?: string; previewImageUrl?: string }[] } }[]; __tabs: string[] };
 
-async function chuanBi(page: Page, opts: { homNay?: string } = {}) {
+async function chuanBi(page: Page, opts: { homNay?: string; hd?: boolean; url?: string } = {}) {
     await page.setViewportSize({ width: 1920, height: 1000 });
     if (opts.homNay) await page.clock.install({ time: new Date(opts.homNay) });
     await page.route('**://docs.google.com/**', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: cauHinh() }));
     await page.route('**/__ycx_file_mwg__', (r) => r.fulfill({ status: 200, contentType: XLSX_MIME, body: fileBanHang() }));
     await page.context().route('https://report.mwgroup.vn/**', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>MWG</body></html>' }));
-    await page.addInitScript((nhom) => {
+    await page.addInitScript(({ nhom, hd }) => {
         const w = window as unknown as Record<string, unknown>;
-        w.__YCX_TEST_LINE__ = { bot: { botId: 'bot-test', token: 'TOKEN-TEST', botName: 'Bot Test' }, groups: [{ groupId: nhom, groupName: 'Nhóm Siêu Thị 910' }], uploadUrl: 'https://example.com/anh-bao-cao.jpg' };
+        w.__YCX_TEST_LINE__ = { bot: { botId: 'bot-test', token: 'TOKEN-TEST', botName: 'Bot Test' }, groups: [{ groupId: nhom, groupName: 'Nhóm Siêu Thị 910' }, { groupId: nhom.replace('C0', 'C9'), groupName: 'Nhóm Quản Lý' }], uploadUrl: 'https://example.com/anh-bao-cao.jpg', hd };
         w.__YCX_TEST_LINE_UPLOADS__ = [];
+        w.__YCX_TEST_LINE_HD__ = [];
         const store = new Map<string, unknown>();
         w.__gm = store; w.__line = []; w.__tabs = [];
         w.GM_setClipboard = () => {};
@@ -70,8 +69,8 @@ async function chuanBi(page: Page, opts: { homNay?: string } = {}) {
             }
             fetch('/__ycx_file_mwg__').then((r) => r.arrayBuffer()).then((buf) => setTimeout(() => o.onload?.({ status: 200, response: buf }), 100));
         };
-    }, NHOM);
-    await page.goto('/?tab=analysis');
+    }, { nhom: NHOM, hd: Boolean(opts.hd) });
+    await page.goto(opts.url || '/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     await page.addScriptTag({ content: USERSCRIPT });
     await page.evaluate(() => window.dispatchEvent(new Event('focus')));
@@ -133,7 +132,7 @@ test('Auto Sync YCX Realtime nạp xong → TỰ gửi các ảnh đã đặt "n
     }, NHOM);
 
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 8000 });
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 8000 });
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: 'Tự động YCX Realtime' }).click();
     const jobId = new URL((await popupP).url()).searchParams.get('ycx_job')!;
@@ -154,7 +153,7 @@ test('hẹn giờ: đặt 09:00 cho YCX Realtime trên nút → đến giờ t�
     test.setTimeout(120_000);
     await chuanBi(page, { homNay: '2026-10-15T08:58:00' });
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 8000 });
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 8000 });
 
     await page.getByTestId('sched-ycx-realtime').click();
     const modal = page.getByTestId('sched-modal-ycx-realtime');
@@ -203,4 +202,102 @@ test('userscript 7.16: cầu LINE chỉ gửi đúng định dạng (ID nhóm sa
     expect(ketQua.tinLa.ok).toBe(false);
     expect(ketQua.anhHttp.ok).toBe(false);
     expect(await lineCalls(page)).toHaveLength(1);
+});
+
+test('ảnh nét (2026-10-02): function có ghép HD → ảnh GỐC là PNG nguyên bản chụp 3x, xem trước ≤1MB riêng', async ({ page }) => {
+    test.setTimeout(150_000);
+    await chuanBi(page, { hd: true });
+    await napDuLieu(page);
+    await page.getByTestId('export-dest-Tổng Quan Doanh Thu').click();
+    await page.getByTestId('export-dest-modal').getByRole('button', { name: /Nhóm Siêu Thị 910/ }).click();
+    await page.getByTitle('Chỉ Xuất Ảnh Tổng Quan').click();
+    await expect(page.getByText(/Đã gửi "Tổng Quan Doanh Thu" vào nhóm LINE/)).toBeVisible({ timeout: 60_000 });
+    const hd = await page.evaluate(() => (window as unknown as { __YCX_TEST_LINE_HD__: { parts: number; contentType: string; chars: number }[] }).__YCX_TEST_LINE_HD__);
+    expect(hd).toHaveLength(1);
+    expect(hd[0].contentType).toBe('image/png');
+    expect(hd[0].parts).toBe(Math.ceil(hd[0].chars / 900_000));
+    const msg = (await lineCalls(page))[0].body.messages[1] as { originalContentUrl: string; previewImageUrl: string };
+    expect(msg.originalContentUrl).toMatch(/#report_.*_hd$/);
+    expect(msg.previewImageUrl).toBe('https://example.com/anh-bao-cao.jpg');
+    const xemTruoc = await page.evaluate(() => (window as unknown as { __YCX_TEST_LINE_UPLOADS__: number[] }).__YCX_TEST_LINE_UPLOADS__);
+    expect(xemTruoc[0]).toBeLessThanOrEqual(950_000);
+    test.info().annotations.push({ type: 'kich-thuoc', description: `HD ${hd[0].chars} ký tự base64 (${hd[0].parts} mảnh), xem trước ${xemTruoc[0]}` });
+});
+
+test('hẹn giờ + KHU VỰC: chọn "Chi tiết theo kho" → nhóm Quản Lý; đến giờ đổ dữ liệu xong chỉ gửi đúng khu vực đó', async ({ page }) => {
+    test.setTimeout(180_000);
+    await chuanBi(page, { homNay: '2026-10-15T08:58:00' });
+    const dock = page.getByTestId('ycx-auto-dock');
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 8000 });
+    // Nút "Tổng Quan" vẫn đặt đích nhóm 910 — lượt có chọn khu vực KHÔNG được gửi nó
+    await page.evaluate(async (nhom) => {
+        const duongDan = '/services/analysisExportDestinations.ts';
+        const m = (await import(/* @vite-ignore */ duongDan)) as typeof import('../../services/analysisExportDestinations');
+        await m.setExportDestination('Tổng Quan Doanh Thu', { kind: 'line', groupId: nhom, groupName: 'Nhóm Siêu Thị 910' });
+    }, NHOM);
+
+    await page.getByTestId('sched-ycx-realtime').click();
+    const modal = page.getByTestId('sched-modal-ycx-realtime');
+    await modal.getByTestId('sched-input-ycx-realtime').fill('09:00');
+    await modal.getByRole('button', { name: /Thêm giờ/ }).click();
+    const chon = modal.getByTestId('sched-area-Chi Tiết Theo Kho');
+    await expect(chon).toBeEnabled({ timeout: 10_000 });
+    await chon.selectOption({ label: 'Nhóm Quản Lý' });
+    await expect(chon).toHaveValue(NHOM.replace('C0', 'C9'));
+    await page.screenshot({ path: test.info().outputPath('hen-gio-khu-vuc.png') });
+    await page.getByRole('dialog', { name: 'Hẹn giờ tự chạy' }).getByRole('button', { name: 'Đóng' }).click();
+
+    // Lưu thật (đọc lại cài đặt)
+    const luu = await page.evaluate(async () => {
+        const duongDan = '/services/autoSyncSchedule.ts';
+        const m = (await import(/* @vite-ignore */ duongDan)) as typeof import('../../services/autoSyncSchedule');
+        return m.getAutoSend('ycx-realtime');
+    });
+    expect(luu).toEqual([{ area: 'Chi Tiết Theo Kho', groupId: NHOM.replace('C0', 'C9'), groupName: 'Nhóm Quản Lý' }]);
+
+    await page.clock.runFor(150_000);
+    await expect.poll(() => page.evaluate(() => (window as unknown as W).__tabs), { timeout: 10_000 }).toHaveLength(1);
+    const jobId = new URL((await page.evaluate(() => (window as unknown as W).__tabs))[0]).searchParams.get('ycx_job')!;
+    await page.evaluate((id) => {
+        (window as unknown as W).__gm.set('ycx_ycx_done', { source: 'ycx-ycx-auto', type: 'done', jobId: id, mode: 'realtime', url: 'https://report.mwgroup.vn/files/a.xlsx', fileName: 'a.xlsx', at: 1 });
+    }, jobId);
+    await expect(page.locator('#business-overview')).toContainText('66 Tr', { timeout: 60_000 });
+    await expect(page.getByText(/Tự gửi LINE: đã gửi 1 ảnh/)).toBeVisible({ timeout: 60_000 });
+    const calls = await lineCalls(page);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].body.to).toBe(NHOM.replace('C0', 'C9'));
+    expect(calls[0].body.messages[0].text).toContain('Chi Tiết Theo Kho');
+});
+
+test('hẹn giờ Report BI Luỹ kế + khu vực: đổ dữ liệu xong → Report BI tự chụp Thi đua Tổng & Doanh thu Tổng → gửi LINE', async ({ page }) => {
+    test.setTimeout(180_000);
+    const { seedCompetitionData } = await import('./helpers/seed');
+    await chuanBi(page, { url: '/?tab=employees' });
+    await page.getByRole('button', { name: /Cập nhật/i }).first().waitFor({ state: 'visible', timeout: 20_000 });
+    await seedCompetitionData(page);
+    // Đặt hẹn giờ ĐÚNG phút hiện tại bằng dịch vụ (giao diện chọn khu vực đã kiểm ở test trên)
+    await page.evaluate(async (nhom) => {
+        const duongDan = '/services/autoSyncSchedule.ts';
+        const m = (await import(/* @vite-ignore */ duongDan)) as typeof import('../../services/autoSyncSchedule');
+        const d = new Date();
+        await m.setSchedule('bi-luyke', { enabled: true, times: [`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`], autoSend: [
+            { area: 'bi-thi-dua-tong', groupId: nhom, groupName: 'Nhóm Siêu Thị 910' },
+            { area: 'bi-doanh-thu-tong', groupId: nhom, groupName: 'Nhóm Siêu Thị 910' },
+        ] });
+    }, NHOM);
+    // Người dùng đang đứng ở Phân tích — lượt chạy không ép chuyển tab, chỉ mở Report BI lúc chụp rồi trả về
+    await page.locator('aside').first().locator('button:has(svg.lucide-chart-column), button:has(svg.lucide-bar-chart-3)').first().click();
+    await expect(page).toHaveURL(/tab=analysis|\/analysis/);
+    // Bộ hẹn giờ quét mỗi 30s → chờ lượt chạy giữ chỗ khung giờ (dấu localStorage)
+    await expect.poll(() => page.evaluate(() => Object.keys(localStorage).some((k) => k.startsWith('ycx-sched-ran:bi-luyke:'))), { timeout: 45_000 }).toBe(true);
+    await page.waitForTimeout(1500);
+    // Userscript báo xong (dữ liệu đã có sẵn từ bước dán) → khung Auto Sync Pro nhờ Report BI xuất ảnh
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent('ycx-bi-automation:done', { detail: { source: 'ycx-bi-automation', type: 'done', jobId: 'khac', mode: 'luyke', results: {} } })));
+    await expect(page.getByText(/Tự gửi LINE \(Report BI\): đã gửi 2 ảnh/)).toBeVisible({ timeout: 90_000 });
+    const calls = await lineCalls(page);
+    const chu = calls.map((c) => c.body.messages[0].text || '');
+    expect(chu.some((t) => t.includes('Thi Đua Lũy Kế - Tổng'))).toBe(true);
+    expect(chu.some((t) => t.includes('Doanh Thu Lũy Kế - Tổng'))).toBe(true);
+    await expect(page).toHaveURL(/tab=analysis|\/analysis/); // đã trả về tab người dùng đang xem
+    await page.screenshot({ path: test.info().outputPath('bi-tu-gui.png') });
 });

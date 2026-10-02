@@ -77,6 +77,16 @@ const TabContent = React.memo(() => {
         return () => window.removeEventListener('ycx-request-upload-ycx', onRequestUpload);
     }, [mountedTabs, setActiveTab]);
 
+    // Khi nhận file YCX từ Auto Sync (Realtime / Luỹ kế), bảo đảm tab 'analysis' được mount ngầm
+    // trong DOM để xử lý và lưu dữ liệu mà KHÔNG ép người dùng phải chuyển tab rời khỏi màn hình hiện tại.
+    React.useEffect(() => {
+        const handleAutoSync = () => {
+            setMountedTabs(prev => prev.has('analysis') ? prev : new Set(prev).add('analysis'));
+        };
+        window.addEventListener('ycx-auto-sync-file', handleAutoSync);
+        return () => window.removeEventListener('ycx-auto-sync-file', handleAutoSync);
+    }, []);
+
     // Mount tab on first visit
     React.useEffect(() => {
         setMountedTabs(prev => {

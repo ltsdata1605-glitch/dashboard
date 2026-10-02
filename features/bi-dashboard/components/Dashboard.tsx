@@ -9,7 +9,7 @@ import CompetitionView from './dashboard/CompetitionView';
 import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
 import KpiOverview from './dashboard/KpiOverview';
-import { shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenSupermarketName, type SubTab } from '../utils/dashboardHelpers';
 import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
@@ -135,10 +135,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                 } else {
                     return await exportOptions.showExportOptions(blob, filename);
                 }
+            } else {
+                toast.error('Có lỗi xảy ra khi tạo ảnh. Vui lòng thử lại!');
             }
             return null;
         } catch (err) {
             console.error('Export error', err);
+            toast.error('Có lỗi xảy ra khi tạo ảnh. Vui lòng thử lại!');
             return null;
         }
     };
@@ -181,6 +184,93 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
             setActiveMainTab('cumulative');
         }
     }, [hasRealtimeData, hasCumulativeData, activeMainTab, setActiveMainTab]);
+
+    // ─── Tự xuất ảnh theo hẹn giờ (2026-10-02) ───
+    // Khung Auto Sync Pro (gốc) gửi `ycx-bi-auto-export:request` {requestId, mode, areas} sau khi lượt BI hẹn giờ đổ dữ
+    // liệu xong; ở đây dựng ảnh từng khu vực rồi trả `ycx-bi-auto-export:done` {images, errors}. Hai khu vực chỉ nói
+    // chuyện qua sự kiện (CLAUDE.md mục 1) — gửi LINE là việc của bên gốc.
+    const autoRef = useRef({ isActive, supermarkets, activeMainTab, activeSubTab, activeSupermarket, setActiveMainTab, setActiveSubTab, setActiveSupermarket });
+    autoRef.current = { isActive, supermarkets, activeMainTab, activeSubTab, activeSupermarket, setActiveMainTab, setActiveSubTab, setActiveSupermarket };
+    useEffect(() => {
+        const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+        const KHU_VUC: Record<string, { sub: SubTab; tong: boolean; kind: 'page' | 'industry' | 'competition'; ten: string }> = {
+            'bi-doanh-thu-tong': { sub: 'revenue', tong: true, kind: 'page', ten: 'Doanh Thu' },
+            'bi-doanh-thu-tung-st': { sub: 'revenue', tong: false, kind: 'page', ten: 'Doanh Thu' },
+            'bi-nganh-hang-tung-st': { sub: 'revenue', tong: false, kind: 'industry', ten: 'Ngành Hàng' },
+            'bi-thi-dua-tong': { sub: 'competition', tong: true, kind: 'competition', ten: 'Thi Đua' },
+            'bi-thi-dua-tung-st': { sub: 'competition', tong: false, kind: 'competition', ten: 'Thi Đua' },
+        };
+        let dangChay = false;
+        const daNhan = new Set<string>();
+        const onRequest = async (e: Event) => {
+            const d = (e as CustomEvent).detail as { requestId?: string; mode?: string; areas?: string[] } | null;
+            if (!d?.requestId || dangChay || daNhan.has(d.requestId)) return;
+            daNhan.add(d.requestId);
+            dangChay = true;
+            // Bên gốc gửi lại yêu cầu tới khi nhận xác nhận này (mục Report BI có thể vừa mới mount)
+            window.dispatchEvent(new CustomEvent('ycx-bi-auto-export:ack', { detail: { requestId: d.requestId } }));
+            const images: { area: string; label: string; blob: Blob }[] = [];
+            const errors: { area: string; error: string }[] = [];
+            const r = () => autoRef.current;
+            const t0 = Date.now();
+            while (!r().isActive && Date.now() - t0 < 20_000) await sleep(250);
+            const truoc = { main: r().activeMainTab, sub: r().activeSubTab, sm: r().activeSupermarket };
+            const realtime = d.mode !== 'luyke';
+            try {
+                if (!r().isActive) throw new Error('mục Siêu thị của Report BI chưa mở được');
+                r().setActiveMainTab(realtime ? 'realtime' : 'cumulative');
+                const nhan = realtime ? 'Thời Gian Thực' : 'Lũy Kế';
+                const laDienThoai = window.innerWidth < 1024 || /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                for (const area of d.areas || []) {
+                    const kv = KHU_VUC[area];
+                    if (!kv) { errors.push({ area, error: 'khu vực không rõ' }); continue; }
+                    const ds = kv.tong ? ['Tổng'] : r().supermarkets.filter(sm => sm !== 'Tổng');
+                    if (ds.length === 0) errors.push({ area, error: 'chưa có siêu thị nào' });
+                    for (const sm of ds) {
+                        r().setActiveSubTab(kv.sub);
+                        r().setActiveSupermarket(sm);
+                        await sleep(1800);
+                        const el = kv.kind === 'industry' ? industryTableRef.current : printableRef.current;
+                        const label = `${kv.ten} ${nhan} - ${sm}`;
+                        if (!el) { errors.push({ area, error: `${sm}: chưa có dữ liệu` }); continue; }
+                        try {
+                            const blob = await exportElementAsImage(el, `BI_PRO_${label.replace(/[\\/:*?"<>|]/g, '_')}.png`, {
+                                mode: 'blob-only',
+                                elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar', '.hide-on-export'],
+                                ...(kv.kind === 'competition' ? { fitAllColumns: true, fitWidthToTable: true } : { captureAsDisplayed: true }),
+                                // Gửi LINE: chụp nét hơn (bộ xuất ảnh tự hạ khi vượt trần canvas)
+                                ...(laDienThoai ? {} : { scale: 3 }),
+                            });
+                            if (blob) images.push({ area, label, blob }); else errors.push({ area, error: `${sm}: không dựng được ảnh` });
+                        } catch (err) {
+                            errors.push({ area, error: `${sm}: ${err instanceof Error ? err.message : String(err)}` });
+                        }
+                    }
+                }
+            } catch (err) {
+                errors.push({ area: 'Report BI', error: err instanceof Error ? err.message : String(err) });
+            } finally {
+                r().setActiveMainTab(truoc.main);
+                r().setActiveSubTab(truoc.sub);
+                r().setActiveSupermarket(truoc.sm);
+                dangChay = false;
+                window.dispatchEvent(new CustomEvent('ycx-bi-auto-export:done', { detail: { requestId: d.requestId, images, errors } }));
+            }
+        };
+        window.addEventListener('ycx-bi-auto-export:request', onRequest);
+        return () => window.removeEventListener('ycx-bi-auto-export:request', onRequest);
+    }, []);
+
+    // Lắng nghe chuyển tab chế độ (Realtime / Luỹ kế) và tab con (Doanh thu / Thi đua)
+    useEffect(() => {
+        const onSwitchTab = (e: Event) => {
+            const d = (e as CustomEvent).detail;
+            if (d?.mainTab) setActiveMainTab(d.mainTab);
+            if (d?.subTab) setActiveSubTab(d.subTab);
+        };
+        window.addEventListener('dashboard-switch-tab', onSwitchTab);
+        return () => window.removeEventListener('dashboard-switch-tab', onSwitchTab);
+    }, [setActiveMainTab, setActiveSubTab]);
 
     if (isActive === false) {
         return <div className="hidden" />;
@@ -295,7 +385,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                         onExport={async () => {
                             setIsHeaderExporting(true);
-                            const exportTarget = (activeSubTab === 'revenue' && activeSupermarket !== 'Tổng' && pageRef.current) ? pageRef : printableRef;
+                            const exportTarget = printableRef;
                             const subTabLabel = activeSubTab === 'competition' ? 'Thi Đua' : 'Doanh Thu';
                             await handleExportPNG(exportTarget, `${subTabLabel} ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`, null, { captureAsDisplayed: true });
                             setIsHeaderExporting(false);
@@ -366,16 +456,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         </div>
                     )}
                 </div>
-                <ExportOptionsModal
-                    isOpen={!!exportOptions.pendingExport}
-                    onClose={exportOptions.handleClose}
-                    onDownload={exportOptions.handleDownload}
-                    onShare={exportOptions.handleShare}
-                    canShare={exportOptions.canShare}
-                    filename={exportOptions.pendingExport?.filename || ''}
-                />
-                {!onStartAutoSync && fallbackAutoSync.renderAutoSyncModal()}
             </div>
+            <ExportOptionsModal
+                isOpen={!!exportOptions.pendingExport}
+                onClose={exportOptions.handleClose}
+                onDownload={exportOptions.handleDownload}
+                onShare={exportOptions.handleShare}
+                canShare={exportOptions.canShare}
+                filename={exportOptions.pendingExport?.filename || ''}
+            />
+            {!onStartAutoSync && fallbackAutoSync.renderAutoSyncModal()}
         </ExportOptionsProvider>
     );
 };

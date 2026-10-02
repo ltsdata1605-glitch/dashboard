@@ -1078,6 +1078,43 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [analysisEmployees, setAnalysisEmployees] = useState<AnalysisEmployeesPayload | null>(null);
 
+    // Tự động kiểm tra fallback key nếu ô dữ liệu trống (do khác biệt chữ hoa/thường hoặc tên đầy đủ)
+    useEffect(() => {
+        if (!safeName) return;
+        const checkFallback = async () => {
+            const variations = [safeName.toUpperCase(), supermarketName, shortenSupermarketName(supermarketName || '')];
+            if (!thiDuaData) {
+                for (const v of variations) {
+                    if (!v) continue;
+                    const altKey = `config-${v}-thidua` as db.BIKey;
+                    if (altKey === ids.td) continue;
+                    const altVal = await db.get<string>(altKey);
+                    if (altVal && typeof altVal === 'string' && altVal.trim()) {
+                        setThiDuaData(altVal);
+                        const altTs = await db.get<string>(`${altKey}-ts` as db.BIKey);
+                        if (altTs) setThiDuaTs(altTs);
+                        break;
+                    }
+                }
+            }
+            if (!traGopData) {
+                for (const v of variations) {
+                    if (!v) continue;
+                    const altKey = `config-${v}-tragop` as db.BIKey;
+                    if (altKey === ids.tg) continue;
+                    const altVal = await db.get<string>(altKey);
+                    if (altVal && typeof altVal === 'string' && altVal.trim()) {
+                        setTraGopData(altVal);
+                        const altTs = await db.get<string>(`${altKey}-ts` as db.BIKey);
+                        if (altTs) setTraGopTs(altTs);
+                        break;
+                    }
+                }
+            }
+        };
+        checkFallback();
+    }, [safeName, supermarketName, ids.td, ids.tg, thiDuaData, traGopData, setThiDuaData, setThiDuaTs, setTraGopData, setTraGopTs]);
+
     const [customLinks, setCustomLinks] = useIndexedDBState<Record<string, string> | null>(TILE_CUSTOM_LINKS_KEY as any, null);
     const [modalConfig, setModalConfig] = useState<{
         isOpen: boolean;

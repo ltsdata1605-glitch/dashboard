@@ -21,6 +21,7 @@ interface RevenueDesktopRowProps {
     targetTraGop?: number;
     targetQuyDoi?: number;
     isRealtimeMode?: boolean;
+    storeDatPercent?: number;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -37,7 +38,8 @@ export const RevenueDesktopRow = React.memo(({
     isShowRemaining = false,
     targetTraGop = 45,
     targetQuyDoi = 40,
-    isRealtimeMode = false
+    isRealtimeMode = false,
+    storeDatPercent
 }: RevenueDesktopRowProps) => {
     const prev = row.prevCompData;
     const hasTarget = (row.calculatedTarget || 0) > 0;
@@ -85,6 +87,25 @@ export const RevenueDesktopRow = React.memo(({
             <td className="export-col-revenue px-2 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
                 <Pill className="font-bold" color={getDkhtColor(row.pctDkht || 0, hasTarget)}>{hasTarget ? `${roundUp(row.pctDkht || 0)}%` : '—'}</Pill>
                 <DeltaBadge current={row.pctDkht} previous={prev?.dkht} isPercent />
+            </td>
+            {/* NHÓM THI ĐUA: Đạt & %Đạt đặt sau %D.KIẾN */}
+            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+                {row.comp_total ? (
+                    <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-bold'}>
+                        {row.comp_dat ?? 0}/{row.comp_total}
+                    </span>
+                ) : (
+                    <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                )}
+            </td>
+            <td className="export-col-competition px-1.5 py-[3px] text-center font-bold tabular-nums border-r border-slate-100 dark:border-slate-700/50">
+                {row.comp_total ? (
+                    <span className={storeDatPercent !== undefined && (row.comp_pct_dat || 0) < storeDatPercent ? 'text-rose-700 dark:text-rose-400 font-extrabold' : 'text-emerald-700 dark:text-emerald-400 font-extrabold'}>
+                        {roundUp(row.comp_pct_dat || 0)}%
+                    </span>
+                ) : (
+                    <span className="text-slate-400 dark:text-slate-500 font-normal">-</span>
+                )}
             </td>
             {isShowRemaining && (
                 <>

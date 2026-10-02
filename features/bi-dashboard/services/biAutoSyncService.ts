@@ -231,11 +231,17 @@ export async function applyBiSyncResults(
                     daLuu.add(stSafeName);
                     const key = `config-${stSafeName}-industry-luyke`;
                     await saveBiField(key, indText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-industry-luyke`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, indText, `${keyUpper}-ts`);
+                    }
                 }
             }
         } else if (results.industry && safeName) {
             const key = `config-${safeName}-industry-luyke`;
             await saveBiField(key, results.industry, `${key}-ts`);
+            const keyUpper = `config-${safeName.toUpperCase()}-industry-luyke`;
+            if (keyUpper !== key) await saveBiField(keyUpper, results.industry, `${keyUpper}-ts`);
         }
         // 3. Doanh thu nhân viên Luỹ kế (danhSach)
         if (results.employeeByStore && Object.keys(results.employeeByStore).length > 0) {
@@ -246,11 +252,17 @@ export async function applyBiSyncResults(
                     daLuu.add(stSafeName);
                     const key = `config-${stSafeName}-danhsach`;
                     await saveBiField(key, empText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-danhsach`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, empText, `${keyUpper}-ts`);
+                    }
                 }
             }
         } else if (results.employee && safeName) {
             const key = `config-${safeName}-danhsach`;
             await saveBiField(key, results.employee, `${key}-ts`);
+            const keyUpper = `config-${safeName.toUpperCase()}-danhsach`;
+            if (keyUpper !== key) await saveBiField(keyUpper, results.employee, `${keyUpper}-ts`);
         }
         // 4. Thi đua Luỹ kế (cụm). Đường UI cũ còn ghi thêm vào Thi đua siêu thị; dữ liệu API cụm là bảng theo chương
         // trình (không có nhân viên) nên KHÔNG ghi vào ô Thi đua nhân viên — ô đó lấy từ competitionByStore (7.10+).
@@ -259,6 +271,8 @@ export async function applyBiSyncResults(
             if (!quaApi && safeName) {
                 const key = `config-${safeName}-thidua`;
                 await saveBiField(key, results.competition, `${key}-ts`);
+                const keyUpper = `config-${safeName.toUpperCase()}-thidua`;
+                if (keyUpper !== key) await saveBiField(keyUpper, results.competition, `${keyUpper}-ts`);
             }
         }
         // 4b. Thi đua theo nhân viên từng siêu thị (7.10+) → ô "THI ĐUA" của Cấu hình siêu thị
@@ -270,6 +284,10 @@ export async function applyBiSyncResults(
                     daLuu.add(stSafeName);
                     const key = `config-${stSafeName}-thidua`;
                     await saveBiField(key, tdText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-thidua`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, tdText, `${keyUpper}-ts`);
+                    }
                 }
             }
         }
@@ -282,11 +300,17 @@ export async function applyBiSyncResults(
                     daLuu.add(stSafeName);
                     const key = `config-${stSafeName}-tragop`;
                     await saveBiField(key, tcText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-tragop`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, tcText, `${keyUpper}-ts`);
+                    }
                 }
             }
         } else if (results.installment && safeName) {
             const key = `config-${safeName}-tragop`;
             await saveBiField(key, results.installment, `${key}-ts`);
+            const keyUpper = `config-${safeName.toUpperCase()}-tragop`;
+            if (keyUpper !== key) await saveBiField(keyUpper, results.installment, `${keyUpper}-ts`);
         }
     }
 

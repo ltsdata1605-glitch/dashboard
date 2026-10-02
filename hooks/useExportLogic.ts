@@ -32,7 +32,12 @@ export interface ExportImageOptions {
     destination?: 'auto' | 'download';
     /** Ném lỗi nếu gửi LINE hỏng (dùng cho lượt tự gửi sau Auto Sync) thay vì chỉ báo toast */
     throwOnLineError?: boolean;
+    /** Gửi vào nhóm này, bỏ qua đích đã đặt cho nút (lượt hẹn giờ có danh sách khu vực riêng — 2026-10-02) */
+    lineTarget?: { groupId: string; groupName: string } | null;
 }
+
+/** Độ nét khi chụp ảnh để GỬI LINE (2026-10-02, chủ dự án: "ảnh cao và nét"): 3x máy tính, 2x điện thoại (trần canvas iOS) */
+export const LINE_EXPORT_SCALE_DESKTOP = 3;
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
@@ -122,15 +127,19 @@ export const useExportLogic = ({
             setIsExporting(true);
             // Bảng chờ do bộ xuất ảnh chung tự mở (tiêu đề theo tên báo cáo) — không dùng lớp phủ cũ nữa
             await new Promise(resolve => setTimeout(resolve, 150));
-            const { destination = 'auto', throwOnLineError = false, ...rest } = options;
+            const { destination = 'auto', throwOnLineError = false, lineTarget = null, ...rest } = options;
+            await loadExportDestinations();
+            const reportKey = reportKeyFromFilename(filename);
+            const dest = lineTarget?.groupId
+                ? { kind: 'line' as const, groupId: lineTarget.groupId, groupName: lineTarget.groupName }
+                : destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
                 mode: 'blob-only' as ExportMode,
+                // Gửi LINE: chụp nét hơn (bộ xuất ảnh tự hạ khi vượt trần canvas)
+                ...(dest.kind === 'line' && !isMobileLikeDevice() ? { scale: LINE_EXPORT_SCALE_DESKTOP } : {}),
                 ...rest
             };
-            await loadExportDestinations();
-            const reportKey = reportKeyFromFilename(filename);
-            const dest = destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
             if (blob && dest.kind === 'line') {

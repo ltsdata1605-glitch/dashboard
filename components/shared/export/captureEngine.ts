@@ -1357,17 +1357,33 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
         options.onBeforeCapture?.(clone, { width: finalWidth, height: finalHeight });
         const htmlToImage = await import('html-to-image');
-        const blob = await htmlToImage.toBlob(clone, {
-            pixelRatio: finalScale,
-            backgroundColor: isTransparentTable ? undefined : defaultBg,
-            width: finalWidth,
-            height: finalHeight,
-            style: {
-                margin: '0',
-                padding: '4px',
-            },
-            // GIỮ font embedding mặc định để text render đúng.
-        });
+        let blob: Blob | null = null;
+        try {
+            blob = await htmlToImage.toBlob(clone, {
+                pixelRatio: finalScale,
+                backgroundColor: isTransparentTable ? undefined : defaultBg,
+                width: finalWidth,
+                height: finalHeight,
+                style: {
+                    margin: '0',
+                    padding: '4px',
+                },
+                // GIỮ font embedding mặc định để text render đúng.
+            });
+        } catch (fontErr) {
+            console.warn('html-to-image capture failed with fonts, retrying with skipFonts: true', fontErr);
+            blob = await htmlToImage.toBlob(clone, {
+                pixelRatio: finalScale,
+                backgroundColor: isTransparentTable ? undefined : defaultBg,
+                width: finalWidth,
+                height: finalHeight,
+                style: {
+                    margin: '0',
+                    padding: '4px',
+                },
+                skipFonts: true,
+            });
+        }
 
         if (!blob) {
             throw new Error("Không thể tạo ảnh từ DOM (kết quả trả về trống).");

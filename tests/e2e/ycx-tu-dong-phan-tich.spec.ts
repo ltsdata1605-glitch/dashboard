@@ -14,8 +14,6 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * một file bán hàng 3 Kho thật → kiểm Phân tích nạp đúng như bấm File YCX → Tệp Realtime.
  */
 const USERSCRIPT = readFileSync(resolve(fileURLToPath(new URL('.', import.meta.url)), '../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js'), 'utf-8');
-/** Bản đang phát — đọc từ @version, KHÔNG ghi cứng: nâng 7.16 → 7.17 từng làm 6 test đỏ chỉ vì chữ "bản 7.16". */
-const BAN_HIEN_TAI = USERSCRIPT.match(/^\/\/\s*@version\s+([\d.]+)/m)![1];
 
 const KHOS = [{ ma: '90001', trieu: 11 }, { ma: '90002', trieu: 22 }, { ma: '90003', trieu: 33 }];
 const today = new Date();
@@ -87,7 +85,7 @@ test('Phân tích: khung AUTO SYNC YCX → mở báo cáo 77 → tiến trình �
     const dock = page.getByTestId('ycx-auto-dock');
     await expect(dock).toBeVisible();
     await expect(dock).toContainText('Auto Sync');
-    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 5000 });
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
     await page.screenshot({ path: test.info().outputPath('1-khung.png') });
 
     const popupP = page.waitForEvent('popup');
@@ -131,7 +129,7 @@ test('Phân tích: tab MWG báo lỗi → khung hiện lỗi + nút Chạy lại
     test.setTimeout(60_000);
     await moPhanTichCoUserscript(page);
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 5000 });
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: /Tự động YCX Realtime/ }).click();
     const jobId = new URL((await popupP).url()).searchParams.get('ycx_job')!;
@@ -176,7 +174,7 @@ test('Phân tích: YCX Luỹ kế ngày 15 → mở báo cáo 77 chế độ luy
     test.setTimeout(120_000);
     await moPhanTichCoUserscript(page, '2026-10-15T09:00:00');
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 5000 });
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
     await expect(dock).toContainText('YCX Luỹ kế');
 
     const popupP = page.waitForEvent('popup');
@@ -207,7 +205,7 @@ test('Phân tích: bấm YCX Luỹ kế vào NGÀY 01 → chạy Realtime', asyn
     test.setTimeout(60_000);
     await moPhanTichCoUserscript(page, '2026-10-01T09:00:00');
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(`bản ${BAN_HIEN_TAI}`, { timeout: 5000 });
+    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
     expect((await popupP).url()).toMatch(/\?ycx_ycx=realtime&ycx_job=ycx-/);

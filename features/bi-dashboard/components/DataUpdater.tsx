@@ -706,6 +706,14 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     addUpdate(`config-${shortenSupermarketName(targetSupermarket)}-tragop`, `Tự động cập nhật Trả chậm - ${targetSupermarket}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị');
                 }
             }
+
+            // Tự động mở màn hình tương ứng khi chạy xong
+            const { navigateToBiRealtime, navigateToBiLuyKe } = await import('../services/autoNavigationService');
+            if (payload.mode === 'realtime') {
+                void navigateToBiRealtime();
+            } else {
+                void navigateToBiLuyKe();
+            }
         });
 
         const unsubError = onBiError((err) => {
