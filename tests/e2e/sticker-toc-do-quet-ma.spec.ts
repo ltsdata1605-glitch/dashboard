@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { E2E_LAUNCH } from '../../playwright.config';
 
 // Dự án chạy ESM (package.json "type": "module") nên không có __dirname
 const THU_MUC_TEST = path.dirname(fileURLToPath(import.meta.url));
@@ -27,7 +28,7 @@ const Y4M = path.join(thuMuc, 'ean13-nho.y4m');
 execFileSync('node', [path.join(THU_MUC_TEST, 'helpers', 'gen-barcode-y4m.cjs'), Y4M, MA_VACH, '1']);
 if (!existsSync(Y4M)) throw new Error('Không sinh được video mã vạch cho camera giả');
 
-test.use({ launchOptions: { args: [
+test.use({ launchOptions: { ...E2E_LAUNCH, args: [
     '--use-fake-ui-for-media-stream',
     '--use-fake-device-for-media-stream',
     `--use-file-for-fake-video-capture=${Y4M}`,

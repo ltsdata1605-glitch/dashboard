@@ -3,6 +3,7 @@
  */
 
 import { onRequest } from 'firebase-functions/v2/https';
+import { verifyLineSignature } from './lineSignature';
 import * as crypto from 'crypto';
 import { db } from './firebaseAdmin';
 import { FieldPath } from 'firebase-admin/firestore';
@@ -1988,6 +1989,23 @@ export const lineBotWebhook = onRequest(
             return;
         }
         const config = configDoc.data() || {};
+
+        // KIỂM CHỮ KÝ LINE (2026-10-02) — chặn sự kiện giả. Đặt SAU khi biết bot nào (mỗi bot một Channel secret) và
+        // TRƯỚC mọi xử lý sự kiện. Thiếu secret = TỪ CHỐI (fail-closed): bot dùng để kiểm soát nhân viên, thà ngừng
+        // trả lời (log báo rõ, Cài đặt Bot hiện cảnh báo) còn hơn nhận sự kiện giả. Trả 200 khi thiếu secret để LINE
+        // không đánh dấu webhook lỗi; trả 401 khi chữ ký sai.
+        const channelSecret = String(config.channelSecret || '').trim();
+        if (!channelSecret) {
+            console.error(`[lineBotWebhook] Bot ${uid}: CHƯA nhập Channel secret → bỏ qua ${events.length} sự kiện (không kiểm được chữ ký). Nhập ở Bot LINE › Cài đặt.`);
+            res.status(200).send('Channel secret not configured');
+            return;
+        }
+        if (!verifyLineSignature(req.rawBody, req.headers['x-line-signature'], channelSecret)) {
+            console.warn(`[lineBotWebhook] Bot ${uid}: chữ ký x-line-signature KHÔNG khớp → từ chối ${events.length} sự kiện (giả mạo, hoặc Channel secret nhập sai).`);
+            res.status(401).send('Invalid signature');
+            return;
+        }
+
         const token = config.channelAccessToken;
         if (!token) {
             res.status(200).send('Bot token not configured yet');

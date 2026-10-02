@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { E2E_LAUNCH } from '../../playwright.config';
 
 /**
  * In Sticker — hệ thống nút + tiện ích quét mã vạch (chủ dự án yêu cầu 2026-09-25).
@@ -9,7 +10,7 @@ import { test, expect, type Page } from '@playwright/test';
  * React (dev server của Vite không phục vụ /deps/react.js). Dữ liệu gieo thẳng vào IndexedDB
  * `ProductSearchDB` → không chạm Firestore thật, không tốn hạn mức đọc.
  */
-test.use({ launchOptions: { args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] } });
+test.use({ launchOptions: { ...E2E_LAUNCH, args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream'] } });
 
 const AUTH_HOOK_STUB = `
 const FAKE_USER = { uid: 'u-audit', email: 'audit@test.local' };

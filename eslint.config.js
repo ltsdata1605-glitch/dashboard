@@ -5,7 +5,7 @@ import importPlugin from 'eslint-plugin-import';
 // Cấu hình tối thiểu theo RULES.md §2.0 / §2.5 (Shared Core Contract).
 // Mục tiêu: enforce đúng 4 điều máy kiểm được, không bật full "recommended"
 // ruleset (sẽ tạo hàng nghìn lỗi mới trên code vibecode cũ, không phải mục tiêu ở đây).
-const FEATURES = ['bi-dashboard', 'phan-ca', 'sticker-event', 'khai-thac'];
+const FEATURES = ['bi-dashboard', 'phan-ca', 'sticker-event', 'khai-thac', 'line-bot'];
 
 const featureBoundaryRules = FEATURES.map((feature) => {
   const others = FEATURES.filter((f) => f !== feature);
@@ -31,7 +31,8 @@ const featureBoundaryRules = FEATURES.map((feature) => {
             // phép import services/firebase.ts (chỉ instance db/auth, không phải logic nghiệp
             // vụ) — cần cho tính năng phân quyền theo siêu thị (biData/{maKho}, xem
             // implementation_plan.md mục "Đợt 4"). phan-ca/sticker-event KHÔNG có ngoại lệ này.
-            ...(feature === 'bi-dashboard' ? { except: ['./firebase.ts', './firebase'] } : {}),
+            // line-bot (khu vực thứ 5, thêm vào luật 2026-10-02) cũng chỉ dùng instance db của services/firebase.ts.
+            ...(feature === 'bi-dashboard' || feature === 'line-bot' ? { except: ['./firebase.ts', './firebase'] } : {}),
             message: 'features/* không được import services/ gốc — dùng services riêng của feature (RULES.md §2.0).',
           },
         ],

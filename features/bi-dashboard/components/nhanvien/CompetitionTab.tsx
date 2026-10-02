@@ -609,7 +609,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 size="none"
                                 key={key}
                                 data-active={isActive ? 'true' : undefined}
-                                aria-current={isActive ? 'true' : undefined}
                                 onClick={() => { setActiveCompetitionTab(key); setActiveVersionName(null); }}
                                 className={`relative flex items-center gap-1.5 px-3 sm:px-3.5 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer snap-center ${
                                     isActive
@@ -634,7 +633,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 role="button"
                                 tabIndex={0}
                                 data-active={isActive ? 'true' : undefined}
-                                aria-current={isActive ? 'true' : undefined}
                                 onClick={() => onVersionTabClick(version)}
                                 onKeyDown={onActivateKey(() => onVersionTabClick(version))}
                                 className={`relative flex items-center gap-1.5 pl-3 pr-6 h-10 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors snap-center shrink-0 cursor-pointer ${

@@ -284,6 +284,16 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         placeholder="Dán Channel secret từ tab Basic settings..."
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
+                    {/* Từ 2026-10-02 webhook KIỂM CHỮ KÝ bằng secret này — thiếu hoặc sai thì bot bỏ qua mọi tin nhắn. */}
+                    {!secret.trim() ? (
+                        <p data-testid="line-secret-warning" className="mt-1.5 text-[12px] font-semibold text-rose-700 leading-snug">
+                            Bắt buộc: chưa có Channel secret thì bot KHÔNG nhận tin nhắn nào (máy chủ không kiểm được tin có thật từ LINE hay bị giả).
+                        </p>
+                    ) : (
+                        <p className="mt-1.5 text-[11px] text-slate-500 leading-snug">
+                            Dùng để kiểm chữ ký mọi tin LINE gửi tới — nhập sai thì bot sẽ bỏ qua tin nhắn. Bấm Lưu sau khi dán.
+                        </p>
+                    )}
                 </div>
 
                 <div>

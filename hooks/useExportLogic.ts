@@ -11,7 +11,7 @@ import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants'
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { getExportDestination, loadExportDestinations, reportKeyFromFilename } from '../services/analysisExportDestinations';
+import { getExportDestination, loadExportDestinations, reportKeyFromFilename, type ExportDestination } from '../services/analysisExportDestinations';
 import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
 
@@ -130,8 +130,8 @@ export const useExportLogic = ({
             const { destination = 'auto', throwOnLineError = false, lineTarget = null, ...rest } = options;
             await loadExportDestinations();
             const reportKey = reportKeyFromFilename(filename);
-            const dest = lineTarget?.groupId
-                ? { kind: 'line' as const, groupId: lineTarget.groupId, groupName: lineTarget.groupName }
+            const dest: ExportDestination = lineTarget?.groupId
+                ? { kind: 'line' as const, groups: [{ groupId: lineTarget.groupId, groupName: lineTarget.groupName }], groupId: lineTarget.groupId, groupName: lineTarget.groupName }
                 : destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
@@ -143,24 +143,42 @@ export const useExportLogic = ({
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
             if (blob && dest.kind === 'line') {
-                // Nút này đã đặt "Gửi nhóm LINE": gửi thay vì tải về (CLAUDE.md: cài đặt đích ở ngay nút xuất ảnh)
-                const tId = toast.loading(`Đang gửi "${reportKey}" vào nhóm LINE ${dest.groupName}…`);
-                try {
-                    const { sendReportImageToLine } = await import('../services/lineReportDelivery');
-                    const now = new Date();
-                    const p2 = (n: number) => String(n).padStart(2, '0');
-                    await sendReportImageToLine({
-                        blob, groupId: dest.groupId, fileName: filename,
-                        caption: `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`,
-                        uid: user?.uid || '', departmentId,
-                    });
-                    toast.success(`Đã gửi "${reportKey}" vào nhóm LINE ${dest.groupName}`, { id: tId });
-                } catch (err) {
-                    const msg = getErrorMessage(err);
-                    toast.error(`Gửi LINE thất bại: ${msg}`, { id: tId, duration: 8000 });
-                    if (throwOnLineError) throw new Error(msg);
+                const targetGroups = (dest.groups && dest.groups.length > 0)
+                    ? dest.groups
+                    : (dest.groupId ? [{ groupId: dest.groupId, groupName: dest.groupName || 'Nhóm LINE' }] : []);
+
+                if (targetGroups.length > 0) {
+                    const groupTitle = targetGroups.length === 1
+                        ? `nhóm LINE ${targetGroups[0].groupName}`
+                        : `${targetGroups.length} nhóm LINE`;
+                    const tId = toast.loading(`Đang gửi "${reportKey}" vào ${groupTitle}…`);
+                    try {
+                        const { sendReportImageToLineGroups } = await import('../services/lineReportDelivery');
+                        const now = new Date();
+                        const p2 = (n: number) => String(n).padStart(2, '0');
+                        const caption = `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`;
+                        const res = await sendReportImageToLineGroups({
+                            blob,
+                            groups: targetGroups,
+                            fileName: filename,
+                            caption,
+                            uid: user?.uid || '',
+                            departmentId,
+                        });
+                        if (res.errors.length === 0) {
+                            toast.success(`Đã gửi "${reportKey}" vào ${groupTitle}`, { id: tId });
+                        } else if (res.ok > 0) {
+                            toast.error(`Đã gửi ${res.ok}/${targetGroups.length} nhóm. Lỗi: ${res.errors.join('; ')}`, { id: tId, duration: 8000 });
+                        } else {
+                            throw new Error(res.errors.join('; '));
+                        }
+                    } catch (err) {
+                        const msg = getErrorMessage(err);
+                        toast.error(`Gửi LINE thất bại: ${msg}`, { id: tId, duration: 8000 });
+                        if (throwOnLineError) throw new Error(msg);
+                    }
+                    return blob;
                 }
-                return blob;
             }
             if (blob) {
                 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;

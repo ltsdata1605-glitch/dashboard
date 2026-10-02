@@ -60,7 +60,7 @@ const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnCo
 };
 
 interface WarehouseSummaryProps {
-    onBatchExport: () => Promise<void>;
+    onBatchExport?: () => Promise<void>;
 }
 
 // PERF FIX: nhận dữ liệu qua props tường minh (Pick từ DashboardContextType — đảm bảo type luôn
@@ -311,10 +311,15 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
     const handleSingleExport = async (tuDong = false) => {
         if (summaryRef.current) {
-            const prefix = getExportFilenamePrefix(filterState.kho);
-            await handleExport(summaryRef.current, `${prefix} - Chi Tiết Theo Kho.png`, {
+            const currentKho = viewMode === 'vertical' && verticalKhoFilter.length > 0
+                ? verticalKhoFilter
+                : filterState.kho;
+            const prefix = getExportFilenamePrefix(currentKho);
+            const fileName = prefix ? `${prefix} - Chi Tiết Theo Kho.png` : 'Chi Tiết Theo Kho.png';
+            await handleExport(summaryRef.current, fileName, {
                 elementsToHide: ['.hide-on-export'],
                 scale: 2,
+                captureAsDisplayed: true,
                 throwOnLineError: tuDong,
             });
         } else if (tuDong) throw new Error('Bảng "Chi tiết theo kho" chưa hiển thị');
@@ -653,12 +658,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             </Button>
                         )}
 
-                        {uniqueFilterOptions.kho.length > 1 && (
-                            <Button variant="unstyled" size="none" onClick={onBatchExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Xuất hàng loạt">
-                                <Icon name="images" size={4} className="lg:hidden" />
-                                <Icon name="images" size={4.5} className="hidden lg:block" />
-                            </Button>
-                        )}
                         <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
                             {isExporting ? <><Icon name="loader-2" className="animate-spin lg:hidden" size={4} /><Icon name="loader-2" className="animate-spin hidden lg:block" size={4.5} /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={4.5} className="hidden lg:block" /></>}
                         </Button>

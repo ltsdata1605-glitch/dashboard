@@ -483,9 +483,12 @@ export const lineBotFirestoreService = {
             createdAt: schedule.createdAt || now
         };
         // Loại bỏ triệt để mọi key có giá trị undefined để tránh lỗi Firestore Unsupported field value: undefined
+        // Trường do MÁY CHỦ quản lý (lineBotUserSchedules): không bao giờ ghi từ giao diện — bản lịch đang mở trên trang
+        // có thể cũ hơn; ghi đè lastAutoRunSlot bằng giá trị cũ là máy chủ GỬI LẠI khe vừa gửi (2026-10-02).
+        const SERVER_OWNED = new Set(['lastAutoRunSlot', 'lastAutoRunResult']);
         const cleanPayload: Record<string, any> = {};
         for (const [k, v] of Object.entries(payload)) {
-            if (v !== undefined) {
+            if (v !== undefined && !SERVER_OWNED.has(k)) {
                 cleanPayload[k] = v;
             }
         }

@@ -317,7 +317,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             onChange={e => setTargetType(e.target.value as any)}
                             className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold mb-2"
                         >
-                            <option value="ALL_GROUPS">Tất cả các nhóm (Broadcast)</option>
+                            <option value="ALL_GROUPS">Tất cả các nhóm đã lưu</option>
                             <option value="SPECIFIC_GROUPS">Chọn nhóm cụ thể</option>
                         </select>
 

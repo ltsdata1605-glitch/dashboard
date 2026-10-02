@@ -224,7 +224,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                 for (const area of d.areas || []) {
                     const kv = KHU_VUC[area];
                     if (!kv) { errors.push({ area, error: 'khu vực không rõ' }); continue; }
-                    const ds = kv.tong ? ['Tổng'] : r().supermarkets.filter(sm => sm !== 'Tổng');
+                    // Chỉ xuất 1 ảnh đang hiển thị/chọn, không xuất nhiều ảnh lặp qua mọi siêu thị
+                    const currentSm = r().activeSupermarket && r().activeSupermarket !== 'Tổng'
+                        ? r().activeSupermarket
+                        : (r().supermarkets.find(sm => sm !== 'Tổng') || 'Tổng');
+                    const ds = kv.tong ? ['Tổng'] : [currentSm];
                     if (ds.length === 0) errors.push({ area, error: 'chưa có siêu thị nào' });
                     for (const sm of ds) {
                         r().setActiveSubTab(kv.sub);
@@ -272,32 +276,41 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         return () => window.removeEventListener('dashboard-switch-tab', onSwitchTab);
     }, [setActiveMainTab, setActiveSubTab]);
 
-    // Đọc URL query parameters (?mode=... & ?sub=...) khi MỞ phân hệ Siêu thị và khi bấm Lùi/Tới của trình duyệt.
-    // KHÔNG chạy lại mỗi lần chế độ đổi (2026-10-02): trước đây deps có activeMainTab/activeSubTab → bấm "Thi đua"
-    // thì hiệu ứng này kéo về giá trị CŨ trong URL, hiệu ứng ghi URL bên dưới ghi giá trị mới → giật qua lại vô hạn →
-    // Report BI sập "Maximum update depth exceeded" (tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts).
-    const urlStateRef = useRef({ activeMainTab, activeSubTab, setActiveMainTab, setActiveSubTab });
-    urlStateRef.current = { activeMainTab, activeSubTab, setActiveMainTab, setActiveSubTab };
+    // Đọc URL query parameters (?mode=... & ?sub=...) khi xem phân hệ Siêu thị — CHỈ lúc màn hình được mở (deep link).
+    // SỬA 2026-10-02: bản đầu để effect này phụ thuộc activeMainTab/activeSubTab → người dùng bấm đổi chế độ thì effect
+    // đọc URL (vẫn ghi chế độ CŨ) kéo state về cũ, effect đồng bộ bên dưới lại ghi URL theo state → vòng lặp vô hạn,
+    // Report BI sập "Maximum update depth exceeded" (chạy thật trên dashboard.pro.vn 12:22 → sửa ngay).
+    // Giá trị lấy từ URL đang CHỜ có hiệu lực — trong lúc chờ không ghi URL (xem chú thích cùng ngày ở NhanVien.tsx).
+    const urlPendingRef = useRef<{ mode?: string; sub?: string } | null>(null);
+    const urlSettersRef = useRef({ setActiveMainTab, setActiveSubTab });
+    urlSettersRef.current = { setActiveMainTab, setActiveSubTab };
     useEffect(() => {
         if (isActive === false || typeof window === 'undefined') return;
-        const docUrl = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('tab') === 'employees' && (urlParams.get('view') === 'dashboard' || !urlParams.get('view'))) {
-                const cur = urlStateRef.current;
-                const m = urlParams.get('mode');
-                if ((m === 'realtime' || m === 'cumulative') && m !== cur.activeMainTab) cur.setActiveMainTab(m);
-                const s = urlParams.get('sub');
-                if ((s === 'revenue' || s === 'competition') && s !== cur.activeSubTab) cur.setActiveSubTab(s);
-            }
-        };
-        docUrl();
-        window.addEventListener('popstate', docUrl);
-        return () => window.removeEventListener('popstate', docUrl);
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('tab') === 'employees' && (urlParams.get('view') === 'dashboard' || !urlParams.get('view'))) {
+            const m = urlParams.get('mode');
+            const s = urlParams.get('sub');
+            const pending: { mode?: string; sub?: string } = {};
+            if (m === 'realtime' || m === 'cumulative') { pending.mode = m; urlSettersRef.current.setActiveMainTab(m); }
+            if (s === 'revenue' || s === 'competition') { pending.sub = s; urlSettersRef.current.setActiveSubTab(s); }
+            urlPendingRef.current = pending.mode || pending.sub ? pending : null;
+        }
     }, [isActive]);
 
     // Đồng bộ URL query parameters khi người dùng chuyển mode hoặc subtab trong Siêu thị
     useEffect(() => {
         if (isActive === false || typeof window === 'undefined') return;
+        const pending = urlPendingRef.current;
+        if (pending) {
+            const modeOk = !pending.mode || pending.mode === activeMainTab;
+            const subOk = !pending.sub || pending.sub === activeSubTab;
+            if (!modeOk || !subOk) {
+                if (!modeOk) urlSettersRef.current.setActiveMainTab(pending.mode as typeof activeMainTab);
+                if (!subOk) urlSettersRef.current.setActiveSubTab(pending.sub as typeof activeSubTab);
+                return;
+            }
+            urlPendingRef.current = null;
+        }
         const url = new URL(window.location.href);
         if (url.searchParams.get('tab') === 'employees' && (url.searchParams.get('view') === 'dashboard' || !url.searchParams.get('view'))) {
             let changed = false;

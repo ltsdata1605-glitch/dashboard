@@ -5,6 +5,6 @@ export { adminUpdateUser, listManagedUsers } from './admin';
 export { generateWithGemini, parseSalarySlipWithGemini } from './gemini';
 export { stickerRegister, stickerResolveSession, stickerAdminUpdateUser, stickerStaffAuth } from './stickerEvent';
 export { lineBotWebhook } from './lineBotWebhook';
-export { dailyMorningInventoryReport, dailyEveningUsageSummary } from './lineBotScheduler';
+export { dailyMorningInventoryReport, dailyEveningUsageSummary, lineBotUserSchedules } from './lineBotScheduler';
 export { pmhRelayPoll, pmhRelayComplete } from './pmhRelay';
 

@@ -186,7 +186,10 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                         </Button>
                     </div>
                     <div className="border-t border-slate-200 pt-3">
-                        <p className="mb-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">Tự xuất ảnh & gửi LINE sau khi đổ dữ liệu</p>
+                        <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">
+                            <Icon name="line" size={3.5} className="text-[#06C755]" />
+                            <span>Tự xuất ảnh & gửi LINE sau khi đổ dữ liệu</span>
+                        </p>
                         <AutoSendAreas scheduleKey={scheduleKey} entry={entry} luu={luu} />
                     </div>
                     <div className="border-t border-slate-200 pt-3">

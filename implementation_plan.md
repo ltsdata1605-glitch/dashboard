@@ -7047,6 +7047,21 @@ có dòng siêu thị ngay, 1 kho phải khoan COMPANY → AREA → STORE); `thi
 **Chưa kiểm được trên MWG thật** (không có phiên đăng nhập): tên `columnname` các tầng giữa là suy đoán — nếu vẫn
 không ra, Console trang baocao có dòng `[BI-Sync] [API] Thi đua nhân viên …` / `Không lấy được Thi đua nhân viên cho …`.
 
+## Sửa các test e2e đỏ từ trước (2026-10-02)
+
+| Test | Nguyên nhân thật | Sửa |
+|---|---|---|
+| 9 test BI (`bi-competition` ×4, `bi-bonus-compare` ×3, `bi-competition-bonus-col`, `bi-competition-export-fit`) | Ô "Cập nhật" giờ bấm là TỰ ĐỌC clipboard (`readText`); `helpers/seed.ts` vẫn chờ `textarea` | `pasteIntoTile` gắn clipboard giả rồi bấm ô; textarea còn là đường dự phòng |
+| `bi-bonus-compare` (menu chế độ xem) | Do Đợt D: `aria-current` gắn cho dải tab → test tìm mục đang chọn trong menu bắt trúng 3 chỗ | Dải tab chỉ dùng `data-active` (bỏ `aria-current`) |
+| `bi-sync-cap-nhat-xong-tu-chay-tiep` | Chrome coi `.user.js` là lượt cài userscript → không có Tampermonkey thì tải về, URL tab = ":" | Bắt yêu cầu điều hướng tới file thay vì đọc URL tab |
+| `sticker-nut-va-quet-ma` ×2, `sticker-toc-do-quet-ma` ×2 | MÔI TRƯỜNG: spec tự khai `launchOptions` đè mất đường dẫn Chromium của máy cloud | `playwright.config.ts` xuất `E2E_LAUNCH` (từ `E2E_CHROMIUM_PATH`), 2 spec trải vào |
+| `iframe-tabs-csp` (xlsx check-thuong) | MÔI TRƯỜNG: Chromium không tin chứng chỉ proxy → không tải được cdn.sheetjs.com | `E2E_IGNORE_HTTPS_ERRORS=1` (chỉ bật cho test cần CDN — xem chú thích config) |
+
+Máy cloud chạy e2e: `E2E_CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test …`. Máy chủ dự án/CI không đổi.
+- Lượt chạy TOÀN BỘ e2e trên máy cloud (2026-10-02): 199 qua / 43 bỏ qua / 8 đỏ → sửa tiếp:
+  6 test ghi cứng "bản 7.16" (`ycx-tu-dong-phan-tich` ×4, `line-gui-anh-va-hen-gio` ×2) → khi gộp, lấy bản của main (mẫu `bản 7.x`) — cùng sửa một việc; trước đó mình cho đọc từ `@version` của
+  userscript; `bi-sync-kiem-phien-ban` cùng lỗi `.user.js` → bắt yêu cầu điều hướng. `iframe-tabs-csp` cần
+  `E2E_IGNORE_HTTPS_ERRORS=1`. Sau sửa: cả 8 qua.
 ## Ảnh gửi LINE nét hơn + hẹn giờ chọn khu vực tự xuất & gửi LINE (2026-10-02)
 
 **Yêu cầu chủ dự án:** (1) ảnh xuất gửi LINE "cao và nét"; (2) trong hộp "Hẹn giờ tự chạy" chọn được khu vực nào sẽ tự
@@ -7104,3 +7119,31 @@ Commit "deep link URL sync" (19a53367) thêm 2 hiệu ứng: đọc URL → đ�
 ghi giá trị mới → giật qua lại vô hạn → "Maximum update depth exceeded": **bấm "Thi đua"/"Luỹ kế" ở Report BI là sập**,
 lượt hẹn giờ BI tự chụp ảnh cũng sập theo. Sửa: chỉ đọc URL khi mở mục và khi `popstate` (Dashboard.tsx, NhanVien.tsx).
 Test: `tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts` (bấm qua lại không sập + mở link sâu đúng chế độ).
+## SỰ CỐ: Report BI sập trên trang thật — deep link `?view=&mode=&sub=` (2026-10-02, commit 19a5336, deploy 12:22)
+
+- Triệu chứng: Siêu thị → gạt Realtime/Luỹ kế → "Đã xảy ra lỗi tại Báo cáo BI — Maximum update depth exceeded";
+  Nhân viên: bấm tab con bị kéo ngược về tab cũ. 7 test BI đỏ trên `main` nguyên gốc (đã kiểm bằng git worktree).
+- Nguyên nhân: effect "đọc URL → state" phụ thuộc chính state đó (`activeMainTab/activeSubTab`, `activeTab`) → đổi state
+  thì effect đọc URL CŨ kéo state về, effect "state → URL" ghi lại → ping-pong vô hạn.
+- Sửa (`Dashboard.tsx`, `NhanVien.tsx`): đọc URL CHỈ khi màn hình được mở (`[isActive]`, setter qua ref); giá trị deep
+  link giữ ở "chờ" — effect ghi URL không ghi đè cho tới khi state đúng là giá trị đó (kho IndexedDB nạp bất đồng bộ
+  từng làm `sub=bonus` bị ghi đè thành `revenue`).
+- Test: `tests/e2e/bi-deep-link-khong-vong-lap.spec.ts` (gạt chế độ, bấm 4 tab con, 2 kiểu deep link).
+
+## Bot LINE — 3 lỗ hổng chủ dự án nêu (2026-10-02)
+
+1. 🔴 **Kiểm chữ ký `x-line-signature`** — `functions/src/lineSignature.ts` (HMAC-SHA256 base64 trên `req.rawBody`, so
+   sánh hằng thời gian). `lineBotWebhook.ts`: kiểm NGAY sau khi tải cấu hình bot, TRƯỚC mọi xử lý sự kiện. Thiếu
+   `channelSecret` → bỏ qua sự kiện (200 + log lỗi); chữ ký sai → 401. Các lệnh `?action=` của Dashboard không phải
+   sự kiện LINE → không đổi. Cài đặt Bot hiện cảnh báo đỏ khi chưa nhập secret.
+   ⚠️ THỨ TỰ TRIỂN KHAI: nhập Channel secret (Bot LINE › Cấu Hình Bot › Lưu) TRƯỚC, rồi mới `npm run deploy:functions`.
+2. 🟠 **Lịch "Gửi Notify" tự gửi** — `lineBotUserSchedules` (5 phút/lần, giờ VN) trong `lineBotScheduler.ts`; logic thuần
+   `lineBotScheduleDue.ts` (khe ngày+giờ, trễ ≤ 20 phút, `lastAutoRunSlot` chống trùng, giữ chỗ bằng transaction, ONCE
+   tự tắt). "Tất cả các nhóm" = mọi nhóm ĐÃ LƯU (không dùng broadcast của LINE — gửi tới mọi người kết bạn, không phải
+   nhóm); nút "Gửi ngay" đổi theo cho thống nhất. Giao diện không bao giờ ghi `lastAutoRunSlot/lastAutoRunResult`.
+3. 🟡 `features/line-bot` vào bảng mục 1 + 1.1 của CLAUDE.md VÀ vào `FEATURES` của `eslint.config.js` (trước đó nằm
+   ngoài luật cách ly; ngoại lệ `services/firebase` như bi-dashboard). 0 vi phạm.
+- Test: `tests/unit/line-bot-signature.test.ts`, `line-bot-webhook-chu-ky.test.ts` (hàm webhook THẬT + Firestore giả;
+  đã kiểm ngược: bỏ đoạn kiểm chữ ký → 4/5 đỏ), `line-bot-schedule-due.test.ts`, `line-bot-notify-may-chu.test.ts`.
+- Chưa làm (ngoài 3 mục): các `?action=` công khai của webhook (lưu media, gửi thử bằng token trong body) không xác thực
+  người gọi; `features/tax-calculator`, `check-thuong` cũng chưa có trong bảng/luật cách ly.

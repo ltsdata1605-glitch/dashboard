@@ -75,14 +75,25 @@ export const TILE = {
  * theo, mỗi test treo 1 phút rồi timeout. Dùng chỉ số ô là cách bền nhất với bố cục hiện tại.
  */
 export async function pasteIntoTile(page: Page, tileIndex: number, text: string) {
+    // SỬA 2026-10-02 — bấm ô giờ TỰ ĐỌC clipboard (`navigator.clipboard.readText`, "Click để tự dán"),
+    // chỉ hiện `textarea` khi đọc clipboard lỗi. Trình duyệt test không cấp quyền clipboard nên
+    // readText treo/lỗi → hàm cũ chờ textarea 10s rồi hỏng (9 test BI đỏ). Giờ gắn nội dung vào
+    // clipboard giả rồi bấm ô — đúng đường người dùng thật đi. Textarea vẫn là đường dự phòng.
+    await page.evaluate((value) => {
+        Object.defineProperty(navigator, 'clipboard', {
+            configurable: true,
+            value: { ...navigator.clipboard, readText: async () => value, writeText: async () => {} },
+        });
+    }, text);
     await page.locator('h4').nth(tileIndex).click();
     const textarea = page.locator('textarea').first();
-    await textarea.waitFor({ state: 'visible', timeout: 10_000 });
-    await textarea.evaluate((el, value) => {
-        const dt = new DataTransfer();
-        dt.setData('text', value);
-        el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
-    }, text);
+    if (await textarea.isVisible({ timeout: 1500 }).catch(() => false)) {
+        await textarea.evaluate((el, value) => {
+            const dt = new DataTransfer();
+            dt.setData('text', value);
+            el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+        }, text);
+    }
     await page.waitForTimeout(600);
 }
 

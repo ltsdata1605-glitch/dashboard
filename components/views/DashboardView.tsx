@@ -544,12 +544,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     </span>
                                                 </div>
                                             )}
-                                            {processingTime > 0 && (
-                                                <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
-                                                    <Icon name="zap" size={3} className="text-amber-500" />
-                                                    <span>Xử lý {processingTime}ms</span>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
 

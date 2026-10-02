@@ -33,9 +33,14 @@ test('cập nhật userscript xong quay lại tab → tự tải lại và TỰ 
     await page.getByRole('button', { name: /Cập nhật/i }).first().click();
 
     // 1) Bản cũ → tự mở trang cập nhật, modal báo cần cập nhật
-    const tabCapNhat = page.context().waitForEvent('page');
+    // Bắt YÊU CẦU ĐIỀU HƯỚNG tới file userscript, không đọc URL của tab mới: Chrome coi đường dẫn `.user.js` là lượt
+    // cài userscript — không có Tampermonkey thì TẢI file về rồi đóng tab, URL tab thành ":" (đo 2026-10-02 trên
+    // Chromium bản đầy đủ; bản headless-shell thì mở như trang thường). Lọc isNavigationRequest để không nhầm với
+    // lượt fetch kiểm phiên bản (`…user.js?t=…`).
+    const moTrangCapNhat = page.context().waitForEvent('request', (r) =>
+        r.isNavigationRequest() && r.url().includes('/scripts/mwg-auto-thu-thap-diem-thuong.user.js'));
     await page.getByRole('button', { name: /Tự động Realtime/i }).click();
-    expect((await tabCapNhat).url()).toContain('/scripts/mwg-auto-thu-thap-diem-thuong.user.js');
+    await moTrangCapNhat;
     await expect(page.getByTestId('bi-sync-can-cap-nhat')).toBeVisible();
 
     // 2) Người dùng bấm Update trong Tampermonkey (giả: đổi bản) rồi quay lại tab Dashboard
