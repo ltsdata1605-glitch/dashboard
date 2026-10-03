@@ -90,6 +90,138 @@ export function fitTablesToContent(root: HTMLElement): number {
                 if (c.style.maxWidth && c.style.maxWidth !== 'none') c.style.setProperty('max-width', 'none', 'important');
             });
         });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FIX ĐỘ RỘNG CỘT VỪA KHÍT NỘI DUNG (COLUMN CONTENT FITTING)
+        // ═══════════════════════════════════════════════════════════════════════
+        const theadRows = Array.from(table.querySelectorAll('thead tr'));
+        const tbodyRows = Array.from(table.querySelectorAll('tbody tr'));
+        const tfootRows = Array.from(table.querySelectorAll('tfoot tr'));
+
+        // Xây dựng ma trận thead để xác định index của từng cột
+        const theadGrid: HTMLTableCellElement[][] = [];
+        theadRows.forEach((row, rIdx) => {
+            let cIdx = 0;
+            Array.from(row.children).forEach((cellNode) => {
+                if (!(cellNode instanceof HTMLTableCellElement)) return;
+                while (theadGrid[rIdx] && theadGrid[rIdx][cIdx]) cIdx++;
+                const rSpan = cellNode.rowSpan || 1;
+                const cSpan = cellNode.colSpan || 1;
+                for (let r = 0; r < rSpan; r++) {
+                    if (!theadGrid[rIdx + r]) theadGrid[rIdx + r] = [];
+                    for (let c = 0; c < cSpan; c++) {
+                        theadGrid[rIdx + r][cIdx + c] = cellNode;
+                    }
+                }
+                cIdx += cSpan;
+            });
+        });
+
+        const totalCols = theadGrid.length > 0 ? theadGrid[theadGrid.length - 1].length : 0;
+        if (totalCols > 0) {
+            const colMaxWidths: number[] = new Array(totalCols).fill(0);
+
+            // Đo ở thead (chỉ tính ô đơn colSpan === 1)
+            theadRows.forEach((row, rIdx) => {
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    if ((cellNode.colSpan || 1) === 1) {
+                        const cIdx = theadGrid[rIdx]?.indexOf(cellNode);
+                        if (cIdx !== undefined && cIdx >= 0) {
+                            const w = Math.ceil(cellNode.scrollWidth || cellNode.getBoundingClientRect().width);
+                            colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
+                        }
+                    }
+                });
+            });
+
+            // Đo ở tbody (chỉ tính ô đơn colSpan === 1, bỏ qua các dòng phân nhóm colSpan > 1)
+            tbodyRows.forEach((row) => {
+                let cIdx = 0;
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    const cSpan = cellNode.colSpan || 1;
+                    if (cSpan === 1 && cIdx < totalCols) {
+                        const w = Math.ceil(cellNode.scrollWidth || cellNode.getBoundingClientRect().width);
+                        colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
+                        cIdx++;
+                    } else {
+                        cIdx += cSpan;
+                    }
+                });
+            });
+
+            // Đo ở tfoot (chỉ tính ô đơn colSpan === 1)
+            tfootRows.forEach((row) => {
+                let cIdx = 0;
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    const cSpan = cellNode.colSpan || 1;
+                    if (cSpan === 1 && cIdx < totalCols) {
+                        const w = Math.ceil(cellNode.scrollWidth || cellNode.getBoundingClientRect().width);
+                        colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
+                        cIdx++;
+                    } else {
+                        cIdx += cSpan;
+                    }
+                });
+            });
+
+            // Cố định độ rộng vừa khít nội dung cho từng cột
+            for (let c = 0; c < totalCols; c++) {
+                if (colMaxWidths[c] <= 0) continue;
+                const colW = colMaxWidths[c] + 4; // 4px đệm viền an toàn
+
+                theadRows.forEach((row, rIdx) => {
+                    const cell = theadGrid[rIdx]?.[c];
+                    if (cell && (cell.colSpan || 1) === 1) {
+                        cell.style.setProperty('width', `${colW}px`, 'important');
+                        cell.style.setProperty('min-width', `${colW}px`, 'important');
+                        cell.style.setProperty('max-width', `${colW}px`, 'important');
+                    }
+                });
+
+                tbodyRows.forEach((row) => {
+                    let curC = 0;
+                    Array.from(row.children).forEach((cellNode) => {
+                        if (!(cellNode instanceof HTMLTableCellElement)) return;
+                        const cSpan = cellNode.colSpan || 1;
+                        if (cSpan === 1 && curC === c) {
+                            cellNode.style.setProperty('width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('min-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('max-width', `${colW}px`, 'important');
+                            curC++;
+                        } else {
+                            curC += cSpan;
+                        }
+                    });
+                });
+
+                tfootRows.forEach((row) => {
+                    let curC = 0;
+                    Array.from(row.children).forEach((cellNode) => {
+                        if (!(cellNode instanceof HTMLTableCellElement)) return;
+                        const cSpan = cellNode.colSpan || 1;
+                        if (cSpan === 1 && curC === c) {
+                            cellNode.style.setProperty('width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('min-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('max-width', `${colW}px`, 'important');
+                            curC++;
+                        } else {
+                            curC += cSpan;
+                        }
+                    });
+                });
+            }
+
+            // Đặt bề rộng bảng cố định theo đúng tổng độ rộng các cột đã fix
+            const tableWidth = Math.ceil(table.getBoundingClientRect().width || colMaxWidths.reduce((a, b) => a + (b > 0 ? b + 4 : 0), 0));
+            if (tableWidth > 0) {
+                table.style.setProperty('width', `${tableWidth}px`, 'important');
+                table.style.setProperty('min-width', `${tableWidth}px`, 'important');
+                table.style.setProperty('max-width', `${tableWidth}px`, 'important');
+            }
+        }
     });
 
     // Đo bảng rộng nhất + đệm/viền các khối bọc nó

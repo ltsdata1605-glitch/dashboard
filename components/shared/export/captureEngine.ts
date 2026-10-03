@@ -1039,10 +1039,20 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     clone.style.border = 'none';
     clone.style.borderRadius = '0';
 
-    // Remove redundant inner borders on table overflow wrappers inside cards
+    // Gỡ bỏ overflow-hidden và overflow-x: auto trên các wrapper bọc table để không cắt mất các cột bên phải
+    // NHƯNG GIỮ NGUYÊN viền bao quanh bảng nếu wrapper vốn có viền (như border border-slate-200 / dark:border-slate-700)
     clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
         if (el instanceof HTMLElement) {
-            el.style.setProperty('border', 'none', 'important');
+            const hasTable = !!el.querySelector('table');
+            const hasBorder = /(?:^|\s)border(?:-|\s|$)/.test(el.className || '') || el.style.borderWidth !== '' || el.style.border !== '';
+            if (hasTable && hasBorder) {
+                const isDark = document.documentElement.classList.contains('dark');
+                const borderColor = isDark ? '#334155' : '#e2e8f0';
+                el.style.setProperty('border', `1px solid ${borderColor}`, 'important');
+                el.style.setProperty('box-sizing', 'border-box', 'important');
+            } else {
+                el.style.setProperty('border', 'none', 'important');
+            }
             el.style.setProperty('box-shadow', 'none', 'important');
         }
     });
@@ -1268,18 +1278,17 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         }
     }
 
-    // CO CỘT VỪA NỘI DUNG (mặc định) — bảng rộng nhất quyết định bề rộng ảnh, tối thiểu 680px.
-    // Bảng hẹp hơn bề rộng ảnh thì giãn 100% để cột chia đều phần dư, không để khoảng trắng bên phải.
+    // CO CỘT VỪA NỘI DUNG (mặc định) — fix độ rộng từng cột vừa khít nội dung thực tế trước khi xuất
     let fittedWidth = 0;
     if (doFit) {
         fittedWidth = fitTablesToContent(clone);
         if (fittedWidth > 0) {
-            const w = Math.max(EXPORT_MIN_WIDTH, fittedWidth);
+            const hasKpiGrid = !!clone.querySelector('.kpi-grid, .kpi-grid-for-export, .kpi-overview-card');
+            const w = Math.max(hasKpiGrid ? EXPORT_MIN_WIDTH : 0, fittedWidth);
             clone.style.setProperty('width', `${w}px`, 'important');
             clone.style.setProperty('max-width', `${w}px`, 'important');
             clone.style.setProperty('min-width', `${w}px`, 'important');
             captureContainer.style.width = `${w}px`;
-            clone.querySelectorAll<HTMLElement>('table').forEach((t) => t.style.setProperty('width', '100%', 'important'));
         }
     }
 
@@ -1314,15 +1323,15 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             maxTableWidth = Math.max(maxTableWidth, w);
         });
 
-        // Bề rộng tối ưu vừa xem trên điện thoại:
-        // Với báo cáo thông thường (Tổng quan siêu thị ~620px, Chi tiết ngành hàng ~580px):
-        // Chọn bề rộng ~680px để các thẻ KPI trên đỉnh và lưới 6 cột hiển thị cân đối nhất,
-        // các cột dữ liệu không bị bè ngang thừa khoảng trắng, mở trên điện thoại đọc rõ mồn một.
-        // Với bảng nhiều cột (Thi Đua 30+ cột), tự động mở rộng theo maxTableWidth để không mất cột.
+        // Bề rộng tối ưu:
+        // Với bảng có cột: giữ nguyên độ rộng vừa khít của các cột (fittedWidth), không kéo dãn thừa khoảng trắng.
+        // Chỉ áp dụng trần EXPORT_MIN_WIDTH khi có cụm thẻ KPI grid.
+        const hasKpiGrid = !!clone.querySelector('.kpi-grid, .kpi-grid-for-export, .kpi-overview-card');
+        const minWidthThreshold = hasKpiGrid ? EXPORT_MIN_WIDTH : 0;
         const optimalWidth = fittedWidth > 0
-            ? Math.max(EXPORT_MIN_WIDTH, fittedWidth)
+            ? Math.max(minWidthThreshold, fittedWidth)
             : maxTableWidth > 0
-                ? Math.max(EXPORT_MIN_WIDTH, maxTableWidth + 16)
+                ? Math.max(minWidthThreshold, maxTableWidth + 16)
                 : Math.max(EXPORT_MIN_WIDTH, Math.min(Math.ceil(rect.width || 0), 1000));
 
         const contentWidth = captureAsDisplayed
@@ -1341,6 +1350,17 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
             captureContainer.style.setProperty('min-width', `${finalWidth}px`, 'important');
             captureContainer.style.setProperty('max-width', `${finalWidth}px`, 'important');
         }
+
+        // Đảm bảo wrapper trực tiếp bao quanh bảng giữ viền xám bao quanh bảng
+        clone.querySelectorAll('table').forEach((t) => {
+            const parent = t.parentElement;
+            if (parent instanceof HTMLElement && (/(?:^|\s)border(?:-|\s|$)/.test(parent.className || '') || parent.classList.contains('overflow-x-auto'))) {
+                const isDark = document.documentElement.classList.contains('dark');
+                const borderColor = isDark ? '#334155' : '#e2e8f0';
+                parent.style.setProperty('border', `1px solid ${borderColor}`, 'important');
+                parent.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+        });
 
         let finalScale = scale;
         if (finalHeight * scale > 32000) {

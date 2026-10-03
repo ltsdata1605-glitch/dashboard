@@ -1083,11 +1083,19 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         clone.style.borderRadius = '0';
     }
 
-    // Remove redundant inner borders ONLY on table overflow wrappers inside cards (keep card borders intact)
-    // ĐỒNG THỜI: Gỡ bỏ overflow-hidden và overflow-x: auto trên các wrapper bọc table để không cắt mất các cột bên phải
+    // Gỡ bỏ overflow-hidden và overflow-x: auto trên các wrapper bọc table để không cắt mất các cột bên phải
+    // NHƯNG GIỮ NGUYÊN viền bao quanh bảng nếu wrapper vốn có viền (như border border-slate-200 / dark:border-slate-700)
     clone.querySelectorAll<HTMLElement>('.overflow-x-auto, .overflow-hidden').forEach((el) => {
         if (el instanceof HTMLElement && el.querySelector('table')) {
-            el.style.setProperty('border', 'none', 'important');
+            const hasBorder = /(?:^|\s)border(?:-|\s|$)/.test(el.className || '') || el.style.borderWidth !== '' || el.style.border !== '';
+            if (hasBorder) {
+                const isDark = document.documentElement.classList.contains('dark');
+                const borderColor = isDark ? '#334155' : '#e2e8f0';
+                el.style.setProperty('border', `1px solid ${borderColor}`, 'important');
+                el.style.setProperty('box-sizing', 'border-box', 'important');
+            } else {
+                el.style.setProperty('border', 'none', 'important');
+            }
             el.style.setProperty('overflow', 'visible', 'important');
             el.style.setProperty('overflow-x', 'visible', 'important');
             el.style.setProperty('overflow-y', 'visible', 'important');
@@ -1546,10 +1554,12 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         // Neo theo độ rộng thực tế của bảng (+ padding), tối thiểu 720px để 4 cột thẻ KPI đỉnh và 6 cột thẻ ngành hàng
         // hiển thị gọn gàng, đẹp mắt, không bị kéo bè thừa khoảng trắng ở cột Ngành Hàng.
         // (Bề rộng tối thiểu trước đây 720px riêng cho Report BI — nay 680px chung toàn dự án, chủ dự án chốt 2026-10-01)
+        const hasKpiGrid = !!clone.querySelector('.kpi-grid, .kpi-grid-for-export, .kpi-overview-card');
+        const minWidthThreshold = hasKpiGrid ? EXPORT_MIN_WIDTH : 0;
         const naturalTableWidth = fittedWidth > 0
-            ? Math.max(EXPORT_MIN_WIDTH, fittedWidth)
+            ? Math.max(minWidthThreshold, fittedWidth)
             // (commit Mac 21964bfe: +48px đệm an toàn cho px-4 và viền mép phải)
-            : maxTableWidth > 0 ? Math.max(EXPORT_MIN_WIDTH, maxTableWidth + 48) : 0;
+            : maxTableWidth > 0 ? Math.max(minWidthThreshold, maxTableWidth + 48) : 0;
         const optimalWidth = naturalTableWidth > 0
             ? naturalTableWidth
             : Math.max(EXPORT_MIN_WIDTH, Math.min(Math.ceil(rect.width || 0), 1000));
@@ -1611,6 +1621,14 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
             t.style.setProperty('width', '100%', 'important');
             t.style.setProperty('min-width', '100%', 'important');
             t.style.setProperty('box-sizing', 'border-box', 'important');
+            // Đảm bảo wrapper trực tiếp bao quanh bảng giữ viền xám bao quanh bảng
+            const parent = t.parentElement;
+            if (parent instanceof HTMLElement && (/(?:^|\s)border(?:-|\s|$)/.test(parent.className || '') || parent.classList.contains('overflow-x-auto'))) {
+                const isDark = document.documentElement.classList.contains('dark');
+                const borderColor = isDark ? '#334155' : '#e2e8f0';
+                parent.style.setProperty('border', `1px solid ${borderColor}`, 'important');
+                parent.style.setProperty('box-sizing', 'border-box', 'important');
+            }
         });
 
         // Đo chiều cao chính xác sau khi đã set width và layout hoàn chỉnh

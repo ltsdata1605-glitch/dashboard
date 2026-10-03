@@ -319,7 +319,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
             await handleExport(summaryRef.current, fileName, {
                 elementsToHide: ['.hide-on-export'],
                 scale: 2,
-                captureAsDisplayed: true,
                 throwOnLineError: tuDong,
             });
         } else if (tuDong) throw new Error('Bảng "Chi tiết theo kho" chưa hiển thị');

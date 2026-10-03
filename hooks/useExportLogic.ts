@@ -26,6 +26,7 @@ export interface ExportImageOptions {
     forcedWidth?: number | null;
     fitCategoryColumn?: boolean;
     fitAllColumns?: boolean;
+    fitWidthToTable?: boolean;
     mode?: ExportMode;
     onCloneReady?: ((clone: HTMLElement) => void) | null;
     /** 'auto' (mặc định): theo đích đã đặt cho nút (tải về / gửi nhóm LINE). 'download': luôn tải về. */
