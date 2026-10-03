@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { buildSummaryTable } from '../../services/summaryTableCalc';
@@ -108,6 +108,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
+    const tableContainerRef = useRef<HTMLDivElement>(null);
     const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-summary-${isCumulative ? 'luyke' : 'realtime'}`, ['Lượt Khách LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'TLPVTC LK', 'Lượt Bill Thu Hộ', 'Lãi gộp QĐ', '%HT Target Dự kiến (LNTT)', '% HT Target Dự Kiến (QĐ)', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm']);
 
     // --- Supermarket Filter State ---
@@ -123,6 +124,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             }
             if (supermarketFilterRef.current && !supermarketFilterRef.current.contains(event.target as Node)) {
                 setIsSupermarketFilterOpen(false);
+            }
+            if (tableContainerRef.current && !tableContainerRef.current.contains(event.target as Node)) {
+                setSortConfig(prev => {
+                    if (prev.column !== null) {
+                        return { column: null, direction: null };
+                    }
+                    return prev;
+                });
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -157,6 +166,62 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             return Array.from(newHidden);
         });
     };
+
+    // --- Column Sort State & Handlers ---
+    const [sortConfig, setSortConfig] = useState<{ column: string | null; direction: 'asc' | 'desc' | null }>({
+        column: null,
+        direction: null
+    });
+
+    const handleColumnSort = useCallback((headerName: string) => {
+        setSortConfig(prev => {
+            if (prev.column === headerName) {
+                if (prev.direction === 'desc') {
+                    return { column: headerName, direction: 'asc' };
+                }
+                return { column: null, direction: null };
+            }
+            return { column: headerName, direction: 'desc' };
+        });
+    }, []);
+
+    const displayRows = useMemo(() => {
+        const rows = processedTable.allRows;
+        if (!sortConfig.column || !sortConfig.direction) return rows;
+        const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
+        const colIdx = processedTable.allHeaders.indexOf(sortConfig.column);
+        if (colIdx === -1) return rows;
+
+        const nonTotalRows: typeof rows = [];
+        const totalRows: typeof rows = [];
+
+        rows.forEach(r => {
+            const rawName = String(r[nameIdx] || '').trim();
+            if (rawName === 'Tổng' || rawName === 'TỔNG CỤM' || rawName === 'TỔNG') {
+                totalRows.push(r);
+            } else {
+                nonTotalRows.push(r);
+            }
+        });
+
+        nonTotalRows.sort((a, b) => {
+            const rawValA = a[colIdx]?.isMerged ? a[colIdx].value : a[colIdx];
+            const rawValB = b[colIdx]?.isMerged ? b[colIdx].value : b[colIdx];
+            const valA = parseNumber(rawValA);
+            const valB = parseNumber(rawValB);
+
+            if (!isNaN(valA) && !isNaN(valB)) {
+                return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+            }
+            const strA = String(rawValA || '').toLowerCase();
+            const strB = String(rawValB || '').toLowerCase();
+            return sortConfig.direction === 'asc'
+                ? strA.localeCompare(strB, 'vi')
+                : strB.localeCompare(strA, 'vi');
+        });
+
+        return [...nonTotalRows, ...totalRows];
+    }, [processedTable.allRows, processedTable.allHeaders, sortConfig]);
 
     // Build header groups, marking single-column groups for rowSpan=2 rendering
     const headerGroups = useMemo(() => {
@@ -362,7 +427,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
             <div className="w-full overflow-hidden">
                     {/* ─── TABLE VIEW — styled like Chi Tiết Theo Kho ─── */}
-                    <div className="w-full overflow-x-auto custom-scrollbar px-4 pb-4 pt-2">
+                    <div ref={tableContainerRef} className="w-full overflow-x-auto custom-scrollbar px-4 pb-4 pt-2">
                         <table className="w-full min-w-full text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
@@ -380,13 +445,27 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     {headerGroups.map((g, idx) => {
                                         if (g.isSingle) {
                                             /* Single-column group: merge into rowSpan=2 */
+                                            const isSorted = g.singleHeader === sortConfig.column;
                                             return (
                                                 <th
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
-                                                    className={`${GROUP_EDGE} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-b-slate-200 dark:border-b-slate-700 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                    onClick={() => handleColumnSort(g.singleHeader)}
+                                                    className={`${GROUP_EDGE} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-b-slate-200 dark:border-b-slate-700 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-90 transition-all uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle select-none ${
+                                                        isSorted
+                                                            ? '!bg-sky-50 dark:!bg-sky-950/70 !text-sky-700 dark:!text-sky-300 ring-2 ring-inset ring-sky-400 dark:ring-sky-500 shadow-sm font-black'
+                                                            : `${g.bg} ${g.text}`
+                                                    }`}
+                                                    title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
                                                 >
-                                                    {renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}
+                                                    <span className="inline-flex items-center justify-center gap-0.5">
+                                                        <span>{renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}</span>
+                                                        {isSorted && (
+                                                            <span className="text-[11px] text-sky-600 dark:text-sky-400 font-black inline-block">
+                                                                {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                                                            </span>
+                                                        )}
+                                                    </span>
                                                 </th>
                                             );
                                         }
@@ -412,19 +491,33 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
                                         if (isSingleGroup) return null;
                                         const g = COLUMN_GROUPS[h] || { bg: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
+                                        const isSorted = h === sortConfig.column;
                                         return (
                                             <th
                                                 key={h}
-                                                className={`${groupStartHeaders.has(h) ? GROUP_EDGE : ''} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-b-slate-200 dark:border-b-slate-700 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                onClick={() => handleColumnSort(h)}
+                                                className={`${groupStartHeaders.has(h) ? GROUP_EDGE : ''} px-1.5 sm:px-2.5 py-1.5 sm:py-2 border-b border-b-slate-200 dark:border-b-slate-700 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-90 transition-all uppercase tracking-wider text-[11px] sm:text-[12px] font-bold text-center align-middle select-none ${
+                                                    isSorted
+                                                        ? '!bg-sky-50 dark:!bg-sky-950/70 !text-sky-700 dark:!text-sky-300 ring-2 ring-inset ring-sky-400 dark:ring-sky-500 shadow-sm font-black'
+                                                        : `${g.bg} ${g.text}`
+                                                }`}
+                                                title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
                                             >
-                                                {renderHeaderText(headerMapping[h] || h)}
+                                                <span className="inline-flex items-center justify-center gap-0.5">
+                                                    <span>{renderHeaderText(headerMapping[h] || h)}</span>
+                                                    {isSorted && (
+                                                        <span className="text-[11px] text-sky-600 dark:text-sky-400 font-black inline-block">
+                                                            {sortConfig.direction === 'asc' ? '▲' : '▼'}
+                                                        </span>
+                                                    )}
+                                                </span>
                                             </th>
                                         );
                                     })}
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                                {processedTable.allRows.map((row, rIdx) => {
+                                {displayRows.map((row, rIdx) => {
                                     const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
                                     const rawName = row[nameIdx];
                                     const isTotal = rawName === 'Tổng';
@@ -447,6 +540,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi' || h === 'Target Hiệu quả quy đổi') && !isNaN(val);
                                                     const isTraGop = (h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC' || h === 'TRẢ CHẬM' || h === '%T.CHẬM' || h === 'TC' || h === 'Target Trả chậm') && !isNaN(val);
                                                     const isTtCol = h === '% TT';
+                                                    const isSortedCol = h === sortConfig.column;
 
                                                     let colorCls = '';
                                                     let cellTitle: string | undefined = undefined;
@@ -477,7 +571,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 text-[11px] sm:text-[13px] font-bold
                                                                 tabular-nums align-middle
                                                                 border-r border-slate-200 dark:border-slate-700
-                                                                bg-slate-100 dark:bg-slate-800
+                                                                ${isSortedCol ? '!bg-sky-100/80 dark:!bg-sky-900/50' : 'bg-slate-100 dark:bg-slate-800'}
                                                                 ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
                                                                 ${h === 'Tên miền'
                                                                     ? 'uppercase tracking-wider sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
@@ -533,6 +627,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 const isHqqd = (h === '%HQQĐ' || h === '%QĐ' || h === 'HQQĐ' || h === 'Target Quy đổi' || h === 'Target Hiệu quả quy đổi') && !isNaN(val);
                                                 const isTraGop = (h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm' || h === '%TC' || h === 'TRẢ CHẬM' || h === '%T.CHẬM' || h === 'TC' || h === 'Target Trả chậm') && !isNaN(val);
                                                 const isTtCol = h === '% TT';
+                                                const isSortedCol = h === sortConfig.column;
 
                                                 let colorCls = '';
                                                 let cellTitle: string | undefined = undefined;
@@ -564,6 +659,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             px-1.5 sm:px-2.5 py-1 sm:py-1.5 leading-tight
                                                             tabular-nums align-middle whitespace-nowrap
                                                             ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
+                                                            ${isSortedCol ? '!bg-sky-50/70 dark:!bg-sky-950/40' : ''}
                                                             ${h === 'Tên miền'
                                                                 ? `px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-sky-50/60 dark:!bg-sky-900/20' : ''}`
                                                                 : `text-center text-[11px] sm:text-[13px] border-r border-slate-100 dark:border-slate-700/50 ${colorCls || ''}`}

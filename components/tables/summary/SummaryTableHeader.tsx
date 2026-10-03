@@ -3,6 +3,7 @@ import { Icon } from '../../common/Icon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
 import { onActivateKey } from '../../shared/ui';
+import ExportDestinationButton from '../../analysis/ExportDestinationButton';
 import type { FilterState } from '../../../types';
 
 interface SummaryTableHeaderProps {
@@ -149,6 +150,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
                                             {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
                                         </Button>
+                                        <ExportDestinationButton reportKey="Chi Tiết Ngành Hàng" />
                                     </div>
 
                                     {activeFilterKey === 'columns' && (

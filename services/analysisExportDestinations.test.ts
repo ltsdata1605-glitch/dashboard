@@ -82,4 +82,25 @@ describe('analysisExportDestinations multi-group support', () => {
         await setExportDestination('Chi Tiết Theo Kho', { kind: 'download' });
         expect(getExportDestination('Chi Tiết Theo Kho')).toEqual({ kind: 'download' });
     });
+
+    it('defaults report command for Chi Tiết Theo Kho to "bc"', async () => {
+        const { getReportCommand, sanitizeReportCommand } = await import('./analysisExportDestinations');
+        expect(getReportCommand('Chi Tiết Theo Kho')).toBe('bc');
+        expect(sanitizeReportCommand('.bc')).toBe('bc');
+        expect(sanitizeReportCommand('/BC ')).toBe('bc');
+        expect(sanitizeReportCommand('!cttk')).toBe('cttk');
+    });
+
+    it('supports saving and retrieving custom report commands', async () => {
+        const { getReportCommand } = await import('./analysisExportDestinations');
+        await setExportDestination('Tổng Quan Doanh Thu', {
+            kind: 'line',
+            groups: [{ groupId: 'c123', groupName: 'Nhóm Test' }],
+            command: 'dt',
+        });
+
+        const dest = getExportDestination('Tổng Quan Doanh Thu');
+        expect(dest.command).toBe('dt');
+        expect(getReportCommand('Tổng Quan Doanh Thu')).toBe('dt');
+    });
 });

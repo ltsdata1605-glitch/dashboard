@@ -280,7 +280,11 @@ function formatHelpGuideMessage(): string {
         '🎯 4. LỌC MÃ RIÊNG (CHAT 1-1):',
         '• Chuyển tiếp tin nhắn gộp cho BOT để tự lọc mã tên bạn.',
         '• "csd": Hiện lại mọi thẻ đã lọc nhưng CHƯA sử dụng trong tháng.',
-        '• Dán 1 mã coupon vào chat: BOT báo mã đã được ai dùng lúc nào / chưa dùng.'
+        '• Dán 1 mã coupon vào chat: BOT báo mã đã được ai dùng lúc nào / chưa dùng.',
+        '',
+        '📸 5. NHẬN ẢNH BÁO CÁO TỨC THÌ:',
+        '• Gõ "bc": Nhận ảnh Báo cáo Chi Tiết Theo Kho mới nhất.',
+        '• Gõ "dsbc": Xem toàn bộ danh sách lệnh nhận ảnh báo cáo.'
     ].join('\n');
 }
 
@@ -2117,6 +2121,114 @@ export const lineBotWebhook = onRequest(
                         ]);
                     }
                     continue;
+                }
+
+                // 1.2. Kiểm tra danh sách lệnh báo cáo (dsbc)
+                const cleanCmd = lower.replace(/^[./!#\s]+/, '').replace(/\s+/g, '').trim();
+                if (cleanCmd === 'dsbc' || lower === 'lệnh bc' || lower === 'lenh bc' || lower === 'danh sách báo cáo' || lower === 'danh sach bao cao') {
+                    let reportList = '📋 DANH SÁCH LỆNH NHẬN ẢNH BÁO CÁO:\n━━━━━━━━━━━━━━━━━━━━━\n';
+                    let foundCount = 0;
+                    try {
+                        const snap = await db.collection('line_bots').doc(uid).collection('report_commands').get();
+                        if (!snap.empty) {
+                            snap.docs.forEach((d) => {
+                                const data = d.data();
+                                if (data.command) {
+                                    reportList += `• "${data.command}": ${data.reportKey || 'Báo cáo'}\n`;
+                                    foundCount++;
+                                }
+                            });
+                        }
+                    } catch (err) {
+                        console.warn('[lineBotWebhook] Lỗi đọc report_commands:', err);
+                    }
+                    if (foundCount === 0) {
+                        reportList += `• "bc": Chi Tiết Theo Kho\n`;
+                    }
+                    reportList += '━━━━━━━━━━━━━━━━━━━━━\n💡 Gõ lệnh tương ứng vào nhóm LINE để Bot gửi ảnh mới nhất (Hoàn toàn MIỄN PHÍ)!';
+                    await replyLineMessage(token, replyToken, [
+                        {
+                            type: 'text',
+                            text: reportList,
+                            quoteToken: event.message?.quoteToken
+                        }
+                    ]);
+                    continue;
+                }
+
+                // 1.3. Xử lý gõ lệnh nhận ảnh báo cáo (ví dụ "bc", "cttk", "dt", "thidua"...)
+                // Cơ chế Reply qua LINE Messaging API: Hoàn toàn MIỄN PHÍ & KHÔNG GIỚI HẠN
+                if (cleanCmd && cleanCmd.length >= 2 && cleanCmd.length <= 30 && !['id', 'admin', 'lineid', 'groupid', 'hd', 'help', 'huongdan', 'cp', 'tk', 'csd', 'huy', 'tra'].includes(cleanCmd)) {
+                    let cmdDoc = await db.collection('line_bots').doc(uid).collection('report_commands').doc(cleanCmd).get();
+                    let cmdData = cmdDoc.exists ? cmdDoc.data() : null;
+
+                    if (!cmdData) {
+                        const globalDoc = await db.collection('report_commands').doc(cleanCmd).get();
+                        if (globalDoc.exists) cmdData = globalDoc.data();
+                    }
+
+                    // Fallback mặc định cho lệnh "bc": nếu chưa có trong collection, tìm ảnh Chi Tiết Theo Kho mới nhất trong bot_media
+                    if (!cmdData && cleanCmd === 'bc') {
+                        try {
+                            const mSnap = await db.collection('bot_media')
+                                .where('source', '==', 'analysis-export')
+                                .orderBy('createdAt', 'desc')
+                                .limit(10)
+                                .get();
+                            const matchDoc = mSnap.docs.find(d => {
+                                const n = (d.data().name || '').toLowerCase();
+                                return n.includes('chi tiết theo kho') || n.includes('chi tiet theo kho') || n.includes('kho tổng hợp');
+                            });
+                            if (matchDoc) {
+                                const mData = matchDoc.data();
+                                const mUrl = `https://${DEFAULT_REGION}-dashboa-7e20b.cloudfunctions.net/lineBotWebhook?mediaId=${matchDoc.id}`;
+                                cmdData = {
+                                    command: 'bc',
+                                    reportKey: 'Chi Tiết Theo Kho',
+                                    imageUrl: mUrl,
+                                    previewUrl: mUrl,
+                                    caption: `📊 Báo cáo Chi Tiết Theo Kho — cập nhật gần nhất`,
+                                    updatedAt: mData.createdAt
+                                };
+                            }
+                        } catch (e) {
+                            console.warn('[lineBotWebhook] Fallback tìm ảnh cho bc lỗi:', e);
+                        }
+                    }
+
+                    if (cmdData || cleanCmd === 'bc') {
+                        const reportTitle = cmdData?.reportKey || (cleanCmd === 'bc' ? 'Chi Tiết Theo Kho' : 'Báo Cáo');
+                        const imgUrl = cmdData?.imageUrl;
+                        const prvUrl = cmdData?.previewUrl || imgUrl;
+
+                        if (imgUrl) {
+                            const replyMsgs: any[] = [];
+                            const captionText = cmdData?.caption || `📊 Báo cáo ${reportTitle} — cập nhật mới nhất`;
+                            replyMsgs.push({
+                                type: 'text',
+                                text: captionText,
+                                quoteToken: event.message?.quoteToken
+                            });
+                            replyMsgs.push({
+                                type: 'image',
+                                originalContentUrl: imgUrl,
+                                previewImageUrl: prvUrl
+                            });
+                            await replyLineMessage(token, replyToken, replyMsgs);
+                            console.info(`[lineBotWebhook] Đã reply ảnh báo cáo cho lệnh "${cleanCmd}" (${reportTitle})`);
+                            continue;
+                        } else {
+                            // Đã có lệnh nhưng chưa có ảnh nào được xuất lên Bot
+                            await replyLineMessage(token, replyToken, [
+                                {
+                                    type: 'text',
+                                    text: `📊 BÁO CÁO: ${reportTitle.toUpperCase()} (Lệnh "${cleanCmd}")\n━━━━━━━━━━━━━━━━━━━━━\n⚠️ Chưa có ảnh báo cáo mới nào trong kho lệnh.\n👉 Bạn hãy vào Dashboard YCX bấm "Xuất ảnh" mục ${reportTitle} hoặc bật Auto Sync để nạp ảnh mới nhất lên Bot nhé!`,
+                                    quoteToken: event.message?.quoteToken
+                                }
+                            ]);
+                            continue;
+                        }
+                    }
                 }
 
                 // 1.4 Chào hỏi & menu trong chat riêng 1-1 (hi, hello, alo, xin chào...)

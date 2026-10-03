@@ -13,6 +13,7 @@
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { lineBotFirestoreService } from '../features/line-bot/services/lineBotFirestoreService';
+import { sanitizeReportCommand, getReportCommand, reportKeyFromFilename } from './analysisExportDestinations';
 
 const WEBHOOK_URL = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net/lineBotWebhook';
 const PUSH_REQ = 'ycx-line-push:send';
@@ -245,9 +246,120 @@ async function pushViaCloudFunction(token: string, to: string, imageUrl: string,
     if (!data.success) throw new Error(data.error || 'Gửi ảnh LINE thất bại');
 }
 
+/** Lưu / cập nhật cấu hình cú pháp lệnh vào Firestore */
+export async function syncReportCommandConfig(params: {
+    botId: string;
+    reportKey: string;
+    command: string;
+    groupIds?: string[];
+}): Promise<void> {
+    const cmd = sanitizeReportCommand(params.command);
+    if (!cmd || !params.botId) return;
+    const now = new Date().toISOString();
+    const data = {
+        command: cmd,
+        reportKey: params.reportKey,
+        groupIds: params.groupIds || [],
+        updatedAt: now,
+    };
+    try {
+        await Promise.all([
+            setDoc(doc(db, 'line_bots', params.botId, 'report_commands', cmd), data, { merge: true }),
+            setDoc(doc(db, 'report_commands', cmd), data, { merge: true }).catch(() => {}),
+        ]);
+        console.info(`[LINE] Đã đồng bộ cấu hình lệnh "${cmd}" cho "${params.reportKey}"`);
+    } catch (e) {
+        console.warn('[LINE] Lỗi lưu cấu hình report_command:', e);
+    }
+}
+
+/** Lưu ảnh mới nhất cho cú pháp lệnh vào Firestore để LINE bot reply khi có tin nhắn */
+export async function saveReportCommandImage(params: {
+    botId: string;
+    command: string;
+    reportKey: string;
+    imageUrl: string;
+    previewUrl?: string;
+    caption?: string;
+    uid?: string;
+    groupIds?: string[];
+}): Promise<void> {
+    const cmd = sanitizeReportCommand(params.command);
+    if (!cmd || !params.botId) return;
+    const now = new Date().toISOString();
+    const data = {
+        command: cmd,
+        reportKey: params.reportKey,
+        imageUrl: params.imageUrl,
+        previewUrl: params.previewUrl || params.imageUrl,
+        caption: params.caption || '',
+        updatedAt: now,
+        ...(params.uid ? { updatedBy: params.uid } : {}),
+        ...(params.groupIds ? { groupIds: params.groupIds } : {}),
+    };
+    try {
+        await Promise.all([
+            setDoc(doc(db, 'line_bots', params.botId, 'report_commands', cmd), data, { merge: true }),
+            setDoc(doc(db, 'report_commands', cmd), data, { merge: true }).catch(() => {}),
+        ]);
+        console.info(`[LINE] Đã nạp ảnh mới cho lệnh "${cmd}" (${params.reportKey})`);
+    } catch (e) {
+        console.warn('[LINE] Lỗi cập nhật ảnh cho report_command:', e);
+    }
+}
+
+/** Nén & nạp ảnh mới nhất lên Firestore cho một cú pháp lệnh (chạy ngầm, không block download) */
+export async function syncReportImageForCommand(params: {
+    blob: Blob;
+    reportKey: string;
+    command?: string;
+    fileName: string;
+    uid: string;
+    departmentId?: string | null;
+    caption?: string;
+    groupIds?: string[];
+}): Promise<void> {
+    const cmd = sanitizeReportCommand(params.command || getReportCommand(params.reportKey));
+    if (!cmd) return;
+    const bot = await resolveLineBot(params.uid, params.departmentId);
+    if (!bot) return;
+
+    try {
+        const img = await prepareLineImage(params.blob);
+        const url = await uploadLineImage(img.base64, params.fileName.replace(/\.png$/i, '.jpg'));
+        let goc = url;
+        if (await lineHdSupported()) {
+            try {
+                const hd = await prepareLineHdImage(params.blob);
+                goc = await uploadLineHdImage(hd.base64, hd.contentType, params.fileName);
+            } catch { /* fallback to url */ }
+        }
+
+        await saveReportCommandImage({
+            botId: bot.botId,
+            command: cmd,
+            reportKey: params.reportKey,
+            imageUrl: goc,
+            previewUrl: url,
+            caption: params.caption,
+            uid: params.uid,
+            groupIds: params.groupIds,
+        });
+    } catch (err) {
+        console.warn('[LINE] Lỗi nạp ảnh cho lệnh:', err);
+    }
+}
+
 /** Gửi 1 ảnh báo cáo (kèm 1 dòng chú thích) vào NHIỀU nhóm LINE. Nén và tải ảnh lên bot_media 1 lần, rồi gửi tới từng nhóm. */
 export async function sendReportImageToLineGroups(params: {
-    blob: Blob; groups: { groupId: string; groupName: string }[]; caption: string; fileName: string; uid: string; departmentId?: string | null;
+    blob: Blob;
+    groups: { groupId: string; groupName: string }[];
+    caption: string;
+    fileName: string;
+    uid: string;
+    departmentId?: string | null;
+    command?: string;
+    reportKey?: string;
 }): Promise<{ ok: number; errors: string[] }> {
     const bot = await resolveLineBot(params.uid, params.departmentId);
     if (!bot) throw new Error('Chưa cấu hình Bot LINE — vào mục Bot LINE để kết nối bot trước');
@@ -264,6 +376,22 @@ export async function sendReportImageToLineGroups(params: {
         } catch (e) {
             console.warn('[LINE] Không tải được bản HD — gửi bản xem trước làm ảnh gốc', e);
         }
+    }
+
+    // Tự động đồng bộ/cập nhật ảnh mới cho cú pháp lệnh LINE (ví dụ "bc")
+    const effectiveKey = params.reportKey || reportKeyFromFilename(params.fileName);
+    const effectiveCmd = sanitizeReportCommand(params.command || getReportCommand(effectiveKey));
+    if (effectiveCmd) {
+        void saveReportCommandImage({
+            botId: bot.botId,
+            command: effectiveCmd,
+            reportKey: effectiveKey,
+            imageUrl: goc,
+            previewUrl: url,
+            caption: params.caption,
+            uid: params.uid,
+            groupIds: params.groups.map(g => g.groupId),
+        });
     }
 
     const ver = await userscriptVersion();

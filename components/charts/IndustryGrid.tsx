@@ -12,6 +12,7 @@ import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
 import { Button } from '../shared/ui/Button';
+import ExportDestinationButton from '../analysis/ExportDestinationButton';
 
 // Ramp phân loại nhóm — chỉ dùng sắc độ của 5 màu semantic (sky/emerald/amber/rose/slate)
 // + indigo (alias primary hợp lệ), đủ tương phản để phân biệt tới 12 nhóm mà vẫn trong palette.
@@ -284,6 +285,17 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
                         <Icon name="circle-dollar-sign" size={4.5} className="hidden lg:block" />
                     </Button>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleExport}
+                        disabled={isExporting}
+                        className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Xuất ảnh Tỷ Trọng Ngành Hàng"
+                    >
+                        {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
+                        {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                    </Button>
+                    <ExportDestinationButton reportKey="Tỷ Trọng Ngành Hàng" />
                     {drilldownPath.length > 0 && (
                         <Button
                             variant="unstyled" size="none"

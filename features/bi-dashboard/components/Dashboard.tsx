@@ -146,6 +146,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         }
     };
 
+    /**
+     * Xuất ảnh Doanh thu:
+     * Khi có khối Chi Tiết Ngành Hàng (siêu thị cụ thể, không phải 'Tổng' và có dữ liệu),
+     * BẮT BUỘC xuất trọn vẹn cả 2 khu vực REALTIME và CHI TIẾT NGÀNH HÀNG (pageRef) giống hình 1,
+     * tuyệt đối không xuất riêng lẻ từng khối.
+     */
+    const handleRevenueExport = async (autoAction?: 'download' | 'share' | 'cancel' | null) => {
+        setIsHeaderExporting(true);
+        try {
+            const isRealtime = activeMainTab === 'realtime';
+            const hasIndustry = activeSupermarket !== 'Tổng' && !!(isRealtime ? industryRealtimeParsed : industryLuyKeParsed);
+            const targetRef = hasIndustry ? pageRef : printableRef;
+            const subTabLabel = 'Doanh Thu';
+            const label = `${subTabLabel} ${isRealtime ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`;
+            return await handleExportPNG(targetRef, label, autoAction, { captureAsDisplayed: true });
+        } finally {
+            setIsHeaderExporting(false);
+        }
+    };
+
     const runBatchExport = async (mode: 'realtime' | 'cumulative' | 'competition') => {
         const setExporting = mode === 'competition' ? setIsBatchExportingCompetition : (mode === 'realtime' ? setIsBatchExporting : setIsBatchExportingCumulative);
         setExporting(true);
@@ -234,7 +254,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         r().setActiveSubTab(kv.sub);
                         r().setActiveSupermarket(sm);
                         await sleep(1800);
-                        const el = kv.kind === 'industry' ? industryTableRef.current : printableRef.current;
+                        const hasIndustryData = sm !== 'Tổng' && !!(realtime ? industryRealtimeParsed : industryLuyKeParsed);
+                        const el = kv.kind === 'competition'
+                            ? printableRef.current
+                            : (kv.kind === 'industry'
+                                ? industryTableRef.current
+                                : (hasIndustryData ? pageRef.current : printableRef.current));
                         const label = `${kv.ten} ${nhan} - ${sm}`;
                         if (!el) { errors.push({ area, error: `${sm}: chưa có dữ liệu` }); continue; }
                         try {
@@ -444,11 +469,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         }}
                         isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                         onExport={async () => {
-                            setIsHeaderExporting(true);
-                            const exportTarget = printableRef;
-                            const subTabLabel = activeSubTab === 'competition' ? 'Thi Đua' : 'Doanh Thu';
-                            await handleExportPNG(exportTarget, `${subTabLabel} ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`, null, { captureAsDisplayed: true });
-                            setIsHeaderExporting(false);
+                            if (activeSubTab === 'competition') {
+                                setIsHeaderExporting(true);
+                                try {
+                                    await handleExportPNG(printableRef, `Thi Đua ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`, null, { fitAllColumns: true, fitWidthToTable: true });
+                                } finally {
+                                    setIsHeaderExporting(false);
+                                }
+                            } else {
+                                await handleRevenueExport();
+                            }
                         }}
                         isExporting={isHeaderExporting}
                         onStartAutoSync={handleStartAutoSync}
@@ -511,7 +541,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                 realtimeData={industryRealtimeParsed}
                                 luykeData={industryLuyKeParsed}
                                 activeSupermarket={activeSupermarket}
-                                onExport={async () => { await handleExportPNG(industryTableRef, `Ngành Hàng ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`, null, { captureAsDisplayed: true }); }}
+                                onExport={async () => {
+                                    await handleExportPNG(
+                                        industryTableRef,
+                                        `Chi Tiết Ngành Hàng ${isRealtimeView ? 'Thời Gian Thực' : 'Lũy Kế'} - ${activeSupermarket}`,
+                                        null,
+                                        { captureAsDisplayed: true }
+                                    );
+                                }}
                             />
                         </div>
                     )}

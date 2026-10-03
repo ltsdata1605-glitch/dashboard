@@ -12,9 +12,23 @@ import { getSetting, saveSetting } from './dbService';
 
 export interface LineGroupTarget { groupId: string; groupName: string }
 export type ExportDestination =
-    | { kind: 'download' }
-    | { kind: 'line'; groups?: LineGroupTarget[]; groupId?: string; groupName?: string };
-type DestMap = Record<string, { groups?: LineGroupTarget[]; groupId?: string; groupName?: string }>;
+    | { kind: 'download'; command?: string }
+    | { kind: 'line'; groups?: LineGroupTarget[]; groupId?: string; groupName?: string; command?: string };
+export interface DestinationSetting {
+    groups?: LineGroupTarget[];
+    groupId?: string;
+    groupName?: string;
+    command?: string;
+}
+type DestMap = Record<string, DestinationSetting>;
+
+export const DEFAULT_REPORT_COMMANDS: Record<string, string> = {
+    'Chi Tiết Theo Kho': 'bc',
+};
+
+export function sanitizeReportCommand(cmd: string): string {
+    return (cmd || '').toLowerCase().replace(/^[./!#\s]+/, '').replace(/\s+/g, '').trim();
+}
 
 const SETTING_KEY = 'analysis_export_destinations';
 const EVT = 'ycx-export-destinations-changed';
@@ -43,29 +57,43 @@ export function loadExportDestinations(): Promise<void> {
     return store.loaded;
 }
 
+export function getReportCommand(reportKey: string): string {
+    const d = store.map[reportKey];
+    if (d && typeof d.command === 'string') return d.command;
+    return DEFAULT_REPORT_COMMANDS[reportKey] || '';
+}
+
 export function getExportDestination(reportKey: string): ExportDestination {
     // Đang chạy lượt hẹn giờ có danh sách khu vực riêng → gửi đúng nhóm của khu vực đó, bỏ qua đích đặt ở nút
+    const d = store.map[reportKey];
+    const savedCmd = d?.command;
+    const command = savedCmd !== undefined ? (savedCmd || undefined) : undefined;
+
     if (store.runTarget?.groupId) {
         const single: LineGroupTarget = { groupId: store.runTarget.groupId, groupName: store.runTarget.groupName };
-        return { kind: 'line', groups: [single], groupId: single.groupId, groupName: single.groupName };
+        return { kind: 'line', groups: [single], groupId: single.groupId, groupName: single.groupName, ...(command ? { command } : {}) };
     }
-    const d = store.map[reportKey];
-    if (!d) return { kind: 'download' };
+    if (!d) return { kind: 'download', ...(command ? { command } : {}) };
     const groups: LineGroupTarget[] = (d.groups && Array.isArray(d.groups) && d.groups.length > 0)
         ? d.groups
         : (d.groupId ? [{ groupId: d.groupId, groupName: d.groupName || 'Nhóm LINE' }] : []);
-    if (groups.length === 0) return { kind: 'download' };
+    if (groups.length === 0) return { kind: 'download', ...(command ? { command } : {}) };
     return {
         kind: 'line',
         groups,
         groupId: groups[0].groupId,
-        groupName: groups.map(g => g.groupName).join(', ')
+        groupName: groups.map(g => g.groupName).join(', '),
+        ...(command ? { command } : {})
     };
 }
 
 export async function setExportDestination(reportKey: string, dest: ExportDestination): Promise<void> {
     await loadExportDestinations();
     const next = { ...store.map };
+    const cleanCmd = dest.command !== undefined ? sanitizeReportCommand(dest.command) : undefined;
+    const existingCmd = next[reportKey]?.command;
+    const finalCmd = cleanCmd !== undefined ? cleanCmd : existingCmd;
+
     if (dest.kind === 'line') {
         const groups: LineGroupTarget[] = (dest.groups && Array.isArray(dest.groups) && dest.groups.length > 0)
             ? dest.groups
@@ -74,13 +102,24 @@ export async function setExportDestination(reportKey: string, dest: ExportDestin
             next[reportKey] = {
                 groups,
                 groupId: groups[0].groupId,
-                groupName: groups.map(g => g.groupName).join(', ')
+                groupName: groups.map(g => g.groupName).join(', '),
+                ...(finalCmd ? { command: finalCmd } : {})
+            };
+        } else if (finalCmd) {
+            next[reportKey] = {
+                command: finalCmd
             };
         } else {
             delete next[reportKey];
         }
     } else {
-        delete next[reportKey];
+        if (finalCmd) {
+            next[reportKey] = {
+                command: finalCmd
+            };
+        } else {
+            delete next[reportKey];
+        }
     }
     store.map = next;
     if (typeof window !== 'undefined') window.dispatchEvent(new Event(EVT));

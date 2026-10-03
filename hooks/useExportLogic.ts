@@ -11,7 +11,10 @@ import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants'
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import { getExportDestination, loadExportDestinations, reportKeyFromFilename, type ExportDestination } from '../services/analysisExportDestinations';
+import {
+    getExportDestination, loadExportDestinations, reportKeyFromFilename,
+    getReportCommand, sanitizeReportCommand, type ExportDestination
+} from '../services/analysisExportDestinations';
 import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
 
@@ -134,6 +137,7 @@ export const useExportLogic = ({
             const dest: ExportDestination = lineTarget?.groupId
                 ? { kind: 'line' as const, groups: [{ groupId: lineTarget.groupId, groupName: lineTarget.groupName }], groupId: lineTarget.groupId, groupName: lineTarget.groupName }
                 : destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
+            const cmd = sanitizeReportCommand(dest.command || getReportCommand(reportKey));
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
                 mode: 'blob-only' as ExportMode,
@@ -165,6 +169,8 @@ export const useExportLogic = ({
                             caption,
                             uid: user?.uid || '',
                             departmentId,
+                            command: cmd,
+                            reportKey,
                         });
                         if (res.errors.length === 0) {
                             toast.success(`Đã gửi "${reportKey}" vào ${groupTitle}`, { id: tId });
@@ -187,6 +193,24 @@ export const useExportLogic = ({
                     downloadBlob(blob, filename);
                 } else {
                     await shareBlob(blob, filename);
+                }
+
+                // Nếu khu vực xuất ảnh có cú pháp lệnh LINE (ví dụ "bc" cho Chi Tiết Theo Kho), tự động nạp ảnh ngầm lên bot
+                if (cmd && dest.kind === 'download') {
+                    const now = new Date();
+                    const p2 = (n: number) => String(n).padStart(2, '0');
+                    const caption = `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`;
+                    void import('../services/lineReportDelivery').then(({ syncReportImageForCommand }) => {
+                        void syncReportImageForCommand({
+                            blob,
+                            reportKey,
+                            command: cmd,
+                            fileName: filename,
+                            uid: user?.uid || '',
+                            departmentId,
+                            caption,
+                        });
+                    }).catch(() => {});
                 }
             }
             return blob;

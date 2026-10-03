@@ -1140,18 +1140,23 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     // THU GỌN LƯỚI THẺ KPI NGÀNH HÀNG KHI XUẤT ẢNH
     // ═══════════════════════════════════════════════════════════════════════
     clone.querySelectorAll<HTMLElement>('.industry-kpi-container').forEach((container) => {
-        container.style.setProperty('padding', '6px 8px', 'important');
-        container.style.setProperty('margin-bottom', '6px', 'important');
+        container.style.setProperty('padding-top', '12px', 'important');
+        container.style.setProperty('padding-bottom', '6px', 'important');
+        container.style.setProperty('padding-left', '0px', 'important');
+        container.style.setProperty('padding-right', '0px', 'important');
+        container.style.setProperty('margin-top', '4px', 'important');
+        container.style.setProperty('margin-bottom', '10px', 'important');
     });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-grid').forEach((grid) => {
         grid.style.setProperty('display', 'grid', 'important');
         grid.style.setProperty('grid-template-columns', 'repeat(6, minmax(0, 1fr))', 'important');
-        grid.style.setProperty('gap', '4px', 'important');
+        grid.style.setProperty('gap', '5px', 'important');
     });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-card').forEach((card) => {
-        card.style.setProperty('padding', '4px 6px', 'important');
+        card.style.setProperty('padding', '6px 8px', 'important');
+        card.style.setProperty('border-radius', '6px', 'important');
         card.style.setProperty('min-height', 'auto', 'important');
 
         // Tiêu đề thẻ (tên ngành/nhóm hàng)

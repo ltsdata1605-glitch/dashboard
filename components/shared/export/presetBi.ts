@@ -1234,8 +1234,12 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         container.style.setProperty('background', 'transparent', 'important');
         container.style.setProperty('background-color', 'transparent', 'important');
         container.style.setProperty('box-shadow', 'none', 'important');
-        container.style.setProperty('padding', '0px', 'important');
-        container.style.setProperty('margin-bottom', '8px', 'important');
+        container.style.setProperty('padding-top', '12px', 'important');
+        container.style.setProperty('padding-bottom', '6px', 'important');
+        container.style.setProperty('padding-left', '0px', 'important');
+        container.style.setProperty('padding-right', '0px', 'important');
+        container.style.setProperty('margin-top', '4px', 'important');
+        container.style.setProperty('margin-bottom', '10px', 'important');
         container.style.setProperty('width', '100%', 'important');
         container.style.setProperty('max-width', '100%', 'important');
         container.style.setProperty('box-sizing', 'border-box', 'important');
@@ -1268,8 +1272,9 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
             container.style.setProperty('border', 'none', 'important');
             container.style.setProperty('background', 'transparent', 'important');
             container.style.setProperty('box-shadow', 'none', 'important');
-            container.style.setProperty('padding', '0px', 'important');
-            container.style.setProperty('margin-bottom', '4px', 'important');
+            container.style.setProperty('padding-top', '10px', 'important');
+            container.style.setProperty('padding-bottom', '4px', 'important');
+            container.style.setProperty('margin-bottom', '8px', 'important');
         });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-grid').forEach((grid) => {
@@ -1278,7 +1283,7 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         grid.style.setProperty('max-width', '100%', 'important');
         grid.style.setProperty('box-sizing', 'border-box', 'important');
         grid.style.setProperty('grid-template-columns', 'repeat(6, minmax(0, 1fr))', 'important');
-        grid.style.setProperty('gap', '3px', 'important');
+        grid.style.setProperty('gap', '5px', 'important');
     });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-card').forEach((card) => {
@@ -1286,15 +1291,16 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         card.style.setProperty('max-width', '100%', 'important');
         card.style.setProperty('min-width', '0px', 'important');
         card.style.setProperty('box-sizing', 'border-box', 'important');
-        card.style.setProperty('padding', '3px 4px', 'important');
+        card.style.setProperty('padding', '6px 8px', 'important');
         card.style.setProperty('min-height', 'auto', 'important');
         card.style.setProperty('overflow', 'hidden', 'important');
+        card.style.setProperty('border-radius', '6px', 'important');
 
         // Tiêu đề thẻ (tên ngành/nhóm hàng)
         card.querySelectorAll<HTMLElement>('.industry-kpi-title').forEach((el) => {
-            el.style.setProperty('font-size', '9px', 'important');
-            el.style.setProperty('line-height', '1.15', 'important');
-            el.style.setProperty('margin-bottom', '1px', 'important');
+            el.style.setProperty('font-size', '10px', 'important');
+            el.style.setProperty('line-height', '1.2', 'important');
+            el.style.setProperty('margin-bottom', '3px', 'important');
             el.style.setProperty('overflow', 'hidden', 'important');
             el.style.setProperty('text-overflow', 'ellipsis', 'important');
             el.style.setProperty('white-space', 'nowrap', 'important');
@@ -1305,26 +1311,26 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
 
         // Số chính (Doanh thu hoặc Số lượng lớn hơn)
         card.querySelectorAll<HTMLElement>('.industry-kpi-num').forEach((el) => {
-            el.style.setProperty('font-size', '12px', 'important');
+            el.style.setProperty('font-size', '13px', 'important');
             el.style.setProperty('line-height', '1.1', 'important');
             el.style.setProperty('font-weight', '700', 'important');
         });
 
         // Nhãn số chính (SL hoặc DTQĐ)
         card.querySelectorAll<HTMLElement>('.industry-kpi-label').forEach((el) => {
-            el.style.setProperty('font-size', '8px', 'important');
+            el.style.setProperty('font-size', '8.5px', 'important');
             el.style.setProperty('line-height', '1', 'important');
         });
 
         // Số phụ (Doanh thu hoặc Số lượng nhỏ hơn)
         card.querySelectorAll<HTMLElement>('.industry-kpi-subnum').forEach((el) => {
-            el.style.setProperty('font-size', '9px', 'important');
+            el.style.setProperty('font-size', '9.5px', 'important');
             el.style.setProperty('line-height', '1.1', 'important');
         });
 
         // Nhãn số phụ (SL: hoặc DTQĐ:)
         card.querySelectorAll<HTMLElement>('.industry-kpi-sublabel').forEach((el) => {
-            el.style.setProperty('font-size', '8px', 'important');
+            el.style.setProperty('font-size', '8.5px', 'important');
             el.style.setProperty('line-height', '1', 'important');
         });
     });
@@ -1610,6 +1616,16 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
                 titleBar.style.setProperty('width', '100%', 'important');
                 titleBar.style.setProperty('min-width', '100%', 'important');
                 titleBar.style.setProperty('box-sizing', 'border-box', 'important');
+            }
+        });
+        clone.querySelectorAll<HTMLElement>('.js-industry-view-container').forEach((card) => {
+            // Đảm bảo tiêu đề CHI TIẾT NGÀNH HÀNG có khoảng đệm thoáng đãng
+            const header = card.querySelector<HTMLElement>('[class*="border-b"]') || card.querySelector<HTMLElement>('h2')?.parentElement;
+            if (header) {
+                header.style.setProperty('padding-top', '12px', 'important');
+                header.style.setProperty('padding-bottom', '12px', 'important');
+                header.style.setProperty('padding-left', '16px', 'important');
+                header.style.setProperty('padding-right', '16px', 'important');
             }
         });
         if (clone.classList.contains('competition-group-card')) {
