@@ -650,10 +650,10 @@ export default function GlobalAutoSyncDock() {
                             type="button"
                             onClick={() => setShowGuideModal(true)}
                             title="Bấm để xem hướng dẫn cài đặt tiện ích Tampermonkey hoặc kiểm tra kết nối"
-                            className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-semibold text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
+                            className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[10px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
                         >
                             <Sparkles className="w-3 h-3 text-amber-500/80 shrink-0" />
-                            <span>Tampermonkey • Hướng dẫn {ycxScript.checked ? (ycxScript.installed ? `(bản ${ycxScript.version || '?'})` : '(chưa cài)') : ''}</span>
+                            <span>HƯỚNG DẪN CÀI ĐẶT TAMPERMONKEY</span>
                         </button>
                     </>
                 )}

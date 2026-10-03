@@ -362,6 +362,19 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
 
 
+    const [localProcessingTime, setLocalProcessingTime] = useState(0);
+    useEffect(() => {
+        if (appState !== 'loading' && appState !== 'processing') {
+            setLocalProcessingTime(0);
+            return;
+        }
+        const start = Date.now();
+        const interval = setInterval(() => {
+            setLocalProcessingTime(Date.now() - start);
+        }, 100);
+        return () => clearInterval(interval);
+    }, [appState]);
+
     if (isActive === false) {
         return <div className="hidden" />;
     }
@@ -492,7 +505,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     )}
 
                     {(appState === 'loading' || appState === 'processing') && (
-                        <ProcessingLoader status={status} processingTime={processingTime} />
+                        <ProcessingLoader status={status} processingTime={processingTime || localProcessingTime} />
                     )}
 
                     {showDashboard && (
