@@ -48,7 +48,7 @@ import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
-import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo } from '../../services/analysisExportDestinations';
+import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo, LINE_EXPORT_TEMPORARILY_DISABLED } from '../../services/analysisExportDestinations';
 import type { AutoSendItem } from '../../services/autoSyncSchedule';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
@@ -177,7 +177,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             delete (window as any).__pendingYcxAutoSyncMode;
             delete (window as any).__pendingYcxAutoSend;
             khuVucGuiRef.current = autoSend;
-            if (!laLuyKe || autoSend.length) choGuiLineRef.current = Date.now();
+            // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
+            if (!LINE_EXPORT_TEMPORARILY_DISABLED && laLuyKe && autoSend.length) {
+                choGuiLineRef.current = Date.now();
+            }
             handleFileProcessing([pendingFile], false, laLuyKe);
         }
 
@@ -187,11 +190,12 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
                 delete (window as any).__pendingYcxAutoSend;
-                // YCX Realtime tự động → nạp xong thì tự xuất & gửi các ảnh đã đặt đích "nhóm LINE";
-                // lượt hẹn giờ có chọn khu vực (cả Luỹ kế) → xuất đúng các khu vực đó vào nhóm đã chọn
                 const autoSend: AutoSendItem[] = Array.isArray(e.detail?.autoSend) ? e.detail.autoSend : [];
                 khuVucGuiRef.current = autoSend;
-                if (e.detail?.mode !== 'luyke' || autoSend.length) choGuiLineRef.current = Date.now();
+                // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
+                if (!LINE_EXPORT_TEMPORARILY_DISABLED && e.detail?.mode === 'luyke' && autoSend.length) {
+                    choGuiLineRef.current = Date.now();
+                }
                 handleFileProcessing([file], false, e.detail?.mode === 'luyke');
             }
         };
@@ -199,8 +203,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         return () => window.removeEventListener('ycx-auto-sync-file', handleAutoSyncFile);
     }, [handleFileProcessing]);
 
-    // Dữ liệu Auto Sync YCX Realtime đã hiện → tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (đợi 2.5s cho biểu đồ vẽ xong)
+    // Dữ liệu Auto Sync YCX Realtime đã hiện → tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (nếu không tắt)
     useEffect(() => {
+        if (LINE_EXPORT_TEMPORARILY_DISABLED) return;
         const moc = choGuiLineRef.current;
         if (!moc || appState !== 'dashboard' || !processedData || isProcessing || isFilterProcessing) return;
         if (Date.now() - moc > 10 * 60_000) { choGuiLineRef.current = null; return; }

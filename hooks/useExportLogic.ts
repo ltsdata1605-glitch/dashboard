@@ -13,7 +13,8 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
 import {
     getExportDestination, loadExportDestinations, reportKeyFromFilename,
-    getReportCommand, sanitizeReportCommand, type ExportDestination
+    getReportCommand, sanitizeReportCommand, type ExportDestination,
+    LINE_EXPORT_TEMPORARILY_DISABLED
 } from '../services/analysisExportDestinations';
 import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
@@ -147,7 +148,7 @@ export const useExportLogic = ({
             };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
-            if (blob && dest.kind === 'line') {
+            if (blob && dest.kind === 'line' && !LINE_EXPORT_TEMPORARILY_DISABLED) {
                 const targetGroups = (dest.groups && dest.groups.length > 0)
                     ? dest.groups
                     : (dest.groupId ? [{ groupId: dest.groupId, groupName: dest.groupName || 'Nhóm LINE' }] : []);

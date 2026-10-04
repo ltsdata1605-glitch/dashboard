@@ -6,7 +6,7 @@ import { Icon } from '../common/Icon';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     getExportDestination, loadExportDestinations, onExportDestinationsChanged, setExportDestination,
-    getReportCommand, sanitizeReportCommand,
+    getReportCommand, sanitizeReportCommand, LINE_EXPORT_TEMPORARILY_DISABLED,
     type ExportDestination, type LineGroupTarget,
 } from '../../services/analysisExportDestinations';
 import { listLineGroups, resolveLineBot, syncReportCommandConfig, type LineGroupRef } from '../../services/lineReportDelivery';
@@ -47,7 +47,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
             const current = getExportDestination(reportKey);
             setDest(current);
             setCommandInput(current.command ?? getReportCommand(reportKey));
-            if (current.kind === 'line') {
+            if (current.kind === 'line' && !LINE_EXPORT_TEMPORARILY_DISABLED) {
                 const list = current.groups && current.groups.length > 0
                     ? current.groups
                     : (current.groupId ? [{ groupId: current.groupId, groupName: current.groupName || 'Nhóm LINE' }] : []);
@@ -150,6 +150,10 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
     };
 
     const toggleGroup = (g: LineGroupRef) => {
+        if (LINE_EXPORT_TEMPORARILY_DISABLED) {
+            toast('Chức năng gửi LINE đang tạm tắt theo yêu cầu. Báo cáo sẽ luôn tải về máy.', { icon: 'ℹ️' });
+            return;
+        }
         setSelectedGroups(prev => {
             const exists = prev.some(item => item.groupId === g.groupId);
             if (exists) {
@@ -161,6 +165,10 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
     };
 
     const handleSelectAll = (all: LineGroupRef[]) => {
+        if (LINE_EXPORT_TEMPORARILY_DISABLED) {
+            toast('Chức năng gửi LINE đang tạm tắt theo yêu cầu. Báo cáo sẽ luôn tải về máy.', { icon: 'ℹ️' });
+            return;
+        }
         setSelectedGroups(all.map(g => ({ groupId: g.groupId, groupName: g.groupName })));
     };
 
@@ -176,13 +184,13 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
     }, [groups, searchQuery]);
 
     const activeGroups: LineGroupTarget[] = useMemo(() => {
-        if (dest.kind !== 'line') return [];
+        if (LINE_EXPORT_TEMPORARILY_DISABLED || dest.kind !== 'line') return [];
         return dest.groups && dest.groups.length > 0
             ? dest.groups
             : (dest.groupId ? [{ groupId: dest.groupId, groupName: dest.groupName || 'Nhóm LINE' }] : []);
     }, [dest]);
 
-    const laLine = activeGroups.length > 0;
+    const laLine = !LINE_EXPORT_TEMPORARILY_DISABLED && activeGroups.length > 0;
     const groupCount = activeGroups.length;
     const currentCmd = dest.command || getReportCommand(reportKey);
     const cmdNotice = currentCmd ? ` • Lệnh LINE: "${currentCmd}"` : '';
@@ -190,7 +198,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
         ? (groupCount === 1
             ? `Ảnh "${reportKey}": gửi nhóm LINE ${activeGroups[0].groupName}${cmdNotice} — bấm để đổi`
             : `Ảnh "${reportKey}": gửi ${groupCount} nhóm LINE (${activeGroups.map(g => g.groupName).join(', ')})${cmdNotice} — bấm để đổi`)
-        : `Ảnh "${reportKey}": tải về máy${cmdNotice} — bấm để đặt gửi nhóm LINE hoặc lệnh bot`;
+        : `Ảnh "${reportKey}": tải về máy${LINE_EXPORT_TEMPORARILY_DISABLED ? ' (gửi LINE tạm tắt)' : ''}${cmdNotice} — bấm để cấu hình`;
 
     return (
         <>
@@ -300,17 +308,29 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                     </div>
 
                     <div className="border-t border-slate-100 dark:border-slate-800 pt-2">
+                        {LINE_EXPORT_TEMPORARILY_DISABLED && (
+                            <div className="mb-2.5 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+                                <Icon name="alert-circle" size={4} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                                <span><b>Chức năng gửi LINE đang tạm tắt</b>: Tất cả báo cáo khi bấm xuất ảnh sẽ luôn được tải trực tiếp về máy.</span>
+                            </div>
+                        )}
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                                <Icon name="line" size={4} className="text-[#06C755]" />
+                                <Icon name="line" size={4} className={LINE_EXPORT_TEMPORARILY_DISABLED ? "text-slate-400" : "text-[#06C755]"} />
                                 <span className="text-[12px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                                     Tự động gửi vào nhóm LINE{botName ? ` (bot ${botName})` : ''}
                                 </span>
-                                <span className="text-[11px] text-slate-400 font-normal">
-                                    (Chọn 1 hoặc nhiều nhóm)
-                                </span>
+                                {LINE_EXPORT_TEMPORARILY_DISABLED ? (
+                                    <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                                        Đang tạm tắt
+                                    </span>
+                                ) : (
+                                    <span className="text-[11px] text-slate-400 font-normal">
+                                        (Chọn 1 hoặc nhiều nhóm)
+                                    </span>
+                                )}
                             </div>
-                            {groups && groups.length > 0 && (
+                            {!LINE_EXPORT_TEMPORARILY_DISABLED && groups && groups.length > 0 && (
                                 <div className="flex items-center gap-2 text-[11px]">
                                     <button 
                                         type="button"
@@ -359,7 +379,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                         )}
 
                         {groups && (
-                            <div className="max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                            <div className={`max-h-56 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar ${LINE_EXPORT_TEMPORARILY_DISABLED ? 'opacity-40 pointer-events-none select-none' : ''}`}>
                                 {filteredGroups.length === 0 ? (
                                     <div className="text-center py-4 text-xs text-slate-400">Không tìm thấy nhóm phù hợp</div>
                                 ) : (
@@ -399,13 +419,13 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                         <div className="text-[12px] text-slate-500 dark:text-slate-400">
-                            {selectedGroups.length > 0 ? (
+                            {!LINE_EXPORT_TEMPORARILY_DISABLED && selectedGroups.length > 0 ? (
                                 <span className="text-[#06C755] font-bold inline-flex items-center gap-1">
                                     <Icon name="line" size={3.5} />
                                     <span>Đã chọn {selectedGroups.length} nhóm LINE</span>
                                 </span>
                             ) : (
-                                <span>Đang chọn: <b>Tải về máy</b></span>
+                                <span>Đang chọn: <b className="text-sky-600 dark:text-sky-400">Tải về máy</b></span>
                             )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -429,10 +449,16 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                         </div>
                     </div>
 
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-                        Đặt nhóm LINE thì bấm nút xuất ảnh sẽ gửi vào tất cả các nhóm đã chọn, và sau mỗi lượt
-                        <b> Auto Sync YCX Realtime</b> ảnh này được tự xuất & gửi.
-                    </p>
+                    {LINE_EXPORT_TEMPORARILY_DISABLED ? (
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                            Tính năng gửi LINE đang tạm tắt. Bấm nút xuất ảnh ở bất kỳ bảng/thẻ nào sẽ luôn tải file ảnh trực tiếp về máy.
+                        </p>
+                    ) : (
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                            Đặt nhóm LINE thì bấm nút xuất ảnh sẽ gửi vào tất cả các nhóm đã chọn, và sau mỗi lượt
+                            <b> Auto Sync YCX Luỹ kế</b> ảnh này được tự xuất & gửi.
+                        </p>
+                    )}
                 </div>
             </Modal>
         </>

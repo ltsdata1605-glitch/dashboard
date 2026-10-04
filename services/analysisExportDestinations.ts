@@ -63,12 +63,20 @@ export function getReportCommand(reportKey: string): string {
     return DEFAULT_REPORT_COMMANDS[reportKey] || '';
 }
 
+/** Cờ tạm tắt chức năng gửi LINE theo yêu cầu người dùng: mặc định luôn lưu về máy */
+export const LINE_EXPORT_TEMPORARILY_DISABLED = true;
+
 export function getExportDestination(reportKey: string): ExportDestination {
-    // Đang chạy lượt hẹn giờ có danh sách khu vực riêng → gửi đúng nhóm của khu vực đó, bỏ qua đích đặt ở nút
     const d = store.map[reportKey];
     const savedCmd = d?.command;
     const command = savedCmd !== undefined ? (savedCmd || undefined) : undefined;
 
+    // Tạm thời tắt chức năng gửi LINE: Mọi báo cáo luôn xuất tải về máy
+    if (LINE_EXPORT_TEMPORARILY_DISABLED) {
+        return { kind: 'download', ...(command ? { command } : {}) };
+    }
+
+    // Đang chạy lượt hẹn giờ có danh sách khu vực riêng → gửi đúng nhóm của khu vực đó, bỏ qua đích đặt ở nút
     if (store.runTarget?.groupId) {
         const single: LineGroupTarget = { groupId: store.runTarget.groupId, groupName: store.runTarget.groupName };
         return { kind: 'line', groups: [single], groupId: single.groupId, groupName: single.groupName, ...(command ? { command } : {}) };
@@ -140,6 +148,7 @@ export function registerAutoExport(reportKey: string, run: () => Promise<unknown
 
 /** Tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (tuần tự). Trả về danh sách báo cáo đã chạy. */
 export async function runLineAutoExports(): Promise<{ key: string; ok: boolean; error?: string }[]> {
+    if (LINE_EXPORT_TEMPORARILY_DISABLED) return [];
     await loadExportDestinations();
     const out: { key: string; ok: boolean; error?: string }[] = [];
     for (const [key, run] of store.runners) {
@@ -154,6 +163,7 @@ export async function runLineAutoExports(): Promise<{ key: string; ok: boolean; 
  * đã chọn cho nó — không phụ thuộc đích đặt ở từng nút. Khu vực chưa hiển thị (đang ẩn / chưa mở) báo lỗi rõ tên.
  */
 export async function runLineAutoExportsTo(items: { area: string; groupId: string; groupName: string }[]): Promise<{ key: string; ok: boolean; error?: string }[]> {
+    if (LINE_EXPORT_TEMPORARILY_DISABLED) return [];
     await loadExportDestinations();
     const out: { key: string; ok: boolean; error?: string }[] = [];
     for (const it of items) {
