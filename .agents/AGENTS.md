@@ -68,3 +68,9 @@ Bất cứ khi nào có thay đổi, tối ưu hoặc sửa lỗi trong `public/
 - **Cơ chế mở rộng toàn diện**: Phải đảm bảo bộ máy xuất ảnh tự động mở rộng toàn bộ bảng (`fitTablesToContent` / `fitAllColumns` / `fitWidthToTable`), loại bỏ giới hạn chiều rộng/thanh cuộn, gỡ `sticky` về `static`, và đo đạc bề rộng thực tế của mọi cột để ảnh chụp xuất ra đầy đủ 100% tất cả các hàng và tất cả các cột, không bao giờ bị cắt xén hay mất phần cuộn ngang/dọc. Khung card ảnh ôm vừa vặn theo tổng độ rộng các cột của bảng.
 - **Chỉ dùng `captureAsDisplayed: true`** cho các thành phần cố định trên màn hình (như cụm thẻ KPI card đơn thuần, biểu đồ xu hướng không chứa bảng dữ liệu tràn viền).
 
+## Silent Real-User Verification Rule (Quy Tắc Tự Động Test Âm Thầm Trên Dữ Liệu Thật)
+- **Bắt buộc tự động test thực tế như người dùng thật**: Sau mỗi lần sửa đổi, tối ưu hoặc cập nhật tính năng (đặc biệt liên quan đến giao diện, thẻ KPI, bảng dữ liệu), Agent **BẮT BUỘC tự động chạy test xác thực thực tế** trên chính profile dữ liệu thật (`.e2e-chrome-profile`) hoặc kiểm tra DOM/computed style thực tế của trình duyệt.
+- **Thực hiện hoàn toàn âm thầm (Silent & Headless)**: Toàn bộ quá trình test phải chạy ngầm ở chế độ headless (chạy `npm run test:verify-silent` hoặc Playwright headless), không mở cửa sổ gây phiền toái, không làm gián đoạn màn hình làm việc của người dùng.
+- **Nguyên tắc "Không báo thành công khi chưa kiểm chứng"**: Tuyệt đối KHÔNG BAO GIỜ báo cáo hoàn tất nếu chưa chạy test xác thực thực tế và chứng minh mọi chỉ số (như `border-radius: 16px`, `overflow: hidden`, dữ liệu số, hiển thị cột) đều PASS 100% đúng yêu cầu.
+
+

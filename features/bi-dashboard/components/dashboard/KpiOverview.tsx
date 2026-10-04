@@ -198,23 +198,27 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
     };
 
     return (
-        <div className={`kpi-overview-container js-kpi-overview-container px-2 sm:px-4 pt-1 pb-2 space-y-1 sm:space-y-2 lg:space-y-2.5 ${className || ''}`}>
+        <div className={`kpi-overview-container js-kpi-overview-container px-3 sm:px-5 pt-1.5 pb-3.5 space-y-3 sm:space-y-3.5 ${className || ''}`}>
             {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
-            <div className="kpi-overview-grid grid grid-cols-4 gap-1 sm:gap-2 lg:gap-2.5">
+            <div className="kpi-overview-grid grid grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
                 <KpiCard
                     icon="dollar-sign"
                     iconColor="emerald"
-                    title="DT Thực"
+                    title="DT THỰC"
                     trendLabel="Dự kiến"
-                    trendValue={dtThucDuKienStr}
+                    trendValue={
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{dtThucDuKienStr}</span>
+                        </span>
+                    }
                     isGood={true}
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-0.5 sm:gap-1">
-                        <span className="text-[20px] xs:text-[22px] sm:text-[30px] md:text-[34px] lg:text-[42px] xl:text-[48px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                             {dtlkFormatted.value}
                         </span>
-                        <span className="text-[12px] sm:text-[16px] lg:text-[18px] xl:text-[20px] font-black text-slate-400 dark:text-slate-500">
+                        <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">
                             {dtlkFormatted.unit}
                         </span>
                     </div>
@@ -225,83 +229,107 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     iconColor="sky"
                     title="DTQĐ"
                     isGood={dtqdIsGood}
-                    trendLabel={dtqdTrendLabel}
-                    trendValue={dtqdTrendValue}
+                    trendLabel="Target"
+                    progressPercent={secondaryPct}
+                    trendValue={
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">
+                                {secondaryTargetStr || dtqdTrendValue}
+                            </span>
+                            {currentDtqdTarget > 0 && (
+                                <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                    dtqdRemaining >= 0
+                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                        : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                                }`}>
+                                    {dtqdRemaining >= 0 ? `+${dtqdRemainingFormatted.full}` : `-${dtqdRemainingFormatted.full}`}
+                                </span>
+                            )}
+                        </span>
+                    }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-0.5 sm:gap-1.5 flex-nowrap overflow-hidden">
-                        <span className={`text-[19px] xs:text-[21px] sm:text-[28px] md:text-[32px] lg:text-[38px] xl:text-[44px] font-black leading-tight tracking-tight tabular-nums shrink-0 ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
+                    <div className="flex items-baseline gap-1 flex-nowrap overflow-hidden">
+                        <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums shrink-0 ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                             {dtqdFormatted.value}
                         </span>
-                        <span className="text-[12px] sm:text-[15px] lg:text-[17px] xl:text-[19px] font-black text-slate-400 dark:text-slate-500 shrink-0">
+                        <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
                             {dtqdFormatted.unit}
                         </span>
-                        {currentDtqdTarget > 0 && (
-                            <span
-                                title={`Doanh thu còn lại (Thực hiện - Target): ${dtqdRemaining >= 0 ? '+' : '-'}${dtqdRemainingFormatted.full}`}
-                                className={`text-[11px] sm:text-[12px] lg:text-[13px] xl:text-[14px] font-bold tabular-nums shrink-0 ${
-                                    dtqdRemaining >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'
-                                }`}
-                            >
-                                ({dtqdRemaining >= 0 ? '+' : '-'}{dtqdRemainingFormatted.full})
-                            </span>
-                        )}
                     </div>
                 </KpiCard>
 
                 <KpiCard
                     icon="activity"
-                    iconColor={hqqdIsGood ? "indigo" : "rose"}
+                    iconColor="indigo"
                     title="HQQĐ"
                     isGood={hqqdIsGood}
                     trendLabel="Mục tiêu"
-                    trendValue={`${currentQuyDoiTarget}%`}
+                    progressPercent={currentQuyDoiTarget > 0 ? (hqqd / currentQuyDoiTarget) * 100 : undefined}
+                    trendValue={
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{currentQuyDoiTarget}%</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                hqqdIsGood
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                            }`}>
+                                {Math.ceil(hqqd) - currentQuyDoiTarget >= 0
+                                    ? `+${Math.ceil(hqqd) - currentQuyDoiTarget}%`
+                                    : `-${Math.abs(Math.ceil(hqqd) - currentQuyDoiTarget)}%`}
+                            </span>
+                        </span>
+                    }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-0.5 sm:gap-1.5">
-                        <span className={`text-[20px] xs:text-[22px] sm:text-[30px] md:text-[34px] lg:text-[42px] xl:text-[48px] font-black leading-tight tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <div className="flex items-baseline gap-1">
+                        <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
                             {Math.ceil(hqqd)}%
                         </span>
-                        {!hqqdIsGood && currentQuyDoiTarget > 0 && (
-                            <span className="text-[11px] sm:text-[13px] lg:text-[14px] xl:text-[16px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
-                                (-{Math.max(0, currentQuyDoiTarget - Math.ceil(hqqd))}%)
-                            </span>
-                        )}
                     </div>
                 </KpiCard>
 
                 <KpiCard
                     icon="credit-card"
-                    iconColor={traGopIsGood ? "amber" : "rose"}
-                    title="Trả Chậm"
+                    iconColor="amber"
+                    title="TRẢ CHẬM"
                     isGood={traGopIsGood}
                     trendLabel="Mục tiêu"
-                    trendValue={`${currentTraGopTarget}%`}
+                    progressPercent={currentTraGopTarget > 0 ? (tyTrongTraGop / currentTraGopTarget) * 100 : undefined}
+                    trendValue={
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{currentTraGopTarget}%</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                traGopIsGood
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                            }`}>
+                                {Math.round(tyTrongTraGop) - currentTraGopTarget >= 0
+                                    ? `+${Math.round(tyTrongTraGop) - currentTraGopTarget}%`
+                                    : `-${Math.abs(Math.round(tyTrongTraGop) - currentTraGopTarget)}%`}
+                            </span>
+                        </span>
+                    }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-0.5 sm:gap-1.5">
-                        <span className={`text-[20px] xs:text-[22px] sm:text-[30px] md:text-[34px] lg:text-[42px] xl:text-[48px] font-black leading-tight tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                    <div className="flex items-baseline gap-1">
+                        <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                             {Math.round(tyTrongTraGop)}%
                         </span>
-                        {!traGopIsGood && currentTraGopTarget > 0 && (
-                            <span className="text-[11px] sm:text-[13px] lg:text-[14px] xl:text-[16px] font-bold text-rose-500 dark:text-rose-400 tabular-nums">
-                                (-{Math.max(0, currentTraGopTarget - Math.round(tyTrongTraGop))}%)
-                            </span>
-                        )}
                     </div>
                 </KpiCard>
             </div>
 
             {/* ROW 2: CHỈ SỐ PHỤ */}
-            <div className="kpi-overview-grid grid grid-cols-4 gap-1 sm:gap-2 lg:gap-2.5">
-                <KpiCard icon="users" iconColor="sky" title="L.Khách" trendValue={renderGrowth(kpiData.luotKhachChange)}>
-                    <div className="text-[19px] xs:text-[21px] sm:text-[28px] md:text-[32px] lg:text-[38px] xl:text-[44px] font-black leading-tight tracking-tight tabular-nums text-sky-700 dark:text-sky-400">
+            <div className="kpi-overview-grid grid grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
+                <KpiCard icon="users" iconColor="sky" title="L.KHÁCH" trendValue={renderGrowth(kpiData.luotKhachChange)}>
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-sky-700 dark:text-sky-400">
                         {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
                     </div>
                 </KpiCard>
 
                 <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
-                    <div className="text-[19px] xs:text-[21px] sm:text-[28px] md:text-[32px] lg:text-[38px] xl:text-[44px] font-black leading-tight tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
                         {(() => {
                             const val = parseNumber(kpiData.tlpv);
                             if (!val) return '0%';
@@ -310,8 +338,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     </div>
                 </KpiCard>
 
-                <KpiCard icon="receipt" iconColor="emerald" title="Bill Bán">
-                    <div className="text-[19px] xs:text-[21px] sm:text-[28px] md:text-[32px] lg:text-[38px] xl:text-[44px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+                <KpiCard icon="receipt" iconColor="emerald" title="BILL BÁN">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                         {kpiData.lbillBH && kpiData.lbillBH !== 'N/A'
                             ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN')
                             : (kpiData.lbill && kpiData.lbill !== 'N/A'
@@ -320,8 +348,8 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     </div>
                 </KpiCard>
 
-                <KpiCard icon="wallet" iconColor="rose" title="Bill T.Hộ">
-                    <div className="text-[19px] xs:text-[21px] sm:text-[28px] md:text-[32px] lg:text-[38px] xl:text-[44px] font-black leading-tight tracking-tight tabular-nums text-rose-700 dark:text-rose-400">
+                <KpiCard icon="wallet" iconColor="rose" title="BILL T.HỘ">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-rose-700 dark:text-rose-400">
                         {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
                     </div>
                 </KpiCard>

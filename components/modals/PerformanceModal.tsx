@@ -22,26 +22,62 @@ interface PerformanceModalProps {
     productConfig?: ProductConfig;
 }
 
+const MODAL_KPI_COLORS: Record<string, { top: string; iconBg: string; iconText: string; valText: string }> = {
+    indigo: {
+        top: 'bg-gradient-to-r from-indigo-400 to-violet-600',
+        iconBg: 'bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40',
+        iconText: 'text-indigo-600 dark:text-indigo-400',
+        valText: 'text-indigo-700 dark:text-indigo-300',
+    },
+    emerald: {
+        top: 'bg-gradient-to-r from-emerald-400 to-teal-600',
+        iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40',
+        iconText: 'text-emerald-600 dark:text-emerald-400',
+        valText: 'text-emerald-700 dark:text-emerald-300',
+    },
+    rose: {
+        top: 'bg-gradient-to-r from-rose-400 to-pink-600',
+        iconBg: 'bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40',
+        iconText: 'text-rose-600 dark:text-rose-400',
+        valText: 'text-rose-700 dark:text-rose-300',
+    },
+    amber: {
+        top: 'bg-gradient-to-r from-amber-400 to-orange-600',
+        iconBg: 'bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40',
+        iconText: 'text-amber-600 dark:text-amber-400',
+        valText: 'text-amber-700 dark:text-amber-300',
+    },
+    cyan: {
+        top: 'bg-gradient-to-r from-sky-400 to-blue-600',
+        iconBg: 'bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40',
+        iconText: 'text-sky-600 dark:text-sky-400',
+        valText: 'text-sky-700 dark:text-sky-300',
+    },
+    purple: {
+        top: 'bg-gradient-to-r from-purple-400 to-indigo-600',
+        iconBg: 'bg-purple-50 dark:bg-purple-950/60 border border-purple-100 dark:border-purple-900/40',
+        iconText: 'text-purple-600 dark:text-purple-400',
+        valText: 'text-purple-700 dark:text-purple-300',
+    },
+};
+
 const KpiCard: React.FC<{ icon: string, label: string, value: string, color: string, children?: React.ReactNode }> = ({ icon, label, value, color, children }) => {
+    const c = MODAL_KPI_COLORS[color] || MODAL_KPI_COLORS.indigo;
     return (
-        <div className={`flex-1 p-1 sm:p-2 bg-white dark:bg-slate-800 rounded sm:rounded-md shadow-[0_1px_3px_rgba(0,0,0,0.05)] border-l-2 border-${color}-500 flex flex-col justify-center gap-0.5`}>
-            {/* Color mapping for JIT compiler */}
-            {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 */}
-            {/* border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 */}
-            {/* border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 */}
-            {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 */}
-            {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 */}
-            {/* border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 */}
-            <div className="flex items-center sm:gap-1.5 justify-center sm:justify-start">
-                <div className={`hidden sm:flex w-7 h-7 rounded bg-${color}-100 dark:bg-${color}-900/50 items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
-                    <Icon name={icon} size={3.5} />
+        <div className="flex-1 bg-white dark:bg-slate-900/95 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col justify-between overflow-hidden">
+            <div className={`h-[3px] w-full shrink-0 ${c.top}`} />
+            <div className="p-1.5 sm:p-2.5 flex flex-col justify-between flex-1 gap-1">
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
+                        <Icon name={icon} size={3} />
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate w-full" title={label}>{label}</p>
                 </div>
-                <div className="min-w-0 flex-1 text-center sm:text-left">
-                    <p className="text-[11px] font-bold text-slate-550 dark:text-slate-400 uppercase tracking-widerer truncate w-full" title={label}>{label}</p>
-                    <p className={`text-[11px] sm:text-xs font-black text-${color}-600 dark:text-${color}-400 leading-tight truncate w-full`}>{value}</p>
+                <div className={`text-sm sm:text-base lg:text-lg font-black ${c.valText} leading-tight tabular-nums truncate`}>
+                    {value}
                 </div>
+                {children && <div className="mt-auto text-[10px] sm:text-[11px] leading-tight border-t border-slate-100 dark:border-slate-800/70 pt-1 w-full">{children}</div>}
             </div>
-            {children && <div className="mt-0.5 text-[11px] leading-tight border-t border-slate-100/50 dark:border-slate-800/20 pt-0.5 w-full">{children}</div>}
         </div>
     );
 };

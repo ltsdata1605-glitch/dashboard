@@ -3,100 +3,94 @@ import { Icon } from '../../common/Icon';
 
 interface KpiColorStyle {
     iconText: string;
+    iconBg: string;
     progressBg: string;
     progressFill: string;
-    border: string;
-    borderTop: string;
+    progressGradient: string;
     borderHover: string;
     borderHex: string;
     topHex: string;
+    topAccent: string;
 }
 
-/* Chuẩn "Bảng điều khiển ca trực" (2026-09-11) đã gỡ 3 khoá khỏi kiểu này:
-   `gradient` (dải chuyển màu trên đỉnh thẻ), `iconBg` (nền bo góc quanh biểu tượng) và
-   `glowColor` (bóng phát sáng). Cả ba chỉ để trang trí, và ở màn hình dày số thì chúng
-   tranh chỗ với chính con số. `progressFill` cũng đổi từ gradient sang MÀU ĐẶC. */
-
-// Bảng màu TĨNH (literal, không dựng qua template string) — Tailwind chỉ sinh CSS cho class
-// xuất hiện y hệt dạng chuỗi tĩnh trong source. Trước đây makeStyle(c) dựng class kiểu
-// `from-${c}-500 via-${c}-400 to-${c}-300` khiến Tailwind không quét được nếu chuỗi ghép đó
-// không tồn tại y hệt ở nơi khác trong code — gây mất hẳn dải gradient/màu cho 1 số thẻ (vd.
-// slate — thẻ HQQĐ) dù code logic không có lỗi. Định nghĩa tĩnh từng màu để đảm bảo luôn được
-// sinh CSS, bất kể nơi khác trong code có dùng chuỗi đó hay không.
+// Bảng màu tĩnh với dải gradient hiện đại, nền squircle và viền tương tác
 const COLOR_STYLES: Record<string, KpiColorStyle> = {
     sky: {
-        iconText: 'text-sky-700 dark:text-sky-400',
-        progressBg: 'bg-sky-100 dark:bg-sky-500/10',
-        progressFill: 'bg-sky-600',
-        border: 'border-sky-300 dark:border-sky-800/80',
-        borderTop: 'border-t-sky-600 dark:border-t-sky-500',
-        borderHover: 'hover:border-sky-400 hover:border-t-sky-600 dark:hover:border-sky-600 dark:hover:border-t-sky-500',
+        iconText: 'text-sky-600 dark:text-sky-400',
+        iconBg: 'bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-900/40',
+        progressBg: 'bg-sky-100 dark:bg-sky-950/60',
+        progressFill: 'bg-sky-500',
+        progressGradient: 'bg-gradient-to-r from-sky-400 to-blue-600',
+        borderHover: 'hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-sky-500/10',
         borderHex: '#7dd3fc',
         topHex: '#0284c7',
+        topAccent: 'bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600',
+    },
+    emerald: {
+        iconText: 'text-emerald-600 dark:text-emerald-400',
+        iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40',
+        progressBg: 'bg-emerald-100 dark:bg-emerald-950/60',
+        progressFill: 'bg-emerald-500',
+        progressGradient: 'bg-gradient-to-r from-emerald-400 to-teal-600',
+        borderHover: 'hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-emerald-500/10',
+        borderHex: '#86efac',
+        topHex: '#059669',
+        topAccent: 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-teal-600',
+    },
+    amber: {
+        iconText: 'text-amber-600 dark:text-amber-400',
+        iconBg: 'bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40',
+        progressBg: 'bg-amber-100 dark:bg-amber-950/60',
+        progressFill: 'bg-amber-500',
+        progressGradient: 'bg-gradient-to-r from-amber-400 to-orange-600',
+        borderHover: 'hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-amber-500/10',
+        borderHex: '#fcd34d',
+        topHex: '#d97706',
+        topAccent: 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-600',
+    },
+    rose: {
+        iconText: 'text-rose-600 dark:text-rose-400',
+        iconBg: 'bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40',
+        progressBg: 'bg-rose-100 dark:bg-rose-950/60',
+        progressFill: 'bg-rose-500',
+        progressGradient: 'bg-gradient-to-r from-rose-400 to-pink-600',
+        borderHover: 'hover:border-rose-300 dark:hover:border-rose-700 hover:shadow-rose-500/10',
+        borderHex: '#fda4af',
+        topHex: '#e11d48',
+        topAccent: 'bg-gradient-to-r from-rose-400 via-rose-500 to-pink-600',
+    },
+    indigo: {
+        iconText: 'text-indigo-600 dark:text-indigo-400',
+        iconBg: 'bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40',
+        progressBg: 'bg-indigo-100 dark:bg-indigo-950/60',
+        progressFill: 'bg-indigo-500',
+        progressGradient: 'bg-gradient-to-r from-indigo-400 to-violet-600',
+        borderHover: 'hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-indigo-500/10',
+        borderHex: '#a5b4fc',
+        topHex: '#4f46e5',
+        topAccent: 'bg-gradient-to-r from-indigo-400 via-indigo-500 to-violet-600',
     },
     slate: {
         iconText: 'text-slate-600 dark:text-slate-400',
-        progressBg: 'bg-slate-100 dark:bg-slate-500/10',
-        progressFill: 'bg-slate-600',
-        border: 'border-slate-300 dark:border-slate-700',
-        borderTop: 'border-t-slate-600 dark:border-t-slate-400',
-        borderHover: 'hover:border-slate-400 hover:border-t-slate-600 dark:hover:border-slate-500 dark:hover:border-t-slate-400',
+        iconBg: 'bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
+        progressBg: 'bg-slate-100 dark:bg-slate-800',
+        progressFill: 'bg-slate-500',
+        progressGradient: 'bg-gradient-to-r from-slate-400 to-slate-600',
+        borderHover: 'hover:border-slate-400 dark:hover:border-slate-600 hover:shadow-slate-500/10',
         borderHex: '#cbd5e1',
         topHex: '#475569',
-    },
-    emerald: {
-        iconText: 'text-emerald-700 dark:text-emerald-400',
-        progressBg: 'bg-emerald-100 dark:bg-emerald-500/10',
-        progressFill: 'bg-emerald-600',
-        border: 'border-emerald-300 dark:border-emerald-800/80',
-        borderTop: 'border-t-emerald-600 dark:border-t-emerald-500',
-        borderHover: 'hover:border-emerald-400 hover:border-t-emerald-600 dark:hover:border-emerald-600 dark:hover:border-t-emerald-500',
-        borderHex: '#86efac',
-        topHex: '#059669',
-    },
-    amber: {
-        iconText: 'text-amber-700 dark:text-amber-400',
-        progressBg: 'bg-amber-100 dark:bg-amber-500/10',
-        progressFill: 'bg-amber-600',
-        border: 'border-amber-300 dark:border-amber-800/80',
-        borderTop: 'border-t-amber-600 dark:border-t-amber-500',
-        borderHover: 'hover:border-amber-400 hover:border-t-amber-600 dark:hover:border-amber-600 dark:hover:border-t-amber-500',
-        borderHex: '#fcd34d',
-        topHex: '#d97706',
-    },
-    rose: {
-        iconText: 'text-rose-700 dark:text-rose-400',
-        progressBg: 'bg-rose-100 dark:bg-rose-500/10',
-        progressFill: 'bg-rose-600',
-        border: 'border-rose-300 dark:border-rose-800/80',
-        borderTop: 'border-t-rose-600 dark:border-t-rose-500',
-        borderHover: 'hover:border-rose-400 hover:border-t-rose-600 dark:hover:border-rose-600 dark:hover:border-t-rose-500',
-        borderHex: '#fda4af',
-        topHex: '#e11d48',
-    },
-    indigo: {
-        iconText: 'text-indigo-700 dark:text-indigo-400',
-        progressBg: 'bg-indigo-100 dark:bg-indigo-500/10',
-        progressFill: 'bg-indigo-600',
-        border: 'border-indigo-300 dark:border-indigo-800/80',
-        borderTop: 'border-t-indigo-600 dark:border-t-indigo-500',
-        borderHover: 'hover:border-indigo-400 hover:border-t-indigo-600 dark:hover:border-indigo-600 dark:hover:border-t-indigo-500',
-        borderHex: '#a5b4fc',
-        topHex: '#4f46e5',
+        topAccent: 'bg-gradient-to-r from-slate-400 via-slate-500 to-slate-600',
     },
 };
 
-// Alias tên màu cũ (dùng ở nhiều nơi gọi KpiCard) trỏ về đúng màu semantic tĩnh ở trên.
+// Aliases cho tên màu cũ
 COLOR_STYLES.blue = COLOR_STYLES.sky;
 COLOR_STYLES.teal = COLOR_STYLES.emerald;
 COLOR_STYLES.pink = COLOR_STYLES.rose;
 COLOR_STYLES.red = COLOR_STYLES.rose;
-COLOR_STYLES.purple = COLOR_STYLES.slate;
+COLOR_STYLES.purple = COLOR_STYLES.indigo;
 COLOR_STYLES.orange = COLOR_STYLES.amber;
-
-// Class TĨNH (Tailwind chỉ sinh CSS cho chuỗi xuất hiện nguyên văn): ngưỡng 140/170/200px.
-const BADGE_CHU = ['@min-[140px]:inline-flex', '@min-[170px]:inline-flex', '@min-[200px]:inline-flex'];
-const BADGE_CHAM = ['@min-[140px]:hidden', '@min-[170px]:hidden', '@min-[200px]:hidden'];
+COLOR_STYLES.cyan = COLOR_STYLES.sky;
 
 export interface KpiCardProps {
     icon: string;
@@ -113,19 +107,25 @@ export interface KpiCardProps {
 }
 
 /**
- * KPI Card "premium" — icon chip glow, dải gradient accent, progress bar, trend/target footer.
- * Component trình bày thuần (chỉ nhận props, không phụ thuộc hook/context) nên dùng được ở
- * cả 4 khu vực (Root + features/*). Khác với `StatCard` (đơn giản hơn, không progress/gradient):
- * dùng KpiCard khi cần thể hiện tiến độ so với mục tiêu.
+ * KPI Card chuẩn "Executive Modern" — squircle icon, gradient top accent,
+ * thanh tiến độ dạng viên nang (pill) bo tròn, thẻ bo góc mềm mại rounded-2xl,
+ * micro status indicator thông minh và hiệu ứng hover mượt mà.
  */
-export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClick, children, trendLabel, trendValue, progressPercent, isGood = true, badge }) => {
+export const KpiCard: React.FC<KpiCardProps> = ({
+    icon,
+    iconColor,
+    title,
+    onClick,
+    children,
+    trendLabel,
+    trendValue,
+    progressPercent,
+    isGood = true,
+    badge,
+}) => {
     const isClickable = !!onClick;
-    const normalStyle = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
-    // Khi không đạt (isGood === false): chuyển style sang cảnh báo rose/đỏ
-    const style = !isGood ? COLOR_STYLES['rose'] : normalStyle;
+    const style = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
     const clampedProgress = progressPercent !== undefined ? Math.min(Math.max(progressPercent, 0), 100) : undefined;
-    // Bề rộng hàng tiêu đề cần để chứa icon + tiêu đề + chữ "CHƯA ĐẠT" (~7.5px/ký tự ở 11px đậm hoa).
-    const nguong = title.length <= 5 ? 0 : title.length <= 8 ? 1 : 2;
 
     return (
         <div
@@ -133,38 +133,35 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             title={isClickable ? 'Bấm để chuyển tới Cập nhật > Target Doanh thu' : undefined}
             data-kpi-border={style.borderHex}
             data-kpi-top-border={style.topHex}
-            data-kpi-top-color={!isGood ? 'rose' : iconColor}
-            className={`kpi-overview-card relative flex flex-col justify-between h-full border border-t-0 transition-all duration-300 group touch-feedback ${
-                !isGood
-                    ? 'bg-rose-50/20 dark:bg-rose-950/15 border-rose-300 dark:border-rose-800/80 shadow-xs shadow-rose-500/5 hover:border-rose-400'
-                    : `bg-white dark:bg-slate-900 ${style.border} border-t-0 ${style.borderHover}`
-            } ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
+            data-kpi-top-color={iconColor}
+            className={`kpi-overview-card preserve-rounded relative flex flex-col justify-between h-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs transition-all duration-300 group overflow-hidden shadow-xs hover:shadow-lg ${style.borderHover} ${
+                isClickable ? 'cursor-pointer hover:-translate-y-1 active:scale-[0.98]' : 'hover:-translate-y-0.5'
+            } premium-card-shadow`}
         >
-            {/* Vạch nhận diện đỉnh thẻ — màu ĐẶC, tràn mép 100% qua cả viền trái & phải, không bị khuyết góc */}
-            <div className={`kpi-top-accent h-[3.5px] -mx-[1px] w-[calc(100%+2px)] shrink-0 ${style.progressFill}`} />
+            {/* Vạch nhận diện đỉnh thẻ — dải gradient mềm mại bo theo góc bo thẻ */}
+            <div className={`kpi-top-accent h-[3.5px] w-full shrink-0 ${style.topAccent}`} />
 
             {/* Layout cho desktop (lg trở lên) */}
-            <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2">
-                {/* Hàng 1: Icon + Title + Badge cảnh báo nếu chưa đạt */}
-                {/* `@container`: huy hiệu "Chưa đạt" chỉ hiện CHỮ khi hàng đủ rộng cho cả tiêu đề (ngưỡng
-                    theo độ dài tiêu đề, xem BADGE_CHU/BADGE_CHAM); hẹp hơn thì thu thành chấm đỏ. Đo trên laptop 1366px với dữ liệu thật (2026-09-28): lưới 5 cột
-                    chỉ còn ~142px/hàng → tiêu đề bị cắt "DT …", "CH …" để nhường chỗ cho huy hiệu.
-                    Mặc định là chấm (thư viện xuất ảnh không hiểu container query vẫn ra đúng nghĩa). */}
-                <div className="@container flex items-center justify-between gap-1 min-w-0">
+            <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2.5">
+                {/* Hàng 1: Icon squircle + Title + Micro Status Badge */}
+                <div className="@container flex items-center justify-between gap-1.5 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
-                        <div className={`${style.iconText} shrink-0 transition-all duration-300 group-hover:scale-110 ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                            <Icon name={icon} size={3} />
+                        <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${style.iconBg} ${style.iconText}`}>
+                            <Icon name={icon} size={3.5} />
                         </div>
-                        <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>{title}</h3>
+                        <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>
+                            {title}
+                        </h3>
                     </div>
-                    {badge ? badge : (!isGood && (
-                        <>
-                            <span className={`hidden ${BADGE_CHU[nguong]} items-center px-1.5 py-0.5 rounded text-[11px] font-black uppercase tracking-wider bg-rose-100 text-rose-700 border border-rose-200 shrink-0 shadow-2xs`}>
-                                Chưa đạt
-                            </span>
-                            <span className={`${BADGE_CHAM[nguong]} w-2 h-2 rounded-full bg-rose-600 shrink-0`} role="img" aria-label="Chưa đạt" title="Chưa đạt" />
-                        </>
-                    ))}
+                    {badge ? badge : (
+                        <div className="flex items-center shrink-0">
+                            {!isGood ? (
+                                <span className="w-2 h-2 rounded-full bg-rose-500 shadow-2xs" title="Chưa đạt mục tiêu" />
+                            ) : (
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-2xs" title="Đạt mục tiêu" />
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Hàng 2: Giá trị chính (Value) */}
@@ -172,18 +169,22 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                     {children}
                 </div>
 
-                {/* Hàng 3: Thanh tiến độ + Mục tiêu / Tăng trưởng nếu có */}
+                {/* Hàng 3: Thanh tiến độ pill + Mục tiêu / Tăng trưởng nếu có */}
                 {(clampedProgress !== undefined || trendLabel || trendValue) && (
-                    <div className="kpi-overview-footer mt-auto pt-1.5 border-t border-slate-100 dark:border-white/[0.04] space-y-1">
+                    <div className="kpi-overview-footer mt-auto pt-2 border-t border-slate-100 dark:border-slate-800/70 space-y-1.5">
                         {clampedProgress !== undefined && (
-                            <div className="flex items-center gap-1.5">
-                                <div className={`flex-1 h-[3px] ${style.progressBg} overflow-hidden`}>
+                            <div className="flex items-center gap-2">
+                                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800/90 rounded-full overflow-hidden p-0">
                                     <div
-                                        className={`h-full ${style.progressFill}`}
+                                        className={`h-full rounded-full transition-all duration-700 ease-out ${
+                                            isGood && clampedProgress >= 100
+                                                ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
+                                                : style.progressGradient
+                                        }`}
                                         style={{ width: `${clampedProgress}%` }}
                                     />
                                 </div>
-                                <span className={`text-[11px] font-bold ${style.iconText} shrink-0 tabular-nums`}>
+                                <span className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 shrink-0 tabular-nums">
                                     {progressPercent !== undefined && !isNaN(progressPercent)
                                         ? Math.round(progressPercent)
                                         : Math.round(clampedProgress)}%
@@ -191,9 +192,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
                             </div>
                         )}
                         {(trendLabel || trendValue) && (
-                            <div className="flex items-center justify-between gap-1 text-[11px] leading-none">
+                            <div className="flex items-center justify-between gap-1 text-[11px] leading-none pt-0.5">
                                 <span className="text-slate-400 dark:text-slate-500 font-semibold tracking-wide truncate">{trendLabel}</span>
-                                <div className="font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
+                                <div className="font-bold text-right shrink-0">
                                     {trendValue}
                                 </div>
                             </div>
@@ -203,41 +204,51 @@ export const KpiCard: React.FC<KpiCardProps> = ({ icon, iconColor, title, onClic
             </div>
 
             {/* Layout đứng (vertical) cực gọn cho mobile (dưới lg) */}
-            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1 sm:px-1.5 py-1.5 text-center h-full">
-                {/* Hàng 1: Icon — hoặc huy hiệu "Chưa đạt" THẾ CHỖ icon (2026-09-27).
-                    Trước đây huy hiệu nằm chung hàng với tiêu đề ở cỡ 7.5px; lên sàn 11px thì thẻ
-                    rộng ~85px (lưới 4 cột trên iPhone) không chứa nổi cả hai → tiêu đề bị cắt
-                    "HQ…", "TRẢ …". Icon chỉ để trang trí nên nhường chỗ cho thông tin trạng thái. */}
-                <div className={`flex items-center justify-center ${style.iconText} shrink-0 mb-0.5 min-h-4`}>
-                    {isGood ? (
+            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-2 py-2 text-center h-full gap-1">
+                {/* Hàng 1: Icon squircle + Status dot */}
+                <div className="flex items-center justify-between w-full">
+                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${style.iconBg} ${style.iconText}`}>
                         <Icon name={icon} size={3} />
-                    ) : (
-                        <span className="px-1 rounded text-[11px] leading-4 font-black uppercase whitespace-nowrap bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">Chưa đạt</span>
-                    )}
+                    </div>
+                    {!isGood ? (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" title="Chưa đạt" />
+                    ) : isGood && clampedProgress !== undefined && clampedProgress >= 100 ? (
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Đạt" />
+                    ) : null}
                 </div>
                 
                 {/* Hàng 2: Title */}
-                <div className="flex items-center justify-center w-full mb-0.5 min-w-0">
-                    <h3 className="text-[11px] font-bold uppercase tracking-tight sm:tracking-wide text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>{title}</h3>
+                <div className="flex items-center justify-center w-full min-w-0">
+                    <h3 className="text-[10px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>
+                        {title}
+                    </h3>
                 </div>
                 
                 {/* Hàng 3: Value */}
                 <div className="my-0.5 min-w-0 w-full overflow-hidden shrink-0">
                     {children}
                 </div>
+
+                {/* Hàng 4: Progress mini */}
+                {clampedProgress !== undefined && (
+                    <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full rounded-full ${isGood && clampedProgress >= 100 ? 'bg-emerald-500' : style.progressFill}`}
+                            style={{ width: `${clampedProgress}%` }}
+                        />
+                    </div>
+                )}
                 
-                {/* Hàng 4: Label phụ */}
+                {/* Hàng 5: Label / Giá trị phụ */}
                 {trendValue ? (
-                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
+                    <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (
-                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
+                    <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
                         {trendLabel}
                     </div>
-                ) : (
-                    <div className="h-2 shrink-0"></div>
-                )}
+                ) : null}
             </div>
         </div>
     );

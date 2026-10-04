@@ -364,6 +364,8 @@ export const useExportLogic = ({
                 const warehouseElement = document.getElementById('warehouse-summary-view');
                 const blob = warehouseElement ? await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
                     elementsToHide: ['.hide-on-export'],
+                    fitAllColumns: true,
+                    fitWidthToTable: true,
                     mode: gomAnh.mode,
                 }) : null;
                 gomAnh.them(blob, 'Báo Cáo Kho Tổng Hợp.png');

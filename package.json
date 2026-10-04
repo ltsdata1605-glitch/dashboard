@@ -26,7 +26,8 @@
     "test:unit:coverage": "vitest run --coverage",
     "test:related": "vitest related --run",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "test:verify-silent": "playwright test tests/e2e/kpi-style-real-user.spec.ts --project=chromium"
   },
   "dependencies": {
     "@google/genai": "^1.48.0",

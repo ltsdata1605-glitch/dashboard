@@ -126,17 +126,17 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`relative p-1.5 lg:p-2 rounded-md transition-colors flex items-center justify-center ${
+                    className={`relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${
                         isOpen || isFiltered
-                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 border border-sky-300 dark:border-sky-700'
-                            : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold'
+                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                     title={label}
                 >
                     <Icon name={iconName} size={4} className="lg:hidden" />
-                    <Icon name={iconName} size={5} className="hidden lg:block" />
+                    <Icon name={iconName} size={4.5} className="hidden lg:block" />
                     {isFiltered && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[11px] flex items-center justify-center font-bold">
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[10px] flex items-center justify-center font-bold">
                             {selected.length}
                         </span>
                     )}

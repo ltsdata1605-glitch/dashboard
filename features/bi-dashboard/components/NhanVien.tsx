@@ -450,47 +450,42 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 </div>
             </div>
 
-            {/* Banner hướng dẫn nếu chưa có danh sách nhân viên từ Phân Tích */}
-            {!hasAnalysisEmployees && (
-                <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-800 dark:text-amber-200 shadow-sm animate-fadeIn">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 shrink-0">
-                            <Icon name="alert-triangle" size={5} />
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold">Chưa có danh sách nhân viên từ chức năng Phân Tích</h4>
-                            <p className="text-xs text-amber-700/90 dark:text-amber-300/90 mt-0.5">
-                                Để toàn bộ các tab Report BI hiển thị và phân bổ target chính xác trên mọi thiết bị, vui lòng tải dữ liệu tại chức năng <b>Phân Tích</b>.
-                            </p>
-                        </div>
+            {/* Khi chưa có danh sách nhân viên từ Phân Tích: Yêu cầu người dùng cập nhật */}
+            {!hasAnalysisEmployees ? (
+                <div className="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-8 sm:p-12 text-center space-y-5 shadow-xs">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
+                        <Icon name="users" size={8} />
                     </div>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => setAppActiveTab('analysis')}
-                        className="shrink-0 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-1.5 py-1.5 px-3 rounded-lg"
-                    >
-                        <span>Chuyển đến Phân Tích</span>
-                        <Icon name="arrow-right" size={3.5} />
-                    </Button>
+                    <div className="max-w-md mx-auto space-y-2">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
+                            Chưa có danh sách nhân viên từ chức năng Phân Tích
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            Danh sách nhân viên chuẩn của hệ thống được quản lý tại chức năng <b>Phân Tích</b>. Vui lòng chuyển sang Phân Tích để cập nhật danh sách nhân viên của bạn.
+                        </p>
+                    </div>
+                    <div className="pt-2">
+                        <Button
+                            variant="primary"
+                            onClick={() => setAppActiveTab('analysis')}
+                            className="font-bold text-xs sm:text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm inline-flex items-center gap-2"
+                        >
+                            <span>Chuyển đến Phân Tích để cập nhật</span>
+                            <Icon name="arrow-right" size={4} />
+                        </Button>
+                    </div>
                 </div>
-            )}
-
-
-
-            {/* 3. Tab Switcher — MỘT khung viền duy nhất bọc chung tab switcher + nội dung.
-                Card/SectionCard bên trong mỗi tab con (RevenueTab/InstallmentTab/
-                CompetitionTab/BonusTab/DetailTab) truyền bordered={false} để không tự vẽ thêm viền
-                riêng nữa — tránh viền lồng viền. */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
-                <div className="px-4 sm:px-5 pt-3">
-                    <Tabs
-                        items={NAV_TABS.map(({ tab, label }) => ({ id: tab, label }))}
-                        activeId={activeTab}
-                        onChange={(id) => setActiveTab(id as Tab)}
-                        variant="underline"
-                    />
-                </div>
+            ) : (
+                /* 3. Tab Switcher — MỘT khung viền duy nhất bọc chung tab switcher + nội dung */
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden rounded-none lg:rounded-2xl shadow-sm">
+                    <div className="px-4 sm:px-5 pt-3">
+                        <Tabs
+                            items={NAV_TABS.map(({ tab, label }) => ({ id: tab, label }))}
+                            activeId={activeTab}
+                            onChange={(id) => setActiveTab(id as Tab)}
+                            variant="underline"
+                        />
+                    </div>
 
                 {visitedTabs.has('revenue') && (
                     <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
@@ -527,8 +522,8 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         />
                     </div>
                 )}
-
             </div>
+            )}
 
             {/* BonusDataModal — giữ conditional vì là modal overlay */}
             {editingBonusEmployee && (

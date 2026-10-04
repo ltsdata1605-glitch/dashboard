@@ -13,7 +13,7 @@ import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
 import { useStableCallback } from './useStableCallback';
 import * as dbService from '../services/dbService';
-import { saveAnalysisEmployees, getAnalysisEmployees } from '../features/bi-dashboard/services/analysisEmployeeSyncService';
+import { saveAnalysisEmployees, getAnalysisEmployees, convertDepartmentMapToEmployees } from '../features/bi-dashboard/services/analysisEmployeeSyncService';
 import { toLocalISOString, getRowValue } from '../utils/dataUtils';
 import { COL } from '../constants';
 
@@ -199,59 +199,35 @@ export const useDashboardLogic = () => {
         await dbService.saveKpiTargets(targets);
     });
 
-    /**
-     * DepartmentMap ("mã NV" -> "Bộ phận;;Tên") -> danh sách nhân viên cho Report BI.
-     * Tên ghép lại dạng "mã - Tên" đúng khuôn mà normalizeAnalysisEmployees mong đợi.
-     */
-    const departmentMapToEmployeeList = (map: DepartmentMap) =>
-        // Chỉ đẩy nhân viên BP All In One sang Report BI. Lọc lại ở đây (dù file nạp vào đã lọc)
-        // để danh sách cũ lưu từ trước cũng theo đúng quy tắc mà không cần nạp lại file.
-        Object.entries(keepOnlyAllInOne(map).map).map(([id, raw]) => {
-            const [dept, name] = String(raw || '').split(';;');
-            const cleanName = (name || '').trim();
-            // File có cột "Mã NV" và "Tên" tách riêng thì phần tên đã kèm sẵn mã ("101 - Nguyễn
-            // Văn A") — ghép thêm mã lần nữa sẽ ra "101 - 101 - Nguyễn Văn A".
-            const alreadyHasId = cleanName.startsWith(`${id} -`) || cleanName.startsWith(`${id}-`);
-            const fullName = !cleanName ? id : alreadyHasId ? cleanName : `${id} - ${cleanName}`;
-            return { name: fullName, department: (dept || '').trim() };
-        });
-
     const updateDepartmentMap = useStableCallback(async (map: DepartmentMap) => {
         setDepartmentMap(map);
         await dbService.saveDepartmentMap(map);
-        // Đồng bộ sang Report BI NGAY cả khi chưa tải file YCX: trước đây danh sách nhân viên chỉ
-        // được đẩy sang BI sau khi xử lý file YCX (hooks/useDataManagement), nên người dùng cập
-        // nhật danh sách ở modal "Quản lý danh sách nhân viên" mà Report BI vẫn trống
-        // (chủ dự án báo 2026-09-22).
+        // Đồng bộ sang Report BI NGAY cả khi chưa tải file YCX:
+        // Đảm bảo danh sách ở modal "Quản lý danh sách nhân viên" (Phân Tích) luôn là nguồn chuẩn 100%
         try {
             const currentSm = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
-            await saveAnalysisEmployees(departmentMapToEmployeeList(map), currentSm);
+            await saveAnalysisEmployees(convertDepartmentMapToEmployees(map), currentSm, true);
         } catch (err) {
             console.warn('[useDashboardLogic] Không đồng bộ được danh sách nhân viên sang Report BI:', err);
         }
     });
 
-    // Người dùng đã có sẵn danh sách nhân viên từ trước bản sửa này (departmentMap có dữ liệu)
-    // nhưng chưa từng tải file YCX -> Report BI vẫn trống cho tới khi họ sửa gì đó. Đẩy 1 lần
-    // lúc khởi động, và CHỈ khi phía BI thực sự chưa có danh sách (không ghi đè dữ liệu tốt hơn).
+    // Luôn đảm bảo đồng bộ danh sách nhân viên từ departmentMap sang Report BI
     useEffect(() => {
         if (!departmentMap || Object.keys(departmentMap).length === 0) return;
         let cancelled = false;
         (async () => {
             try {
-                const existing = await getAnalysisEmployees();
-                if (cancelled || (existing && existing.employees.length > 0)) return;
-                const list = departmentMapToEmployeeList(departmentMap);
-                if (list.length === 0) return;
-                await saveAnalysisEmployees(list);
-                console.info('[useDashboardLogic] Đã đẩy danh sách nhân viên có sẵn sang Report BI (lần đầu).');
+                const list = convertDepartmentMapToEmployees(departmentMap);
+                if (list.length === 0 || cancelled) return;
+                const currentSm = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
+                await saveAnalysisEmployees(list, currentSm);
             } catch (err) {
-                console.warn('[useDashboardLogic] Bỏ qua đồng bộ nhân viên lần đầu:', err);
+                console.warn('[useDashboardLogic] Lỗi đồng bộ nhân viên sang Report BI:', err);
             }
         })();
         return () => { cancelled = true; };
-         
-    }, [departmentMap]);
+    }, [departmentMap, filterState.kho]);
 
     // Dùng chung sau khi xoá file hoặc xem lại báo cáo — 2 handler trước đây copy-paste giống hệt
     // khối này, chỉ khác action gọi trước đó (handleDeleteFileRaw vs handleViewReportRaw).

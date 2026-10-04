@@ -37,6 +37,20 @@ function splitCurrencyValue(formatted: string): { val: string; unit: string } {
     return { val: trimmed, unit: '' };
 }
 
+/** Định dạng chênh lệch mục tiêu: Nếu > 0 thêm dấu "+", nhỏ hơn 0 thêm dấu "-" */
+function formatCurrencyDiff(diff: number): string {
+    if (diff > 0) return `+${formatCurrency(diff)}`;
+    if (diff < 0) return `-${formatCurrency(Math.abs(diff))}`;
+    return '0';
+}
+
+function formatPercentDiff(diff: number): string {
+    if (diff > 0) return `+${diff.toFixed(0)}%`;
+    if (diff < 0) return `-${Math.abs(diff).toFixed(0)}%`;
+    return '0%';
+}
+
+
 const KpiTargetEditor: React.FC<{
     value: string;
     onChange: (val: string) => void;
@@ -321,10 +335,14 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         progressPercent = pctHT;
                         const gapValue = rawValue - activeTarget;
                         finalTrendValue = revenueTarget > 0
-                            ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
-                                <span>{formatCurrency(activeTarget)}</span>
-                                <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                    {isGood ? `Đã vượt +${formatCurrency(gapValue)}` : `Còn thiếu ${formatCurrency(Math.abs(gapValue))}`}
+                            ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formatCurrency(activeTarget)}</span>
+                                <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                    isGood
+                                        ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                        : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                                }`}>
+                                    {formatCurrencyDiff(gapValue)}
                                 </span>
                             </span>
                             : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[11px] transition-colors">Nhấp để cài đặt</span>;
@@ -338,10 +356,14 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         } else {
                             const gap = rawValue - hieuQuaTarget;
                             finalTrendValue = (
-                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
-                                    <span>{hieuQuaTarget}%</span>
-                                    <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                        {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
+                                <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                    <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{hieuQuaTarget}%</span>
+                                    <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                        isGood
+                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                                    }`}>
+                                        {formatPercentDiff(gap)}
                                     </span>
                                 </span>
                             );
@@ -356,10 +378,14 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         } else {
                             const gap = rawValue - traGopTarget;
                             finalTrendValue = (
-                                <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
-                                    <span>{traGopTarget}%</span>
-                                    <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                        {isGood ? `Đã vượt +${gap.toFixed(0)}%` : `Còn thiếu ${Math.abs(gap).toFixed(0)}%`}
+                                <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                    <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{traGopTarget}%</span>
+                                    <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                        isGood
+                                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                                    }`}>
+                                        {formatPercentDiff(gap)}
                                     </span>
                                 </span>
                             );
@@ -394,7 +420,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
 
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="flex flex-col items-center lg:items-end leading-tight">
-                            <span>{formattedActive} / {pctHT.toFixed(0)}%</span>
+                            <span className="font-bold text-slate-700 dark:text-slate-200">{formattedActive} / {pctHT.toFixed(0)}%</span>
                             <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
                           </span>
                         : <span className="text-slate-400 italic text-[11px]">Chưa cài đặt</span>;
@@ -403,8 +429,6 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                 // "Doanh Thu Thực" — allow entering/editing target (metric can be 'totalRevenue' or 'doanhThuThuc')
                 const isDTThucCard = config.metric === 'totalRevenue' || config.metric === 'doanhThuThuc';
                 if (isDTThucCard) {
-                    // Áp dụng cùng định dạng "Mục tiêu + chênh lệch màu" như thẻ HQQĐ/TRẢ CHẬM,
-                    // nhưng hiện SỐ TIỀN còn thiếu/đã vượt (không phải %, vì đây là thẻ tiền tệ).
                     const monthlyTarget = dtThucTarget;
                     const dailyDTThuc = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
                     const activeTarget = isLuyKe ? monthlyTarget : dailyDTThuc;
@@ -416,10 +440,14 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     const gapValue = rawValue - activeTarget;
 
                     finalTrendValue = monthlyTarget > 0
-                        ? <span className="cursor-pointer hover:text-sky-500 transition-colors flex flex-col items-center lg:items-end leading-tight">
-                            <span>{formatCurrency(activeTarget)}</span>
-                            <span className={`text-[11px] font-medium ${isGood ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                {isGood ? `Đã vượt +${formatCurrency(gapValue)}` : `Còn thiếu ${formatCurrency(Math.abs(gapValue))}`}
+                        ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formatCurrency(activeTarget)}</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                isGood
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                            }`}>
+                                {formatCurrencyDiff(gapValue)}
                             </span>
                         </span>
                         : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[11px] transition-colors">Chưa cài đặt</span>;
@@ -428,24 +456,25 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                 // "DT Chưa Xuất" — show unshipped order count with progress bar
                 if (isSpecialUnshipped) {
                     const unshippedCount = processedData?.unshippedOrders?.length || 0;
-                    // Nhãn ngắn để không bị cắt chữ khi ghép với giá trị dài ("Còn 52 đơn") trong footer flex
                     finalTrendLabel = "Lưu ý";
                     isGood = unshippedCount === 0;
-                    // Progress bar: visually show urgency (cap at 20 orders = 100%)
                     progressPercent = unshippedCount > 0 ? Math.min((unshippedCount / 20) * 100, 100) : 0;
                     if (unshippedCount > 0) {
-                        // Dòng phụ bên dưới để đồng bộ bố cục footer 2 dòng với các thẻ khác (HQQĐ/TRẢ CHẬM...)
                         finalTrendValue = (
-                            <span className="flex flex-col items-center lg:items-end leading-tight">
-                                <span className="text-rose-700 dark:text-rose-400 font-bold">Còn {unshippedCount} đơn</span>
-                                <span className="text-[11px] font-medium text-rose-400 dark:text-rose-500">Chờ xuất</span>
+                            <span className="flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                <span className="text-[11.5px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">Còn {unshippedCount} đơn</span>
+                                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40">
+                                    Chờ xuất
+                                </span>
                             </span>
                         );
                     } else {
                         finalTrendValue = (
-                            <span className="flex flex-col items-center lg:items-end leading-tight">
-                                <span className="text-emerald-700 dark:text-emerald-400 font-bold">Không có đơn chờ</span>
-                                <span className="text-[11px] font-medium text-emerald-400 dark:text-emerald-500">Đã xử lý hết</span>
+                            <span className="flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                <span className="text-[11.5px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">0 đơn chờ</span>
+                                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
+                                    Đã xử lý hết
+                                </span>
                             </span>
                         );
                     }

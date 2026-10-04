@@ -560,15 +560,15 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         </div>
                                     </div>
 
-                                    {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
-                                        <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
-                                            <React.Suspense fallback={<TableSkeleton rows={3} />}>
-                                                <WarehouseSummary onBatchExport={handleBatchKhoExport} />
-                                            </React.Suspense>
-                                        </div>
-                                    )}
-
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
+                                        {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
+                                            <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
+                                                <React.Suspense fallback={<TableSkeleton rows={3} />}>
+                                                    <WarehouseSummary onBatchExport={handleBatchKhoExport} />
+                                                </React.Suspense>
+                                            </div>
+                                        )}
+
                                         <SectionCard ref={kpiCardsOnlyRef} className="relative lg:rounded-none">
                                             {/* Unconfigured Groups Warning Banner */}
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
@@ -654,11 +654,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                             <Icon name="settings-2" size={4} className="lg:hidden" />
                                                             <Icon name="settings-2" size={4.5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleKpiCardsOnlyExport()} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
-                                                            <Icon name="download" size={4} className="lg:hidden" />
-                                                            <Icon name="download" size={4.5} className="hidden lg:block" />
-                                                        </Button>
-                                                        <ExportDestinationButton reportKey="Tổng Quan Doanh Thu" />
                                                         <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <Icon name="camera" size={4} className="lg:hidden" />
                                                             <Icon name="camera" size={4.5} className="hidden lg:block" />
@@ -674,6 +669,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 </div>
                                             </div>
                                         </SectionCard>
+
 
                                         {visibleComponents.trendChart && (
                                             <div data-debug-id="TrendChart" data-debug-info={JSON.stringify(debugInitialData.TrendChart)} id="trend-chart-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>

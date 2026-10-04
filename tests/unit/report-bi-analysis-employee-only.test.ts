@@ -1,0 +1,39 @@
+import { describe, expect, it } from 'vitest';
+import {
+    convertDepartmentMapToEmployees,
+    normalizeAnalysisEmployees
+} from '../../features/bi-dashboard/services/analysisEmployeeSyncService';
+
+describe('Report BI - Danh sách nhân viên đồng bộ từ Phân Tích', () => {
+    it('convertDepartmentMapToEmployees chuyển đổi chính xác từ departmentMap 40 nhân viên', () => {
+        const mockDeptMap: Record<string, string> = {
+            '7587': 'BP All In One - ĐMX;;7587 - Nguyễn Thị Túy',
+            '15447': 'BP All In One - ĐMX;;15447 - Đinh Đăng Khoa',
+            '15887': 'BP All In One - ĐMX;;15887 - Thạch Ngọc Phụng',
+            '17952': 'BP All In One - ĐMX;;17952 - Đinh Thị Mỹ Hương',
+        };
+
+        const rawList = convertDepartmentMapToEmployees(mockDeptMap);
+        expect(rawList).toHaveLength(4);
+        expect(rawList[0].department).toBe('BP All In One - ĐMX');
+        expect(rawList[0].name).toBe('7587 - Nguyễn Thị Túy');
+
+        const cleanList = normalizeAnalysisEmployees(rawList);
+        expect(cleanList).toHaveLength(4);
+        expect(cleanList.map(e => e.id)).toEqual(['7587', '15447', '15887', '17952']);
+    });
+
+    it('loại trừ nhân viên không hợp lệ hoặc tài khoản hệ thống từ Phân Tích', () => {
+        const mockDeptMap: Record<string, string> = {
+            '7587': 'BP All In One - ĐMX;;Nguyễn Thị Túy',
+            'MWG01': 'BP All In One - ĐMX;;MWG Quản Trị',
+            '999': 'Chưa xác định;;Người lạ',
+            '888': 'Quản lý siêu thị;;Trưởng Ca',
+        };
+
+        const rawList = convertDepartmentMapToEmployees(mockDeptMap);
+        const cleanList = normalizeAnalysisEmployees(rawList);
+        expect(cleanList).toHaveLength(1);
+        expect(cleanList[0].id).toBe('7587');
+    });
+});

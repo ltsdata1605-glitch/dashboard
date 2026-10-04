@@ -127,7 +127,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
 
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-none shadow-sm">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-2xl shadow-xs overflow-hidden">
                 {/* Sub-tabs row */}
                 <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/60 hide-on-export flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
                     <Tabs

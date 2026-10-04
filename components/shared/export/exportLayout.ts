@@ -117,6 +117,42 @@ export function fitTablesToContent(root: HTMLElement): number {
             });
         });
 
+        // Hàm đo kích thước nội dung thực tế của ô, tránh bị ảnh hưởng bởi độ rộng table đang dãn
+        const measureCellContent = (cellNode: HTMLElement): number => {
+            let contentW = 0;
+            try {
+                const range = document.createRange();
+                range.selectNodeContents(cellNode);
+                const rect = range.getBoundingClientRect();
+                if (rect && rect.width > 0) {
+                    contentW = rect.width;
+                }
+            } catch {
+                // fallback
+            }
+
+            // Đo các con inline/flex bên trong (icon SVG, badge, sub-div)
+            cellNode.querySelectorAll<HTMLElement>('div, span, svg').forEach((child) => {
+                const r = child.getBoundingClientRect();
+                if (r && r.width > 0) {
+                    contentW = Math.max(contentW, r.width);
+                }
+            });
+
+            if (contentW <= 0) {
+                contentW = cellNode.scrollWidth || 0;
+            }
+
+            // Đệm viền và chữ: giới hạn padding an toàn tối đa 14px để cột ôm sát gọn gàng
+            const cs = window.getComputedStyle(cellNode);
+            const padL = parseFloat(cs.paddingLeft || '0');
+            const padR = parseFloat(cs.paddingRight || '0');
+            const totalPad = padL + padR;
+            const safePad = totalPad > 0 ? Math.min(totalPad, 14) : 8;
+
+            return Math.ceil(contentW + safePad);
+        };
+
         const totalCols = theadGrid.length > 0 ? theadGrid[theadGrid.length - 1].length : 0;
         if (totalCols > 0) {
             const colMaxWidths: number[] = new Array(totalCols).fill(0);
@@ -128,7 +164,7 @@ export function fitTablesToContent(root: HTMLElement): number {
                     if ((cellNode.colSpan || 1) === 1) {
                         const cIdx = theadGrid[rIdx]?.indexOf(cellNode);
                         if (cIdx !== undefined && cIdx >= 0) {
-                            const w = Math.ceil(cellNode.scrollWidth || cellNode.getBoundingClientRect().width);
+                            const w = measureCellContent(cellNode);
                             colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
                         }
                     }
@@ -142,7 +178,7 @@ export function fitTablesToContent(root: HTMLElement): number {
                     if (!(cellNode instanceof HTMLTableCellElement)) return;
                     const cSpan = cellNode.colSpan || 1;
                     if (cSpan === 1 && cIdx < totalCols) {
-                        const w = Math.ceil(cellNode.scrollWidth || cellNode.getBoundingClientRect().width);
+                        const w = measureCellContent(cellNode);
                         colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
                         cIdx++;
                     } else {
@@ -158,12 +194,35 @@ export function fitTablesToContent(root: HTMLElement): number {
                     if (!(cellNode instanceof HTMLTableCellElement)) return;
                     const cSpan = cellNode.colSpan || 1;
                     if (cSpan === 1 && cIdx < totalCols) {
-                        const w = Math.ceil(cellNode.scrollWidth || cellNode.getBoundingClientRect().width);
+                        const w = measureCellContent(cellNode);
                         colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
                         cIdx++;
                     } else {
                         cIdx += cSpan;
                     }
+                });
+            });
+
+            // Đảm bảo các ô nhóm cha ở thead (colSpan > 1) không bị thiếu chỗ
+            theadRows.forEach((row, rIdx) => {
+                let cIdx = 0;
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    const cSpan = cellNode.colSpan || 1;
+                    if (cSpan > 1) {
+                        const parentW = measureCellContent(cellNode);
+                        let childrenSum = 0;
+                        for (let i = 0; i < cSpan; i++) {
+                            if (cIdx + i < totalCols) childrenSum += colMaxWidths[cIdx + i];
+                        }
+                        if (parentW > childrenSum && cSpan > 0) {
+                            const extraPerCol = Math.ceil((parentW - childrenSum) / cSpan);
+                            for (let i = 0; i < cSpan; i++) {
+                                if (cIdx + i < totalCols) colMaxWidths[cIdx + i] += extraPerCol;
+                            }
+                        }
+                    }
+                    cIdx += cSpan;
                 });
             });
 
@@ -178,6 +237,7 @@ export function fitTablesToContent(root: HTMLElement): number {
                         cell.style.setProperty('width', `${colW}px`, 'important');
                         cell.style.setProperty('min-width', `${colW}px`, 'important');
                         cell.style.setProperty('max-width', `${colW}px`, 'important');
+                        cell.style.setProperty('box-sizing', 'border-box', 'important');
                     }
                 });
 
@@ -190,6 +250,7 @@ export function fitTablesToContent(root: HTMLElement): number {
                             cellNode.style.setProperty('width', `${colW}px`, 'important');
                             cellNode.style.setProperty('min-width', `${colW}px`, 'important');
                             cellNode.style.setProperty('max-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('box-sizing', 'border-box', 'important');
                             curC++;
                         } else {
                             curC += cSpan;
@@ -206,6 +267,7 @@ export function fitTablesToContent(root: HTMLElement): number {
                             cellNode.style.setProperty('width', `${colW}px`, 'important');
                             cellNode.style.setProperty('min-width', `${colW}px`, 'important');
                             cellNode.style.setProperty('max-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('box-sizing', 'border-box', 'important');
                             curC++;
                         } else {
                             curC += cSpan;
@@ -215,8 +277,10 @@ export function fitTablesToContent(root: HTMLElement): number {
             }
 
             // Đặt bề rộng bảng cố định theo đúng tổng độ rộng các cột đã fix
-            const tableWidth = Math.ceil(table.getBoundingClientRect().width || colMaxWidths.reduce((a, b) => a + (b > 0 ? b + 4 : 0), 0));
+            const sumColsWidth = colMaxWidths.reduce((sum, w) => sum + (w > 0 ? w + 4 : 0), 0);
+            const tableWidth = sumColsWidth > 0 ? sumColsWidth : Math.ceil(table.getBoundingClientRect().width);
             if (tableWidth > 0) {
+                table.style.setProperty('table-layout', 'fixed', 'important');
                 table.style.setProperty('width', `${tableWidth}px`, 'important');
                 table.style.setProperty('min-width', `${tableWidth}px`, 'important');
                 table.style.setProperty('max-width', `${tableWidth}px`, 'important');

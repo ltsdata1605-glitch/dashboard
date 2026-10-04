@@ -199,7 +199,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                    Lịch sử thang chữ: bản cũ ép chữ xuống 8–9px ("High-Density Typography"), phá quy tắc
                    sàn 11px của CLAUDE.md đúng trên điện thoại (đo iPhone 15 2026-09-26: 71 chỗ < 11px). */
 
-                /* KHÔNG BO GÓC cho tất cả bảng, viền, thẻ card trong toàn bộ phân hệ Report BI (giữ nguyên avatar tròn & floating dock) */
+                /* KHÔNG BO GÓC cho tất cả bảng, viền trong toàn bộ phân hệ Report BI (ngoại trừ thẻ KPI .kpi-overview-card, avatar tròn & floating dock) */
                 .bi-report-module table,
                 .bi-report-module thead,
                 .bi-report-module tbody,
@@ -207,9 +207,9 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 .bi-report-module tr,
                 .bi-report-module th,
                 .bi-report-module td,
-                .bi-report-module .card,
-                .bi-report-module .rounded,
-                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.preserve-rounded):not(.preserve-rounded *) {
+                .bi-report-module .card:not(.kpi-overview-card),
+                .bi-report-module .rounded:not(.kpi-overview-card),
+                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.preserve-rounded):not(.preserve-rounded *) {
                     border-radius: 0px !important;
                 }
             `}</style>

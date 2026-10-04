@@ -204,10 +204,49 @@ export async function saveAnalysisEmployees(
 }
 
 /**
- * Đọc danh sách nhân viên phân tích từ IndexedDB (fallback Firebase nếu trên thiết bị mới)
+ * Chuyển đổi DepartmentMap ("mã NV" -> "Bộ phận;;Tên") từ chức năng Phân Tích
+ * sang mảng danh sách nhân viên chuẩn để chuẩn hóa cho Report BI
+ */
+export function convertDepartmentMapToEmployees(map: Record<string, string>): Array<{ name: string; department: string }> {
+    return Object.entries(map || {}).map(([id, raw]) => {
+        const [dept, name] = String(raw || '').split(';;');
+        const cleanName = (name || '').trim();
+        const cleanId = id.trim();
+        const alreadyHasId = cleanName.startsWith(`${cleanId} -`) || cleanName.startsWith(`${cleanId}-`);
+        const fullName = !cleanName ? cleanId : alreadyHasId ? cleanName : `${cleanId} - ${cleanName}`;
+        return { name: fullName, department: (dept || '').trim() };
+    });
+}
+
+/**
+ * Đọc danh sách nhân viên phân tích từ IndexedDB (ưu tiên tối cao từ departmentMap của Phân Tích, fallback Firebase nếu trên thiết bị mới)
  */
 export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload | null> {
-    // 1. Đọc từ IndexedDB — qua adapter (A29): bản cũ nâng lên v1, bản hỏng bỏ qua
+    // 1. Đọc trực tiếp từ departmentMap của Phân Tích (nguồn chuẩn gốc duy nhất)
+    try {
+        const deptMap = await getSetting<Record<string, string>>('departmentMap');
+        if (deptMap && Object.keys(deptMap).length > 0) {
+            const rawEmployees = convertDepartmentMapToEmployees(deptMap);
+            const cleanList = normalizeAnalysisEmployees(rawEmployees);
+            if (cleanList.length > 0) {
+                const payload: AnalysisEmployeesPayload = {
+                    schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
+                    source: 'phan-tich',
+                    updatedAt: Date.now(),
+                    totalCount: cleanList.length,
+                    employees: cleanList,
+                };
+                // Đồng bộ ngầm vào key ANALYSIS_EMPLOYEES_KEY để lưu cache nhanh
+                saveSetting(ANALYSIS_EMPLOYEES_KEY, payload).catch(() => {});
+                saveSetting(`bi_${ANALYSIS_EMPLOYEES_KEY}`, payload).catch(() => {});
+                return payload;
+            }
+        }
+    } catch (err) {
+        console.warn('[AnalysisEmployeeSync] Không thể đọc trực tiếp từ departmentMap:', err);
+    }
+
+    // 2. Đọc từ IndexedDB — qua adapter (A29): bản cũ nâng lên v1, bản hỏng bỏ qua
     let local = docAnalysisEmployeesPayload(await getSetting<unknown>(ANALYSIS_EMPLOYEES_KEY));
     if (!local) {
         local = docAnalysisEmployeesPayload(await getSetting<unknown>(`bi_${ANALYSIS_EMPLOYEES_KEY}`));
@@ -217,7 +256,7 @@ export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload |
         return local;
     }
 
-    // 2. Nếu local chưa có (ví dụ: vừa mở trên thiết bị mới), thử đọc từ Cloud Firestore
+    // 3. Nếu local chưa có (ví dụ: vừa mở trên thiết bị mới), thử đọc từ Cloud Firestore
     const user = auth.currentUser;
     if (user) {
         try {
@@ -226,8 +265,7 @@ export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload |
             if (snap.exists()) {
                 const data = snap.data();
                 const cloudPayload = docAnalysisEmployeesPayload(data?.value);
-                if (cloudPayload) {
-                    // Lưu lại vào IndexedDB để lần sau đọc nhanh
+                if (cloudPayload && cloudPayload.employees.length > 0) {
                     await saveSetting(ANALYSIS_EMPLOYEES_KEY, cloudPayload);
                     await saveSetting(`bi_${ANALYSIS_EMPLOYEES_KEY}`, cloudPayload);
                     return cloudPayload;

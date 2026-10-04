@@ -249,6 +249,15 @@ export function useNhanVienData(isActive?: boolean) {
         return () => { isMounted = false; };
     }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded, isActive, runWorkerTask]);
 
+    const loadAnalysisEmployees = useCallback(async () => {
+        try {
+            const payload = await getAnalysisEmployees();
+            setAnalysisEmployeesPayload(payload);
+        } catch (err) {
+            console.error('[useNhanVienData] Lỗi tải danh sách nhân viên phân tích:', err);
+        }
+    }, []);
+
     useEffect(() => {
         // Chỉ 9 key liệt kê trong fetchAllData() (config-*, manual-dept-mapping-*, bonus-data-*,
         // targethero-*-departmentweights, hidden-employees-*, bonus-current-period-label-*) thực sự
@@ -264,24 +273,19 @@ export function useNhanVienData(isActive?: boolean) {
                 || key.startsWith('hidden-employees-')
                 || key.startsWith('targethero-')
                 || key === 'summary-luy-ke'
+                || key === 'departmentMap'
                 || key === ANALYSIS_EMPLOYEES_KEY
                 || key === `bi_${ANALYSIS_EMPLOYEES_KEY}`;
             if (isRelevant) {
+                if (key === 'departmentMap' || key === ANALYSIS_EMPLOYEES_KEY || key === `bi_${ANALYSIS_EMPLOYEES_KEY}`) {
+                    loadAnalysisEmployees();
+                }
                 setDataVersion(v => v + 1);
             }
         };
         window.addEventListener('indexeddb-change', handleDbChange as EventListener);
         return () => window.removeEventListener('indexeddb-change', handleDbChange as EventListener);
-    }, []);
-
-    const loadAnalysisEmployees = useCallback(async () => {
-        try {
-            const payload = await getAnalysisEmployees();
-            setAnalysisEmployeesPayload(payload);
-        } catch (err) {
-            console.error('[useNhanVienData] Lỗi tải danh sách nhân viên phân tích:', err);
-        }
-    }, []);
+    }, [loadAnalysisEmployees]);
 
     useEffect(() => {
         loadAnalysisEmployees();
@@ -323,8 +327,8 @@ export function useNhanVienData(isActive?: boolean) {
     }, [analysisEmployeesList, hasAnalysisEmployees]);
 
     const isEmployeeInAnalysis = useCallback((origName?: string): boolean => {
-        if (!hasAnalysisEmployees) return true; // Nếu chưa có danh sách phân tích thì fallback giữ nguyên
-        if (!origName) return false;
+        // QUY TẮC BẮT BUỘC: Nếu chưa có danh sách phân tích hoặc tên rỗng thì KHÔNG cho qua
+        if (!hasAnalysisEmployees || !origName) return false;
         const clean = origName.toLowerCase().trim();
         if (analysisEmployeeLookup.has(clean)) return true;
         const canonical = standardizeEmployeeName(origName).toLowerCase().trim();
@@ -349,10 +353,7 @@ export function useNhanVienData(isActive?: boolean) {
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     const dept = (r.department || '').trim();
                     if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
-                    if (hasAnalysisEmployees) {
-                        return isEmployeeInAnalysis(r.originalName);
-                    }
-                    return true;
+                    return isEmployeeInAnalysis(r.originalName);
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu:', err));
@@ -373,10 +374,7 @@ export function useNhanVienData(isActive?: boolean) {
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     const dept = (r.department || '').trim();
                     if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
-                    if (hasAnalysisEmployees) {
-                        return isEmployeeInAnalysis(r.originalName);
-                    }
-                    return true;
+                    return isEmployeeInAnalysis(r.originalName);
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu realtime:', err));
@@ -405,7 +403,7 @@ export function useNhanVienData(isActive?: boolean) {
         parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
             if (isSystemOrIgnoredEmployee(r.originalName, r.department)) return;
             const canonical = standardizeEmployeeName(r.originalName!);
-            if (!hasAnalysisEmployees || isEmployeeInAnalysis(r.originalName)) {
+            if (isEmployeeInAnalysis(r.originalName)) {
                 if (!map[canonical]) map[canonical] = r.department!;
                 if (!map[r.originalName!]) map[r.originalName!] = r.department!;
             }
@@ -435,10 +433,7 @@ export function useNhanVienData(isActive?: boolean) {
                 setInstallmentRows(rows.filter((r: InstallmentRow) => {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
-                    if (hasAnalysisEmployees) {
-                        return isEmployeeInAnalysis(r.originalName);
-                    }
-                    return true;
+                    return isEmployeeInAnalysis(r.originalName);
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse trả góp:', err));
@@ -609,55 +604,28 @@ export function useNhanVienData(isActive?: boolean) {
 
     const allEmployees = useMemo(() => {
         if (isActive === false) return [];
+        // YÊU CẦU CỐT LÕI: Luôn luôn và duy nhất lấy danh sách nhân viên từ chức năng Phân tích.
+        // Nếu chưa có danh sách phân tích thì trả về mảng rỗng để yêu cầu người dùng cập nhật.
+        if (!hasAnalysisEmployees) return [];
+
         const seen = new Set<string>();
         const list: { name: string; originalName: string; department: string }[] = [];
 
-        // 1. Nếu có danh sách từ Phân tích: Sử dụng trực tiếp làm chuẩn gốc
-        if (hasAnalysisEmployees) {
-            for (const emp of analysisEmployeesList) {
-                if (hiddenEmployeesSet.has(emp.originalName)) continue;
-                const canonical = standardizeEmployeeName(emp.originalName);
-                const dedupKey = emp.id || canonical;
-                if (!seen.has(dedupKey)) {
-                    seen.add(dedupKey);
-                    const dept = employeeDepartmentMap[emp.originalName] || employeeDepartmentMap[canonical] || emp.department;
-                    if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept)) continue;
-                    list.push({
-                        name: emp.name || formatEmployeeName(emp.originalName),
-                        originalName: emp.originalName,
-                        department: dept
-                    });
-                }
-            }
-            return list.sort((a, b) => a.name.localeCompare(b.name));
-        }
-
-        // 2. Dự phòng: Quét từ employeeDepartmentMap nếu chưa có Phân tích
-        const entries = Object.entries(employeeDepartmentMap as Record<string, string>)
-            .sort(([a], [b]) => b.length - a.length);
-
-        for (const [originalName, department] of entries) {
-            if (!department || isSystemOrIgnoredEmployee(originalName, department)) continue;
-            const canonical = standardizeEmployeeName(originalName);
-            let empId = '';
-            if (canonical.includes(' - ')) {
-                const parts = canonical.split(' - ').map(p => p.trim());
-                empId = /^\d+$/.test(parts[1]) ? parts[1] : (/^\d+$/.test(parts[0]) ? parts[0] : canonical);
-            } else if (/^\d+$/.test(canonical)) {
-                empId = canonical;
-            }
-
-            const dedupKey = empId || canonical;
+        for (const emp of analysisEmployeesList) {
+            if (hiddenEmployeesSet.has(emp.originalName)) continue;
+            const canonical = standardizeEmployeeName(emp.originalName);
+            const dedupKey = emp.id || canonical;
             if (!seen.has(dedupKey)) {
                 seen.add(dedupKey);
+                const dept = employeeDepartmentMap[emp.originalName] || employeeDepartmentMap[canonical] || emp.department;
+                if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept)) continue;
                 list.push({
-                    name: formatEmployeeName(originalName),
-                    originalName,
-                    department
+                    name: emp.name || formatEmployeeName(emp.originalName),
+                    originalName: emp.originalName,
+                    department: dept
                 });
             }
         }
-
         return list.sort((a, b) => a.name.localeCompare(b.name));
     }, [employeeDepartmentMap, hasAnalysisEmployees, analysisEmployeesList, hiddenEmployeesSet, isActive]);
 
