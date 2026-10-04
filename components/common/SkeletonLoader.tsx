@@ -15,15 +15,12 @@ const KpiCardSkeleton: React.FC = () => (
             </div>
             <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
         </div>
-        <div className="my-1">
+        <div className="my-1 flex justify-center">
             <SkeletonPulse className="h-8 w-28" />
         </div>
-        <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800/60">
-            <SkeletonPulse className="h-1.5 w-full rounded-full" />
-            <div className="flex justify-between items-center pt-0.5">
-                <SkeletonPulse className="h-3 w-14" />
-                <SkeletonPulse className="h-3.5 w-16 rounded-md" />
-            </div>
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex justify-between items-center">
+            <SkeletonPulse className="h-3 w-14" />
+            <SkeletonPulse className="h-3.5 w-16 rounded-md" />
         </div>
     </div>
 );

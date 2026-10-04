@@ -64,19 +64,27 @@ const MODAL_KPI_COLORS: Record<string, { top: string; iconBg: string; iconText: 
 const KpiCard: React.FC<{ icon: string, label: string, value: string, color: string, children?: React.ReactNode }> = ({ icon, label, value, color, children }) => {
     const c = MODAL_KPI_COLORS[color] || MODAL_KPI_COLORS.indigo;
     return (
-        <div className="flex-1 bg-white dark:bg-slate-900/95 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs flex flex-col justify-between overflow-hidden">
-            <div className={`h-[3px] w-full shrink-0 ${c.top}`} />
-            <div className="p-1.5 sm:p-2.5 flex flex-col justify-between flex-1 gap-1">
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
-                        <Icon name={icon} size={3} />
+        <div className="flex-1 bg-white dark:bg-slate-900/95 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden">
+            <div className={`h-[3.5px] w-full shrink-0 ${c.top}`} />
+            <div className="p-2 sm:p-2.5 flex flex-col justify-between flex-1 gap-1">
+                <div className="flex items-center justify-between gap-1 min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
+                            <Icon name={icon} size={3} />
+                        </div>
+                        <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title={label}>{label}</p>
                     </div>
-                    <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate w-full" title={label}>{label}</p>
                 </div>
-                <div className={`text-sm sm:text-base lg:text-lg font-black ${c.valText} leading-tight tabular-nums truncate`}>
+                <div className={`w-full text-center flex items-center justify-center my-1 text-sm sm:text-base lg:text-xl font-black ${c.valText} leading-none tabular-nums truncate`}>
                     {value}
                 </div>
-                {children && <div className="mt-auto text-[10px] sm:text-[11px] leading-tight border-t border-slate-100 dark:border-slate-800/70 pt-1 w-full">{children}</div>}
+                {children ? (
+                    <div className="mt-auto text-[10px] sm:text-[11px] leading-none border-t border-slate-100 dark:border-slate-800/70 pt-1.5 w-full flex items-center justify-center">
+                        {children}
+                    </div>
+                ) : (
+                    <div className="mt-auto border-t border-transparent pt-1.5 h-[17px]" />
+                )}
             </div>
         </div>
     );

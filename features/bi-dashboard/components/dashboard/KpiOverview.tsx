@@ -207,14 +207,14 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     title="DT THỰC"
                     trendLabel="Dự kiến"
                     trendValue={
-                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{dtThucDuKienStr}</span>
                         </span>
                     }
                     isGood={true}
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline justify-center gap-1 w-full">
                         <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
                             {dtlkFormatted.value}
                         </span>
@@ -232,12 +232,12 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     trendLabel="Target"
                     progressPercent={secondaryPct}
                     trendValue={
-                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">
                                 {secondaryTargetStr || dtqdTrendValue}
                             </span>
                             {currentDtqdTarget > 0 && (
-                                <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                     dtqdRemaining >= 0
                                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                         : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -249,7 +249,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-1 flex-nowrap overflow-hidden">
+                    <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
                         <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums shrink-0 ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
                             {dtqdFormatted.value}
                         </span>
@@ -267,9 +267,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     trendLabel="Mục tiêu"
                     progressPercent={currentQuyDoiTarget > 0 ? (hqqd / currentQuyDoiTarget) * 100 : undefined}
                     trendValue={
-                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{currentQuyDoiTarget}%</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                 hqqdIsGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -282,7 +282,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline justify-center gap-1 w-full">
                         <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
                             {Math.ceil(hqqd)}%
                         </span>
@@ -297,9 +297,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     trendLabel="Mục tiêu"
                     progressPercent={currentTraGopTarget > 0 ? (tyTrongTraGop / currentTraGopTarget) * 100 : undefined}
                     trendValue={
-                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                        <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{currentTraGopTarget}%</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                 traGopIsGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -312,7 +312,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline gap-1">
+                    <div className="flex items-baseline justify-center gap-1 w-full">
                         <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
                             {Math.round(tyTrongTraGop)}%
                         </span>
@@ -323,13 +323,13 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
             {/* ROW 2: CHỈ SỐ PHỤ */}
             <div className="kpi-overview-grid grid grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
                 <KpiCard icon="users" iconColor="sky" title="L.KHÁCH" trendValue={renderGrowth(kpiData.luotKhachChange)}>
-                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-sky-700 dark:text-sky-400">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-sky-700 dark:text-sky-400 text-center w-full">
                         {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
                     </div>
                 </KpiCard>
 
                 <KpiCard icon="shield-check" iconColor="amber" title="TLPVTC" trendValue={renderGrowth(kpiData.tlpvChange)}>
-                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-amber-700 dark:text-amber-400">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-amber-700 dark:text-amber-400 text-center w-full">
                         {(() => {
                             const val = parseNumber(kpiData.tlpv);
                             if (!val) return '0%';
@@ -339,7 +339,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                 </KpiCard>
 
                 <KpiCard icon="receipt" iconColor="emerald" title="BILL BÁN">
-                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400 text-center w-full">
                         {kpiData.lbillBH && kpiData.lbillBH !== 'N/A'
                             ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN')
                             : (kpiData.lbill && kpiData.lbill !== 'N/A'
@@ -349,7 +349,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                 </KpiCard>
 
                 <KpiCard icon="wallet" iconColor="rose" title="BILL T.HỘ">
-                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-rose-700 dark:text-rose-400">
+                    <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-rose-700 dark:text-rose-400 text-center w-full">
                         {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
                     </div>
                 </KpiCard>

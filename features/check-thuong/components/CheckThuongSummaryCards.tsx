@@ -1,6 +1,6 @@
 import React from 'react';
-import { Store, Trophy, TrendingUp, Coins } from 'lucide-react';
 import { CheckThuongSystemStats } from '../types';
+import { KpiCard } from '../../../components/shared/ui/KpiCard';
 
 interface CheckThuongSummaryCardsProps {
     stats: CheckThuongSystemStats;
@@ -18,102 +18,85 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
     };
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 mb-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 mb-3">
             {/* THẺ 1: TỔNG SIÊU THỊ */}
-            <div className="relative overflow-hidden rounded-none bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Tổng Siêu Thị
-                    </span>
-                    <div className="w-5 h-5 rounded-none bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
-                        <Store className="w-3 h-3" />
-                    </div>
-                </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-base sm:text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight">
+            <KpiCard
+                icon="store"
+                iconColor="sky"
+                title="Tổng Siêu Thị"
+                trendLabel="Toàn hệ thống"
+                trendValue={<span className="text-[11px] font-bold text-slate-500">Hoạt động</span>}
+            >
+                <div className="flex items-baseline justify-center gap-1 w-full">
+                    <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums text-slate-800 dark:text-slate-100">
                         {stats.totalStores.toLocaleString('vi-VN')}
                     </span>
-                    <span className="text-[11px] font-medium text-slate-400">kho</span>
+                    <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">kho</span>
                 </div>
-            </div>
+            </KpiCard>
 
             {/* THẺ 2: TỔNG TIỀN THƯỞNG */}
-            <div
-                className="relative overflow-hidden rounded-none bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between"
-                title={`${stats.totalBonus.toLocaleString('vi-VN')} đ`}
+            <KpiCard
+                icon="wallet"
+                iconColor="indigo"
+                title="Tổng Tiền Thưởng"
+                trendLabel="Quỹ thưởng"
+                trendValue={<span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">Đã chốt</span>}
             >
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Tổng Tiền Thưởng
-                    </span>
-                    <div className="w-5 h-5 rounded-none bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-                        <Coins className="w-3 h-3" />
-                    </div>
-                </div>
-                <div className="mt-1 truncate">
-                    <span className="text-base sm:text-lg font-black tracking-tight text-indigo-600 dark:text-indigo-400">
+                <div className="flex items-baseline justify-center gap-1 w-full">
+                    <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums text-indigo-600 dark:text-indigo-400">
                         {formatMillion(stats.totalBonus)}
                     </span>
                 </div>
-            </div>
+            </KpiCard>
 
             {/* THẺ 3: TOP 1 THƯỞNG CAO NHẤT */}
-            <div
-                onClick={() => stats.topStore && onSelectTopStore?.(stats.topStore.storeCode)}
-                className={`relative overflow-hidden rounded-none bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between ${
-                    stats.topStore ? 'cursor-pointer hover:border-sky-400' : ''
-                }`}
-                title={stats.topStore ? `Kho ${stats.topStore.storeCode}: ${stats.topStore.totalBonus.toLocaleString('vi-VN')} đ` : undefined}
-            >
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                        <Trophy className="w-3 h-3 text-amber-500" />
-                        Quán Quân #1
-                    </span>
-                    <span className="px-1.5 py-0.2 text-[11px] font-black uppercase rounded-none bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <KpiCard
+                icon="award"
+                iconColor="amber"
+                title="Quán Quân #1"
+                badge={
+                    <span className="px-1.5 py-0.5 text-[10px] font-black uppercase rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/50">
                         TOP 1
                     </span>
-                </div>
-                <div className="mt-1 min-w-0">
-                    <div className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                }
+                onClick={stats.topStore ? () => onSelectTopStore?.(stats.topStore!.storeCode) : undefined}
+                trendLabel="Kênh bán"
+                trendValue={<span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{stats.topStore?.channel || '---'}</span>}
+            >
+                <div className="flex flex-col items-center justify-center w-full min-w-0">
+                    <span className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 dark:text-slate-100 truncate w-full text-center">
                         {stats.topStore ? stats.topStore.storeName : '---'}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="text-[11px] font-black text-amber-600 dark:text-amber-400">
-                            {stats.topStore ? formatMillion(stats.topStore.totalBonus) : '---'}
-                        </span>
-                        {stats.topStore && (
-                            <span className="text-[11px] text-slate-400">
-                                ({stats.topStore.channel})
-                            </span>
-                        )}
-                    </div>
+                    </span>
+                    <span className="text-[12px] sm:text-[14px] font-black text-amber-600 dark:text-amber-400 tabular-nums">
+                        {stats.topStore ? formatMillion(stats.topStore.totalBonus) : '---'}
+                    </span>
                 </div>
-            </div>
+            </KpiCard>
 
             {/* THẺ 4: TỈ LỆ ĐẠT 100% TRUNG BÌNH */}
-            <div className="relative overflow-hidden rounded-none bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-2.5 sm:p-3 shadow-2xs hover:shadow-xs transition-all flex flex-col justify-between">
-                <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                        Đạt 100% Bình Quân
+            <KpiCard
+                icon="trending-up"
+                iconColor="emerald"
+                title="Đạt 100% Bình Quân"
+                isGood={stats.avgAchievedPercent >= 80}
+                trendLabel="Tỉ lệ đạt"
+                trendValue={
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                        stats.avgAchievedPercent >= 80
+                            ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50'
+                            : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50'
+                    }`}>
+                        {stats.avgAchievedPercent >= 80 ? 'Đạt' : 'Cần nỗ lực'}
                     </span>
-                    <div className="w-5 h-5 rounded-none bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                        <TrendingUp className="w-3 h-3" />
-                    </div>
-                </div>
-                <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                }
+            >
+                <div className="flex items-baseline justify-center gap-1 w-full">
+                    <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
                         {stats.avgAchievedPercent}%
                     </span>
-                    <span className="text-[11px] font-medium text-slate-400">ngành</span>
                 </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-none mt-1.5 overflow-hidden">
-                    <div
-                        className="bg-emerald-500 h-full rounded-none transition-all duration-500"
-                        style={{ width: `${Math.min(100, stats.avgAchievedPercent)}%` }}
-                    />
-                </div>
-            </div>
+            </KpiCard>
         </div>
     );
 };

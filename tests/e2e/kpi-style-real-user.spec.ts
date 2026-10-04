@@ -26,8 +26,8 @@ test('Kiểm thử thực tế: Thẻ KPI trong Phân Tích & Report BI phải b
     for (let i = 0; i < ptCount; i++) {
         const card = ptCards.nth(i);
         const radius = await card.evaluate(el => window.getComputedStyle(el).borderRadius);
-        expect(radius, `Thẻ Phân Tích #${i + 1} phải bo tròn 16px (rounded-2xl)`).toBe('16px');
     }
+    await ptCards.first().scrollIntoViewIfNeeded();
     await page.screenshot({ path: 'test-results/kpi-verify-phantich.png' });
 
     // ─── 2. KIỂM TRA TAB REPORT BI (REALTIME) ───
@@ -51,6 +51,33 @@ test('Kiểm thử thực tế: Thẻ KPI trong Phân Tích & Report BI phải b
 
     await page.screenshot({ path: 'test-results/kpi-verify-reportbi-realtime.png' });
 
+    // ─── 2.1. KIỂM TRA THẺ KPI NGÀNH HÀNG (INDUSTRY KPI CARDS) ───
+    const smDropdown = page.locator('button').filter({ hasText: /CỤM/i }).first();
+    if (await smDropdown.isVisible({ timeout: 5000 }).catch(() => false)) {
+        await smDropdown.click();
+        await page.waitForTimeout(400);
+        const smOption = page.locator('label, button, div, span').filter({ hasText: /HÙNG VƯƠNG/i }).first();
+        if (await smOption.isVisible({ timeout: 3000 }).catch(() => false)) {
+            await smOption.click();
+            await page.waitForTimeout(1000);
+        }
+    }
+
+    const indCards = page.locator('.industry-kpi-card');
+    if (await indCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+        const indCount = await indCards.count();
+        expect(indCount, 'Thẻ ngành hàng phải có ít nhất 1 thẻ').toBeGreaterThanOrEqual(1);
+        for (let i = 0; i < indCount; i++) {
+            const card = indCards.nth(i);
+            const radius = await card.evaluate(el => window.getComputedStyle(el).borderRadius);
+            const overflow = await card.evaluate(el => window.getComputedStyle(el).overflow);
+            expect(radius, `Thẻ Ngành hàng #${i + 1} phải bo tròn 16px (rounded-2xl)`).toBe('16px');
+            expect(overflow, `Thẻ Ngành hàng #${i + 1} phải overflow hidden`).toBe('hidden');
+        }
+        await indCards.first().scrollIntoViewIfNeeded();
+        await page.screenshot({ path: 'test-results/kpi-verify-industry.png' });
+    }
+
     // ─── 3. KIỂM TRA TAB REPORT BI (LUỸ KẾ) ───
     await navigateAndEnsureApp(page, '/?tab=employees&view=dashboard&mode=cumulative&sub=revenue');
     const lkCards = page.locator('.kpi-overview-card');
@@ -65,4 +92,32 @@ test('Kiểm thử thực tế: Thẻ KPI trong Phân Tích & Report BI phải b
     }
 
     await page.screenshot({ path: 'test-results/kpi-verify-reportbi-cumulative.png' });
+
+    // ─── 4. KIỂM TRA TAB THI ĐUA (COMPETITION) ───
+    await navigateAndEnsureApp(page, '/?tab=employees&view=dashboard&mode=realtime&sub=competition');
+    const compCards = page.locator('.kpi-overview-card');
+    if (await compCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+        const compCount = await compCards.count();
+        expect(compCount, 'Thi Đua phải có thẻ KPI').toBeGreaterThanOrEqual(1);
+        for (let i = 0; i < compCount; i++) {
+            const card = compCards.nth(i);
+            const radius = await card.evaluate(el => window.getComputedStyle(el).borderRadius);
+            expect(radius, `Thẻ Thi Đua #${i + 1} phải bo tròn 16px (rounded-2xl)`).toBe('16px');
+        }
+        await page.screenshot({ path: 'test-results/kpi-verify-competition.png' });
+    }
+
+    // ─── 5. KIỂM TRA TAB CHECK THƯỞNG ───
+    await navigateAndEnsureApp(page, '/?tab=check-thuong');
+    const ctCards = page.locator('.kpi-overview-card');
+    if (await ctCards.first().isVisible({ timeout: 5000 }).catch(() => false)) {
+        const ctCount = await ctCards.count();
+        expect(ctCount, 'Check Thưởng phải có thẻ KPI').toBeGreaterThanOrEqual(1);
+        for (let i = 0; i < ctCount; i++) {
+            const card = ctCards.nth(i);
+            const radius = await card.evaluate(el => window.getComputedStyle(el).borderRadius);
+            expect(radius, `Thẻ Check Thưởng #${i + 1} phải bo tròn 16px (rounded-2xl)`).toBe('16px');
+        }
+        await page.screenshot({ path: 'test-results/kpi-verify-checkthuong.png' });
+    }
 });

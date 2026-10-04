@@ -141,9 +141,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             {/* Vạch nhận diện đỉnh thẻ — dải gradient mềm mại bo theo góc bo thẻ */}
             <div className={`kpi-top-accent h-[3.5px] w-full shrink-0 ${style.topAccent}`} />
 
-            {/* Layout cho desktop (lg trở lên) */}
+            {/* Layout cho desktop (lg trở lên) — Thiết kế gọn gàng, tinh tế, số to rõ */}
             <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2.5">
-                {/* Hàng 1: Icon squircle + Title + Micro Status Badge */}
+                {/* Hàng 1: Icon squircle + Title + Micro Status Dot */}
                 <div className="@container flex items-center justify-between gap-1.5 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                         <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${style.iconBg} ${style.iconText}`}>
@@ -164,41 +164,18 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                     )}
                 </div>
 
-                {/* Hàng 2: Giá trị chính (Value) */}
-                <div className="kpi-overview-value my-1.5 min-w-0">
+                {/* Hàng 2: Giá trị chính (Value) — To rõ, nổi bật, sắc nét, canh giữa */}
+                <div className="kpi-overview-value my-1.5 min-w-0 w-full flex items-center justify-center">
                     {children}
                 </div>
 
-                {/* Hàng 3: Thanh tiến độ pill + Mục tiêu / Tăng trưởng nếu có */}
-                {(clampedProgress !== undefined || trendLabel || trendValue) && (
-                    <div className="kpi-overview-footer mt-auto pt-2 border-t border-slate-100 dark:border-slate-800/70 space-y-1.5">
-                        {clampedProgress !== undefined && (
-                            <div className="flex items-center gap-2">
-                                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800/90 rounded-full overflow-hidden p-0">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-700 ease-out ${
-                                            isGood && clampedProgress >= 100
-                                                ? 'bg-gradient-to-r from-emerald-400 to-teal-500'
-                                                : style.progressGradient
-                                        }`}
-                                        style={{ width: `${clampedProgress}%` }}
-                                    />
-                                </div>
-                                <span className="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 shrink-0 tabular-nums">
-                                    {progressPercent !== undefined && !isNaN(progressPercent)
-                                        ? Math.round(progressPercent)
-                                        : Math.round(clampedProgress)}%
-                                </span>
-                            </div>
-                        )}
-                        {(trendLabel || trendValue) && (
-                            <div className="flex items-center justify-between gap-1 text-[11px] leading-none pt-0.5">
-                                <span className="text-slate-400 dark:text-slate-500 font-semibold tracking-wide truncate">{trendLabel}</span>
-                                <div className="font-bold text-right shrink-0">
-                                    {trendValue}
-                                </div>
-                            </div>
-                        )}
+                {/* Hàng 3: Mục tiêu / Tăng trưởng (Không còn thanh bar, cực kỳ gọn gàng) */}
+                {(trendLabel || trendValue) && (
+                    <div className="kpi-overview-footer mt-auto pt-2 border-t border-slate-100 dark:border-slate-800/70 flex items-center justify-between gap-1 text-[11px] leading-none">
+                        <span className="text-slate-400 dark:text-slate-500 font-semibold tracking-wide truncate">{trendLabel}</span>
+                        <div className="font-bold text-right shrink-0">
+                            {trendValue}
+                        </div>
                     </div>
                 )}
             </div>
@@ -212,9 +189,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                     </div>
                     {!isGood ? (
                         <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" title="Chưa đạt" />
-                    ) : isGood && clampedProgress !== undefined && clampedProgress >= 100 ? (
+                    ) : (
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Đạt" />
-                    ) : null}
+                    )}
                 </div>
                 
                 {/* Hàng 2: Title */}
@@ -225,21 +202,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 </div>
                 
                 {/* Hàng 3: Value */}
-                <div className="my-0.5 min-w-0 w-full overflow-hidden shrink-0">
+                <div className="my-0.5 min-w-0 w-full overflow-hidden shrink-0 flex justify-center">
                     {children}
                 </div>
-
-                {/* Hàng 4: Progress mini */}
-                {clampedProgress !== undefined && (
-                    <div className="w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div
-                            className={`h-full rounded-full ${isGood && clampedProgress >= 100 ? 'bg-emerald-500' : style.progressFill}`}
-                            style={{ width: `${clampedProgress}%` }}
-                        />
-                    </div>
-                )}
                 
-                {/* Hàng 5: Label / Giá trị phụ */}
+                {/* Hàng 4: Label / Giá trị phụ */}
                 {trendValue ? (
                     <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}

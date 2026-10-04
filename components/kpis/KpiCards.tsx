@@ -335,9 +335,9 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         progressPercent = pctHT;
                         const gapValue = rawValue - activeTarget;
                         finalTrendValue = revenueTarget > 0
-                            ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                                 <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formatCurrency(activeTarget)}</span>
-                                <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                     isGood
                                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                         : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -356,9 +356,9 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         } else {
                             const gap = rawValue - hieuQuaTarget;
                             finalTrendValue = (
-                                <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                                     <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{hieuQuaTarget}%</span>
-                                    <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                         isGood
                                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -378,9 +378,9 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         } else {
                             const gap = rawValue - traGopTarget;
                             finalTrendValue = (
-                                <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                                <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                                     <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{traGopTarget}%</span>
-                                    <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                         isGood
                                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -419,9 +419,15 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     }
 
                     finalTrendValue = monthlyTarget > 0
-                        ? <span className="flex flex-col items-center lg:items-end leading-tight">
-                            <span className="font-bold text-slate-700 dark:text-slate-200">{formattedActive} / {pctHT.toFixed(0)}%</span>
-                            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
+                        ? <span className="flex items-center gap-1.5 leading-none">
+                            <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formattedActive}</span>
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                                isGood
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
+                                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
+                            }`}>
+                                {pctHT.toFixed(0)}%
+                            </span>
                           </span>
                         : <span className="text-slate-400 italic text-[11px]">Chưa cài đặt</span>;
                 }
@@ -440,9 +446,9 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     const gapValue = rawValue - activeTarget;
 
                     finalTrendValue = monthlyTarget > 0
-                        ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                        ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formatCurrency(activeTarget)}</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold tabular-nums ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
                                 isGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -453,7 +459,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         : <span className="cursor-pointer text-slate-400 hover:text-sky-500 italic text-[11px] transition-colors">Chưa cài đặt</span>;
                 }
  
-                // "DT Chưa Xuất" — show unshipped order count with progress bar
+                // "DT Chưa Xuất" — show unshipped order count with badge in one row
                 if (isSpecialUnshipped) {
                     const unshippedCount = processedData?.unshippedOrders?.length || 0;
                     finalTrendLabel = "Lưu ý";
@@ -461,19 +467,19 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     progressPercent = unshippedCount > 0 ? Math.min((unshippedCount / 20) * 100, 100) : 0;
                     if (unshippedCount > 0) {
                         finalTrendValue = (
-                            <span className="flex flex-col items-center lg:items-end leading-tight gap-0.5">
+                            <span className="flex items-center gap-1.5 leading-none">
                                 <span className="text-[11.5px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">Còn {unshippedCount} đơn</span>
-                                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40 shrink-0">
                                     Chờ xuất
                                 </span>
                             </span>
                         );
                     } else {
                         finalTrendValue = (
-                            <span className="flex flex-col items-center lg:items-end leading-tight gap-0.5">
-                                <span className="text-[11.5px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">0 đơn chờ</span>
-                                <span className="inline-flex items-center px-1.5 py-0.2 rounded-md text-[10.5px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
-                                    Đã xử lý hết
+                            <span className="flex items-center gap-1.5 leading-none">
+                                <span className="text-[11.5px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">0 đơn</span>
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40 shrink-0">
+                                    Đã hết
                                 </span>
                             </span>
                         );
@@ -545,27 +551,40 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             onClick={isClickable ? handleClick : undefined}
                             trendLabel={finalTrendLabel}
                             trendValue={finalTrendValue}
-                            progressPercent={progressPercent}
                             isGood={isGood}
                         >
                             {config.format === 'currency' ? (
                                 (() => {
                                     const { val, unit } = splitCurrencyValue(displayValue);
                                     return (
-                                        <div className="flex items-baseline gap-0.5 sm:gap-1.5 flex-nowrap overflow-hidden">
-                                            <span className={`text-[20px] sm:text-2xl lg:text-[34px] xl:text-[40px] 2xl:text-[44px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
+                                        <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
+                                            <span className={`text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
                                                 {val}
                                             </span>
                                             {unit && (
-                                                <span className="text-[12px] sm:text-[15px] lg:text-[17px] xl:text-[19px] font-black text-slate-400 dark:text-slate-500 shrink-0">
+                                                <span className="text-[13px] sm:text-[15px] lg:text-[18px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
                                                     {unit}
                                                 </span>
                                             )}
                                         </div>
                                     );
                                 })()
+                            ) : config.format === 'percentage' ? (
+                                (() => {
+                                    const pctVal = displayValue.endsWith('%') ? displayValue.slice(0, -1) : displayValue;
+                                    return (
+                                        <div className="flex items-baseline justify-center gap-0.5 flex-nowrap overflow-hidden w-full">
+                                            <span className={`text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums shrink-0 ${valueColor}`}>
+                                                {pctVal}
+                                            </span>
+                                            <span className="text-[13px] sm:text-[15px] lg:text-[18px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
+                                                %
+                                            </span>
+                                        </div>
+                                    );
+                                })()
                             ) : (
-                                <div className={`text-[20px] sm:text-2xl lg:text-[34px] xl:text-[40px] 2xl:text-[44px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
+                                <div className={`w-full text-center text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums ${valueColor}`}>
                                     {displayValue}
                                 </div>
                             )}
