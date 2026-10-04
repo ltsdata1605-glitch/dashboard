@@ -58,6 +58,22 @@ export const CheckThuongView: React.FC = () => {
                 }
                 if (e.data.fileName) setFileName(e.data.fileName);
                 if (e.data.uploadTime) setUploadTime(e.data.uploadTime);
+
+                if (e.data.competitionData && Array.isArray(e.data.competitionData) && e.data.competitionData.length > 0) {
+                    const filePayload = {
+                        schemaVersion: 1,
+                        source: 'check-thuong',
+                        competitionData: e.data.competitionData,
+                        fileName: e.data.fileName || 'file_cu.xlsx',
+                        uploadTime: e.data.uploadTime || null,
+                        code1: e.data.code1 || '910',
+                        code2: e.data.code2 || '',
+                        lastModified: Date.now()
+                    };
+                    saveSettingOrThrow('checkthuong_data', filePayload).catch(err => {
+                        console.error('[CheckThuong] Lưu dữ liệu từ file loaded thất bại:', err);
+                    });
+                }
             } else if (e.data?.type === 'CHECK_THUONG_REQUEST_DATA_FROM_PARENT') {
                 getUnifiedCheckThuongData().then((saved) => {
                     if (saved && saved.competitionData && saved.competitionData.length > 0) {

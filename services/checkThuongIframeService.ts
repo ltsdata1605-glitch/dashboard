@@ -59,16 +59,35 @@ export function getCheckThuongDataFromIframeDb(): Promise<any> { // payload ifra
  */
 export async function getUnifiedCheckThuongData(): Promise<any> {
     try {
-        let iframeData = await getCheckThuongDataFromIframeDb();
-        if (iframeData && Array.isArray(iframeData.competitionData) && iframeData.competitionData.length > 0) {
+        const iframeData = await getCheckThuongDataFromIframeDb();
+        const { getSetting, saveSetting } = await import('./dbService');
+        const parentData = await getSetting<any>('checkthuong_data');
+
+        const hasIframe = iframeData && Array.isArray(iframeData.competitionData) && iframeData.competitionData.length > 0;
+        const hasParent = parentData && Array.isArray(parentData.competitionData) && parentData.competitionData.length > 0;
+
+        if (hasIframe && !hasParent) {
+            // Đã có trong iframe nhưng chưa có trong DB chính -> tự động lưu vào DB chính để kích hoạt Cloud Sync
+            await saveSetting('checkthuong_data', iframeData);
             return iframeData;
         }
 
-        // Nếu iframe DB chưa có (máy mới, sau dọn dẹp cache, hoặc khởi động lần đầu),
-        // fallback sang BI_HUB_DATABASE_V2 (nguồn chính của app và Cloud Sync)
-        const { getSetting } = await import('./dbService');
-        const parentData = await getSetting<any>('checkthuong_data');
-        if (parentData && Array.isArray(parentData.competitionData) && parentData.competitionData.length > 0) {
+        if (hasIframe && hasParent) {
+            const iframeTime = iframeData.lastModified || 0;
+            const parentTime = parentData.lastModified || 0;
+            if (iframeTime > parentTime) {
+                await saveSetting('checkthuong_data', iframeData);
+                return iframeData;
+            } else if (parentTime > iframeTime) {
+                saveCheckThuongDataToIframeDb(parentData).catch(err => {
+                    console.warn('[CheckThuongSync] Lỗi tự động vá sang keyval-store:', err);
+                });
+                return parentData;
+            }
+            return parentData;
+        }
+
+        if (!hasIframe && hasParent) {
             // Tự động vá sang keyval-store cho iframe
             saveCheckThuongDataToIframeDb(parentData).catch(err => {
                 console.warn('[CheckThuongSync] Lỗi tự động vá sang keyval-store:', err);

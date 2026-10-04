@@ -351,10 +351,16 @@ export const syncHeavySettingToCloud = async (user: User, key: string, value: un
     }
 
     const parts = splitIntoChunks(serialized);
-    const batch = writeBatch(db);
-    parts.forEach((part, i) => batch.set(doc(chunksRef, `chunk_${i}`), { data: part }));
-    batch.set(docRef, { chunked: true, chunkCount: parts.length, updatedAt: serverTimestamp() });
-    await batch.commit();
+    const BATCH_SIZE = 10;
+    for (let i = 0; i < parts.length; i += BATCH_SIZE) {
+        const batch = writeBatch(db);
+        const slice = parts.slice(i, i + BATCH_SIZE);
+        slice.forEach((part, idx) => {
+            batch.set(doc(chunksRef, `chunk_${i + idx}`), { data: part });
+        });
+        await batch.commit();
+    }
+    await setDoc(docRef, { chunked: true, chunkCount: parts.length, updatedAt: serverTimestamp() }, { merge: false });
 
     // Dọn chunk dư ra nếu lần ghi này ít chunk hơn lần trước — chạy nền, không chặn ghi chính.
     const knownBefore = lastKnownChunkCount.get(docRef.path);

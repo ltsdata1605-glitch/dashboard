@@ -17,6 +17,27 @@ describe('isLightSyncKey', () => {
     });
 });
 
+describe('isHeavySyncKey — nhận diện đầy đủ khóa nặng thi đua và cấu hình lớn', () => {
+    it.each([
+        'checkthuong_data',
+        'competition-luy-ke',
+        'competition-realtime',
+        'summary-luy-ke',
+        'summary-realtime',
+        'bi_competition-luy-ke',
+        'bi_competition-realtime',
+        'bi_summary-luy-ke',
+        'bi_summary-realtime',
+        'config-Tân Hiệp-thidua',
+        'bi_config-Tân Hiệp-thidua',
+        'analysis-employees-list',
+        'productConfig'
+    ])('%s → là khoá nặng', async (k) => {
+        const { isHeavySyncKey } = await import('../../utils/localDbScope');
+        expect(isHeavySyncKey(k)).toBe(true);
+    });
+});
+
 describe('bộ đệm Kho không phải cấu hình nhẹ + so giá trị', () => {
     it('khoDataCache_/khoDataAppliedSnapshot:: → KHÔNG đồng bộ nhẹ', async () => {
         expect(isLightSyncKey('khoDataCache_910_realtime_uid')).toBe(false);

@@ -440,7 +440,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                 <div className="flex flex-row items-center justify-between w-full gap-2 sm:gap-4 py-1.5 lg:py-3 flex-grow min-h-[150px]">
                                     {/* Cột trái: Biểu đồ */}
                                     <div className="w-[45%] sm:w-[48%] h-[150px] sm:h-[180px] lg:h-[200px] shrink-0">
-                                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+                                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1} initialDimension={{ width: 1, height: 1 }}>
                                             <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                                                 <Pie
                                                     data={pieChartData}

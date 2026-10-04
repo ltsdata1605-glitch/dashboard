@@ -170,7 +170,7 @@ export async function saveAnalysisEmployees(
         schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
         source: 'phan-tich',
         updatedAt: Date.now(),
-        supermarket,
+        supermarket: supermarket || '',
         totalCount: cleanList.length,
         employees: cleanList
     };
@@ -185,9 +185,10 @@ export async function saveAnalysisEmployees(
     const user = auth.currentUser;
     if (user) {
         try {
+            const cleanPayload = JSON.parse(JSON.stringify(payload, (k, v) => v === undefined ? null : v));
             const docRef = doc(db, 'users', user.uid, 'configs', ANALYSIS_EMPLOYEES_KEY);
             await setDoc(docRef, {
-                value: payload,
+                value: cleanPayload,
                 updatedAt: serverTimestamp(),
                 savedAt: Date.now()
             }, { merge: false });

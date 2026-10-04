@@ -16,7 +16,7 @@ async function navigateAndEnsureApp(page: Page, url: string) {
 
 test('Kiểm thử thực tế: Thẻ KPI trong Phân Tích & Report BI phải bo tròn 16px (rounded-2xl)', async ({ page }) => {
     // ─── 1. KIỂM TRA TAB PHÂN TÍCH ───
-    await navigateAndEnsureApp(page, '/');
+    await navigateAndEnsureApp(page, '/?tab=analysis');
 
     const ptCards = page.locator('.kpi-overview-card');
     await expect(ptCards.first()).toBeVisible({ timeout: 20_000 });
