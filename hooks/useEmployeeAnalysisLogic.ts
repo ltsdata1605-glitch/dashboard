@@ -126,14 +126,18 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV25', true);
             }
 
-            if (finalExploitationTabs.length > 0) {
-                setCustomExploitationTabs(finalExploitationTabs);
+            if (finalExploitationTabs.length === 0) {
+                // Tài khoản mới hoặc máy mới chưa có tab: nạp toàn bộ preset mặc định và lưu để hiển thị ổn định
+                finalExploitationTabs = [...presetExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('customExploitationTabs', finalExploitationTabs, 'local-employee-analysis');
+                ghiNhanTrenDia('customExploitationTabs', finalExploitationTabs);
+            } else if (savedExploitationTabs) {
+                ghiNhanTrenDia('customExploitationTabs', finalExploitationTabs);
             }
-            if (!savedExploitationTabs) {
-                // Chưa có trên đĩa: preset chỉ để HIỂN THỊ, không tự lưu (xem trên).
-                ghiNhanTrenDia('customExploitationTabs', finalExploitationTabs.length > 0 ? finalExploitationTabs : []);
-            } else if (!('customExploitationTabs' in trenDiaRef.current)) {
-                ghiNhanTrenDia('customExploitationTabs', savedExploitationTabs);
+
+            setCustomExploitationTabs(finalExploitationTabs);
+            if (!('customExploitationTabs' in trenDiaRef.current)) {
+                ghiNhanTrenDia('customExploitationTabs', finalExploitationTabs);
             }
             ghiNhanTrenDia('efficiencyExploitationTabs', savedEfficiencyTabs ?? []);
             
