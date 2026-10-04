@@ -7,7 +7,7 @@ import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
 import { offerShareRetry } from '../shared/ui/ShareRetryToast';
 import { downloadBlob } from '../../services/uiService';
-import { getCheckThuongDataFromIframeDb } from '../../services/checkThuongIframeService';
+import { getUnifiedCheckThuongData } from '../../services/checkThuongIframeService';
 import { CheckThuongLeaderboardView } from '../../features/check-thuong';
 
 
@@ -31,8 +31,8 @@ export const CheckThuongView: React.FC = () => {
     useEffect(() => {
         setMounted(true);
 
-        // Nạp trước dữ liệu đã lưu từ IndexedDB nếu có
-        getCheckThuongDataFromIframeDb().then((saved) => {
+        // Nạp trước dữ liệu đã lưu từ IndexedDB hợp nhất (cả keyval-store và BI_HUB_DATABASE_V2)
+        getUnifiedCheckThuongData().then((saved) => {
             if (saved && saved.competitionData && saved.competitionData.length > 0) {
                 setHasData(true);
                 setCompetitionData(saved.competitionData);
@@ -40,6 +40,11 @@ export const CheckThuongView: React.FC = () => {
                 if (saved.uploadTime) setUploadTime(saved.uploadTime);
                 if (saved.code1) setCodes(prev => ({ ...prev, code1: saved.code1 }));
                 if (saved.code2) setCodes(prev => ({ ...prev, code2: saved.code2 }));
+                // Gửi ngay cho iframe nếu iframe đã sẵn sàng
+                iframeRef.current?.contentWindow?.postMessage({
+                    type: 'CHECK_THUONG_INIT_DATA',
+                    payload: saved
+                }, '*');
             }
         });
 
@@ -53,6 +58,15 @@ export const CheckThuongView: React.FC = () => {
                 }
                 if (e.data.fileName) setFileName(e.data.fileName);
                 if (e.data.uploadTime) setUploadTime(e.data.uploadTime);
+            } else if (e.data?.type === 'CHECK_THUONG_REQUEST_DATA_FROM_PARENT') {
+                getUnifiedCheckThuongData().then((saved) => {
+                    if (saved && saved.competitionData && saved.competitionData.length > 0) {
+                        iframeRef.current?.contentWindow?.postMessage({
+                            type: 'CHECK_THUONG_INIT_DATA',
+                            payload: saved
+                        }, '*');
+                    }
+                });
             } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED' || e.data?.type === 'CHECK_THUONG_DATA_RESPONSE') {
                 const payload = e.data.payload;
                 if (payload) {
@@ -93,12 +107,35 @@ export const CheckThuongView: React.FC = () => {
         };
 
         // Tự động áp dụng bản Cloud mới vào iframe — người dùng không cần phải click xác nhận hay cập nhật thủ công
-        const handleCloudSync = () => {
-            iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, '*');
+        const handleCloudSync = (e?: any) => {
+            const payload = e?.detail?.payload;
+            if (payload && payload.competitionData && payload.competitionData.length > 0) {
+                setHasData(true);
+                setCompetitionData(payload.competitionData);
+                if (payload.fileName) setFileName(payload.fileName);
+                if (payload.uploadTime) setUploadTime(payload.uploadTime);
+                if (payload.code1) setCodes(prev => ({ ...prev, code1: payload.code1 }));
+                if (payload.code2) setCodes(prev => ({ ...prev, code2: payload.code2 }));
+                iframeRef.current?.contentWindow?.postMessage({
+                    type: 'CHECK_THUONG_INIT_DATA',
+                    payload
+                }, '*');
+            } else {
+                getUnifiedCheckThuongData().then((saved) => {
+                    if (saved && saved.competitionData && saved.competitionData.length > 0) {
+                        iframeRef.current?.contentWindow?.postMessage({
+                            type: 'CHECK_THUONG_INIT_DATA',
+                            payload: saved
+                        }, '*');
+                    } else {
+                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, '*');
+                    }
+                });
+            }
         };
 
-        const handleCloudUpdateAvailable = () => {
-            handleCloudSync();
+        const handleCloudUpdateAvailable = (e?: any) => {
+            handleCloudSync(e);
             toast.dismiss('checkthuong-cloud-update');
             if (activeTabRef.current === 'check-thuong') {
                 toast.success('Đã tự động cập nhật dữ liệu Check Thưởng mới nhất', {
@@ -165,6 +202,16 @@ export const CheckThuongView: React.FC = () => {
             // 2. Read saved font and inject into iframe
             getGlobalFont().then(font => {
                 injectFontIntoIframe(font || 'UTM Avo');
+            });
+
+            // 3. Đẩy dữ liệu Check Thưởng ngay xuống iframe để render lập tức mà không phải chờ
+            getUnifiedCheckThuongData().then(saved => {
+                if (saved && saved.competitionData && saved.competitionData.length > 0) {
+                    iframe.contentWindow?.postMessage({
+                        type: 'CHECK_THUONG_INIT_DATA',
+                        payload: saved
+                    }, '*');
+                }
             });
         };
         iframe.addEventListener('load', onLoad);

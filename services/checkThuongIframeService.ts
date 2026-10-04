@@ -51,3 +51,35 @@ export function getCheckThuongDataFromIframeDb(): Promise<any> { // payload ifra
         getReq.onerror = () => { db.close(); resolve(null); };
     })).catch(() => null);
 }
+
+/**
+ * Đọc dữ liệu Check Thưởng hợp nhất từ cả 'keyval-store' và 'BI_HUB_DATABASE_V2'.
+ * Nếu một trong hai nguồn có dữ liệu mà nguồn kia chưa có, hàm sẽ tự động đồng bộ ngay
+ * lập tức, đảm bảo cả iframe và parent app luôn có dữ liệu tức thì ngay từ lần khởi động đầu tiên.
+ */
+export async function getUnifiedCheckThuongData(): Promise<any> {
+    try {
+        let iframeData = await getCheckThuongDataFromIframeDb();
+        if (iframeData && Array.isArray(iframeData.competitionData) && iframeData.competitionData.length > 0) {
+            return iframeData;
+        }
+
+        // Nếu iframe DB chưa có (máy mới, sau dọn dẹp cache, hoặc khởi động lần đầu),
+        // fallback sang BI_HUB_DATABASE_V2 (nguồn chính của app và Cloud Sync)
+        const { getSetting } = await import('./dbService');
+        const parentData = await getSetting<any>('checkthuong_data');
+        if (parentData && Array.isArray(parentData.competitionData) && parentData.competitionData.length > 0) {
+            // Tự động vá sang keyval-store cho iframe
+            saveCheckThuongDataToIframeDb(parentData).catch(err => {
+                console.warn('[CheckThuongSync] Lỗi tự động vá sang keyval-store:', err);
+            });
+            return parentData;
+        }
+
+        return null;
+    } catch (e) {
+        console.warn('[CheckThuongSync] Lỗi đọc dữ liệu hợp nhất:', e);
+        return null;
+    }
+}
+

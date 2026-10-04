@@ -391,7 +391,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                         try {
                                             const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
                                             await saveCheckThuongDataToIframeDb(cloudItem.value);
-                                            window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                                            window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync', { detail: { payload: cloudItem.value } }));
                                         } catch (err) {
                                             console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
                                         }
