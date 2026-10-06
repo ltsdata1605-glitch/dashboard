@@ -1,26 +1,11 @@
 
 import React, { useState, useCallback, useTransition } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-    BarChart3, 
-    LayoutDashboard, 
-    Users, 
-    Wrench,
-    X,
-    Ticket,
-    Calculator,
-    Sticker,
-    Settings,
-    HelpCircle,
-    Printer,
-    Calendar,
-    FileText,
-    ArrowUpDown,
-    Bot
-} from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
+import { AppIcon, type IconName } from '../shared/ui/icon';
+import { NAV_TAB_ICONS } from './navIcons';
 
 const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
@@ -28,23 +13,24 @@ const MobileBottomNav: React.FC = React.memo(() => {
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
 
-    const mainTabs = [
-        { id: 'analysis', label: 'Phân tích YCX', icon: BarChart3 },
-        { id: 'employees', label: 'Report BI', icon: Users },
-        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard },
+    // Icon theo TÊN CHỨC NĂNG (chuẩn hoá icon 2026-10-02) — cùng tên với Sidebar nên 2 thanh luôn cùng hình.
+    const mainTabs: { id: string; label: string; icon: IconName }[] = [
+        { id: 'analysis', label: 'Phân tích YCX', icon: NAV_TAB_ICONS['analysis'] },
+        { id: 'employees', label: 'Report BI', icon: NAV_TAB_ICONS['employees'] },
+        { id: 'check-thuong', label: 'Check thưởng', icon: NAV_TAB_ICONS['check-thuong'] },
 
     ];
 
-    const moreTabs = [
-        { id: 'reports', label: 'Báo cáo', icon: FileText },
-        { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
-        { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
-        { id: 'tools-line-bot', label: 'Bot LINE', icon: Bot },
-        { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },
-        { id: 'tools-tax', label: 'Tính thuế', icon: Calculator },
-        { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: ArrowUpDown },
-        { id: 'settings', label: 'Phân quyền', icon: Settings },
-        { id: 'help', label: 'Giới thiệu', icon: HelpCircle },
+    const moreTabs: { id: string; label: string; icon: IconName }[] = [
+        { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'] },
+        { id: 'tools-print-sticker', label: 'In Sticker', icon: NAV_TAB_ICONS['tools-print-sticker'] },
+        { id: 'tools-phanca', label: 'Phân ca', icon: NAV_TAB_ICONS['tools-phanca'] },
+        { id: 'tools-line-bot', label: 'Bot LINE', icon: NAV_TAB_ICONS['tools-line-bot'] },
+        { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: NAV_TAB_ICONS['tools-coupon'] },
+        { id: 'tools-tax', label: 'Tính thuế', icon: NAV_TAB_ICONS['tools-tax'] },
+        { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: NAV_TAB_ICONS['tools-price-compare'] },
+        { id: 'settings', label: 'Phân quyền', icon: NAV_TAB_ICONS['settings'] },
+        { id: 'help', label: 'Giới thiệu', icon: NAV_TAB_ICONS['help'] },
     ];
 
     const handleTabClick = useCallback((id: string) => {
@@ -89,7 +75,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                     onClick={() => setIsMoreOpen(false)}
                                     className="min-h-11 min-w-11 flex items-center justify-center p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
-                                    <X size={20} />
+                                    <AppIcon name="close" size="md" />
                                 </Button>
                             </div>
 
@@ -105,7 +91,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                             className="justify-start flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                         >
                                             <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-900/30 flex items-center justify-center">
-                                                <tab.icon size={20} className="text-sky-700 dark:text-sky-400" />
+                                                <AppIcon name={tab.icon} size="lg" className="text-sky-700" />
                                             </div>
                                             <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
                                         </Button>
@@ -130,7 +116,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                                 } ${isPending ? 'opacity-70' : ''}`}
                                             >
-                                                <tab.icon size={20} />
+                                                <AppIcon name={tab.icon} size="lg" />
                                                 <span className="font-medium text-sm">{tab.label}</span>
                                             </Button>
                                         );
@@ -163,7 +149,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                     />
                                 )}
-                                <tab.icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                                <AppIcon name={tab.icon} size="lg" />
                                 <span className={`text-[11px] leading-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.label}</span>
                             </Button>
                         );
@@ -184,7 +170,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                         )}
-                        <Wrench size={22} strokeWidth={isMoreActive ? 2.5 : 1.8} />
+                        <AppIcon name="navTools" size="lg" />
                         <span className={`text-[11px] leading-tight ${isMoreActive ? 'font-bold' : 'font-medium'}`}>Khác</span>
                     </Button>
                 </div>

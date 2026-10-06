@@ -6,23 +6,8 @@ import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';
 import { Button } from './components/shared/ui/Button';
-import {
-    BarChart3,
-    LayoutDashboard,
-    Users,
-    Printer,
-    Calendar,
-    Ticket,
-    Calculator,
-    Settings,
-    HelpCircle,
-    Shield,
-    Wrench,
-    ChevronLeft,
-    ArrowUpDown,
-    Bot,
-    FileText
-} from 'lucide-react';
+import { AppIcon } from './components/shared/ui/icon';
+import { navTabIcon } from './components/layout/navIcons';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 const DashboardView = lazyWithRetry(() => import('./components/views/DashboardView'), 'DashboardView');
@@ -222,26 +207,8 @@ function AppContent() {
         };
     }, [activeTab]);
 
-    const getTabIcon = () => {
-        switch (activeTab) {
-            case 'analysis': return <BarChart3 size={18} color="white" strokeWidth={2.5} />;
-            case 'check-thuong': return <LayoutDashboard size={18} color="white" strokeWidth={2.5} />;
-            case 'employees': return <Users size={18} color="white" strokeWidth={2.5} />;
-            case 'tools-print-sticker': return <Printer size={18} color="white" strokeWidth={2.5} />;
-            case 'tools-phanca': return <Calendar size={18} color="white" strokeWidth={2.5} />;
-            case 'tools-line-bot': return <Bot size={18} color="white" strokeWidth={2.5} />;
-            case 'reports': return <FileText size={18} color="white" strokeWidth={2.5} />;
-            case 'tools-coupon': return <Ticket size={18} color="white" strokeWidth={2.5} />;
-            case 'tools-tax': return <Calculator size={18} color="white" strokeWidth={2.5} />;
-            case 'tools-price-compare': return <ArrowUpDown size={18} color="white" strokeWidth={2.5} />;
-            case 'settings': return <Settings size={18} color="white" strokeWidth={2.5} />;
-            case 'help': return <HelpCircle size={18} color="white" strokeWidth={2.5} />;
-            case 'pending-approval': return <Shield size={18} color="white" strokeWidth={2.5} />;
-            default:
-                if (activeTab.startsWith('tools')) return <Wrench size={18} color="white" strokeWidth={2.5} />;
-                return <BarChart3 size={18} color="white" strokeWidth={2.5} />;
-        }
-    };
+    // Ô icon trang trên thanh tiêu đề mobile — cùng map với Sidebar/MobileBottomNav (navIcons.ts).
+    const getTabIcon = () => <AppIcon name={navTabIcon(activeTab)} size="md" className="text-white" />;
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
@@ -321,7 +288,7 @@ function AppContent() {
                                 title="Về Dashboard"
                                 className="min-h-11 shrink-0 flex items-center gap-2.5 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
                             >
-                                <ChevronLeft size={18} className="text-slate-400 dark:text-slate-500 -mr-1.5" />
+                                <AppIcon name="chevronLeft" size="md" className="text-slate-400 -mr-1.5" />
                                 {brandIconAndTitle}
                             </Button>
                         ) : (

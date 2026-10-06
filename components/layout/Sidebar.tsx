@@ -1,39 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-    LayoutDashboard,
-    BarChart3,
-    Users,
-    LogOut,
-    FileText,
-    Menu,
-    ChevronDown,
-    Wrench,
-    Ticket,
-    Calculator,
-    Sticker,
-    ExternalLink,
-    Calendar,
-    ArrowUpDown,
-    Bot,
-    type LucideIcon
-} from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
+import { AppIcon, type IconName } from '../shared/ui/icon';
+import { NAV_TAB_ICONS } from './navIcons';
 import { formatCleanDisplayName } from '../../utils/dataUtils';
 
 interface NavSubItem {
     id: string;
     label: string;
-    icon: LucideIcon;
+    icon: IconName;
     externalUrl?: string;
 }
 
 interface NavMenuItem {
     id: string;
     label: string;
-    icon: LucideIcon;
+    icon: IconName;
     path?: string;
     externalUrl?: string;
     subItems?: NavSubItem[];
@@ -98,8 +82,8 @@ const NavItem = React.memo(({
                     }
                 `}
             >
-                <div className={`flex items-center justify-center min-w-[22px] transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
-                    <item.icon size={22} className={isActive ? 'text-sky-700' : 'group-hover:scale-110 transition-transform duration-300'} />
+                <div className={`flex items-center justify-center min-w-5 transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
+                    <AppIcon name={item.icon} size="lg" className={isActive ? 'text-sky-700' : 'group-hover:scale-110 transition-transform duration-300'} />
                 </div>
                 
                 <motion.div 
@@ -124,8 +108,9 @@ const NavItem = React.memo(({
                     </span>
                     
                     {hasSubItems && (
-                        <ChevronDown 
-                            size={16} 
+                        <AppIcon
+                            name="chevronDown"
+                            size="md"
                             className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                         />
                     )}
@@ -179,7 +164,7 @@ const NavItem = React.memo(({
                                     >
                                         <span className="flex-grow text-left">{sub.label}</span>
                                         {sub.externalUrl && (
-                                            <ExternalLink size={12} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                                            <AppIcon name="externalLink" size="xs" className="opacity-50 group-hover:opacity-100 transition-opacity" />
                                         )}
                                     </Button>
                                 ))}
@@ -200,26 +185,27 @@ export default function Sidebar() {
     const [isMobile, setIsMobile] = useState(false);
     const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
 
-    const menuItems = [
-        { id: 'analysis', label: 'Phân tích YCX', icon: BarChart3, path: '/analysis' },
-        { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
-        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
+    // Icon theo TÊN CHỨC NĂNG (chuẩn hoá icon 2026-10-02) — cùng tên với MobileBottomNav.
+    const menuItems: NavMenuItem[] = [
+        { id: 'analysis', label: 'Phân tích YCX', icon: NAV_TAB_ICONS['analysis'], path: '/analysis' },
+        { id: 'employees', label: 'Report BI', icon: NAV_TAB_ICONS['employees'], path: '/employees' },
+        { id: 'check-thuong', label: 'Check thưởng', icon: NAV_TAB_ICONS['check-thuong'], path: '/' },
 
-        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
+        { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'], path: '/reports' },
         ...(isDemoMode || userRole === 'admin' || userRole === 'manager' ? [
-            { id: 'tools-line-bot', label: 'Bot LINE', icon: Bot, path: '/line-bot' }
+            { id: 'tools-line-bot', label: 'Bot LINE', icon: NAV_TAB_ICONS['tools-line-bot'], path: '/line-bot' }
         ] : []),
         { 
             id: 'tools', 
             label: 'Công cụ', 
-            icon: Wrench, 
+            icon: NAV_TAB_ICONS['tools'], 
             path: '/tools',
             subItems: [
-                { id: 'tools-print-sticker', label: 'In Sticker', icon: Sticker },
-                { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
-                { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },
-                { id: 'tools-tax', label: 'Tính thuế', icon: Calculator },
-                { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: ArrowUpDown }
+                { id: 'tools-print-sticker', label: 'In Sticker', icon: NAV_TAB_ICONS['tools-print-sticker'] },
+                { id: 'tools-phanca', label: 'Phân ca', icon: NAV_TAB_ICONS['tools-phanca'] },
+                { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: NAV_TAB_ICONS['tools-coupon'] },
+                { id: 'tools-tax', label: 'Tính thuế', icon: NAV_TAB_ICONS['tools-tax'] },
+                { id: 'tools-price-compare', label: 'So sánh giá ĐT', icon: NAV_TAB_ICONS['tools-price-compare'] }
             ]
         },
     ];
@@ -227,8 +213,8 @@ export default function Sidebar() {
     // "Cài đặt" và "Giới thiệu" đã bỏ khỏi menu chính — Avatar ở cuối sidebar (dòng
     // ~350) đã dẫn thẳng tới Cài đặt, không cần trùng lặp. "Giới thiệu" bỏ hẳn theo
     // yêu cầu người dùng, chấp nhận không còn đường vào trên desktop.
-    const secondaryItems = [
-        ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
+    const secondaryItems: NavMenuItem[] = [
+        ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: NAV_TAB_ICONS['pending-approval'], path: '/pending' }] : []),
     ];
 
     useEffect(() => {
@@ -280,7 +266,7 @@ export default function Sidebar() {
                 <div className="h-20 flex items-center px-5 border-b border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-3 overflow-hidden w-full">
                         <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-200 dark:shadow-sky-900/20">
-                            <BarChart3 className="text-white" size={24} />
+                            <AppIcon name="chartBar" size="xl" className="text-white" />
                         </div>
                         <motion.div
                             initial={false}
@@ -382,7 +368,7 @@ export default function Sidebar() {
                             aria-label="Đăng xuất"
                             className="mt-1 shrink-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
                         >
-                            <LogOut size={18} />
+                            <AppIcon name="logout" size="md" />
                         </Button>
                     )}
                 </div>
