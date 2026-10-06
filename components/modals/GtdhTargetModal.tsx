@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import SearchableSelect from '../common/SearchableSelect';
-import { Icon } from '../common/Icon';
 import { formatCurrency } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
 
@@ -75,8 +75,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                 {/* CONFIGURATION FORM */}
                 <div className="p-3 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 flex-shrink-0">
                     <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight mb-3 sm:mb-4 flex items-center gap-2">
-                        <Icon name="plus-circle" size={3.5} className="text-rose-500 sm:hidden" />
-                        <Icon name="plus-circle" size={4} className="text-rose-500 hidden sm:block" />
+                        <AppIcon name="addCircle" size="md" className="text-rose-500" />
                         Thêm / Chỉnh Sửa Mục Tiêu
                     </h4>
                     
@@ -119,7 +118,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                 onClick={handleSave}
                                 disabled={!selectedNhomHang || !targetValue}
                                 variant="danger"
-                                leftIcon={<Icon name="save" size={4} />}
+                                leftIcon={<AppIcon name="save" size="md" />}
                                 className="w-full"
                             >
                                 LƯU MỤC TIÊU
@@ -132,8 +131,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                 <div className="p-3 sm:p-6 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex-1 custom-scrollbar">
                     <div className="flex justify-between items-center mb-3 sm:mb-4">
                         <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight flex items-center gap-2">
-                            <Icon name="list" size={3.5} className="text-sky-500 sm:hidden" />
-                            <Icon name="list" size={4} className="text-sky-500 hidden sm:block" />
+                            <AppIcon name="viewList" size="md" className="text-sky-500" />
                             Mục Tiêu Đang Áp Dụng
                         </h4>
                         <span className="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
@@ -143,7 +141,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
 
                     {gtdhList.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500">
-                            <Icon name="target" size={12} className="mb-3 opacity-20" />
+                            <AppIcon name="target" size="hero" className="mb-3 opacity-20" />
                             <p className="text-sm">Chưa có mục tiêu GTĐH nào được thiết lập.</p>
                             <p className="text-xs mt-1">Hệ thống sẽ không bôi đỏ cảnh báo trong bảng Chi Tiết Ngành Hàng.</p>
                         </div>
@@ -166,7 +164,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                         className="h-8 w-8 text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400"
                                         title="Xoá mục tiêu này"
                                     >
-                                        <Icon name="trash-2" size={4} />
+                                        <AppIcon name="delete" size="md" />
                                     </Button>
                                 </div>
                             ))}

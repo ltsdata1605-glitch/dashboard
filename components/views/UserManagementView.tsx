@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase';
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
-import { Icon } from '../common/Icon';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
@@ -715,29 +716,29 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 {/* Header */}
                 <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
+                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center rounded-md"><AppIcon name="users" size="lg" /></div>
                         <div>
                             <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Phân Quyền & Duyệt Yêu Cầu</h1>
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
                     <Button variant="unstyled" size="none" onClick={() => fetchRequests(true)} disabled={isLoading} className="min-h-11 sm:min-h-0 h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
-                        <Icon name="refresh-ccw" size={3.5} className={isLoading ? 'animate-spin' : ''} /> Làm Mới
+                        <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} /> Làm Mới
                     </Button>
                 </div>
                 {/* Tabs & Search & Sort */}
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
                         <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
-                            <Icon name="clock" size={3.5} />
+                            <AppIcon name="clock" size="md" />
                             Chờ duyệt
                         </Button>
                         <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'active' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
-                            <Icon name="users" size={3.5} />
+                            <AppIcon name="users" size="md" />
                             Hoạt động
                         </Button>
                         <Button variant="ghost" onClick={() => setListMode('expired')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'expired' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'}`}>
-                            <Icon name="calendar-clock" size={3.5} />
+                            <AppIcon name="schedule" size="md" />
                             Hết hạn
                         </Button>
                     </div>
@@ -751,7 +752,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <option value="logins">Truy cập</option>
                             </Select>
                             <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
-                                <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
+                                <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="md" />
                             </Button>
                         </div>
                         <div className="relative w-full sm:w-56">
@@ -770,12 +771,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     <AnimatePresence>
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
-                                <Icon name="loader-2" size={8} className="animate-spin text-sky-500 mb-4" />
+                                <AppIcon name="loading" size="state" spin className="text-sky-500 mb-4" />
                                 <p className="text-slate-500 font-medium">Đang tải danh sách...</p>
                             </div>
                         ) : requests.length === 0 ? (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
-                                <div className="w-16 h-16 bg-sky-50 dark:bg-sky-900/20 rounded-full flex items-center justify-center mb-4"><Icon name="check-circle-2" size={8} className="text-sky-400" /></div>
+                                <div className="w-16 h-16 bg-sky-50 dark:bg-sky-900/20 rounded-full flex items-center justify-center mb-4"><AppIcon name="success" size="state" className="text-sky-400" /></div>
                                 <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
                                     {listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : listMode === 'expired' ? 'Không có người dùng hết hạn' : 'Chưa có người dùng hoạt động'}
                                 </p>
@@ -829,7 +830,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                      </Select>
                                                 ) : (
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400' : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'}`}>
-                                                        <Icon name={req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users'} size={3} />
+                                                        <AppIcon name={resolveIconName(req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users') ?? 'help'} size="xs" />
                                                         {req.role === 'admin' ? 'Admin' : req.role === 'manager' ? 'Quản Lý' : 'NV'}
                                                     </span>
                                                 )}
@@ -846,9 +847,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             title="Từ chối"
                                                         >
                                                             {actionLoadingId === req.id && actionLoadingType === 'reject' ? (
-                                                                <Icon name="loader-2" size={3.5} className="animate-spin text-rose-600" />
+                                                                <AppIcon name="loading" size="sm" spin className="text-rose-600" />
                                                             ) : (
-                                                                <Icon name="x" size={3.5} />
+                                                                <AppIcon name="close" size="sm" />
                                                             )}
                                                         </Button>
                                                         <Button 
@@ -861,12 +862,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                         >
                                                             {actionLoadingId === req.id && actionLoadingType === 'approve' ? (
                                                                 <>
-                                                                    <Icon name="loader-2" size={3.5} className="animate-spin text-white" />
+                                                                    <AppIcon name="loading" size="sm" spin className="text-white" />
                                                                     <span>Đang duyệt...</span>
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    <Icon name="check" size={3.5} />
+                                                                    <AppIcon name="check" size="sm" />
                                                                     <span>Duyệt</span>
                                                                 </>
                                                             )}
@@ -883,9 +884,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             title="Gia hạn quyền truy cập"
                                                         >
                                                             {actionLoadingId === req.id ? (
-                                                                <Icon name="loader-2" size={3.5} className="animate-spin text-emerald-600" />
+                                                                <AppIcon name="loading" size="sm" spin className="text-emerald-600" />
                                                             ) : (
-                                                                <Icon name="refresh-cw" size={3.5} />
+                                                                <AppIcon name="refresh" size="sm" />
                                                             )}
                                                             Gia hạn
                                                         </Button>
@@ -897,11 +898,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
                                                             title="Thu hồi"
                                                         >
-                                                            <Icon name="user-minus" size={3.5} />
+                                                            <AppIcon name="userRemove" size="sm" />
                                                         </Button>
                                                         {savingIds.has(req.id) && (
                                                             <span className="text-[11px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
-                                                                <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...
+                                                                <AppIcon name="loading" size="xs" spin /> Lưu...
                                                             </span>
                                                         )}
                                                     </div>
@@ -915,7 +916,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors rounded-md shadow-sm flex items-center gap-1 text-xs font-medium active:scale-95"
                                                             title="Gia hạn / Đổi thời hạn"
                                                         >
-                                                            <Icon name="calendar-clock" size={3.5} className="text-emerald-600 dark:text-emerald-400" />
+                                                            <AppIcon name="schedule" size="sm" className="text-emerald-600" />
                                                             Gia hạn
                                                         </Button>
                                                         <Button
@@ -926,11 +927,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                             className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-700 transition-colors rounded-md shadow-sm flex items-center active:scale-95"
                                                             title="Thu hồi"
                                                         >
-                                                            <Icon name="user-minus" size={3.5} />
+                                                            <AppIcon name="userRemove" size="sm" />
                                                         </Button>
                                                         {savingIds.has(req.id) && (
                                                             <span className="text-[11px] text-sky-500 font-bold flex items-center gap-1 animate-pulse">
-                                                                <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...
+                                                                <AppIcon name="loading" size="xs" spin /> Lưu...
                                                             </span>
                                                         )}
                                                     </div>
@@ -1068,7 +1069,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         {/* Quick Presets */}
                         <div>
                             <label className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                                <Icon name="zap" size={3.5} className="text-amber-500" />
+                                <AppIcon name="quick" size="sm" className="text-amber-500" />
                                 Chọn nhanh thời gian:
                             </label>
                             <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
@@ -1106,7 +1107,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-950/30'
                                     }`}
                                 >
-                                    <Icon name="shield" size={3.5} />
+                                    <AppIcon name="security" size="sm" />
                                     Cấp quyền Vô Thời Hạn (Không bao giờ hết hạn)
                                 </Button>
                             </div>
@@ -1117,7 +1118,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                        <Icon name="clock" size={3.5} className="text-sky-500" />
+                                        <AppIcon name="clock" size="sm" className="text-sky-500" />
                                         Nhập số ngày gia hạn:
                                     </label>
                                     <div className="relative">
@@ -1137,7 +1138,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                                 <div className="space-y-1">
                                     <label className="text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1">
-                                        <Icon name="calendar" size={3.5} className="text-emerald-500" />
+                                        <AppIcon name="calendar" size="sm" className="text-emerald-500" />
                                         Hoặc chọn ngày kết thúc:
                                     </label>
                                     <Input
@@ -1161,12 +1162,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             <p className="text-base font-black text-slate-800 dark:text-white mt-0.5 flex items-center justify-center gap-1.5">
                                 {isUnlimited ? (
                                     <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                                        <Icon name="shield" size={4} />
+                                        <AppIcon name="security" size="md" />
                                         Vô thời hạn
                                     </span>
                                 ) : (
                                     <>
-                                        <Icon name="calendar-clock" size={4} className="text-emerald-600" />
+                                        <AppIcon name="schedule" size="md" className="text-emerald-600" />
                                         <span className="text-emerald-700 dark:text-emerald-300">
                                             {extendDate ? new Date(extendDate).toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Chưa chọn'}
                                         </span>
@@ -1193,7 +1194,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 isLoading={isSubmittingExtend}
                                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5"
                             >
-                                <Icon name="check" size={4} />
+                                <AppIcon name="check" size="md" />
                                 Xác Nhận Gia Hạn
                             </Button>
                         </div>

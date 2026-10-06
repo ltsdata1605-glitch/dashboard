@@ -28,20 +28,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {/* Khối `relative` CHỈ bọc ô nhập (2026-10-06): trước đây bọc cả dòng báo lỗi bên dưới nên icon
             canh `top-1/2` theo cả khối → khi có lỗi, icon tụt xuống lệch khỏi ô nhập. */}
         <div className="relative">
-        {left && (
+        {left && (onLeftIconClick ? (
           <Button
             type="button"
             variant="unstyled" size="none"
             onClick={onLeftIconClick}
-            disabled={!onLeftIconClick}
-            className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
-              onLeftIconClick ? "cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden" : "cursor-default"
-            )}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden"
           >
             <AppIcon name={left} size="md" />
           </Button>
-        )}
+        ) : (
+          // Icon TRANG TRÍ (2026-10-06): trước là <button disabled> không nhãn — trình đọc màn hình đọc thành một
+          // nút vô nghĩa, và nó chặn cú bấm vào vùng icon. Nay là span bỏ qua con trỏ → bấm vào icon là vào ô nhập.
+          <span aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center">
+            <AppIcon name={left} size="md" />
+          </span>
+        ))}
         
         <input
           ref={ref}
@@ -61,20 +63,22 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy}
         />
         
-        {right && (
+        {right && (onRightIconClick ? (
           <Button
             type="button"
             variant="unstyled" size="none"
             onClick={onRightIconClick}
-            disabled={!onRightIconClick}
-            className={cn(
-              "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
-              onRightIconClick ? "cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden" : "cursor-default"
-            )}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden"
           >
             <AppIcon name={right} size="md" />
           </Button>
-        )}
+        ) : (
+          // Icon TRANG TRÍ (2026-10-06): trước là <button disabled> không nhãn — trình đọc màn hình đọc thành một
+          // nút vô nghĩa, và nó chặn cú bấm vào vùng icon. Nay là span bỏ qua con trỏ → bấm vào icon là vào ô nhập.
+          <span aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center">
+            <AppIcon name={right} size="md" />
+          </span>
+        ))}
         </div>
 
         {error && (

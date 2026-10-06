@@ -676,7 +676,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         {readOnly ? (
                             'Không có dữ liệu thi đua để hiển thị.'
                         ) : (
-                            <>Bấm biểu tượng lọc <AppIcon name="filter" size="md" /> để chọn các cột dữ liệu hiển thị cho bảng này.</>
+                            <>Bấm biểu tượng lọc <AppIcon name="filter" size="md" className="inline" /> để chọn các cột dữ liệu hiển thị cho bảng này.</>
                         )}
                     </div>
                 ) : (

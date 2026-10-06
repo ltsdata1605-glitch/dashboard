@@ -1,6 +1,6 @@
 import React from 'react';
-import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Icon } from '../../../components/common/Icon';
+import { resolveIconName } from '../../../components/shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import type { ItemGroup, ReportDraft, CustomField } from '../types';
@@ -26,7 +26,7 @@ const blockNonNumericKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
 export const BandHeader: React.FC<{ icon?: string; title: React.ReactNode; right?: React.ReactNode }> = ({ icon, title, right }) => (
     <div className="h-7 px-2 flex items-center justify-between gap-2 bg-slate-100 border-b border-slate-200">
         <div className="flex items-center gap-1.5 min-w-0 text-slate-600">
-            {icon && <Icon name={icon} size={3.5} />}
+            {icon && <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />}
             <span className="text-[11px] font-bold uppercase tracking-wider truncate font-[family-name:var(--console-font-label)]">{title}</span>
         </div>
         {right && <div className="flex items-center gap-1 shrink-0">{right}</div>}
@@ -43,14 +43,14 @@ const AmountRow: React.FC<{ icon: string; label: string; value: string; onChange
     return (
         <div className={`flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-emerald-50/60' : 'bg-white'}`}>
             <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
-                <span className={`hidden sm:inline-flex shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><Icon name={icon} size={4} /></span>
+                <span className={`hidden sm:inline-flex shrink-0 ${active ? 'text-emerald-700' : 'text-slate-400'}`}><AppIcon name={resolveIconName(icon) ?? 'help'} size="md" /></span>
                 <span className={`min-w-0 truncate text-[13px] ${active ? 'font-semibold text-slate-900' : 'text-slate-700'}`} title={label}>{label}</span>
             </div>
             <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                 {onDelete && (
                     <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
                         className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600 relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden">
-                        <Trash2 size={12} />
+                        <AppIcon name="delete" size="xs" />
                     </Button>
                 )}
                 <Input type="number" inputMode="decimal" min="0" step="0.1" placeholder="0" fullWidth={false} aria-label={label}
@@ -78,7 +78,7 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                         // Cao 24px là dưới xa mức chạm 44px của Apple — đây lại là nút dùng nhiều
                         // nhất ở màn Báo cáo khai thác. Desktop giữ 24px cho gọn hàng tiêu đề.
                         className="h-6 min-h-11 sm:min-h-0 px-1.5 flex items-center justify-center gap-1 text-[11px] font-bold text-sky-700 hover:bg-sky-50 rounded">
-                        <Plus size={12} /> Thêm mục
+                        <AppIcon name="add" size="md" /> Thêm mục
                     </Button>
                 }
             />
@@ -108,10 +108,10 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                     className="h-8 lg:h-6 rounded px-2 text-[13px]" />
                 <div className="flex items-center gap-1 shrink-0">
                     <Button variant="secondary" size="icon" onClick={() => onOther(group, { count: Math.max(0, other.count - 1) })} aria-label="Giảm mục khác"
-                        className="h-8 w-8 lg:h-6 lg:w-6 rounded"><Minus size={12} /></Button>
+                        className="h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="minus" size="sm" /></Button>
                     <span className={`w-6 text-center text-[13px] tabular-nums font-semibold ${other.count > 0 ? 'text-sky-700' : 'text-slate-400'}`}>{other.count}</span>
                     <Button variant="secondary" size="icon" onClick={() => onOther(group, { count: other.count + 1 })} aria-label="Tăng mục khác"
-                        className="h-8 w-8 lg:h-6 lg:w-6 rounded"><Plus size={12} /></Button>
+                        className="h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="add" size="sm" /></Button>
                 </div>
             </div>
             )}

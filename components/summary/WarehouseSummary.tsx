@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, startTransition } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { WarehouseColumnConfig } from '../../types';
-import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { useDashboardContext, DashboardContextType } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig, getSetting, saveSetting } from '../../services/dbService';
@@ -619,8 +620,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
-                            <Icon name="layers" size={4} className="lg:hidden" />
-                            <Icon name="layers" size={4.5} className="hidden lg:block" />
+                            <AppIcon name="layers" size="md" />
                         </Button>
 
                         {/* Toggle Ngang/Dọc */}
@@ -630,8 +630,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
-                            <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4} className="lg:hidden" />
-                            <Icon name={viewMode === 'horizontal' ? 'layout-list' : 'table-2'} size={4.5} className="hidden lg:block" />
+                            <AppIcon name={resolveIconName(viewMode === 'horizontal' ? 'layout-list' : 'table-2') ?? 'help'} size="md" />
                         </Button>
 
                         {/* Nút lọc Siêu thị & Tổng dạng Icon Phễu dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
@@ -652,13 +651,12 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                         {userRole !== 'employee' && (
                             <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
-                                <Icon name="settings-2" size={4} className="lg:hidden" />
-                                <Icon name="settings-2" size={4.5} className="hidden lg:block" />
+                                <AppIcon name="settings" size="md" />
                             </Button>
                         )}
 
                         <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
-                            {isExporting ? <><Icon name="loader-2" className="animate-spin lg:hidden" size={4} /><Icon name="loader-2" className="animate-spin hidden lg:block" size={4.5} /></> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={4.5} className="hidden lg:block" /></>}
+                            {isExporting ? <><AppIcon name="loading" size="md" spin /></> : <><AppIcon name="exportImage" size="md" /></>}
                         </Button>
                         <ExportDestinationButton reportKey="Chi Tiết Theo Kho" />
                     </div>
@@ -673,7 +671,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     <div className="flex items-center justify-between mb-1.5 text-[11px] sm:text-xs">
                         <div className="flex items-center gap-2 min-w-0">
                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded shrink-0">
-                                <Icon name="clock" size={3} className="text-slate-400 dark:text-slate-500" />
+                                <AppIcon name="clock" size="xs" className="text-slate-400" />
                                 <span className="text-[11px] font-black uppercase tracking-wider">Quỹ thời gian</span>
                             </div>
                             <span className="text-[11px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 tabular-nums">
@@ -759,7 +757,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
-                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                            <AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />
                                         )}
                                     </div>
                                 </th>
@@ -773,7 +771,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                                     <div className="flex items-center justify-center gap-1">
                                                         {col.metric === 'percentHT' && isLuyKe ? '%D.KIẾN' : col.subHeader}
                                                         {sortConfig.key === col.id && (
-                                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                            <AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />
                                                         )}
                                                     </div>
                                                 </th>
@@ -801,7 +799,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.metric === 'percentHT' && isLuyKe ? '%D.KIẾN' : col.subHeader}
                                                 {sortConfig.key === col.id && (
-                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                    <AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />
                                                 )}
                                             </div>
                                         </th>

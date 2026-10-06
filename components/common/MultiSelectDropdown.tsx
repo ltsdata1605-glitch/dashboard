@@ -1,7 +1,8 @@
 
 import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import { Icon } from './Icon';
 import { Button } from '../shared/ui/Button';
 
 interface MultiSelectDropdownProps {
@@ -133,8 +134,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     }`}
                     title={label}
                 >
-                    <Icon name={iconName} size={4} className="lg:hidden" />
-                    <Icon name={iconName} size={4.5} className="hidden lg:block" />
+                    <AppIcon name={resolveIconName(iconName) ?? 'help'} size="md" />
                     {isFiltered && (
                         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[10px] flex items-center justify-center font-bold">
                             {selected.length}
@@ -163,16 +163,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                 {selected.length}
                             </div>
                         )}
-                        <Icon
-                            name="chevron-down"
-                            size={3}
-                            className={`text-slate-400 transition-transform duration-200 sm:hidden ${isOpen ? 'rotate-180' : ''}`}
-                        />
-                        <Icon
-                            name="chevron-down"
-                            size={3.5}
-                            className={`text-slate-400 transition-transform duration-200 hidden sm:block ${isOpen ? 'rotate-180' : ''}`}
-                        />
+                        <AppIcon name="chevronDown" size="sm" className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
                 </Button>
             )}
@@ -191,8 +182,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     {/* Search Field */}
                     <div className="p-1.5 sm:p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                         <div className="relative">
-                            <Icon name="search" size={3} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 sm:hidden" />
-                            <Icon name="search" size={3.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hidden sm:block" />
+                            <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder={placeholder}
@@ -223,8 +213,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                     className="peer sr-only" 
                                 />
                                 <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border border-slate-300 dark:border-slate-600 transition-colors peer-checked:bg-sky-600 peer-checked:border-sky-600" />
-                                <Icon name="check" size={2.5} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 sm:hidden" />
-                                <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 hidden sm:block" />
+                                <AppIcon name="check" size="xs" className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100" />
                             </div>
                             <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 group-hover:text-sky-700 transition-colors">Tất cả {label}</span>
                         </label>
@@ -252,7 +241,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                             <div className={`relative flex items-center justify-center w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 transition-all shrink-0 ${
                                                 isSelected ? 'bg-sky-600 border-sky-600 shadow-sm' : 'border-slate-300 dark:border-slate-600'
                                             }`}>
-                                                {isSelected && <><Icon name="check" size={2.5} className="text-white sm:hidden" /><Icon name="check" size={3} className="text-white hidden sm:block" /></>}
+                                                {isSelected && <><AppIcon name="check" size="xs" className="text-white" /></>}
                                             </div>
                                             <span className={`text-[11px] sm:text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option}</span>
                                         </Button>
@@ -266,7 +255,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                                <Icon name="search-x" size={6} className="text-slate-300 mb-2" />
+                                <AppIcon name="searchEmpty" size="xl" className="text-slate-300 mb-2" />
                                 <p className="text-[11px] text-slate-500 font-medium">Không tìm thấy "{searchTerm}"</p>
                             </div>
                         )}

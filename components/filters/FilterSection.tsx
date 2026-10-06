@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { VisibilityState } from '../../types';
 import { toLocalISOString, getRowValue } from '../../utils/dataUtils';
 import { COL } from '../../constants';
-import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import GtdhTargetModal from '../modals/GtdhTargetModal';
@@ -54,8 +55,7 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
         >
             <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className={`p-0.5 sm:p-1 rounded-md sm:rounded-lg transition-colors ${classes.iconBg}`}>
-                    <Icon name={icon} size={3} className={`transition-colors sm:hidden ${classes.iconColor}`}/>
-                    <Icon name={icon} size={3.5} className={`transition-colors hidden sm:block ${classes.iconColor}`}/>
+                    <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" className={`transition-colors ${classes.iconColor}`} />
                 </div>
                 <span className={`font-medium text-[11px] sm:text-xs transition-colors ${classes.textColor}`}>{label}</span>
             </div>
@@ -198,8 +198,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         onClick={onClose}
                         className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
                     >
-                        <Icon name="x" size={5} className="sm:hidden" />
-                        <Icon name="x" size={6} className="hidden sm:block" />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
             </div>
@@ -232,8 +231,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                             ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/60' 
                                             : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'
                                     }`}>
-                                        <Icon name="settings" size={3.5} className="sm:hidden" />
-                                        <Icon name="settings" size={4} className="hidden sm:block" />
+                                        <AppIcon name="settings" size="md" />
                                     </div>
                                     <div className="flex flex-col leading-tight">
                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
@@ -250,8 +248,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     className="w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
                                     title="Nhập file Excel Phân ca"
                                 >
-                                    <Icon name="upload-cloud" size={3.5} className="sm:hidden" />
-                                    <Icon name="upload-cloud" size={4} className="hidden sm:block" />
+                                    <AppIcon name="cloudUpload" size="md" />
                                 </Button>
 
                                 {/* Lấy danh sách (icon liên kết) */}
@@ -262,8 +259,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     className="w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
                                     title="Lấy danh sách phân ca từ ERP TGDĐ"
                                 >
-                                    <Icon name="link" size={3.5} className="sm:hidden" />
-                                    <Icon name="link" size={4} className="hidden sm:block" />
+                                    <AppIcon name="link" size="md" />
                                 </a>
                             </div>
                         </div>
@@ -281,8 +277,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                             className="p-1 sm:p-1.5 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                             title="Đặt lại bộ lọc"
                         >
-                            <Icon name="rotate-ccw" size={4} className="sm:hidden" />
-                            <Icon name="rotate-ccw" size={5} className="hidden sm:block" />
+                            <AppIcon name="reset" size="lg" />
                         </Button>
                     </div>
 
@@ -291,8 +286,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-1 sm:space-y-1.5">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-700 dark:text-sky-400 shadow-sm">
-                                    <Icon name="warehouse" size={3} className="sm:hidden" />
-                                    <Icon name="warehouse" size={3.5} className="hidden sm:block" />
+                                    <AppIcon name="warehouse" size="sm" />
                                 </div>
                                 <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Kho Tạo</label>
                             </div>
@@ -309,8 +303,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-1 sm:space-y-1.5">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-700 dark:text-sky-400 shadow-sm">
-                                    <Icon name="calendar" size={3} className="sm:hidden" />
-                                    <Icon name="calendar" size={3.5} className="hidden sm:block" />
+                                    <AppIcon name="calendar" size="sm" />
                                 </div>
                                 <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Tháng</label>
                             </div>
@@ -334,8 +327,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-1 sm:space-y-1.5">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-md text-amber-700 dark:text-amber-400 shadow-sm">
-                                    <Icon name="user" size={3} className="sm:hidden" />
-                                    <Icon name="user" size={3.5} className="hidden sm:block" />
+                                    <AppIcon name="user" size="sm" />
                                 </div>
                                 <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-widest">Người Tạo</label>
                             </div>
@@ -352,8 +344,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-1 sm:space-y-1.5">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 rounded-md text-rose-700 dark:text-rose-400 shadow-sm">
-                                    <Icon name="file-text" size={3} className="sm:hidden" />
-                                    <Icon name="file-text" size={3.5} className="hidden sm:block" />
+                                    <AppIcon name="report" size="sm" />
                                 </div>
                                 <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-widest">Trạng thái hồ sơ</label>
                             </div>
@@ -370,8 +361,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-1 sm:space-y-1.5 col-span-2">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-700 dark:text-emerald-400 shadow-sm">
-                                    <Icon name="truck" size={3} className="sm:hidden" />
-                                    <Icon name="truck" size={3.5} className="hidden sm:block" />
+                                    <AppIcon name="delivery" size="sm" />
                                 </div>
                                 <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">T.Thái Xuất</label>
                             </div>
@@ -396,8 +386,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <div className="space-y-1.5 px-1">
                             <div className="flex items-center gap-1.5 sm:gap-2">
                                 <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-700 dark:text-sky-400 shadow-sm">
-                                    <Icon name="users" size={3} className="sm:hidden" />
-                                    <Icon name="users" size={3.5} className="hidden sm:block" />
+                                    <AppIcon name="users" size="sm" />
                                 </div>
                                 <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-slate-300 tracking-widest">Bộ phận</label>
                             </div>
@@ -487,16 +476,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         >
                             <div className="flex items-center gap-2 sm:gap-2.5">
                                 <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-md sm:rounded-lg text-sky-700 dark:text-sky-400 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/60 transition-colors">
-                                    <Icon name="settings-2" size={3.5} className="sm:hidden" />
-                                    <Icon name="settings-2" size={4} className="hidden sm:block" />
+                                    <AppIcon name="settings" size="md" />
                                 </div>
                                 <div className="flex flex-col items-start leading-tight">
                                     <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Mục tiêu GTĐH</span>
                                     <span className="text-[11px] sm:text-[11px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
                                 </div>
                             </div>
-                            <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors sm:hidden" />
-                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors hidden sm:block" />
+                            <AppIcon name="chevronRight" size="md" className="text-slate-300 group-hover:text-sky-500 transition-colors" />
                         </Button>
                     </div>
                 </div>

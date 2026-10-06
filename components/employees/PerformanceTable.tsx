@@ -1,6 +1,6 @@
 import React, { useMemo, useState, forwardRef, useEffect, useRef } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { Employee, EmployeeData } from '../../types';
-import { Icon } from '../common/Icon';
 import { getDailyTarget, saveDailyTarget } from '../../services/dbService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { GroupType, SortDirection, safeSort, EmployeeWithTarget } from './performance/PerformanceTableUtils';
@@ -170,7 +170,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
     if (!employeeData) {
         return (
             <div className="flex items-center justify-center p-8 h-64">
-                <Icon name="loader-2" className="animate-spin text-sky-500" size={8} />
+                <AppIcon name="loading" size="state" spin className="text-sky-500" />
                 <span className="ml-3 text-slate-500 font-medium">Đang tải dữ liệu...</span>
             </div>
         );

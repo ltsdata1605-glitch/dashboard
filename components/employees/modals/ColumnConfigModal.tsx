@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Modal } from '../../shared/ui/Modal';
-import { Icon } from '../../common/Icon';
 import type { ColumnConfig } from '../../../types';
 import { DataColumnForm } from './column-config/DataColumnForm';
 import { CalculatedColumnForm } from './column-config/CalculatedColumnForm';
@@ -297,7 +297,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 <div className="flex justify-end gap-3">
                     <Button variant="unstyled" size="none" type="button" onClick={onClose}>Hủy Bỏ</Button>
                     <Button variant="primary" type="button" onClick={handleSubmit}>
-                        <Icon name="save" size={4} /> {editingColumn ? "Lưu Thay Đổi" : "Lưu & Bắt Đầu Cột Mới"}
+                        <AppIcon name="save" size="md" /> {editingColumn ? "Lưu Thay Đổi" : "Lưu & Bắt Đầu Cột Mới"}
                     </Button>
                 </div>
             }
@@ -310,8 +310,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                             ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
                         }`}>
-                           <Icon name={feedback.type === 'error' ? 'alert-triangle' : 'check-circle'} size={3.5} className="sm:hidden" />
-                           <Icon name={feedback.type === 'error' ? 'alert-triangle' : 'check-circle'} size={4} className="hidden sm:block" />
+                           <AppIcon name={feedback.type === 'error' ? 'warning' : 'success'} size="md" />
                            {feedback.message}
                         </div>
                     )}
@@ -319,13 +318,13 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     <div className="border-b border-slate-200 dark:border-slate-800">
                         <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto custom-scrollbar">
                             <Button type="button" variant="unstyled" size="none" onClick={() => setColumnType('data')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${columnType === 'data' ? 'border-sky-500 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="database" size={4} /> Truy vấn Data
+                                <AppIcon name="database" size="md" /> Truy vấn Data
                             </Button>
                             <Button type="button" variant="unstyled" size="none" onClick={() => setColumnType('calculated')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${columnType === 'calculated' ? 'border-sky-500 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="calculator" size={4} /> Cột Tính Toán
+                                <AppIcon name="calculator" size="md" /> Cột Tính Toán
                             </Button>
                             <Button type="button" variant="unstyled" size="none" onClick={() => setColumnType('target')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${columnType === 'target' ? 'border-sky-500 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="target" size={4} /> Thiết lập Target
+                                <AppIcon name="target" size="md" /> Thiết lập Target
                             </Button>
                         </nav>
                     </div>
@@ -362,7 +361,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                             onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
                                         >
                                             {h}
-                                            {mainHeader === h && <Icon name="check" size={4} className="text-sky-700" />}
+                                            {mainHeader === h && <AppIcon name="check" size="md" className="text-sky-700" />}
                                         </div>
                                     ))}
                                 </div>

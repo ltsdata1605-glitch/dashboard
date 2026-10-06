@@ -1,8 +1,8 @@
 
 import React, { useState, forwardRef, useMemo, useEffect } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { Employee } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
-import { Icon } from '../common/Icon';
 import { saveTopSellerAnalysis } from '../../services/dbService';
 import { RankBadge } from './performance/PerformanceTableUtils';
 import { Button } from '../shared/ui/Button';
@@ -94,8 +94,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${!isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Top/Bot 20%"
                         >
-                            <Icon name="percent" size={4} className="lg:hidden" />
-                            <Icon name="percent" size={4.5} className="hidden lg:block" />
+                            <AppIcon name="percent" size="md" />
                         </Button>
                         <Button
                             variant="unstyled" size="none"
@@ -103,8 +102,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${isExpanded ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title="Tất cả"
                         >
-                            <Icon name="layout-list" size={4} className="lg:hidden" />
-                            <Icon name="layout-list" size={4.5} className="hidden lg:block" />
+                            <AppIcon name="viewList" size="md" />
                         </Button>
                     </div>
                     <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
@@ -114,8 +112,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         title="Xuất hàng loạt báo cáo chi tiết"
                     >
-                        <Icon name="images" size={4} className="lg:hidden" />
-                        <Icon name="images" size={4.5} className="hidden lg:block" />
+                        <AppIcon name="exportBatch" size="md" />
                     </Button>
                     {onExport && (
                         <Button
@@ -125,8 +122,8 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                             title="Xuất Ảnh"
                         >
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                            {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                            {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                         </Button>
                     )}
                 </div>

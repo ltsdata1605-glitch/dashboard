@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, Copy, Pencil, Trash2 } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
@@ -110,7 +110,7 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                         <React.Fragment key={r.id}>
                                             <tr className={`h-[26px] hover:bg-slate-50 cursor-pointer border-l-[3px] ${traGop ? 'border-l-emerald-600' : 'border-l-slate-200'}`}
                                                 onClick={() => setExpanded(open ? null : r.id)} data-testid="history-row">
-                                                <td className="px-1 text-slate-400">{open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}</td>
+                                                <td className="px-1 text-slate-400">{open ? <AppIcon name="chevronDown" size="sm" /> : <AppIcon name="chevronRight" size="sm" />}</td>
                                                 <td className="px-2 whitespace-nowrap text-slate-600">{fmtTime(r.savedAt, r.date)}</td>
                                                 <td className="px-2 truncate max-w-[160px] text-slate-800">{r.staffName || '—'}</td>
                                                 <td className="px-2 text-right font-semibold text-slate-900">{fmtTr(total)}</td>
@@ -128,9 +128,9 @@ export const HistoryTab: React.FC<HistoryTabProps> = ({ reports, fields, onEdit,
                                                     <span className={r.priceWar ? 'text-rose-700 font-semibold' : 'text-slate-300'}>Chiến</span>
                                                 </td>
                                                 <td className="px-2 text-right whitespace-nowrap" onClick={e => e.stopPropagation()}>
-                                                    <Button variant="unstyled" size="none" onClick={() => copyReport(r)} title="Sao chép văn bản" aria-label="Sao chép" className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-sky-700"><Copy size={13} /></Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => onEdit(r)} title="Sửa lại" aria-label="Sửa lại" className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-sky-700"><Pencil size={13} /></Button>
-                                                    <Button variant="unstyled" size="none" onClick={() => setPendingDelete(r)} title="Xoá" aria-label="Xoá" className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-rose-600"><Trash2 size={13} /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={() => copyReport(r)} title="Sao chép văn bản" aria-label="Sao chép" className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-sky-700"><AppIcon name="copy" size="sm" /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={() => onEdit(r)} title="Sửa lại" aria-label="Sửa lại" className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-sky-700"><AppIcon name="edit" size="sm" /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={() => setPendingDelete(r)} title="Xoá" aria-label="Xoá" className="h-6 w-6 inline-flex items-center justify-center text-slate-400 hover:text-rose-600"><AppIcon name="delete" size="sm" /></Button>
                                                 </td>
                                             </tr>
                                             {open && (

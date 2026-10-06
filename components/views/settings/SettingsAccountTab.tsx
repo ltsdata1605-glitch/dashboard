@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../shared/ui/Modal';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import { Icon } from '../../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
@@ -144,7 +145,7 @@ export const SettingsAccountTab: React.FC = () => {
                         className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95"
                         title="Xoá tất cả dữ liệu cục bộ và đưa về trạng thái như người dùng mới hoàn toàn"
                     >
-                        <Icon name="trash-2" size={3.5} />
+                        <AppIcon name="delete" size="md" />
                         <span>Xoá tất cả dữ liệu (Người dùng mới)</span>
                     </Button>
                 </div>
@@ -160,7 +161,7 @@ export const SettingsAccountTab: React.FC = () => {
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <Icon name="user" size={10} className="text-sky-400" />
+                                    <AppIcon name="user" size="state" className="text-sky-400" />
                                 )}
                             </div>
 
@@ -175,7 +176,7 @@ export const SettingsAccountTab: React.FC = () => {
                                         userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
                                         'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                     }`}>
-                                        <Icon name={userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users'} size={3.5} />
+                                        <AppIcon name={resolveIconName(userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users') ?? 'help'} size="sm" />
                                         {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
                                     </span>
                                 </div>
@@ -185,7 +186,7 @@ export const SettingsAccountTab: React.FC = () => {
                                 {!isEditingProfile && (
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300 pt-0.5">
                                         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <Icon name="map-pin" size={3.5} className="text-rose-500 shrink-0" />
+                                            <AppIcon name="location" size="sm" className="text-rose-500" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Mã Kho:</span>
                                             <span className="font-bold text-slate-800 dark:text-white font-mono">{isSuperAdmin ? 'ALL (Super Admin)' : (departmentId || 'Chưa đăng ký')}</span>
                                             {isSuperAdmin && (
@@ -198,7 +199,7 @@ export const SettingsAccountTab: React.FC = () => {
                                         <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
                                         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <Icon name="user-check" size={3.5} className="text-rose-500 shrink-0" />
+                                            <AppIcon name="userCheck" size="sm" className="text-rose-500" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Tên NV:</span>
                                             <span className="font-bold text-amber-700 dark:text-amber-400 italic">{employeeName || 'N/A'}</span>
                                         </div>
@@ -206,7 +207,7 @@ export const SettingsAccountTab: React.FC = () => {
                                         <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
                                         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <Icon name="shield" size={3.5} className="text-rose-500 shrink-0" />
+                                            <AppIcon name="security" size="sm" className="text-rose-500" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Chức năng:</span>
                                             <span className="font-bold text-slate-800 dark:text-white">
                                                 {userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}
@@ -216,7 +217,7 @@ export const SettingsAccountTab: React.FC = () => {
                                         <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
                                         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <Icon name="calendar" size={3.5} className="text-rose-500 shrink-0" />
+                                            <AppIcon name="calendar" size="sm" className="text-rose-500" />
                                             <span className="font-medium text-slate-500 dark:text-slate-400">Hạn:</span>
                                             <span className="font-bold text-emerald-700 dark:text-emerald-400">
                                                 {expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}
@@ -253,7 +254,7 @@ export const SettingsAccountTab: React.FC = () => {
                                             : 'bg-white dark:bg-slate-800 border-2 border-rose-200 dark:border-rose-800/30 text-slate-700 dark:text-slate-300 hover:border-rose-400'
                                     }`}
                                 >
-                                    <Icon name={isEditingProfile ? 'save' : 'edit-3'} size={4} />
+                                    <AppIcon name={isEditingProfile ? 'save' : 'edit'} size="md" />
                                     {isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
                                 </Button>
                             </div>
@@ -263,7 +264,7 @@ export const SettingsAccountTab: React.FC = () => {
                     {isEditingProfile && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-sky-100 dark:border-sky-900/50 rounded-lg mb-6">
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> {isSuperAdmin ? 'KHO DÙNG CHUNG (thêm vào quyền Super Admin)' : 'MÃ KHO ĐĂNG KÝ'}</label>
+                                <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><AppIcon name="location" size="sm" /> {isSuperAdmin ? 'KHO DÙNG CHUNG (thêm vào quyền Super Admin)' : 'MÃ KHO ĐĂNG KÝ'}</label>
                                 <input
                                     type="text"
                                     value={stagedDept}
@@ -283,12 +284,12 @@ export const SettingsAccountTab: React.FC = () => {
                                             : 'border-slate-200 dark:border-slate-700 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20'
                                     }`}
                                 />
-                                {deptError && <p className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1"><Icon name="alert-circle" size={3.5} /> {deptError}</p>}
-                                {!deptError && stagedDept && <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1"><Icon name="check-circle" size={3.5} /> Nhấn Enter hoặc click Lưu</p>}
+                                {deptError && <p className="text-xs text-rose-600 dark:text-rose-400 font-medium flex items-center gap-1"><AppIcon name="alert" size="sm" /> {deptError}</p>}
+                                {!deptError && stagedDept && <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1"><AppIcon name="success" size="sm" /> Nhấn Enter hoặc click Lưu</p>}
                             </div>
                             {userRole === 'employee' && (
                                 <div className="flex flex-col gap-2">
-                                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> KHỚP TÊN BÁO CÁO</label>
+                                    <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><AppIcon name="userCheck" size="sm" /> KHỚP TÊN BÁO CÁO</label>
                                     <input
                                         type="text"
                                         value={stagedEmployee}
@@ -303,7 +304,7 @@ export const SettingsAccountTab: React.FC = () => {
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
                             }`}>
-                                <Icon name={userRole === 'admin' ? 'check-circle' : 'alert-triangle'} size={4} />
+                                <AppIcon name={resolveIconName(userRole === 'admin' ? 'check-circle' : 'alert-triangle') ?? 'help'} size="md" />
                                 {isSuperAdmin
                                     ? 'Áp dụng ngay: đọc/ghi được dữ liệu dùng chung (Phân tích, Report BI) của các Kho này — vẫn giữ toàn quyền Super Admin'
                                     : userRole === 'admin'
@@ -333,7 +334,7 @@ export const SettingsAccountTab: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800 shadow-sm transition-all group"
                     title="Đăng xuất tài khoản"
                 >
-                    <Icon name="log-out" size={4.5} className="text-rose-500 group-hover:translate-x-0.5 transition-transform" />
+                    <AppIcon name="logout" size="md" className="text-rose-500 group-hover:translate-x-0.5 transition-transform" />
                     <span>Đăng Xuất Tài Khoản</span>
                 </Button>,
                 document.getElementById('global-header-actions')!
@@ -346,7 +347,7 @@ export const SettingsAccountTab: React.FC = () => {
                     className="min-h-11 sm:min-h-0 shrink-0 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
                     title="Đăng xuất tài khoản"
                 >
-                    <Icon name="log-out" size={3.5} />
+                    <AppIcon name="logout" size="md" />
                     <span>Đăng Xuất</span>
                 </Button>,
                 document.getElementById('mobile-topbar-actions')!
@@ -372,7 +373,7 @@ export const SettingsAccountTab: React.FC = () => {
                     <div ref={hopResetRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá toàn bộ dữ liệu" tabIndex={-1} className="outline-none bg-white dark:bg-slate-850 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
                         <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                             <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 shrink-0">
-                                <Icon name="trash-2" size={6} />
+                                <AppIcon name="delete" size="xl" />
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">Xoá Tất Cả Dữ Liệu</h3>
@@ -416,12 +417,12 @@ export const SettingsAccountTab: React.FC = () => {
                             >
                                 {isResetting ? (
                                     <>
-                                        <Icon name="refresh-cw" size={3.5} className="animate-spin" />
+                                        <AppIcon name="refresh" size="sm" spin />
                                         <span>Đang xoá...</span>
                                     </>
                                 ) : (
                                     <>
-                                        <Icon name="trash-2" size={3.5} />
+                                        <AppIcon name="delete" size="sm" />
                                         <span>Xác nhận xoá sạch</span>
                                     </>
                                 )}

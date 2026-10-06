@@ -1,9 +1,9 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import type { WarehouseColumnConfig, WarehouseCategoryType, WarehouseMetricType } from '../../types';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import SearchableSelect from '../common/SearchableSelect';
 import { WAREHOUSE_METRIC_TYPE_MAP, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
 import ColumnConfigModal from '../employees/modals/ColumnConfigModal';
@@ -261,15 +261,15 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
                     <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-md">
                         <Button variant="unstyled" size="none" onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
-                            <Icon name="check-square" size={3.5} /> Bật tất cả
+                            <AppIcon name="checkboxOn" size="sm" /> Bật tất cả
                         </Button>
                         <Button variant="unstyled" size="none" onClick={() => handleSelectAll(false)} className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
-                            <Icon name="square" size={3.5} /> Tắt tất cả
+                            <AppIcon name="checkboxOff" size="sm" /> Tắt tất cả
                         </Button>
                     </div>
                 </div>
                  <Button variant="unstyled" size="none" onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-none border border-sky-600 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-all">
-                    <Icon name="plus" size={4} /> Tạo Cột Mới
+                    <AppIcon name="add" size="md" /> Tạo Cột Mới
                 </Button>
             </div>
             
@@ -298,7 +298,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-56 shrink-0">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                     <div className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-grab shrink-0 p-0.5" title="Giữ và kéo để đổi thứ tự nhóm">
-                                        <Icon name="grip-vertical" size={3.5} />
+                                        <AppIcon name="dragHandle" size="sm" />
                                     </div>
                                     <h4 className={`text-xs font-bold uppercase tracking-wider ${styles.text} truncate`}>
                                         {mainHeader}
@@ -310,10 +310,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
 
                                 {/* Nút thao tác nhóm */}
                                 <div className="flex items-center gap-0.5 shrink-0 opacity-90 md:opacity-0 md:group-hover/row:opacity-100 transition-opacity">
-                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors"><Icon name="eye" size={3.5}/></Button>
-                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"><Icon name="eye-off" size={3.5}/></Button>
+                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors"><AppIcon name="show" size="sm" /></Button>
+                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"><AppIcon name="hide" size="sm" /></Button>
                                     {isCustomGroup && (
-                                        <Button variant="unstyled" size="none" onClick={() => handleDeleteGroup(mainHeader)} title="Xóa toàn bộ nhóm" className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors ml-0.5"><Icon name="trash-2" size={3.5}/></Button>
+                                        <Button variant="unstyled" size="none" onClick={() => handleDeleteGroup(mainHeader)} title="Xóa toàn bộ nhóm" className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors ml-0.5"><AppIcon name="delete" size="sm" /></Button>
                                     )}
                                 </div>
                             </div>
@@ -340,9 +340,9 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                             
                                             {/* Nút sửa & xoá chỉ hiện khi hover vào chip */}
                                             <div className="flex items-center ml-0.5 border-l border-slate-200 dark:border-slate-700 pl-1 opacity-0 group-hover/chip:opacity-100 transition-opacity">
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded transition-colors" title="Chỉnh sửa"><Icon name="edit-3" size={3} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded transition-colors" title="Chỉnh sửa"><AppIcon name="edit" size="xs" /></Button>
                                                 {col.isCustom && (
-                                                    <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors" title="Xóa cột"><Icon name="trash-2" size={3} /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors" title="Xóa cột"><AppIcon name="delete" size="xs" /></Button>
                                                 )}
                                             </div>
                                         </div>
@@ -376,10 +376,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             footer={view === 'picker' ? (
                 <div className="flex items-center justify-between">
                     <Button type="button" variant="unstyled" size="none" onClick={handleRestoreDefaults} className="min-h-11 sm:min-h-0 py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
-                        <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
+                        <AppIcon name="reset" size="md" /> Khôi phục mặc định
                     </Button>
                     <Button type="button" variant="unstyled" size="none" onClick={handleSaveAndClose} className="min-h-11 sm:min-h-0 py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[11px] sm:text-sm font-black text-white bg-sky-600 hover:bg-sky-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-sky-500/30 flex items-center gap-1 sm:gap-2">
-                        Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
+                        Hoàn tất <AppIcon name="check" size="md" className="ml-1" />
                     </Button>
                 </div>
             ) : undefined}

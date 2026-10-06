@@ -1,5 +1,6 @@
 import React from 'react';
-import { Icon } from '../../common/Icon';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
 import { onActivateKey } from '../../shared/ui';
@@ -96,8 +97,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 }`}
                                 title="Tiêu chuẩn"
                             >
-                                <Icon name="table" size={4} className="lg:hidden" />
-                                <Icon name="table" size={4.5} className="hidden lg:block" />
+                                <AppIcon name="table" size="md" />
                             </Button>
                             <Button
                                 variant="unstyled" size="none"
@@ -109,8 +109,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 }`}
                                 title="So sánh"
                             >
-                                <Icon name="columns-2" size={4} className="lg:hidden" />
-                                <Icon name="columns-2" size={4.5} className="hidden lg:block" />
+                                <AppIcon name="columns" size="md" />
                             </Button>
                         </div>
                         
@@ -125,8 +124,8 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     title="Xuất Ảnh"
                                     className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                 >
-                                    {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                                    {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                                    {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                                    {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                                 </Button>
                             ) : (
                                 <>
@@ -137,8 +136,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
-                                            <Icon name="settings-2" size={4} className="lg:hidden"/>
-                                            <Icon name="settings-2" size={4.5} className="hidden lg:block"/>
+                                            <AppIcon name="settings" size="md" />
                                         </Button>
                                         <Button
                                             variant="unstyled" size="none"
@@ -147,8 +145,8 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             title="Xuất Ảnh"
                                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                         >
-                                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                                            {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                                            {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                                            {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                                         </Button>
                                         <ExportDestinationButton reportKey="Chi Tiết Ngành Hàng" />
                                     </div>
@@ -157,7 +155,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                             <div className="flex justify-between items-center mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 border-b border-slate-50 pb-1.5 sm:pb-2 dark:border-slate-700/50">
                                                 <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
-                                                <Button variant="unstyled" size="none" onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={4} className="lg:hidden"/><Icon name="x" size={5} className="hidden lg:block"/></Button>
+                                                <Button variant="unstyled" size="none" onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><AppIcon name="close" size="md" /></Button>
                                             </div>
                                             <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                                 {HEADER_CONFIG.filter((col) => {
@@ -169,8 +167,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                                     <div key={col.key} role="button" tabIndex={0} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} onKeyDown={onActivateKey(() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key]))} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2 select-none">
                                                             <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg ${col.colorClass}`}>
-                                                                <Icon name={col.icon || 'columns'} size={3} className="sm:hidden" />
-                                                                <Icon name={col.icon || 'columns'} size={3.5} className="hidden sm:block" />
+                                                                <AppIcon name={resolveIconName(col.icon || 'columns') ?? 'help'} size="sm" />
                                                             </div>
                                                             {col.label}
                                                         </span>

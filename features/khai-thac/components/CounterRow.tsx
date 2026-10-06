@@ -1,6 +1,6 @@
 import React from 'react';
-import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Icon } from '../../../components/common/Icon';
+import { resolveIconName } from '../../../components/shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface CounterRowProps {
@@ -32,7 +32,7 @@ export const CounterRow: React.FC<CounterRowProps> = ({ icon, label, value, onCh
         <div className={`flex items-center gap-0.5 sm:gap-2 px-1.5 sm:px-2 h-11 lg:h-[34px] border-b border-slate-100 ${active ? 'bg-sky-50/60' : 'bg-white'}`}>
             <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                 <span className={`hidden sm:inline-flex shrink-0 ${active ? 'text-sky-700' : 'text-slate-400'}`}>
-                    <Icon name={icon} size={4} />
+                    <AppIcon name={resolveIconName(icon) ?? 'help'} size="md" />
                 </span>
                 <span className={`min-w-0 truncate text-[13px] ${active ? 'font-semibold text-slate-900' : 'text-slate-700'}`} title={label}>
                     {label}
@@ -42,19 +42,19 @@ export const CounterRow: React.FC<CounterRowProps> = ({ icon, label, value, onCh
                 {onDelete && (
                     <Button variant="unstyled" size="none" onClick={onDelete} title="Xoá mục này" aria-label={`Xoá ${label}`}
                         className="h-6 w-6 flex items-center justify-center text-slate-300 hover:text-rose-600 relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden">
-                        <Trash2 size={12} />
+                        <AppIcon name="delete" size="sm" />
                     </Button>
                 )}
                 <Button variant="secondary" size="icon" onClick={() => onChange(Math.max(0, value - 1))} aria-label={`Giảm ${label}`}
                     className="h-8 w-7 min-h-0 min-w-0 sm:w-9 lg:h-6 lg:w-6 rounded relative after:absolute after:-inset-x-2 after:-inset-y-1.5 after:content-[''] lg:after:hidden">
-                    <Minus size={12} />
+                    <AppIcon name="minus" size="sm" />
                 </Button>
                 <span className={`w-5 sm:w-6 text-center text-[13px] tabular-nums font-semibold ${active ? 'text-sky-700' : 'text-slate-400'}`} data-testid={`count-${label}`}>
                     {value}
                 </span>
                 <Button variant="secondary" size="icon" onClick={() => onChange(value + 1)} aria-label={`Tăng ${label}`}
                     className="h-8 w-7 min-h-0 min-w-0 sm:w-9 lg:h-6 lg:w-6 rounded relative after:absolute after:-inset-x-2 after:-inset-y-1.5 after:content-[''] lg:after:hidden">
-                    <Plus size={12} />
+                    <AppIcon name="add" size="sm" />
                 </Button>
             </div>
         </div>

@@ -7207,7 +7207,21 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
     (h-3→xs, h-3.5→sm, h-4→md, h-5→lg, h-6→xl…), rồi soát tay theo ngữ cảnh (icon trong nút có chữ → md).
   - Test: `tests/e2e/icon-thanh-cong-cu-bi.spec.ts` (390/1366: cùng cỡ, lệch dọc ≤1px, vùng chạm 44px, bấm "Còn lại"
     → ô tích đổi; kiểm ngược: đồng hồ về sm → đỏ), unit `tests/unit/icon-registry.test.ts` +4.
-- [ ] **3** — Form/tìm kiếm/bộ lọc, Modal, Tooltip, EmptyState, ConfirmDialog.
+- [x] **3** — TOÀN BỘ khu vực gốc + Khai thác (2026-10-06): `components/**`, `features/check-thuong`,
+  `features/tax-calculator`, `features/khai-thac` — 0 icon kiểu cũ, 0 import thẳng lucide (ngoài registry).
+  - Codemod chạy trên ~95 file: `<Icon name size={N}>` → AppIcon (tên qua bảng chuyển tiếp, N×4px → token), tên động
+    bọc `resolveIconName`, GỘP cặp icon "bản điện thoại + bản máy tính" (`sm:hidden`/`hidden sm:block`) thành 1 icon.
+    Trần theo vai trò: nút đóng và mũi tên ≤ md.
+  - SỬA LỖI GIAI ĐOẠN 0: `.ycx-icon` đặt `display:inline-block` → trong nút không flex icon lệch ~2.5px (khung Auto Sync,
+    link header…). Nay không đặt display (giữ `block` của preflight như lucide cũ); codemod không còn bỏ lớp
+    `inline`/`block`/`mx-auto` (đã khôi phục 6 chỗ bị bỏ ở Giai đoạn 1–2).
+  - 3 tên chưa từng tồn tại → luôn hiện dấu hỏi: nút sắp xếp Phân quyền ('arrow-up-narrow-wide'/'arrow-down-wide-narrow'),
+    màn chờ duyệt ('user-plus'). Nút "Xuất ảnh" ở Thuế dùng icon tải xuống → máy ảnh. Nút "Chụp" giấy tờ ở Thuế tách tên
+    `takePhoto` (cùng hình máy ảnh nhưng khác chức năng với `exportImage`).
+  - `Input`: icon trang trí là `<span>` bỏ qua con trỏ (trước là `<button disabled>` không nhãn, chặn bấm vào ô).
+  - Registry 201 icon (thêm web, apiKey, cloud, localStorage, panelClose, click, call, takePhoto).
+  - Test: `tests/e2e/icon-audit-man-goc.spec.ts` — 8 màn × (390, 1366): 0 icon ngoài AppIcon, 0 lệch dọc >1px, 0 icon
+    nhỏ hơn md trong nút có chữ, 0 nút chỉ-icon dưới 44px (tính cả vùng chạm mở rộng `after:-inset-*`).
 - [ ] **4** — Phân tích, Report BI, Báo cáo, Check thưởng; xoá `features/bi-dashboard/components/Icons.tsx`.
 - [ ] **5** — Landing, bộ xuất ảnh, In Sticker (xoá `features/sticker-event/Icons.tsx`), Phân Ca, Bot LINE, Khai thác;
   xoá `components/common/Icon.tsx` khi `iconLegacyCall` về 0.

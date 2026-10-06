@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { FileHistoryManager } from './FileHistoryManager';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { Button } from '../shared/ui/Button';
@@ -92,7 +92,7 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
     if (files === null) {
         return (
             <div className="flex items-center justify-center py-4 text-slate-400 dark:text-slate-500">
-                <Icon name="loader-2" size={4} className="animate-spin" />
+                <AppIcon name="loading" size="md" spin />
             </div>
         );
     }
@@ -103,7 +103,7 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
                 <h4 className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide flex items-center gap-1.5">
-                    <Icon name="share-2" size={3.5} className="text-sky-500" />
+                    <AppIcon name="share" size="sm" className="text-sky-500" />
                     Dữ liệu Kho dùng chung ({maKho})
                 </h4>
                 <Button
@@ -112,7 +112,7 @@ export const KhoFileManager: React.FC<KhoFileManagerProps> = ({ maKho }) => {
                     className="text-[11px] text-rose-500 hover:text-rose-700 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                     title={`Xoá sạch tất cả ${files.length} file dùng chung của Kho ${maKho}`}
                 >
-                    <Icon name="trash-2" size={3} />
+                    <AppIcon name="delete" size="xs" />
                     <span>Xoá tất cả ({files.length} file)</span>
                 </Button>
             </div>

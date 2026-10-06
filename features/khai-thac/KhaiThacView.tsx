@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Check, Pencil, User } from 'lucide-react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Tabs } from '../../components/shared/ui/Tabs';
@@ -249,18 +249,18 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Tabs items={tabItems} activeId={tab} onChange={id => setTab(id as SubTab)} variant="underline" size="sm" />
                 <div className="flex items-center gap-1.5">
-                    <User size={14} className="text-slate-400" />
+                    <AppIcon name="user" size="sm" className="text-slate-400" />
                     {editingName ? (
                         <>
                             <Input autoFocus placeholder="Mã - Tên (VD: 21707 - Sơn)" value={nameInput} onChange={e => setNameInput(e.target.value)}
                                 onKeyDown={e => { if (e.key === 'Enter') commitName(); }} fullWidth={false} aria-label="Tên nhân viên"
                                 className="h-8 rounded w-56 text-[13px]" data-testid="staff-name-input" />
-                            <Button variant="primary" size="icon" className="h-8 w-8 rounded" onClick={commitName} aria-label="Lưu tên"><Check size={14} /></Button>
+                            <Button variant="primary" size="icon" className="h-8 w-8 rounded" onClick={commitName} aria-label="Lưu tên"><AppIcon name="check" size="sm" /></Button>
                         </>
                     ) : (
                         <Button variant="secondary" size="sm" className="h-8 rounded gap-1.5" onClick={() => { setNameInput(draft.staffName); setEditingName(true); }} title="Đổi tên nhân viên" data-testid="staff-name">
                             <span className="font-semibold text-slate-800">{draft.staffName || 'Chưa có tên'}</span>
-                            <Pencil size={12} className="text-slate-400" />
+                            <AppIcon name="edit" size="xs" className="text-slate-400" />
                         </Button>
                     )}
                 </div>

@@ -1,6 +1,6 @@
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 
 export interface UploadConflictInfo {
@@ -63,7 +63,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                 {/* Header */}
                 <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
-                        <Icon name="alert-triangle" size={6} className="animate-pulse" />
+                        <AppIcon name="warning" size="xl" className="animate-pulse" />
                     </div>
                     <div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -82,7 +82,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             Tệp mới tải lên
                         </span>
                         <div className="flex items-center gap-2">
-                            <Icon name="file-spreadsheet" size={3.5} className="text-slate-400" />
+                            <AppIcon name="spreadsheet" size="sm" className="text-slate-400" />
                             <strong className="text-slate-800 dark:text-slate-200 font-semibold truncate max-w-[280px]" title={newFilename}>
                                 {newFilename}
                             </strong>
@@ -188,7 +188,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         onClick={() => onResolve('cancel')}
                         className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-bold uppercase tracking-wider text-[11px] rounded-xl active:scale-[0.97] transition-all flex items-center gap-1.5"
                     >
-                        <Icon name="x" size={3.5} />
+                        <AppIcon name="close" size="sm" />
                         Hủy nạp file
                     </Button>
                 </div>

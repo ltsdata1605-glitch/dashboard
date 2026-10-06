@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import { Icon } from './Icon';
 import { Button } from '../shared/ui/Button';
 
 interface SingleSelectDropdownProps {
@@ -106,11 +106,7 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                     {renderContent()}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                    <Icon
-                        name="chevron-down"
-                        size={3.5}
-                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                    />
+                    <AppIcon name="chevronDown" size="sm" className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                 </div>
             </Button>
 
@@ -128,7 +124,7 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                     {options.length > 5 && (
                     <div className="p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                         <div className="relative">
-                            <Icon name="search" size={3.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                             <input
                                 type="text"
                                 placeholder={placeholder}
@@ -165,14 +161,14 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                             }`}
                                         >
                                             <span className={`text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option.label}</span>
-                                            {isSelected && <Icon name="check" size={3.5} className="text-sky-700 dark:text-sky-400 flex-shrink-0" />}
+                                            {isSelected && <AppIcon name="check" size="sm" className="text-sky-700" />}
                                         </Button>
                                     );
                                 })}
                             </div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                                <Icon name="search-x" size={6} className="text-slate-300 mb-2" />
+                                <AppIcon name="searchEmpty" size="xl" className="text-slate-300 mb-2" />
                                 <p className="text-[11px] text-slate-500 font-medium">Không có kết quả</p>
                             </div>
                         )}

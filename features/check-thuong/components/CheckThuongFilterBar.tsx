@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, X, Camera, RotateCcw, Loader2 } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { LeaderboardFilterState } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -35,7 +35,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                 {/* LỌC KÊNH */}
                 <div className="relative shrink-0 flex items-center">
                     <div className="absolute left-3 pointer-events-none text-slate-400">
-                        <Filter className="w-3.5 h-3.5" />
+                        <AppIcon name="filter" size="sm" />
                     </div>
                     <select
                         value={filters.channel}
@@ -55,7 +55,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                 {/* Ô NHẬP TÌM TÊN HOẶC MÃ KHO */}
                 <div className="relative flex-1 min-w-[200px]">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                        <Search className="w-4 h-4" />
+                        <AppIcon name="search" size="md" />
                     </div>
                     <input
                         type="text"
@@ -72,7 +72,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                             className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-none"
                             title="Xoá từ khoá tìm kiếm"
                         >
-                            <X className="w-3.5 h-3.5" />
+                            <AppIcon name="close" size="sm" />
                         </Button>
                     )}
                 </div>
@@ -94,7 +94,7 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                             className="p-2 text-slate-500 hover:text-rose-500 bg-slate-100 hover:bg-rose-50 dark:bg-slate-800 dark:hover:bg-rose-950/40 rounded-none transition-colors border border-slate-200/80 dark:border-slate-700"
                             title="Đặt lại bộ lọc"
                         >
-                            <RotateCcw className="w-3.5 h-3.5" />
+                            <AppIcon name="reset" size="sm" />
                         </Button>
                     )}
 
@@ -136,9 +136,9 @@ export const CheckThuongFilterBar: React.FC<CheckThuongFilterBarProps> = ({
                         title={`Xuất ảnh Top ${exportLimit} siêu thị`}
                     >
                         {isExporting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <AppIcon name="loading" size="sm" spin />
                         ) : (
-                            <Camera className="w-3.5 h-3.5" />
+                            <AppIcon name="exportImage" size="sm" />
                         )}
                         <span className="hidden sm:inline">Xuất ảnh ({exportLimit})</span>
                         <span className="sm:hidden">Ảnh</span>

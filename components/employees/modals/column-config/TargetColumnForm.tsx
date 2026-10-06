@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../../../common/Icon';
+import { AppIcon } from '../../../shared/ui/icon/AppIcon';
 import { Input } from '../../../shared/ui/Input';
 import { Button } from '../../../shared/ui/Button';
 
@@ -18,7 +18,7 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
         <div className="space-y-6">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
                 <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <Icon name="target" size={4} className="text-sky-500" /> Chỉ tiêu kho (Target)
+                    <AppIcon name="target" size="md" className="text-sky-500" /> Chỉ tiêu kho (Target)
                 </h4>
             </div>
             <div className="space-y-5">
@@ -47,7 +47,7 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                             />
                         </div>
                         <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1.5">
-                            <Icon name="info" size={3.5} className="mt-0.5 text-sky-500" />
+                            <AppIcon name="info" size="sm" className="mt-0.5 text-sky-500" />
                             <span>Hệ thống phân bổ tổng điểm này theo nguyên tắc trung bình cộng cho số lượng nhân viên thực tế làm việc.</span>
                         </p>
                     </div>

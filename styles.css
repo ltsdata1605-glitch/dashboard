@@ -70,12 +70,14 @@
      Px KHÔNG viết ở đây: AppIcon truyền `--ycx-icon-m` (mobile) và `--ycx-icon-d` (laptop) lấy từ
      `iconTokens.ts`; CSS chỉ chọn biến theo mốc `lg` (64rem = 1024px, trùng breakpoint Tailwind).
      Đặt trong @layer components để utility (`w-*`) vẫn đè được khi THẬT SỰ cần ngoại lệ. */
+  /* KHÔNG đặt `display` (sửa 2026-10-06): giữ đúng mặc định của Tailwind preflight cho svg (`block`,
+     `vertical-align: middle`) như icon lucide cũ. Bản đầu đặt `inline-block` → trong nút không dùng flex,
+     icon bị khung dòng chữ đẩy lệch ~2.5px (đo bằng tests/e2e/icon-audit-man-goc.spec.ts). Icon nằm GIỮA
+     câu chữ thì nơi gọi tự thêm lớp `inline`/`inline-block` như trước. */
   .ycx-icon {
     width: var(--ycx-icon-m, 18px);
     height: var(--ycx-icon-m, 18px);
     flex-shrink: 0;
-    display: inline-block;
-    vertical-align: middle;
   }
   @media (min-width: 64rem) {
     .ycx-icon {

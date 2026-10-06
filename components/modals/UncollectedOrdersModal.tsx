@@ -1,8 +1,9 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { flushSync } from 'react-dom';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -537,21 +538,21 @@ Link: ${url}`;
     const controls = (
         <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 lg:gap-2 hide-on-export">
             <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn chưa thu" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
-                <Icon name="clipboard-list" size={4} />
+                <AppIcon name="checklist" size="md" />
             </Button>
             <Button onClick={toggleAllDetails} variant="secondary" size="icon" title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}>
-                <Icon name="chevrons-down-up" size={4} />
+                <AppIcon name="collapseAll" size="md" />
             </Button>
              <Button onClick={handleBatchExport} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh hàng loạt theo từng nhân viên">
-                 <Icon name="images" size={4} />
+                 <AppIcon name="exportBatch" size="md" />
             </Button>
             <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
-                 <Icon name="camera" size={4} />
+                 <AppIcon name="exportImage" size="md" />
             </Button>
-            <Button onClick={handleExportLocalExcel} disabled={isExporting} variant="outline" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportLocalExcel} disabled={isExporting} variant="outline" title="Xuất File Excel" leftIcon={<AppIcon name="spreadsheet" size="md" />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Excel
             </Button>
-            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="outline" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-sky-300 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="outline" title="Xuất lên Google Sheet" leftIcon={<AppIcon name="spreadsheet" size="md" />} className="border border-sky-300 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Sheet
             </Button>
         </div>
@@ -585,7 +586,7 @@ Link: ${url}`;
                                             className={`bg-slate-50 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-lg border-l-4 border-${color}-500 flex items-center gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5`}
                                         >
                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-${color}-100 dark:bg-${color}-900/50 flex flex-shrink-0 items-center justify-center text-${color}-600 dark:text-${color}-400`}>
-                                                <Icon name={icon} size={4.5} />
+                                                <AppIcon name={resolveIconName(icon) ?? 'help'} size="md" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 truncate leading-tight mb-0.5" title={item.name}>{item.name}</p>
@@ -609,10 +610,10 @@ Link: ${url}`;
                                             <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-700 dark:text-amber-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
                                             <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${creator.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{creator.hieuQuaQD.toFixed(0)}%</span></span>
                                             <Button onClick={(e) => handleExportCreator(e, creator.name)} title={`Xuất ảnh của ${creator.name}`} variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hide-on-export ml-2">
-                                                <Icon name="camera" size={4} />
+                                                <AppIcon name="exportImage" size="md" />
                                             </Button>
                                             <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
-                                                <Icon name="chevron-down" />
+                                                <AppIcon name="chevronDown" size="md" />
                                             </div>
                                         </div>
                                     </summary>
@@ -636,7 +637,7 @@ Link: ${url}`;
                                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-700 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
                                                     <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
                                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
-                                                        <Icon name="chevron-down" />
+                                                        <AppIcon name="chevronDown" size="md" />
                                                     </div>
                                                 </div>
                                             </summary>

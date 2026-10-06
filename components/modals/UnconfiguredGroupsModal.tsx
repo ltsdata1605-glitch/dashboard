@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Button } from '../shared/ui/Button';
@@ -68,7 +68,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-2xl">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
-                        <Icon name="alert-triangle" size={5} className="animate-bounce" />
+                        <AppIcon name="warning" size="lg" className="animate-bounce" />
                     </div>
                     <div>
                         <h2 className="text-base sm:text-lg font-bold tracking-tight text-amber-800 dark:text-amber-400 uppercase">
@@ -80,7 +80,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                     </div>
                 </div>
                 <Button variant="unstyled" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-2 text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
-                    <Icon name="x" size={4} />
+                    <AppIcon name="close" size="md" />
                 </Button>
             </div>
 
@@ -125,7 +125,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                         className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 rounded transition-colors flex items-center gap-1 text-[11px] font-bold"
                                                         title="Sao chép dòng cấu hình"
                                                     >
-                                                        <Icon name="copy" size={3} />
+                                                        <AppIcon name="copy" size="xs" />
                                                         <span>Sao chép</span>
                                                     </Button>
                                                     <Button
@@ -137,7 +137,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                         className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-350 rounded transition-colors flex items-center gap-1 text-[11px] font-bold"
                                                         title="Loại bỏ không hiển thị cảnh báo"
                                                     >
-                                                        <Icon name="eye-off" size={3} />
+                                                        <AppIcon name="hide" size="xs" />
                                                         <span>Loại bỏ</span>
                                                     </Button>
                                                 </div>
@@ -150,7 +150,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                     </div>
                 ) : (
                     <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-850 rounded-xl text-slate-500 dark:text-slate-400">
-                        <Icon name="check-circle-2" className="mx-auto text-emerald-500 mb-2" size={8} />
+                        <AppIcon name="success" size="state" className="mx-auto text-emerald-500 mb-2" />
                         <p className="font-semibold text-xs text-slate-700 dark:text-slate-300">Không có nhóm hàng mới cần cấu hình</p>
                         <p className="text-[11px] mt-0.5">Tất cả các nhóm hàng trong dữ liệu đều đã được cấu hình hoặc đã được loại bỏ.</p>
                     </div>
@@ -219,7 +219,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         disabled={unconfiguredGroups.length === 0}
                         className={`px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-300/30 dark:shadow-none active:scale-95'}`}
                     >
-                        <Icon name="copy" size={3.5} />
+                        <AppIcon name="copy" size="sm" />
                         <span>Sao chép toàn bộ dòng mới</span>
                     </Button>
                     
@@ -229,7 +229,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         rel="noopener noreferrer"
                         className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
-                        <Icon name="external-link" size={3.5} />
+                        <AppIcon name="externalLink" size="sm" />
                         <span>Mở file Google Sheets cấu hình</span>
                     </a>
                 </div>

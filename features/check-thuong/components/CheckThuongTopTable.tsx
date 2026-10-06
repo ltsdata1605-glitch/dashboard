@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronRight, ChevronDown, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { CheckThuongStoreSummary, LeaderboardSortField, SortDirection } from '../types';
 import { CHECK_THUONG_COLS, parseNumber } from '../services/checkThuongCalc';
 import { Button } from '../../../components/shared/ui/Button';
@@ -150,12 +150,12 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                     <span className="inline-flex items-center shrink-0">
                         {isActive ? (
                             sortOrder === 'asc' ? (
-                                <ArrowUp className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
+                                <AppIcon name="arrowUp" size="sm" className="text-sky-600 stroke-[2.5]" />
                             ) : (
-                                <ArrowDown className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 stroke-[2.5]" />
+                                <AppIcon name="arrowDown" size="sm" className="text-sky-600 stroke-[2.5]" />
                             )
                         ) : (
-                            <ArrowUpDown className="w-3 h-3 opacity-0 group-hover/th:opacity-60 transition-opacity text-slate-400" />
+                            <AppIcon name="sort" size="xs" className="opacity-0 group-hover/th:opacity-60 transition-opacity text-slate-400" />
                         )}
                     </span>
                 </div>
@@ -267,7 +267,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                             isExpanded ? 'rotate-180 text-sky-600 bg-sky-100 dark:bg-sky-950' : ''
                                                         }`}
                                                     >
-                                                        <ChevronDown className="w-3 h-3" />
+                                                        <AppIcon name="chevronDown" size="xs" />
                                                     </span>
                                                 </button>
                                             </td>
@@ -318,7 +318,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                     title={`Xem chi tiết kho ${store.storeCode}`}
                                                 >
                                                     <span>Xem</span>
-                                                    <ChevronRight className="w-3 h-3" />
+                                                    <AppIcon name="chevronRight" size="xs" />
                                                 </Button>
                                             </td>
                                         </tr>
@@ -345,7 +345,7 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                                                                     onClick={() => onSelectStore(store.storeCode)}
                                                                     className="text-[11px] font-bold text-sky-600 hover:text-sky-500 hover:underline inline-flex items-center gap-0.5 cursor-pointer"
                                                                 >
-                                                                    Xem chi tiết <ChevronRight className="w-3 h-3" />
+                                                                    Xem chi tiết <AppIcon name="chevronRight" size="xs" />
                                                                 </Button>
                                                             </div>
                                                         </div>

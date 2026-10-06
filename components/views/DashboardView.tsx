@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
@@ -52,7 +53,6 @@ import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo, LINE_EXPO
 import type { AutoSendItem } from '../../services/autoSyncSchedule';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { getExportFilenamePrefix, formatCurrency, getRowValue } from '../../utils/dataUtils';
 import { COL } from '../../constants';
@@ -395,7 +395,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     <div className="flex items-start justify-between gap-3 w-full min-w-0">
                         <div className="flex items-start gap-2.5 flex-1 min-w-0">
                             <div className="p-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded-lg shrink-0 mt-0.5">
-                                <Icon name="cloud-download" size={4} />
+                                <AppIcon name="cloudDownload" size="md" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-1.5 w-full min-w-0">
@@ -411,15 +411,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                 </p>
                                 {pendingCloudSync.meta.savedAt && (
                                     <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                                        <Icon name="clock" size={3} />
+                                        <AppIcon name="clock" size="xs" />
                                         {new Date(pendingCloudSync.meta.savedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 )}
                             </div>
                         </div>
                         <Button variant="unstyled" size="none" onClick={() => setPendingCloudSync(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 shrink-0">
-                            <Icon name="x" size={4} className="lg:hidden" />
-                            <Icon name="x" size={5} className="hidden lg:block" />
+                            <AppIcon name="close" size="md" />
                         </Button>
                     </div>
                     <div className="flex gap-2 mt-0.5">
@@ -435,7 +434,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             onClick={() => handleAcceptCloudSync()}
                             className="flex-[2] py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
                         >
-                            <Icon name="refresh-cw" size={3.5} />
+                            <AppIcon name="refresh" size="sm" />
                             Nạp dữ liệu đám mây
                         </Button>
                     </div>
@@ -493,7 +492,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             {/* Banner for Pending Users */}
                             {userRole === 'pending' && (
                                 <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-md shadow-rose-500/20 z-50 sticky top-0 flex items-center justify-center gap-2">
-                                    <Icon name="alert-triangle" size={5} />
+                                    <AppIcon name="warning" size="lg" />
                                     Tài khoản của bạn hiện CHƯA ĐƯỢC PHÊ DUYỆT hoặc ĐÃ HẾT HẠN. Bạn đang xem giao diện rút gọn. Vui lòng bật "Dữ liệu Mẫu" ở Menu trái để thử nghiệm tính năng!
                                 </div>
                             )}
@@ -531,7 +530,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     {announcement && announcement.active && announcement.content && (
                                         <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[11px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-none shadow-md border border-rose-500/25 mb-2 no-print">
                                             <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-lg z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
-                                                <Icon name="megaphone" size={4} className="animate-bounce shrink-0" />
+                                                <AppIcon name="announcement" size="md" className="animate-bounce" />
                                                 <span className="uppercase tracking-wider text-[11px] font-black">Thông báo</span>
                                             </div>
                                             <div className="flex-1 overflow-hidden relative h-5 flex items-center">
@@ -550,13 +549,13 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
                                             <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
-                                                <Icon name="users" size={3} className="text-sky-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
+                                                <AppIcon name="users" size="xs" className="text-sky-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             {logic.fileInfo && (
                                                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
-                                                    <Icon name="calendar-days" size={3.5} className="opacity-70" />
+                                                    <AppIcon name="calendar" size="sm" className="opacity-70" />
                                                     <span className="text-[11px] font-bold uppercase tracking-widest">
                                                         Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-black">{logic.fileInfo.savedAt}</span>
                                                     </span>
@@ -590,7 +589,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     </div>
                                                     <div className="text-[11px] font-bold underline underline-offset-2 flex items-center gap-0.5">
                                                         <span>Xem & Cập nhật</span>
-                                                        <Icon name="chevron-right" size={3} />
+                                                        <AppIcon name="chevronRight" size="xs" />
                                                     </div>
                                                 </div>
                                             )}
@@ -647,7 +646,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
                                                                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-700 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[11px]"
                                                                 >
-                                                                    <Icon name="archive-restore" size={3.5} />
+                                                                    <AppIcon name="restore" size="sm" />
                                                                     Chờ xuất: {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
                                                                 </Button>
                                                             )}
@@ -656,12 +655,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 >
                                                     <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
                                                         <Button variant="unstyled" size="none" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                            <Icon name="settings-2" size={4} className="lg:hidden" />
-                                                            <Icon name="settings-2" size={4.5} className="hidden lg:block" />
+                                                            <AppIcon name="settings" size="md" />
                                                         </Button>
                                                         <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
-                                                            <Icon name="camera" size={4} className="lg:hidden" />
-                                                            <Icon name="camera" size={4.5} className="hidden lg:block" />
+                                                            <AppIcon name="exportImage" size="md" />
                                                         </Button>
                                                         <ExportDestinationButton reportKey="Toàn Bộ Bản Tin" />
                                                     </div>

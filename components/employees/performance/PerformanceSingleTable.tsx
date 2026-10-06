@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import type { Employee } from '../../../types';
 import { abbreviateName, formatCurrency, formatQuantity, getBorderAccentFromColorClass } from '../../../utils/dataUtils';
-import { Icon } from '../../common/Icon';
 import {
     GroupType, SortDirection, TAB_THEMES, DEPT_COLORS,
     getProgressBarColor, getPercentBadge, getTraChamBadge, getHieuQuaBadge, RankBadge, EmployeeWithTarget
@@ -171,7 +172,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
     if (!dataToRender || Object.keys(dataToRender).length === 0) {
         return (
             <div ref={tableRef} className="flex flex-col items-center justify-center py-20 text-center">
-                <Icon name="inbox" size={10} className="text-slate-300 dark:text-slate-700 mb-3" />
+                <AppIcon name="empty" size="state" className="text-slate-300 mb-3" />
                 <p className="text-sm font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">Không có dữ liệu hiển thị</p>
             </div>
         );
@@ -206,8 +207,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     title={tabLabel}
                                 >
-                                    <Icon name={tabIcon} size={4} className="lg:hidden" />
-                                    <Icon name={tabIcon} size={4.5} className="hidden lg:block" />
+                                    <AppIcon name={resolveIconName(tabIcon) ?? 'help'} size="md" />
                                     <span className="hidden sm:inline">{tabLabel}</span>
                                 </Button>
                             )})}
@@ -223,8 +223,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
-                            <Icon name="images" size={4} className="lg:hidden" />
-                            <Icon name="images" size={4.5} className="hidden lg:block" />
+                            <AppIcon name="exportBatch" size="md" />
                         </Button>
                         <Button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
@@ -233,8 +232,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                            {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                            {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                         </Button>
                     </div>
                 </div>
@@ -257,7 +256,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 <div className="flex items-center justify-center gap-1">
                                     NHÂN VIÊN
                                     {(sortConfig.key === 'name' && showSortArrow) && (
-                                        <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>
+                                        <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                     )}
                                 </div>
                             </th>
@@ -274,7 +273,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     <div className="flex items-center justify-center gap-1 whitespace-normal leading-tight">
                                         {group.name}
                                         {group.noSubHeader && sortConfig.key === headers.find(h => h.groupName === group.name)?.key && showSortArrow && (
-                                            <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
+                                            <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                         )}
                                     </div>
                                 </th>
@@ -323,16 +322,16 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             </div>
                                         ) : (
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
-                                                {h.sos ? <Icon name="alert-triangle" size={3} /> : null}
+                                                {h.sos ? <AppIcon name="warning" size="xs" /> : null}
                                                 {h.label}
-                                                {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-sky-500 hide-on-export" />}
+                                                {isTarget && <AppIcon name="edit" size="xs" className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-sky-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
                                                     <Button variant="unstyled" size="none" onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-sky-700 dark:hover:text-sky-400 transition-opacity shrink-0 hide-on-export">
-                                                        <Icon name="copy" size={3} />
+                                                        <AppIcon name="copy" size="xs" />
                                                     </Button>
                                                 )}
                                                 {(sortConfig.key === h.key && showSortArrow) && (
-                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
+                                                    <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                                 )}
                                                 {copyKey === h.key && (
                                                     <span className="ml-1 text-emerald-700 text-[11px] font-bold animate-pulse absolute -top-1 right-1 hide-on-export">✓</span>

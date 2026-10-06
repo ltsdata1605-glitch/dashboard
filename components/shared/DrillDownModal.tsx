@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { AppIcon } from './ui/icon/AppIcon';
 import type { DataRow, ProductConfig } from '../../types';
 import { COL } from '../../constants';
 import { getRowValue, calculateRowMetrics, formatCurrency, formatQuantity, parseExcelDate } from '../../utils/dataUtils';
@@ -6,7 +7,6 @@ import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 import { Input } from '../shared/ui/Input';
 import { EmptyState } from '../shared/ui/EmptyState';
-import { Icon } from '../common/Icon';
 
 /**
  * Modal DRILL-DOWN dùng chung (KE_HOACH_TONG_THE.md mục 6 — "bấm một ô bất kỳ → xem các dòng cấu
@@ -163,7 +163,7 @@ export const DrillDownModal: React.FC<DrillDownModalProps> = ({
 
                 <div className="flex justify-end pt-1">
                     <Button variant="secondary" size="sm" onClick={onClose}>
-                        <Icon name="x" size={3.5} className="mr-1" /> Đóng
+                        <AppIcon name="close" size="sm" className="mr-1" /> Đóng
                     </Button>
                 </div>
             </div>

@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
 import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getBorderAccentFromColorClass, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
@@ -411,17 +412,17 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Icon name="plus-circle" size={4} className="lg:hidden" /><Icon name="plus-circle" size={5} className="hidden lg:block" />
+                            <AppIcon name="addCircle" size="lg" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Icon name="settings-2" size={4} className="lg:hidden" /><Icon name="settings-2" size={5} className="hidden lg:block" />
+                            <AppIcon name="settings" size="lg" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors">
-                            <Icon name="trash-2" size={4} className="lg:hidden" /><Icon name="trash-2" size={5} className="hidden lg:block" />
+                            <AppIcon name="delete" size="lg" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={5} className="hidden lg:block" />}
+                            {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                            {isExporting ? <AppIcon name="loading" size="lg" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="lg" className="hidden lg:block" />}
                         </Button>
                         <ExportDestinationButton reportKey={config.tableName} />
                     </div>
@@ -435,7 +436,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     <div className="flex items-center justify-center gap-1">
                                         NHÂN VIÊN
                                         {sortConfig.key === 'name' && (
-                                            <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>
+                                            <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                         )}
                                     </div>
                                 </th>
@@ -468,12 +469,12 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
-                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
+                                                    <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={4} /></Button>
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-700 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><AppIcon name="edit" size="md" /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-700 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><AppIcon name="delete" size="md" /></Button>
                                             </div>
                                         </th>
                                     );
@@ -496,12 +497,12 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
-                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
+                                                    <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={4} /></Button>
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-700 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={4} /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><AppIcon name="edit" size="md" /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-700 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><AppIcon name="delete" size="md" /></Button>
                                             </div>
                                         </th>
                                     );

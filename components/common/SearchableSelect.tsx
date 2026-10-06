@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Icon } from './Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Button } from '../shared/ui/Button';
 
 interface SearchableSelectProps {
@@ -58,8 +58,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                         {displayValue}
                     </span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                        <Icon name="chevrons-up-down" size={3.5} className="text-slate-400 sm:hidden" />
-                        <Icon name="chevrons-up-down" size={4} className="text-slate-400 hidden sm:block" />
+                        <AppIcon name="expandAll" size="md" className="text-slate-400" />
                     </span>
                 </Button>
                 {isOpen && (
@@ -82,7 +81,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                                 <span className="block truncate italic">{placeholder}</span>
                                 {!value && (
                                     <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-sky-700">
-                                        <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
+                                        <AppIcon name="check" size="md" />
                                     </span>
                                 )}
                             </li>
@@ -96,7 +95,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                                         <span className="block truncate">{opt}</span>
                                         {value === opt && (
                                             <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-sky-700">
-                                                <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
+                                                <AppIcon name="check" size="md" />
                                             </span>
                                         )}
                                     </li>

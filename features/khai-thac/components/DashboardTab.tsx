@@ -1,5 +1,5 @@
 import React, { useMemo, useRef } from 'react';
-import { Share2 } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { KpiCard } from '../../../components/shared/ui/KpiCard';
@@ -71,7 +71,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
         <div className="space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
                 <Tabs items={RANGE_ITEMS} activeId={range} onChange={id => onRangeChange(id as DashboardRange)} variant="segment" size="sm" />
-                <Button variant="secondary" size="sm" className="rounded h-8" leftIcon={<Share2 size={13} />}
+                <Button variant="secondary" size="sm" className="rounded h-8" leftIcon={<AppIcon name="share" size="sm" />}
                     onClick={() => shareElementAsImage(captureRef.current, `bieu-do-${new Date().toISOString().slice(0, 10)}.png`, 'Báo cáo doanh số cá nhân')}>
                     Xuất ảnh
                 </Button>

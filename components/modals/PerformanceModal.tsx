@@ -1,7 +1,8 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { Employee, DataRow, ProductConfig } from '../../types';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO, getCategoryExportWidth } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
@@ -70,7 +71,7 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
                 <div className="flex items-center justify-between gap-1 min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                         <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center shrink-0 ${c.iconBg} ${c.iconText}`}>
-                            <Icon name={icon} size={3} />
+                            <AppIcon name={resolveIconName(icon) ?? 'help'} size="xs" />
                         </div>
                         <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate" title={label}>{label}</p>
                     </div>
@@ -323,10 +324,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     const controls = (
         <div className="flex items-center gap-1 sm:gap-2 hide-on-export">
             <Button onClick={toggleAllCustomers} variant="secondary" size="icon" title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
-                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} />
+                <AppIcon name={isAllCustomersExpanded ? 'expandAll' : 'collapseAll'} size="md" />
             </Button>
             <Button onClick={handleExport} disabled={isExporting} isLoading={isExporting} variant="secondary" size="icon" title="Xuất Ảnh Phân Tích" className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
-                 {!isExporting && <Icon name="camera" size={4} />}
+                 {!isExporting && <AppIcon name="exportImage" size="md" />}
             </Button>
         </div>
     );
@@ -390,7 +391,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4">
                  <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                        <Icon name="contact" size={4} className="text-sky-500 sm:hidden"/><Icon name="contact" size={5} className="text-sky-500 hidden sm:block"/> Chi Tiết Theo Khách Hàng
+                        <AppIcon name="contact" size="lg" className="text-sky-500" /> Chi Tiết Theo Khách Hàng
                     </span>
                  </h4>
                  <div ref={customerDetailsContainerRef} className={`space-y-0 pr-1 sm:pr-2 mt-2 sm:mt-4 ${(isBatchExporting || isExporting) ? '' : 'max-h-[500px] overflow-y-auto'}`}>
@@ -409,7 +410,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                     {showDateHeader && (
                                         <div className="flex items-center gap-2 mt-3 mb-1 px-1">
                                             <div className="flex items-center gap-1.5 text-xs font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2.5 py-1 rounded-md">
-                                                <Icon name="calendar" size={3} />
+                                                <AppIcon name="calendar" size="xs" />
                                                 <span>Ngày tạo: {customer.createdDateFormatted}</span>
                                             </div>
                                             <div className="flex-1 h-px bg-sky-200 dark:bg-sky-800"></div>
@@ -420,7 +421,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                 <div className="flex items-center justify-between w-full sm:w-auto">
                                     <p className="font-extrabold text-[11px] sm:text-sm text-sky-950 dark:text-sky-100 pl-1 whitespace-nowrap">{customer.name.toUpperCase()}</p>
                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2 sm:hidden">
-                                        <Icon name="chevron-down" />
+                                        <AppIcon name="chevronDown" size="md" />
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-x-2 sm:gap-x-3 gap-y-0.5 sm:gap-y-1 flex-wrap justify-start sm:justify-end text-[11px] font-semibold w-full sm:w-auto">
@@ -429,7 +430,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-700 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
                                     <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2 hidden sm:block">
-                                        <Icon name="chevron-down" />
+                                        <AppIcon name="chevronDown" size="md" />
                                     </div>
                                 </div>
                              </summary>

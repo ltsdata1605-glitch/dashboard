@@ -9,8 +9,8 @@ import { ICON_REGISTRY, type IconName } from './iconRegistry';
  * dồn về MỘT tên: 'trash-2' → delete, 'check-circle'/'check-circle-2' → success, 'refresh-ccw'/
  * 'refresh-cw' → refresh, 'settings'/'settings-2' → settings…
  *
- * Có thêm 3 tên mà bảng cũ KHÔNG có nên từng âm thầm hiện dấu hỏi: 'alert-octagon', 'trending-down',
- * 'message-square'. Xoá file này khi `iconLegacyCall` của lint-ratchet về 0.
+ * Có thêm 6 tên mà bảng cũ KHÔNG có nên từng âm thầm hiện dấu hỏi: 'alert-octagon', 'trending-down',
+ * 'message-square', 'arrow-up-narrow-wide', 'arrow-down-wide-narrow', 'user-plus'. Xoá file này khi `iconLegacyCall` của lint-ratchet về 0.
  */
 export const LEGACY_ICON_NAMES: Record<string, IconName> = {
   'activity': 'activity',
@@ -209,6 +209,10 @@ export const LEGACY_ICON_NAMES: Record<string, IconName> = {
   'wind': 'wind',
   'x': 'close',
   'zap': 'quick',
+  // Tên KHÔNG có trong bảng cũ — từng âm thầm hiện dấu hỏi (phát hiện qua audit 2026-10-06)
+  'arrow-up-narrow-wide': 'sortAsc',
+  'arrow-down-wide-narrow': 'sortDesc',
+  'user-plus': 'userAdd',
 };
 
 /** Tên chức năng giữ nguyên; tên cũ đổi qua bảng; không nhận ra → undefined (nơi gọi tự dự phòng). */

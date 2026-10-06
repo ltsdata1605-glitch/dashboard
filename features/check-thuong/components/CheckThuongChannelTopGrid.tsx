@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ChevronRight, Camera } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { CheckThuongStoreSummary } from '../types';
 
 interface CheckThuongChannelTopGridProps {
@@ -182,7 +182,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                 title={`Xuất ảnh Top 10 siêu thị thưởng cao kênh ${channel}`}
                                 className={`p-1.5 ${theme.button} border rounded-none transition-all shadow-2xs active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center`}
                             >
-                                <Camera className={`w-3.5 h-3.5 ${theme.icon}`} />
+                                <AppIcon name="exportImage" size="md" className={theme.icon} />
                             </button>
                         </div>
 
@@ -255,7 +255,7 @@ export const CheckThuongChannelTopGrid: React.FC<CheckThuongChannelTopGridProps>
                                 onClick={() => top10[0] && onSelectStore(top10[0].storeCode)}
                                 className="text-sky-600 hover:text-sky-700 dark:text-sky-400 font-bold inline-flex items-center gap-0.5 cursor-pointer"
                             >
-                                Top 1 <ChevronRight className="w-2.5 h-2.5" />
+                                Top 1 <AppIcon name="chevronRight" size="xs" />
                             </button>
                         </div>
                     </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../../../common/Icon';
+import { AppIcon } from '../../../shared/ui/icon/AppIcon';
 import MultiSelectDropdown from '../../../common/MultiSelectDropdown';
 import { Select } from '../../../shared/ui/Select';
 import { Input } from '../../../shared/ui/Input';
@@ -44,7 +44,7 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
         <div className="space-y-6">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
                 <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <Icon name="filter" size={4} className="text-sky-500" /> Chỉ định nguồn dữ liệu
+                    <AppIcon name="filter" size="md" className="text-sky-500" /> Chỉ định nguồn dữ liệu
                 </h4>
             </div>
             <div className="space-y-5">
@@ -76,7 +76,7 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                 </div>
                 <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                     <h5 className="font-medium text-sm text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-                        <Icon name="tag" size={4} className="text-slate-400" /> Lọc theo cấu hình giá trị bán
+                        <AppIcon name="tag" size="md" className="text-slate-400" /> Lọc theo cấu hình giá trị bán
                     </h5>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div className="w-full sm:w-[160px]">

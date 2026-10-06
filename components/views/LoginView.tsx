@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
@@ -72,7 +72,7 @@ const LoginView: React.FC = () => {
             <div className="max-w-md w-full bg-white rounded-md p-8 border border-slate-200 animate-fade-in-up">
                 <div className="flex justify-center mb-8">
                     <div className="w-16 h-16 rounded-md bg-sky-50 flex items-center justify-center">
-                        <Icon name="layout-dashboard" className="w-8 h-8 text-sky-700 dark:text-sky-400" />
+                        <AppIcon name="dashboard" size="state" className="text-sky-700" />
                     </div>
                 </div>
                 
@@ -83,7 +83,7 @@ const LoginView: React.FC = () => {
                 {isInAppWebView && (
                     <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">
                         <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
-                            <Icon name="alert-triangle" className="w-4 h-4" /> Lưu ý Đăng Nhập:
+                            <AppIcon name="warning" size="md" /> Lưu ý Đăng Nhập:
                         </div>
                         <p className="leading-relaxed">
                             Anh/Chị đang truy cập qua trình duyệt của <strong>Zalo/Facebook</strong>. Trình duyệt này chặn cửa sổ đăng nhập Google.
@@ -150,7 +150,7 @@ const LoginView: React.FC = () => {
                         onClick={() => setDemoMode(true)}
                         className="w-full flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-sky-400 dark:hover:border-sky-600 hover:bg-sky-50/50 dark:hover:bg-sky-900/10 transition-all font-medium text-slate-500 dark:text-slate-400"
                     >
-                        <Icon name="glasses" size={5} />
+                        <AppIcon name="glasses" size="lg" />
                         Kích hoạt Chế độ Dùng Thử
                     </Button>
                     <p className="text-[11px] text-center text-slate-400 mt-2 px-2 leading-relaxed">

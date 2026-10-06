@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { QrCode, Copy, Check, Info } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { BANK_OPTIONS } from '../services/bankCatalog';
@@ -57,7 +57,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/80 pb-2">
                 <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
-                        <QrCode size={15} />
+                        <AppIcon name="qrCode" size="md" />
                     </div>
                     <div>
                         <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-white">
@@ -104,7 +104,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                     onClick={() => handleCopy(bankAccount, 'Số tài khoản')}
                                     className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
                                 >
-                                    {copiedField === 'Số tài khoản' ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
+                                    {copiedField === 'Số tài khoản' ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                                     <span>Copy STK</span>
                                 </button>
                             )}
@@ -129,7 +129,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                     onClick={() => handleCopy(qrDescription, 'Nội dung CK')}
                                     className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5"
                                 >
-                                    {copiedField === 'Nội dung CK' ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
+                                    {copiedField === 'Nội dung CK' ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                                     <span>Copy nội dung</span>
                                 </button>
                             )}
@@ -161,14 +161,14 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                                 onClick={() => handleCopy(String(Math.round(amount)), 'Số tiền')}
                                 className="gap-1 text-xs text-emerald-700 hover:bg-emerald-100 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
                             >
-                                {copiedField === 'Số tiền' ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                                {copiedField === 'Số tiền' ? <AppIcon name="check" size="sm" className="text-emerald-600" /> : <AppIcon name="copy" size="sm" />}
                                 <span>Copy số tiền</span>
                             </Button>
                         </div>
 
                         {/* Giải thích: đây chính là tiền thuế bạn được nhận lại do nhận thay */}
                         <div className="flex items-start gap-1.5 pt-1.5 border-t border-emerald-200/70 dark:border-emerald-800/50">
-                            <Info size={12} className="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0" />
+                            <AppIcon name="info" size="xs" className="text-emerald-600 mt-0.5" />
                             <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
                                 Đồng nghiệp quét mã này để trả lại phần thuế bạn đã nộp thay
                                 {proxyAmount && proxyAmount > 0 ? (
@@ -202,7 +202,7 @@ export const TaxPaymentQrCard: React.FC<TaxPaymentQrCardProps> = ({
                         </div>
                     ) : (
                         <div className="p-6 text-slate-400 text-xs space-y-1.5">
-                            <QrCode size={36} className="mx-auto text-slate-300 dark:text-slate-600" />
+                            <AppIcon name="qrCode" size="state" className="mx-auto text-slate-300" />
                             <p className="font-semibold text-slate-600 dark:text-slate-400">Chưa tạo mã QR</p>
                             <p className="text-[11px] text-slate-400 max-w-[200px] mx-auto">
                                 Vui lòng chọn ngân hàng và nhập số tài khoản để tự động tạo mã QR.

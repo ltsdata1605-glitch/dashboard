@@ -1,9 +1,9 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import SingleSelectDropdown from '../common/SingleSelectDropdown';
 import FilterChip from '../common/FilterChip';
@@ -170,7 +170,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             title="Tải YCX lên"
                             className="flex items-center justify-center w-8 h-8 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="upload" size={5} />
+                            <AppIcon name="upload" size="lg" />
                         </Button>
                     )}
                     {onOpenHistory && canManageFiles && (
@@ -181,7 +181,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             title="Quản lý tệp đã lưu"
                             className="flex items-center justify-center w-8 h-8 text-rose-700 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="database" size={5} />
+                            <AppIcon name="database" size="lg" />
                         </Button>
                     )}
                     <a
@@ -191,7 +191,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         title="Tải dữ liệu báo cáo (BCNB)"
                         className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95 shrink-0"
                     >
-                        <Icon name="link" size={5} />
+                        <AppIcon name="link" size="lg" />
                     </a>
                     {hasSalesData && onClearSalesData && (
                         <Button
@@ -200,7 +200,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             title={salesClearTitle || "Xóa dữ liệu YCX"}
                             className="flex items-center justify-center w-8 h-8 text-rose-500 hover:text-rose-600 rounded-lg transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="trash-2" size={5} />
+                            <AppIcon name="delete" size="lg" />
                         </Button>
                     )}
                     <Button
@@ -209,7 +209,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         title="Bộ lọc nâng cao"
                         className="flex items-center justify-center w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg transition-all active:scale-95 shrink-0"
                     >
-                        <Icon name="settings" size={5} />
+                        <AppIcon name="settings" size="lg" />
                     </Button>
                 </div>,
                 document.getElementById('mobile-topbar-actions')!

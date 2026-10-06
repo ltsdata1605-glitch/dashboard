@@ -1,5 +1,6 @@
 import React from 'react';
-import { Icon } from '../../common/Icon';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import type { ExploitationData } from '../../../types';
 
 export type SortConfig = {
@@ -66,7 +67,7 @@ export const HeaderCell: React.FC<{
         >
             <div className="flex items-center justify-center gap-1">
                 {label}
-                {isActive && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>}
+                {isActive && <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>}
             </div>
         </th>
     );

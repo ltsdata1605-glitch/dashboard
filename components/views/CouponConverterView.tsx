@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { transformCouponText } from '../../utils/couponFormatter';
 import { SAMPLE_TITLE, SAMPLE_OUTPUT } from '../../utils/couponSampleData';
-import { Icon } from '../common/Icon';
 import { Button, Input } from '../shared/ui';
 
 export default function CouponConverterView() {
@@ -155,7 +155,7 @@ export default function CouponConverterView() {
                     <Button 
                         variant="secondary"
                         onClick={() => setShowGuide(!showGuide)}
-                        leftIcon={<Icon name={showGuide ? "chevron-up" : "help-circle"} size={4} />}
+                        leftIcon={<AppIcon name={showGuide ? 'chevronUp' : 'help'} size="md" />}
                         className="mt-6 rounded-full font-semibold border-sky-100 dark:border-sky-800/50 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/50"
                     >
                         {showGuide ? "Ẩn hướng dẫn sử dụng" : "Xem hướng dẫn sử dụng"}
@@ -175,7 +175,7 @@ export default function CouponConverterView() {
                 {errorMessage && (
                     <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0 rounded-lg">
                         <div className="flex items-center gap-3">
-                            <Icon name="alert-triangle" size={6} className="text-rose-500" />
+                            <AppIcon name="warning" size="xl" className="text-rose-500" />
                             <div>
                                 <p className="font-semibold text-sm">Lỗi xử lý</p>
                                 <p className="text-sm mt-0.5 opacity-90">{errorMessage}</p>
@@ -186,7 +186,7 @@ export default function CouponConverterView() {
                             onClick={() => setErrorMessage('')}
                             className="text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 transition-colors p-1 hover:bg-rose-100 dark:hover:bg-rose-900/40"
                         >
-                            <Icon name="x" size={5} />
+                            <AppIcon name="close" size="md" />
                         </Button>
                     </div>
                 )}
@@ -206,7 +206,7 @@ export default function CouponConverterView() {
                                       className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 border border-sky-100 dark:border-sky-800/50 rounded-lg"
                                       title="Làm mới và chuẩn bị dán"
                                   >
-                                      <Icon name="clipboard-paste" size={4} />
+                                      <AppIcon name="paste" size="md" />
                                   </Button>
                                   <Button
                                       variant="unstyled" size="none"
@@ -214,7 +214,7 @@ export default function CouponConverterView() {
                                       className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 rounded-lg"
                                       title="Xóa nội dung, giữ tiêu đề"
                                   >
-                                      <Icon name="trash-2" size={4} />
+                                      <AppIcon name="delete" size="md" />
                                   </Button>
                                   <Button
                                       variant="unstyled" size="none"
@@ -222,7 +222,7 @@ export default function CouponConverterView() {
                                       className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 rounded-lg"
                                       title="Xóa toàn bộ"
                                   >
-                                      <Icon name="trash-2" size={4} />
+                                      <AppIcon name="delete" size="md" />
                                   </Button>
                               </div>
                          </div>
@@ -269,7 +269,7 @@ export default function CouponConverterView() {
                                 </h2>
                                 {lastUpdated && (
                                     <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md">
-                                        <Icon name="clock" size={3.5} /> {lastUpdated}
+                                        <AppIcon name="clock" size="sm" /> {lastUpdated}
                                     </span>
                                 )}
                             </div>
@@ -284,7 +284,7 @@ export default function CouponConverterView() {
                                         ? '!bg-emerald-50 dark:!bg-emerald-900/30 !text-emerald-700 dark:!text-emerald-400 !border-emerald-200 dark:!border-emerald-800/60'
                                         : '!bg-sky-600 hover:!bg-sky-500 !text-white !border-sky-600'
                                 }`}
-                                leftIcon={isCopied ? <Icon name="check-circle" size={4} /> : <Icon name="copy" size={4} />}
+                                leftIcon={isCopied ? <AppIcon name="success" size="md" /> : <AppIcon name="copy" size="md" />}
                             />
                         </div>
                         
@@ -299,7 +299,7 @@ export default function CouponConverterView() {
                                         </div>
                                     ) : (
                                         <span className="text-slate-400 dark:text-slate-500 select-none italic flex flex-col items-center justify-center h-full text-center">
-                                            <Icon name="code" size={12} className="mb-4 opacity-40" />
+                                            <AppIcon name="code" size="hero" className="mb-4 opacity-40" />
                                             Kết quả hiển thị tại đây...
                                         </span>
                                     )}

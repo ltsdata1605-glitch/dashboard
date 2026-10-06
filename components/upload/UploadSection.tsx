@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Button } from '../shared/ui/Button';
 
 interface UploadSectionProps {
@@ -91,7 +91,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
 
                     <div className="flex items-center gap-3 mb-4 relative z-10">
                         <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
-                            <Icon name="database" size={4.5} />
+                            <AppIcon name="database" size="md" />
                         </div>
                         <div className="text-left flex-1">
                             <h3 className="font-bold text-slate-900 dark:text-white text-[13px]">
@@ -105,7 +105,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             className="p-1.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
                             title="Cài đặt cấu hình"
                         >
-                            <Icon name="share-2" size={4.5} />
+                            <AppIcon name="share" size="md" />
                         </Button>
                     </div>
                 </>
@@ -127,7 +127,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 dark:to-slate-800/50 pointer-events-none"></div>
                         <div className="flex flex-col items-center justify-center p-4 relative z-10">
                             <div className={`w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-sky-100 dark:group-hover/dropzone:shadow-none group-hover/dropzone:border-sky-200 dark:group-hover/dropzone:border-sky-500/30 text-slate-400 dark:text-slate-500 group-hover/dropzone:text-sky-500 dark:group-hover/dropzone:text-sky-400`}>
-                                <Icon name="upload" size={5} />
+                                <AppIcon name="upload" size="lg" />
                             </div>
                             <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300 text-center">
                                 <span className="text-sky-700 dark:text-sky-400 font-semibold">

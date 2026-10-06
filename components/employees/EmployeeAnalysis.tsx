@@ -1,10 +1,11 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useEmployeeAnalysisLogic } from '../../hooks/useEmployeeAnalysisLogic';
 import { useEmployeeAnalysisData } from '../../hooks/useEmployeeAnalysisData';
 import { useEmployeeAnalysisTabs } from '../../hooks/useEmployeeAnalysisTabs';
-import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
@@ -240,7 +241,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         title="Đồng bộ danh sách nhân viên này sang Report BI và Cloud Firebase"
                         className="text-xs flex items-center gap-1.5 py-1 px-2.5 font-semibold text-sky-700 bg-sky-50 border border-sky-200 hover:bg-sky-100 dark:bg-sky-900/30 dark:border-sky-700 dark:text-sky-300"
                     >
-                        <Icon name="refresh-cw" size={3.5} className={isSyncingToBi ? 'animate-spin' : ''} />
+                        <AppIcon name="refresh" size="sm" className={isSyncingToBi ? 'animate-spin' : ''} />
                         <span className="hidden sm:inline">Đồng bộ Report BI</span>
                     </Button>
                     <div ref={settingsRef} className="relative">
@@ -250,8 +251,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             title="Tùy chọn hiển thị" 
                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         >
-                            <Icon name="settings-2" size={4} className="lg:hidden"/>
-                            <Icon name="settings-2" size={4.5} className="hidden lg:block"/>
+                            <AppIcon name="settings" size="md" />
                         </Button>
                         {isSettingsOpen && (
                             <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
@@ -261,7 +261,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                                         <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                             <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2">
                                                 <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md sm:rounded-lg text-slate-500">
-                                                    <Icon name={tab.icon} size={3.5}/>
+                                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="sm" />
                                                 </div>
                                                 {tab.label}
                                             </span>

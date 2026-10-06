@@ -1,8 +1,8 @@
 
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { SummaryTableNode, ProductConfig } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity, getParentGroup, getSubgroup } from '../../utils/dataUtils';
-import { Icon } from '../common/Icon';
 
 interface RecursiveRowProps {
     nodeKey: string;
@@ -216,8 +216,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     <div className={`flex items-center gap-1.5 sm:gap-3 ${contentColorClass}`} style={{ marginLeft: indentMargin }}>
                         {isExpandable ? (
                             <div className={`w-4 h-4 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''} flex-shrink-0 text-slate-400`}>
-                                <Icon name="chevron-right" size={3} className="sm:hidden" />
-                                <Icon name="chevron-right" size={3.5} className="hidden sm:block" />
+                                <AppIcon name="chevronRight" size="sm" />
                             </div>
                         ) : (
                             <div className="w-4 h-4 sm:w-6 sm:h-6 inline-block flex-shrink-0"></div>
@@ -334,7 +333,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                                         </span>
                                         {isWarning && (
                                             <div className="group relative shrink-0 text-rose-500 flex items-center" title={`Mục tiêu: ${formatCurrency(target)}\nCòn thiếu: ${formatCurrency(target - revenueQD)}`}>
-                                                <Icon name="alert-triangle" size={3.5} />
+                                                <AppIcon name="warning" size="sm" />
                                             </div>
                                         )}
                                     </div>

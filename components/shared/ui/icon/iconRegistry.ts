@@ -19,21 +19,22 @@
  */
 import type React from 'react';
 import {
-  Activity, Apple, ArchiveRestore, ArrowDown, ArrowLeft, ArrowLeftRight, ArrowRight, ArrowUp, ArrowUpDown, Award, Backpack,
-  BadgeCheck, Banknote, BatteryCharging, Bell, BellOff, Bot, Briefcase, Bug, Building2, Cable, Calculator, Calendar,
-  CalendarCheck, CalendarClock, CalendarRange, CalendarX, Camera, ChartColumn, ChartGantt, ChartLine, ChartPie,
-  ChartSpline, Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsDownUp, ChevronsUpDown,
-  CircleAlert, CircleCheck, CircleDollarSign, CircleHelp, CircleMinus, CirclePlus, CircleX, ClipboardList,
-  ClipboardPaste, Clock, CloudDownload, CloudUpload, Code, Coffee, Columns2, Compass, Contact, Copy, Cpu, CreditCard,
-  Crown, Database, Download, Droplets, EllipsisVertical, ExternalLink, Eye, EyeOff, Factory, Fan, FastForward,
-  FileCheck, FileKey2, FileScan, FileSpreadsheet, FileText, Film, Filter, Flame, GalleryHorizontalEnd, Gamepad2,
-  Gift, Glasses, GripVertical, Hash, Headphones, History, House, Images, Inbox, Info, Keyboard, Laptop, Layers,
-  LayoutDashboard, LayoutGrid, LayoutTemplate, Lightbulb, Link, List, LoaderCircle, Lock, LogIn, LogOut, Mail,
-  MapPin, Maximize2, Medal, Megaphone, MemoryStick, Menu, MessageCircle, Minimize2, Minus, MousePointer2, Package,
-  PackageX, Paintbrush, Palette, Pause, Pencil, Percent, Play, PlugZap, Plus, Printer, QrCode, Radio, Receipt,
-  RefreshCw, Rocket, RotateCcw, Router, Save, ScanLine, Search, SearchX, Send, Server, Settings, Share, Share2,
-  Shield, ShieldAlert, ShieldCheck, ShoppingBag, Sigma, Signal, SlidersHorizontal, Smartphone, SmartphoneNfc,
-  Sparkles, Speaker, Square, SquareCheck, SquarePlay, SquarePlus, Star, Store, Swords, Table2, Tablet, Tag, Target,
+  Activity, Apple, ArchiveRestore, ArrowDown, ArrowLeft, ArrowLeftRight, ArrowRight, ArrowUp, ArrowUpDown, Award,
+  Backpack, BadgeCheck, Banknote, BatteryCharging, Bell, BellOff, Bot, Briefcase, Bug, Building2, Cable, Calculator,
+  Calendar, CalendarCheck, CalendarClock, CalendarRange, CalendarX, Camera, ChartColumn, ChartGantt, ChartLine,
+  ChartPie, ChartSpline, Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsDownUp,
+  ChevronsUpDown, CircleAlert, CircleCheck, CircleDollarSign, CircleHelp, CircleMinus, CirclePlus, CircleX,
+  ClipboardList, ClipboardPaste, Clock, Cloud, CloudDownload, CloudUpload, Code, Coffee, Columns2, Compass, Contact,
+  Copy, Cpu, CreditCard, Crown, Database, Download, Droplets, EllipsisVertical, ExternalLink, Eye, EyeOff, Factory,
+  Fan, FastForward, FileCheck, FileKey2, FileScan, FileSpreadsheet, FileText, Film, Filter, Flame,
+  GalleryHorizontalEnd, Gamepad2, Gift, Glasses, Globe, GripVertical, HardDrive, Hash, Headphones, History, House,
+  Images, Inbox, Info, Key, Keyboard, Laptop, Layers, LayoutDashboard, LayoutGrid, LayoutTemplate, Lightbulb, Link,
+  List, LoaderCircle, Lock, LogIn, LogOut, Mail, MapPin, Maximize2, Medal, Megaphone, MemoryStick, Menu,
+  MessageCircle, Minimize2, Minus, MousePointer2, MousePointerClick, Package, PackageX, Paintbrush, Palette,
+  PanelRightClose, Pause, Pencil, Percent, Phone, Play, PlugZap, Plus, Printer, QrCode, Radio, Receipt, RefreshCw,
+  Rocket, RotateCcw, Router, Save, ScanLine, Search, SearchX, Send, Server, Settings, Share, Share2, Shield,
+  ShieldAlert, ShieldCheck, ShoppingBag, Sigma, Signal, SlidersHorizontal, Smartphone, SmartphoneNfc, Sparkles,
+  Speaker, Square, SquareCheck, SquarePlay, SquarePlus, Star, Store, Swords, Table2, Tablet, Tag, Target,
   ThermometerSnowflake, Ticket, Tornado, Trash2, TrendingDown, TrendingUp, TriangleAlert, Trophy, Truck, Tv, Type,
   Upload, User, UserCheck, UserCog, UserMinus, UserPlus, UserX, Users, Wallet, Warehouse, Watch, Waves, Webcam, Wind,
   Wrench, X, Zap,
@@ -66,6 +67,7 @@ export const ICON_REGISTRY = {
   viewOptions: SlidersHorizontal,    // tuỳ chỉnh hiển thị/cột (khác `settings` cấu hình hệ thống)
   exportImage: Camera,               // XUẤT 1 ẢNH — chủ dự án chốt "CHUẨN" (2026-10-02)
   exportBatch: Images,               // xuất ảnh HÀNG LOẠT
+  takePhoto: Camera,                 // CHỤP ảnh bằng máy ảnh thiết bị (quét giấy tờ/mã) — khác exportImage dù cùng hình
   download: Download,                // tải file xuống (Excel, JSON…)
   upload: Upload,                    // nhập/tải file lên từ máy
   cloudUpload: CloudUpload,          // đồng bộ lên cloud
@@ -180,6 +182,7 @@ export const ICON_REGISTRY = {
   store: Store,                      // siêu thị
   department: Building2,             // bộ phận / kho
   phone: Smartphone,
+  call: Phone,                       // gọi điện cho khách
   user: User,
   users: Users,
   userCheck: UserCheck,
@@ -234,6 +237,12 @@ export const ICON_REGISTRY = {
   film: Film,
   flame: Flame,
   briefcase: Briefcase,
+  web: Globe,                        // trang web / tra cứu online
+  apiKey: Key,                       // khoá API
+  cloud: Cloud,                      // lưu trên cloud
+  localStorage: HardDrive,           // lưu trên máy
+  panelClose: PanelRightClose,       // đóng thanh bên
+  click: MousePointerClick,          // hướng dẫn thao tác bấm
 
   // ── Ngành hàng / đồ vật (icon minh hoạ nhóm sản phẩm ở Phân tích, Report BI) ────────────────
   laptop: Laptop,

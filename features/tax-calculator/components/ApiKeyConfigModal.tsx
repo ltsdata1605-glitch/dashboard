@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import { X, Key, ExternalLink, Check, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -72,7 +72,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-                            <Key size={16} />
+                            <AppIcon name="apiKey" size="md" />
                         </div>
                         <div>
                             <h3 className="font-bold text-sm text-slate-800 dark:text-white">
@@ -82,7 +82,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                         </div>
                     </div>
                     <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <X size={16} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -107,7 +107,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
 
                     <div className="p-2.5 bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200/70 dark:border-sky-800/60 rounded-xl text-[11px] text-sky-800 dark:text-sky-300 space-y-1">
                         <div className="flex items-center gap-1 font-semibold">
-                            <Sparkles size={12} />
+                            <AppIcon name="sparkles" size="xs" />
                             <span>Cách lấy API Key miễn phí (mất 30 giây):</span>
                         </div>
                         <p>
@@ -119,7 +119,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                                 className="relative after:absolute after:-inset-y-4 after:inset-x-0 after:content-[''] sm:after:hidden font-bold underline inline-flex items-center gap-0.5"
                             >
                                 <span>Google AI Studio</span>
-                                <ExternalLink size={10} />
+                                <AppIcon name="externalLink" size="xs" />
                             </a>
                         </p>
                         <p>2. Đăng nhập Gmail và bấm <strong>"Create API Key"</strong>.</p>
@@ -143,7 +143,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                             Đóng
                         </Button>
                         <Button variant="primary" size="sm" onClick={handleSave} className="flex items-center gap-1">
-                            <Check size={14} />
+                            <AppIcon name="check" size="sm" />
                             <span>Lưu cài đặt</span>
                         </Button>
                     </div>

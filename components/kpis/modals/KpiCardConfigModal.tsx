@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import type { KpiCardConfig, KpiMetricSource } from '../../../types';
 import { Modal } from '../../shared/ui/Modal';
-import { Icon } from '../../common/Icon';
 import MultiSelectDropdown from '../../common/MultiSelectDropdown';
 import { Button } from '../../shared/ui/Button';
 import { Input } from '../../shared/ui/Input';
@@ -217,7 +218,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                         Hủy bỏ
                     </Button>
                     <Button variant="primary" onClick={handleSave} className="shadow-sm shadow-sky-600/20 hover:shadow-md hover:shadow-sky-600/30">
-                        <Icon name="save" size={4.5} /> Lưu Cấu Hình
+                        <AppIcon name="save" size="md" /> Lưu Cấu Hình
                     </Button>
                 </div>
             }
@@ -228,7 +229,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
                         <h3 className="font-bold text-[11px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
                         <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[11px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-sky-50 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400 font-semibold rounded-lg hover:bg-sky-100 transition-colors flex items-center gap-0.5 sm:gap-1">
-                            <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Thêm
+                            <AppIcon name="add" size="sm" /> Thêm
                         </Button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-1.5 sm:p-4 space-y-1 sm:space-y-2 relative">
@@ -244,11 +245,10 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 onClick={() => setEditingCard(config)}
                             >
                                 <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-sky-700 p-1">
-                                    <Icon name="grip-vertical" size={4.5} />
+                                    <AppIcon name="dragHandle" size="md" />
                                 </div>
                                 <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-${normColor(config.iconColor)}-100 text-${normColor(config.iconColor)}-600 dark:bg-${normColor(config.iconColor)}-500/20 dark:text-${normColor(config.iconColor)}-400`}>
-                                    <Icon name={config.icon} size={3.5} className="sm:hidden" />
-                                    <Icon name={config.icon} size={4.5} className="hidden sm:block" />
+                                    <AppIcon name={resolveIconName(config.icon) ?? 'help'} size="md" />
                                 </div>
                                 <div className="flex-1 min-w-0 hidden sm:block">
                                     <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">{config.title}</h4>
@@ -259,8 +259,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                     </p>
                                 </div>
                                 <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-sky-700 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
-                                    <Icon name={config.isVisible ? "eye" : "eye-off"} size={3.5} className="sm:hidden" />
-                                    <Icon name={config.isVisible ? "eye" : "eye-off"} size={4} className="hidden sm:block" />
+                                    <AppIcon name={config.isVisible ? 'show' : 'hide'} size="md" />
                                 </Button>
                             </div>
                         ))}
@@ -273,7 +272,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                         <h3 className="font-semibold text-[11px] sm:text-base text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để tùy chỉnh giao diện và dữ liệu'}</h3>
                         {editingCard && (
                             <Button variant="unstyled" size="none" onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-[11px] sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                                <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" /> Xóa thẻ
+                                <AppIcon name="delete" size="md" /> Xóa thẻ
                             </Button>
                         )}
                     </div>
@@ -334,7 +333,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 {editingCard.type === 'data' && (
                                     <div className="space-y-3 sm:space-y-4">
                                         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2 sm:p-3 text-[11px] sm:text-sm text-amber-800 dark:text-amber-400 font-medium flex gap-1.5 sm:gap-2">
-                                            <Icon name="info" size={3.5} className="mt-0.5 shrink-0" />
+                                            <AppIcon name="info" size="sm" className="mt-0.5" />
                                             <span>Thẻ này sẽ lọc dữ liệu trên danh sách Đơn Hàng qua Kho được chọn.</span>
                                         </div>
                                         
@@ -464,7 +463,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                     onClick={() => updateEditingCard({ icon })}
                                                     className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-sky-100 border-sky-300 text-sky-700 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
                                                 >
-                                                    <Icon name={icon} size={3.5} className="sm:hidden" /><Icon name={icon} size={5} className="hidden sm:block" />
+                                                    <AppIcon name={resolveIconName(icon) ?? 'help'} size="lg" />
                                                 </Button>
                                             ))}
                                         </div>
@@ -479,7 +478,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                     onClick={() => updateEditingCard({ iconColor: color })}
                                                     className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${normColor(editingCard.iconColor) === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-sky-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
                                                 >
-                                                    <Icon name="palette" size={4} />
+                                                    <AppIcon name="palette" size="md" />
                                                 </Button>
                                             ))}
                                         </div>
@@ -515,7 +514,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-slate-400 px-4">
-                                <Icon name="layout-template" size={10} className="sm:!w-16 sm:!h-16 mb-2 sm:mb-4 opacity-20" />
+                                <AppIcon name="template" size="state" className="sm:!w-16 sm:!h-16 mb-2 sm:mb-4 opacity-20" />
                                 <p className="text-[11px] sm:text-base text-center">Bấm vào một thẻ bên trái để tùy chỉnh giao diện và dữ liệu</p>
                             </div>
                         )}

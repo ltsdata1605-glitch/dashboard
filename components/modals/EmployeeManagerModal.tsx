@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import toast from 'react-hot-toast';
-import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getSetting } from '../../services/dbService';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
@@ -129,8 +130,8 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     };
 
     const renderSortIcon = (key: 'id' | 'name' | 'dept') => {
-        if (sortConfig?.key !== key) return <Icon name="chevrons-up-down" size={3.5} className="opacity-30" />;
-        return <Icon name={sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down'} size={3.5} className="text-sky-700" />;
+        if (sortConfig?.key !== key) return <AppIcon name="expandAll" size="sm" className="opacity-30" />;
+        return <AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') ?? 'help'} size="sm" className="text-sky-700" />;
     };
 
     const handleEdit = (emp: { id: string, dept: string, name: string }) => {
@@ -199,7 +200,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                         onClick={handleRestore}
                         variant="secondary"
                         size="sm"
-                        leftIcon={<Icon name="rotate-ccw" size={3.5} />}
+                        leftIcon={<AppIcon name="reset" size="sm" />}
                         className="text-[11px] sm:text-xs py-1 px-2.5"
                     >
                         Khôi phục gốc
@@ -226,8 +227,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-8 sm:pl-9 pr-3 text-xs sm:text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                         />
-                        <Icon name="search" size={3.5} className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:hidden" />
-                        <Icon name="search" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hidden sm:block" />
+                        <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     </div>
                     <div className="hidden sm:flex gap-2 text-xs text-slate-400 dark:text-slate-500">
                         <span>Lưu ý: Dữ liệu được lưu tự động và an toàn (IndexedDB).</span>
@@ -259,7 +259,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
                                             </select>
                                             <Button variant="unstyled" size="none" className={`p-0.5 sm:p-1 rounded transition-colors ${filterDept ? 'text-indigo-650 bg-sky-50' : 'text-slate-400 hover:bg-slate-200'}`}>
-                                                <Icon name="filter" size={3} />
+                                                <AppIcon name="filter" size="xs" />
                                             </Button>
                                         </div>
                                     </div>
@@ -298,10 +298,10 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center">
                                                 <div className="flex justify-center gap-1">
                                                     <Button variant="unstyled" size="none" onClick={handleSave} className="p-1 text-emerald-700 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
-                                                        <Icon name="check" size={3.5} />
+                                                        <AppIcon name="check" size="sm" />
                                                     </Button>
                                                     <Button variant="unstyled" size="none" onClick={() => setEditingId(null)} className="p-1 text-rose-700 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
-                                                        <Icon name="x" size={3.5} />
+                                                        <AppIcon name="close" size="sm" />
                                                     </Button>
                                                 </div>
                                             </td>
@@ -320,12 +320,10 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center w-[13%] sm:w-24">
                                                 <div className="flex justify-center gap-0.5 sm:gap-1">
                                                     <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-0.5 sm:p-1 text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
-                                                        <Icon name="pencil" size={3} className="sm:hidden" />
-                                                        <Icon name="pencil" size={3.5} className="hidden sm:block" />
+                                                        <AppIcon name="edit" size="sm" />
                                                     </Button>
                                                     <Button variant="unstyled" size="none" onClick={() => handleDelete(emp.id)} className="p-0.5 sm:p-1 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Xóa">
-                                                        <Icon name="trash-2" size={3} className="sm:hidden" />
-                                                        <Icon name="trash-2" size={3.5} className="hidden sm:block" />
+                                                        <AppIcon name="delete" size="sm" />
                                                     </Button>
                                                 </div>
                                             </td>

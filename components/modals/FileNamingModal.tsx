@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 
 interface FileNamingModalProps {
@@ -47,7 +47,7 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
-                        <Icon name="tag" size={5} />
+                        <AppIcon name="tag" size="lg" />
                     </div>
                     <div>
                         <h3 className="text-sm font-bold uppercase tracking-widest text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
@@ -103,7 +103,7 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
                             disabled={!inputValue.trim()}
                             className="w-full h-11 bg-amber-600 hover:bg-amber-500 disabled:opacity-40 disabled:hover:bg-amber-600 text-white font-bold uppercase tracking-widest text-xs rounded-xl shadow-md shadow-amber-500/10 active:scale-[0.98] transition-all disabled:pointer-events-none flex items-center justify-center gap-1.5"
                         >
-                            <Icon name="check" size={4} />
+                            <AppIcon name="check" size="md" />
                             Xác nhận đặt tên
                         </Button>
                     </div>

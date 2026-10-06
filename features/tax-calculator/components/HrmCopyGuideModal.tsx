@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardPaste, ExternalLink, Keyboard, MousePointerClick } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -54,7 +54,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         className="relative after:absolute after:-inset-y-4 after:inset-x-0 after:content-[''] sm:after:hidden text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1"
                     >
                         Mở trang Chi tiết lương
-                        <ExternalLink className="w-3 h-3" />
+                        <AppIcon name="externalLink" size="xs" />
                     </a>
                 </div>
                 <ol className="space-y-2">
@@ -85,7 +85,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         aria-label="Mở trang Xem chi tiết thưởng"
                     >
                         Mở trang Xem chi tiết thưởng
-                        <ExternalLink className="w-3 h-3" />
+                        <AppIcon name="externalLink" size="xs" />
                     </a>
                 </div>
                 <ol className="space-y-2">
@@ -93,7 +93,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         Mở HRM › <strong>Xem chi tiết thưởng</strong>, chọn đúng <strong>tháng</strong>.
                     </Step>
                     <Step index={2}>
-                        Bấm mũi tên <MousePointerClick className="w-3 h-3 inline text-sky-500" /> ở{' '}
+                        Bấm mũi tên <AppIcon name="click" size="xs" className="inline text-sky-500" /> ở{' '}
                         <strong>Thưởng nóng</strong> và <strong>Thưởng chính</strong> để <strong>mở rộng</strong> danh
                         sách — có mở ra thì app mới lấy được từng khoản thưởng.
                     </Step>
@@ -107,7 +107,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
             {/* Lưu ý */}
             <div className="p-3 rounded-xl border border-amber-200 dark:border-amber-800/60 bg-amber-50/60 dark:bg-amber-950/20 space-y-1.5">
                 <h4 className="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-                    <Keyboard className="w-3.5 h-3.5" />
+                    <AppIcon name="keyboard" size="sm" />
                     Lưu ý
                 </h4>
                 <ul className="text-[11px] text-slate-700 dark:text-slate-300 space-y-1 list-disc pl-4 leading-relaxed">
@@ -124,7 +124,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         Dán nhầm ô (thưởng vào ô lương) app sẽ báo ngay và <strong>giữ nguyên</strong> dữ liệu cũ.
                     </li>
                     <li className="flex items-start gap-1">
-                        <ClipboardPaste className="w-3 h-3 mt-0.5 shrink-0 text-amber-600" />
+                        <AppIcon name="paste" size="xs" className="mt-0.5 text-amber-600" />
                         <span>
                             Chỉ có ảnh chụp? Dùng <strong>“hoặc tải ảnh (AI)”</strong> — chậm hơn và phụ thuộc hạn mức
                             AI.

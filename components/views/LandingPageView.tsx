@@ -1,7 +1,7 @@
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import UploadSection from '../upload/UploadSection';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
-import { Icon } from '../common/Icon';
 import type { UploadedFileRegistryItem } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -78,7 +78,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                                 ) : (
                                     <div className="flex flex-col items-center text-center py-10 px-4">
                                         <div className="w-12 h-12 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-3">
-                                            <Icon name="clock" size={6} />
+                                            <AppIcon name="clock" size="xl" />
                                         </div>
                                         <h3 className="text-sm font-bold text-slate-800 dark:text-white">Đang chờ dữ liệu từ Quản lý Kho</h3>
                                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
@@ -94,17 +94,17 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                 {/* Footer / Trust Indicators */}
                 <div className="mt-6 flex items-center justify-center gap-6 text-center">
                     <div className="flex items-center gap-1.5 text-slate-400">
-                        <Icon name="shield-check" size={3.5} />
+                        <AppIcon name="securityOk" size="sm" />
                         <span className="text-[11px] font-semibold text-slate-500">Local Processing</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                     <div className="flex items-center gap-1.5 text-slate-400">
-                        <Icon name="zap" size={3.5} />
+                        <AppIcon name="quick" size="sm" />
                         <span className="text-[11px] font-semibold text-slate-500">Instant Speed</span>
                     </div>
                     <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                     <div className="flex items-center gap-1.5 text-slate-400">
-                        <Icon name="sparkles" size={3.5} />
+                        <AppIcon name="sparkles" size="sm" />
                         <span className="text-[11px] font-semibold text-slate-500">Smart UI</span>
                     </div>
                 </div>

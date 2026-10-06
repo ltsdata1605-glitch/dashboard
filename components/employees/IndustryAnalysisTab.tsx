@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { formatCurrency, abbreviateName, formatQuantityWithFraction, formatQuantity } from '../../utils/dataUtils';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 import type { ExploitationData, CustomColumnConfig, CustomExploitationTabConfig, DataRow, ProductConfig } from '../../types';
 import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, SortConfig } from './industry/IndustryTableUtils';
@@ -310,25 +311,22 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                     <div className="flex items-center gap-1 sm:gap-1.5">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
                             <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
-                                <Icon name="list" size={4} className="lg:hidden" />
-                                <Icon name="list" size={4.5} className="hidden lg:block" />
+                                <AppIcon name="viewList" size="md" />
                                 <span className="hidden sm:inline">Chi tiết</span>
                             </Button>
                             <Button variant="unstyled" size="none" onClick={() => setViewMode('efficiency')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Hiệu quả">
-                                <Icon name="percent" size={4} className="lg:hidden" />
-                                <Icon name="percent" size={4.5} className="hidden lg:block" />
+                                <AppIcon name="percent" size="md" />
                                 <span className="hidden sm:inline">Hiệu quả</span>
                             </Button>
                         </div>
                         <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1 shrink-0"></div>
                         <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
-                            <Icon name="images" size={4} className="lg:hidden" />
-                            <Icon name="images" size={4.5} className="hidden lg:block" />
+                            <AppIcon name="exportBatch" size="md" />
                         </Button>
                         {onExport && (
                             <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 disabled:opacity-40">
-                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                                {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                                {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                                {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>
                         )}
                     </div>
@@ -363,8 +361,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                  title="Tạo thẻ mới"
                                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-sky-700 flex items-center justify-center shrink-0"
                              >
-                                 <Icon name="plus" size={4} className="lg:hidden" />
-                                 <Icon name="plus" size={5} className="hidden lg:block" />
+                                 <AppIcon name="add" size="lg" />
                              </Button>
                         )}
                     </div>
@@ -377,7 +374,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         <div className="flex items-center justify-center gap-1">
                                             NHÂN VIÊN
                                             {sortConfig.key === 'name' && (
-                                                <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>
+                                                <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                             )}
                                         </div>
                                     </th>
@@ -390,8 +387,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                {onEditCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-sky-700 dark:hover:text-sky-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={4}/></Button>}
-                                                {f.isCustom && onDeleteCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-700 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={4}/></Button>}
+                                                {onEditCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-sky-700 dark:hover:text-sky-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><AppIcon name="edit" size="md" /></Button>}
+                                                {f.isCustom && onDeleteCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-700 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><AppIcon name="delete" size="md" /></Button>}
                                             </div>
                                         </th>
                                     )})}

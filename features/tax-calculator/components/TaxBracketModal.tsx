@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import { X, Layers, Sparkles } from 'lucide-react';
 import { Button } from '../../../components/shared/ui/Button';
 import {
     TAX_BRACKETS_2026,
@@ -39,7 +39,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                 <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
-                            <Layers size={16} />
+                            <AppIcon name="layers" size="md" />
                         </div>
                         <div>
                             <div className="flex items-center gap-1.5">
@@ -47,7 +47,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                                     Biểu Thuế Thu Nhập Cá Nhân
                                 </h3>
                                 <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
-                                    <Sparkles size={10} /> 5 Bậc
+                                    <AppIcon name="sparkles" size="xs" /> 5 Bậc
                                 </span>
                             </div>
                             <p className="text-[11px] text-slate-400">
@@ -56,7 +56,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                         </div>
                     </div>
                     <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <X size={16} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 

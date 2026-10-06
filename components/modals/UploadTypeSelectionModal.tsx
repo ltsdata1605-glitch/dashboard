@@ -1,6 +1,6 @@
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 
 interface UploadTypeSelectionModalProps {
@@ -27,7 +27,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
             <div className="-m-5 p-4">
                 <div className="flex flex-col items-center text-center mb-4">
                     <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-2">
-                        <Icon name="file-up" size={4.5} />
+                        <AppIcon name="upload" size="md" />
                     </div>
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">
                         Tải lên {fileCount} tệp doanh số
@@ -44,7 +44,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                         className="justify-start w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-emerald-500/30 dark:border-slate-800 dark:hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/10 transition-all flex items-start gap-2.5 group"
                     >
                         <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-500/20 group-hover:scale-105 transition-transform">
-                            <Icon name="zap" size={3.5} />
+                            <AppIcon name="quick" size="sm" />
                         </div>
                         <div className="flex-1">
                             <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
@@ -62,7 +62,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                         className="justify-start w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-sky-500/30 dark:border-slate-800 dark:hover:border-sky-500/30 hover:bg-sky-50/10 dark:hover:bg-sky-950/10 transition-all flex items-start gap-2.5 group"
                     >
                         <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20 group-hover:scale-105 transition-transform">
-                            <Icon name="database" size={3.5} />
+                            <AppIcon name="database" size="sm" />
                         </div>
                         <div className="flex-1">
                             <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-sky-700 dark:group-hover:text-sky-400">

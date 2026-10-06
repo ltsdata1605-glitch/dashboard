@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { formatQuantity, formatCurrency } from '../../../utils/dataUtils';
 import { Select } from '../../shared/ui/Select';
 import { Input } from '../../shared/ui/Input';
@@ -192,7 +192,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     )}
                 </div>
                 <div className="flex text-[11px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1 sm:gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                    <Icon name="info" size={3.5} className="mt-0.5 shrink-0 text-sky-400 dark:text-sky-500"/>
+                    <AppIcon name="info" size="sm" className="mt-0.5 text-sky-400" />
                     <span>
                         {compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :
                         compMode === 'day_same_period' ? "So sánh ngày được chọn với ngày cùng số của tháng trước (VD: 15/03 vs 15/02). Dùng để loại bỏ biến động nhất thời khi đầu/cuối tháng." :
@@ -283,7 +283,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                             <span className="w-2 h-2 rounded-full bg-sky-500 animate-pulse"></span>
                             <span className="text-[11px] font-bold text-sky-800 dark:text-sky-200 whitespace-nowrap">HT: {dateDisplay?.current || ''}</span>
                         </div>
-                        <Icon name="arrow-right" size={3.5} className="text-slate-400" />
+                        <AppIcon name="next" size="sm" className="text-slate-400" />
                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm rounded border border-slate-200/70 dark:border-slate-700/50 shadow-sm">
                             <span className="w-2 h-2 rounded-full bg-slate-400"></span>
                             <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap">SS: {dateDisplay?.prev || ''}</span>

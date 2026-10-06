@@ -1,11 +1,11 @@
 
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import TopSellerList from './TopSellerList';
 import PerformanceTable from './PerformanceTable';
 import IndustryAnalysisTab from './IndustryAnalysisTab';
 import HeadToHeadTab from './HeadToHeadTab';
 import ContestTable from './ContestTable';
-import { Icon } from '../common/Icon';
 import type { ExploitationData, CustomContestTab, CustomExploitationTabConfig, DataRow, Employee, EmployeeData, ProductConfig, ContestTableConfig, ModalState } from '../../types';
 import { Button } from '../shared/ui/Button';
 import type { Tab } from './EmployeeAnalysisTabs';
@@ -237,18 +237,18 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                             <div className="px-1.5 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
                                 <div className="flex items-center gap-0.5 sm:gap-1.5 flex-wrap">
                                     <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} title="Tạo Bảng Thi Đua Mới" className="p-1.5 lg:p-2 text-slate-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all">
-                                        <Icon name="plus" size={4} className="lg:hidden" /><Icon name="plus" size={5} className="hidden lg:block" />
+                                        <AppIcon name="add" size="lg" />
                                     </Button>
                                     <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT_TAB', data: { tabId: customTab.id, initialName: customTab.name, initialIcon: customTab.icon }})} title="Sửa Tên Tab" className="p-1.5 lg:p-2 text-slate-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all">
-                                        <Icon name="edit-3" size={4} className="lg:hidden" /><Icon name="edit-3" size={5} className="hidden lg:block" />
+                                        <AppIcon name="edit" size="lg" />
                                     </Button>
                                     <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'CONFIRM_DELETE_TAB', data: { tabId: customTab.id, tabName: customTab.name }})} title="Xóa Tab" className="p-1.5 lg:p-2 text-slate-400 hover:text-rose-700 hover:bg-rose-50 rounded-lg sm:rounded-xl transition-all">
-                                        <Icon name="trash-2" size={4} className="lg:hidden" /><Icon name="trash-2" size={5} className="hidden lg:block" />
+                                        <AppIcon name="delete" size="lg" />
                                     </Button>
                                     <div className="h-4 sm:h-6 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
                                     <Button variant="unstyled" size="none" onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="p-1.5 lg:p-2 text-slate-400 hover:text-sky-700 hover:bg-sky-50 rounded-lg sm:rounded-xl transition-all">
-                                        {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                                        {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={5} className="hidden lg:block" />}
+                                        {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                                        {isExporting ? <AppIcon name="loading" size="lg" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="lg" className="hidden lg:block" />}
                                     </Button>
                                 </div>
                             </div>

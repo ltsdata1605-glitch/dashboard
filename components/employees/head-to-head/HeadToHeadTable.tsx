@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../../types';
 import { abbreviateName, formatQuantity, formatRevenueForHeadToHead, toLocalISOString, getExportFilenamePrefix, sanitizeFilename } from '../../../utils/dataUtils';
-import { Icon } from '../../common/Icon';
 import { useHeadToHeadLogic, HeadToHeadRow as HeadToHeadRowData } from '../../../hooks/useHeadToHeadLogic';
 import { exportElementAsImage } from '../../../services/uiService';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
@@ -151,7 +152,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                             <th colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-left text-[11px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 uppercase tracking-wider cursor-pointer select-none min-w-[110px] sm:min-w-[150px] sticky left-0 z-20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors">
                                 <div className="flex items-center gap-1">
                                     NHÂN VIÊN
-                                    <span className="hide-on-export"><Icon name="chevrons-up-down" size={3} className="text-slate-400 opacity-80"/></span>
+                                    <span className="hide-on-export"><AppIcon name="expandAll" size="xs" className="text-slate-400 opacity-80" /></span>
                                 </div>
                             </th>
                             {processedData.dateHeaders.map(date => {
@@ -168,11 +169,11 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({
                             })}
                             <th onClick={() => handleSort('total')} className="px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider cursor-pointer select-none bg-sky-50/50 dark:bg-sky-900/20 border-r border-slate-200 dark:border-slate-700 hover:bg-sky-100 transition-colors">
                                 {config.totalCalculationMethod === 'average' ? 'T.BÌNH' : 'TỔNG'}
-                                {sortConfig.key === 'total' && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-sky-500" /></span>}
+                                {sortConfig.key === 'total' && <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" className="inline ml-1 text-sky-500" /></span>}
                             </th>
                             <th onClick={() => handleSort('daysWithNoSales')} className="px-2 py-1 text-center text-[11px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider cursor-pointer select-none bg-rose-50/50 dark:bg-rose-900/20 hover:bg-rose-100 transition-colors">
                                 NS
-                                {sortConfig.key === 'daysWithNoSales' && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-rose-500" /></span>}
+                                {sortConfig.key === 'daysWithNoSales' && <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" className="inline ml-1 text-rose-500" /></span>}
                             </th>
                         </tr>
                     </thead>

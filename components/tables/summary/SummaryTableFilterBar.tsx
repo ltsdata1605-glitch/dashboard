@@ -1,5 +1,6 @@
 import React from 'react';
-import { Icon } from '../../common/Icon';
+import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { FilterPopover } from './FilterPopover';
 import { PILL_COLORS, PILL_ICONS, ORDER_LABELS, SHORT_ORDER_LABELS } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
@@ -44,8 +45,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
 
                         return (
                             <div key={key} className={`flex items-center ${colorClass} border rounded-full pl-2 pr-1.5 py-0.5 lg:pl-3 lg:pr-2 lg:py-1 cursor-move transition-transform hover:scale-105 shadow-sm select-none group relative`}>
-                                <Icon name={iconName} size={2.5} className="mr-1 opacity-70 lg:hidden" />
-                                <Icon name={iconName} size={3} className="mr-1.5 opacity-70 hidden lg:block" />
+                                <AppIcon name={resolveIconName(iconName) ?? 'help'} size="xs" className="mr-1.5 opacity-70" />
                                 <span className="text-[11px] lg:text-xs font-bold mr-1">
                                     <span className="hidden sm:inline">{ORDER_LABELS[key]}</span>
                                     <span className="sm:hidden">{SHORT_ORDER_LABELS[key] || ORDER_LABELS[key]}</span>
@@ -72,8 +72,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                 className="relative h-6 w-6 lg:h-7 lg:w-7 rounded-lg bg-sky-100 text-sky-700 hover:bg-sky-200 flex items-center justify-center transition-colors dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-800/60"
                                 title="Mở rộng 1 cấp độ"
                             >
-                                <Icon name="chevrons-up-down" size={4} className="lg:hidden" />
-                                <Icon name="chevrons-up-down" size={5} className="hidden lg:block" />
+                                <AppIcon name="expandAll" size="lg" />
                                 {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 lg:w-3.5 lg:h-3.5 bg-sky-500 text-white text-[11px] font-bold rounded-full">{expandLevel}</span>}
                             </Button>
                             <div className="hidden lg:block w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
@@ -83,8 +82,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                 className="h-6 w-6 lg:h-7 lg:w-7 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 flex items-center justify-center transition-colors dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-800/60"
                                 title="Thu gọn 1 cấp độ"
                             >
-                                <Icon name="chevrons-down-up" size={4} className="lg:hidden" />
-                                <Icon name="chevrons-down-up" size={5} className="hidden lg:block" />
+                                <AppIcon name="collapseAll" size="lg" />
                             </Button>
                             {setIsFullScreen && (
                                 <>
@@ -95,8 +93,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                         className={`h-6 w-6 lg:h-7 lg:w-7 rounded-lg flex items-center justify-center transition-colors ${isFullScreen ? 'bg-sky-100 text-sky-700 hover:bg-sky-200 dark:bg-sky-900/40 dark:text-sky-400 dark:hover:bg-sky-800/60' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}
                                         title={isFullScreen ? "Thu nhỏ bảng" : "Phóng to toàn màn hình"}
                                     >
-                                        <Icon name={isFullScreen ? "minimize-2" : "maximize-2"} size={4} className="lg:hidden" />
-                                        <Icon name={isFullScreen ? "minimize-2" : "maximize-2"} size={5} className="hidden lg:block" />
+                                        <AppIcon name={isFullScreen ? 'collapse' : 'expand'} size="lg" />
                                     </Button>
                                 </>
                             )}
@@ -107,8 +104,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                     className="p-1 lg:p-1.5 rounded-full text-slate-400 hover:text-rose-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ml-0.5 lg:ml-1"
                                     title="Làm mới tất cả bộ lọc"
                                 >
-                                    <Icon name="rotate-ccw" size={4} className="lg:hidden" />
-                                    <Icon name="rotate-ccw" size={5} className="hidden lg:block" />
+                                    <AppIcon name="reset" size="lg" />
                                 </Button>
                             )}
                         </div>

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     getExportDestination, loadExportDestinations, onExportDestinationsChanged, setExportDestination,
@@ -207,7 +207,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                 data-testid={`export-dest-${reportKey}`}
                 className={`relative hide-on-export flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded transition-colors ${laLine ? 'text-[#06C755] hover:bg-emerald-50 dark:hover:bg-emerald-950/40' : 'text-slate-400 hover:text-[#06C755] hover:bg-slate-100 dark:hover:bg-slate-800'} ${className}`}
             >
-                <Icon name="line" size={4} />
+                <AppIcon name="lineBrand" size="md" />
                 {laLine ? (
                     groupCount > 1 ? (
                         <span className="absolute -top-1 -right-1 bg-[#06C755] text-white text-[9px] font-black px-1 min-w-[15px] h-[15px] rounded-full flex items-center justify-center shadow-sm">
@@ -230,7 +230,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                     <div className="bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-3">
                         <div className="flex items-center justify-between mb-1.5">
                             <label htmlFor="report-command-input" className="flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200">
-                                <Icon name="message-square" size={4} className="text-[#06C755]" />
+                                <AppIcon name="message" size="md" className="text-[#06C755]" />
                                 <span>Cú pháp gõ lệnh nhận ảnh trên LINE</span>
                             </label>
                             {commandInput.trim() && (
@@ -263,7 +263,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                 className="shrink-0 text-xs flex items-center gap-1 border-emerald-300 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
                                 title="Xuất và nạp ảnh mới nhất của khu vực này vào kho lệnh LINE ngay lập tức"
                             >
-                                <Icon name={dangSyncAnh ? "loader-2" : "upload-cloud"} size={3.5} className={dangSyncAnh ? "animate-spin text-emerald-600" : "text-emerald-600"} />
+                                <AppIcon name={dangSyncAnh ? 'loading' : 'cloudUpload'} size="sm" className={dangSyncAnh ? "animate-spin text-emerald-600" : "text-emerald-600"} />
                                 <span>{dangSyncAnh ? 'Đang nạp...' : 'Nạp ảnh ngay'}</span>
                             </Button>
                         </div>
@@ -295,7 +295,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                     >
                         <div className="flex items-center gap-2.5">
                             <div className={`w-7 h-7 rounded-md flex items-center justify-center ${selectedGroups.length === 0 ? 'bg-sky-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
-                                <Icon name="download" size={4} />
+                                <AppIcon name="download" size="md" />
                             </div>
                             <div>
                                 <div className="text-[13px] font-bold">Tải về máy</div>
@@ -303,20 +303,20 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                             </div>
                         </div>
                         {selectedGroups.length === 0 && (
-                            <Icon name="check" size={4.5} className="text-sky-600 dark:text-sky-400 font-black" />
+                            <AppIcon name="check" size="md" className="text-sky-600 font-black" />
                         )}
                     </div>
 
                     <div className="border-t border-slate-100 dark:border-slate-800 pt-2">
                         {LINE_EXPORT_TEMPORARILY_DISABLED && (
                             <div className="mb-2.5 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
-                                <Icon name="alert-circle" size={4} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                                <AppIcon name="alert" size="md" className="text-amber-600" />
                                 <span><b>Chức năng gửi LINE đang tạm tắt</b>: Tất cả báo cáo khi bấm xuất ảnh sẽ luôn được tải trực tiếp về máy.</span>
                             </div>
                         )}
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                                <Icon name="line" size={4} className={LINE_EXPORT_TEMPORARILY_DISABLED ? "text-slate-400" : "text-[#06C755]"} />
+                                <AppIcon name="lineBrand" size="md" className={LINE_EXPORT_TEMPORARILY_DISABLED ? "text-slate-400" : "text-[#06C755]"} />
                                 <span className="text-[12px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                                     Tự động gửi vào nhóm LINE{botName ? ` (bot ${botName})` : ''}
                                 </span>
@@ -365,7 +365,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
 
                         {groups === null && (
                             <div className="py-6 text-center text-slate-400 text-xs">
-                                <Icon name="loader-2" size={4.5} className="animate-spin inline-block mr-1.5" />
+                                <AppIcon name="loading" size="md" spin className="inline-block mr-1.5" />
                                 Đang tải danh sách nhóm LINE...
                             </div>
                         )}
@@ -401,9 +401,9 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                                             ? 'bg-emerald-600 border-emerald-600 text-white'
                                                             : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                                                     }`}>
-                                                        {isSelected && <Icon name="check" size={3} className="stroke-[3]" />}
+                                                        {isSelected && <AppIcon name="check" size="xs" className="stroke-[3]" />}
                                                     </div>
-                                                    <Icon name="line" size={4} className={isSelected ? 'text-[#06C755]' : 'text-slate-400'} />
+                                                    <AppIcon name="lineBrand" size="md" className={isSelected ? 'text-[#06C755]' : 'text-slate-400'} />
                                                     <span className="truncate">{g.groupName}</span>
                                                 </div>
                                                 {isSelected && (
@@ -421,7 +421,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                         <div className="text-[12px] text-slate-500 dark:text-slate-400">
                             {!LINE_EXPORT_TEMPORARILY_DISABLED && selectedGroups.length > 0 ? (
                                 <span className="text-[#06C755] font-bold inline-flex items-center gap-1">
-                                    <Icon name="line" size={3.5} />
+                                    <AppIcon name="lineBrand" size="sm" />
                                     <span>Đã chọn {selectedGroups.length} nhóm LINE</span>
                                 </span>
                             ) : (

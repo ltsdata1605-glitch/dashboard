@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Button } from '../shared/ui/Button';
 
@@ -32,8 +32,7 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                 }`}
                 title={hideZeroRevenue ? 'Đang ẩn nhân viên No Sale — Nhấn để hiện' : 'Đang hiện tất cả — Nhấn để ẩn No Sale'}
             >
-                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4} className="lg:hidden" />
-                <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4.5} className="hidden lg:block" />
+                <AppIcon name={hideZeroRevenue ? 'userReject' : 'userCheck'} size="md" />
             </Button>
         </div>
     );

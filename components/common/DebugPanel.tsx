@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Icon } from './Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Button } from '../shared/ui/Button';
 
 export interface DebugInfo {
@@ -22,7 +22,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
         <div className={`debug-panel ${isVisible ? '' : 'hidden'}`}>
             <div className="debug-panel-header">
                 <div className="flex items-center gap-3">
-                    <Icon name="bug" className="w-5 h-5 text-sky-500" />
+                    <AppIcon name="bug" size="lg" className="text-sky-500" />
                     <h3 className="font-bold text-lg">Bảng Gỡ Lỗi Giao Diện</h3>
                 </div>
                 <div className="flex items-center gap-4">
@@ -34,7 +34,7 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
                         {isInspectorActive ? 'TẮT Inspector' : 'BẬT Inspector'}
                     </Button>
                     <Button variant="unstyled" size="none" onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
-                        <Icon name="x" size={6} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
             </div>

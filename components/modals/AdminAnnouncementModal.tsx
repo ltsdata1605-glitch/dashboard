@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { listenSystemAnnouncement } from '../../services/systemAnnouncementService';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../shared/ui/Modal';
-import { Icon } from '../common/Icon';
 import toast from 'react-hot-toast';
 import { Button } from '../shared/ui/Button';
 
@@ -111,7 +111,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 >
                     <div className="flex items-center gap-2">
                         <div className="p-1.5 bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 rounded-lg shrink-0">
-                            <Icon name="megaphone" size={4} />
+                            <AppIcon name="announcement" size="md" />
                         </div>
                         <div>
                             <span className="block text-xs font-bold text-slate-700 dark:text-slate-200">Kích hoạt thông báo</span>
@@ -151,9 +151,9 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                         className="px-5 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-40 text-white font-bold text-xs rounded-xl shadow-md shadow-rose-500/10 active:scale-[0.98] transition-all flex items-center gap-1.5"
                     >
                         {isLoading ? (
-                            <Icon name="loader-2" size={3.5} className="animate-spin" />
+                            <AppIcon name="loading" size="sm" spin />
                         ) : (
-                            <Icon name="check" size={3.5} />
+                            <AppIcon name="check" size="sm" />
                         )}
                         Lưu cấu hình
                     </Button>

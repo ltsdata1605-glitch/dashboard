@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { startExportJob } from '../shared/export';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
 import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
 import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } from '../../types';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { COL } from '../../constants';
-import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { EmptyState } from '../shared/ui/EmptyState';
@@ -313,7 +313,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
   const renderChart = () => {
     if (!hasData || chartData.length === 0) {
-        return <div className="flex items-center justify-center h-full"><EmptyState icon={<Icon name="trending-up" size={5} />} title="Không có dữ liệu xu hướng" compact /></div>;
+        return <div className="flex items-center justify-center h-full"><EmptyState icon={<AppIcon name="trendUp" size="lg" />} title="Không có dữ liệu xu hướng" compact /></div>;
     }
 
     if (trendState.view === 'daily') {
@@ -494,7 +494,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   }`}
                   title="Chọn khoảng thời gian"
               >
-                  <Icon name="clock" size={4} />
+                  <AppIcon name="clock" size="md" />
                   {/* Nhãn NẰM CẠNH icon, ghi đủ chữ. Bản cũ là nhãn "absolute" đè góc icon — ở sàn chữ 11px
                       nó che nửa đồng hồ, và "N/T/Th" không ai đoán được (iPhone, dữ liệu thật 2026-09-28). */}
                   <span className="text-[11px] font-black text-sky-700 dark:text-sky-400 leading-none uppercase whitespace-nowrap">
@@ -557,8 +557,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               }`}
               title="Dạng Biểu đồ"
           >
-              <Icon name="bar-chart-2" size={4} className="lg:hidden" />
-              <Icon name="bar-chart-2" size={4.5} className="hidden lg:block" />
+              <AppIcon name="chartBar" size="md" />
           </Button>
           <Button
               variant="unstyled" size="none"
@@ -570,8 +569,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               }`}
               title="Dạng Bảng Lịch"
           >
-              <Icon name="calendar" size={4} className="lg:hidden" />
-              <Icon name="calendar" size={4.5} className="hidden lg:block" />
+              <AppIcon name="calendar" size="md" />
           </Button>
 
           <Button
@@ -585,8 +583,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             }`}
             title={displayMode === 'calendar' ? "Xuất ảnh hàng loạt toàn bộ Bảng Lịch" : "Xuất ảnh"}
           >
-            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4} className="lg:hidden" />}
-            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4.5} className="hidden lg:block" />}
+            {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name={displayMode === 'calendar' ? 'exportBatch' : 'exportImage'} size="md" className="lg:hidden" />}
+            {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name={displayMode === 'calendar' ? 'exportBatch' : 'exportImage'} size="md" className="hidden lg:block" />}
           </Button>
           {displayMode !== 'calendar' && <ExportDestinationButton reportKey="Xu Hướng Doanh Thu" />}
         </div>
@@ -674,8 +672,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-sm transition-colors"
                                             title="Lưu bảng nháp thành bảng mới"
                                         >
-                                            <Icon name="plus" size={4} className="lg:hidden" />
-                                            <Icon name="plus" size={5} className="hidden lg:block" />
+                                            <AppIcon name="add" size="lg" />
                                         </Button>
                                         <Button
                                             variant="unstyled" size="none"
@@ -684,8 +681,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shadow-sm"
                                             title="Xuất ảnh"
                                         >
-                                            <Icon name="camera" size={4} className="lg:hidden" />
-                                            <Icon name="camera" size={5} className="hidden lg:block" />
+                                            <AppIcon name="exportImage" size="lg" />
                                         </Button>
                                     </>
                                 }

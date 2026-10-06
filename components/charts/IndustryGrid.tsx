@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
 import type { PieLabelRenderProps } from 'recharts';
 import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import type { DataRow, IndustryData, ProductConfig, FilterState } from '../../types';
-import { Icon } from '../common/Icon';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { EmptyState } from '../shared/ui/EmptyState';
@@ -245,7 +246,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                 )}
                                 {drilldownPath.map((item, idx) => (
                                     <React.Fragment key={idx}>
-                                        <Icon name="chevron-right" size={3} className="opacity-40 mx-0.5" />
+                                        <AppIcon name="chevronRight" size="xs" className="opacity-40 mx-0.5" />
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => handleBreadcrumbClick(idx + 1)}
@@ -273,8 +274,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Số lượng"
                     >
-                        <Icon name="package" size={4} className="lg:hidden" />
-                        <Icon name="package" size={4.5} className="hidden lg:block" />
+                        <AppIcon name="product" size="md" />
                     </Button>
                     <Button
                         variant="unstyled" size="none"
@@ -282,8 +282,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Doanh thu"
                     >
-                        <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
-                        <Icon name="circle-dollar-sign" size={4.5} className="hidden lg:block" />
+                        <AppIcon name="money" size="md" />
                     </Button>
                     <Button
                         variant="unstyled" size="none"
@@ -292,8 +291,8 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         title="Xuất ảnh Tỷ Trọng Ngành Hàng"
                     >
-                        {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                        {!isExporting && <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                        {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                        {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                     </Button>
                     <ExportDestinationButton reportKey="Tỷ Trọng Ngành Hàng" />
                     {drilldownPath.length > 0 && (
@@ -302,8 +301,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             onClick={() => handleBreadcrumbClick(drilldownPath.length - 1)}
                             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
                         >
-                            <Icon name="chevron-left" size={4} className="lg:hidden" />
-                            <Icon name="chevron-left" size={5} className="hidden lg:block" />
+                            <AppIcon name="chevronLeft" size="md" />
                             Quay lại
                         </Button>
                     )}
@@ -321,7 +319,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-2 pb-1 border-b border-transparent dark:border-white/5">
                             {currentLevelLabel && (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 text-xs font-extrabold uppercase tracking-widest border border-sky-100 dark:border-sky-800/40">
-                                    <Icon name="layers" size={3.5} />
+                                    <AppIcon name="layers" size="sm" />
                                     {currentLevelLabel}
                                     {isDrillable && drilldownPath.length < 2 && (
                                         <span className="ml-1 opacity-60">(Click để xem chi tiết)</span>
@@ -332,7 +330,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
 
                         {currentView.data.length === 0 ? (
                             <div className="bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
-                                <EmptyState icon={<Icon name="search-x" size={6} />} title="Không có dữ liệu" compact />
+                                <EmptyState icon={<AppIcon name="searchEmpty" size="xl" />} title="Không có dữ liệu" compact />
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-2 industry-cards-grid">
@@ -361,7 +359,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                         >
                                             {/* Mobile: compact inline row */}
                                             <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} lg:hidden`}>
-                                                <Icon name={icon} size={3} />
+                                                <AppIcon name={resolveIconName(icon) ?? 'help'} size="xs" />
                                             </div>
                                             {/* 2 dòng (tên / doanh thu · SL) thay vì 1 hàng: ô rộng ~170px trên iPhone mà
                                                 nhồi 6 thứ vào một hàng thì tên ra "PH…", doanh thu ra "2.." (dữ liệu thật 2026-09-28). */}
@@ -376,13 +374,13 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 {pct.toFixed(1)}%
                                             </span>
                                             {isDrillable && (
-                                                <Icon name="chevron-right" size={3} className="text-sky-400 opacity-60 shrink-0 lg:hidden" />
+                                                <AppIcon name="chevronRight" size="xs" className="text-sky-400 opacity-60 lg:hidden" />
                                             )}
 
                                             {/* Desktop: original block layout */}
                                             <div className="hidden lg:flex justify-between items-start mb-1.5">
                                                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
-                                                    <Icon name={icon} size={3.5} />
+                                                    <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
                                                 </div>
                                                 <span className={`text-[11px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-widerer`}>
                                                     {pct.toFixed(1)}%
@@ -399,7 +397,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                     }
                                                 </div>
                                                 <div className="mt-1 flex items-center gap-1 text-[11px] font-bold">
-                                                    <Icon name={metricToDisplay === 'revenue' ? 'package' : 'dollar-sign'} size={2.5} className="text-slate-400 dark:text-slate-500" />
+                                                    <AppIcon name={resolveIconName(metricToDisplay === 'revenue' ? 'package' : 'dollar-sign') ?? 'help'} size="xs" className="text-slate-400" />
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span> 
                                                         : <span className="text-slate-400 dark:text-slate-500">{formatCurrency(revenue)}</span>
@@ -408,7 +406,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                             </div>
                                             {isDrillable && (
                                                 <div className="hidden lg:block absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-70 transition-opacity">
-                                                    <Icon name="chevron-right" size={3} className="text-sky-400" />
+                                                    <AppIcon name="chevronRight" size="xs" className="text-sky-400" />
                                                 </div>
                                             )}
                                         </div>
@@ -424,7 +422,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-1 pb-1 border-b border-transparent dark:border-white/5">
                             <div className="flex items-center gap-2">
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/40">
-                                    <Icon name="pie-chart" size={3.5} />
+                                    <AppIcon name="chartPie" size="sm" />
                                     {drilldownPath.length === 0
                                         ? (metricToDisplay === 'revenue' ? 'Tỷ trọng doanh thu' : 'Tỷ trọng số lượng')
                                         : `Top — ${drilldownPath[drilldownPath.length - 1]}`}

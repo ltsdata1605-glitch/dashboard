@@ -1,9 +1,10 @@
 
 import React, { useState, useMemo, useRef, useEffect, useCallback, useTransition, useDeferredValue } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import Sortable from 'sortablejs';
 import type { SummaryTableNode, GrandTotal } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
-import { Icon } from '../common/Icon';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -202,7 +203,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
               {isExpanding && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px]">
                       <div className="flex flex-col items-center p-5 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">
-                          <Icon name="loader-2" size={8} className="animate-spin text-sky-700 dark:text-sky-400 mb-3" />
+                          <AppIcon name="loading" size="state" spin className="text-sky-700 mb-3" />
                           <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Đang chuẩn bị khung dữ liệu bảng...</span>
                       </div>
                   </div>
@@ -313,7 +314,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 <div className="flex items-center justify-center gap-1">
                                                     H.TẠI
                                                     {compSortConfig.column === h.key && compSortConfig.type === 'current' && (
-                                                        <Icon name={compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                                        <AppIcon name={resolveIconName(compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />
                                                     )}
                                                 </div>
                                             </th>
@@ -324,7 +325,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 <div className="flex items-center justify-center gap-1">
                                                     +/-
                                                     {compSortConfig.column === h.key && compSortConfig.type === 'delta' && (
-                                                        <Icon name={compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                                        <AppIcon name={resolveIconName(compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />
                                                     )}
                                                 </div>
                                             </th>
@@ -374,7 +375,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                         >
                                                             <div className="flex items-center justify-center gap-1">
                                                                 {h.label}
-                                                                {activeSortConfig.column === h.key && <Icon name={activeSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />}
+                                                                {activeSortConfig.column === h.key && <AppIcon name={resolveIconName(activeSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />}
                                                             </div>
                                                         </th>
                                                     );
@@ -405,7 +406,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 {h.label}
-                                                {activeSortConfig.column === h.key && <Icon name={activeSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />}
+                                                {activeSortConfig.column === h.key && <AppIcon name={resolveIconName(activeSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" />}
                                             </div>
                                         </th>
                                     ))}
@@ -440,7 +441,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                 ))
                             ) : (
                                  <tr><td colSpan={isComparisonMode ? 1 + visibleColumns.reduce((acc: number, key: string) => acc + (HEADER_CONFIG.find(h => h.key === key)?.singleColumnInCompare ? 1 : 2), 0) : visibleColumns.length + 1}>
-                                     <EmptyState icon={<Icon name="inbox" size={5} />} title="Không có dữ liệu để hiển thị" compact />
+                                     <EmptyState icon={<AppIcon name="empty" size="lg" />} title="Không có dữ liệu để hiển thị" compact />
                                  </td></tr>
                             )}
                         </tbody>

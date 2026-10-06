@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Copy, RotateCcw, AlertTriangle, Swords, Wallet, CreditCard } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import type { ItemGroup, ReportDraft, CustomField } from '../types';
@@ -34,7 +34,7 @@ const ToggleButton: React.FC<{ on: boolean; onClick: () => void; icon: React.Rea
     <Button variant="secondary" size="sm" onClick={onClick} aria-pressed={on}
         className={`rounded h-9 lg:h-8 gap-1.5 ${on ? TONE_ON[tone].btn : ''}`}>
         <span className={`flex h-4 w-4 items-center justify-center border rounded-sm ${on ? TONE_ON[tone].box : 'border-slate-300 bg-white'}`}>
-            {on && <Check size={11} strokeWidth={3} />}
+            {on && <AppIcon name="check" size="xs" />}
         </span>
         {icon}
         {label}
@@ -55,10 +55,10 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
     // Nút hành động vẽ 2 lần (cột phải desktop / cuối trang mobile) — test id khác nhau để test bấm đúng nút đang hiện.
     const renderActions = (where: 'desktop' | 'mobile') => (
         <div className="grid grid-cols-2 gap-2">
-            <Button variant="secondary" onClick={onReset} leftIcon={<RotateCcw size={14} />} className="rounded h-11 lg:h-9 text-rose-700 border-rose-200 hover:bg-rose-50">
+            <Button variant="secondary" onClick={onReset} leftIcon={<AppIcon name="reset" size="md" />} className="rounded h-11 lg:h-9 text-rose-700 border-rose-200 hover:bg-rose-50">
                 Làm mới
             </Button>
-            <Button variant="primary" onClick={onSubmit} isLoading={isSaving} leftIcon={<Copy size={14} />} className="rounded h-11 lg:h-9" data-testid={`btn-submit-report-${where}`}>
+            <Button variant="primary" onClick={onSubmit} isLoading={isSaving} leftIcon={<AppIcon name="copy" size="md" />} className="rounded h-11 lg:h-9" data-testid={`btn-submit-report-${where}`}>
                 Báo cáo
             </Button>
         </div>
@@ -69,7 +69,7 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
             <div className="lg:col-span-8 space-y-3">
                 {warnings.length > 0 && (
                     <div className="border border-amber-300 bg-amber-50 px-3 py-2 flex gap-2 items-start" role="alert">
-                        <AlertTriangle size={16} className="text-amber-700 shrink-0 mt-0.5" />
+                        <AppIcon name="warning" size="md" className="text-amber-700 mt-0.5" />
                         <div className="text-[13px] text-amber-800">
                             <span className="font-bold uppercase text-[11px] tracking-wider block">Cảnh báo 3 ngày liên tiếp không khai thác</span>
                             {warnings.join(' · ')}
@@ -98,9 +98,9 @@ export const ReportEntryTab: React.FC<ReportEntryTabProps> = ({
                         <p className="text-[11.5px] text-slate-500">Gõ được phép tính (VD <span className="tabular-nums">5+3+4</span>) — rời ô là tự tính ra tổng.</p>
                     </div>
                     <div className="grid grid-cols-3 gap-2 p-2 border-t border-slate-100">
-                        <ToggleButton on={draft.traGop} onClick={() => onPatch({ traGop: !draft.traGop })} icon={<CreditCard size={13} />} label="Trả góp" tone="emerald" />
-                        <ToggleButton on={draft.moVi} onClick={() => onPatch({ moVi: !draft.moVi })} icon={<Wallet size={13} />} label="Mở Ví" tone="sky" />
-                        <ToggleButton on={draft.priceWar} onClick={() => onPatch({ priceWar: !draft.priceWar })} icon={<Swords size={13} />} label="Chiến giá" tone="rose" />
+                        <ToggleButton on={draft.traGop} onClick={() => onPatch({ traGop: !draft.traGop })} icon={<AppIcon name="card" size="md" />} label="Trả góp" tone="emerald" />
+                        <ToggleButton on={draft.moVi} onClick={() => onPatch({ moVi: !draft.moVi })} icon={<AppIcon name="wallet" size="md" />} label="Mở Ví" tone="sky" />
+                        <ToggleButton on={draft.priceWar} onClick={() => onPatch({ priceWar: !draft.priceWar })} icon={<AppIcon name="compete" size="md" />} label="Chiến giá" tone="rose" />
                     </div>
                 </section>
 

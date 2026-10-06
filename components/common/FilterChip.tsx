@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Icon } from './Icon';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Button } from '../shared/ui/Button';
 
 interface FilterChipProps {
@@ -45,7 +45,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
                 className="ml-0.5 p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 title={`Xóa lọc ${label}`}
             >
-                <Icon name="x" size={3} />
+                <AppIcon name="close" size="xs" />
             </Button>
         </div>
     );

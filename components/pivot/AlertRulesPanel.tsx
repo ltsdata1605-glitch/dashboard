@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { DataRow, ProductConfig } from '../../types';
 import * as dbService from '../../services/dbService';
 import {
@@ -13,7 +14,6 @@ import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Select } from '../shared/ui/Select';
 import { Input } from '../shared/ui/Input';
 import { Button } from '../shared/ui/Button';
-import { Icon } from '../common/Icon';
 
 /**
  * Cảnh báo theo ngưỡng — phần giao diện.
@@ -76,7 +76,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
         <div className="px-2 lg:px-4 pb-3">
             <div className="flex items-center justify-between gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                    <Icon name="bell" size={3.5} className="text-amber-500" />
+                    <AppIcon name="notification" size="sm" className="text-amber-500" />
                     Cảnh báo ngưỡng
                     {hits.length > 0 && (
                         <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
@@ -102,7 +102,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
             {/* Danh sách vi phạm */}
             {rules.length > 0 && hits.length === 0 && (
                 <div className="text-[11px] text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-2 py-1.5 flex items-center gap-1.5">
-                    <Icon name="check" size={3.5} />
+                    <AppIcon name="check" size="sm" />
                     Không có chỉ số nào vượt ngưỡng đã đặt.
                 </div>
             )}
@@ -113,7 +113,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                             key={`${h.ruleId}-${h.itemLabel}-${i}`}
                             className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] bg-rose-50 border border-rose-200 rounded px-2 py-1.5"
                         >
-                            <Icon name="alert-triangle" size={3.5} className="text-rose-500 shrink-0" />
+                            <AppIcon name="warning" size="sm" className="text-rose-500" />
                             <span className="font-bold text-slate-800">{h.dimensionLabel} {h.itemLabel}</span>
                             <span className="text-slate-600">
                                 {h.metricLabel} <strong className="text-rose-700">{fmtValue(h.value, rules.find(r => r.id === h.ruleId)?.metric ?? 'revenue')}</strong>
@@ -180,7 +180,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                                 className="p-1 text-slate-400 hover:text-rose-700"
                                 title="Xoá quy tắc"
                             >
-                                <Icon name="trash-2" size={3.5} />
+                                <AppIcon name="delete" size="sm" />
                             </Button>
                         </div>
                     ))}
@@ -189,7 +189,7 @@ export const AlertRulesPanel: React.FC<Props> = ({ sourceData, productConfig }) 
                         onClick={() => persist([...rules, createEmptyRule()])}
                         className="text-xs"
                     >
-                        <Icon name="plus" size={3.5} className="mr-1" /> Thêm quy tắc
+                        <AppIcon name="add" size="sm" className="mr-1" /> Thêm quy tắc
                     </Button>
                     <p className="text-[11px] text-slate-400 leading-snug">
                         Cảnh báo được tính trên đúng dữ liệu bạn đang xem (theo bộ lọc và phạm vi quyền của bạn).

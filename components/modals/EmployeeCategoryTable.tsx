@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { DataRow, MetricValues, ProductConfig, WarehouseColumnConfig } from '../../types';
 import { CATEGORY_TABLE_CLASS, DEFAULT_WAREHOUSE_COLUMNS, WAREHOUSE_COLUMN_CONFIG_VERSION, WAREHOUSE_HEADER_COLORS } from '../../constants';
 import { calculateWarehouseSummary } from '../../services/summaryService';
 import { getSetting, getWarehouseColumnConfig } from '../../services/dbService';
-import { Icon } from '../common/Icon';
 
 /** 3 nhóm cột của bảng "Chi Tiết Theo Kho" được đưa vào modal phân tích nhân viên. */
 const CATEGORY_MAIN_HEADERS = ['SL PHỤ KIỆN', 'SL DỊCH VỤ', 'SL GIA DỤNG'];
@@ -149,8 +149,7 @@ const EmployeeCategoryTable: React.FC<EmployeeCategoryTableProps> = ({ rows, pro
     return (
         <div className={`${CATEGORY_TABLE_CLASS} bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4`}>
             <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2">
-                <Icon name="layout-grid" size={4} className="text-sky-500 sm:hidden" />
-                <Icon name="layout-grid" size={5} className="text-sky-500 hidden sm:block" />
+                <AppIcon name="viewGrid" size="lg" className="text-sky-500" />
                 Phụ Kiện &amp; Điện Gia Dụng
             </h4>
             <div className="overflow-x-auto custom-scrollbar">

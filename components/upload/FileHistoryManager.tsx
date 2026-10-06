@@ -1,6 +1,6 @@
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { UploadedFileRegistryItem } from '../../types';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 
 interface FileHistoryManagerProps {
@@ -40,7 +40,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
             <div className={`flex items-center justify-between flex-wrap gap-2 ${compact ? 'mb-2' : 'mb-4'}`}>
                 <div>
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <Icon name="database" size={4} className="text-sky-500" />
+                        <AppIcon name="database" size="md" className="text-sky-500" />
                         <span>Kho Dữ Liệu Tích Lũy ({registry.length})</span>
                     </h4>
                     {!compact && (
@@ -56,7 +56,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                         id="btn-view-historical-report"
                         className="px-4 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
-                        <Icon name="play" size={3.5} />
+                        <AppIcon name="play" size="sm" />
                         <span>Xem Báo Cáo Gộp</span>
                     </Button>
                 )}
@@ -101,14 +101,14 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                         </span>
                                         {file.isMissingLocalData && (
                                             <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
-                                                <Icon name="alert-triangle" size={2.5} className="text-rose-500 animate-pulse" />
+                                                <AppIcon name="warning" size="xs" className="text-rose-500 animate-pulse" />
                                                 Thiếu dữ liệu - Hãy nạp lại
                                             </span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 mt-1">
                                         <span className="flex items-center gap-1">
-                                            <Icon name="clock" size={3} />
+                                            <AppIcon name="clock" size="xs" />
                                             {formatDate(file.savedAt)}
                                         </span>
                                     </div>
@@ -122,7 +122,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                 className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all ml-4 shrink-0"
                                 title="Xóa tệp này"
                             >
-                                <Icon name="trash-2" size={4} />
+                                <AppIcon name="delete" size="md" />
                             </Button>
                         </div>
                     ))}
@@ -131,7 +131,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                 {/* Footer summary bar */}
                 <div className={`bg-slate-100/40 dark:bg-slate-900/80 border-t border-slate-200/50 dark:border-slate-800/80 flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 ${compact ? 'px-3 py-1.5' : 'px-3.5 py-2'}`}>
                     <span className="flex items-center gap-1">
-                        <Icon name="file-check" size={3.5} className="text-emerald-500" />
+                        <AppIcon name="fileCheck" size="sm" className="text-emerald-500" />
                         Đang gộp: <strong className="text-slate-700 dark:text-slate-300 font-extrabold">{activeCount}</strong> tệp
                     </span>
                     <span>

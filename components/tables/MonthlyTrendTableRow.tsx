@@ -1,7 +1,7 @@
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { SummaryTableNode } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
-import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
 
 interface MonthlyTrendTableRowProps {
@@ -126,7 +126,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                         {indentGuides}
                         {isExpandable ? (
                             <Button variant="unstyled" size="none" className={`w-5 h-5 flex items-center justify-center bg-white dark:bg-slate-700 border ${isExpanded ? 'border-sky-400 bg-sky-50 dark:border-sky-500' : 'border-slate-300 dark:border-slate-600'} rounded shadow-sm shrink-0 z-10 transition-colors`}>
-                                <Icon name={isExpanded ? "chevron-down" : "chevron-right"} size={3.5} className={isExpanded ? 'text-sky-700 dark:text-sky-400' : 'text-slate-500 dark:text-slate-300'} />
+                                <AppIcon name={isExpanded ? 'chevronDown' : 'chevronRight'} size="sm" className={isExpanded ? 'text-sky-700 dark:text-sky-400' : 'text-slate-500 dark:text-slate-300'} />
                             </Button>
                         ) : (
                             <span className="w-5 h-5 shrink-0 z-10"></span>

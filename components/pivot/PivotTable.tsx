@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
@@ -27,7 +28,6 @@ import { Select } from '../shared/ui/Select';
 import { Input } from '../shared/ui/Input';
 import { Button } from '../shared/ui/Button';
 import { EmptyState } from '../shared/ui/EmptyState';
-import { Icon } from '../common/Icon';
 import DrillDownModal from '../shared/DrillDownModal';
 import AlertRulesPanel from './AlertRulesPanel';
 
@@ -152,7 +152,7 @@ const PivotTable: React.FC = () => {
                         onClick={() => toggle(r.key)}
                         className="inline-flex items-center gap-1 text-left hover:text-sky-700"
                     >
-                        <Icon name={expanded.has(r.key) ? 'chevron-down' : 'chevron-right'} size={3.5} className="text-slate-400 shrink-0" />
+                        <AppIcon name={expanded.has(r.key) ? 'chevronDown' : 'chevronRight'} size="sm" className="text-slate-400" />
                         <span>{r.label}</span>
                         <span className="ml-1 text-[11px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">
                             {r.children.length}
@@ -204,7 +204,7 @@ const PivotTable: React.FC = () => {
                         onClick={() => toggle(r.key)}
                         className="inline-flex items-center gap-1 text-left hover:text-sky-700"
                     >
-                        <Icon name={expanded.has(r.key) ? 'chevron-down' : 'chevron-right'} size={3.5} className="text-slate-400 shrink-0" />
+                        <AppIcon name={expanded.has(r.key) ? 'chevronDown' : 'chevronRight'} size="sm" className="text-slate-400" />
                         <span>{r.label}</span>
                         <span className="ml-1 text-[11px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full">{r.children.length}</span>
                     </Button>
@@ -242,7 +242,7 @@ const PivotTable: React.FC = () => {
                             <span>Tự chọn chiều phân tích và chỉ số</span>
                             {scopeNote && (
                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                    <Icon name="lock" size={3} />
+                                    <AppIcon name="lock" size="xs" />
                                     {scopeNote}
                                 </span>
                             )}
@@ -288,7 +288,7 @@ const PivotTable: React.FC = () => {
                             : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
                     }`}
                 >
-                    <Icon name={compareOn ? 'check' : 'plus'} size={3.5} />
+                    <AppIcon name={compareOn ? 'check' : 'add'} size="sm" />
                     So sánh kỳ
                 </Button>
 

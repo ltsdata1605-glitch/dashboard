@@ -1,17 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import {
-  Calculator,
-  History,
-  Info,
-  Sparkles,
-  ShieldCheck,
-  Cloud,
-  HardDrive,
-  Key,
-  Camera,
-  MousePointerClick,
-  FileSpreadsheet,
-} from 'lucide-react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { auth } from '../../services/firebase';
 import { TaxCalculationInput, SavedTaxRecord } from './types/tax.types';
@@ -320,7 +308,7 @@ export const TaxCalculatorView: React.FC = () => {
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-sm">
-              <Calculator className="w-4.5 h-4.5" />
+              <AppIcon name="calculator" size="md" />
             </div>
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -328,7 +316,7 @@ export const TaxCalculatorView: React.FC = () => {
                   Tính Thuế
                 </h1>
                 <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 px-1.5 py-0.5 rounded-md">
-                  <Sparkles className="w-2.5 h-2.5 text-sky-500" />
+                  <AppIcon name="sparkles" size="xs" className="text-sky-500" />
                   Biểu 5 bậc (2026)
                 </span>
 
@@ -341,7 +329,7 @@ export const TaxCalculatorView: React.FC = () => {
                       : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
                   }`}
                 >
-                  {isCloudUser ? <Cloud className="w-2.5 h-2.5 text-emerald-500" /> : <HardDrive className="w-2.5 h-2.5 text-slate-400" />}
+                  {isCloudUser ? <AppIcon name="cloud" size="xs" className="text-emerald-500" /> : <AppIcon name="localStorage" size="xs" className="text-slate-400" />}
                   <span>{isCloudUser ? 'Cloud' : 'Local'}</span>
                 </span>
               </div>
@@ -368,14 +356,14 @@ export const TaxCalculatorView: React.FC = () => {
                 }}
                 className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"
               >
-                <Camera className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                <AppIcon name="exportImage" size="md" className="text-sky-600" />
                 <span className="hidden sm:inline">Nút Chụp ảnh</span>
               </a>
 
               {/* Tooltip hướng dẫn */}
               <div className="pointer-events-none absolute left-0 top-full mt-1.5 z-50 w-64 opacity-0 group-hover:opacity-100 transition-opacity duration-150 rounded-md bg-slate-800 text-white p-2.5 shadow-lg text-[11px] leading-relaxed">
                 <div className="font-bold mb-1 flex items-center gap-1">
-                  <MousePointerClick className="w-3 h-3" />
+                  <AppIcon name="click" size="xs" />
                   Kéo thả nút này lên thanh Dấu trang
                 </div>
                 <div className="text-slate-200">
@@ -394,7 +382,7 @@ export const TaxCalculatorView: React.FC = () => {
               title="API Key Gemini dự phòng"
               className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-amber-700 dark:text-amber-300 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <AppIcon name="apiKey" size="md" className="text-amber-600" />
               <span className="hidden sm:inline">API Key</span>
             </button>
 
@@ -403,7 +391,7 @@ export const TaxCalculatorView: React.FC = () => {
               onClick={() => setShowBracketModal(true)}
               className="min-h-11 sm:min-h-0 px-2.5 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-700/60 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
-              <Info className="w-3.5 h-3.5 text-sky-500" />
+              <AppIcon name="info" size="md" className="text-sky-500" />
               <span>Biểu thuế</span>
             </button>
 
@@ -417,7 +405,7 @@ export const TaxCalculatorView: React.FC = () => {
               }`}
               title={showHistorySidebar ? 'Thu gọn danh sách lịch sử bên phải' : 'Mở danh sách lịch sử bên phải'}
             >
-              <History className={`w-3.5 h-3.5 ${showHistorySidebar ? 'text-white' : 'text-sky-500'}`} />
+              <AppIcon name="history" size="md" className={showHistorySidebar ? 'text-white' : 'text-sky-500'} />
               <span>Lịch sử</span>
               {historyList.length > 0 && (
                 <span className={`ml-0.5 px-1.5 py-0.2 text-[11px] font-bold rounded-full ${

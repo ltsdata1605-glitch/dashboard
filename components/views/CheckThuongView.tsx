@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import { Icon } from '../common/Icon';
 import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
 import { offerShareRetry } from '../shared/ui/ShareRetryToast';
@@ -303,7 +303,7 @@ export const CheckThuongView: React.FC = () => {
                     }`}
                     title="Tra cứu & So sánh siêu thị"
                 >
-                    <Icon name="search" size={3} />
+                    <AppIcon name="search" size="xs" />
                     <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Tra cứu</span>
                 </Button>
 
@@ -323,7 +323,7 @@ export const CheckThuongView: React.FC = () => {
                     }`}
                     title="Xem Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao"
                 >
-                    <Icon name="trophy" size={3} />
+                    <AppIcon name="trophy" size="xs" />
                     <span>Top thưởng</span>
                 </Button>
             </div>
@@ -357,7 +357,7 @@ export const CheckThuongView: React.FC = () => {
                             className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
                             title="Xoá mã kho đang so sánh"
                         >
-                            <Icon name="rotate-ccw" size={3} />
+                            <AppIcon name="reset" size="xs" />
                         </Button>
                         <Button
                             variant="unstyled" size="none"
@@ -365,7 +365,7 @@ export const CheckThuongView: React.FC = () => {
                             className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
                             title="Tải file khác"
                         >
-                            <Icon name="upload" size={3} />
+                            <AppIcon name="upload" size="xs" />
                         </Button>
                     </div>
                 </>
@@ -380,7 +380,7 @@ export const CheckThuongView: React.FC = () => {
                         className={`${isMobile ? 'min-h-11 px-3 rounded-full' : 'px-2.5 py-1'} flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-xs font-bold`}
                         title="Tải file khác"
                     >
-                        <Icon name="upload" size={3} />
+                        <AppIcon name="upload" size="xs" />
                         <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Đổi file</span>
                     </Button>
                 </div>

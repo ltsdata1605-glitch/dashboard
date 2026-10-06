@@ -1,6 +1,6 @@
 import React from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { Status } from '../../types';
-import { Icon } from './Icon';
 
 interface ProcessingLoaderProps {
     status: Status;
@@ -79,8 +79,8 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
 
                     {/* Glowing Core Capsule */}
                     <div className="relative bg-gradient-to-br from-sky-600 via-sky-600 to-sky-500 w-10 h-10 sm:w-12 sm:h-12 rounded-2xl shadow-lg shadow-sky-500/30 flex items-center justify-center text-white ring-4 ring-sky-50 dark:ring-slate-800 transform rotate-3">
-                        <Icon name="cpu" size={5} className="animate-pulse hidden sm:block" />
-                        <Icon name="cpu" size={4} className="animate-pulse sm:hidden" />
+                        <AppIcon name="cpu" size="lg" className="animate-pulse hidden sm:block" />
+                        <AppIcon name="cpu" size="md" className="animate-pulse sm:hidden" />
                     </div>
                 </div>
 
@@ -106,7 +106,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     {/* Metrics Bar */}
                     <div className="flex items-center justify-between px-1">
                         <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 shadow-sm">
-                            <Icon name="clock" size={3.5} className="text-sky-700 dark:text-sky-400" />
+                            <AppIcon name="clock" size="sm" className="text-sky-700" />
                             <div className="flex items-baseline gap-1">
                                 <span className="text-sm sm:text-base font-mono font-bold text-sky-700 dark:text-sky-400 tabular-nums">
                                     {seconds}s

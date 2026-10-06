@@ -1,19 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import {
-    History,
-    X,
-    Trash2,
-    Cloud,
-    HardDrive,
-    CalendarDays,
-    FileSpreadsheet,
-    Download,
-    Copy,
-    Check,
-    Search,
-    CheckCircle2,
-    PanelRightClose,
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { SavedTaxRecord } from '../types/tax.types';
 import { formatVnd } from '../services/taxCalculatorService';
@@ -129,7 +115,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
             <div className="p-3 sm:p-3.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-2 bg-slate-50/70 dark:bg-slate-800/80">
                 <div className="flex items-center gap-2 min-w-0">
                     <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
-                        <History size={15} />
+                        <AppIcon name="history" size="md" />
                     </div>
                     <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
@@ -153,7 +139,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         title="Xuất file Excel danh sách hoàn thuế"
                         className="min-w-11 sm:min-w-0 min-h-11 sm:min-h-0 p-1.5 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
                     >
-                        <FileSpreadsheet size={16} />
+                        <AppIcon name="spreadsheet" size="md" />
                     </button>
                     <button
                         type="button"
@@ -161,7 +147,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         title="Thu gọn danh sách lịch sử"
                         className="min-w-11 sm:min-w-0 min-h-11 sm:min-h-0 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition-colors cursor-pointer"
                     >
-                        <PanelRightClose size={16} />
+                        <AppIcon name="panelClose" size="md" />
                     </button>
                 </div>
             </div>
@@ -169,7 +155,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
             {/* Ô tìm kiếm nhanh tên nhân viên */}
             <div className="px-3 pt-2.5 pb-1.5 border-b border-slate-100 dark:border-slate-700/60">
                 <div className="relative flex items-center">
-                    <Search size={13} className="absolute left-2.5 text-slate-400 pointer-events-none" />
+                    <AppIcon name="search" size="sm" className="absolute left-2.5 text-slate-400 pointer-events-none" />
                     <input
                         type="text"
                         value={searchKeyword}
@@ -183,7 +169,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             onClick={() => setSearchKeyword('')}
                             className="absolute right-2 text-slate-400 hover:text-slate-600 cursor-pointer"
                         >
-                            <X size={12} />
+                            <AppIcon name="close" size="xs" />
                         </button>
                     )}
                 </div>
@@ -224,7 +210,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
             <div className="overflow-y-auto p-2.5 sm:p-3 space-y-2 flex-1 divide-y divide-transparent">
                 {records.length === 0 ? (
                     <div className="py-12 text-center text-slate-400 text-xs px-2">
-                        <History size={24} className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                        <AppIcon name="history" size="xl" className="mx-auto mb-2 text-slate-300" />
                         <p className="font-semibold text-slate-600 dark:text-slate-300">Chưa có bản ghi nào</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">
                             Sau khi tính thuế, kết quả sẽ tự động lưu vào đây để khôi phục nhanh.
@@ -241,7 +227,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             <div className="sticky top-0 z-10 -mx-2.5 sm:-mx-3 px-2.5 sm:px-3 py-1 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xs border-y border-slate-100 dark:border-slate-700/60 flex items-center justify-between gap-1 text-[11px]">
                                 <div className="flex items-center gap-1.5 min-w-0">
                                     <span className="font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 flex items-center gap-1 truncate">
-                                        <CalendarDays size={11} className="text-sky-500 shrink-0" />
+                                        <AppIcon name="calendar" size="xs" className="text-sky-500" />
                                         {group.label} ({group.records.length})
                                     </span>
                                     {onUpdateGroupMonth && (
@@ -295,7 +281,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
 
                                                     {isSelected && (
                                                         <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.2 rounded-full bg-sky-500 text-white">
-                                                            <CheckCircle2 size={9} />
+                                                            <AppIcon name="success" size="xs" />
                                                             <span>Đang xem</span>
                                                         </span>
                                                     )}
@@ -325,11 +311,11 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
 
                                                     {rec.syncedToCloud ? (
                                                         <span title="Đã đồng bộ Cloud" className="text-emerald-500">
-                                                            <Cloud size={11} />
+                                                            <AppIcon name="cloud" size="xs" />
                                                         </span>
                                                     ) : (
                                                         <span title="Lưu máy" className="text-slate-400">
-                                                            <HardDrive size={11} />
+                                                            <AppIcon name="localStorage" size="xs" />
                                                         </span>
                                                     )}
                                                 </div>
@@ -371,7 +357,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                                                     title="Xóa bản ghi này"
                                                     className="lg:opacity-0 lg:group-hover:opacity-100 p-1 rounded-md relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all cursor-pointer"
                                                 >
-                                                    <Trash2 size={13} />
+                                                    <AppIcon name="delete" size="sm" />
                                                 </button>
                                             )}
                                         </div>
@@ -391,7 +377,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         onClick={onClearAll}
                         className="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                     >
-                        <Trash2 size={11} />
+                        <AppIcon name="delete" size="xs" />
                         <span>Xóa tất cả</span>
                     </button>
 
@@ -402,7 +388,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 cursor-pointer"
                             title="Sao chép bảng cho Google Sheets"
                         >
-                            {isCopied ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} />}
+                            {isCopied ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                             <span>{isCopied ? 'Đã copy!' : 'Copy Sheets'}</span>
                         </button>
                         <button
@@ -411,7 +397,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer"
                             title="Xuất file Excel (.xlsx)"
                         >
-                            <Download size={11} />
+                            <AppIcon name="download" size="xs" />
                             <span>Xuất Excel</span>
                         </button>
                     </div>

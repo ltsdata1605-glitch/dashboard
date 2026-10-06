@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../../../common/Icon';
+import { AppIcon } from '../../../shared/ui/icon/AppIcon';
 import { DATA_STATUS_COLORS } from '../../../../constants';
 import { Button } from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
@@ -35,12 +35,11 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
         <div className="mt-3 sm:mt-5">
             <div className="flex justify-between items-center mb-2 sm:mb-3">
                 <h4 className="font-semibold text-xs sm:text-sm text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
-                    <Icon name="paintbrush" size={3.5} className="text-sky-500 dark:text-sky-400 sm:hidden" />
-                    <Icon name="paintbrush" size={4} className="text-sky-500 dark:text-sky-400 hidden sm:block" />
+                    <AppIcon name="paintbrush" size="md" className="text-sky-500" />
                     Định dạng cảnh báo
                 </h4>
                 <Button variant="secondary" onClick={addFormattingRule} className="h-7 sm:h-8 px-2 sm:px-3 text-xs">
-                    <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" />Thêm luật
+                    <AppIcon name="add" size="md" />Thêm luật
                 </Button>
             </div>
             {formattingRules.length === 0 ? (
@@ -88,7 +87,7 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
                                 </div>
                             )}
                             <Button variant="ghost" onClick={() => removeFormattingRule(rule.id)} className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 text-rose-400 hover:text-rose-700 hover:bg-rose-50 p-0">
-                                <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
+                                <AppIcon name="delete" size="md" />
                             </Button>
                         </div>
                     )})}

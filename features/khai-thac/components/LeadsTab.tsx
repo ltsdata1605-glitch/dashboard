@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Phone, Plus, Search, Share2, Trash2, AlertTriangle } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { Select } from '../../../components/shared/ui/Select';
@@ -119,7 +119,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                         <Input id="lead-notes" placeholder="Ghi chú khách hàng…" value={notes} onChange={e => setNotes(e.target.value)} className="h-8 rounded text-[13px]"
                             onKeyDown={e => { if (e.key === 'Enter') submit(); }} />
                     </div>
-                    <Button variant="primary" onClick={submit} disabled={!canAdd} leftIcon={<Plus size={14} />} className="w-full rounded h-10 lg:h-9" data-testid="btn-add-lead"
+                    <Button variant="primary" onClick={submit} disabled={!canAdd} leftIcon={<AppIcon name="add" size="md" />} className="w-full rounded h-10 lg:h-9" data-testid="btn-add-lead"
                         title={canAdd ? undefined : Object.values(errors).filter(Boolean).join(' · ')}>
                         Thêm khách
                     </Button>
@@ -134,12 +134,12 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                     right={
                         <>
                             <div className="relative hidden sm:block">
-                                <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
+                                <AppIcon name="search" size="xs" className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <Input placeholder="Tìm nhanh…" value={search} onChange={e => setSearch(e.target.value)} aria-label="Tìm khách hàng"
                                     className="h-6 w-40 rounded pl-6 pr-2 text-[12px]" fullWidth={false} />
                             </div>
                             {leads.length > 0 && (
-                                <Button variant="secondary" size="sm" className="h-6 px-2 rounded text-[11px]" leftIcon={<Share2 size={12} />}
+                                <Button variant="secondary" size="sm" className="h-6 px-2 rounded text-[11px]" leftIcon={<AppIcon name="share" size="xs" />}
                                     onClick={() => shareElementAsImage(listRef.current, `khach-hang-${new Date().toISOString().slice(0, 10)}.png`, 'Danh sách khách hàng')}>
                                     Xuất ảnh
                                 </Button>
@@ -149,7 +149,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                 />
                 {overdueCount > 0 && (
                     <div className="px-3 py-1.5 bg-rose-50 border-b border-rose-200 text-[12px] text-rose-700 flex items-center gap-2" role="alert">
-                        <AlertTriangle size={14} /> {overdueCount} khách quá 2 giờ chưa cập nhật trạng thái chăm sóc.
+                        <AppIcon name="warning" size="sm" /> {overdueCount} khách quá 2 giờ chưa cập nhật trạng thái chăm sóc.
                     </div>
                 )}
                 <div className="sm:hidden px-2 py-1.5 border-b border-slate-100">
@@ -180,7 +180,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                             <div className="flex items-center gap-1 shrink-0">
                                                 <a href={`tel:${l.phone}`} title="Gọi điện" aria-label={`Gọi ${l.name}`}
                                                     className="h-7 w-7 lg:h-6 lg:w-6 inline-flex items-center justify-center border border-slate-300 rounded text-emerald-700 hover:bg-emerald-50">
-                                                    <Phone size={12} />
+                                                    <AppIcon name="call" size="xs" />
                                                 </a>
                                                 <a href={`https://zalo.me/${l.phone}`} target="_blank" rel="noreferrer" title="Mở Zalo"
                                                     className="h-7 lg:h-6 px-1.5 inline-flex items-center justify-center border border-slate-300 rounded text-[11px] font-bold text-sky-700 hover:bg-sky-50">
@@ -192,7 +192,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                                 </Select>
                                                 <Button variant="unstyled" size="none" onClick={() => setPendingDelete(l)} title="Xoá khách" aria-label={`Xoá ${l.name}`}
                                                     className="h-7 w-7 lg:h-6 lg:w-6 flex items-center justify-center text-slate-300 hover:text-rose-600">
-                                                    <Trash2 size={13} />
+                                                    <AppIcon name="delete" size="sm" />
                                                 </Button>
                                             </div>
                                         </div>

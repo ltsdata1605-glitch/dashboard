@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../../../common/Icon';
+import { AppIcon } from '../../../shared/ui/icon/AppIcon';
 import { Select } from '../../../shared/ui/Select';
 import { Button } from '../../../shared/ui/Button';
 
@@ -31,7 +31,7 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
         <div className="space-y-6">
             <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
                 <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <Icon name="sigma" size={4} className="text-sky-500" /> Thuật toán ghép cột
+                    <AppIcon name="total" size="md" className="text-sky-500" /> Thuật toán ghép cột
                 </h4>
             </div>
             <div className="space-y-5">

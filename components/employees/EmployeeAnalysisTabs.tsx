@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Icon } from '../common/Icon';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { Button } from '../shared/ui/Button';
 import type { CustomContestTab, ModalState } from '../../types';
@@ -58,8 +59,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                             className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-[13px] transition-colors whitespace-nowrap ${getTabColorClasses(tab.color || 'sky', activeTab === tab.id)}`}
                         >
                             <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
-                                <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
-                                <Icon name={tab.icon} size={4} className="hidden sm:block"/>
+                                <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
                             </div>
                             {tab.label}
                         </Button>
@@ -80,8 +80,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                                 className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-medium text-[11px] sm:text-[13px] transition-colors whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
                             >
                                 <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
-                                    <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
-                                    <Icon name={tab.icon} size={4} className="hidden sm:block"/>
+                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
                                 </div>
                                 {tab.name}
                             </Button>
@@ -93,8 +92,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                         title="Tạo tab thi đua mới"
                         className="ml-2 p-1.5 text-slate-400 hover:text-sky-700 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
                     >
-                        <Icon name="plus-circle" size={4} className="sm:hidden" />
-                        <Icon name="plus-circle" size={5} className="hidden sm:block" />
+                        <AppIcon name="addCircle" size="lg" />
                     </Button>
                 </div>
                 {/* Scroll fade indicator */}

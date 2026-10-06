@@ -1,10 +1,6 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Button } from '../shared/ui/Button';
-import { 
-  Search, Upload, Download, Play, Trash2, Plus, X, 
-  CheckCircle, AlertCircle, Loader2, FileSpreadsheet,
-  Globe, ArrowUpDown, ExternalLink, RefreshCw
-} from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 // ─── Types ───────────────────────────────────────────────
@@ -402,7 +398,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <ArrowUpDown className="w-6 h-6 text-sky-700" />
+            <AppIcon name="sort" size="xl" className="text-sky-700" />
             So sánh giá đối thủ
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -418,7 +414,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
             className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition"
             title="Kiểm tra kết nối server"
           >
-            <RefreshCw className="w-4 h-4 text-slate-500" />
+            <AppIcon name="refresh" size="md" className="text-slate-500" />
           </Button>
           <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
             serverStatus === 'online' 
@@ -441,7 +437,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {serverStatus === 'mobile' && (
         <div data-testid="so-gia-chi-may-tinh" className="bg-amber-50 border border-amber-200 rounded p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-700 mt-0.5 shrink-0" />
+            <AppIcon name="alert" size="lg" className="text-amber-700 mt-0.5" />
             <div>
               <p className="font-medium text-amber-800">Công cụ So giá chỉ chạy trên máy tính</p>
               <p className="text-sm text-amber-700 mt-1">
@@ -457,7 +453,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {serverStatus === 'offline' && (
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-700 mt-0.5 shrink-0" />
+            <AppIcon name="alert" size="lg" className="text-amber-700 mt-0.5" />
             <div>
               <p className="font-medium text-amber-800 dark:text-amber-300">Server scraping chưa chạy</p>
               <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
@@ -476,7 +472,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
         {/* Sites Config */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <h2 className="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-sky-500" />
+            <AppIcon name="web" size="md" className="text-sky-500" />
             Cấu hình trang web
           </h2>
           
@@ -530,7 +526,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
         {/* Product Input */}
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
           <h2 className="font-semibold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
-            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+            <AppIcon name="spreadsheet" size="md" className="text-emerald-500" />
             Nhập danh sách sản phẩm
           </h2>
           
@@ -547,7 +543,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
-              leftIcon={<Upload className="w-4 h-4" />}
+              leftIcon={<AppIcon name="upload" size="md" />}
             >
               Upload Excel/CSV
             </Button>
@@ -556,7 +552,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                 variant="ghost"
                 size="sm"
                 onClick={clearProducts}
-                leftIcon={<Trash2 className="w-4 h-4" />}
+                leftIcon={<AppIcon name="delete" size="md" />}
                 className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/20"
               >
                 Xóa tất cả ({products.length})
@@ -578,7 +574,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               size="sm"
               onClick={parseTextInput}
               disabled={!inputText.trim()}
-              leftIcon={<Plus className="w-4 h-4" />}
+              leftIcon={<AppIcon name="add" size="md" />}
             >
               Thêm vào danh sách
             </Button>
@@ -599,7 +595,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               onClick={startScraping}
               disabled={isRunning || serverStatus !== 'online'}
               isLoading={isRunning}
-              leftIcon={isRunning ? undefined : <Play className="w-4 h-4" />}
+              leftIcon={isRunning ? undefined : <AppIcon name="play" size="md" />}
             >
               {isRunning ? 'Đang chạy...' : 'Bắt đầu so sánh giá'}
             </Button>
@@ -610,7 +606,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
             <div className="px-4 py-3 bg-sky-50 dark:bg-sky-900/20 border-b border-sky-100 dark:border-sky-800">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-sm text-sky-800 dark:text-sky-300 flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <AppIcon name="loading" size="md" spin />
                   Đang xử lý: <span className="font-medium truncate max-w-[300px]">{progress.product}</span>
                 </span>
                 <span className="text-sm font-semibold text-sky-700 dark:text-sky-400">
@@ -661,7 +657,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                         onClick={() => removeProduct(idx)}
                         className="p-1 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 text-slate-400 hover:text-rose-500 transition"
                       >
-                        <X className="w-4 h-4" />
+                        <AppIcon name="close" size="md" />
                       </Button>
                     </td>
                   </tr>
@@ -675,7 +671,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {/* Error */}
       {error && (
         <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-rose-500 mt-0.5 shrink-0" />
+          <AppIcon name="alert" size="lg" className="text-rose-500 mt-0.5" />
           <div>
             <p className="font-medium text-rose-800 dark:text-rose-300">Lỗi</p>
             <p className="text-sm text-rose-700 dark:text-rose-400 mt-1">{error}</p>
@@ -688,14 +684,14 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between flex-wrap gap-2">
             <h3 className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-emerald-500" />
+              <AppIcon name="success" size="lg" className="text-emerald-500" />
               Kết quả so sánh giá ({results.length} sản phẩm)
             </h3>
             <Button
               variant="primary"
               size="sm"
               onClick={exportToExcel}
-              leftIcon={<Download className="w-4 h-4" />}
+              leftIcon={<AppIcon name="download" size="md" />}
             >
               Tải Excel
             </Button>
@@ -774,7 +770,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                                     rel="noopener noreferrer"
                                     className="block text-xs text-sky-500 hover:text-sky-700 mt-0.5 flex items-center justify-end gap-0.5"
                                   >
-                                    Xem <ExternalLink className="w-3 h-3" />
+                                    Xem <AppIcon name="externalLink" size="xs" />
                                   </a>
                                 )}
                               </div>
@@ -822,7 +818,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
           <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500/20 via-rose-500/20 to-sky-500/20 rounded-2xl blur-lg opacity-50 group-hover:opacity-100 transition duration-700 pointer-events-none"></div>
           <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-xl border border-slate-200 dark:border-slate-700/60 p-10 text-center">
             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-100 dark:border-sky-500/20">
-              <Search className="w-6 h-6" />
+              <AppIcon name="search" size="xl" />
             </div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-1">Chưa có sản phẩm nào</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">

@@ -715,7 +715,7 @@ export default function GlobalAutoSyncDock() {
                                     return (
                                         <li key={s.id} className={`flex items-center gap-2 border-l-[3px] pl-2 ${loi ? 'border-rose-500 text-rose-700 dark:text-rose-400' : xong ? 'border-emerald-500 text-slate-700 dark:text-slate-300' : dang ? 'border-sky-500 text-sky-800 dark:text-sky-300 font-semibold' : 'border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                             <span className="w-4 shrink-0 text-center" aria-hidden>
-                                                {loi ? <AppIcon name="error" size="sm" className="text-rose-500" /> : xong ? <AppIcon name="success" size="sm" className="text-emerald-500" /> : dang ? <span className="inline-block h-3 w-3 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin align-middle" /> : '·'}
+                                                {loi ? <AppIcon name="error" size="sm" className="text-rose-500 inline" /> : xong ? <AppIcon name="success" size="sm" className="text-emerald-500 inline" /> : dang ? <span className="inline-block h-3 w-3 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin align-middle" /> : '·'}
                                             </span>
                                             <span>{s.label}</span>
                                         </li>

@@ -573,7 +573,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         return (
             <Card bordered={false} title="HIỆU QUẢ THI ĐUA THEO NHÂN VIÊN">
                 <div className="mt-4 text-center py-12">
-                     <AppIcon name="users" size="hero" className="text-slate-400" />
+                     <AppIcon name="users" size="hero" className="text-slate-400 mx-auto" />
                     <p className="mt-4 text-slate-600 max-w-md mx-auto">Không có dữ liệu thi đua. Vui lòng chọn siêu thị và dán dữ liệu "Chương trình thi đua" tại trang Cập nhật.</p>
                 </div>
             </Card>
@@ -827,7 +827,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 </div>
                             </div>
                             {selectedHeadersForNhom.length === 0 ? (
-                                <div className="mt-2 text-center py-12"><AppIcon name="users" size="hero" className="text-slate-400" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
+                                <div className="mt-2 text-center py-12"><AppIcon name="users" size="hero" className="text-slate-400 mx-auto" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
                             ) : (
                                 <div className="space-y-8" ref={groupViewRef}>
                                     <div className="mb-6 text-center py-4 sm:py-5 px-6 bg-sky-600 shadow-sm">

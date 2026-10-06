@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, forwardRef, useEffect } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { startExportJob } from '../shared/export';
-import { Icon } from '../common/Icon';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig, HeadToHeadConditionalFormatRule } from '../../types';
 import { exportElementAsImage } from '../../services/uiService';
 import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables, getSetting, saveSetting } from '../../services/dbService';
@@ -276,15 +276,15 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
                         <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
-                            <Icon name="plus" size={4} className="lg:hidden"/><Icon name="plus" size={4.5} className="hidden lg:block"/>
+                            <AppIcon name="add" size="md" />
                         </Button>
                         {activeTable && (
                             <>
                                 <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
-                                    <Icon name="pencil" size={4} className="lg:hidden"/><Icon name="pencil" size={4.5} className="hidden lg:block"/>
+                                    <AppIcon name="edit" size="md" />
                                 </Button>
                                 <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
-                                    <Icon name="trash-2" size={4} className="lg:hidden"/><Icon name="trash-2" size={4.5} className="hidden lg:block"/>
+                                    <AppIcon name="delete" size="md" />
                                 </Button>
                             </>
                         )}
@@ -304,7 +304,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             }`}
                             title={includeToday ? 'Đang bao gồm hôm nay — Nhấn để loại bỏ' : 'Không bao gồm hôm nay — Nhấn để thêm'}
                         >
-                            <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={4} className="lg:hidden"/><Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={4.5} className="hidden lg:block"/>
+                            <AppIcon name={includeToday ? 'calendarCheck' : 'calendarOff'} size="md" />
                         </Button>
                         <Button
                             variant="unstyled" size="none"
@@ -313,13 +313,13 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
-                            {isBatchExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="images" size={4} className="lg:hidden" />}
-                            {isBatchExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="images" size={4.5} className="hidden lg:block" />}
+                            {isBatchExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportBatch" size="md" className="lg:hidden" />}
+                            {isBatchExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportBatch" size="md" className="hidden lg:block" />}
                         </Button>
                         {onExport && (
                             <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
-                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name="camera" size={4} className="lg:hidden" />}
-                                {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin hidden lg:block" /> : <Icon name="camera" size={4.5} className="hidden lg:block" />}
+                                {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
+                                {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>
                         )}
                     </div>

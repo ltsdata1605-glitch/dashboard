@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
-import { Icon } from '../common/Icon';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 import { Button } from '../shared/ui/Button';
@@ -82,7 +83,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                             </div>
                         )}
                         <div className={`absolute bottom-0 right-0 w-6 h-6 ${forceDeptUpdate ? 'bg-rose-500' : 'bg-amber-400'} rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center shadow-sm`}>
-                            <Icon name={forceDeptUpdate ? 'alert-triangle' : status === 'new' ? 'user-plus' : 'clock'} size={3.5} className="text-white" />
+                            <AppIcon name={forceDeptUpdate ? 'warning' : status === 'new' ? 'userAdd' : 'clock'} size="sm" className="text-white" />
                         </div>
                     </div>
 
@@ -96,7 +97,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
 
                     {forceDeptUpdate && (
                         <div className="w-full bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 p-3 rounded-xl border border-rose-200 dark:border-rose-900/40 text-sm text-center leading-relaxed mb-4">
-                            <Icon name="alert-circle" size={4} className="inline mr-1" />
+                            <AppIcon name="alert" size="md" className="inline mr-1" />
                             Tài khoản của bạn <strong>chưa đăng ký mã kho</strong>. Vui lòng cập nhật để tiếp tục sử dụng hệ thống.
                         </div>
                     )}
@@ -121,7 +122,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                     rel="noopener noreferrer"
                                     className="w-full py-2.5 px-6 rounded-xl bg-[#06C755] hover:bg-[#05b34c] text-white font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                                 >
-                                    <Icon name="line" size={4} />
+                                    <AppIcon name="lineBrand" size="md" />
                                     Bấm vào đây để Nhắn Tin LINE
                                 </a>
                             </div>
@@ -132,7 +133,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                     onClick={() => window.location.reload()}
                                     className="flex-1 py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 text-sm"
                                 >
-                                    <Icon name="refresh-ccw" size={4} />
+                                    <AppIcon name="refresh" size="md" />
                                     Tải lại
                                 </Button>
                                 <Button
@@ -141,7 +142,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                     onClick={logout}
                                     className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-rose-500 font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center gap-2 text-sm"
                                 >
-                                    <Icon name="log-out" size={4} />
+                                    <AppIcon name="logout" size="md" />
                                     Đăng xuất
                                 </Button>
                             </div>
@@ -158,7 +159,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                         onClick={() => setSelectedRole('manager')}
                                         className={`justify-start p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'manager' ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400' : 'border-slate-200 dark:border-slate-700 hover:border-sky-300 text-slate-500'}`}
                                     >
-                                        <Icon name="briefcase" size={6} />
+                                        <AppIcon name="briefcase" size="xl" />
                                         <span className="font-semibold text-sm">Quản lý Kho</span>
                                     </Button>
                                     <Button
@@ -167,7 +168,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                         onClick={() => setSelectedRole('employee')}
                                         className={`justify-start p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'employee' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' : 'border-slate-200 dark:border-slate-700 hover:border-emerald-300 text-slate-500'}`}
                                     >
-                                        <Icon name="users" size={6} />
+                                        <AppIcon name="users" size="xl" />
                                         <span className="font-semibold text-sm">Nhân viên</span>
                                     </Button>
                                 </div>
@@ -221,7 +222,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                             onClick={logout}
                                             className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
                                         >
-                                            <Icon name="log-out" size={4} />
+                                            <AppIcon name="logout" size="md" />
                                             Đăng xuất
                                         </Button>
                                         <Button
@@ -230,7 +231,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                             disabled={isSubmitting}
                                             className="flex-1 py-3 px-4 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-sky-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
-                                            {isSubmitting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="check-circle" size={5} />}
+                                            {isSubmitting ? <AppIcon name="loading" size="lg" spin /> : <AppIcon name="success" size="lg" />}
                                             {isSubmitting ? 'Đang gửi...' : forceDeptUpdate ? 'Cập nhật Mã Kho' : 'Gửi Đăng Ký'}
                                         </Button>
                                     </div>
@@ -244,7 +245,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                         onClick={() => logout()}
                         className="w-full mt-4 py-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-semibold transition-colors flex items-center justify-center gap-2"
                     >
-                        <Icon name="log-out" size={4} />
+                        <AppIcon name="logout" size="md" />
                         <span>Đăng xuất tài khoản khác</span>
                     </Button>
                 </div>
