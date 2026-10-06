@@ -289,7 +289,7 @@ test('hẹn giờ Report BI Luỹ kế + khu vực: đổ dữ liệu xong → R
         ] });
     }, NHOM);
     // Người dùng đang đứng ở Phân tích — lượt chạy tự mở Report BI để chụp
-    await page.locator('aside').first().locator('button:has(svg.lucide-chart-column), button:has(svg.lucide-bar-chart-3)').first().click();
+    await page.locator('aside').first().locator('button:has(svg[data-icon="navAnalysis"])').first().click();
     await expect(page).toHaveURL(/tab=analysis|\/analysis/);
     // Bộ hẹn giờ quét mỗi 30s → chờ lượt chạy giữ chỗ khung giờ (dấu localStorage)
     await expect.poll(() => page.evaluate(() => Object.keys(localStorage).some((k) => k.startsWith('ycx-sched-ran:bi-luyke:'))), { timeout: 45_000 }).toBe(true);

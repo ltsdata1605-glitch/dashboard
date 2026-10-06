@@ -32,7 +32,7 @@ test('đo tải trang, bộ nhớ, DOM và thời gian thao tác', async ({ page
     });
 
     const t1 = Date.now();
-    await page.locator('aside').first().locator('button:has(svg.lucide-users)').first().click();
+    await page.locator('aside').first().locator('button:has(svg[data-icon="navReportBi"])').first().click();
     await page.getByRole('button', { name: /Tổng quan/i }).first().waitFor({ timeout: 60_000 });
     const tReportBi = Date.now() - t1;
 

@@ -12,7 +12,7 @@ const openReportBi = async (page: import('@playwright/test').Page) => {
     await page.goto('/');
     const sidebar = page.locator('aside').first();
     await sidebar.waitFor({ state: 'visible', timeout: 60_000 });
-    await sidebar.locator('button:has(svg.lucide-users)').first().click();
+    await sidebar.locator('button:has(svg[data-icon="navReportBi"])').first().click();
     await page.getByRole('button', { name: /Tổng quan/i }).first().waitFor({ timeout: 30_000 });
 };
 

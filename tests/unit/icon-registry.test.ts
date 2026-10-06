@@ -147,3 +147,18 @@ describe('<Input> — icon canh theo Ô NHẬP, không theo cả khối có dòn
     expect(html).toContain('data-icon="search"');
   });
 });
+
+describe('Test e2e không bám vào HÌNH icon', () => {
+  it('không selector nào dùng class lucide-… (đổi hình icon từng làm đỏ 9 spec Report BI, 2026-10-06)', async () => {
+    const { readdirSync, statSync } = await import('node:fs');
+    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => {
+      const p = `${d}/${f}`;
+      return statSync(p).isDirectory() ? walk(p) : [p];
+    });
+    // Tìm theo TÊN CHỨC NĂNG: svg[data-icon="navReportBi"] (AppIcon tự gắn data-icon).
+    const bad = walk('tests/e2e')
+      .filter((p) => /\.(ts|tsx)$/.test(p) && !/icon-|iconAudit/.test(p))
+      .filter((p) => /svg\.lucide-|lucide-[a-z]/.test(readFileSync(p, 'utf8')));
+    expect(bad).toEqual([]);
+  });
+});

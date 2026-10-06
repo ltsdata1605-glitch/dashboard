@@ -40,17 +40,17 @@ async function openReportBi(page: Page) {
     await page.goto('/');
     const sidebar = page.locator('aside').first();
     await sidebar.waitFor({ state: 'visible', timeout: 60_000 });
-    await sidebar.locator('button:has(svg.lucide-users)').first().click();
+    await sidebar.locator('button:has(svg[data-icon="navReportBi"])').first().click();
     await page.getByRole('button', { name: /Tổng quan/i }).first().waitFor({ timeout: 30_000 });
 }
 
-/** Vào module Phân Tích (root). Icon `BarChart3` của lucide render ra class
- *  `lucide-chart-column` — KHÔNG phải `lucide-bar-chart-3` như tên component. */
+/** Vào module Phân Tích (root). Tìm nút theo TÊN CHỨC NĂNG của icon (`data-icon`, components/layout/navIcons.ts)
+ *  chứ không theo hình lucide — đổi hình icon (chuẩn hoá icon 2026-10-06) đã làm hỏng các selector theo hình. */
 async function openPhanTich(page: Page) {
     await page.goto('/');
     const sidebar = page.locator('aside').first();
     await sidebar.waitFor({ state: 'visible', timeout: 60_000 });
-    await sidebar.locator('button:has(svg.lucide-chart-column)').first().click();
+    await sidebar.locator('button:has(svg[data-icon="navAnalysis"])').first().click();
 }
 
 /** Các màn hình được theo dõi. Thêm dần khi Đợt 1 tách tới file tương ứng. */

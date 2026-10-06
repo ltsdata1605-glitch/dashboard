@@ -4,7 +4,7 @@ test('diag2', async ({ page }) => {
     await page.goto('/');
     const sb = page.locator('aside').first();
     await sb.waitFor({ state: 'visible', timeout: 40_000 });
-    await sb.locator('button:has(svg.lucide-users)').first().click();
+    await sb.locator('button:has(svg[data-icon="navReportBi"])').first().click();
     await page.getByRole('button', { name: /Nhân viên/i }).first().click();
     await page.getByRole('button', { name: 'Thi đua', exact: true }).first().click();
     await page.getByRole('button', { name: 'Tổng', exact: true }).first().click({ timeout: 25_000 });

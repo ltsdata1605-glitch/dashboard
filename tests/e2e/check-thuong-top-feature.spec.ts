@@ -45,7 +45,7 @@ async function openTopThuong(page: import('@playwright/test').Page) {
     // LayoutDashboard cho mục "Check thưởng").
     const sidebar = page.locator('aside').first();
     await sidebar.waitFor({ state: 'visible', timeout: 20_000 });
-    await sidebar.locator('button:has(svg.lucide-layout-dashboard)').first().click();
+    await sidebar.locator('button:has(svg[data-icon="navRewardCheck"])').first().click();
 
     // Bơm dữ liệu qua đúng kênh mà CheckThuongView.tsx đang lắng nghe (postMessage từ iframe).
     await page.waitForTimeout(1500);
