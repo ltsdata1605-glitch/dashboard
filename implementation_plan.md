@@ -7231,5 +7231,12 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   - Icon trong nút có chữ → md: chọn siêu thị, Đặt lại, Thêm siêu thị, Copy All.
   - Bài audit tách thành `tests/e2e/helpers/iconAudit.ts`, thêm `tests/e2e/icon-audit-bi.spec.ts` (Siêu thị, 4 tab
     Nhân viên, Cập nhật × 390/1366).
+  - SỬA TEST hỏng từ Giai đoạn 1: 9 file e2e tìm nút điều hướng bằng HÌNH (`svg.lucide-users`, `svg.lucide-chart-column`)
+    → không thấy/bấm nhầm sau khi đổi hình Report BI/Phân tích. Nay tìm theo `svg[data-icon="nav…"]`; unit test chặn
+    selector `lucide-` trong tests/e2e.
+  - 12 e2e ĐỎ SẴN trên main (đã chạy trên bản main KHÔNG có Giai đoạn 4 → đỏ y hệt), không do chuẩn hoá icon:
+    line-gui-anh-va-hen-gio ×6 (gửi LINE tạm tắt, 7c9f96b), bi-bonus-compare ×3 + bi-deep-link ×1 (Nhân viên chặn
+    khi chưa có danh sách từ Phân tích, 3384f2b — dữ liệu mẫu của test thiếu), bi-competition-bonus-col (chữ thẻ KPI
+    đổi "2/4 nhóm" → "Tiến độ 2/4", 3f4c8c7), bi-competition-export-fit (thẻ KPI rộng hơn bảng 218px, 3f4c8c7).
 - [ ] **5** — Landing, bộ xuất ảnh, In Sticker (xoá `features/sticker-event/Icons.tsx`), Phân Ca, Bot LINE, Khai thác;
   xoá `components/common/Icon.tsx` khi `iconLegacyCall` về 0.
