@@ -1,12 +1,4 @@
 {
-  "App.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 15,
-    "iconNumericSize": 16,
-    "iconLegacyCall": 0
-  },
   "components/analysis/ExportDestinationButton.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -294,78 +286,6 @@
     "iconDirectImport": 0,
     "iconNumericSize": 15,
     "iconLegacyCall": 15
-  },
-  "components/layout/AutoSyncScheduleButton.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 4,
-    "iconLegacyCall": 4
-  },
-  "components/layout/FontSelector.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 2
-  },
-  "components/layout/GlobalAutoSyncDock.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 11,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0
-  },
-  "components/layout/Header.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 9,
-    "iconLegacyCall": 9
-  },
-  "components/layout/InstallAppHint.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 3,
-    "iconNumericSize": 3,
-    "iconLegacyCall": 0
-  },
-  "components/layout/MobileBottomNav.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 15,
-    "iconNumericSize": 5,
-    "iconLegacyCall": 0
-  },
-  "components/layout/NotificationDropdown.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 5,
-    "iconLegacyCall": 5
-  },
-  "components/layout/PendingApprovalBanner.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 1,
-    "iconLegacyCall": 1
-  },
-  "components/layout/Sidebar.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 15,
-    "iconNumericSize": 5,
-    "iconLegacyCall": 0
   },
   "components/modals/AdminAnnouncementModal.tsx": {
     "nonSemanticColor": 0,

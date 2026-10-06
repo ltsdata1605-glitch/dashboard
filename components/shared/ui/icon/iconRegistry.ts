@@ -20,7 +20,7 @@
 import type React from 'react';
 import {
   Activity, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpDown, Award, BadgeCheck, Bell, BellOff, Bot,
-  Building2, Calculator, Calendar, CalendarClock, Camera, ChartColumn, ChartLine, ChartPie, ChartSpline, Check,
+  Building2, Calculator, Calendar, CalendarClock, CalendarRange, Gift, Megaphone, Share, SquarePlus, Type, Camera, ChartColumn, ChartLine, ChartPie, ChartSpline, Check,
   ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleAlert, CircleCheck, CircleDollarSign, CircleHelp,
   CircleMinus, CirclePlus, CircleX, ClipboardList, ClipboardPaste, Clock, CloudDownload, CloudUpload, Copy, Crown,
   Database, Download, EllipsisVertical, ExternalLink, Eye, EyeOff, FileSpreadsheet, FileText, Filter, GripVertical,
@@ -98,6 +98,8 @@ export const ICON_REGISTRY = {
   hide: EyeOff,
   lock: Lock,
   history: History,
+  iosShare: Share,                   // CHỈ để mô tả nút Chia sẻ của Safari iOS (hướng dẫn cài app)
+  iosAddToHome: SquarePlus,          // CHỈ để mô tả "Thêm vào MH chính" của Safari iOS
 
   // ── Sắp xếp / mở rộng ───────────────────────────────────────────────────────────────────
   sort: ArrowUpDown,
@@ -128,8 +130,10 @@ export const ICON_REGISTRY = {
   clock: Clock,                      // thời gian / cùng kỳ
   schedule: CalendarClock,           // hẹn giờ, lịch tự động
   calendar: Calendar,
+  dateRange: CalendarRange,          // khoảng ngày / luỹ kế
   notification: Bell,
   notificationOff: BellOff,
+  announcement: Megaphone,           // thông báo hệ thống (admin soạn)
   empty: Inbox,                      // empty state chung
   security: Shield,
   securityOk: ShieldCheck,
@@ -161,7 +165,9 @@ export const ICON_REGISTRY = {
   star: Star,
   sparkles: Sparkles,                // AI / gợi ý tự động
   idea: Lightbulb,
-  quick: Zap,
+  quick: Zap,                        // tự động / chạy nhanh (Auto Sync realtime)
+  gift: Gift,                        // thưởng nóng / quà
+  font: Type,                        // chọn phông chữ
   product: Package,
   store: Store,                      // siêu thị
   department: Building2,             // bộ phận / kho

@@ -3,7 +3,7 @@ import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, autoAreasFor, getSchedule, loadSchedules, nextScheduleLabel, normalizeTime,
@@ -151,7 +151,7 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                 data-testid={`sched-${scheduleKey}`}
                 className={`flex items-center justify-center gap-0.5 rounded ${compact ? 'h-5 min-w-5 px-0.5' : 'h-7 min-w-7 px-1'} text-[11px] font-bold tabular-nums leading-none transition-colors ${mau}`}
             >
-                <Icon name="clock" size={3} />
+                <AppIcon name="clock" size="xs" />
                 {keTiep && !compact && <span>{keTiep}</span>}
             </Button>
             <Modal isOpen={open} onClose={() => setOpen(false)} title="Hẹn giờ tự chạy" subTitle={ten} maxWidth="md">
@@ -173,21 +173,19 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                         {entry.times.map((t) => (
                             <li key={t} className="flex items-center justify-between border-l-[3px] border-sky-500 bg-slate-50 px-3 py-1">
                                 <span className="font-bold tabular-nums">{t}</span>
-                                <Button variant="ghost" size="sm" aria-label={`Xoá ${t}`} onClick={() => luu({ ...entry, times: entry.times.filter((x) => x !== t) })}>
-                                    <Icon name="x" size={3.5} />
-                                </Button>
+                                <Button variant="ghost" size="icon" icon="close" aria-label={`Xoá ${t}`} onClick={() => luu({ ...entry, times: entry.times.filter((x) => x !== t) })} />
                             </li>
                         ))}
                     </ul>
                     <div className="flex items-center gap-2">
                         <Input type="time" value={nhap} onChange={(e) => setNhap(e.target.value)} aria-label="Giờ chạy" className="w-32" data-testid={`sched-input-${scheduleKey}`} />
-                        <Button variant="primary" size="sm" onClick={them} disabled={!normalizeTime(nhap)}>
-                            <Icon name="plus" size={3.5} /> Thêm giờ
+                        <Button variant="primary" size="sm" icon="add" onClick={them} disabled={!normalizeTime(nhap)}>
+                            Thêm giờ
                         </Button>
                     </div>
                     <div className="border-t border-slate-200 pt-3">
                         <p className="mb-1.5 flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">
-                            <Icon name="line" size={3.5} className="text-[#06C755]" />
+                            <AppIcon name="lineBrand" size="sm" className="text-[#06C755]" />
                             <span>Tự xuất ảnh & gửi LINE sau khi đổ dữ liệu</span>
                         </p>
                         <AutoSendAreas scheduleKey={scheduleKey} entry={entry} luu={luu} />

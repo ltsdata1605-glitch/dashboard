@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Share, PlusSquare, X } from 'lucide-react';
+import { AppIcon } from '../shared/ui/icon';
 import { Button } from '../shared/ui/Button';
 import { isRunningStandalone, readDismissedAt, shouldShowInstallHint, writeDismissedAt } from './installHint';
 
@@ -46,13 +46,13 @@ const InstallAppHint: React.FC<{ hidden?: boolean }> = ({ hidden }) => {
                 <div className="min-w-0 flex-1">
                     <p className="text-[14px] font-bold text-slate-800 leading-snug">Cài Dashboard YCX như app</p>
                     <p className="text-[13px] text-slate-600 leading-snug mt-1">
-                        Bấm <Share size={15} className="inline -mt-0.5 text-sky-600" aria-label="Chia sẻ" /> ở thanh Safari,
-                        rồi chọn <PlusSquare size={15} className="inline -mt-0.5 text-slate-700" aria-hidden /> <b>Thêm vào MH chính</b>.
+                        Bấm <AppIcon name="iosShare" size="sm" label="Chia sẻ" className="-mt-0.5 text-sky-600" /> ở thanh Safari,
+                        rồi chọn <AppIcon name="iosAddToHome" size="sm" className="-mt-0.5 text-slate-700" /> <b>Thêm vào MH chính</b>.
                     </p>
                     <p className="text-[12px] text-slate-500 leading-snug mt-1">Mở toàn màn hình, không còn thanh địa chỉ. Bấm × để nhắc lại sau 14 ngày.</p>
                 </div>
                 <Button variant="ghost" size="icon" onClick={dismiss} aria-label="Để sau" className="shrink-0 text-slate-400">
-                    <X size={18} />
+                    <AppIcon name="close" size="md" />
                 </Button>
             </div>
         </div>

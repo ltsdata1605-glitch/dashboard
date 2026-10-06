@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { collection, query, orderBy, limit, onSnapshot, getDocs, QuerySnapshot, DocumentData } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
 import { usePendingApprovals } from '../../hooks/usePendingApprovalCount';
 import { useActiveTab } from '../../contexts/LayoutContext';
@@ -226,7 +226,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                 className={`${buttonClassName || "relative flex items-center justify-center p-2.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"}`}
                 title="Thông báo"
             >
-                <Icon name="bell" size={5} />
+                <AppIcon name="notification" size="md" />
                 {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
@@ -254,7 +254,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                     className="p-1.5 text-slate-500 hover:text-rose-700 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
                                     title="Cấu hình thông báo hệ thống"
                                 >
-                                    <Icon name="megaphone" size={3.5} />
+                                    <AppIcon name="announcement" size="sm" />
                                 </Button>
                             )}
                             {unreadCount > 0 && (
@@ -269,7 +269,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                         {notifications.length === 0 ? (
                             <div className="p-8 flex flex-col items-center justify-center text-center">
                                 <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-3">
-                                    <Icon name="bell-off" size={5} className="text-slate-400" />
+                                    <AppIcon name="notificationOff" size="lg" className="text-slate-400" />
                                 </div>
                                 <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Không có thông báo mới</p>
                                 <p className="text-xs text-slate-500 mt-1">Hệ thống sẽ báo cho bạn khi có biến động về phân quyền</p>
@@ -295,18 +295,14 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                                 notif.type === 'error' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30' :
                                                 'bg-sky-100 text-sky-700 dark:bg-sky-900/30'
                                             }`}>
-                                                <Icon name={
-                                                    notif.type === 'success' ? 'check-circle' :
-                                                    notif.type === 'warning' ? 'alert-circle' :
-                                                    notif.type === 'error' ? 'alert-octagon' :
+                                                {/* Trước 2026-10-02: 2 icon (cỡ mobile/desktop) và loại `error` gọi tên 'alert-octagon' KHÔNG có
+                                                    trong components/common/Icon.tsx → âm thầm hiện dấu hỏi. Nay 1 icon, size tự đổi theo màn. */}
+                                                <AppIcon name={
+                                                    notif.type === 'success' ? 'success' :
+                                                    notif.type === 'warning' ? 'warning' :
+                                                    notif.type === 'error' ? 'error' :
                                                     'info'
-                                                } size={3.5} className="sm:hidden" />
-                                                <Icon name={
-                                                    notif.type === 'success' ? 'check-circle' :
-                                                    notif.type === 'warning' ? 'alert-circle' :
-                                                    notif.type === 'error' ? 'alert-octagon' :
-                                                    'info'
-                                                } size={4} className="hidden sm:block" />
+                                                } size="sm" />
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0">

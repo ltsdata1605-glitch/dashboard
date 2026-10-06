@@ -1,10 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import {
-    Zap, TrendingUp, Sparkles, ChevronRight, ChevronLeft, Gift,
-    FileSpreadsheet, CalendarRange, RefreshCw, AlertCircle, CheckCircle2,
-} from 'lucide-react';
 import { Button } from '../shared/ui/Button';
+import { AppIcon } from '../shared/ui/icon';
 import { Modal } from '../shared/ui/Modal';
 import AutoSyncScheduleButton from './AutoSyncScheduleButton';
 import {
@@ -432,7 +429,7 @@ export default function GlobalAutoSyncDock() {
                             aria-label="Mở rộng khung Auto Sync YCX"
                             className="preserve-rounded p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                         >
-                            <ChevronLeft className="w-4 h-4" />
+                            <AppIcon name="chevronLeft" size="md" />
                         </button>
                         <button
                             type="button"
@@ -440,7 +437,7 @@ export default function GlobalAutoSyncDock() {
                             title="Tự động Realtime (Report BI)"
                             className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-amber-500 via-amber-500 to-amber-600 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
-                            <Zap className="w-4 h-4 fill-amber-200" />{lich['bi-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
+                            <AppIcon name="quick" size="md" className="fill-amber-200" />{lich['bi-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
@@ -448,7 +445,7 @@ export default function GlobalAutoSyncDock() {
                             title="Tự động Luỹ kế (Report BI)"
                             className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
                         >
-                            <TrendingUp className="w-4 h-4" />{lich['bi-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
+                            <AppIcon name="trendUp" size="md" />{lich['bi-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
@@ -458,7 +455,7 @@ export default function GlobalAutoSyncDock() {
                                 bonusStatus.isBusy ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
-                            <Gift className="w-4 h-4 text-sky-100" />{lich['bonus']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
+                            <AppIcon name="gift" size="md" className="text-sky-100" />{lich['bonus']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
@@ -469,7 +466,7 @@ export default function GlobalAutoSyncDock() {
                                 ycxDangChay && ycxMode === 'realtime' ? 'ring-2 ring-sky-400 animate-pulse' : ''
                             }`}
                         >
-                            <FileSpreadsheet className="w-4 h-4 text-sky-100" />{lich['ycx-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
+                            <AppIcon name="spreadsheet" size="md" className="text-sky-100" />{lich['ycx-realtime']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                         <button
                             type="button"
@@ -480,7 +477,7 @@ export default function GlobalAutoSyncDock() {
                                 ycxDangChay && ycxMode === 'luyke' ? 'ring-2 ring-emerald-400 animate-pulse' : ''
                             }`}
                         >
-                            <CalendarRange className="w-4 h-4 text-emerald-100" />{lich['ycx-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
+                            <AppIcon name="dateRange" size="md" className="text-emerald-100" />{lich['ycx-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
                     </div>
                 ) : (
@@ -503,7 +500,7 @@ export default function GlobalAutoSyncDock() {
                                 aria-label="Thu gọn khung Auto Sync YCX"
                                 className="preserve-rounded p-1 rounded-md text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                             >
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <AppIcon name="chevronRight" size="sm" />
                             </button>
                         </div>
 
@@ -518,7 +515,7 @@ export default function GlobalAutoSyncDock() {
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
-                                <Zap className="h-4 w-4 text-amber-100 fill-amber-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.9)]" />
+                                <AppIcon name="quick" size="md" className="text-amber-100 fill-amber-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
@@ -545,7 +542,7 @@ export default function GlobalAutoSyncDock() {
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
                             <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
-                                <TrendingUp className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(110,231,183,0.9)]" />
+                                <AppIcon name="trendUp" size="md" className="text-emerald-100 drop-shadow-[0_0_6px_rgba(110,231,183,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
@@ -574,7 +571,7 @@ export default function GlobalAutoSyncDock() {
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                 bonusStatus.isBusy ? 'animate-pulse' : ''
                             }`}>
-                                <Gift className="h-4 w-4 text-sky-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
+                                <AppIcon name="gift" size="md" className="text-sky-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
@@ -603,7 +600,7 @@ export default function GlobalAutoSyncDock() {
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                 ycxDangChay && ycxMode === 'realtime' ? 'animate-pulse' : ''
                             }`}>
-                                <FileSpreadsheet className="h-4 w-4 text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
+                                <AppIcon name="spreadsheet" size="md" className="text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
@@ -633,7 +630,7 @@ export default function GlobalAutoSyncDock() {
                             <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                 ycxDangChay && ycxMode === 'luyke' ? 'animate-pulse' : ''
                             }`}>
-                                <CalendarRange className="h-4 w-4 text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
+                                <AppIcon name="dateRange" size="md" className="text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
@@ -656,7 +653,7 @@ export default function GlobalAutoSyncDock() {
                             title="Bấm để xem hướng dẫn cài đặt tiện ích Tampermonkey hoặc kiểm tra kết nối"
                             className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[10px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
                         >
-                            <Sparkles className="w-3 h-3 text-amber-500/80 shrink-0" />
+                            <AppIcon name="sparkles" size="xs" className="text-amber-500/80" />
                             <span>HƯỚNG DẪN CÀI ĐẶT TAMPERMONKEY</span>
                         </button>
                     </>
@@ -718,7 +715,7 @@ export default function GlobalAutoSyncDock() {
                                     return (
                                         <li key={s.id} className={`flex items-center gap-2 border-l-[3px] pl-2 ${loi ? 'border-rose-500 text-rose-700 dark:text-rose-400' : xong ? 'border-emerald-500 text-slate-700 dark:text-slate-300' : dang ? 'border-sky-500 text-sky-800 dark:text-sky-300 font-semibold' : 'border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                             <span className="w-4 shrink-0 text-center" aria-hidden>
-                                                {loi ? <AlertCircle className="w-3.5 h-3.5 text-rose-500 inline" /> : xong ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 inline" /> : dang ? <span className="inline-block h-3 w-3 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin align-middle" /> : '·'}
+                                                {loi ? <AppIcon name="error" size="sm" className="text-rose-500" /> : xong ? <AppIcon name="success" size="sm" className="text-emerald-500" /> : dang ? <span className="inline-block h-3 w-3 rounded-full border-2 border-sky-200 border-t-sky-600 animate-spin align-middle" /> : '·'}
                                             </span>
                                             <span>{s.label}</span>
                                         </li>

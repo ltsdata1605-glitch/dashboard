@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon';
 import { saveGlobalFont, getGlobalFont } from '../../services/dbService';
 import { createPortal } from 'react-dom';
 import { Button } from '../shared/ui/Button';
@@ -150,7 +150,7 @@ const FontSelector: React.FC = () => {
                 className={`p-2.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
                 title={`Font hiện tại: ${currentFontLabel}`}
             >
-                <Icon name="type" size={4} />
+                <AppIcon name="font" size="md" />
             </Button>
 
             {isOpen && createPortal(
@@ -181,7 +181,7 @@ const FontSelector: React.FC = () => {
                                     style={font.style}
                                 >
                                     <div className={`flex items-center justify-center w-4 h-4 rounded-full border ${isSelected ? 'border-sky-600 bg-sky-600' : 'border-slate-300 dark:border-slate-600'}`}>
-                                        {isSelected && <Icon name="check" size={2.5} className="text-white" />}
+                                        {isSelected && <AppIcon name="check" size="xs" className="text-white" />}
                                     </div>
                                     <span className={`text-[13px] ${isSelected ? 'font-bold' : ''} ${font.className || ''}`}>{font.label}</span>
                                 </Button>

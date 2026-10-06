@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon';
 import { motion, AnimatePresence } from 'motion/react';
 import { Modal } from '../shared/ui/Modal';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-semibold text-sm transition-colors"
                         title="Tải lên báo cáo Phân ca"
                     >
-                        <Icon name="users-round" size={4} />
+                        <AppIcon name="users" size="md" />
                         <span>Nhân Viên</span>
                     </Button>
                     
@@ -135,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({
                                 className="p-2 text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                                 title="Quản lý danh sách nhân viên"
                             >
-                                <Icon name="settings" size={4} />
+                                <AppIcon name="userSettings" size="md" />
                             </Button>
                         </div>
                     )}
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({
                             className="p-2 text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                             title="Mở trang quản lý phân ca"
                         >
-                            <Icon name="link" size={4} />
+                            <AppIcon name="externalLink" size="md" />
                         </a>
                         
                         <AnimatePresence mode="wait">
@@ -161,7 +161,7 @@ const Header: React.FC<HeaderProps> = ({
                                     className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 ${deptClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20'}`}
                                     title="Xóa dữ liệu phân ca"
                                 >
-                                    <Icon name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loader-2' : 'trash-2')} size={4} className={isClearingDepartments ? 'animate-spin' : ''} />
+                                    <AppIcon name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loading' : 'delete')} size="md" spin={isClearingDepartments} />
                                 </motion.button>
                             )}
                         </AnimatePresence>
@@ -179,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({
                                 className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-semibold text-sm transition-colors"
                                 title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
-                                <Icon name="upload" size={4} />
+                                <AppIcon name="upload" size="md" />
                                 <span>File YCX</span>
                             </Button>
                             {onOpenHistory && (
@@ -190,7 +190,7 @@ const Header: React.FC<HeaderProps> = ({
                                     title="Quản lý tệp đã lưu (Lũy kế)"
                                     className="flex items-center justify-center p-2 text-rose-700 dark:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 border-l border-slate-100 dark:border-slate-700 transition-colors"
                                 >
-                                    <Icon name="database" size={4} />
+                                    <AppIcon name="database" size="md" />
                                 </Button>
                             )}
                         </>
@@ -202,7 +202,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                         title="Tải dữ liệu báo cáo"
                     >
-                        <Icon name="link" size={4} />
+                        <AppIcon name="externalLink" size="md" />
                     </a>
 
                     <AnimatePresence mode="wait">
@@ -216,7 +216,7 @@ const Header: React.FC<HeaderProps> = ({
                                 className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 ${salesClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer'}`}
                                 title={salesClearTitle || "Xóa dữ liệu YCX"}
                             >
-                                <Icon name={salesClearSuccess ? 'check' : (isClearingSalesData ? 'loader-2' : 'trash-2')} size={4} className={isClearingSalesData ? 'animate-spin' : ''} />
+                                <AppIcon name={salesClearSuccess ? 'check' : (isClearingSalesData ? 'loading' : 'delete')} size="md" spin={isClearingSalesData} />
                             </motion.button>
                         )}
                     </AnimatePresence>
@@ -235,7 +235,7 @@ const Header: React.FC<HeaderProps> = ({
                             title="Bộ lọc nâng cao / Tuỳ chỉnh"
                             className="flex items-center justify-center p-2 text-white rounded-full"
                         >
-                            <Icon name="settings" size={4} />
+                            <AppIcon name="viewOptions" size="md" />
                         </Button>
                     </div>
                 )}

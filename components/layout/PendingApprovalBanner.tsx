@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import { Icon } from '../common/Icon';
+import { AppIcon } from '../shared/ui/icon';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 
 const PendingApprovalBanner: React.FC = () => {
@@ -21,7 +21,7 @@ const PendingApprovalBanner: React.FC = () => {
             className="w-full bg-gradient-to-r from-amber-500 to-amber-700 text-white overflow-hidden flex items-center cursor-pointer shadow-md z-[100] relative py-2 px-4 group"
         >
             <div className="flex-shrink-0 mr-3 bg-white/20 p-1.5 rounded-full">
-                <Icon name="alert-circle" size={5} />
+                <AppIcon name="alert" size="md" />
             </div>
             
             <div className="flex-1 overflow-hidden whitespace-nowrap">

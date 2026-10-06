@@ -4,6 +4,7 @@ import {
     setExportDestination,
     loadExportDestinations,
     reportKeyFromFilename,
+    LINE_EXPORT_TEMPORARILY_DISABLED,
     type ExportDestination
 } from './analysisExportDestinations';
 
@@ -29,11 +30,19 @@ describe('analysisExportDestinations multi-group support', () => {
         }
     });
 
+    // Chủ dự án tạm tắt gửi LINE (7c9f96b, 2026-10-04): 3 test nhiều-nhóm bên dưới chỉ chạy khi cờ
+    // LINE_EXPORT_TEMPORARILY_DISABLED = false — bật lại LINE là chúng tự chạy lại. Trong lúc tắt, test này
+    // khẳng định đúng hành vi đang muốn: đã cấu hình gửi LINE vẫn luôn TẢI VỀ MÁY.
+    it.runIf(LINE_EXPORT_TEMPORARILY_DISABLED)('đang tạm tắt gửi LINE: đích LINE đã lưu vẫn trả về tải về máy', async () => {
+        await setExportDestination('Chi Tiết Theo Kho', { kind: 'line', groups: [{ groupId: 'c123', groupName: 'Nhóm 910' }] });
+        expect(getExportDestination('Chi Tiết Theo Kho').kind).toBe('download');
+    });
+
     it('returns download by default', () => {
         expect(getExportDestination('Báo Cáo Test')).toEqual({ kind: 'download' });
     });
 
-    it('supports setting and getting multiple LINE groups', async () => {
+    it.skipIf(LINE_EXPORT_TEMPORARILY_DISABLED)('supports setting and getting multiple LINE groups', async () => {
         const groups = [
             { groupId: 'c123', groupName: 'Nhóm Kho 910' },
             { groupId: 'c456', groupName: 'Nhóm Thu Ngân' },
@@ -54,7 +63,7 @@ describe('analysisExportDestinations multi-group support', () => {
         }
     });
 
-    it('maintains backwards compatibility for legacy single-group format', async () => {
+    it.skipIf(LINE_EXPORT_TEMPORARILY_DISABLED)('maintains backwards compatibility for legacy single-group format', async () => {
         await setExportDestination('Tổng Quan Doanh Thu', {
             kind: 'line',
             groupId: 'c999',
@@ -72,7 +81,7 @@ describe('analysisExportDestinations multi-group support', () => {
         }
     });
 
-    it('resets to download when empty groups array or kind download is passed', async () => {
+    it.skipIf(LINE_EXPORT_TEMPORARILY_DISABLED)('resets to download when empty groups array or kind download is passed', async () => {
         await setExportDestination('Chi Tiết Theo Kho', {
             kind: 'line',
             groups: [{ groupId: 'c123', groupName: 'Nhóm 910' }],

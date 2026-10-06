@@ -156,7 +156,7 @@ Không dùng thư viện icon khác, không vẽ SVG icon mới (ngoại lệ: l
 | `xs` | 12 | 14 | badge, chữ phụ, link ngoài |
 | `sm` | 14 | 16 | dòng bảng 26px, input/tìm kiếm/bộ lọc, nút trong dòng dữ liệu |
 | `md` | 16 | 18 | **mặc định** — nút thường, nút chỉ có icon |
-| `lg` | 20 | 22 | thanh điều hướng trái/dưới, tab, menu |
+| `lg` | 20 | 22 | thanh điều hướng trái/dưới, menu chính (tab trong trang: `<Tabs>` tự dùng `sm`/`md` theo cỡ tab) |
 | `xl` | 24 | 24 | hành động chính, header modal lớn |
 | `state` | 32 | 32 | empty state — không dùng trong nút |
 | `hero` | 48 | 40 | landing, minh hoạ |
@@ -205,6 +205,9 @@ không đặt size bằng `w-*`/`h-*` trên icon. `lint-ratchet` đếm `iconDir
 | Nav: Báo cáo | `navReports` | FileText | |
 | Nav: Check thưởng | `navRewardCheck` | BadgeCheck | |
 | Nav: Khác / công cụ | `navTools` | Wrench | |
+
+Icon của từng tab điều hướng khai **một nơi**: `components/layout/navIcons.ts` (Sidebar, thanh dưới, ô icon
+trang trên thanh tiêu đề mobile đều đọc từ đây).
 
 ---
 

@@ -7181,7 +7181,17 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
 - [x] **0** — registry, tokens, AppIcon, Button `icon`, ratchet, test `tests/unit/icon-registry.test.ts`, tài liệu
   (DESIGN_SYSTEM.md 4.6, CLAUDE.md mục 2). Không đổi pixel nào của UI hiện có ngoài spinner đang tải của `Button`
   (16px → 16px laptop / 18px mobile).
-- [ ] **1** — Điều hướng: Sidebar, MobileBottomNav, Header, Tabs (icon nav theo bảng `nav*`).
+- [x] **1** — Điều hướng (2026-10-06): Sidebar, MobileBottomNav, ô icon trang trên thanh tiêu đề mobile (App.tsx),
+  thanh công cụ Header, chuông thông báo, chọn phông, khung Auto Sync, hẹn giờ, banner chờ duyệt, gợi ý cài app,
+  `Tabs` nhận tên icon. Icon theo tab khai MỘT nơi: `components/layout/navIcons.ts`. Đổi hình theo bảng đã duyệt:
+  Phân tích ChartSpline, Report BI ChartColumn, Check thưởng BadgeCheck, In Sticker Printer ở cả 2 thanh. Nét luôn 2
+  (bỏ 1.8/2.5 ở thanh dưới). Lỗi thật đã sửa: thông báo loại `error` gọi `alert-octagon` không có trong Icon.tsx cũ →
+  hiện dấu hỏi. Ratchet: iconDirectImport 744→685, iconNumericSize 973→923, iconLegacyCall 735→714.
+  Test: `tests/e2e/icon-dieu-huong.spec.ts` (360/390/430/1366; đã kiểm ngược — đổi icon Report BI → test đỏ).
+  Kèm (ngoài phạm vi icon, để `npm run check` xanh): `services/analysisExportDestinations.test.ts` đỏ sẵn trên main
+  từ 7c9f96b (tạm tắt gửi LINE) → 3 test nhiều-nhóm chạy theo cờ `LINE_EXPORT_TEMPORARILY_DISABLED`, thêm test cho
+  hành vi đang tắt. 3 commit "Gửi nhóm LINE" (05b8221, dcffc62, 963dedd — 02/10, chưa từng vào main) được ghi nhận
+  vào lịch sử nhưng GIỮ nội dung main, vì main đã tạm tắt gửi LINE theo yêu cầu chủ dự án.
 - [ ] **2** — Nút/toolbar (gồm thanh Cùng kỳ/Còn lại/Realtime), nút trong bảng.
 - [ ] **3** — Form/tìm kiếm/bộ lọc, Modal, Tooltip, EmptyState, ConfirmDialog.
 - [ ] **4** — Phân tích, Report BI, Báo cáo, Check thưởng; xoá `features/bi-dashboard/components/Icons.tsx`.
