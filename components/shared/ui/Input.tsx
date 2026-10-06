@@ -1,12 +1,15 @@
 import React, { forwardRef, useId } from 'react';
 import { cn } from './utils';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from './icon/AppIcon';
+import type { IconName } from './icon/iconRegistry';
+import { resolveIconName } from './icon/legacyIconNames';
 import { Button } from './Button';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
-  leftIcon?: string;
-  rightIcon?: string;
+  /** Tên chức năng (iconRegistry) — tên kiểu cũ ('search', 'x'…) vẫn nhận qua lớp chuyển tiếp. */
+  leftIcon?: IconName | string;
+  rightIcon?: IconName | string;
   onRightIconClick?: () => void;
   onLeftIconClick?: () => void;
   fullWidth?: boolean;
@@ -18,9 +21,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     // ô nào đang lỗi. Nay nối lỗi vào ô qua aria-invalid + aria-describedby (giữ describedby sẵn có).
     const errorId = `${useId()}-error`;
     const describedBy = [props['aria-describedby'], error ? errorId : undefined].filter(Boolean).join(' ') || undefined;
+    const left = resolveIconName(leftIcon) ?? (leftIcon ? 'help' : undefined);
+    const right = resolveIconName(rightIcon) ?? (rightIcon ? 'help' : undefined);
     return (
-      <div data-ui="shared" className={cn("relative", fullWidth ? "w-full" : "w-auto")}>
-        {leftIcon && (
+      <div data-ui="shared" className={cn(fullWidth ? "w-full" : "w-auto")}>
+        {/* Khối `relative` CHỈ bọc ô nhập (2026-10-06): trước đây bọc cả dòng báo lỗi bên dưới nên icon
+            canh `top-1/2` theo cả khối → khi có lỗi, icon tụt xuống lệch khỏi ô nhập. */}
+        <div className="relative">
+        {left && (
           <Button
             type="button"
             variant="unstyled" size="none"
@@ -31,7 +39,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               onLeftIconClick ? "cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden" : "cursor-default"
             )}
           >
-            <Icon name={leftIcon} size={4.5} />
+            <AppIcon name={left} size="md" />
           </Button>
         )}
         
@@ -43,8 +51,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             "focus-visible:outline-none focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500",
             "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100",
             "dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus-visible:border-sky-400 dark:focus-visible:ring-sky-400 dark:disabled:bg-slate-900/50",
-            leftIcon && "pl-9",
-            rightIcon && "pr-9",
+            left && "pl-9",
+            right && "pr-9",
             error && "border-rose-500 focus-visible:border-rose-500 focus-visible:ring-rose-500 dark:border-rose-500 dark:focus-visible:border-rose-400 dark:focus-visible:ring-rose-400",
             className
           )}
@@ -53,7 +61,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           aria-describedby={describedBy}
         />
         
-        {rightIcon && (
+        {right && (
           <Button
             type="button"
             variant="unstyled" size="none"
@@ -64,10 +72,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               onRightIconClick ? "cursor-pointer hover:text-sky-500 transition-colors after:absolute after:-inset-[13px] after:content-[''] sm:after:hidden" : "cursor-default"
             )}
           >
-            <Icon name={rightIcon} size={4.5} />
+            <AppIcon name={right} size="md" />
           </Button>
         )}
-        
+        </div>
+
         {error && (
           <p id={errorId} role="alert" className="mt-1.5 text-xs font-bold text-rose-500 dark:text-rose-400">
             {error}

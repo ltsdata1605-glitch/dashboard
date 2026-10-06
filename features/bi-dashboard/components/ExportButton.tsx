@@ -1,12 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CameraIcon, SpinnerIcon, ChevronDownIcon } from './Icons';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { renderIcon, type IconProp } from '../../../components/shared/ui/icon/renderIcon';
 import { Button, cn } from '../../../components/shared/ui/Button';
 
 export interface ExportOptionItem {
   id: string;
   label: string;
   sublabel?: string;
-  icon?: React.ReactNode;
+  /** Tên chức năng (iconRegistry) hoặc node tự dựng (cũ). */
+  icon?: IconProp;
   onSelect: () => Promise<void> | void;
 }
 
@@ -15,7 +17,7 @@ interface ExportButtonProps {
   options?: ExportOptionItem[];
   disabled?: boolean;
   className?: string;
-  icon?: React.ReactNode;
+  icon?: IconProp;
   title?: string;
   ariaLabel?: string;
 }
@@ -96,7 +98,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         disabled={disabled || isLoading}
         className={cn(
           "export-button-component h-8 min-h-11 sm:min-h-0 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
-          hasOptions ? "px-2 gap-1.5" : "w-8 p-1.5",
+          // Nút chỉ có icon: vùng chạm 44px cả 2 chiều trên điện thoại (trước 2026-10-06 chỉ cao 44, rộng 32).
+          hasOptions ? "px-2 gap-1.5" : "w-8 min-w-11 sm:min-w-0 p-1.5",
           isOpen && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
           className
         )}
@@ -105,12 +108,12 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         aria-expanded={hasOptions ? isOpen : undefined}
       >
         {isLoading ? (
-          <SpinnerIcon className="h-4 w-4 animate-spin text-sky-500 shrink-0" />
+          <AppIcon name="loading" spin size="md" className="text-sky-500" />
         ) : (
           <>
-            {icon || <CameraIcon className="h-4 w-4 shrink-0" />}
+            {icon ? renderIcon(icon, 'md') : <AppIcon name="exportImage" size="md" />}
             {hasOptions && (
-              <ChevronDownIcon className={cn("h-3.5 w-3.5 shrink-0 opacity-70 transition-transform duration-200", isOpen && "rotate-180")} />
+              <AppIcon name="chevronDown" size="sm" className={cn("opacity-70 transition-transform duration-200", isOpen && "rotate-180")} />
             )}
           </>
         )}
@@ -130,7 +133,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({
                 className="w-full flex items-start gap-2.5 px-2.5 py-2 rounded-lg text-left hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer"
               >
                 <div className="mt-0.5 p-1 rounded-md bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 shadow-2xs transition-colors shrink-0">
-                  {opt.icon || <CameraIcon className="h-4 w-4 text-slate-500" />}
+                  {opt.icon ? renderIcon(opt.icon, 'md') : <AppIcon name="exportImage" size="md" className="text-slate-500" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-bold text-slate-700 dark:text-slate-200 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">

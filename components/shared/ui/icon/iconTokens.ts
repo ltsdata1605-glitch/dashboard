@@ -15,9 +15,9 @@
 export const ICON_SIZES = {
   /** Trong badge, chữ phụ, link ngoài cạnh chữ nhỏ. */
   xs: { laptop: 12, mobile: 14 },
-  /** Trong dòng bảng (26px), ô input/tìm kiếm/bộ lọc, nút trong dòng dữ liệu. */
+  /** Trong dòng bảng (26px), nút trong dòng dữ liệu, mũi tên mở menu, dấu × xoá chip. */
   sm: { laptop: 14, mobile: 16 },
-  /** MẶC ĐỊNH — nút thường, nút chỉ có icon (cỡ icon máy ảnh "CHUẨN" ở Report BI). */
+  /** MẶC ĐỊNH — nút thường, nút chỉ có icon (cỡ máy ảnh "CHUẨN" ở Report BI), icon trong ô nhập/chọn. */
   md: { laptop: 16, mobile: 18 },
   /** Thanh điều hướng trái/dưới, tab, menu. */
   lg: { laptop: 20, mobile: 22 },

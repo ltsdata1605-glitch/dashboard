@@ -1,5 +1,7 @@
 import React from 'react';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from './icon/AppIcon';
+import type { IconName } from './icon/iconRegistry';
+import { resolveIconName } from './icon/legacyIconNames';
 
 interface KpiColorStyle {
     iconText: string;
@@ -93,7 +95,8 @@ COLOR_STYLES.orange = COLOR_STYLES.amber;
 COLOR_STYLES.cyan = COLOR_STYLES.sky;
 
 export interface KpiCardProps {
-    icon: string;
+    /** Tên chức năng (iconRegistry); tên kiểu cũ (vd constants.ts) vẫn nhận qua lớp chuyển tiếp. */
+    icon: IconName | string;
     iconColor: string;
     title: string;
     onClick?: (e: React.MouseEvent) => void;
@@ -147,7 +150,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 <div className="@container flex items-center justify-between gap-1.5 min-w-0">
                     <div className="flex items-center gap-2 min-w-0">
                         <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${style.iconBg} ${style.iconText}`}>
-                            <Icon name={icon} size={3.5} />
+                            <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
                         </div>
                         <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>
                             {title}
@@ -185,7 +188,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 {/* Hàng 1: Icon squircle + Status dot */}
                 <div className="flex items-center justify-between w-full">
                     <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${style.iconBg} ${style.iconText}`}>
-                        <Icon name={icon} size={3} />
+                        <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
                     </div>
                     {!isGood ? (
                         <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" title="Chưa đạt" />

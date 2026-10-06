@@ -107,3 +107,43 @@ describe('lint-ratchet — chỉ số icon', () => {
     expect(ratchet.countIconLegacyCall(src)).toBe(3);
   });
 });
+
+describe('Lớp chuyển tiếp tên icon cũ → tên chức năng (Giai đoạn 2)', () => {
+  it('mọi tên trong ICON_MAP của components/common/Icon.tsx đều đổi được sang tên chức năng', async () => {
+    const { resolveIconName } = await import('../../components/shared/ui/icon/legacyIconNames');
+    const src = readFileSync('components/common/Icon.tsx', 'utf8');
+    const legacy = [...src.slice(src.indexOf('const ICON_MAP')).matchAll(/'([a-z0-9-]+)':\s*[A-Za-z0-9]+/g)].map((m) => m[1]);
+    expect(legacy.length).toBeGreaterThan(150);
+    const missing = legacy.filter((n) => !resolveIconName(n));
+    expect(missing).toEqual([]);
+  });
+
+  it('3 tên bảng cũ KHÔNG có (từng âm thầm hiện dấu hỏi) nay ra đúng icon', async () => {
+    const { resolveIconName } = await import('../../components/shared/ui/icon/legacyIconNames');
+    expect(resolveIconName('alert-octagon')).toBe('error');
+    expect(resolveIconName('trending-down')).toBe('trendDown');
+    expect(resolveIconName('message-square')).toBe('message');
+  });
+
+  it('các biến thể cũ cùng chức năng dồn về một tên', async () => {
+    const { resolveIconName } = await import('../../components/shared/ui/icon/legacyIconNames');
+    expect(new Set(['check-circle', 'check-circle-2'].map(resolveIconName))).toEqual(new Set(['success']));
+    expect(new Set(['refresh-cw', 'refresh-ccw'].map(resolveIconName))).toEqual(new Set(['refresh']));
+    expect(new Set(['settings', 'settings-2'].map(resolveIconName))).toEqual(new Set(['settings']));
+    expect(resolveIconName('search')).toBe('search'); // tên chức năng giữ nguyên
+    expect(resolveIconName('khong-co-that')).toBeUndefined();
+  });
+});
+
+describe('<Input> — icon canh theo Ô NHẬP, không theo cả khối có dòng báo lỗi', () => {
+  it('dòng lỗi nằm NGOÀI khối relative chứa icon', async () => {
+    const { Input } = await import('../../components/shared/ui/Input');
+    const html = renderToStaticMarkup(createElement(Input, { leftIcon: 'search', error: 'Sai định dạng' }));
+    const relStart = html.indexOf('<div class="relative">');
+    const errAt = html.indexOf('role="alert"');
+    const relEnd = html.indexOf('</div>', html.indexOf('<input'));
+    expect(relStart).toBeGreaterThan(-1);
+    expect(errAt).toBeGreaterThan(relEnd); // <p role=alert> sau khi khối relative đã đóng
+    expect(html).toContain('data-icon="search"');
+  });
+});

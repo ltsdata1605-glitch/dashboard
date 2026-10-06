@@ -7192,7 +7192,21 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   từ 7c9f96b (tạm tắt gửi LINE) → 3 test nhiều-nhóm chạy theo cờ `LINE_EXPORT_TEMPORARILY_DISABLED`, thêm test cho
   hành vi đang tắt. 3 commit "Gửi nhóm LINE" (05b8221, dcffc62, 963dedd — 02/10, chưa từng vào main) được ghi nhận
   vào lịch sử nhưng GIỮ nội dung main, vì main đã tạm tắt gửi LINE theo yêu cầu chủ dự án.
-- [ ] **2** — Nút/toolbar (gồm thanh Cùng kỳ/Còn lại/Realtime), nút trong bảng.
+- [x] **2** — Nút/toolbar (2026-10-06):
+  - Thanh Report BI → Doanh thu (ảnh chủ dự án): đồng hồ, ô tích THẬT (`checkboxOn/Off` thay ô vuông 14px tự dựng),
+    icon Realtime (`live` thay chấm 8px), kiểu xem, xuất hàng loạt (`exportBatch` — trước là `DownloadAllIcon`
+    thư mục), máy ảnh: tất cả cỡ `md`. Kiểu nút giữ nguyên (lựa chọn (a)). Tab Trả chậm, Thi đua, Thưởng cùng chuẩn.
+  - `ExportButton` (BI): AppIcon; nút chỉ có icon rộng 32px trên điện thoại → nay 44px.
+  - TOÀN BỘ `components/shared/ui` hết icon kiểu cũ: Input/Select (icon md; SỬA LỆCH: icon canh theo cả khối gồm dòng
+    báo lỗi → tụt khi có lỗi), ConfirmDialog (cảnh báo dùng TriangleAlert chuẩn), Modal (đóng md), DataTable (sắp xếp
+    xs), Dropdown/MultiSelect (mũi tên sm), StatCard, KpiCard, SectionHeader (1 icon thay 2 icon ẩn/hiện), landing.
+  - Lớp chuyển tiếp `icon/legacyIconNames.ts` (196 tên cũ → tên chức năng) + `renderIcon` (prop icon nhận tên hoặc
+    node). Registry thêm nhóm đồ vật/ngành hàng (giữ hình cũ) → 193 icon. Sửa 2 tên cũ từng ra dấu hỏi:
+    'trending-down', 'message-square'.
+  - Codemod dùng lại cho các giai đoạn sau: chuyển `<XIcon className="h-4 w-4 …"/>`/`<Lucide size={16}/>` → AppIcon
+    (h-3→xs, h-3.5→sm, h-4→md, h-5→lg, h-6→xl…), rồi soát tay theo ngữ cảnh (icon trong nút có chữ → md).
+  - Test: `tests/e2e/icon-thanh-cong-cu-bi.spec.ts` (390/1366: cùng cỡ, lệch dọc ≤1px, vùng chạm 44px, bấm "Còn lại"
+    → ô tích đổi; kiểm ngược: đồng hồ về sm → đỏ), unit `tests/unit/icon-registry.test.ts` +4.
 - [ ] **3** — Form/tìm kiếm/bộ lọc, Modal, Tooltip, EmptyState, ConfirmDialog.
 - [ ] **4** — Phân tích, Report BI, Báo cáo, Check thưởng; xoá `features/bi-dashboard/components/Icons.tsx`.
 - [ ] **5** — Landing, bộ xuất ảnh, In Sticker (xoá `features/sticker-event/Icons.tsx`), Phân Ca, Bot LINE, Khai thác;

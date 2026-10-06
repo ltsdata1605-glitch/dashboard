@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from './utils';
 import { EmptyState } from './EmptyState';
 import { Skeleton } from './Skeleton';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { AppIcon } from './icon/AppIcon';
 
 /* ─── DataTable ─── */
 
@@ -93,11 +93,11 @@ const groupColorClasses: Record<string, string> = {
 
 const SortIcon: React.FC<{ direction: SortDirection; active: boolean }> = ({ direction, active }) => {
   if (!active || !direction) {
-    return <ArrowUpDown size={12} className="text-slate-300 dark:text-slate-600" />;
+    return <AppIcon name="sort" size="xs" className="text-slate-300" />;
   }
   return direction === 'asc'
-    ? <ArrowUp size={12} className="text-sky-500" />
-    : <ArrowDown size={12} className="text-sky-500" />;
+    ? <AppIcon name="sortAsc" size="xs" className="text-sky-500" />
+    : <AppIcon name="sortDesc" size="xs" className="text-sky-500" />;
 };
 
 /** true khi viewport ≥ 1024px (breakpoint `lg` — cùng ngưỡng với lớp `hidden lg:table-cell`). */

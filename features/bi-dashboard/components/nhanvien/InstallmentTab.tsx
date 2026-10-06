@@ -1,5 +1,6 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { startExportJob } from '../../../../components/shared/export';
 import Card from '../Card';
 import toast from 'react-hot-toast';
@@ -8,7 +9,6 @@ import ExportButton from '../ExportButton';
 import { InstallmentRow, InstallmentProvider } from '../../types/nhanVienTypes';
 import { getYesterdayDateString, parseInstallmentData, computeColumnTiers, DataTier } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XIcon, DownloadAllIcon, DocumentReportIcon } from '../Icons';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { onActivateKey } from '../../../../components/shared/ui';
@@ -387,13 +387,12 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
         return <div className="hidden" />;
     }
 
-    if (rows.length === 0) return <Card bordered={false} title="Phân tích Trả chậm"><EmptyState icon={<DocumentReportIcon className="h-6 w-6" />} title="Chưa có dữ liệu" /></Card>;
+    if (rows.length === 0) return <Card bordered={false} title="Phân tích Trả chậm"><EmptyState icon={<AppIcon name="report" size="xl" />} title="Chưa có dữ liệu" /></Card>;
     
     const providers = rows.find(r => r.providers.length > 0)?.providers || [];
 
     const cardTitle = <span className="js-report-title">Trả chậm nhân viên đến ngày {getYesterdayDateString()}</span>;
     const cardSubtitle = <span className="js-report-title">Khi lợi ích được đặt đúng chỗ, quyết định mua trở nên tự nhiên.</span>;
-
 
     return (
         <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
@@ -417,11 +416,11 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         onClick={() => importFileRef.current?.click()}
                         className={`h-8 gap-1.5 px-2.5 text-xs ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
                     >
-                        <ClockIcon className="h-3.5 w-3.5" />
+                        <AppIcon name="clock" size="md" />
                         <span>Cùng kỳ</span>{/* hiện cả trên điện thoại: nút chỉ có icon đồng hồ không ai đoán được (2026-09-28) */}
                         {prevMonthRaw && (
                             <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800">
-                                <XIcon className="h-3.5 w-3.5" />
+                                <AppIcon name="close" size="sm" />
                             </Button>
                         )}
                     </Button>
@@ -444,7 +443,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
-                        {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
+                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
@@ -455,7 +454,7 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400"
                     >
-                        {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
+                        {isExportingByDept ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>
                     <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
                 </div>

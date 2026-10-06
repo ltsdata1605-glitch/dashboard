@@ -1,12 +1,11 @@
 
 import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle, useCallback } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { startExportJob } from '../../../../components/shared/export';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon, ChevronDownIcon, DownloadAllIcon, SpinnerIcon } from '../Icons';
-import { Columns3 } from 'lucide-react';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import {
@@ -516,10 +515,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
                     <Button type="button" variant="unstyled" size="none" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="p-0 text-emerald-700">
-                        <CheckCircleIcon className="h-4 w-4" />
+                        <AppIcon name="success" size="md" />
                     </Button>
                     <Button type="button" variant="unstyled" size="none" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="p-0 text-slate-400">
-                        <XIcon className="h-4 w-4" />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
             ) : (
@@ -540,7 +539,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                         title="Chọn cột hiển thị"
                     >
-                        <FilterIcon className="h-4 w-4" />
+                        <AppIcon name="filter" size="md" />
                         {selectedTitles.length > 0 && (
                             <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[11px] rounded-full w-4 h-4 flex items-center justify-center">
                                 {selectedTitles.length}
@@ -587,7 +586,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                     title="Đổi tên bảng"
                 >
-                    <PencilIcon className="h-4 w-4" />
+                    <AppIcon name="edit" size="md" />
                 </Button>
             )}
 
@@ -599,7 +598,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
                     title="Xóa bảng"
                 >
-                    <TrashIcon className="h-4 w-4" />
+                    <AppIcon name="delete" size="md" />
                 </Button>
             )}
 
@@ -625,7 +624,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                             );
                         })}
                     </select>
-                    <ChevronDownIcon className="h-3.5 w-3.5 absolute right-1.5 text-slate-400 pointer-events-none" />
+                    <AppIcon name="chevronDown" size="sm" className="absolute right-1.5 text-slate-400 pointer-events-none" />
                 </div>
             )}
 
@@ -640,9 +639,9 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
                 >
                     {isExportingByGroup ? (
-                        <SpinnerIcon className="h-4 w-4 animate-spin text-sky-700" />
+                        <AppIcon name="loading" size="md" spin className="text-sky-700" />
                     ) : (
-                        <DownloadAllIcon className="h-4 w-4" />
+                        <AppIcon name="exportBatch" size="md" />
                     )}
                 </Button>
             )}
@@ -655,12 +654,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 rounded-lg flex items-center justify-center transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
-                {showPercent ? <HashIcon className="h-4 w-4" /> : <PercentIcon className="h-4 w-4" />}
+                {showPercent ? <AppIcon name="hash" size="md" /> : <AppIcon name="percent" size="md" />}
             </Button>
 
             <ExportButton
                 onExportPNG={async () => { await handleExportSummaryPNG(); }}
-                icon={<Columns3 className="h-4 w-4" />}
+                icon={<AppIcon name="columns" size="md" />}
                 title="Xuất ảnh rút gọn (chỉ Nhân viên, %HT 100%, Hiệu quả)"
                 ariaLabel="Xuất ảnh rút gọn"
             />
@@ -677,7 +676,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         {readOnly ? (
                             'Không có dữ liệu thi đua để hiển thị.'
                         ) : (
-                            <>Bấm biểu tượng lọc <FilterIcon className="inline h-4 w-4" /> để chọn các cột dữ liệu hiển thị cho bảng này.</>
+                            <>Bấm biểu tượng lọc <AppIcon name="filter" size="md" /> để chọn các cột dữ liệu hiển thị cho bảng này.</>
                         )}
                     </div>
                 ) : (

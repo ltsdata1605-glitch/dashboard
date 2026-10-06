@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { cn, onActivateKey } from './utils';
-import { ChevronDown } from 'lucide-react';
+import { AppIcon } from './icon/AppIcon';
 import { Button } from './Button';
 import { Input } from './Input';
 
@@ -259,7 +259,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             {typeof count === 'number' && (
               <span className={cn('text-[11px] sm:text-[11px] font-black text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 rounded-full px-1.5 py-0.5', count <= 1 && 'hidden sm:inline')}>{count}</span>
             )}
-            <ChevronDown size={14} className={cn('text-slate-400 transition-transform duration-200 sm:w-4 sm:h-4 w-3.5 h-3.5', isOpen && 'rotate-180')} />
+            <AppIcon name="chevronDown" size="sm" className={cn('text-slate-400 transition-transform duration-200', isOpen && 'rotate-180')} />
           </div>
         </Button>
       )}

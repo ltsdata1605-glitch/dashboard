@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from './utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { AppIcon } from './icon/AppIcon';
 
 /* ─── StatCard ─── */
 
@@ -44,12 +44,8 @@ const trendColors: Record<TrendDirection, string> = {
 };
 
 const TrendIcon: React.FC<{ direction: TrendDirection }> = ({ direction }) => {
-  const size = 14;
-  switch (direction) {
-    case 'up':   return <TrendingUp size={size} />;
-    case 'down': return <TrendingDown size={size} />;
-    case 'flat': return <Minus size={size} />;
-  }
+  const name = direction === 'up' ? 'trendUp' : direction === 'down' ? 'trendDown' : 'minus';
+  return <AppIcon name={name} size="sm" />;
 };
 
 export const StatCard = React.memo<StatCardProps>(({

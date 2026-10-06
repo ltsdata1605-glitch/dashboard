@@ -1,10 +1,10 @@
 
 import React, { useRef, useCallback } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { UploadIcon, ViewListIcon, ViewGridIcon } from '../Icons';
-import { CalendarDays, CalendarRange, Table2, ArrowLeftRight } from 'lucide-react';
+import type { IconName } from '../../../../components/shared/ui/icon/iconRegistry';
 import { Dropdown, DropdownItem } from '../../../../components/shared/ui/Dropdown';
 import { MonthlyBonusTable } from './bonus/MonthlyBonusTable';
 import { Employee, BonusMetrics, RevenueRow } from '../../types/nhanVienTypes';
@@ -28,11 +28,11 @@ export type { BonusDisplayRow } from './bonus/BonusDisplayRow';
 
 // Menu chế độ xem theo thời gian — thay cho nút xoay vòng cũ (phải bấm 3 lần mới về chế độ
 // muốn xem, tooltip lại mô tả chế độ KẾ TIẾP nên dễ nhầm). Thứ tự = từ chi tiết đến tổng quát.
-const PERIOD_MODES: { id: BonusPeriodMode; label: string; description: string; Icon: React.FC<{ className?: string }> }[] = [
-    { id: 'summary', label: 'Tổng hợp kỳ', description: 'ERP · T.Nóng · Tổng · Dự kiến', Icon: Table2 },
-    { id: 'daily', label: 'Xem theo ngày', description: 'Từng ngày, gom theo tuần', Icon: CalendarDays },
-    { id: 'monthly', label: 'Luỹ kế tháng', description: '6 tháng gần nhất, cột mỗi tháng', Icon: CalendarRange },
-    { id: 'compare', label: 'So sánh cùng kỳ', description: 'Kỳ này vs cùng kỳ tháng trước', Icon: ArrowLeftRight },
+const PERIOD_MODES: { id: BonusPeriodMode; label: string; description: string; icon: IconName }[] = [
+    { id: 'summary', label: 'Tổng hợp kỳ', description: 'ERP · T.Nóng · Tổng · Dự kiến', icon: 'table' },
+    { id: 'daily', label: 'Xem theo ngày', description: 'Từng ngày, gom theo tuần', icon: 'calendar' },
+    { id: 'monthly', label: 'Luỹ kế tháng', description: '6 tháng gần nhất, cột mỗi tháng', icon: 'dateRange' },
+    { id: 'compare', label: 'So sánh cùng kỳ', description: 'Kỳ này vs cùng kỳ tháng trước', icon: 'swap' },
 ];
 
 export const BonusView: React.FC<{
@@ -103,7 +103,7 @@ export const BonusView: React.FC<{
         id: m.id,
         label: m.label,
         description: m.description,
-        icon: <m.Icon className="h-4 w-4" />,
+        icon: <AppIcon name={m.icon} size="md" />,
         active: m.id === periodMode,
     }));
     const handleSelectPeriodMode = useCallback((id: string) => setPeriodMode(id as BonusPeriodMode), [setPeriodMode]);
@@ -137,7 +137,7 @@ export const BonusView: React.FC<{
                         onClick={() => { setHrmWindowRef(window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank')); onBatchUpdate(); }}
                         className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded-md transition-all active:scale-95 shrink-0"
                     >
-                        <UploadIcon className="h-3.5 w-3.5" />
+                        <AppIcon name="upload" size="md" />
                         <span>Thủ công</span>
                     </Button>
                     <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} onCompareDone={handleCompareDone} />
@@ -150,7 +150,7 @@ export const BonusView: React.FC<{
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
-                        {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
+                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Dropdown
@@ -167,7 +167,7 @@ export const BonusView: React.FC<{
                                 data-testid="bonus-period-mode-trigger"
                                 className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
                             >
-                                <activePeriodMode.Icon className="h-4 w-4" />
+                                <AppIcon name={activePeriodMode.icon} size="md" />
                             </span>
                         }
                     />

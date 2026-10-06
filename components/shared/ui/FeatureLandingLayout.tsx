@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from './icon/AppIcon';
 
 export interface FeatureLandingLayoutProps {
     title?: React.ReactNode;
@@ -78,17 +78,17 @@ export const FeatureLandingLayout: React.FC<FeatureLandingLayoutProps> = ({
                 {trustIndicators || (
                     <div className="mt-6 flex items-center justify-center gap-6 text-center">
                         <div className="flex items-center gap-1.5 text-slate-400">
-                            <Icon name="shield-check" size={3.5} />
+                            <AppIcon name="securityOk" size="xs" />
                             <span className="text-[11px] font-semibold text-slate-500">Local Processing</span>
                         </div>
                         <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                         <div className="flex items-center gap-1.5 text-slate-400">
-                            <Icon name="zap" size={3.5} />
+                            <AppIcon name="quick" size="xs" />
                             <span className="text-[11px] font-semibold text-slate-500">Instant Speed</span>
                         </div>
                         <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
                         <div className="flex items-center gap-1.5 text-slate-400">
-                            <Icon name="sparkles" size={3.5} />
+                            <AppIcon name="sparkles" size="xs" />
                             <span className="text-[11px] font-semibold text-slate-500">Smart UI</span>
                         </div>
                     </div>

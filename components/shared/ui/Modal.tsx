@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence, useDragControls, type PanInfo } from 'motion/react';
 import { cn } from './utils';
 import { Button } from './Button';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from './icon/AppIcon';
 
 // ═══════════════════════════════════════════════════════════════════════
 // NGĂN XẾP MODAL (audit A11/A12, 2026-09-29)
@@ -346,7 +346,7 @@ export function Modal({
                     // Nút đóng từng chỉ 22px trên iPhone (icon 14px + p-1) — nhỏ nhất trong mọi modal.
                     className="order-2 sm:order-3 shrink-0 min-h-11 min-w-11 -mr-2 sm:min-h-0 sm:min-w-0 sm:mr-0 p-1 flex items-center justify-center rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                   >
-                    <Icon name="x" size={4.5} />
+                    <AppIcon name="close" size="md" />
                   </Button>
                 )}
               </div>

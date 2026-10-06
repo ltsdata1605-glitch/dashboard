@@ -3,7 +3,7 @@ import { startExportJob } from '../../../../components/shared/export';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton, { ExportOptionItem } from '../ExportButton';
-import { SpinnerIcon, UsersIcon, XIcon, ViewListIcon, ViewGridIcon, ClockIcon, DownloadAllIcon, CheckCircleIcon, AlertTriangleIcon, ImagesIcon, ChartBarIcon, SparklesIcon } from '../Icons';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { RevenueRow, BonusMetrics, Criterion, Employee, CompetitionHeader } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString, CompetitionEmployeeRow } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -331,21 +331,21 @@ const RevenueView: React.FC<{
             id: 'all',
             label: 'Xuất all (Tất cả)',
             sublabel: 'Đầy đủ nhóm Doanh thu & Hiệu suất',
-            icon: <ImagesIcon className="h-4 w-4 text-sky-500" />,
+            icon: <AppIcon name="exportBatch" size="md" className="text-sky-500" />,
             onSelect: async () => { await handleExportPNG('all'); }
         },
         {
             id: 'revenue',
             label: 'Xuất nhóm Doanh thu',
             sublabel: 'M.Tiêu, Thực, DTQĐ, D.Kiến, %D.Kiến',
-            icon: <ChartBarIcon className="h-4 w-4 text-emerald-500" />,
+            icon: <AppIcon name="chartBar" size="md" className="text-emerald-500" />,
             onSelect: async () => { await handleExportPNG('revenue'); }
         },
         {
             id: 'performance',
             label: 'Xuất nhóm Hiệu suất',
             sublabel: 'HQQĐ, % Trả chậm & Thưởng',
-            icon: <SparklesIcon className="h-4 w-4 text-amber-500" />,
+            icon: <AppIcon name="sparkles" size="md" className="text-amber-500" />,
             onSelect: async () => { await handleExportPNG('performance'); }
         }
     ], [handleExportPNG, isRealtimeMode, supermarketName]);
@@ -405,8 +405,8 @@ const RevenueView: React.FC<{
         return <div className="hidden" />;
     }
 
-    if (!supermarketName) return <Card bordered={false} title="Phân tích Nhân viên"><EmptyState icon={<UsersIcon className="h-6 w-6" />} title="Vui lòng chọn siêu thị" compact /></Card>;
-    if (isLoading) return <Card bordered={false} title={cardTitle} subtitle={cardSubtitle}><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-sky-500 animate-spin" /></div></Card>;
+    if (!supermarketName) return <Card bordered={false} title="Phân tích Nhân viên"><EmptyState icon={<AppIcon name="users" size="xl" />} title="Vui lòng chọn siêu thị" compact /></Card>;
+    if (isLoading) return <Card bordered={false} title={cardTitle} subtitle={cardSubtitle}><div className="flex items-center justify-center py-20"><AppIcon name="loading" spin size="hero" className="text-sky-500" /></div></Card>;
 
     return (
         <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
@@ -443,7 +443,7 @@ const RevenueView: React.FC<{
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
                             }`}
                         >
-                            <ClockIcon className={`h-3.5 w-3.5 ${prevMonthRaw && isShowPrevMonth ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}`} />
+                            <AppIcon name="clock" size="md" className={prevMonthRaw && isShowPrevMonth ? 'text-emerald-600' : 'text-slate-400'} />
                             <span>Cùng kỳ</span>{/* hiện cả trên điện thoại: nút chỉ có icon đồng hồ không ai đoán được (2026-09-28) */}
                             {prevMonthRaw && (
                                 <span
@@ -465,7 +465,7 @@ const RevenueView: React.FC<{
                                     }}
                                     className="ml-0.5 p-0.5 rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors inline-flex items-center justify-center cursor-pointer"
                                 >
-                                    <XIcon className="h-3.5 w-3.5" />
+                                    <AppIcon name="close" size="sm" />
                                 </span>
                             )}
                         </Button>
@@ -477,12 +477,9 @@ const RevenueView: React.FC<{
                             onClick={() => setIsShowRemaining(p => !p)}
                             className={`h-8 gap-1.5 px-2.5 text-xs ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
                         >
-                            <span
-                                aria-hidden="true"
-                                className={`h-3.5 w-3.5 rounded border flex items-center justify-center transition-colors ${isShowRemaining ? 'bg-amber-600 border-amber-600' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}
-                            >
-                                {isShowRemaining && <CheckCircleIcon className="h-3.5 w-3.5 text-white" />}
-                            </span>
+                            {/* Ô tích THẬT (chuẩn hoá icon 2026-10-06): trước là ô vuông 14px tự dựng chứa icon
+                                tích-tròn — lệch cỡ với đồng hồ/máy ảnh. Nay cùng cỡ md với cả thanh. */}
+                            <AppIcon name={isShowRemaining ? 'checkboxOn' : 'checkboxOff'} size="md" className={isShowRemaining ? 'text-amber-600' : 'text-slate-400'} />
                             <span>Còn lại</span>
                         </Button>
                     )}
@@ -500,7 +497,8 @@ const RevenueView: React.FC<{
                         }`}
                         title={isRealtimeMode ? 'Đang xem Doanh thu Realtime (Bấm để xem Luỹ kế)' : 'Bấm để xem Doanh thu Realtime trong ngày'}
                     >
-                        <span className={`w-2 h-2 rounded-full ${isRealtimeMode ? 'bg-white animate-pulse' : 'bg-amber-500'}`} />
+                        {/* Icon Realtime (chuẩn hoá icon 2026-10-06) thay chấm tròn 8px — cùng cỡ md với cả thanh. */}
+                        <AppIcon name="live" size="md" className={isRealtimeMode ? 'text-white animate-pulse' : 'text-amber-500'} />
                         <span>Realtime</span>
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
@@ -511,7 +509,7 @@ const RevenueView: React.FC<{
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
                     >
-                        {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
+                        <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="md" />
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
@@ -522,7 +520,7 @@ const RevenueView: React.FC<{
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400"
                     >
-                        {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
+                        {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>
                     <ExportButton options={exportOptions} />
                 </div>
@@ -538,7 +536,7 @@ const RevenueView: React.FC<{
             </div>
                     {isRealtimeMode && activeRows.length === 0 && (
                         <div className="mx-4 my-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex items-center gap-2">
-                            <AlertTriangleIcon className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                            <AppIcon name="warning" size="md" className="text-amber-600" />
                             <span>Chưa có dữ liệu Doanh thu Realtime. Vui lòng vào mục <strong>Cập nhật &gt; Cấu hình siêu thị &amp; Nhân viên &gt; Dữ liệu</strong> (ô <strong>REALTIME</strong> của DOANH THU NHÂN VIÊN) để dán dữ liệu.</span>
                         </div>
                     )}

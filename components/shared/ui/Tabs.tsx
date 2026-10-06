@@ -2,22 +2,16 @@ import React, { useCallback, useRef } from 'react';
 import { cn } from './utils';
 import { Button } from './Button';
 import { useCenterActiveInStrip } from './useCenterActiveInStrip';
-import { AppIcon } from './icon/AppIcon';
-import { ICON_REGISTRY, type IconName } from './icon/iconRegistry';
+import { renderIcon, type IconProp } from './icon/renderIcon';
 
 /* ─── Tabs ─── */
 
-/** Icon của tab: tên chức năng → AppIcon cùng cỡ chữ tab (sm → 14/16px, md → 16/18px). */
-function renderTabIcon(icon: TabItem['icon'], size: 'sm' | 'md') {
-  if (typeof icon === 'string' && icon in ICON_REGISTRY) return <AppIcon name={icon as IconName} size={size} />;
-  return icon;
-}
 
 export interface TabItem {
   id: string;
   label: string;
   /** Tên chức năng trong iconRegistry (khuyên dùng — size tự theo cỡ tab) hoặc node tự dựng (cũ). */
-  icon?: IconName | React.ReactNode;
+  icon?: IconProp;
   badge?: string | number;
   disabled?: boolean;
 }
@@ -90,7 +84,7 @@ export const Tabs = React.memo<TabsProps>(({
                 item.disabled && 'opacity-40 cursor-not-allowed'
               )}
             >
-              {item.icon && <span className="shrink-0 inline-flex">{renderTabIcon(item.icon, size)}</span>}
+              {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, size)}</span>}
               {item.label}
               {item.badge !== undefined && (
                 <span className={cn(
@@ -142,7 +136,7 @@ export const Tabs = React.memo<TabsProps>(({
                 item.disabled && 'opacity-40 cursor-not-allowed'
               )}
             >
-              {item.icon && <span className="shrink-0 inline-flex">{renderTabIcon(item.icon, size)}</span>}
+              {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, size)}</span>}
               {item.label}
               {item.badge !== undefined && (
                 <span className={cn(
@@ -190,7 +184,7 @@ export const Tabs = React.memo<TabsProps>(({
               item.disabled && 'opacity-40 cursor-not-allowed'
             )}
           >
-            {item.icon && <span className="shrink-0 inline-flex">{renderTabIcon(item.icon, size)}</span>}
+            {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, size)}</span>}
             {item.label}
             {item.badge !== undefined && (
               <span className={cn(

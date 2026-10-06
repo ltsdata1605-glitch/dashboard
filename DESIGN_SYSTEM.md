@@ -154,8 +154,8 @@ Không dùng thư viện icon khác, không vẽ SVG icon mới (ngoại lệ: l
 | Token | Laptop | Mobile | Dùng cho |
 |---|---:|---:|---|
 | `xs` | 12 | 14 | badge, chữ phụ, link ngoài |
-| `sm` | 14 | 16 | dòng bảng 26px, input/tìm kiếm/bộ lọc, nút trong dòng dữ liệu |
-| `md` | 16 | 18 | **mặc định** — nút thường, nút chỉ có icon |
+| `sm` | 14 | 16 | dòng bảng 26px, nút trong dòng dữ liệu, mũi tên mở menu (▾), dấu × xoá chip |
+| `md` | 16 | 18 | **mặc định** — nút thường, nút chỉ có icon, icon trong ô nhập/tìm kiếm/chọn. Mọi icon chính trên CÙNG một thanh công cụ dùng `md` |
 | `lg` | 20 | 22 | thanh điều hướng trái/dưới, menu chính (tab trong trang: `<Tabs>` tự dùng `sm`/`md` theo cỡ tab) |
 | `xl` | 24 | 24 | hành động chính, header modal lớn |
 | `state` | 32 | 32 | empty state — không dùng trong nút |

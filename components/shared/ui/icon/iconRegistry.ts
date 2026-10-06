@@ -19,17 +19,24 @@
  */
 import type React from 'react';
 import {
-  Activity, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpDown, Award, BadgeCheck, Bell, BellOff, Bot,
-  Building2, Calculator, Calendar, CalendarClock, CalendarRange, Gift, Megaphone, Share, SquarePlus, Type, Camera, ChartColumn, ChartLine, ChartPie, ChartSpline, Check,
-  ChevronDown, ChevronLeft, ChevronRight, ChevronUp, CircleAlert, CircleCheck, CircleDollarSign, CircleHelp,
-  CircleMinus, CirclePlus, CircleX, ClipboardList, ClipboardPaste, Clock, CloudDownload, CloudUpload, Copy, Crown,
-  Database, Download, EllipsisVertical, ExternalLink, Eye, EyeOff, FileSpreadsheet, FileText, Filter, GripVertical,
-  Hash, History, House, Images, Inbox, Info, LayoutGrid, Layers, Lightbulb, Link, List, LoaderCircle, Lock, LogIn,
-  LogOut, Mail, Maximize2, Medal, Menu, MessageCircle, Minimize2, Minus, Package, Pause, Pencil, Percent, Play, Plus,
-  Printer, QrCode, Radio, RefreshCw, RotateCcw, Save, ScanLine, Search, SearchX, Send, Settings, Share2, Shield,
-  ShieldAlert, ShieldCheck, SlidersHorizontal, Smartphone, Sparkles, Square, SquareCheck, Star, Store, Tag, Target,
-  Ticket, Trash2, TrendingDown, TrendingUp, TriangleAlert, Trophy, Upload, User, UserCheck, UserCog, UserPlus, Users,
-  Wallet, Wrench, X, Zap,
+  Activity, Apple, ArchiveRestore, ArrowDown, ArrowLeft, ArrowLeftRight, ArrowRight, ArrowUp, ArrowUpDown, Award, Backpack,
+  BadgeCheck, Banknote, BatteryCharging, Bell, BellOff, Bot, Briefcase, Bug, Building2, Cable, Calculator, Calendar,
+  CalendarCheck, CalendarClock, CalendarRange, CalendarX, Camera, ChartColumn, ChartGantt, ChartLine, ChartPie,
+  ChartSpline, Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsDownUp, ChevronsUpDown,
+  CircleAlert, CircleCheck, CircleDollarSign, CircleHelp, CircleMinus, CirclePlus, CircleX, ClipboardList,
+  ClipboardPaste, Clock, CloudDownload, CloudUpload, Code, Coffee, Columns2, Compass, Contact, Copy, Cpu, CreditCard,
+  Crown, Database, Download, Droplets, EllipsisVertical, ExternalLink, Eye, EyeOff, Factory, Fan, FastForward,
+  FileCheck, FileKey2, FileScan, FileSpreadsheet, FileText, Film, Filter, Flame, GalleryHorizontalEnd, Gamepad2,
+  Gift, Glasses, GripVertical, Hash, Headphones, History, House, Images, Inbox, Info, Keyboard, Laptop, Layers,
+  LayoutDashboard, LayoutGrid, LayoutTemplate, Lightbulb, Link, List, LoaderCircle, Lock, LogIn, LogOut, Mail,
+  MapPin, Maximize2, Medal, Megaphone, MemoryStick, Menu, MessageCircle, Minimize2, Minus, MousePointer2, Package,
+  PackageX, Paintbrush, Palette, Pause, Pencil, Percent, Play, PlugZap, Plus, Printer, QrCode, Radio, Receipt,
+  RefreshCw, Rocket, RotateCcw, Router, Save, ScanLine, Search, SearchX, Send, Server, Settings, Share, Share2,
+  Shield, ShieldAlert, ShieldCheck, ShoppingBag, Sigma, Signal, SlidersHorizontal, Smartphone, SmartphoneNfc,
+  Sparkles, Speaker, Square, SquareCheck, SquarePlay, SquarePlus, Star, Store, Swords, Table2, Tablet, Tag, Target,
+  ThermometerSnowflake, Ticket, Tornado, Trash2, TrendingDown, TrendingUp, TriangleAlert, Trophy, Truck, Tv, Type,
+  Upload, User, UserCheck, UserCog, UserMinus, UserPlus, UserX, Users, Wallet, Warehouse, Watch, Waves, Webcam, Wind,
+  Wrench, X, Zap,
 } from 'lucide-react';
 import { LineIcon } from './brandIcons';
 
@@ -103,6 +110,7 @@ export const ICON_REGISTRY = {
 
   // ── Sắp xếp / mở rộng ───────────────────────────────────────────────────────────────────
   sort: ArrowUpDown,
+  swap: ArrowLeftRight,               // so sánh / đổi chiều
   sortAsc: ArrowUp,
   sortDesc: ArrowDown,
   chevronDown: ChevronDown,
@@ -179,6 +187,84 @@ export const ICON_REGISTRY = {
   userSettings: UserCog,
   message: MessageCircle,
   mail: Mail,
+
+  // ── Mũi tên (hướng thuần, không mang nghĩa sắp xếp/xu hướng) ───────────────────────────────
+  arrowUp: ArrowUp,
+  arrowDown: ArrowDown,
+  expandAll: ChevronsUpDown,         // mở rộng tất cả nhóm
+  collapseAll: ChevronsDownUp,       // thu gọn tất cả nhóm
+  fastForward: FastForward,
+
+  // ── Bổ sung chức năng (2026-10-06, lớp chuyển tiếp từ components/common/Icon.tsx) ─────────
+  dashboard: LayoutDashboard,
+  template: LayoutTemplate,
+  table: Table2,
+  columns: Columns2,
+  gantt: ChartGantt,
+  total: Sigma,                      // tổng cộng
+  compete: Swords,                   // thi đua / đối đầu
+  restore: ArchiveRestore,
+  calendarCheck: CalendarCheck,
+  calendarOff: CalendarX,
+  fileCheck: FileCheck,
+  fileKey: FileKey2,
+  fileScan: FileScan,
+  receipt: Receipt,
+  cash: Banknote,
+  card: CreditCard,                  // trả góp / thẻ
+  shopping: ShoppingBag,
+  productOff: PackageX,
+  delivery: Truck,
+  warehouse: Warehouse,
+  location: MapPin,
+  contact: Contact,
+  userRemove: UserMinus,
+  userReject: UserX,
+  calculator: Calculator,
+  code: Code,
+  bug: Bug,
+  server: Server,
+  rocket: Rocket,
+  compass: Compass,
+  pointer: MousePointer2,
+  palette: Palette,
+  paintbrush: Paintbrush,
+  gallery: GalleryHorizontalEnd,
+  video: SquarePlay,
+  film: Film,
+  flame: Flame,
+  briefcase: Briefcase,
+
+  // ── Ngành hàng / đồ vật (icon minh hoạ nhóm sản phẩm ở Phân tích, Report BI) ────────────────
+  laptop: Laptop,
+  tablet: Tablet,
+  tv: Tv,
+  watch: Watch,
+  headphones: Headphones,
+  speaker: Speaker,
+  keyboard: Keyboard,
+  webcam: Webcam,
+  cpu: Cpu,
+  memory: MemoryStick,
+  router: Router,
+  simCard: Signal,
+  phoneNfc: SmartphoneNfc,
+  accessory: Cable,
+  battery: BatteryCharging,
+  appliance: PlugZap,                // gia dụng điện nhỏ (máy xay…)
+  kitchen: ChefHat,
+  cooling: ThermometerSnowflake,     // điện lạnh
+  fan: Fan,
+  wind: Wind,
+  waves: Waves,
+  tornado: Tornado,
+  water: Droplets,                   // lọc nước
+  coffee: Coffee,
+  apple: Apple,
+  glasses: Glasses,
+  backpack: Backpack,
+  gamepad: Gamepad2,
+  factory: Factory,
 
   // ── Thương hiệu (SVG tự vẽ duy nhất được giữ — lucide không có logo thương hiệu) ──────────
   lineBrand: LineIcon,

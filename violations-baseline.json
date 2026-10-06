@@ -423,91 +423,11 @@
     "iconNumericSize": 1,
     "iconLegacyCall": 1
   },
-  "components/shared/ui/ConfirmDialog.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 4,
-    "iconLegacyCall": 4
-  },
-  "components/shared/ui/DataTable.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 3,
-    "iconNumericSize": 3,
-    "iconLegacyCall": 0
-  },
-  "components/shared/ui/Dropdown.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 1,
-    "iconLegacyCall": 0
-  },
-  "components/shared/ui/FeatureLandingLayout.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 3,
-    "iconLegacyCall": 3
-  },
-  "components/shared/ui/Input.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 2
-  },
   "components/shared/ui/KpiCard.tsx": {
     "nonSemanticColor": 10,
     "indigoAlias": 15,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 2
-  },
-  "components/shared/ui/Modal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 1,
-    "iconLegacyCall": 1
-  },
-  "components/shared/ui/MultiSelectDropdown.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 1,
-    "iconLegacyCall": 0
-  },
-  "components/shared/ui/SectionHeader.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 2
-  },
-  "components/shared/ui/Select.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 2
-  },
-  "components/shared/ui/StatCard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 3,
     "iconNumericSize": 0,
     "iconLegacyCall": 0
   },
@@ -823,14 +743,6 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 8
   },
-  "features/bi-dashboard/components/ExportButton.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 3
-  },
   "features/bi-dashboard/components/NhanVien.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -838,14 +750,6 @@
     "iconDirectImport": 0,
     "iconNumericSize": 2,
     "iconLegacyCall": 4
-  },
-  "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 4,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 3
   },
   "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
     "nonSemanticColor": 0,
@@ -863,22 +767,6 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 3
   },
-  "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 10
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 9
-  },
   "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -886,22 +774,6 @@
     "iconDirectImport": 1,
     "iconNumericSize": 0,
     "iconLegacyCall": 3
-  },
-  "features/bi-dashboard/components/nhanvien/InstallmentTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 7
-  },
-  "features/bi-dashboard/components/nhanvien/RevenueTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 12
   },
   "features/bi-dashboard/components/nhanvien/shared/AvatarDisplay.tsx": {
     "nonSemanticColor": 0,

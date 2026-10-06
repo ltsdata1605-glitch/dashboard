@@ -5,3 +5,6 @@ export type { IconName } from './iconRegistry';
 export { ICON_SIZES, ICON_STROKE_WIDTH, ICON_TEXT_GAP_CLASS } from './iconTokens';
 export type { IconSize } from './iconTokens';
 export { LineIcon } from './brandIcons';
+export { LEGACY_ICON_NAMES, resolveIconName } from './legacyIconNames';
+export { renderIcon } from './renderIcon';
+export type { IconProp } from './renderIcon';

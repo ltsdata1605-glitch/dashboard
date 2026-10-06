@@ -1,6 +1,6 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { cn, onActivateKey } from './utils';
-import { ChevronDown } from 'lucide-react';
+import { AppIcon } from './icon/AppIcon';
 import { Button } from './Button';
 
 /* ─── Dropdown ─── */
@@ -198,7 +198,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({ label, icon, cla
   >
     {icon && <span className="shrink-0">{icon}</span>}
     <span className="truncate">{label}</span>
-    <ChevronDown size={14} className="shrink-0 text-slate-400" />
+    <AppIcon name="chevronDown" size="sm" className="text-slate-400" />
   </Button>
 );
 

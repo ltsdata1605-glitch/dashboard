@@ -1,9 +1,12 @@
 import { cn } from './Button';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from './icon/AppIcon';
+import type { IconName } from './icon/iconRegistry';
+import { resolveIconName } from './icon/legacyIconNames';
 
 interface SectionHeaderProps {
     title: React.ReactNode;
-    icon?: string | null;
+    /** Tên chức năng (iconRegistry); tên kiểu cũ vẫn nhận qua lớp chuyển tiếp. */
+    icon?: IconName | string | null;
     subtitle?: React.ReactNode;
     children?: React.ReactNode;
     onClick?: (e: React.MouseEvent) => void;
@@ -35,8 +38,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
             <div className="flex items-center gap-1.5 lg:gap-3 min-w-0">
                 {icon && (
                     <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl bg-sky-600/10 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
-                        <Icon name={icon} size={4.5} className="lg:hidden" />
-                        <Icon name={icon} size={5} className="hidden lg:block" />
+                        <AppIcon name={resolveIconName(icon) ?? 'help'} size="lg" />
                     </div>
                 )}
                 <div className="min-w-0">

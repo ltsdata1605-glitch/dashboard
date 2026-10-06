@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
-import { Icon } from '../../common/Icon';
+import { AppIcon } from './icon/AppIcon';
 
 export type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
 
@@ -35,22 +35,22 @@ export function ConfirmDialog({
 
   const variants = {
     danger: {
-      icon: <Icon name="trash-2" size={6} className="text-rose-500" />,
+      icon: <AppIcon name="delete" size="xl" className="text-rose-500" />,
       bg: 'bg-rose-100 dark:bg-rose-900/30',
       button: 'danger' as const
     },
     warning: {
-      icon: <Icon name="alert-circle" size={6} className="text-amber-500" />,
+      icon: <AppIcon name="warning" size="xl" className="text-amber-500" />,
       bg: 'bg-amber-100 dark:bg-amber-900/30',
       button: 'primary' as const
     },
     info: {
-      icon: <Icon name="info" size={6} className="text-sky-500" />,
+      icon: <AppIcon name="info" size="xl" className="text-sky-500" />,
       bg: 'bg-sky-100 dark:bg-sky-900/30',
       button: 'primary' as const
     },
     success: {
-      icon: <Icon name="check-circle-2" size={6} className="text-emerald-500" />,
+      icon: <AppIcon name="success" size="xl" className="text-emerald-500" />,
       bg: 'bg-emerald-100 dark:bg-emerald-900/30',
       button: 'primary' as const
     }

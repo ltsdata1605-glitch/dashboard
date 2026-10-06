@@ -1,12 +1,12 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { startExportJob } from '../../../../components/shared/export';
 import { createPortal } from 'react-dom';
 import Card from '../Card';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { UsersIcon, XIcon, SpinnerIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
 import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
@@ -25,8 +25,6 @@ import { onActivateKey } from '../../../../components/shared/ui';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import TimeProgressBar from './shared/TimeProgressBar';
-import { Layers } from 'lucide-react';
-
 import { useCompetitionData } from '../../hooks/useCompetitionData';
 
 interface CompetitionTabProps {
@@ -567,7 +565,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         });
     };
 
-
     if (isActive === false) {
         return <div className="hidden" />;
     }
@@ -576,7 +573,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         return (
             <Card bordered={false} title="HIỆU QUẢ THI ĐUA THEO NHÂN VIÊN">
                 <div className="mt-4 text-center py-12">
-                     <UsersIcon className="h-16 w-16 text-slate-400 mx-auto" />
+                     <AppIcon name="users" size="hero" className="text-slate-400" />
                     <p className="mt-4 text-slate-600 max-w-md mx-auto">Không có dữ liệu thi đua. Vui lòng chọn siêu thị và dán dữ liệu "Chương trình thi đua" tại trang Cập nhật.</p>
                 </div>
             </Card>
@@ -651,7 +648,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }}
                                     className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-60 hover:opacity-100 transition-all"
                                 >
-                                    <XIcon className="h-3.5 w-3.5" />
+                                    <AppIcon name="close" size="sm" />
                                 </Button>
                                 {isActive && (
                                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 dark:bg-sky-400 rounded-full" />
@@ -668,7 +665,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-sky-300 dark:border-sky-600 shadow-xs shrink-0 my-1">
                             <Input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên bản lưu..."} className="w-28 text-xs h-6 border-0 focus:ring-0" fullWidth={false} autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
                             <Button variant="unstyled" size="none" onClick={handleSaveVersionAction} className="h-6 px-2 bg-sky-600 text-white rounded text-[11px] font-bold hover:bg-sky-700 disabled:bg-slate-300 flex items-center transition-colors" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
-                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><XIcon className="h-3.5 w-3.5" /></Button>
+                            <Button variant="unstyled" size="none" onClick={onCancelNewVersion} className="p-0.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"><AppIcon name="close" size="sm" /></Button>
                         </div>
                     ) : (
                         <Button
@@ -679,7 +676,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             title="Tạo bản lưu mới từ các nhóm đang chọn"
                             className="p-1.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-40 cursor-pointer shrink-0"
                         >
-                            <PlusIcon className="h-4 w-4" />
+                            <AppIcon name="add" size="md" />
                         </Button>
                     )}
                 </div>
@@ -694,12 +691,12 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
                                 className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
                             >
-                                {viewMode === 'group' ? <ViewGridIcon className="h-4 w-4" /> : <ViewListIcon className="h-4 w-4" />}
+                                {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                             </Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
+                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400">{isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}</Button>
                             {highlightedEmployees.size > 0 && (
-                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-amber-600 dark:text-amber-400">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UsersIcon className="h-4 w-4" />}</Button>
+                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-amber-600 dark:text-amber-400">{isExportingHighlights ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="users" size="md" />}</Button>
                             )}
                             <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
                         </>
@@ -723,13 +720,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 }
                                 aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
                             >
-                                <Layers className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />
+                                <AppIcon name="layers" size="md" className="text-sky-500" />
                                 <span>{canhanGroupingMode === 'configured' ? 'Tuỳ chỉnh' : 'Mặc định'}</span>
                             </Button>
 
                             {/* Lọc nhóm — MultiSelectDropdown */}
                             <MultiSelectDropdown
-                                icon={<FilterIcon className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />}
+                                icon={<AppIcon name="filter" size="md" className="text-sky-500" />}
                                 triggerLabel="Lọc nhóm"
                                 count={isFiltered ? activeFilterCount : undefined}
                                 allLabel="Chọn tất cả"
@@ -748,7 +745,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
                             <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400">
-                                {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                                {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                             </Button>
                             <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} />
                         </>
@@ -756,7 +753,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
                         <>
                             <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400">
-                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                                {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                             </Button>
                         </>
                     )}
@@ -779,7 +776,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Lọc nhóm — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
                                         style với các bộ lọc khác trong dự án (VD bộ lọc siêu thị ngay phía trên) */}
                                     <MultiSelectDropdown
-                                        icon={<FilterIcon className="h-3.5 w-3.5 text-sky-500 flex-shrink-0" />}
+                                        icon={<AppIcon name="filter" size="md" className="text-sky-500" />}
                                         triggerLabel="Lọc nhóm"
                                         count={isFiltered ? activeFilterCount : undefined}
                                         allLabel="Chọn tất cả"
@@ -797,7 +794,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
                                         <Button variant="unstyled" size="none" onClick={handleToggleEmployeeFilter} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
-                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
+                                            <AppIcon name="users" size="md" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">{highlightedEmployees.size}</span>}<AppIcon name="chevronDown" size="sm" className={`transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </Button>
                                         {isEmployeeFilterOpen && createPortal(
                                             <div
@@ -830,7 +827,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 </div>
                             </div>
                             {selectedHeadersForNhom.length === 0 ? (
-                                <div className="mt-2 text-center py-12"><UsersIcon className="h-16 w-16 text-slate-400 mx-auto" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
+                                <div className="mt-2 text-center py-12"><AppIcon name="users" size="hero" className="text-slate-400" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
                             ) : (
                                 <div className="space-y-8" ref={groupViewRef}>
                                     <div className="mb-6 text-center py-4 sm:py-5 px-6 bg-sky-600 shadow-sm">
@@ -917,7 +914,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             onClick={handleAddSummaryTable}
                                             className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-sky-700 transition-all shadow-md shadow-sky-500/10 active:scale-95 cursor-pointer"
                                         >
-                                            <PlusIcon className="h-3.5 w-3.5" />
+                                            <AppIcon name="add" size="md" />
                                             <span>Thêm bảng</span>
                                         </Button>
                                     </div>
@@ -960,7 +957,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                                 size="sm"
                                                 type="button"
                                                 onClick={handleAddSummaryTable}
-                                                leftIcon={<PlusIcon className="h-4 w-4" />}
+                                                leftIcon={<AppIcon name="add" size="md" />}
                                             >
                                                 Thêm bảng tổng hợp
                                             </Button>
