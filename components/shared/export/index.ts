@@ -20,4 +20,4 @@ export {
     showExportOverlay, updateExportOverlay, hideExportOverlay,
     type ExportJob, type ExportJobState, type ExportItemStatus,
 } from './exportProgress';
-export { fitTablesToContent, appendExportFooter, exportFooterText } from './exportLayout';
+export { fitTablesToContent, appendExportFooter, exportFooterText, fixCircularAvatars } from './exportLayout';

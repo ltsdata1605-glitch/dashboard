@@ -6,6 +6,7 @@ import confetti from 'canvas-confetti';
 import { detectUserscript } from '../../utils/bonusBridge';
 
 const TAMPERMONKEY_STORE_URL = 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo';
+const TAMPERMONKEY_SETTINGS_URL = 'chrome://extensions/?id=dhdgffkkebhmkfjojejmpbldmpobfkfo';
 const SCRIPT_PATH = '/scripts/mwg-auto-thu-thap-diem-thuong.user.js';
 
 export function getScriptUrl(): string {
@@ -26,6 +27,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
     isCheckingExternal = false,
 }) => {
     const [copiedLink, setCopiedLink] = useState(false);
+    const [copiedSettingsLink, setCopiedSettingsLink] = useState(false);
     const [isCheckingInternal, setIsCheckingInternal] = useState(false);
     const [checkSuccess, setCheckSuccess] = useState(false);
 
@@ -39,6 +41,16 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
             icon: '📋',
         });
         setTimeout(() => setCopiedLink(false), 3000);
+    };
+
+    const handleCopySettingsLink = () => {
+        navigator.clipboard.writeText(TAMPERMONKEY_SETTINGS_URL);
+        setCopiedSettingsLink(true);
+        toast.success('Đã sao chép link thiết lập! Mở tab mới và dán (Ctrl+V) vào ô địa chỉ.', {
+            duration: 4000,
+            icon: '📋',
+        });
+        setTimeout(() => setCopiedSettingsLink(false), 3000);
     };
 
     const handleCheckConnection = async () => {
@@ -63,7 +75,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     }
                 }, 800);
             } else {
-                toast.error('Chưa phát hiện được tiện ích. Bạn hãy kiểm tra lại Bước 1 và Bước 2 nhé!', {
+                toast.error('Chưa phát hiện được tiện ích. Bạn hãy kiểm tra lại Bước 1, Bước 2 và Bước 3 nhé!', {
                     duration: 4000,
                 });
                 if (onRetry) onRetry();
@@ -87,12 +99,12 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                         Tính năng Tự Động cần tiện ích Tampermonkey
                     </p>
                     <p className="leading-relaxed">
-                        Để tự động lấy số liệu <b>Realtime, Luỹ kế và Thưởng</b> từ portal MWG về máy mà không cần nhập tay, bạn chỉ cần làm theo <b>3 bước cực kỳ đơn giản bên dưới (chỉ làm 1 lần duy nhất)</b>.
+                        Để tự động lấy số liệu <b>Realtime, Luỹ kế và Thưởng</b> từ portal MWG về máy mà không cần nhập tay, bạn chỉ cần làm theo <b>4 bước cực kỳ đơn giản bên dưới (chỉ làm 1 lần duy nhất)</b>.
                     </p>
                 </div>
             </div>
 
-            {/* DANH SÁCH 3 BƯỚC CHI TIẾT */}
+            {/* DANH SÁCH 4 BƯỚC CHI TIẾT */}
             <div className="space-y-3">
                 {/* ─── BƯỚC 1 ─── */}
                 <div className="p-3.5 sm:p-4 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
@@ -152,12 +164,93 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     </div>
                 </div>
 
-                {/* ─── BƯỚC 2 ─── */}
+                {/* ─── BƯỚC 2: THIẾT LẬP QUYỀN CHO TAMPERMONKEY ─── */}
+                <div className="p-3.5 sm:p-4 rounded-xl border border-indigo-200 dark:border-indigo-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                            <span className="w-6 h-6 rounded-full bg-indigo-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+                                2
+                            </span>
+                            <div>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
+                                    Thiết lập quyền cho Tampermonkey
+                                </h3>
+                                <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+                                    (Bắt buộc trên Chrome mới để kích hoạt script)
+                                </span>
+                            </div>
+                        </div>
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={handleCopySettingsLink}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
+                        >
+                            {copiedSettingsLink ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedSettingsLink ? 'Đã sao chép link' : 'Sao chép link thiết lập'}</span>
+                        </Button>
+                    </div>
+
+                    <div className="space-y-2.5 pl-8 text-xs">
+                        <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center gap-2">
+                            <span className="text-slate-600 dark:text-slate-300">
+                                • Mở một <b>tab mới</b> và dán địa chỉ cài đặt:
+                            </span>
+                            <code className="px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 rounded font-mono font-bold text-[11px] select-all break-all">
+                                {TAMPERMONKEY_SETTINGS_URL}
+                            </code>
+                        </div>
+
+                        <p className="text-slate-600 dark:text-slate-300">
+                            • Trong trang cài đặt tiện ích vừa mở ra, thực hiện <b>2 thiết lập sau</b>:
+                        </p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {/* Mục 1: Allow User Scripts */}
+                            <div className="p-2.5 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-1">
+                                <div className="flex items-center justify-between gap-1">
+                                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                                        Allow User Scripts
+                                    </span>
+                                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-600 text-white rounded uppercase">
+                                        Gạt BẬT (Xanh)
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Bắt buộc bật công tắc này để trình duyệt cho phép script tự động lấy số liệu MWG.
+                                </p>
+                            </div>
+
+                            {/* Mục 2: Site access */}
+                            <div className="p-2.5 rounded-lg bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/40 space-y-1">
+                                <div className="flex items-center justify-between gap-1">
+                                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                                        Site access
+                                    </span>
+                                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-600 text-white rounded">
+                                        "On all sites"
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Tại mục "Allow this extension to read...", chọn <b>On all sites</b> (Trên tất cả các trang).
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Gợi ý thêm: Pin to toolbar */}
+                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
+                            <span className="text-amber-500 font-bold shrink-0">💡 Gợi ý:</span>
+                            <span>Gạt BẬT thêm <b className="text-slate-700 dark:text-slate-200">"Pin to toolbar"</b> để ghim biểu tượng Tampermonkey lên thanh công cụ trình duyệt cho dễ theo dõi.</span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* ─── BƯỚC 3 ─── */}
                 <div className="p-3.5 sm:p-4 rounded-xl border border-sky-200 dark:border-sky-800/60 bg-white dark:bg-slate-900 shadow-xs space-y-3">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
                             <span className="w-6 h-6 rounded-full bg-sky-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
-                                2
+                                3
                             </span>
                             <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
                                 Cài đặt Script Tự Động của Dashboard YCX
@@ -185,12 +278,12 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     </div>
                 </div>
 
-                {/* ─── BƯỚC 3 ─── */}
+                {/* ─── BƯỚC 4 ─── */}
                 <div className="p-3.5 sm:p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs space-y-3">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5">
                             <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
-                                3
+                                4
                             </span>
                             <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
                                 Hoàn tất & Kiểm tra kết nối

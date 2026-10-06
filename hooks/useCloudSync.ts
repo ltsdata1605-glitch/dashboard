@@ -261,7 +261,7 @@ export const useCloudSync = () => {
                                     const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
                                     await saveCheckThuongDataToIframeDb(val);
                                     // Tự động đồng bộ ngay vào iframe Check Thưởng không cần hỏi
-                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                                    window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync', { detail: { payload: val } }));
                                 } catch (err) {
                                     console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
                                 }

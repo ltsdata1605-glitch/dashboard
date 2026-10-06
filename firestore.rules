@@ -179,6 +179,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isSignedIn();
     }
+
+    match /report_commands/{cmd} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
   }
 }
 

@@ -51,3 +51,54 @@ export function getCheckThuongDataFromIframeDb(): Promise<any> { // payload ifra
         getReq.onerror = () => { db.close(); resolve(null); };
     })).catch(() => null);
 }
+
+/**
+ * Đọc dữ liệu Check Thưởng hợp nhất từ cả 'keyval-store' và 'BI_HUB_DATABASE_V2'.
+ * Nếu một trong hai nguồn có dữ liệu mà nguồn kia chưa có, hàm sẽ tự động đồng bộ ngay
+ * lập tức, đảm bảo cả iframe và parent app luôn có dữ liệu tức thì ngay từ lần khởi động đầu tiên.
+ */
+export async function getUnifiedCheckThuongData(): Promise<any> {
+    try {
+        const iframeData = await getCheckThuongDataFromIframeDb();
+        const { getSetting, saveSetting } = await import('./dbService');
+        const parentData = await getSetting<any>('checkthuong_data');
+
+        const hasIframe = iframeData && Array.isArray(iframeData.competitionData) && iframeData.competitionData.length > 0;
+        const hasParent = parentData && Array.isArray(parentData.competitionData) && parentData.competitionData.length > 0;
+
+        if (hasIframe && !hasParent) {
+            // Đã có trong iframe nhưng chưa có trong DB chính -> tự động lưu vào DB chính để kích hoạt Cloud Sync
+            await saveSetting('checkthuong_data', iframeData);
+            return iframeData;
+        }
+
+        if (hasIframe && hasParent) {
+            const iframeTime = iframeData.lastModified || 0;
+            const parentTime = parentData.lastModified || 0;
+            if (iframeTime > parentTime) {
+                await saveSetting('checkthuong_data', iframeData);
+                return iframeData;
+            } else if (parentTime > iframeTime) {
+                saveCheckThuongDataToIframeDb(parentData).catch(err => {
+                    console.warn('[CheckThuongSync] Lỗi tự động vá sang keyval-store:', err);
+                });
+                return parentData;
+            }
+            return parentData;
+        }
+
+        if (!hasIframe && hasParent) {
+            // Tự động vá sang keyval-store cho iframe
+            saveCheckThuongDataToIframeDb(parentData).catch(err => {
+                console.warn('[CheckThuongSync] Lỗi tự động vá sang keyval-store:', err);
+            });
+            return parentData;
+        }
+
+        return null;
+    } catch (e) {
+        console.warn('[CheckThuongSync] Lỗi đọc dữ liệu hợp nhất:', e);
+        return null;
+    }
+}
+

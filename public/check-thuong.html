@@ -605,62 +605,80 @@
                 }
             };
 
+            const applyLoadedData = (savedData, skipSave = true) => {
+                if (savedData && savedData.competitionData && savedData.competitionData.length > 0) {
+                    hideInitialLoader();
+                    storeCodeInput1.value = savedData.code1 || '910';
+                    if (savedData.code2) storeCodeInput2.value = savedData.code2;
+                    if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
+                    
+                    competitionData = savedData.competitionData;
+                    fileUploadTime = savedData.uploadTime;
+                    fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
+                    preProcessData(competitionData);
+                    
+                    // Show the dashboard UI
+                    searchSection.classList.remove('hidden');
+                    landingPage.classList.add('hidden');
+                    landingPage.style.display = 'none';
+                    changeFileButton.classList.remove('hidden');
+                    
+                    if (storeCodeInput1.value) {
+                        handleSearchOrCompare(skipSave);
+                    }
+                    
+                    // Notify parent that file is loaded so it shows the header controls!
+                    if (window.parent) {
+                        window.parent.postMessage({
+                            type: 'CHECK_THUONG_FILE_LOADED',
+                            code1: storeCodeInput1.value,
+                            code2: storeCodeInput2.value,
+                            competitionData: competitionData,
+                            fileName: savedData.fileName || 'file_cu.xlsx',
+                            uploadTime: fileUploadTime
+                        }, '*');
+                    }
+                    return true;
+                }
+                return false;
+            };
+
+            const showEmptyLanding = () => {
+                hideInitialLoader();
+                landingPage.classList.remove('hidden');
+                landingPage.style.display = '';
+                searchSection.classList.add('hidden');
+                changeFileButton.classList.add('hidden');
+                mainContent.classList.add('hidden');
+            };
+
             const reloadFromIDB = () => {
                 idbKeyval.get('checkthuong_data').then(savedData => {
-                    hideInitialLoader();
-                    if (savedData) {
-                        storeCodeInput1.value = savedData.code1 || '910';
-                        if (savedData.code2) storeCodeInput2.value = savedData.code2;
-                        if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
-                        
-                        if (savedData.competitionData && savedData.competitionData.length > 0) {
-                            competitionData = savedData.competitionData;
-                            fileUploadTime = savedData.uploadTime;
-                            fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
-                            preProcessData(competitionData);
-                            
-                            // Show the dashboard UI
-                            searchSection.classList.remove('hidden');
-                            landingPage.classList.add('hidden');
-                            landingPage.style.display = 'none';
-                            changeFileButton.classList.remove('hidden');
-                            
-                            if (storeCodeInput1.value) {
-                                handleSearchOrCompare();
+                    if (applyLoadedData(savedData, true)) {
+                        return;
+                    }
+                    // Nếu idbKeyval cục bộ chưa có dữ liệu, hỏi parent trước khi kết luận là rỗng
+                    if (window.parent) {
+                        window.parent.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA_FROM_PARENT' }, '*');
+                        setTimeout(() => {
+                            if (!competitionData || competitionData.length === 0) {
+                                showEmptyLanding();
                             }
-                            
-                            // Need to notify parent that file is loaded so it shows the header controls!
-                            if (window.parent) {
-                                window.parent.postMessage({
-                                    type: 'CHECK_THUONG_FILE_LOADED',
-                                    code1: storeCodeInput1.value,
-                                    code2: storeCodeInput2.value,
-                                    competitionData: competitionData,
-                                    fileName: savedData.fileName || 'file_cu.xlsx',
-                                    uploadTime: fileUploadTime
-                                }, '*');
-                            }
-                        } else {
-                            landingPage.classList.remove('hidden');
-                            landingPage.style.display = '';
-                            searchSection.classList.add('hidden');
-                            changeFileButton.classList.add('hidden');
-                            mainContent.classList.add('hidden');
-                        }
+                        }, 500);
                     } else {
-                        landingPage.classList.remove('hidden');
-                        landingPage.style.display = '';
-                        searchSection.classList.add('hidden');
-                        changeFileButton.classList.add('hidden');
-                        mainContent.classList.add('hidden');
+                        showEmptyLanding();
                     }
                 }).catch(e => {
-                    hideInitialLoader();
-                    landingPage.classList.remove('hidden');
-                    landingPage.style.display = '';
                     console.warn('IDB Load Error:', e);
                     if (window.parent) {
-                        window.parent.postMessage({ type: 'CHECK_THUONG_LOAD_ERROR', message: String((e && e.message) || e) }, '*');
+                        window.parent.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA_FROM_PARENT' }, '*');
+                        setTimeout(() => {
+                            if (!competitionData || competitionData.length === 0) {
+                                showEmptyLanding();
+                            }
+                        }, 500);
+                    } else {
+                        showEmptyLanding();
                     }
                 });
             };
@@ -1134,11 +1152,13 @@
                 }
             }
 
-            function handleSearchOrCompare() {
+            function handleSearchOrCompare(skipSave = false) {
                 const code1 = storeCodeInput1.value.trim();
                 const code2 = storeCodeInput2.value.trim();
                 
-                saveState();
+                if (!skipSave) {
+                    saveState();
+                }
                 
                 messageEl.classList.add('hidden');
                 messageEl.textContent = '';
@@ -3298,11 +3318,10 @@
                             }
                         }, '*');
                     }
-                } else if (e.data && e.data.type === 'CHECK_THUONG_SYNC_FROM_CLOUD') {
+                } else if (e.data && (e.data.type === 'CHECK_THUONG_INIT_DATA' || e.data.type === 'CHECK_THUONG_SYNC_FROM_CLOUD')) {
                     if (e.data.payload) {
-                        idbKeyval.set('checkthuong_data', e.data.payload).then(() => {
-                            reloadFromIDB();
-                        }).catch(err => console.warn('IDB Sync From Cloud Error:', err));
+                        applyLoadedData(e.data.payload, true);
+                        idbKeyval.set('checkthuong_data', e.data.payload).catch(err => console.warn('IDB Sync Error:', err));
                     }
                 }
             });

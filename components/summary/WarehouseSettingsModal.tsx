@@ -254,17 +254,6 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 
-    const itemPastelColors = [
-        { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
-        { bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-400' },
-        { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
-        { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' },
-        { bg: 'bg-rose-50/50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
-        { bg: 'bg-sky-50/50 dark:bg-sky-900/10', border: 'border-sky-200 dark:border-sky-800', text: 'text-sky-700 dark:text-sky-300', dot: 'bg-sky-400' },
-        { bg: 'bg-rose-50/50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
-        { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' }
-    ];
-
     const renderPickerView = () => (
         <>
             <div className="flex flex-wrap items-center justify-between gap-4 mb-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 pb-4 z-20">
@@ -284,13 +273,14 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 </Button>
             </div>
             
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 pb-4 sm:pb-6">
-                 {groupOrder.map((mainHeader, groupIndex) => {
+             <div className="space-y-2 pb-3">
+                 {groupOrder.map((mainHeader) => {
                     const cols = groupedColumns[mainHeader] || [];
                     if (cols.length === 0) return null;
                     const visibleCount = cols.filter(c => c.isVisible).length;
                     const isCustomGroup = cols.every(c => c.isCustom);
                     const styles = groupColorMap[mainHeader] || groupColorMap.DEFAULT;
+                    const allVisible = visibleCount === cols.length;
 
                     return (
                         <div 
@@ -302,61 +292,65 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             onDragEnter={handleDragEnter}
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, mainHeader)}
-                            className={`group relative flex flex-col h-full bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 hover:border-sky-300 transition-all duration-300 cursor-grab active:cursor-grabbing overflow-hidden`}
+                            className="group/row relative flex flex-col md:flex-row md:items-center gap-2 p-2 sm:px-3 sm:py-2 bg-white dark:bg-slate-900 rounded-lg border border-slate-200/80 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-xs transition-all duration-200 cursor-grab active:cursor-grabbing"
                         >
-                            {/* Header Group */}
-                            <div className={`px-3 py-2 flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pointer-events-none`}>
-                                <div className="flex flex-col">
-                                    <h4 className={`text-[11px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1 sm:gap-2`}>
-                                        <Icon name="layers" size={3} className="opacity-70 sm:hidden" /><Icon name="layers" size={3.5} className="opacity-70 hidden sm:block" />
+                            {/* Cột trái: Tên Nhóm + Badge + Công cụ nhóm */}
+                            <div className="flex items-center justify-between md:justify-start gap-2 w-full md:w-56 shrink-0">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 cursor-grab shrink-0 p-0.5" title="Giữ và kéo để đổi thứ tự nhóm">
+                                        <Icon name="grip-vertical" size={3.5} />
+                                    </div>
+                                    <h4 className={`text-xs font-bold uppercase tracking-wider ${styles.text} truncate`}>
                                         {mainHeader}
                                     </h4>
-                                    <span className="text-[11px] font-medium text-slate-500 mt-1">
-                                        Hiển thị {visibleCount}/{cols.length} cột
+                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${allVisible ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : visibleCount > 0 ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}>
+                                        {visibleCount}/{cols.length}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 transform translate-x-0 lg:translate-x-2 lg:group-hover:translate-x-0 pointer-events-auto">
-                                    <div className="text-slate-400 p-1.5 cursor-grab hover:text-slate-600 dark:hover:text-slate-300" title="Giữ và kéo để di chuyển nhóm"><Icon name="grip-horizontal" size={4} /></div>
-                                    <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"><Icon name="eye" size={4}/></Button>
-                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"><Icon name="eye-off" size={4}/></Button>
+
+                                {/* Nút thao tác nhóm */}
+                                <div className="flex items-center gap-0.5 shrink-0 opacity-90 md:opacity-0 md:group-hover/row:opacity-100 transition-opacity">
+                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors"><Icon name="eye" size={3.5}/></Button>
+                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"><Icon name="eye-off" size={3.5}/></Button>
                                     {isCustomGroup && (
-                                        <Button variant="unstyled" size="none" onClick={() => handleDeleteGroup(mainHeader)} title="Xóa toàn bộ nhóm" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors ml-1"><Icon name="trash-2" size={4}/></Button>
+                                        <Button variant="unstyled" size="none" onClick={() => handleDeleteGroup(mainHeader)} title="Xóa toàn bộ nhóm" className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors ml-0.5"><Icon name="trash-2" size={3.5}/></Button>
                                     )}
                                 </div>
                             </div>
+
+                            {/* Vách ngăn mỏng */}
+                            <div className="hidden md:block w-px h-5 bg-slate-200 dark:bg-slate-700 shrink-0 mx-0.5"></div>
                             
-                            {/* Columns List */}
-                            <div className="p-2 flex flex-wrap content-start gap-1.5 flex-grow">
-                                {cols.map((col, colIndex) => {
-                                    const itemStyle = itemPastelColors[colIndex % itemPastelColors.length];
+                            {/* Cột phải: Dải Chip các cột xếp mượt mà liên tục (flex-wrap) */}
+                            <div className="flex flex-wrap items-center gap-1.5 flex-grow min-w-0">
+                                {cols.map((col) => {
                                     return (
-                                    <div 
-                                        key={col.id} 
-                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-sm text-[11px] font-semibold transition-all cursor-pointer select-none border
-                                            ${col.isVisible 
-                                                ? `${itemStyle.bg} border-transparent ${itemStyle.text}` 
-                                                : 'bg-white text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                        <div 
+                                            key={col.id} 
+                                            onClick={() => handleToggleVisibility(col.id)}
+                                            className={`group/chip relative inline-flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-md text-[11px] font-semibold transition-all duration-150 cursor-pointer select-none border ${
+                                                col.isVisible 
+                                                    ? 'bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 border-sky-300/80 dark:border-sky-800 shadow-2xs hover:bg-sky-100 dark:hover:bg-sky-900/50' 
+                                                    : 'bg-white dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50'
                                             }`}
-                                        onClick={() => handleToggleVisibility(col.id)}
-                                    >
-                                        <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? itemStyle.dot : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                        <span className="truncate max-w-[80px] sm:max-w-[130px]">{col.subHeader}</span>
-                                        
-                                        <div className="flex items-center ml-0.5 border-l border-black/10 dark:border-white/10 opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 transition-opacity pl-1">
-                                            <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 opacity-70 hover:opacity-100 transition-opacity" title="Chỉnh sửa"><Icon name="edit-3" size={3.5} /></Button>
-                                            {col.isCustom ? (
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-rose-500 hover:text-rose-700 transition-colors" title="Xóa cột"><Icon name="trash-2" size={3.5} /></Button>
-                                            ) : (
-                                                <div className="w-[20px]"></div> /* Placeholder for alignment */
-                                            )}
+                                            title={col.isVisible ? `Đang hiện: ${col.subHeader} (bấm để ẩn)` : `Đang ẩn: ${col.subHeader} (bấm để hiện)`}
+                                        >
+                                            <span className={`w-1.5 h-1.5 rounded-full transition-colors shrink-0 ${col.isVisible ? 'bg-sky-500 shadow-xs' : 'bg-slate-300 dark:bg-slate-600'}`}></span>
+                                            <span className="truncate max-w-[120px]">{col.subHeader}</span>
+                                            
+                                            {/* Nút sửa & xoá chỉ hiện khi hover vào chip */}
+                                            <div className="flex items-center ml-0.5 border-l border-slate-200 dark:border-slate-700 pl-1 opacity-0 group-hover/chip:opacity-100 transition-opacity">
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded transition-colors" title="Chỉnh sửa"><Icon name="edit-3" size={3} /></Button>
+                                                {col.isCustom && (
+                                                    <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors" title="Xóa cột"><Icon name="trash-2" size={3} /></Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
                                     );
                                 })}
                             </div>
                         </div>
-                    )
+                    );
                 })}
             </div>
         </>

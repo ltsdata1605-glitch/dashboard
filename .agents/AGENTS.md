@@ -62,3 +62,15 @@ Bất cứ khi nào có thay đổi, tối ưu hoặc sửa lỗi trong `public/
 1. Cập nhật và đồng bộ ngay toàn bộ logic cải tiến đó sang hằng số `AUTO_CLICK_BOOKMARKLET_CODE` trong `features/bi-dashboard/components/AutoClickGuideModal.tsx`.
 2. Đảm bảo nút "Auto Click+ 1-Click" trên giao diện (tại Cập nhật > Cấu hình siêu thị & Nhân viên > Dữ liệu) luôn đồng bộ 100% sức mạnh và thuật toán mới nhất của userscript.
 
+## Image Export Standard (Nguyên Tắc Xuất Ảnh Đầy Đủ Cả Dọc & Ngang)
+- **Bắt buộc xuất trọn vẹn cả chiều dọc và chiều ngang**: Khi xuất ảnh bất kỳ bảng hay thành phần giao diện nào (đặc biệt là các bảng dữ liệu có thanh cuộn ngang `overflow-x-auto` hoặc dọc `overflow-y-auto` như Chi Tiết Theo Kho, Thi Đua, Bảng Doanh Thu, Ngành Hàng...), **tuyệt đối KHÔNG sử dụng `captureAsDisplayed: true` nếu thành phần đó có cuộn ngang hoặc nhiều cột vượt quá khung nhìn màn hình**.
+- **Fix độ rộng cột vừa với nội dung trước khi xuất**: Khi xuất ảnh dạng bảng, trước khi chụp **BẮT BUỘC** phải fix độ rộng của từng cột vừa khít với nội dung thực tế (`fitTablesToContent` / Column Content Fitting). Các cột tiêu đề và số liệu ôm sát nội dung, tuyệt đối không được ép `width: 100%` làm các cột bị kéo dãn toe toét thừa khoảng trắng mênh mông sang hai bên.
+- **Cơ chế mở rộng toàn diện**: Phải đảm bảo bộ máy xuất ảnh tự động mở rộng toàn bộ bảng (`fitTablesToContent` / `fitAllColumns` / `fitWidthToTable`), loại bỏ giới hạn chiều rộng/thanh cuộn, gỡ `sticky` về `static`, và đo đạc bề rộng thực tế của mọi cột để ảnh chụp xuất ra đầy đủ 100% tất cả các hàng và tất cả các cột, không bao giờ bị cắt xén hay mất phần cuộn ngang/dọc. Khung card ảnh ôm vừa vặn theo tổng độ rộng các cột của bảng.
+- **Chỉ dùng `captureAsDisplayed: true`** cho các thành phần cố định trên màn hình (như cụm thẻ KPI card đơn thuần, biểu đồ xu hướng không chứa bảng dữ liệu tràn viền).
+
+## Silent Real-User Verification Rule (Quy Tắc Tự Động Test Âm Thầm Trên Dữ Liệu Thật)
+- **Bắt buộc tự động test thực tế như người dùng thật**: Sau mỗi lần sửa đổi, tối ưu hoặc cập nhật tính năng (đặc biệt liên quan đến giao diện, thẻ KPI, bảng dữ liệu), Agent **BẮT BUỘC tự động chạy test xác thực thực tế** trên chính profile dữ liệu thật (`.e2e-chrome-profile`) hoặc kiểm tra DOM/computed style thực tế của trình duyệt.
+- **Thực hiện hoàn toàn âm thầm (Silent & Headless)**: Toàn bộ quá trình test phải chạy ngầm ở chế độ headless (chạy `npm run test:verify-silent` hoặc Playwright headless), không mở cửa sổ gây phiền toái, không làm gián đoạn màn hình làm việc của người dùng.
+- **Nguyên tắc "Không báo thành công khi chưa kiểm chứng"**: Tuyệt đối KHÔNG BAO GIỜ báo cáo hoàn tất nếu chưa chạy test xác thực thực tế và chứng minh mọi chỉ số (như `border-radius: 16px`, `overflow: hidden`, dữ liệu số, hiển thị cột) đều PASS 100% đúng yêu cầu.
+
+

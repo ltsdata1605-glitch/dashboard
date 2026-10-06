@@ -7,14 +7,20 @@ export const SkeletonPulse: React.FC<{ className?: string }> = ({ className = ''
 
 // Skeleton for a single KPI card
 const KpiCardSkeleton: React.FC = () => (
-    <div className="chart-card p-4 flex flex-col justify-between gap-2">
-        <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-700"></div>
-            <SkeletonPulse className="h-4 w-24" />
+    <div className="rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 p-3.5 flex flex-col justify-between gap-2 overflow-hidden shadow-xs">
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+                <div className="flex-shrink-0 w-7 h-7 rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+                <SkeletonPulse className="h-3.5 w-20" />
+            </div>
+            <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
         </div>
-        <div className="flex items-center gap-4">
-            <SkeletonPulse className="h-8 w-1/2" />
-            <SkeletonPulse className="h-6 w-1/4" />
+        <div className="my-1 flex justify-center">
+            <SkeletonPulse className="h-8 w-28" />
+        </div>
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex justify-between items-center">
+            <SkeletonPulse className="h-3 w-14" />
+            <SkeletonPulse className="h-3.5 w-16 rounded-md" />
         </div>
     </div>
 );

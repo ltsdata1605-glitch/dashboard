@@ -127,25 +127,25 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
     }
 
     return (
-        <div className="industry-kpi-container mb-3 bg-slate-50/60 dark:bg-slate-900/30 p-2 sm:p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs">
+        <div className="industry-kpi-container mb-3 bg-white/80 dark:bg-slate-900/40 backdrop-blur-xs p-2.5 sm:p-3 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs">
             {/* Header bar of KPI Section */}
-            <div className="industry-kpi-header flex items-center justify-between gap-1.5 mb-1.5 pb-1.5 border-b border-slate-200/70 dark:border-slate-800 flex-wrap hide-on-export no-print">
+            <div className="industry-kpi-header flex items-center justify-between gap-1.5 mb-2 pb-2 border-b border-slate-100 dark:border-slate-800 flex-wrap hide-on-export no-print">
                 <div className="flex items-center gap-1.5">
-                    <span className="text-[10.5px] sm:text-[11.5px] font-bold uppercase text-slate-700 dark:text-slate-300 tracking-wider">
+                    <span className="text-[11px] sm:text-[11.5px] font-extrabold uppercase text-slate-700 dark:text-slate-300 tracking-wider">
                         CHỈ SỐ KPI NGÀNH HÀNG
                     </span>
-                    <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200 dark:border-sky-800/60">
+                    <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60">
                         {metricList.length} thẻ
                     </span>
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export no-print">
                     {/* Nút chuyển đổi Số lượng / Doanh thu => Chọn tiêu chí nào thì số đó sẽ lớn hơn */}
-                    <div className="inline-flex items-center h-7 p-0.5 rounded-full bg-slate-200/60 dark:bg-slate-800 border border-slate-300/60 dark:border-slate-700 shadow-2xs">
+                    <div className="inline-flex items-center h-7 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs">
                         <button
                             type="button"
                             onClick={() => setFocusMetric('revenue')}
-                            className={`h-full px-2.5 text-[10.5px] sm:text-[11px] font-bold rounded-full flex items-center transition-all cursor-pointer ${
+                            className={`h-full px-2.5 text-[10.5px] sm:text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
                                 focusMetric === 'revenue'
                                     ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -157,7 +157,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         <button
                             type="button"
                             onClick={() => setFocusMetric('quantity')}
-                            className={`h-full px-2.5 text-[10.5px] sm:text-[11px] font-bold rounded-full flex items-center transition-all cursor-pointer ${
+                            className={`h-full px-2.5 text-[10.5px] sm:text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
                                 focusMetric === 'quantity'
                                     ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -173,7 +173,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={handleResetDefault}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 w-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-all active:scale-95"
+                        className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95"
                         title="Khôi phục 12 thẻ mặc định"
                     >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -183,7 +183,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsAddModalOpen(true)}
-                        className="h-7 inline-flex items-center gap-1 px-3 rounded-full text-[10.5px] sm:text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50/90 dark:bg-sky-950/60 border border-sky-300/80 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all cursor-pointer shadow-2xs active:scale-95"
+                        className="h-7 inline-flex items-center gap-1.5 px-3 rounded-lg text-[10.5px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all cursor-pointer shadow-2xs active:scale-95"
                         title="Tạo / Thêm thẻ KPI"
                     >
                         <Plus className="w-3.5 h-3.5" />
@@ -193,7 +193,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
             </div>
 
             {/* 6-Column Grid */}
-            <div className="industry-kpi-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
+            <div className="industry-kpi-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
                 {metricList.map((metric, index) => (
                     <IndustryKpiCard
                         key={metric.id}

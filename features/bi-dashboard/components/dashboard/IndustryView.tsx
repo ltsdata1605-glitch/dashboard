@@ -84,6 +84,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const filterRef = useRef<HTMLDivElement>(null);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
+    const tableContainerRef = useRef<HTMLDivElement>(null);
     const [industryFilterSearch, setIndustryFilterSearch] = useState('');
     const [subIndustryFilterSearch, setSubIndustryFilterSearch] = useState('');
 
@@ -143,37 +144,40 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         return starts;
     }, [headerGroups, orderedHeaders, visibleColumns]);
 
-    // Cột DTQĐ mặc định luôn được ưu tiên sắp xếp giảm dần
+    // Cột DTQĐ mặc định luôn được ưu tiên sắp xếp giảm dần khi chưa chọn cột
     const defaultDtqdHeader = useMemo(() => {
         return orderedHeaders.find(h => h === 'DTQĐ' || h === 'DT Realtime (QĐ)' || h.includes('DTQĐ')) || null;
     }, [orderedHeaders]);
 
-    const activeSortColumn = sortConfig.column || defaultDtqdHeader;
-    const activeSortDirection = sortConfig.column ? sortConfig.direction : 'desc';
+    // CHỈ highlight và hiện icon khi người dùng chủ động chọn cột (không fallback để tránh luôn bị tô màu)
+    const activeSortColumn = sortConfig.column;
+    const activeSortDirection = sortConfig.direction || 'desc';
 
     // --- Column Sort Handler ---
     const handleColumnSort = useCallback((headerName: string) => {
         setSortConfig(prev => {
-            const currentCol = prev.column || defaultDtqdHeader;
-            const currentDir = prev.column ? prev.direction : 'desc';
+            const currentCol = prev.column;
+            const currentDir = prev.direction;
 
             if (currentCol === headerName) {
-                // Đang ở cột này: đảo chiều hoặc quay về mặc định
+                // Đang ở cột này: đảo chiều hoặc quay về trạng thái ban đầu (bỏ chọn)
                 if (currentDir === 'desc') {
                     return { column: headerName, direction: 'asc' };
                 }
-                // Nếu đang asc: quay về mặc định (DTQĐ desc)
+                // Nếu đang asc: huỷ chọn cột
                 return { column: null, direction: null };
             }
             // Chọn cột mới: bắt đầu từ giảm dần (desc)
             return { column: headerName, direction: 'desc' };
         });
-    }, [defaultDtqdHeader]);
+    }, []);
 
     // --- Sort rows helper ---
     const sortRows = useCallback(<T extends unknown[]>(rows: T[], getValues: (row: T) => string[]): T[] => {
-        if (!sortConfig.column || !sortConfig.direction) return rows;
-        const colIdx = processedTable.headers.indexOf(sortConfig.column);
+        const targetCol = sortConfig.column || defaultDtqdHeader;
+        const targetDir = sortConfig.column ? sortConfig.direction : 'desc';
+        if (!targetCol || !targetDir) return rows;
+        const colIdx = processedTable.headers.indexOf(targetCol);
         if (colIdx === -1) return rows;
         
         return [...rows].sort((a, b) => {
@@ -187,9 +191,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             const numA = parseNumber(valuesA[colIdx]);
             const numB = parseNumber(valuesB[colIdx]);
             const diff = numA - numB;
-            return sortConfig.direction === 'asc' ? diff : -diff;
+            return targetDir === 'asc' ? diff : -diff;
         });
-    }, [sortConfig, processedTable.headers]);
+    }, [sortConfig, processedTable.headers, defaultDtqdHeader]);
 
     const headerMapping: Record<string, string> = {
         'Nhóm ngành hàng': 'NGÀNH HÀNG',
@@ -226,6 +230,15 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             }
             if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
                 setIsFilterOpen(false);
+            }
+            if (tableContainerRef.current && !tableContainerRef.current.contains(event.target as Node)) {
+                // Khi người dùng bấm ra ngoài bảng -> Huỷ chọn cột & tắt toàn bộ tô màu
+                setSortConfig(prev => {
+                    if (prev.column !== null) {
+                        return { column: null, direction: null };
+                    }
+                    return prev;
+                });
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -625,6 +638,12 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             }
         }
 
+        if (headerName === activeSortColumn) {
+            cellClasses += isTotalRow
+                ? ' !bg-sky-100/60 dark:!bg-sky-900/40'
+                : ' !bg-sky-50/50 dark:!bg-sky-950/30';
+        }
+
         return <td key={headerName} title={cellTitle} className={cellClasses}>{cellContent()}</td>;
     };
 
@@ -642,13 +661,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <div className="overflow-hidden">
                     <div className="w-full">
                             {/* ─── DESKTOP TABLE VIEW ─── */}
-                            <div className="overflow-hidden px-4 pb-4">
+                            <div className="overflow-hidden px-4 pt-3.5 sm:pt-4 pb-4">
                                 <IndustryKpiGrid
                                     tree={isRealtime ? realtimeData?.tree : luykeData?.tree}
                                     headers={processedTable.headers}
                                     isRealtime={isRealtime}
                                 />
-                                <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
+                                <div ref={tableContainerRef} className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
                                 <table className="w-full border-collapse compact-export-table">
                                     <thead>
                                         {/* TIER 1: GROUP HEADERS */}
@@ -682,15 +701,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                                 border-b border-r border-slate-200 dark:border-slate-700
                                                                 ${GROUP_EDGE}
                                                                 hover:opacity-80 transition-opacity select-none
-                                                                ${g.bg} ${g.text}
-                                                                ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
+                                                                ${isSorted 
+                                                                    ? '!bg-sky-50 dark:!bg-sky-950/70 !text-sky-700 dark:!text-sky-300 ring-2 ring-inset ring-sky-400 dark:ring-sky-500 shadow-sm font-black' 
+                                                                    : `${g.bg} ${g.text}`}
                                                             `}
                                                             onClick={() => handleColumnSort(g.singleHeader)}
                                                             title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
                                                         >
                                                             <span>{renderHeaderText(headerMapping[g.singleHeader] || g.singleHeader)}</span>
                                                             {isSorted && (
-                                                                <span className="ml-1 text-[10px] text-sky-600 dark:text-sky-400 font-black">
+                                                                <span className="ml-1 text-[11px] text-sky-600 dark:text-sky-400 font-black inline-block">
                                                                     {activeSortDirection === 'asc' ? '▲' : '▼'}
                                                                 </span>
                                                             )}
@@ -730,19 +750,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             px-1.5 py-1 text-[11px] font-bold uppercase
                                                              border-r border-slate-200 dark:border-slate-700
-                                                            ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
-                                                            border-b border-b-slate-200 dark:border-b-slate-700
-                                                            text-center align-middle whitespace-nowrap
-                                                            cursor-pointer hover:opacity-80 transition-opacity select-none
-                                                            ${g.bg} ${g.text}
-                                                            ${isSorted ? 'ring-1 ring-inset ring-sky-400/50 dark:ring-sky-500/50' : ''}
+                                                             ${groupStartHeaders.has(h) ? GROUP_EDGE : ''}
+                                                             border-b border-b-slate-200 dark:border-b-slate-700
+                                                             text-center align-middle whitespace-nowrap
+                                                             cursor-pointer hover:opacity-80 transition-opacity select-none
+                                                             ${isSorted 
+                                                                ? '!bg-sky-50 dark:!bg-sky-950/70 !text-sky-700 dark:!text-sky-300 ring-2 ring-inset ring-sky-400 dark:ring-sky-500 shadow-sm font-black' 
+                                                                : `${g.bg} ${g.text}`}
                                                         `}
                                                         onClick={() => handleColumnSort(h)}
                                                         title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
                                                     >
                                                         <span>{renderHeaderText(headerMapping[h] || h)}</span>
                                                         {isSorted && (
-                                                            <span className="ml-1 text-[10px] text-sky-600 dark:text-sky-400 font-black">
+                                                            <span className="ml-1 text-[11px] text-sky-600 dark:text-sky-400 font-black inline-block">
                                                                 {activeSortDirection === 'asc' ? '▲' : '▼'}
                                                             </span>
                                                         )}

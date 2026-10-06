@@ -391,7 +391,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                         try {
                                             const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
                                             await saveCheckThuongDataToIframeDb(cloudItem.value);
-                                            window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                                            window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync', { detail: { payload: cloudItem.value } }));
                                         } catch (err) {
                                             console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
                                         }
@@ -949,6 +949,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         setUniqueFilterOptions(payload.uniqueFilterOptions);
                         setAllUnconfiguredGroups(payload.allUnconfiguredGroups);
                         setWorkerCachedGeneration(payload.generation);
+                        setStatus({ message: 'Đang áp dụng bộ lọc và tính toán số liệu...', type: 'info', progress: 68 });
                         break;
                     case 'SET_DATA_ERROR':
                         if (payload.generation !== dataGenerationRef.current) return; // lỗi của lần đã bị thay thế — bỏ qua
@@ -998,6 +999,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         setIsFilterProcessing(false);
                         break;
                 }
+            };
+
+            worker.onerror = (err) => {
+                console.error("Worker error in analytics worker:", err);
+                setStatus({ message: 'Lỗi luồng xử lý dữ liệu. Đang tải lại...', type: 'error', progress: 0 });
             };
 
             setWorkerReady(true);
@@ -1178,9 +1184,10 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         // nếu originalData vừa đổi lần nữa (vd Kho-sync) trong lúc round-trip SET_DATA còn dở.
         if (workerCachedGeneration !== dataGenerationRef.current) return;
 
-        // For filter changes, we DON'T set isHardProcessing to avoid layout shift.
-        // isFilterProcessing is a soft signal (optional, kept for future use).
         setIsFilterProcessing(true);
+        if (appState === 'processing') {
+            setStatus({ message: 'Đang tổng hợp KPI và biểu đồ...', type: 'info', progress: 88 });
+        }
 
         if (workerRef.current) {
             // Mục 65d/65e: snapshot ĐÚNG LÚC gửi PROCESS — xem comment FIFO queue ở trên.

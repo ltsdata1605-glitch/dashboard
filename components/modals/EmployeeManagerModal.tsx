@@ -175,8 +175,12 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     };
 
     const handleClose = () => {
-        if (hasUnsavedChanges && updateDepartmentMap) {
-            updateDepartmentMap(localMap);
+        if (updateDepartmentMap) {
+            const isDifferent = Object.keys(localMap).length !== Object.keys(departmentMap || {}).length ||
+                Object.entries(localMap).some(([k, v]) => departmentMap?.[k] !== v);
+            if (hasUnsavedChanges || isDifferent) {
+                updateDepartmentMap(localMap);
+            }
         }
         onClose();
     };

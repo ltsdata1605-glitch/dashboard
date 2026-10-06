@@ -91,14 +91,41 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
 
     return (
         <div 
-            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity`}
+            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity preserve-rounded`}
+            style={{
+                borderRadius: '50%',
+                clipPath: 'circle(50% at 50% 50%)',
+                WebkitClipPath: 'circle(50% at 50% 50%)'
+            }}
             onClick={() => fileInputRef.current?.click()}
             title="Bấm để tải lên hoặc đổi ảnh đại diện"
         >
             {avatarSrc ? (
-                <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
+                <img 
+                    src={avatarSrc} 
+                    alt={emp.name} 
+                    data-avatar="true"
+                    style={{
+                        borderRadius: '50%',
+                        clipPath: 'circle(50% at 50% 50%)',
+                        WebkitClipPath: 'circle(50% at 50% 50%)',
+                        objectFit: 'cover'
+                    }}
+                    className="w-full h-full object-cover rounded-full" 
+                />
             ) : (
-                <img src={getCartoonAvatar(emp.originalName || emp.name).dataUrl} alt={emp.name} className="w-full h-full object-cover rounded-full" />
+                <img 
+                    src={getCartoonAvatar(emp.originalName || emp.name).dataUrl} 
+                    alt={emp.name} 
+                    data-avatar="true"
+                    style={{
+                        borderRadius: '50%',
+                        clipPath: 'circle(50% at 50% 50%)',
+                        WebkitClipPath: 'circle(50% at 50% 50%)',
+                        objectFit: 'cover'
+                    }}
+                    className="w-full h-full object-cover rounded-full" 
+                />
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
                 <CameraIcon className="w-4 h-4 drop-shadow-md" />

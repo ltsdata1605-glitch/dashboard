@@ -48,7 +48,7 @@ import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
-import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo } from '../../services/analysisExportDestinations';
+import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo, LINE_EXPORT_TEMPORARILY_DISABLED } from '../../services/analysisExportDestinations';
 import type { AutoSendItem } from '../../services/autoSyncSchedule';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
@@ -177,7 +177,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             delete (window as any).__pendingYcxAutoSyncMode;
             delete (window as any).__pendingYcxAutoSend;
             khuVucGuiRef.current = autoSend;
-            if (!laLuyKe || autoSend.length) choGuiLineRef.current = Date.now();
+            // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
+            if (!LINE_EXPORT_TEMPORARILY_DISABLED && laLuyKe && autoSend.length) {
+                choGuiLineRef.current = Date.now();
+            }
             handleFileProcessing([pendingFile], false, laLuyKe);
         }
 
@@ -187,11 +190,12 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
                 delete (window as any).__pendingYcxAutoSend;
-                // YCX Realtime tự động → nạp xong thì tự xuất & gửi các ảnh đã đặt đích "nhóm LINE";
-                // lượt hẹn giờ có chọn khu vực (cả Luỹ kế) → xuất đúng các khu vực đó vào nhóm đã chọn
                 const autoSend: AutoSendItem[] = Array.isArray(e.detail?.autoSend) ? e.detail.autoSend : [];
                 khuVucGuiRef.current = autoSend;
-                if (e.detail?.mode !== 'luyke' || autoSend.length) choGuiLineRef.current = Date.now();
+                // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
+                if (!LINE_EXPORT_TEMPORARILY_DISABLED && e.detail?.mode === 'luyke' && autoSend.length) {
+                    choGuiLineRef.current = Date.now();
+                }
                 handleFileProcessing([file], false, e.detail?.mode === 'luyke');
             }
         };
@@ -199,8 +203,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         return () => window.removeEventListener('ycx-auto-sync-file', handleAutoSyncFile);
     }, [handleFileProcessing]);
 
-    // Dữ liệu Auto Sync YCX Realtime đã hiện → tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (đợi 2.5s cho biểu đồ vẽ xong)
+    // Dữ liệu Auto Sync YCX Realtime đã hiện → tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (nếu không tắt)
     useEffect(() => {
+        if (LINE_EXPORT_TEMPORARILY_DISABLED) return;
         const moc = choGuiLineRef.current;
         if (!moc || appState !== 'dashboard' || !processedData || isProcessing || isFilterProcessing) return;
         if (Date.now() - moc > 10 * 60_000) { choGuiLineRef.current = null; return; }
@@ -362,6 +367,19 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
 
 
+    const [localProcessingTime, setLocalProcessingTime] = useState(0);
+    useEffect(() => {
+        if (appState !== 'loading' && appState !== 'processing') {
+            setLocalProcessingTime(0);
+            return;
+        }
+        const start = Date.now();
+        const interval = setInterval(() => {
+            setLocalProcessingTime(Date.now() - start);
+        }, 100);
+        return () => clearInterval(interval);
+    }, [appState]);
+
     if (isActive === false) {
         return <div className="hidden" />;
     }
@@ -492,7 +510,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     )}
 
                     {(appState === 'loading' || appState === 'processing') && (
-                        <ProcessingLoader status={status} processingTime={processingTime} />
+                        <ProcessingLoader status={status} processingTime={processingTime || localProcessingTime} />
                     )}
 
                     {showDashboard && (
@@ -547,15 +565,15 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         </div>
                                     </div>
 
-                                    {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
-                                        <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
-                                            <React.Suspense fallback={<TableSkeleton rows={3} />}>
-                                                <WarehouseSummary onBatchExport={handleBatchKhoExport} />
-                                            </React.Suspense>
-                                        </div>
-                                    )}
-
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
+                                        {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
+                                            <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
+                                                <React.Suspense fallback={<TableSkeleton rows={3} />}>
+                                                    <WarehouseSummary onBatchExport={handleBatchKhoExport} />
+                                                </React.Suspense>
+                                            </div>
+                                        )}
+
                                         <SectionCard ref={kpiCardsOnlyRef} className="relative lg:rounded-none">
                                             {/* Unconfigured Groups Warning Banner */}
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
@@ -641,11 +659,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                             <Icon name="settings-2" size={4} className="lg:hidden" />
                                                             <Icon name="settings-2" size={4.5} className="hidden lg:block" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleKpiCardsOnlyExport()} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
-                                                            <Icon name="download" size={4} className="lg:hidden" />
-                                                            <Icon name="download" size={4.5} className="hidden lg:block" />
-                                                        </Button>
-                                                        <ExportDestinationButton reportKey="Tổng Quan Doanh Thu" />
                                                         <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <Icon name="camera" size={4} className="lg:hidden" />
                                                             <Icon name="camera" size={4.5} className="hidden lg:block" />
@@ -661,6 +674,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 </div>
                                             </div>
                                         </SectionCard>
+
 
                                         {visibleComponents.trendChart && (
                                             <div data-debug-id="TrendChart" data-debug-info={JSON.stringify(debugInitialData.TrendChart)} id="trend-chart-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>

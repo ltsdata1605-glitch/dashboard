@@ -320,33 +320,35 @@ export const HEAVY_SYNC_KEYS = new Set([
     'originalDepartmentMap',
     'customExploitationTabs',
     'efficiencyExploitationTabs',
-    'analysis-employees-list'
+    'analysis-employees-list',
+    'competition-luy-ke',
+    'competition-realtime',
+    'summary-luy-ke',
+    'summary-realtime'
 ]);
 
 export const isHeavySyncKey = (key: string): boolean => {
     if (HEAVY_SYNC_KEYS.has(key)) return true;
     if (key === 'checkthuong_data') return true;
-    if (key.startsWith('bi_')) {
-        const unprefixed = key.substring(3);
-        if (
-            HEAVY_SYNC_KEYS.has(unprefixed) ||
-            unprefixed.startsWith('summary-') ||
-            unprefixed.startsWith('competition-') ||
-            unprefixed.startsWith('config-') ||
-            unprefixed.startsWith('comptarget-') ||
-            unprefixed.startsWith('targethero-') ||
-            unprefixed.startsWith('manual-dept-mapping-') ||
-            unprefixed.startsWith('hidden-employees-') ||
-            unprefixed.startsWith('custom-') ||
-            unprefixed.startsWith('bonus-') ||
-            unprefixed.startsWith('snapshot-') ||
-            unprefixed.startsWith('avatar-') ||
-            unprefixed === 'last-updates-list' ||
-            unprefixed === 'nhanvien-summary-tables-v1' ||
-            unprefixed === 'ai-assistant-history'
-        ) {
-            return true;
-        }
+    const unprefixed = key.startsWith('bi_') ? key.substring(3) : key;
+    if (
+        HEAVY_SYNC_KEYS.has(unprefixed) ||
+        unprefixed.startsWith('summary-') ||
+        unprefixed.startsWith('competition-') ||
+        unprefixed.startsWith('config-') ||
+        unprefixed.startsWith('comptarget-') ||
+        unprefixed.startsWith('targethero-') ||
+        unprefixed.startsWith('manual-dept-mapping-') ||
+        unprefixed.startsWith('hidden-employees-') ||
+        unprefixed.startsWith('custom-') ||
+        unprefixed.startsWith('bonus-') ||
+        unprefixed.startsWith('snapshot-') ||
+        unprefixed.startsWith('avatar-') ||
+        unprefixed === 'last-updates-list' ||
+        unprefixed === 'nhanvien-summary-tables-v1' ||
+        unprefixed === 'ai-assistant-history'
+    ) {
+        return true;
     }
     return false;
 };

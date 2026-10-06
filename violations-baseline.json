@@ -12,16 +12,16 @@
     "indigoAlias": 0,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
-    "iconNumericSize": 8,
-    "iconLegacyCall": 8
+    "iconNumericSize": 11,
+    "iconLegacyCall": 11
   },
   "components/charts/IndustryGrid.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
-    "iconNumericSize": 15,
-    "iconLegacyCall": 15
+    "iconNumericSize": 18,
+    "iconLegacyCall": 18
   },
   "components/charts/SavedCalendarCard.tsx": {
     "nonSemanticColor": 0,
@@ -432,8 +432,8 @@
     "iconLegacyCall": 7
   },
   "components/modals/PerformanceModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
+    "nonSemanticColor": 14,
+    "indigoAlias": 10,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
     "iconNumericSize": 6,
@@ -544,8 +544,8 @@
     "iconLegacyCall": 2
   },
   "components/shared/ui/KpiCard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 13,
+    "nonSemanticColor": 10,
+    "indigoAlias": 15,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
     "iconNumericSize": 2,
@@ -596,8 +596,8 @@
     "indigoAlias": 0,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
-    "iconNumericSize": 15,
-    "iconLegacyCall": 15
+    "iconNumericSize": 13,
+    "iconLegacyCall": 13
   },
   "components/summary/WarehouseSummary.tsx": {
     "nonSemanticColor": 0,
@@ -724,8 +724,8 @@
     "indigoAlias": 0,
     "missingMobileToolbar": 0,
     "iconDirectImport": 0,
-    "iconNumericSize": 17,
-    "iconLegacyCall": 17
+    "iconNumericSize": 15,
+    "iconLegacyCall": 15
   },
   "components/views/LandingPageView.tsx": {
     "nonSemanticColor": 0,
@@ -809,7 +809,7 @@
   },
   "features/bi-dashboard/components/common/TampermonkeyInstallGuideContent.tsx": {
     "nonSemanticColor": 0,
-    "indigoAlias": 0,
+    "indigoAlias": 9,
     "missingMobileToolbar": 0,
     "iconDirectImport": 10,
     "iconNumericSize": 0,
@@ -881,7 +881,7 @@
   },
   "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
     "nonSemanticColor": 0,
-    "indigoAlias": 0,
+    "indigoAlias": 2,
     "missingMobileToolbar": 0,
     "iconDirectImport": 1,
     "iconNumericSize": 0,
@@ -1059,7 +1059,7 @@
     "nonSemanticColor": 0,
     "indigoAlias": 4,
     "missingMobileToolbar": 0,
-    "iconDirectImport": 4,
+    "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0
   },

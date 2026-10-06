@@ -24,6 +24,7 @@ import {
     type YcxMode, type YcxStep,
 } from '../../services/ycxAutoSyncService';
 import { navigateToYcxAnalysis } from '../../features/bi-dashboard/services/autoNavigationService';
+import { LINE_EXPORT_TEMPORARILY_DISABLED } from '../../services/analysisExportDestinations';
 
 type YcxPhase = 'idle' | 'running' | 'error' | 'done';
 type ScriptState = { checked: boolean; installed: boolean; version?: string };
@@ -293,15 +294,18 @@ export default function GlobalAutoSyncDock() {
         const autoSend = getAutoSend(k);
         if (k === 'bi-realtime' || k === 'bi-luyke') {
             const mode = k === 'bi-realtime' ? 'realtime' : 'luyke';
-            biAutoSendRef.current = autoSend.length ? { mode, items: autoSend, at: Date.now() } : null;
+            // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
+            biAutoSendRef.current = (mode !== 'realtime' && !LINE_EXPORT_TEMPORARILY_DISABLED && autoSend.length)
+                ? { mode, items: autoSend, at: Date.now() }
+                : null;
             handleStartBiSync(mode, true);
         }
         else if (k === 'bonus') handleTriggerAutoBonus(true);
-        else if (k === 'ycx-realtime') handleTriggerYcxSync('realtime', { auto: true, autoSend });
-        else if (k === 'ycx-luyke') handleTriggerYcxSync('luyke', { auto: true, autoSend });
+        else if (k === 'ycx-realtime') handleTriggerYcxSync('realtime', { auto: true, autoSend: [] });
+        else if (k === 'ycx-luyke') handleTriggerYcxSync('luyke', { auto: true, autoSend: LINE_EXPORT_TEMPORARILY_DISABLED ? [] : autoSend });
     };
 
-    // Lượt BI hẹn giờ đổ dữ liệu xong → nhờ Report BI xuất các khu vực đã chọn rồi gửi từng ảnh vào nhóm LINE của nó
+    // Lượt BI hẹn giờ đổ dữ liệu xong → nhờ Report BI xuất các khu vực đã chọn rồi gửi từng ảnh vào nhóm LINE của nó (nếu không tắt)
     const ghiKetQuaLichRef = useRef(ghiKetQuaLich);
     ghiKetQuaLichRef.current = ghiKetQuaLich;
     const activeTabRef = useRef(activeTab);
@@ -314,7 +318,7 @@ export default function GlobalAutoSyncDock() {
         const xuLy = (mode: unknown) => {
             ghiKetQuaLichRef.current('bi-', 'done', 'đã cập nhật dữ liệu Report BI');
             const cho = biAutoSendRef.current;
-            if (!cho || (mode && mode !== cho.mode)) return;
+            if (!cho || (mode && mode !== cho.mode) || LINE_EXPORT_TEMPORARILY_DISABLED || cho.mode === 'realtime') return;
             biAutoSendRef.current = null;
             if (Date.now() - cho.at > 60 * 60_000) return;
             // Đợi Report BI ghi xong dữ liệu vào các ô rồi mới chụp
@@ -650,10 +654,10 @@ export default function GlobalAutoSyncDock() {
                             type="button"
                             onClick={() => setShowGuideModal(true)}
                             title="Bấm để xem hướng dẫn cài đặt tiện ích Tampermonkey hoặc kiểm tra kết nối"
-                            className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-semibold text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
+                            className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[10px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
                         >
                             <Sparkles className="w-3 h-3 text-amber-500/80 shrink-0" />
-                            <span>Tampermonkey • Hướng dẫn {ycxScript.checked ? (ycxScript.installed ? `(bản ${ycxScript.version || '?'})` : '(chưa cài)') : ''}</span>
+                            <span>HƯỚNG DẪN CÀI ĐẶT TAMPERMONKEY</span>
                         </button>
                     </>
                 )}

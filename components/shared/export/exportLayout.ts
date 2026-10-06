@@ -74,7 +74,14 @@ export function fitTablesToContent(root: HTMLElement): number {
                 c.style.setProperty('white-space', ws, 'important');
                 c.style.setProperty('text-overflow', 'clip', 'important');
                 if (!isHeader) {
-                    c.style.setProperty('overflow', 'visible', 'important');
+                    const isAvatarOrRounded = c.classList.contains('rounded-full') ||
+                        c.classList.contains('preserve-rounded') ||
+                        c.getAttribute('class')?.includes('rounded-full') ||
+                        (c.style.clipPath && c.style.clipPath.includes('circle')) ||
+                        c.querySelector('img.rounded-full, img[class*="rounded-full"], [data-avatar]') !== null;
+                    if (!isAvatarOrRounded) {
+                        c.style.setProperty('overflow', 'visible', 'important');
+                    }
                     c.style.setProperty('word-break', 'normal', 'important');
                 } else {
                     c.style.setProperty('word-break', 'keep-all', 'important');
@@ -83,6 +90,202 @@ export function fitTablesToContent(root: HTMLElement): number {
                 if (c.style.maxWidth && c.style.maxWidth !== 'none') c.style.setProperty('max-width', 'none', 'important');
             });
         });
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // FIX ĐỘ RỘNG CỘT VỪA KHÍT NỘI DUNG (COLUMN CONTENT FITTING)
+        // ═══════════════════════════════════════════════════════════════════════
+        const theadRows = Array.from(table.querySelectorAll('thead tr'));
+        const tbodyRows = Array.from(table.querySelectorAll('tbody tr'));
+        const tfootRows = Array.from(table.querySelectorAll('tfoot tr'));
+
+        // Xây dựng ma trận thead để xác định index của từng cột
+        const theadGrid: HTMLTableCellElement[][] = [];
+        theadRows.forEach((row, rIdx) => {
+            let cIdx = 0;
+            Array.from(row.children).forEach((cellNode) => {
+                if (!(cellNode instanceof HTMLTableCellElement)) return;
+                while (theadGrid[rIdx] && theadGrid[rIdx][cIdx]) cIdx++;
+                const rSpan = cellNode.rowSpan || 1;
+                const cSpan = cellNode.colSpan || 1;
+                for (let r = 0; r < rSpan; r++) {
+                    if (!theadGrid[rIdx + r]) theadGrid[rIdx + r] = [];
+                    for (let c = 0; c < cSpan; c++) {
+                        theadGrid[rIdx + r][cIdx + c] = cellNode;
+                    }
+                }
+                cIdx += cSpan;
+            });
+        });
+
+        // Hàm đo kích thước nội dung thực tế của ô, tránh bị ảnh hưởng bởi độ rộng table đang dãn
+        const measureCellContent = (cellNode: HTMLElement): number => {
+            let contentW = 0;
+            try {
+                const range = document.createRange();
+                range.selectNodeContents(cellNode);
+                const rect = range.getBoundingClientRect();
+                if (rect && rect.width > 0) {
+                    contentW = rect.width;
+                }
+            } catch {
+                // fallback
+            }
+
+            // Đo các con inline/flex bên trong (icon SVG, badge, sub-div)
+            cellNode.querySelectorAll<HTMLElement>('div, span, svg').forEach((child) => {
+                const r = child.getBoundingClientRect();
+                if (r && r.width > 0) {
+                    contentW = Math.max(contentW, r.width);
+                }
+            });
+
+            if (contentW <= 0) {
+                contentW = cellNode.scrollWidth || 0;
+            }
+
+            // Đệm viền và chữ: giới hạn padding an toàn tối đa 14px để cột ôm sát gọn gàng
+            const cs = window.getComputedStyle(cellNode);
+            const padL = parseFloat(cs.paddingLeft || '0');
+            const padR = parseFloat(cs.paddingRight || '0');
+            const totalPad = padL + padR;
+            const safePad = totalPad > 0 ? Math.min(totalPad, 14) : 8;
+
+            return Math.ceil(contentW + safePad);
+        };
+
+        const totalCols = theadGrid.length > 0 ? theadGrid[theadGrid.length - 1].length : 0;
+        if (totalCols > 0) {
+            const colMaxWidths: number[] = new Array(totalCols).fill(0);
+
+            // Đo ở thead (chỉ tính ô đơn colSpan === 1)
+            theadRows.forEach((row, rIdx) => {
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    if ((cellNode.colSpan || 1) === 1) {
+                        const cIdx = theadGrid[rIdx]?.indexOf(cellNode);
+                        if (cIdx !== undefined && cIdx >= 0) {
+                            const w = measureCellContent(cellNode);
+                            colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
+                        }
+                    }
+                });
+            });
+
+            // Đo ở tbody (chỉ tính ô đơn colSpan === 1, bỏ qua các dòng phân nhóm colSpan > 1)
+            tbodyRows.forEach((row) => {
+                let cIdx = 0;
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    const cSpan = cellNode.colSpan || 1;
+                    if (cSpan === 1 && cIdx < totalCols) {
+                        const w = measureCellContent(cellNode);
+                        colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
+                        cIdx++;
+                    } else {
+                        cIdx += cSpan;
+                    }
+                });
+            });
+
+            // Đo ở tfoot (chỉ tính ô đơn colSpan === 1)
+            tfootRows.forEach((row) => {
+                let cIdx = 0;
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    const cSpan = cellNode.colSpan || 1;
+                    if (cSpan === 1 && cIdx < totalCols) {
+                        const w = measureCellContent(cellNode);
+                        colMaxWidths[cIdx] = Math.max(colMaxWidths[cIdx], w);
+                        cIdx++;
+                    } else {
+                        cIdx += cSpan;
+                    }
+                });
+            });
+
+            // Đảm bảo các ô nhóm cha ở thead (colSpan > 1) không bị thiếu chỗ
+            theadRows.forEach((row, rIdx) => {
+                let cIdx = 0;
+                Array.from(row.children).forEach((cellNode) => {
+                    if (!(cellNode instanceof HTMLTableCellElement)) return;
+                    const cSpan = cellNode.colSpan || 1;
+                    if (cSpan > 1) {
+                        const parentW = measureCellContent(cellNode);
+                        let childrenSum = 0;
+                        for (let i = 0; i < cSpan; i++) {
+                            if (cIdx + i < totalCols) childrenSum += colMaxWidths[cIdx + i];
+                        }
+                        if (parentW > childrenSum && cSpan > 0) {
+                            const extraPerCol = Math.ceil((parentW - childrenSum) / cSpan);
+                            for (let i = 0; i < cSpan; i++) {
+                                if (cIdx + i < totalCols) colMaxWidths[cIdx + i] += extraPerCol;
+                            }
+                        }
+                    }
+                    cIdx += cSpan;
+                });
+            });
+
+            // Cố định độ rộng vừa khít nội dung cho từng cột
+            for (let c = 0; c < totalCols; c++) {
+                if (colMaxWidths[c] <= 0) continue;
+                const colW = colMaxWidths[c] + 4; // 4px đệm viền an toàn
+
+                theadRows.forEach((row, rIdx) => {
+                    const cell = theadGrid[rIdx]?.[c];
+                    if (cell && (cell.colSpan || 1) === 1) {
+                        cell.style.setProperty('width', `${colW}px`, 'important');
+                        cell.style.setProperty('min-width', `${colW}px`, 'important');
+                        cell.style.setProperty('max-width', `${colW}px`, 'important');
+                        cell.style.setProperty('box-sizing', 'border-box', 'important');
+                    }
+                });
+
+                tbodyRows.forEach((row) => {
+                    let curC = 0;
+                    Array.from(row.children).forEach((cellNode) => {
+                        if (!(cellNode instanceof HTMLTableCellElement)) return;
+                        const cSpan = cellNode.colSpan || 1;
+                        if (cSpan === 1 && curC === c) {
+                            cellNode.style.setProperty('width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('min-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('max-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('box-sizing', 'border-box', 'important');
+                            curC++;
+                        } else {
+                            curC += cSpan;
+                        }
+                    });
+                });
+
+                tfootRows.forEach((row) => {
+                    let curC = 0;
+                    Array.from(row.children).forEach((cellNode) => {
+                        if (!(cellNode instanceof HTMLTableCellElement)) return;
+                        const cSpan = cellNode.colSpan || 1;
+                        if (cSpan === 1 && curC === c) {
+                            cellNode.style.setProperty('width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('min-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('max-width', `${colW}px`, 'important');
+                            cellNode.style.setProperty('box-sizing', 'border-box', 'important');
+                            curC++;
+                        } else {
+                            curC += cSpan;
+                        }
+                    });
+                });
+            }
+
+            // Đặt bề rộng bảng cố định theo đúng tổng độ rộng các cột đã fix
+            const sumColsWidth = colMaxWidths.reduce((sum, w) => sum + (w > 0 ? w + 4 : 0), 0);
+            const tableWidth = sumColsWidth > 0 ? sumColsWidth : Math.ceil(table.getBoundingClientRect().width);
+            if (tableWidth > 0) {
+                table.style.setProperty('table-layout', 'fixed', 'important');
+                table.style.setProperty('width', `${tableWidth}px`, 'important');
+                table.style.setProperty('min-width', `${tableWidth}px`, 'important');
+                table.style.setProperty('max-width', `${tableWidth}px`, 'important');
+            }
+        }
     });
 
     // Đo bảng rộng nhất + đệm/viền các khối bọc nó
@@ -126,3 +329,50 @@ export function appendExportFooter(root: HTMLElement, text: string = exportFoote
     root.appendChild(f);
     return f;
 }
+
+/**
+ * Đảm bảo mọi avatar và phần tử tròn (.rounded-full, .preserve-rounded, ảnh đại diện)
+ * được bo tròn tuyệt đối (50%) và có clip-path dạng circle() chuẩn SVG foreignObject.
+ * Tránh lỗi SVG foreignObject của trình duyệt bỏ qua border-radius trên thẻ img
+ * hoặc lỗi cú pháp calc(infinity * 1px) của Tailwind CSS v4.
+ */
+export function fixCircularAvatars(root: HTMLElement): void {
+    // 1. Xử lý tất cả các thẻ ảnh có ý định bo tròn hoặc là avatar
+    root.querySelectorAll<HTMLElement>('img.rounded-full, img[class*="rounded-full"], [data-avatar] img, .preserve-rounded img, img[alt*="avatar"], img[src*="avatar"]').forEach((img) => {
+        img.style.setProperty('border-radius', '50%', 'important');
+        img.style.setProperty('clip-path', 'circle(50% at 50% 50%)', 'important');
+        img.style.setProperty('-webkit-clip-path', 'circle(50% at 50% 50%)', 'important');
+        img.style.setProperty('object-fit', 'cover', 'important');
+        img.style.setProperty('display', 'block', 'important');
+
+        // Bọc hoặc cha trực tiếp
+        const parent = img.parentElement;
+        if (parent) {
+            parent.style.setProperty('border-radius', '50%', 'important');
+            parent.style.setProperty('clip-path', 'circle(50% at 50% 50%)', 'important');
+            parent.style.setProperty('-webkit-clip-path', 'circle(50% at 50% 50%)', 'important');
+            parent.style.setProperty('overflow', 'hidden', 'important');
+        }
+    });
+
+    // 2. Xử lý các phần tử container tròn hoặc pill badge
+    root.querySelectorAll<HTMLElement>('.rounded-full, [class*="rounded-full"], .preserve-rounded').forEach((el) => {
+        const hasImg = !!el.querySelector('img');
+        const w = el.offsetWidth || parseFloat(el.style.width) || 0;
+        const h = el.offsetHeight || parseFloat(el.style.height) || 0;
+        const isSquare = hasImg || (w > 0 && h > 0 && Math.abs(w - h) <= 6);
+
+        if (isSquare) {
+            el.style.setProperty('border-radius', '50%', 'important');
+            el.style.setProperty('clip-path', 'circle(50% at 50% 50%)', 'important');
+            el.style.setProperty('-webkit-clip-path', 'circle(50% at 50% 50%)', 'important');
+            if (hasImg) {
+                el.style.setProperty('overflow', 'hidden', 'important');
+            }
+        } else {
+            // Pill badge (vd % đạt, trạng thái) -> thay calc(infinity * 1px) bằng 9999px chuẩn
+            el.style.setProperty('border-radius', '9999px', 'important');
+        }
+    });
+}
+

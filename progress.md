@@ -1,9 +1,11 @@
-# Progress Log
+# Nhật Ký Tiến Độ (Progress Log)
 
-| Thời gian | Giai đoạn | Hành động | Kết quả |
-|---|---|---|---|
-| 2026-09-27 16:30 | Giai đoạn 1 | Quét toàn bộ codebase tìm icon lỗi | Phát hiện 8 icon bị thiếu trong `ICON_MAP` gây lỗi hiển thị ô vuông xám |
-| 2026-09-27 16:32 | Giai đoạn 1 | Cập nhật `components/common/Icon.tsx` | Bổ sung 8 icon vào `ICON_MAP` và thêm graceful fallback HelpCircle |
-| 2026-09-27 16:33 | Giai đoạn 2 | Xoá file thừa | Xoá `bg_phieutgd.png` ở root, `firestore-debug.log`, `CompetitionCommentaryModal.tsx` |
-| 2026-09-27 16:35 | Giai đoạn 3 | Rà soát code cũ & import thừa | Xoá `SAMPLE_INPUT`, dọn imports không dùng ở `App.tsx`, `Sidebar.tsx`, `MobileBottomNav.tsx` |
-| 2026-09-27 16:37 | Giai đoạn 5 | Typecheck & Test | `npm run typecheck` 0 lỗi; 50/50 targeted tests passed |
+## Session Start: 2026-10-04 15:57
+- Nhiệm vụ: Quét toàn bộ dự án và áp dụng style thẻ KPI của tab Phân Tích cho tất cả các khu vực có thẻ KPI.
+- Bắt đầu Giai đoạn 1: Quét và khảo sát toàn bộ dự án -> Đã hoàn thành, lập `findings.md` và `task_plan.md`.
+- Giai đoạn 2: Cập nhật `CompetitionKpiCards.tsx` sang chuẩn Executive Modern dùng `KpiCard` -> Đã hoàn thành.
+- Giai đoạn 3: Cập nhật `DashboardTab.tsx` (Khai Thác) canh giữa số to rõ -> Đã hoàn thành.
+- Giai đoạn 4: Cập nhật `PerformanceModal.tsx` đồng bộ chuẩn `rounded-2xl`, vạch gradient, số canh giữa, footer 1 dòng -> Đã hoàn thành.
+- Giai đoạn 5: Cập nhật `CheckThuongSummaryCards.tsx` sang chuẩn Executive Modern dùng `KpiCard` -> Đã hoàn thành.
+- Giai đoạn 6: Cập nhật `SkeletonLoader.tsx` (KpiCardSkeleton) canh giữa số, bỏ progress bar cũ -> Đã hoàn thành.
+- Giai đoạn 7: Kiểm thử thực tế `npx tsc --noEmit` (exit 0) & Playwright test (`npm run test:verify-silent` pass 100%) -> Đã hoàn thành.
