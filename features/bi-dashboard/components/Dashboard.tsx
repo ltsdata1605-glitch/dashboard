@@ -1,8 +1,7 @@
 
 import React, { useRef, useState, useMemo, useEffect } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
-import { UploadIcon } from './Icons';
-import { Clock, TrendingUp, Sparkles } from 'lucide-react';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import SummaryTableView from './dashboard/SummaryTableView';
 import CompetitionView from './dashboard/CompetitionView';
@@ -36,7 +35,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
     <FeatureLandingLayout>
         <div className="flex items-center gap-3 mb-4">
             <div className="w-9 h-9 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20">
-                <UploadIcon className="h-5 w-5" />
+                <AppIcon name="upload" size="lg" />
             </div>
             <div className="text-left flex-1">
                 <h3 className="font-bold text-slate-900 dark:text-white text-[13px]">Nhập dữ liệu Báo cáo BI</h3>
@@ -50,7 +49,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; message?: string }> = ({ on
             className="w-full relative group/dropzone flex flex-col items-center justify-center min-h-[120px] border-2 border-dashed border-slate-200 dark:border-slate-700/60 hover:border-sky-400/50 dark:hover:border-sky-500/50 rounded-xl cursor-pointer bg-slate-50/50 dark:bg-slate-800/20 hover:bg-sky-50/30 dark:hover:bg-sky-950/20 transition-all duration-300 overflow-hidden p-4"
         >
             <div className="w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-sky-100 text-slate-400 group-hover/dropzone:text-sky-500">
-                <UploadIcon className="h-5 w-5" />
+                <AppIcon name="upload" size="lg" />
             </div>
             <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300">
                 <span className="text-sky-600 dark:text-sky-400 font-semibold">Cập nhật dữ liệu</span> hoặc nạp báo cáo mới
@@ -396,7 +395,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                 >
                     <div className="py-12 px-6 sm:py-16 sm:px-8 border-t border-slate-200 dark:border-slate-700/60 bg-gradient-to-b from-slate-50/50 to-white dark:from-slate-900/40 dark:to-slate-900/20 flex flex-col items-center justify-center text-center">
                         <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-4 shadow-sm">
-                            <Clock className="w-7 h-7 sm:w-8 sm:h-8 stroke-[1.75]" />
+                            <AppIcon name="clock" size="state" className="stroke-[1.75]" />
                         </div>
                         <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
                             {isRealtimeView ? 'Chưa có dữ liệu Realtime hôm nay' : 'Chưa có dữ liệu Luỹ kế'}
@@ -414,7 +413,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                     onClick={() => setActiveMainTab('cumulative')}
                                     className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm cursor-pointer"
                                 >
-                                    <TrendingUp className="w-4 h-4" />
+                                    <AppIcon name="trendUp" size="md" />
                                     <span>Xem báo cáo Luỹ kế</span>
                                 </Button>
                             )}
@@ -424,7 +423,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                     onClick={() => setActiveMainTab('realtime')}
                                     className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm cursor-pointer"
                                 >
-                                    <Clock className="w-4 h-4" />
+                                    <AppIcon name="clock" size="md" />
                                     <span>Xem báo cáo Realtime</span>
                                 </Button>
                             )}
@@ -433,14 +432,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                 onClick={() => onNavigateToUpdater({ configTab: 'data' })}
                                 className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
                             >
-                                <UploadIcon className="w-4 h-4 text-sky-500" />
+                                <AppIcon name="upload" size="md" className="text-sky-500" />
                                 <span>Cập nhật dữ liệu</span>
                             </Button>
                         </div>
 
                         {isRealtimeView && (
                             <div className="mt-8 pt-6 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-center gap-2 text-[11px] sm:text-xs text-slate-400 dark:text-slate-500">
-                                <Sparkles className="w-3.5 h-3.5 text-amber-500/80" />
+                                <AppIcon name="sparkles" size="sm" className="text-amber-500/80" />
                                 <span>Mẹo: Bạn có thể bật UserScript Tampermonkey trên trang báo cáo MWG để tự động thu thập số liệu.</span>
                             </div>
                         )}

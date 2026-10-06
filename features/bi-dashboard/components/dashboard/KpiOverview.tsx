@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronUpIcon, ChevronDownIcon } from '../Icons';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { parseNumber, roundUp, shortenSupermarketName } from '../../utils/dashboardHelpers';
 import {
     resolveDailyTarget,
@@ -20,7 +20,6 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { parseBaseTargetQuyDoi } from '../../services/employeeParser';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
-import { Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface KpiOverviewProps {
@@ -101,7 +100,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
             <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-bold leading-none ${
                 isPositive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400'
             }`}>
-                {isPositive ? <ChevronUpIcon className="h-2 w-2" /> : <ChevronDownIcon className="h-2 w-2" />}
+                {isPositive ? <AppIcon name="chevronUp" size="xs" /> : <AppIcon name="chevronDown" size="xs" />}
                 {Math.abs(Math.ceil(num))}%
             </span>
         );

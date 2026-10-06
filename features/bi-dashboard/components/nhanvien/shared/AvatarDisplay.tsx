@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
-import { UploadIcon } from '../../Icons';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { standardizeEmployeeName, extractEmployeeId } from '../../../utils/nhanVienHelpers';
@@ -200,9 +200,9 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                         setIsPickerOpen(true);
                     }}
                     title="Đổi avatar hoạt hình hoặc tải ảnh lên"
-                    className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity after:absolute after:-inset-2 after:content-[''] lg:after:hidden no-print border border-slate-200 dark:border-slate-700 shadow-xs"
+                    className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity after:absolute after:-inset-3 after:content-[''] lg:after:hidden no-print border border-slate-200 dark:border-slate-700 shadow-xs"
                 >
-                    <UploadIcon className="h-2 w-2 text-sky-600 dark:text-sky-400" />
+                    <AppIcon name="upload" size="xs" className="text-sky-600" />
                 </Button>
             </div>
 

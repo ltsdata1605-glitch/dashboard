@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import Card from '../Card';
 import ExportButton from '../ExportButton';
-import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, shortenSupermarketName, formatIndustryDisplayName } from '../../utils/dashboardHelpers';
 import { getBorderAccentFromColorClass } from '../../../../utils/dataUtils';
 import { Switch } from './DashboardWidgets';
@@ -256,7 +256,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
                         title="Mở rộng tất cả"
                     >
-                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                        <AppIcon name="expandAll" size="md" />
                     </Button>
                     <Button
                         variant="unstyled" size="none"
@@ -265,7 +265,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
-                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clipRule="evenodd" /></svg>
+                        <AppIcon name="collapseAll" size="md" />
                     </Button>
                 </div>
              )}
@@ -285,7 +285,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     }`}
                     title="Bộ lọc ngành hàng & nhóm hàng"
                 >
-                    <FilterIcon className="h-4 w-4" />
+                    <AppIcon name="filter" size="md" />
                     {(hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0) && (
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
                     )}
@@ -426,7 +426,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
                 >
-                    <CogIcon className="h-4 w-4" />
+                    <AppIcon name="settings" size="md" />
                 </Button>
                 {isColumnSelectorOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
@@ -517,7 +517,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                 className="mr-1 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 shrink-0 transition-transform duration-150"
                                 style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
                             >
-                                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                                <AppIcon name="chevronDown" size="sm" />
                             </Button>
                         )}
                         {!hasChildren && level > 0 && (

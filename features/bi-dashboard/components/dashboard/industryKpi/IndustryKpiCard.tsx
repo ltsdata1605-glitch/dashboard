@@ -1,7 +1,7 @@
 import React from 'react';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { IndustryKpiMetricData } from '../../../services/industryKpiCalc';
 import { roundUp } from '../../../utils/dashboardHelpers';
-import { X } from 'lucide-react';
 import { Button } from '../../../../../components/shared/ui/Button';
 
 export type IndustryKpiFocusMetric = 'revenue' | 'quantity';
@@ -185,7 +185,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-0.5 rounded text-slate-400 hover:text-rose-600 transition-opacity shrink-0 cursor-pointer hide-on-export no-print"
                             title="Xóa thẻ này"
                         >
-                            <X className="w-2.5 h-2.5" />
+                            <AppIcon name="close" size="xs" />
                         </Button>
                     )}
                 </div>

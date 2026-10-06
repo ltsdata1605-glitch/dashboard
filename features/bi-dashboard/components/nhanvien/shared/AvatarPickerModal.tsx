@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { CARTOON_AVATARS, getCartoonAvatar, CartoonAvatar } from '../../../utils/cartoonAvatars';
-import { XIcon, UploadIcon, CheckCircleIcon, SparklesIcon, ResetIcon } from '../../Icons';
 import { Button } from '../../../../../components/shared/ui/Button';
 
 interface AvatarPickerModalProps {
@@ -102,7 +102,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                         onClick={onClose}
                         className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full h-8 w-8"
                     >
-                        <XIcon className="w-5 h-5" />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -118,7 +118,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                             }`}
                         >
-                            <SparklesIcon className="w-3.5 h-3.5 text-amber-500" />
+                            <AppIcon name="sparkles" size="sm" className="text-amber-500" />
                             <span>50 Icon Hoạt Hình</span>
                         </button>
                         <button
@@ -130,7 +130,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                             }`}
                         >
-                            <UploadIcon className="w-3.5 h-3.5 text-sky-500" />
+                            <AppIcon name="upload" size="sm" className="text-sky-500" />
                             <span>Tải Ảnh Từ Máy</span>
                         </button>
                     </div>
@@ -205,7 +205,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                             </span>
                                             {isSelected && (
                                                 <div className="absolute top-1 right-1 bg-sky-500 text-white rounded-full p-0.5 shadow-xs">
-                                                    <CheckCircleIcon className="w-3.5 h-3.5" />
+                                                    <AppIcon name="success" size="sm" />
                                                 </div>
                                             )}
                                         </button>
@@ -216,7 +216,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                     ) : (
                         <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
                             <div className="w-24 h-24 rounded-full border-2 border-dashed border-sky-300 dark:border-sky-700 bg-sky-50/50 dark:bg-sky-950/20 flex items-center justify-center mb-4">
-                                <UploadIcon className="w-10 h-10 text-sky-500" />
+                                <AppIcon name="upload" size="state" className="text-sky-500" />
                             </div>
                             <h4 className="font-bold text-slate-800 dark:text-slate-200 text-base mb-1">
                                 Tải ảnh chân dung từ máy
@@ -230,7 +230,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                 disabled={isProcessing}
                                 className="px-5 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-sky-600 to-sky-700 hover:from-sky-700 hover:to-sky-800 text-white shadow-md hover:shadow-lg transition-all"
                             >
-                                <UploadIcon className="w-4 h-4 mr-2" />
+                                <AppIcon name="upload" size="md" className="mr-2" />
                                 {isProcessing ? 'Đang xử lý...' : 'Chọn file từ thiết bị'}
                             </Button>
                             <input 
@@ -253,7 +253,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                         disabled={isProcessing || !currentAvatarSrc}
                         className="text-xs text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 gap-1.5"
                     >
-                        <ResetIcon className="w-3.5 h-3.5" />
+                        <AppIcon name="reset" size="sm" />
                         <span>Khôi phục avatar mặc định</span>
                     </Button>
                     <Button

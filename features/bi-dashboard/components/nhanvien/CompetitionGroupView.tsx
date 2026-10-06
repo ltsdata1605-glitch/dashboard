@@ -1,7 +1,7 @@
 import React, { useRef, useState, useMemo } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, extractEmployeeId, standardizeEmployeeName } from '../../utils/nhanVienHelpers';
 import {
@@ -269,7 +269,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                             className="export-button-component p-1.5 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
-                            <CameraIcon className="h-4 w-4" />
+                            <AppIcon name="exportImage" size="md" />
                         </Button>
                     </div>
                 </div>

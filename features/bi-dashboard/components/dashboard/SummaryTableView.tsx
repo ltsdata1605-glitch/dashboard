@@ -1,11 +1,11 @@
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import ReactDOM from 'react-dom';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { buildSummaryTable } from '../../services/summaryTableCalc';
 import { extractDateFromData } from '../../services/metricService';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { renderHeaderText } from './SafeHeaderText';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -285,7 +285,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 }`}
                 title="Lọc danh sách siêu thị"
             >
-                <FilterIcon className="h-4 w-4" />
+                <AppIcon name="filter" size="md" />
             </Button>
             {isSupermarketFilterOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
@@ -333,7 +333,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
             >
-                <CogIcon className="h-4 w-4" />
+                <AppIcon name="settings" size="md" />
             </Button>
             {isColumnSelectorOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
@@ -402,13 +402,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                     />
                     <span className="sm:hidden flex items-center justify-center pointer-events-none" aria-hidden="true">
                         {useAdjustedTarget ? (
-                            <svg className="w-4 h-4 text-sky-600 dark:text-sky-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H4zm10.707 5.707a1 1 0 00-1.414-1.414L9 11.586 6.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l5-5z" clipRule="evenodd" />
-                            </svg>
+                            <AppIcon name="checkboxOn" size="md" className="text-sky-600" />
                         ) : (
-                            <svg className="w-4 h-4 text-slate-400 dark:text-slate-500" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5">
-                                <rect x="3" y="3" width="14" height="14" rx="2" />
-                            </svg>
+                            <AppIcon name="checkboxOff" size="md" className="text-slate-400" />
                         )}
                     </span>
                     <span className="hidden sm:inline whitespace-nowrap">Target sau chỉnh</span>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import Card from './Card';
-import { TrashIcon, PencilIcon, PlusIcon, ChevronUpIcon, ChevronDownIcon } from './Icons';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { DataTable, type DataTableColumn } from '../../../components/shared/ui/DataTable';
@@ -303,7 +303,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                             className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md"
                             title="Sửa Mã Kho"
                         >
-                            <PencilIcon className="h-3.5 w-3.5" />
+                            <AppIcon name="edit" size="sm" />
                         </Button>
                     )}
                     <Button
@@ -313,7 +313,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                         className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md"
                         title="Xoá"
                     >
-                        <TrashIcon className="h-3.5 w-3.5" />
+                        <AppIcon name="delete" size="sm" />
                     </Button>
                 </div>
             ),
@@ -345,7 +345,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                     <span className="text-[11px] font-bold">
                         {isLoading ? 'Đang tải...' : hasUnmapped ? `${unmappedNames.length} siêu thị chưa có Mã Kho` : 'Đã cấu hình đủ Mã Kho'}
                     </span>
-                    {isExpanded ? <ChevronUpIcon className="h-3.5 w-3.5 shrink-0" /> : <ChevronDownIcon className="h-3.5 w-3.5 shrink-0" />}
+                    {isExpanded ? <AppIcon name="chevronUp" size="sm" /> : <AppIcon name="chevronDown" size="sm" />}
                 </Button>
             }
         >
@@ -385,7 +385,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                         </div>
                     )}
 
-                    <Button variant="ghost" size="sm" onClick={() => setManualOpen(v => !v)} leftIcon={<PlusIcon className="h-3.5 w-3.5" />}>
+                    <Button variant="ghost" size="sm" onClick={() => setManualOpen(v => !v)} leftIcon={<AppIcon name="add" size="sm" />}>
                         {manualOpen ? 'Ẩn thêm thủ công' : 'Thêm siêu thị khác'}
                     </Button>
                     {manualOpen && (
@@ -401,7 +401,7 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                     ) : (
                         <>
                             <Button variant="unstyled" size="none" onClick={() => setTableOpen(v => !v)} className="flex items-center gap-1 text-[11px] font-bold text-sky-600 dark:text-sky-400 py-1">
-                                {tableOpen ? <ChevronUpIcon className="h-3.5 w-3.5" /> : <ChevronDownIcon className="h-3.5 w-3.5" />}
+                                {tableOpen ? <AppIcon name="chevronUp" size="sm" /> : <AppIcon name="chevronDown" size="sm" />}
                                 {tableOpen ? 'Thu gọn danh sách đã map' : `Xem tất cả ${rows.length} dòng đã map`}
                             </Button>
                             {tableOpen && (

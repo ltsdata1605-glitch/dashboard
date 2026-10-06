@@ -1,8 +1,7 @@
 
 import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import { ResetIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, ChartPieIcon } from './Icons';
-import { Link2, Pencil, GripVertical, Copy } from 'lucide-react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -225,9 +224,7 @@ const GroupCombobox: React.FC<{
                     className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors rounded after:absolute after:-inset-[11px] after:content-[''] sm:after:hidden"
                     title="Xem tất cả các nhóm có sẵn"
                 >
-                    <svg className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180 text-sky-600' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
-                    </svg>
+                    <AppIcon name="chevronDown" size="sm" className={`transition-transform duration-200 ${isOpen ? 'rotate-180 text-sky-600' : ''}`} />
                 </Button>
             </div>
 
@@ -308,9 +305,7 @@ const GroupCombobox: React.FC<{
                                                 className="p-4 -m-3.5 sm:p-0.5 sm:m-0 text-slate-300 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded transition-colors"
                                                 title={`Xoá nhóm "${group}" khỏi danh sách`}
                                             >
-                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
+                                                <AppIcon name="close" size="xs" />
                                             </Button>
                                         )}
                                     </div>
@@ -501,14 +496,14 @@ const StatusTile: React.FC<{
                     <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
-                                {icon || <UploadIcon className="h-4 w-4" />}
+                                {icon || <AppIcon name="upload" size="md" />}
                             </div>
                             <div className="min-w-0">
                                 <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
                                     <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
-                                        <ClockIcon className="h-3.5 w-3.5" /> {lastUpdated}
+                                        <AppIcon name="clock" size="sm" /> {lastUpdated}
                                     </span>
                                 )) : (
                                     <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để tự dán</span>
@@ -534,7 +529,7 @@ const StatusTile: React.FC<{
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
-                            <Pencil className="h-3.5 w-3.5" />
+                            <AppIcon name="edit" size="sm" />
                         </Button>
                     )}
 
@@ -554,7 +549,7 @@ const StatusTile: React.FC<{
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
-                            <Link2 className="h-3.5 w-3.5" />
+                            <AppIcon name="link" size="sm" />
                         </a>
                     )}
 
@@ -570,7 +565,7 @@ const StatusTile: React.FC<{
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
-                            <TrashIcon className="h-3.5 w-3.5" />
+                            <AppIcon name="delete" size="sm" />
                         </Button>
                     )}
                 </div>
@@ -706,7 +701,7 @@ const CompetitionTarget: React.FC<{
                             }
                         });
                     }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors" title="Reset">
-                        <ResetIcon className="h-4 w-4" />
+                        <AppIcon name="reset" size="md" />
                     </Button>
                 </div>
             </div>
@@ -748,9 +743,7 @@ const CompetitionTarget: React.FC<{
                                 <div className="w-full flex items-center gap-2 py-0.5 px-0.5">
                                     {/* Số thứ tự TO RÕ + Icon Kéo Thả */}
                                     <div className="flex items-center gap-1.5 shrink-0 select-none" title="Kéo thả để sắp xếp vị trí">
-                                        <GripVertical
-                                            className="h-3.5 w-3.5 text-slate-400 hover:text-sky-500 dark:text-slate-500 dark:hover:text-sky-400 cursor-grab active:cursor-grabbing shrink-0 transition-colors"
-                                        />
+                                        <AppIcon name="dragHandle" size="sm" className="text-slate-400 hover:text-sky-500 cursor-grab active:cursor-grabbing transition-colors" />
                                         <span className="inline-flex items-center justify-center min-w-[24px] h-[22px] px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black tabular-nums border border-slate-200/90 dark:border-slate-700 shadow-xs">
                                             {index + 1}
                                         </span>
@@ -991,7 +984,7 @@ const CompetitionTarget: React.FC<{
             })() : (
                 <div className="col-span-full">
                     <EmptyState
-                        icon={<AlertTriangleIcon className="h-6 w-6" />}
+                        icon={<AppIcon name="warning" size="xl" />}
                         title='Chưa có dữ liệu "Luỹ kế"'
                         description='Hãy cập nhật dữ liệu "Luỹ kế" bên dưới nhóm "Thi đua Cụm" để cấu hình.'
                     />
@@ -1254,7 +1247,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 setIsGuideOpen(true);
                             }}
                         >
-                            <Copy className="w-3.5 h-3.5 text-sky-100 group-hover:scale-105 transition-transform shrink-0" />
+                            <AppIcon name="copy" size="md" className="text-sky-100 group-hover:scale-105 transition-transform" />
                             <span className="tracking-tight font-semibold">Copy All</span>
                         </a>
                     </div>
@@ -1273,7 +1266,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 sửa/liên kết/xoá đè lên tên và giờ cập nhật. Dưới 640px xếp 1 cột. */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
-                                    icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
+                                    icon={<AppIcon name="clock" size="md" />} colorTheme="amber"
                                     linkUrl={getTileLink('industry-realtime', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-realtime', 'Realtime', 'Siêu thị ngành hàng')}
                                     onChange={(v) => { 
@@ -1295,7 +1288,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         toast.success(`Đã xoá dữ liệu ${title}`);
                                     }} />
                                 <StatusTile title="Luỹ kế" lastUpdated={industryLuyKeTs} value={industryLuyKeData}
-                                    icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="emerald"
+                                    icon={<AppIcon name="chartPie" size="md" />} colorTheme="emerald"
                                     linkUrl={getTileLink('industry-luyke', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('industry-luyke', 'Luỹ kế', 'Siêu thị ngành hàng')}
                                     onChange={(v) => { 
@@ -1328,7 +1321,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="REALTIME" lastUpdated={employeeRealtimeTs} value={employeeRealtimeData} placeholder="Dán dữ liệu Realtime..." error={errors.employeeRealtime}
-                                    icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
+                                    icon={<AppIcon name="clock" size="md" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-realtime', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-realtime', 'REALTIME', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
@@ -1355,7 +1348,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     }} />
 
                                 <StatusTile title="LUỸ KẾ" lastUpdated={danhSachTs} value={danhSachData}
-                                    icon={<UsersIcon className="h-4 w-4" />} colorTheme="emerald"
+                                    icon={<AppIcon name="users" size="md" />} colorTheme="emerald"
                                     linkUrl={getTileLink('nhanvien-doanhthu', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-doanhthu', 'LUỸ KẾ', 'DOANH THU NHÂN VIÊN')}
                                     onChange={(v) => { 
@@ -1391,7 +1384,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             </h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="THI ĐUA" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua..." error={errors.thiDua} 
-                                    icon={<SparklesIcon className="h-4 w-4" />} colorTheme="amber"
+                                    icon={<AppIcon name="sparkles" size="md" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-thidua', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-thidua', 'THI ĐUA', 'THI ĐUA & TRẢ CHẬM')}
                                     onChange={(v) => { 
@@ -1419,7 +1412,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     }} />
 
                                 <StatusTile title="TRẢ CHẬM" lastUpdated={traGopTs} value={traGopData} placeholder="Dán dữ liệu Trả chậm..."
-                                    icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="sky"
+                                    icon={<AppIcon name="chartPie" size="md" />} colorTheme="sky"
                                     linkUrl={getTileLink('nhanvien-tragop', customLinks, supermarketName)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('nhanvien-tragop', 'TRẢ CHẬM', 'THI ĐUA & TRẢ CHẬM')}
                                     onChange={(v) => { 

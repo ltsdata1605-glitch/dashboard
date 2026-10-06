@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
-import { ExternalLink, RotateCcw, Save, Link2 } from 'lucide-react';
 import { TILE_LABELS } from '../services/tileLinkService';
 import toast from 'react-hot-toast';
 
@@ -104,7 +104,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
                             onClick={handleOpenLink}
                             className="flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 border-sky-200 dark:border-sky-800"
                         >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <AppIcon name="externalLink" size="sm" />
                             <span>Mở liên kết</span>
                         </Button>
                         {isCustomized && (
@@ -117,7 +117,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
                                 className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
                                 title="Khôi phục lại liên kết gốc mặc định"
                             >
-                                <RotateCcw className="w-3 h-3" />
+                                <AppIcon name="reset" size="xs" />
                                 <span>Mặc định</span>
                             </Button>
                         )}
@@ -141,7 +141,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
                             disabled={isSaving}
                             className="flex items-center gap-1.5 text-xs font-semibold shadow-sm"
                         >
-                            <Save className="w-3.5 h-3.5" />
+                            <AppIcon name="save" size="sm" />
                             <span>{isSaving ? 'Đang lưu...' : 'Lưu vào Firebase'}</span>
                         </Button>
                     </div>
@@ -150,7 +150,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
         >
             <div className="space-y-4 py-1 text-sm text-slate-700 dark:text-slate-300">
                 <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200/80 dark:border-slate-700/80 flex items-start gap-2.5">
-                    <Link2 className="w-4 h-4 text-sky-600 dark:text-sky-400 mt-0.5 shrink-0" />
+                    <AppIcon name="link" size="md" className="text-sky-600 mt-0.5" />
                     <div className="text-xs leading-relaxed space-y-1">
                         <p className="font-semibold text-slate-800 dark:text-slate-200">
                             Ô: <span className="text-sky-600 dark:text-sky-400">{displayName}</span> ({displayGroup})

@@ -55,53 +55,13 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0
   },
-  "features/bi-dashboard/components/AutoClickGuideModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 10,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0
-  },
-  "features/bi-dashboard/components/BiAutoSyncModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 8,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0
-  },
-  "features/bi-dashboard/components/BiSupermarketMapAdmin.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 5
-  },
-  "features/bi-dashboard/components/BiWrapper.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 2
-  },
   "features/bi-dashboard/components/common/TampermonkeyInstallGuideContent.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 9,
     "missingMobileToolbar": 0,
-    "iconDirectImport": 10,
+    "iconDirectImport": 0,
     "iconNumericSize": 0,
     "iconLegacyCall": 0
-  },
-  "features/bi-dashboard/components/Dashboard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 3,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 1
   },
   "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx": {
     "nonSemanticColor": 0,
@@ -111,155 +71,19 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0
   },
-  "features/bi-dashboard/components/dashboard/CompetitionView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 5,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 2
-  },
-  "features/bi-dashboard/components/dashboard/DashboardHeader.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 3,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 4
-  },
-  "features/bi-dashboard/components/dashboard/industryKpi/AddIndustryKpiModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 7,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0
-  },
-  "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiCard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0
-  },
-  "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiGrid.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 2,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0
-  },
-  "features/bi-dashboard/components/dashboard/IndustryView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 2
-  },
   "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 2,
     "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 2
-  },
-  "features/bi-dashboard/components/dashboard/SummaryTableView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
     "iconDirectImport": 0,
     "iconNumericSize": 0,
-    "iconLegacyCall": 2
-  },
-  "features/bi-dashboard/components/DataUpdater.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 5,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 8
-  },
-  "features/bi-dashboard/components/NhanVien.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 2,
-    "iconLegacyCall": 4
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 3
-  },
-  "features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 3
-  },
-  "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 1,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 3
-  },
-  "features/bi-dashboard/components/nhanvien/shared/AvatarDisplay.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 1
-  },
-  "features/bi-dashboard/components/nhanvien/shared/AvatarPickerModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 5
-  },
-  "features/bi-dashboard/components/Slider.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 1
+    "iconLegacyCall": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 11,
     "missingMobileToolbar": 0,
-    "iconDirectImport": 4,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 9
-  },
-  "features/bi-dashboard/components/TargetHero.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
     "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 5
-  },
-  "features/bi-dashboard/components/TileLinkModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 4,
     "iconNumericSize": 0,
     "iconLegacyCall": 0
   },

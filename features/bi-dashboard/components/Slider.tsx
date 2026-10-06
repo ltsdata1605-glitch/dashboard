@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ResetIcon } from './Icons';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface SliderProps {
@@ -61,7 +61,7 @@ const Slider: React.FC<SliderProps> = ({
                             className="p-1 relative after:absolute after:-inset-[11px] after:content-[''] lg:after:hidden text-slate-400 hover:text-sky-500 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all opacity-100 lg:opacity-0 lg:group-hover/slider:opacity-100"
                             title="Reset về mặc định"
                         >
-                            <ResetIcon className="h-3.5 w-3.5" />
+                            <AppIcon name="reset" size="sm" />
                         </Button>
                     )}
                 </div>

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
-import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ImagesIcon } from '../Icons';
-import { Info, Zap, TrendingUp } from 'lucide-react';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
@@ -104,12 +103,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             className="min-h-11 sm:min-h-0 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-[11px] sm:text-sm font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors select-none cursor-pointer whitespace-nowrap shrink-0"
                             title="Bấm để chuyển đổi giữa Realtime và Luỹ kế"
                         >
-                            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0 animate-pulse" />
+                            <AppIcon name="info" size="sm" className="text-sky-500 animate-pulse" />
                             <span className="whitespace-nowrap">{activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}</span>
                         </Button>
                         <MultiSelectDropdown
                             triggerClassName="rounded-r-full whitespace-nowrap"
-                            icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
+                            icon={<AppIcon name="store" size="md" className="text-sky-500" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
                             allLabel="Chọn tất cả"
@@ -148,7 +147,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
                                 className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-amber-600/30 whitespace-nowrap"
                             >
-                                <Zap className="h-3 w-3 text-amber-100 fill-amber-200 shrink-0" />
+                                <AppIcon name="quick" size="xs" className="text-amber-100 fill-amber-200" />
                                 <span>Tự động Realtime</span>
                             </Button>
 
@@ -160,7 +159,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
                                 className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-emerald-600/30 whitespace-nowrap"
                             >
-                                <TrendingUp className="h-3 w-3 text-emerald-100 shrink-0" />
+                                <AppIcon name="trendUp" size="xs" className="text-emerald-100" />
                                 <span>Tự động Luỹ kế</span>
                             </Button>
                         </div>
@@ -202,7 +201,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 variant="ghost" size="icon" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
                                 title="Xuất tất cả ảnh"
                             >
-                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                                {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                             </Button>
 
                             {/* Single export */}
@@ -213,7 +212,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     variant="ghost" size="icon" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
                                     title="Xuất ảnh"
                                 >
-                                    {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-5 w-5" />}
+                                    {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="lg" />}
                                 </Button>
                             )}
                         </div>

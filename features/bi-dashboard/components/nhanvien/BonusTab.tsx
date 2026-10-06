@@ -165,7 +165,7 @@ export const BonusView: React.FC<{
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={`inline-flex items-center justify-center h-8 w-8 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
+                                className={`inline-flex items-center justify-center h-8 w-8 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
                             >
                                 <AppIcon name={activePeriodMode.icon} size="md" />
                             </span>

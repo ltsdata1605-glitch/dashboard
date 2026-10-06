@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../../../components/shared/ui/Modal';
 import { IndustryItemOption, IndustryKpiCardConfig } from '../../../services/industryKpiCalc';
-import { X, Search, Check, Plus, RotateCcw, Package, Layers } from 'lucide-react';
 import { Button } from '../../../../../components/shared/ui/Button';
 
 interface AddIndustryKpiModalProps {
@@ -61,7 +61,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                 {/* Header */}
                 <div className="px-4 py-3 bg-sky-600 dark:bg-sky-700 text-white flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Plus className="w-5 h-5" />
+                        <AppIcon name="add" size="lg" />
                         <h3 className="text-sm sm:text-base font-black uppercase tracking-wider">
                             Quản lý & Thêm Thẻ KPI Ngành Hàng
                         </h3>
@@ -73,7 +73,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                         onClick={onClose}
                         className="p-1 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -81,7 +81,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                 <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col gap-2.5">
                     {/* Search */}
                     <div className="relative">
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Tìm nhanh ngành hàng hoặc nhóm hàng..."
@@ -103,7 +103,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                             >
-                                <Package className="w-3.5 h-3.5" />
+                                <AppIcon name="product" size="sm" />
                                 <span>Nhóm hàng ({availableSubIndustries.length})</span>
                             </button>
                             <button
@@ -115,7 +115,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                                 }`}
                             >
-                                <Layers className="w-3.5 h-3.5" />
+                                <AppIcon name="layers" size="sm" />
                                 <span>Ngành hàng ({availableIndustries.length})</span>
                             </button>
                         </div>
@@ -129,7 +129,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                             className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 hover:text-sky-700 dark:hover:text-sky-400 transition-colors"
                             title="Khôi phục 12 thẻ mặc định"
                         >
-                            <RotateCcw className="w-3 h-3" />
+                            <AppIcon name="reset" size="xs" />
                             <span className="hidden sm:inline">Mặc định (12 thẻ)</span>
                         </Button>
                     </div>
@@ -173,8 +173,8 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                             className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300/80 dark:border-emerald-800/80 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-300 transition-colors group cursor-pointer"
                                             title="Bấm để bỏ thẻ này"
                                         >
-                                            <Check className="w-3 h-3 group-hover:hidden" />
-                                            <X className="w-3 h-3 hidden group-hover:inline" />
+                                            <AppIcon name="check" size="xs" className="group-hover:hidden" />
+                                            <AppIcon name="close" size="xs" className="hidden group-hover:inline" />
                                             <span className="group-hover:hidden">Đã thêm</span>
                                             <span className="hidden group-hover:inline">Bỏ chọn</span>
                                         </button>
@@ -190,7 +190,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                                             }}
                                             className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300/80 dark:border-sky-800/80 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors cursor-pointer"
                                         >
-                                            <Plus className="w-3 h-3" />
+                                            <AppIcon name="add" size="xs" />
                                             <span>Thêm</span>
                                         </button>
                                     )}

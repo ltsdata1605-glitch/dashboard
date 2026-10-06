@@ -1,10 +1,9 @@
 
 import React, { useRef, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import toast from 'react-hot-toast';
-import { FilterIcon, ChevronDownIcon, CameraIcon } from '../Icons';
-import { Layers } from 'lucide-react';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
@@ -318,7 +317,7 @@ const EmployeeProfileCard: React.FC<{
                             />
                         )}
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity text-white no-print">
-                            <CameraIcon className="w-4 h-4 drop-shadow-md" />
+                            <AppIcon name="exportImage" size="md" className="drop-shadow-md" />
                             <span className="text-[11px] font-bold mt-1 drop-shadow-md uppercase tracking-wider">Đổi ảnh</span>
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
@@ -333,7 +332,7 @@ const EmployeeProfileCard: React.FC<{
                                 title="Bấm vào tên để chọn nhân viên khác"
                             >
                                 <span className="truncate">{selectedEmployee.name}</span>
-                                <ChevronDownIcon className={`w-4 h-4 text-white/80 group-hover/name:text-white transition-transform shrink-0 ${isEmployeeSelectorOpen ? 'rotate-180' : ''}`} />
+                                <AppIcon name="chevronDown" size="md" className={`text-white/80 group-hover/name:text-white transition-transform ${isEmployeeSelectorOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isEmployeeSelectorOpen && createPortal(

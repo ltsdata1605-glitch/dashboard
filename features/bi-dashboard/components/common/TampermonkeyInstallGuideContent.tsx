@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../../components/shared/ui/Button';
-import { ExternalLink, Copy, Check, AlertTriangle, Sparkles, RefreshCw, ShieldCheck, Download, ArrowRight, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import { detectUserscript } from '../../utils/bonusBridge';
@@ -92,7 +92,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
             {/* Thanh giới thiệu nổi bật */}
             <div className="p-3 sm:p-3.5 bg-gradient-to-r from-sky-50 via-sky-50 to-sky-50 dark:from-sky-950/40 dark:via-sky-950/30 dark:to-sky-950/30 rounded-xl border border-sky-100 dark:border-sky-900/40 flex items-start gap-3">
                 <div className="p-2 bg-sky-500/10 dark:bg-sky-400/10 rounded-lg text-sky-600 dark:text-sky-400 shrink-0 mt-0.5">
-                    <ShieldCheck className="w-5 h-5" />
+                    <AppIcon name="securityOk" size="lg" />
                 </div>
                 <div className="text-xs space-y-1 text-slate-600 dark:text-slate-300">
                     <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">
@@ -123,7 +123,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             onClick={() => window.open(TAMPERMONKEY_STORE_URL, '_blank')}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
                         >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <AppIcon name="externalLink" size="sm" />
                             <span>Mở Chrome Web Store</span>
                         </Button>
                     </div>
@@ -135,7 +135,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     {/* Hộp BẬT DEVELOPER MODE — Bắt buộc trên Chrome mới */}
                     <div className="ml-8 p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs space-y-2">
                         <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-                            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                            <AppIcon name="warning" size="md" className="text-amber-600" />
                             <span className="uppercase text-[11px] tracking-wide">⚠️ Bắt buộc: Bật "Chế độ dành cho nhà phát triển"</span>
                         </div>
                         <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
@@ -153,7 +153,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                     onClick={handleCopyExtensionsLink}
                                     className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-200 hover:bg-amber-300 dark:bg-amber-800 dark:hover:bg-amber-700 text-amber-900 dark:text-amber-100 rounded text-[11px] font-bold transition-colors"
                                 >
-                                    {copiedLink ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                                    {copiedLink ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                                     <span>{copiedLink ? 'Đã sao chép' : 'Sao chép link'}</span>
                                 </Button>
                             </div>
@@ -186,7 +186,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             onClick={handleCopySettingsLink}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
                         >
-                            {copiedSettingsLink ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
+                            {copiedSettingsLink ? <AppIcon name="check" size="sm" className="text-white" /> : <AppIcon name="copy" size="sm" />}
                             <span>{copiedSettingsLink ? 'Đã sao chép link' : 'Sao chép link thiết lập'}</span>
                         </Button>
                     </div>
@@ -262,7 +262,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             onClick={() => window.open(getScriptUrl(), '_blank')}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
                         >
-                            <Download className="w-3.5 h-3.5" />
+                            <AppIcon name="download" size="sm" />
                             <span>Cài đặt Script ngay</span>
                         </Button>
                     </div>
@@ -272,7 +272,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             Bấm nút <b className="text-sky-600 dark:text-sky-400">"Cài đặt Script ngay"</b> ở trên. Tiện ích Tampermonkey sẽ mở một tab cài đặt mới.
                         </p>
                         <p className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                            <ArrowRight className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                            <AppIcon name="next" size="sm" className="text-sky-500" />
                             <span>Bạn chỉ cần bấm nút <b className="text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700">"Cài đặt"</b> (hoặc <b className="text-slate-900 dark:text-white font-bold bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700">"Install"</b>) màu đen/xanh. Sau đó đóng tab đó lại.</span>
                         </p>
                     </div>
@@ -302,17 +302,17 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                         >
                             {isChecking ? (
                                 <>
-                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                    <AppIcon name="refresh" size="sm" spin />
                                     <span>Đang kiểm tra...</span>
                                 </>
                             ) : checkSuccess ? (
                                 <>
-                                    <Check className="w-3.5 h-3.5" />
+                                    <AppIcon name="check" size="sm" />
                                     <span>Đã kết nối!</span>
                                 </>
                             ) : (
                                 <>
-                                    <Sparkles className="w-3.5 h-3.5" />
+                                    <AppIcon name="sparkles" size="sm" />
                                     <span>Kiểm tra kết nối</span>
                                 </>
                             )}
@@ -328,7 +328,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
             {/* THANH ĐIỀU HƯỚNG DƯỚI CÙNG */}
             <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
                 <div className="text-[11px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    <AppIcon name="help" size="sm" />
                     <span>Cần hỗ trợ gấp? Bấm nút Dùng thủ công bên phải</span>
                 </div>
                 <div className="flex items-center gap-2 ml-auto">

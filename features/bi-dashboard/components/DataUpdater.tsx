@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, ChartBarIcon, SparklesIcon, PlusIcon } from './Icons';
-import { Link2, Pencil, X, RotateCcw, Clock } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import SupermarketConfig from './SupermarketConfig';
 import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
@@ -264,14 +263,14 @@ const StatusTile: React.FC<{
                     <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
-                                {icon || <UploadIcon className="h-4 w-4" />}
+                                {icon || <AppIcon name="upload" size="md" />}
                             </div>
                             <div className="min-w-0">
                                 <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
                                         <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
-                                            <ClockIcon className="h-3.5 w-3.5" /> {lastUpdated}
+                                            <AppIcon name="clock" size="sm" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
@@ -300,7 +299,7 @@ const StatusTile: React.FC<{
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
-                            <Pencil className="h-3.5 w-3.5" />
+                            <AppIcon name="edit" size="sm" />
                         </Button>
                     )}
 
@@ -320,7 +319,7 @@ const StatusTile: React.FC<{
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
-                            <Link2 className="h-3.5 w-3.5" />
+                            <AppIcon name="link" size="sm" />
                         </a>
                     )}
 
@@ -336,7 +335,7 @@ const StatusTile: React.FC<{
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
-                            <TrashIcon className="h-3.5 w-3.5" />
+                            <AppIcon name="delete" size="sm" />
                         </Button>
                     )}
                 </div>
@@ -344,7 +343,7 @@ const StatusTile: React.FC<{
 
             {error && (
                 <div className="mt-1 flex items-center gap-1 px-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200">
-                    <AlertTriangleIcon className="h-3.5 w-3.5 shrink-0" />
+                    <AppIcon name="warning" size="sm" />
                     <span>{error}</span>
                 </div>
             )}
@@ -820,7 +819,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             title="Đặt lại toàn bộ dữ liệu về mặc định"
                             className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
                         >
-                            <RotateCcw className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-500" />
+                            <AppIcon name="reset" size="md" className="text-rose-500" />
                             <span className="text-[11px] sm:text-xs tracking-wide">Đặt lại</span>
                         </Button>
                     </div>
@@ -868,7 +867,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     error={errors.summaryRealtime}
                                     linkUrl={getTileLink('summary-realtime', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('summary-realtime', 'Realtime', 'Doanh thu hợp nhất')}
-                                    icon={<ClockIcon className="h-4 w-4" />}
+                                    icon={<AppIcon name="clock" size="md" />}
                                     colorTheme="amber"
                                     onChange={(val) => {
                                         if (validateSummaryRealtimeReport(val)) {
@@ -897,7 +896,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     error={errors.summaryLuyKe}
                                     linkUrl={getTileLink('summary-luyke', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('summary-luyke', 'Luỹ kế', 'Doanh thu hợp nhất')}
-                                    icon={<ChartPieIcon className="h-4 w-4" />}
+                                    icon={<AppIcon name="chartPie" size="md" />}
                                     colorTheme="emerald"
                                     readOnly={isReadOnlySharedTile}
                                     readOnlyHint="Nhân viên chỉ xem — quản lý/admin cập nhật dữ liệu này"
@@ -952,7 +951,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     error={errors.competitionRealtime}
                                     linkUrl={getTileLink('competition-realtime', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('competition-realtime', 'Realtime', 'Thi đua')}
-                                    icon={<SparklesIcon className="h-4 w-4" />}
+                                    icon={<AppIcon name="sparkles" size="md" />}
                                     colorTheme="amber"
                                     onChange={(val) => {
                                         if (validateCompetitionRealtimeReport(val)) {
@@ -982,7 +981,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     error={errors.competitionLuyKe}
                                     linkUrl={getTileLink('competition-luyke', customLinks)}
                                     onOpenLinkModal={() => handleOpenLinkConfig('competition-luyke', 'Luỹ kế', 'Thi đua')}
-                                    icon={<ChartBarIcon className="h-4 w-4" />}
+                                    icon={<AppIcon name="chartBar" size="md" />}
                                     colorTheme="emerald"
                                     readOnly={isReadOnlySharedTile}
                                     readOnlyHint="Nhân viên chỉ xem — quản lý/admin cập nhật dữ liệu này"
@@ -1056,10 +1055,10 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                                                 handleDeleteSupermarket(sm);
                                                             }
                                                         }}
-                                                        className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors"
+                                                        className="relative text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors after:absolute after:-inset-[13px] after:content-[''] lg:after:hidden"
                                                         title={`Xoá siêu thị tuỳ chỉnh "${shortName}"`}
                                                     >
-                                                        <X className="w-3 h-3" />
+                                                        <AppIcon name="close" size="xs" />
                                                     </span>
                                                 )}
                                             </Button>
@@ -1072,7 +1071,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     className="min-h-11 sm:min-h-0 shrink-0 px-3 py-1.5 rounded-md text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1 transition-all"
                                     title="Thêm siêu thị mới để cấu hình và dán dữ liệu"
                                 >
-                                    <PlusIcon className="w-3.5 h-3.5" />
+                                    <AppIcon name="add" size="md" />
                                     <span>Thêm siêu thị</span>
                                 </Button>
                             </div>
@@ -1090,7 +1089,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 ) : (
                     <div className="bg-white dark:bg-slate-900 rounded-none lg:rounded-2xl border-y lg:border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-6 flex flex-col items-center justify-center text-center">
                         <EmptyState
-                            icon={<UploadIcon className="h-6 w-6" />}
+                            icon={<AppIcon name="upload" size="xl" />}
                             title="Chưa có danh sách siêu thị"
                             description="Vui lòng dán dữ liệu Luỹ kế / Realtime / Thi đua phía trên, hoặc chủ động thêm siêu thị để bắt đầu cấu hình."
                         />
@@ -1099,7 +1098,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                             onClick={() => setIsAddingSupermarket(true)}
                             className="min-h-11 sm:min-h-0 mt-4 px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                         >
-                            <PlusIcon className="w-4 h-4" />
+                            <AppIcon name="add" size="md" />
                             <span>+ Thêm siêu thị thủ công</span>
                         </Button>
                     </div>

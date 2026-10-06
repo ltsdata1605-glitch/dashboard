@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import ReactDOM from 'react-dom';
-import { Settings, Search, Layers, MessageSquareQuote, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
@@ -10,7 +10,6 @@ import { buildCompetitionTable, type ProcessedProgram } from '../../services/com
 import CompetitionListView from './competition/CompetitionListView';
 import { CompetitionKpiCards } from './competition/CompetitionKpiCards';
 import { calculateCompetitionCommentary, generateZaloCommentaryMessage } from '../../services/competitionCommentaryCalc';
-import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
@@ -279,9 +278,9 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 aria-label="Sao chép nhận xét thi đua"
             >
                 {copiedCommentary ? (
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <AppIcon name="check" size="md" className="text-emerald-600" />
                 ) : (
-                    <MessageSquareQuote className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+                    <AppIcon name="message" size="md" className="text-sky-600" />
                 )}
             </Button>
 
@@ -302,7 +301,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 }
                 aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
             >
-                <Layers className="h-4 w-4" />
+                <AppIcon name="layers" size="md" />
             </Button>
 
             {/* Bộ lọc tích hợp 2 cột: Lọc chương trình & Cột hiển thị */}
@@ -318,7 +317,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     }`}
                     title="Bộ lọc thi đua (Chương trình & Cột hiển thị)"
                 >
-                    <FilterIcon className="h-4 w-4" />
+                    <AppIcon name="filter" size="md" />
                     {isProgramFiltered && (
                         <span className="absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-sky-500 px-0.5 text-[11px] font-bold text-white shadow-sm ring-1 ring-white dark:ring-slate-900">
                             {validSelectedPrograms.length}
@@ -331,7 +330,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         {/* Header của Popup */}
                         <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/60 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80">
                             <div className="flex items-center gap-2">
-                                <FilterIcon className="h-3.5 w-3.5 text-sky-500" />
+                                <AppIcon name="filter" size="sm" className="text-sky-500" />
                                 <span className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">Bộ lọc bảng thi đua</span>
                             </div>
                             <span className="text-[11px] text-slate-400 font-medium">
@@ -359,7 +358,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
                                 {/* Ô tìm kiếm chương trình */}
                                 <div className="relative mb-2">
-                                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                                    <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
                                         value={programFilterSearch}
@@ -452,7 +451,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-lg shrink-0"
                 title="Cấu hình Thi đua"
             >
-                <Settings className="h-4 w-4" />
+                <AppIcon name="settings" size="md" />
             </Button>
         </div>
     );

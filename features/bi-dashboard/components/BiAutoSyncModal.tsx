@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { Check, Loader2, AlertCircle, ExternalLink, Zap, Clock, TrendingUp, ShieldCheck } from 'lucide-react';
 import { BiSyncMode, BiSyncProgress, USERSCRIPT_URL } from '../services/biAutoSyncService';
 import { TampermonkeyInstallGuideContent } from './common/TampermonkeyInstallGuideContent';
 
@@ -119,7 +119,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 status === 'not-installed' ? (
                     <div className="flex items-center gap-2.5">
                         <div className="p-2 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-xs">
-                            <ShieldCheck className="w-5 h-5" />
+                            <AppIcon name="securityOk" size="lg" />
                         </div>
                         <div>
                             <h3 className="font-bold text-base text-slate-800 dark:text-slate-100">
@@ -135,7 +135,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                         <div className={`p-2 rounded-xl text-white shadow-xs ${
                             isRealtime ? 'bg-amber-500 shadow-amber-500/20' : 'bg-emerald-600 shadow-emerald-500/20'
                         }`}>
-                            {isRealtime ? <Clock className="w-5 h-5" /> : <TrendingUp className="w-5 h-5" />}
+                            {isRealtime ? <AppIcon name="clock" size="lg" /> : <AppIcon name="trendUp" size="lg" />}
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
@@ -166,7 +166,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 {status === 'outdated' && (
                     <div className="space-y-3 p-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-200 dark:border-rose-800/60 animate-in fade-in duration-200">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                            <AppIcon name="alert" size="lg" className="text-rose-600 mt-0.5" />
                             <div className="text-xs space-y-1.5">
                                 <p className="font-bold text-rose-900 dark:text-rose-200" data-testid="bi-sync-can-cap-nhat">
                                     Cần cập nhật Userscript{latestVersion ? ` lên bản mới nhất v${latestVersion}` : ''}
@@ -183,7 +183,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                         onClick={() => window.open(USERSCRIPT_URL, '_blank')}
                                         className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                                     >
-                                        <ExternalLink className="w-3.5 h-3.5" />
+                                        <AppIcon name="externalLink" size="sm" />
                                         <span>Mở trang cập nhật Userscript{latestVersion ? ` v${latestVersion}` : ''}</span>
                                     </Button>
                                     <Button
@@ -234,9 +234,9 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                                     : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                         }`}>
                                             {isCompleted ? (
-                                                <Check className="w-4 h-4 stroke-[2.5]" />
+                                                <AppIcon name="check" size="md" className="stroke-[2.5]" />
                                             ) : isCurrent ? (
-                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                <AppIcon name="loading" size="md" spin />
                                             ) : (
                                                 viTri + 1
                                             )}
@@ -280,7 +280,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                     <div className="p-3 rounded border border-sky-200 bg-sky-50" data-testid="bi-sync-tien-trinh">
                         <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-bold text-sky-700 flex items-center gap-1.5">
-                                <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0" />
+                                <AppIcon name="loading" size="sm" spin />
                                 Tự động cập nhật BI
                             </span>
                             <span className="text-[11px] font-bold text-slate-500 tabular-nums">
@@ -302,7 +302,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 {/* THÀNH CÔNG */}
                 {status === 'success' && (
                     <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 text-emerald-800 dark:text-emerald-200 text-xs font-medium">
-                        <Check className="w-5 h-5 text-emerald-600 shrink-0" />
+                        <AppIcon name="check" size="lg" className="text-emerald-600" />
                         <span>Toàn bộ {steps.length} báo cáo {isRealtime ? 'Realtime' : 'Luỹ kế'} đã được tự động dán và lưu trữ thành công vào hệ thống!</span>
                     </div>
                 )}
@@ -310,7 +310,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                 {/* LỖI */}
                 {status === 'error' && (
                     <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 flex items-center gap-3 text-rose-800 dark:text-rose-200 text-xs">
-                        <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
+                        <AppIcon name="alert" size="lg" className="text-rose-600" />
                         <div>
                             <div className="font-bold">Có lỗi xảy ra trong quá trình thu thập:</div>
                             <div className="text-[11px] opacity-90 mt-0.5">{errorMessage || 'Không thể kết nối hoặc phiên đăng nhập MWG hết hạn.'}</div>

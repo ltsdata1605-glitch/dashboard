@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
-import { Zap, Sparkles, Copy, Check, ExternalLink, BookmarkPlus, MousePointerClick, Info, ArrowRight, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export const AUTO_CLICK_BOOKMARKLET_CODE = `javascript:(function(){(async function(){function t(m,e,d=5e3){var n=document.getElementById("__copy_wait_toast__");n||((n=document.createElement("div")).id="__copy_wait_toast__",Object.assign(n.style,{position:"fixed",top:"20px",right:"20px",zIndex:"2147483647",padding:"14px 20px",borderRadius:"10px",fontFamily:"system-ui, -apple-system, sans-serif",fontSize:"14px",fontWeight:"600",color:"white",boxShadow:"0 6px 20px rgba(0,0,0,0.3)",transition:"all 0.3s ease",maxWidth:"360px",lineHeight:"1.4"}),document.body.appendChild(n));n.style.background=e?"linear-gradient(135deg, rgb(220,38,38), rgb(185,28,28))":"linear-gradient(135deg, rgb(22,163,74), rgb(21,128,61))";n.innerHTML=m;n.style.opacity="1";clearTimeout(n.__timer);e||!d||(n.__timer=setTimeout(function(){n.style.opacity="0"},d))}const sleep=ms=>new Promise(r=>setTimeout(r,ms)),BATCH_SIZE=25,SPINNERS=['[id="Loading"]','.overload-wait','.dx-loadpanel:not(.dx-state-invisible)','.dx-loadpanel-content:not(.dx-state-invisible)','.dx-loadindicator','.ant-spin-spinning','.animate-spin','svg.animate-spin','[class*="animate-spin"]','svg.lucide-loader','svg.lucide-loader-2','svg.lucide-spinner','[role="progressbar"]','[aria-busy="true"]','.el-loading-mask:not([style*="display: none"])'].join(", ");function isVis(el){if(!el)return!1;if(null!==el.offsetParent)return!0;var r=el.getBoundingClientRect();return r.width>0&&r.height>0}function isSpinVis(el){if(!el)return!1;var s=window.getComputedStyle(el);if("none"===s.display||"hidden"===s.visibility||parseFloat(s.opacity||"1")<=0.05)return!1;var r=el.getBoundingClientRect();return!(r.width<=0||r.height<=0)&&(null!==el.offsetParent||"fixed"===s.position)}function isAnyLoading(){var sp=document.querySelectorAll(SPINNERS);for(var i=0;i<sp.length;i++){if(isSpinVis(sp[i]))return!0}var btns=document.querySelectorAll("button, [role='button'], span");for(var j=0;j<btns.length;j++){var b=btns[j];if(b.children.length<=3&&isVis(b)&&(b.textContent||"").indexOf("Đang tải")>-1)return!0}return!1}function isOpened(el){if(el.classList&&(el.classList.contains("dx-datagrid-group-opened")||el.classList.contains("ant-table-row-expand-icon-expanded")))return!0;if("true"===el.getAttribute("aria-expanded"))return!0;var r=el.closest("tr, .dx-row, .ant-table-row, button, a, [role='button'], .cursor-pointer, td, div");return!(!r||"true"!==r.getAttribute("aria-expanded")&&"open"!==r.getAttribute("data-state")&&!r.querySelector(".fa-minus, .ant-table-row-expand-icon-expanded, button[aria-expanded='true']")&&(!r.classList||!r.classList.contains("dx-datagrid-group-opened")))}function getCandidates(){var fa=Array.from(document.querySelectorAll(".fa-plus, .fa-plus-square, .fa-plus-circle, [class*='fa-plus'], [class*='plus-circle']")).filter(el=>el.closest("table")),dx=Array.from(document.querySelectorAll(".dx-datagrid-group-closed, td.dx-command-expand.dx-datagrid-group-closed, tr.dx-group-row:not(.dx-datagrid-group-opened) .dx-command-expand")),ant=Array.from(document.querySelectorAll("button.ant-table-row-expand-icon-collapsed, .ant-table-row-expand-icon-collapsed, button.ant-table-row-expand-icon[aria-expanded='false'], button[aria-label*='Mở rộng'][aria-expanded='false'], [aria-label*='Mở rộng']:not([aria-expanded='true']), [aria-label*='expand' i]:not([aria-expanded='true'])"));return Array.from(new Set([...fa,...dx,...ant])).filter(isVis).filter(el=>!(el.classList&&(el.classList.contains("fa-minus")||el.classList.contains("ant-table-row-expand-icon-expanded")))).filter(el=>"true"!==el.getAttribute("aria-expanded")).filter(el=>!isOpened(el))}function triggerClick(el){var target=el.closest("button, a, [role='button'], td.dx-command-expand, td")||el;try{target.dispatchEvent(new MouseEvent("mousedown",{bubbles:!0,cancelable:!0,view:window}));target.dispatchEvent(new MouseEvent("mouseup",{bubbles:!0,cancelable:!0,view:window}))}catch(x){}try{target.click()}catch(x){}target!==el&&function(){try{el.click()}catch(y){}}()}async function waitSpinners(maxWait=15000,poll=100){await sleep(350);var start=Date.now(),clean=0;while(Date.now()-start<maxWait){if(isAnyLoading()){clean=0}else{clean++;if(clean>=2)break}await sleep(poll)}}async function forceRender(){var tbl=document.querySelector('.ant-table-body, .dx-datagrid-rowsview, [class*="table-body"]');tbl&&tbl.scrollHeight>tbl.clientHeight&&(tbl.scrollTop=tbl.scrollHeight,await sleep(40),tbl.scrollTop=0);var sc=document.scrollingElement||document.documentElement,step=Math.max(1.5*(window.innerHeight||800),600),pos=0,guard=0;while(pos<sc.scrollHeight&&guard<35){window.scrollTo(0,pos),await sleep(25),pos+=step,guard++}window.scrollTo(0,sc.scrollHeight),await sleep(40),window.scrollTo(0,0),await sleep(40)}const NL=String.fromCharCode(10);function sanitize(t){return t.split(NL).map(function(l){return l.trim()}).filter(function(l){if(!l||l==="undefined")return!1;var f=l.charAt(0);return!("⚡"===f||"⏳"===f||"⏹"===f||"✅"===f||"📋"===f||"🔘"===f)&&(0!==l.indexOf("Đã mở:")&&0!==l.indexOf("Còn lại:")&&!(l.toLowerCase().indexOf("click+")>-1))}).join(NL)}function extractText(){var exc=Array.from(document.querySelectorAll('.dx-datagrid-content-fixed, .dx-hidden, [id="acp-status-box"], [id="acp-float-btn"], [id="__copy_wait_toast__"]')),prev=exc.map(el=>el.style.display);exc.forEach(el=>{el.style.display="none"});var txt="";try{var sel=window.getSelection(),rg=document.createRange();rg.selectNodeContents(document.body),sel.removeAllRanges(),sel.addRange(rg),txt=sel.toString(),sel.removeAllRanges()}catch(e){txt=document.body.innerText||document.body.textContent||""}return exc.forEach((el,i)=>{el.style.display=prev[i]}),sanitize(txt)}function lbl(b){var d=Array.from(b.childNodes).filter(n=>3===n.nodeType).map(n=>n.textContent).join("");return(d.trim()||(b.textContent||"").trim()).replace(/[ \\t\\r\\n]+/g," ")}var TOGGLE_SEL='button, [role="button"], label, a[role="button"], div[class*="cursor-pointer"], span[class*="cursor-pointer"]';function norm(x){return String(x).toLowerCase().replace(/[ \\t\\r\\n]+/g," ").trim()}function findBtn(al){var as=(Array.isArray(al)?al:[al]).map(norm),ns=Array.from(document.querySelectorAll(TOGGLE_SEL)).filter(function(e){return"acp-float-btn"!==e.id&&!e.closest('[id="acp-status-box"]')&&isVis(e)});var lof=function(e){return norm(lbl(e))};return ns.find(function(e){return as.indexOf(lof(e))>-1})||ns.find(function(e){var t=lof(e);return as.some(function(a){return t.indexOf(a)>-1})&&t.length<=24})||null}function ariaOn(b){return"true"===b.getAttribute("aria-pressed")||"true"===b.getAttribute("aria-checked")||"true"===b.getAttribute("aria-selected")||"on"===b.getAttribute("data-state")||"checked"===b.getAttribute("data-state")}function tgState(e){var i=e.querySelector('input[type="checkbox"], input[type="radio"]')||("INPUT"===e.tagName?e:null);if(i)return i.checked?"on":"off";if(ariaOn(e))return"on";if(["aria-pressed","aria-checked","aria-selected"].some(function(a){return"false"===e.getAttribute(a)}))return"off";if("off"===e.getAttribute("data-state")||"unchecked"===e.getAttribute("data-state"))return"off";var cls=e.className&&void 0!==e.className.baseVal?e.className.baseVal:String(e.className||""),m=e.querySelector(":scope > span");if(m&&/rounded|border/.test(String(m.className||""))){var tk=""!==m.textContent.trim()||!!m.querySelector("svg, i, img");if(tk)return"on";if(/border-slate-200|border-gray-200|border-neutral-200|bg-white/.test(cls))return"off"}if(/(bg-(blue|sky|primary|indigo|emerald|green)-[45678]00)|text-white|bg-blue-50|text-blue-700/.test(cls))return"on";if(/bg-white|bg-transparent|bg-gray-50|bg-slate-50/.test(cls))return"off";return"unknown"}async function ensureToggles(){var on=[],fail=[],nf=[],unk=[],list=[["Trả góp",["trả góp","tra gop","trả chậm","tra cham"]],["DT quy đổi",["dt quy đổi","dt quy doi","doanh thu quy đổi","dtqđ","dt qđ"]]];for(var k=0;k<list.length;k++){var name=list[k][0],al=list[k][1],b=findBtn(al);if(!b){nf.push(name);continue}var st0=tgState(b);if("on"===st0)continue;if("unknown"===st0){unk.push(name);continue}t('⚡ Đang bật "'+name+'"...',!1,0);triggerClick(b);await sleep(120);await waitSpinners(5000);var st=Date.now(),ok=!1;while(Date.now()-st<1500){var f=findBtn(al);if(!f||"off"!==tgState(f)){ok=!0;break}await sleep(50)}(ok?on:fail).push(name)}return{on:on,fail:fail,nf:nf,unk:unk}}try{var tg=await ensureToggles(),pending=getCandidates(),total=pending.length,clicked=0;if(total>0){t("⚡ Đang mở cấp hiện tại: "+total+" mục...",!1,0);for(var i=0;i<total;i++){var btn=pending[i];try{isVis(btn)&&!isOpened(btn)&&(triggerClick(btn),clicked++)}catch(e){}var isBatchEnd=(i+1)/BATCH_SIZE===Math.floor((i+1)/BATCH_SIZE)||i===total-1;var isStep=(i+1)/5===Math.floor((i+1)/5);(isBatchEnd||isStep)&&t("⚡ Đang mở: "+clicked+" / "+total+" mục...",!1,0);if(!isBatchEnd){await sleep(2);continue}await waitSpinners(),await sleep(10)}t("⚡ Đang cuộn hiển thị toàn bộ dòng...",!1,0),await forceRender(),await sleep(60)}t("⏳ Đang trích xuất dữ liệu vào clipboard...",!1,0);var text=extractText();if(!text||0===text.length)return void t("⚠️ Không có dữ liệu để copy.",!0,5e3);if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(text);else if(!document.execCommand("copy"))throw new Error("Trình duyệt không hỗ trợ copy tự động.");var still=getCandidates().length,remainMsg=still>0?'<br/><span style="font-size:12px;opacity:0.9;">Còn '+still+' mục cấp con — bấm Auto Click+ lần nữa để mở tiếp.</span>':"",openedMsg=clicked>0?"Đã mở "+clicked+" mục · ":"",tgMsg=(tg.on.length?'<br/><span style="font-size:12px;opacity:0.9;">🔘 Đã tự bật: '+tg.on.join(", ")+"</span>":"")+(tg.fail.length?'<br/><span style="font-size:12px;opacity:0.9;">⚠️ Không bật được: '+tg.fail.join(", ")+" — bật tay rồi bấm lại.</span>":"")+(tg.nf.length?'<br/><span style="font-size:12px;opacity:0.9;">⚠️ Không thấy nút: '+tg.nf.join(", ")+" trên trang này.</span>":"")+(tg.unk.length?'<br/><span style="font-size:12px;opacity:0.9;">⚠️ Không rõ trạng thái: '+tg.unk.join(", ")+" — bật tay nếu đang tắt.</span>":"");t("✅ "+openedMsg+"Đã copy xong "+text.length.toLocaleString("vi-VN")+" ký tự!"+tgMsg+remainMsg,!1,6e3)}catch(err){t("❌ Thất bại: "+err.message,!0,6e3)}})()})()`;
@@ -35,7 +35,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
             title={
                 <div className="flex items-center gap-2.5">
                     <div className="p-2 rounded-xl bg-gradient-to-tr from-sky-600 to-sky-500 text-white shadow-sm shadow-sky-500/30">
-                        <Zap className="h-5 w-5" />
+                        <AppIcon name="quick" size="lg" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
             footer={
                 <div className="flex items-center justify-between w-full">
                     <span className="text-[11px] text-slate-400 flex items-center gap-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-sky-500" />
+                        <AppIcon name="securityOk" size="sm" className="text-sky-500" />
                         An toàn 100% • Chạy trực tiếp trên trình duyệt • Không lưu dữ liệu ra ngoài
                     </span>
                     <Button
@@ -73,7 +73,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                 {/* LỢI ÍCH TÍNH NĂNG */}
                 <div className="p-3.5 rounded-xl bg-gradient-to-r from-sky-50/80 via-sky-50/50 to-sky-50/50 dark:from-sky-950/20 dark:via-sky-950/20 dark:to-sky-950/20 border border-sky-200/60 dark:border-sky-800/40">
                     <div className="flex items-start gap-2.5">
-                        <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
+                        <AppIcon name="sparkles" size="md" className="text-sky-600 mt-0.5" />
                         <div className="text-xs space-y-1">
                             <p className="font-semibold text-sky-900 dark:text-sky-200">
                                 Giải pháp lấy dữ liệu chuẩn xác 100% (Đồng bộ công nghệ CopyAll):
@@ -104,7 +104,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-xl border-2 border-dashed border-sky-300 dark:border-sky-700">
                                 <div>
                                     <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                                        <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                                        <AppIcon name="sparkles" size="sm" className="text-sky-600" />
                                         <span>Copy All (Khuyên dùng)</span>
                                     </div>
                                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -121,7 +121,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                     className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
-                                    <Sparkles className="w-4 h-4 text-sky-100" />
+                                    <AppIcon name="sparkles" size="md" className="text-sky-100" />
                                     <span>⚡ Copy All 1-Click</span>
                                 </a>
                             </div>
@@ -130,7 +130,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             <div className="flex flex-col justify-between gap-2.5 p-3 bg-sky-50/60 dark:bg-sky-950/30 rounded-xl border-2 border-dashed border-sky-300 dark:border-sky-700">
                                 <div>
                                     <div className="flex items-center gap-1.5 font-bold text-xs text-slate-800 dark:text-slate-200">
-                                        <Copy className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                                        <AppIcon name="copy" size="sm" className="text-sky-600" />
                                         <span>CopyAll (Thuần Copy)</span>
                                     </div>
                                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -147,7 +147,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                     className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-500 hover:to-sky-500 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
-                                    <Copy className="w-4 h-4 text-sky-100" />
+                                    <AppIcon name="copy" size="md" className="text-sky-100" />
                                     <span>📋 CopyAll Toàn Trang</span>
                                 </a>
                             </div>
@@ -193,7 +193,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                     {/* SAO CHÉP MÃ CODE */}
                     <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2">
                         <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
-                            <Copy className="w-3.5 h-3.5 text-sky-500" />
+                            <AppIcon name="copy" size="sm" className="text-sky-500" />
                             <span>Sao chép mã Bookmarklet thủ công</span>
                         </div>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">
@@ -206,7 +206,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 onClick={() => handleCopyCode(AUTO_CLICK_BOOKMARKLET_CODE, 'autoclick', 'Copy All')}
                                 className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-lg border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
                             >
-                                {copiedKey === 'autoclick' ? <Check className="w-3.5 h-3.5 text-sky-600" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                {copiedKey === 'autoclick' ? <AppIcon name="check" size="sm" className="text-sky-600" /> : <AppIcon name="sparkles" size="sm" />}
                                 <span>{copiedKey === 'autoclick' ? 'Đã sao chép Copy All!' : 'Sao chép mã Copy All (Có mở [+])'}</span>
                             </Button>
                             <Button
@@ -215,7 +215,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                 onClick={() => handleCopyCode(COPY_ALL_BOOKMARKLET_CODE, 'copyall', 'CopyAll')}
                                 className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 dark:text-sky-300 rounded-lg border border-sky-200 dark:border-sky-800 text-xs font-semibold active:scale-95 transition-all"
                             >
-                                {copiedKey === 'copyall' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                                {copiedKey === 'copyall' ? <AppIcon name="check" size="sm" className="text-emerald-600" /> : <AppIcon name="copy" size="sm" />}
                                 <span>{copiedKey === 'copyall' ? 'Đã sao chép CopyAll!' : 'Sao chép mã CopyAll (Thuần túy)'}</span>
                             </Button>
                         </div>
@@ -225,7 +225,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                     <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-slate-900/50 space-y-2 flex flex-col justify-between">
                         <div>
                             <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
-                                <MousePointerClick className="w-3.5 h-3.5 text-slate-500" />
+                                <AppIcon name="click" size="sm" className="text-slate-500" />
                                 <span>Userscript Tampermonkey (v4.2)</span>
                             </div>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
@@ -238,7 +238,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                             onClick={() => window.open('/scripts/mwg-auto-thu-thap-diem-thuong.user.js', '_blank')}
                             className="w-full flex items-center justify-center gap-1.5 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 dark:bg-slate-950/60 dark:hover:bg-slate-900/60 dark:text-slate-300 rounded-lg border border-slate-200 dark:border-slate-800 text-xs font-semibold active:scale-95 transition-all"
                         >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <AppIcon name="externalLink" size="sm" />
                             <span>Cài đặt / Cập nhật Userscript (bản mới nhất)</span>
                         </Button>
                     </div>

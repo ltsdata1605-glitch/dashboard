@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { startExportJob } from '../../../../components/shared/export';
 import { Employee, Criterion, CompetitionHeader, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
 import { shortenName, isSameEmployee } from '../../utils/nhanVienHelpers';
 import { getCartoonAvatar } from '../../utils/cartoonAvatars';
 import { getBonusForEmployee } from '../../utils/bonusParser';
-import { ChevronDownIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { useEmployeeAvatar } from '../../hooks/useEmployeeAvatar';
 import { Button } from '../../../../components/shared/ui/Button';
@@ -128,7 +128,7 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
                 />
             )}
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white no-print">
-                <CameraIcon className="w-4 h-4 drop-shadow-md" />
+                <AppIcon name="exportImage" size="md" className="drop-shadow-md" />
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
         </div>
@@ -160,7 +160,7 @@ const EmployeeSelector: React.FC<{
         <div className="relative w-full max-w-[200px]" ref={ref}>
             <Button variant="unstyled" size="none" onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full px-3 py-1.5 text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded shadow-sm">
                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : placeholder}</span>
-                <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400 shrink-0" />
+                <AppIcon name="chevronDown" size="sm" className="ml-2 text-slate-400" />
             </Button>
             {isOpen && (
                 <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
@@ -411,10 +411,10 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
                     <Button variant="unstyled" size="none" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
-                        <ImagesIcon className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-sky-500' : ''}`} />
+                        <AppIcon name="exportBatch" size="md" className={isBatchExporting ? 'animate-pulse text-sky-500' : ''} />
                     </Button>
                     <Button variant="unstyled" size="none" onClick={() => handleExportPNG()} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
-                        <CameraIcon className="w-4 h-4" />
+                        <AppIcon name="exportImage" size="md" />
                     </Button>
                 </div>
             </div>

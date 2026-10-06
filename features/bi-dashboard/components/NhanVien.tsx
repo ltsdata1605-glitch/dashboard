@@ -1,6 +1,6 @@
 import { useWorker } from "../hooks/useWorker";
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ArchiveBoxIcon, BuildingStorefrontIcon } from './Icons';
 import { Tab, Employee, Criterion, Version, CompetitionHeader } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
@@ -21,7 +21,6 @@ import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../servi
 import { Tabs } from '../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../components/shared/ui/MultiSelectDropdown';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import { Icon } from '../../../components/common/Icon';
 import { Button } from '../../../components/shared/ui/Button';
 import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
 import { MOBILE_GUTTER, TOUCH_TARGET } from '../utils/mobileUi';
@@ -417,7 +416,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         <MultiSelectDropdown
                             className="w-auto border-r border-slate-200 dark:border-slate-700"
                             triggerClassName="rounded-l-full"
-                            icon={<BuildingStorefrontIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-sky-500 flex-shrink-0" />}
+                            icon={<AppIcon name="store" size="md" className="text-sky-500" />}
                             triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                             count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
                             allLabel="Chọn tất cả"
@@ -433,7 +432,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         <MultiSelectDropdown
                             className="w-auto"
                             triggerClassName="rounded-r-full"
-                            icon={<ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />}
+                            icon={<AppIcon name="restore" size="md" className="text-sky-500" />}
                             triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
                             count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}
                             allLabel="All"
@@ -454,7 +453,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             {!hasAnalysisEmployees ? (
                 <div className="bg-white dark:bg-slate-800 border border-amber-200 dark:border-amber-800/60 rounded-2xl p-8 sm:p-12 text-center space-y-5 shadow-xs">
                     <div className="w-16 h-16 mx-auto rounded-2xl bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-xs">
-                        <Icon name="users" size={8} />
+                        <AppIcon name="users" size="state" />
                     </div>
                     <div className="max-w-md mx-auto space-y-2">
                         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
@@ -471,7 +470,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                             className="font-bold text-xs sm:text-sm px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm inline-flex items-center gap-2"
                         >
                             <span>Chuyển đến Phân Tích để cập nhật</span>
-                            <Icon name="arrow-right" size={4} />
+                            <AppIcon name="next" size="md" />
                         </Button>
                     </div>
                 </div>

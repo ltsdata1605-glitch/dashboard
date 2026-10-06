@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import { XIcon, TrashIcon, PencilIcon, ResetIcon, UploadIcon } from './Icons';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
@@ -100,7 +100,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                         className="flex-none bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400"
                         title="Khôi phục mặc định"
                     >
-                        <ResetIcon className="h-4 w-4" />
+                        <AppIcon name="reset" size="md" />
                     </Button>
                     <Button 
                         variant="secondary"
@@ -141,7 +141,7 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                     <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors">
                                         <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
                                         <Button variant="unstyled" size="none" onClick={() => toggleEmp(empName)} className="p-0.5 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title="Bỏ chọn">
-                                            <XIcon className="h-3.5 w-3.5" />
+                                            <AppIcon name="close" size="sm" />
                                         </Button>
                                     </span>
                                 ))}
@@ -187,11 +187,11 @@ const CreateDeptModal: React.FC<ManualDeptModalProps> = ({
                                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-transparent hover:border-rose-200 dark:hover:border-rose-800 transition-colors shrink-0"
                                         title="Xoá khỏi danh sách"
                                     >
-                                        <TrashIcon className="h-3.5 w-3.5" />
+                                        <AppIcon name="delete" size="sm" />
                                     </Button>
                                 </div>
                             )) : <div className="flex flex-col items-center justify-center py-8 opacity-60">
-                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
+                                    <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><AppIcon name="close" size="md" className="text-slate-400" /></div>
                                     <p className="text-center text-[11px] font-black uppercase tracking-widest text-slate-500">Nhân sự đã được phân bổ hết</p>
                                 </div>}
                         </div>
@@ -246,7 +246,7 @@ const CompactTargetItem: React.FC<{
                 <div className="flex items-center justify-between">
                     <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{label}</span>
                     <Button variant="ghost" size="icon" onClick={onReset} title="Reset về mặc định" className="text-slate-400 hover:text-rose-500 h-5 w-5 p-0 shrink-0">
-                        <ResetIcon className="h-3.5 w-3.5" />
+                        <AppIcon name="reset" size="sm" />
                     </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
@@ -386,7 +386,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                         className="min-h-11 sm:min-h-0 shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors"
                         title="Mở hộp chọn file YCX (giống nút File YCX ở chức năng Phân Tích)"
                     >
-                        <UploadIcon className="h-3.5 w-3.5" />
+                        <AppIcon name="upload" size="sm" />
                         <span>Nhập nhân viên (File YCX)</span>
                     </Button>
                 </div>
@@ -418,7 +418,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                 }
                             });
                         }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
-                            <ResetIcon className="h-4 w-4" />
+                            <AppIcon name="reset" size="md" />
                         </Button>
                     </div>
                     <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => { setTotalTarget(v); addUpdate(`targethero-${safeName}-total`, `Điều chỉnh Target DTQĐ - ${supermarketName}`, 'Thiết lập và cập nhật dữ liệu cho siêu thị'); }} onReset={() => setTotalTarget(130)} colorTheme="sky" perPerson={totalAllocatedEmployees > 0 ? adjustedTarget / totalAllocatedEmployees : undefined} />
@@ -453,10 +453,10 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     }
                                 });
                             }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
-                                <ResetIcon className="h-4 w-4" />
+                                <AppIcon name="reset" size="md" />
                             </Button>
                             <Button variant="unstyled" size="none" onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 justify-center flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Chỉnh sửa bộ phận">
-                                <PencilIcon className="h-4 w-4" />
+                                <AppIcon name="edit" size="md" />
                             </Button>
                         </div>
                     </div>
@@ -478,7 +478,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3.5 w-3.5" /></Button>
+                                                    <Button variant="unstyled" size="none" onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><AppIcon name="edit" size="sm" /></Button>
                                                     <Button variant="unstyled" size="none" onClick={() => {
                                                         showConfirm({
                                                             title: 'Xóa Bộ phận',
@@ -495,7 +495,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                                 closeConfirm();
                                                             }
                                                         });
-                                                    }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3.5 w-3.5" /></Button>
+                                                    }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-rose-600 hover:bg-rose-100 hover:border-rose-300 transition-colors" title="Xoá nhóm"><AppIcon name="delete" size="sm" /></Button>
                                                 </div>
                                             )}
                                         </div>

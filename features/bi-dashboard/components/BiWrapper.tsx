@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import { resolveIconName } from '../../../components/shared/ui/icon/legacyIconNames';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { readPendingAutoSync } from '../services/biAutoSyncService';
 import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import { Icon } from '../../../components/common/Icon';
 import { TOUCH_TARGET } from '../utils/mobileUi';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
@@ -231,7 +232,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     }`}
                                     title={tab.label || tab.id}
                                 >
-                                    <Icon name={tab.icon} size={4} />
+                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
                                 </Button>
                             );
                         })}
@@ -256,7 +257,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
                                     title={tab.label}
                                 >
-                                    <Icon name={tab.icon} size={4} />
+                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
                                     <span>{tab.label}</span>
                                 </Button>
                             );

@@ -7222,6 +7222,14 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   - Registry 201 icon (thêm web, apiKey, cloud, localStorage, panelClose, click, call, takePhoto).
   - Test: `tests/e2e/icon-audit-man-goc.spec.ts` — 8 màn × (390, 1366): 0 icon ngoài AppIcon, 0 lệch dọc >1px, 0 icon
     nhỏ hơn md trong nút có chữ, 0 nút chỉ-icon dưới 44px (tính cả vùng chạm mở rộng `after:-inset-*`).
-- [ ] **4** — Phân tích, Report BI, Báo cáo, Check thưởng; xoá `features/bi-dashboard/components/Icons.tsx`.
+- [x] **4** — Report BI (2026-10-06): toàn bộ `features/bi-dashboard` hết icon kiểu cũ, import thẳng lucide và
+  SVG viết thẳng; ĐÃ XOÁ `features/bi-dashboard/components/Icons.tsx` (32 SVG tự vẽ). (Phân tích, Check thưởng, Báo cáo
+  đã xong ở Giai đoạn 3.)
+  - Đồng hồ "Quỹ thời gian", mũi tên mở/thu gọn ngành hàng, ô tích "Target sau chỉnh", xoá chip nhóm: SVG tay → AppIcon.
+  - Vùng chạm điện thoại: nút đổi avatar (36→44px, mở rộng vô hình), nút chọn chế độ xem Thưởng (32→44px), nút xoá
+    siêu thị tuỳ chỉnh (18→44px, mở rộng vô hình) — giữ nguyên mật độ dòng bảng.
+  - Icon trong nút có chữ → md: chọn siêu thị, Đặt lại, Thêm siêu thị, Copy All.
+  - Bài audit tách thành `tests/e2e/helpers/iconAudit.ts`, thêm `tests/e2e/icon-audit-bi.spec.ts` (Siêu thị, 4 tab
+    Nhân viên, Cập nhật × 390/1366).
 - [ ] **5** — Landing, bộ xuất ảnh, In Sticker (xoá `features/sticker-event/Icons.tsx`), Phân Ca, Bot LINE, Khai thác;
   xoá `components/common/Icon.tsx` khi `iconLegacyCall` về 0.

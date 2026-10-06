@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import {
     IndustryKpiCardConfig,
     IndustryKpiMetricData,
@@ -10,7 +11,6 @@ import { IndustryTreeNode } from '../../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { IndustryKpiCard, IndustryKpiFocusMetric } from './IndustryKpiCard';
 import { AddIndustryKpiModal } from './AddIndustryKpiModal';
-import { Plus, RotateCcw } from 'lucide-react';
 import { Button } from '../../../../../components/shared/ui/Button';
 
 interface IndustryKpiGridProps {
@@ -176,7 +176,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         className="h-7 w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95"
                         title="Khôi phục 12 thẻ mặc định"
                     >
-                        <RotateCcw className="w-3.5 h-3.5" />
+                        <AppIcon name="reset" size="sm" />
                     </Button>
                     <Button
                         type="button"
@@ -186,7 +186,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         className="h-7 inline-flex items-center gap-1.5 px-3 rounded-lg text-[10.5px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all cursor-pointer shadow-2xs active:scale-95"
                         title="Tạo / Thêm thẻ KPI"
                     >
-                        <Plus className="w-3.5 h-3.5" />
+                        <AppIcon name="add" size="sm" />
                         <span>Thêm thẻ KPI</span>
                     </Button>
                 </div>
