@@ -104,7 +104,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
                             onClick={handleOpenLink}
                             className="flex items-center gap-1.5 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 border-sky-200 dark:border-sky-800"
                         >
-                            <AppIcon name="externalLink" size="sm" />
+                            <AppIcon name="externalLink" size="md" />
                             <span>Mở liên kết</span>
                         </Button>
                         {isCustomized && (
@@ -141,7 +141,7 @@ export const TileLinkModal: React.FC<TileLinkModalProps> = ({
                             disabled={isSaving}
                             className="flex items-center gap-1.5 text-xs font-semibold shadow-sm"
                         >
-                            <AppIcon name="save" size="sm" />
+                            <AppIcon name="save" size="md" />
                             <span>{isSaving ? 'Đang lưu...' : 'Lưu vào Firebase'}</span>
                         </Button>
                     </div>

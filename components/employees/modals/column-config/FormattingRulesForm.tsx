@@ -86,7 +86,7 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
                                     </div>
                                 </div>
                             )}
-                            <Button variant="ghost" onClick={() => removeFormattingRule(rule.id)} className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 text-rose-400 hover:text-rose-700 hover:bg-rose-50 p-0">
+                            <Button variant="ghost" onClick={() => removeFormattingRule(rule.id)} aria-label="Xoá luật định dạng" className="w-11 h-11 sm:w-10 sm:h-10 flex-shrink-0 text-rose-400 hover:text-rose-700 hover:bg-rose-50 p-0">
                                 <AppIcon name="delete" size="md" />
                             </Button>
                         </div>
