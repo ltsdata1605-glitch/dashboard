@@ -10,6 +10,10 @@ export interface SessionProfile {
     departmentId: string | null;
     employeeName: string | null;
     expiresAt: string | null;
+    /** Claims thật trong token (functions/src/claims.ts — chưa duyệt/hết hạn thì khác role/departmentId).
+     *  Không có ở bản Cloud Function cũ → client dùng lại role/departmentId. */
+    claimRole?: string;
+    claimDepartmentId?: string | null;
 }
 
 interface RequestAccessInput {

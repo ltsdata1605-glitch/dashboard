@@ -4,6 +4,7 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, auth } from './firebaseAdmin';
 import { notifyAdminsAndManagers } from './notifications';
 import { normalizeSuperAdminDept } from './superAdminDept';
+import { effectiveRootClaims, mergeCustomClaims } from './claims';
 
 // Chỉ tồn tại phía server — không còn hardcode trong bundle client (xem
 // contexts/AuthContext.tsx bản cũ, dòng ~94).
@@ -18,6 +19,10 @@ interface SessionProfile {
   departmentId: string | null;
   employeeName: string | null;
   expiresAt: string | null;
+  /** Giá trị claims THẬT trong token (khác role/departmentId khi chưa duyệt/hết hạn) — client so
+   *  với token đang cache để quyết định có cần force-refresh không. */
+  claimRole: string;
+  claimDepartmentId: string | null;
 }
 
 // Thay thế toàn bộ khối đọc/ghi Firestore trực tiếp trong
@@ -104,10 +109,8 @@ export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
   // Auth SDK) thay vì tuần tự — 2 thao tác độc lập nhau, gộp lại bớt 1 round-trip trong
   // đường găng mà CLIENT phải chờ trước khi thấy dashboard (resolveSession chạy trên MỌI
   // lần mở app, xem implementation_plan.md mục 40).
-  await Promise.all([
-    writePromise,
-    auth.setCustomUserClaims(uid, { role, departmentId: departmentId ?? null }),
-  ]);
+  const claims = effectiveRootClaims(role, status, departmentId);
+  await Promise.all([writePromise, mergeCustomClaims(uid, claims)]);
 
   const profile: SessionProfile = {
     role,
@@ -115,6 +118,8 @@ export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
     departmentId,
     employeeName,
     expiresAt: expiresAt ? expiresAt.toDate().toISOString() : null,
+    claimRole: claims.role,
+    claimDepartmentId: claims.departmentId,
   };
   return profile;
 });
@@ -178,7 +183,7 @@ export const demoteExpiredUsers = onSchedule('every 24 hours', async () => {
     const role = docSnap.get('role');
     if (role === 'pending' || role === 'admin') continue;
     batch.update(docSnap.ref, { role: 'pending', status: 'expired' });
-    await auth.setCustomUserClaims(docSnap.id, { role: 'pending', departmentId: null });
+    await mergeCustomClaims(docSnap.id, { role: 'pending', departmentId: null });
     count += 1;
   }
   if (count > 0) {

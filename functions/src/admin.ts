@@ -2,6 +2,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp, QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { db, auth } from './firebaseAdmin';
 import { notifyUser } from './notifications';
+import { effectiveRootClaims, mergeCustomClaims } from './claims';
 
 type Role = 'admin' | 'manager' | 'employee' | 'pending' | 'blocked';
 type Status = 'pending' | 'approved' | 'rejected' | 'new' | 'expired' | 'blocked';
@@ -88,8 +89,10 @@ export const adminUpdateUser = onCall(async (request) => {
   }
 
   const finalRole = (role ?? (snap.get('role') as Role) ?? 'pending');
+  const finalStatus = (status ?? (snap.get('status') as Status) ?? null);
   const finalDepartmentId = (departmentId ?? (snap.get('departmentId') as string) ?? null);
-  await auth.setCustomUserClaims(targetUid, { role: finalRole, departmentId: finalDepartmentId || null });
+  // Audit S04: trước đây đặt status 'expired' (nút Thu hồi) nhưng claim vẫn giữ role manager + Kho.
+  await mergeCustomClaims(targetUid, effectiveRootClaims(finalRole, finalStatus, finalDepartmentId));
 
   if (notify) {
     await notifyUser(targetUid, notify);

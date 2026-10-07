@@ -160,9 +160,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // claims khác (mới đăng nhập lần đầu, hoặc admin/quản lý vừa đổi quyền/Kho) vì
                     // firestore.rules dùng request.auth.token.role — token cũ sẽ bị permission-denied.
                     const currentTokenResult = await currentUser.getIdTokenResult(false).catch(() => null);
+                    const expectedRole = profile.claimRole ?? profile.role;
+                    const expectedDept = profile.claimDepartmentId !== undefined ? profile.claimDepartmentId : profile.departmentId;
                     const claimsMatchProfile = currentTokenResult
-                        && currentTokenResult.claims.role === profile.role
-                        && (currentTokenResult.claims.departmentId ?? null) === profile.departmentId;
+                        && currentTokenResult.claims.role === expectedRole
+                        && (currentTokenResult.claims.departmentId ?? null) === (expectedDept ?? null);
                     if (!claimsMatchProfile) {
                         await currentUser.getIdToken(true);
                     }

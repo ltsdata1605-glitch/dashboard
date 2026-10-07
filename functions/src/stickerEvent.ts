@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue } from 'firebase-admin/firestore';
 import { auth, stickerDb } from './firebaseAdmin';
+import { mergeCustomClaims } from './claims';
 
 // Username dành riêng cho Super Admin — CHỈ còn là nhãn hiển thị/khoá tên, KHÔNG còn quyết định
 // quyền (audit 2026-10-07, S02: trước đây ai đăng ký username '21707'/'admin' là nhận ngay claim
@@ -42,7 +43,8 @@ export async function isSuperAdminCaller(uid: string, token: CallerToken | undef
 // toàn bộ claims (không merge). Cùng 1 Auth user pool (project chung) nên
 // tránh khả năng 2 hệ thống đè claim của nhau nếu có ngày trùng UID.
 async function setStickerClaims(uid: string, role: StickerClaimRole, storeId: string | null) {
-  await auth.setCustomUserClaims(uid, { stickerRole: role, stickerStoreId: storeId });
+  // Gộp vào claims sẵn có — không xoá role/departmentId của app gốc (audit S05).
+  await mergeCustomClaims(uid, { stickerRole: role, stickerStoreId: storeId });
 }
 
 // Thay Login.tsx tự setDoc(role, storeId) do client chọn — server tự kiểm tra
