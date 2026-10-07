@@ -7395,3 +7395,15 @@ này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com
 
 **Không đổi:** đường nạp file 200k dòng đã tối ưu + đo ở Đợt 4 (2026-09-30), không đo lại.
 **Chưa làm:** D11 (outbox cho Sticker/Khai thác — báo "đã lưu" khi cloud lỗi). So giá cần chủ dự án `git pull` + khởi động lại server trên Mac; Safari có thể chặn https → http://localhost (dùng Chrome cho So giá).
+
+## Audit 2026-10-07 — Giai đoạn 4: một chuẩn thiết kế (chủ dự án chọn "b": giữ bo mềm)
+
+- **Một nguồn token**: `styles/tokens.css` (giá trị) → `styles.css @theme inline` sinh `rounded-control` 8px /
+  `rounded-card` 16px / `rounded-popup` 12px / `rounded-overlay` 16px. Button/Input/Select/KpiCard/SectionCard/
+  DataTable/Modal/Dropdown/MultiSelectDropdown dùng class ngữ nghĩa; `DESIGN_SYSTEM.md` + `CLAUDE.md` ghi đúng chuẩn đang chạy.
+- **iPhone**: Button/Input/Select có `pointer-coarse:min-h-11` (vùng chạm 44px chỉ trên màn cảm ứng, laptop không đổi).
+- **Phân ca**: `phanca.css` thu phạm vi về `:where(.phanca-root)` + keyframes `phanca-*` — trước đây rò ra toàn app.
+- **Chữ KPI 10px → 11px** ở `KpiCard`, `KpiCards`, `KpiOverview` (ảnh chụp kiểm: huy hiệu "+3%", "Đã hết" vừa khung).
+- **Ratchet mới**: `rawOverlay` 27, `tinyText` 82, `offScaleRadius` 11 (chỉ được giảm; thử file dò → chặn 0→1).
+- Kiểm chứng: `npm run check` xanh (1115 unit), e2e `chuan-thiet-ke-b` (đo computed style), `css-pham-vi-va-vung-cham`.
+- **Còn lại** (dọn dần khi chạm file): 27 modal tự dựng, 44 chữ <11px ngoài xem trước LINE, 11 bo góc ngoài thang.

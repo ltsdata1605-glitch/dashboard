@@ -91,3 +91,20 @@ describe('Nợ kỹ thuật indigo — đếm RIÊNG, và cũng phải bắt bi�
         expect(countIndigoAlias(line('bg-purple-500 border-l-teal-400'))).toBe(0);
     });
 });
+
+describe('GĐ4 — chuẩn thiết kế (B): luật chặn lệch chuẩn mới', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const r = require('../../scripts/lint-ratchet.cjs');
+    it('rawOverlay: đếm fixed inset-0 ngoài components/shared/ui, bỏ qua bộ dùng chung', () => {
+        expect(r.countRawOverlay('<div className="fixed inset-0 z-50">', 'features/x/A.tsx')).toBe(1);
+        expect(r.countRawOverlay('<div className="fixed inset-0 z-50">', 'components/shared/ui/Modal.tsx')).toBe(0);
+    });
+    it('tinyText: đếm chữ < 11px, không đếm 11px trở lên', () => {
+        expect(r.countTinyText('text-[9px] text-[10px] text-[8.5px]', 'a.tsx')).toBe(3);
+        expect(r.countTinyText('text-[11px] text-[12px] text-xs', 'a.tsx')).toBe(0);
+    });
+    it('offScaleRadius: đếm rounded-3xl và bo tự đặt số, không đếm thang chuẩn/var()', () => {
+        expect(r.countOffScaleRadius('rounded-3xl rounded-t-3xl rounded-[12px]', 'a.tsx')).toBe(3);
+        expect(r.countOffScaleRadius('rounded-card rounded-xl rounded-[var(--card-radius)] rounded-full', 'a.tsx')).toBe(0);
+    });
+});

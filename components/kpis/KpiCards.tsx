@@ -337,7 +337,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         finalTrendValue = revenueTarget > 0
                             ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                                 <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formatCurrency(activeTarget)}</span>
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                     isGood
                                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                         : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -358,7 +358,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             finalTrendValue = (
                                 <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                                     <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{hieuQuaTarget}%</span>
-                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                         isGood
                                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -380,7 +380,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                             finalTrendValue = (
                                 <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                                     <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{traGopTarget}%</span>
-                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                         isGood
                                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -421,7 +421,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formattedActive}</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                 isGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -448,7 +448,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{formatCurrency(activeTarget)}</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                 isGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -469,7 +469,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         finalTrendValue = (
                             <span className="flex items-center gap-1.5 leading-none">
                                 <span className="text-[11.5px] font-bold text-rose-600 dark:text-rose-400 tabular-nums">Còn {unshippedCount} đơn</span>
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40 shrink-0">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40 shrink-0">
                                     Chờ xuất
                                 </span>
                             </span>
@@ -478,7 +478,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                         finalTrendValue = (
                             <span className="flex items-center gap-1.5 leading-none">
                                 <span className="text-[11.5px] font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">0 đơn</span>
-                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40 shrink-0">
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40 shrink-0">
                                     Đã hết
                                 </span>
                             </span>

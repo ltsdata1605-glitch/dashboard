@@ -225,7 +225,27 @@ function countIconEmoji(content, file = '') {
   return total;
 }
 
-const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji'];
+/**
+ * GĐ4 audit 2026-10-07 — chuẩn thiết kế (B), DESIGN_SYSTEM.md mục 3/4 (chỉ được GIẢM):
+ *  - rawOverlay: tự dựng modal/lớp phủ bằng `fixed inset-0` NGOÀI components/shared/ui — phải dùng <Modal>.
+ *  - tinyText: chữ nhỏ hơn 11px (`text-[8px]`/`[9px]`/`[10px]`) — màn siêu thị là laptop cũ.
+ *  - offScaleRadius: `rounded-3xl` hoặc bo tự đặt số `rounded-[12px]` — dùng thang rounded-control/card/popup/overlay.
+ */
+const SHARED_UI_DIR = 'components/shared/ui/';
+function countRawOverlay(content, file = '') {
+  if (!file.endsWith('.tsx') || file.startsWith(SHARED_UI_DIR)) return 0;
+  return (content.match(/\bfixed inset-0\b/g) || []).length;
+}
+function countTinyText(content, file = '') {
+  if (!file.endsWith('.tsx')) return 0;
+  return (content.match(/\btext-\[(?:[0-9]|10)(?:\.\d+)?px\]/g) || []).length;
+}
+function countOffScaleRadius(content, file = '') {
+  if (!file.endsWith('.tsx')) return 0;
+  return (content.match(/\brounded(?:-[trbl]{1,2})?-(?:3xl|\[(?!var\()[^\]]+\])/g) || []).length;
+}
+
+const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji', 'rawOverlay', 'tinyText', 'offScaleRadius'];
 
 function computeViolations() {
   const files = walk(ROOT, []);
@@ -241,6 +261,9 @@ function computeViolations() {
       iconLegacyCall: countIconLegacyCall(content),
       iconRawSvg: countIconRawSvg(content, relPath(file)),
       iconEmoji: countIconEmoji(content, relPath(file)),
+      rawOverlay: countRawOverlay(content, relPath(file)),
+      tinyText: countTinyText(content, relPath(file)),
+      offScaleRadius: countOffScaleRadius(content, relPath(file)),
     };
     if (METRIC_KEYS.some((k) => counts[k])) {
       result[relPath(file)] = counts;
@@ -326,5 +349,6 @@ if (require.main === module) {
 module.exports = {
   countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar,
   countIconDirectImport, countIconNumericSize, countIconLegacyCall, countIconRawSvg, countIconEmoji,
+  countRawOverlay, countTinyText, countOffScaleRadius,
   computeViolations, saveBaseline, METRIC_KEYS,
 };

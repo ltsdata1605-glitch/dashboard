@@ -236,7 +236,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                                 {secondaryTargetStr || dtqdTrendValue}
                             </span>
                             {currentDtqdTarget > 0 && (
-                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                     dtqdRemaining >= 0
                                         ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                         : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -268,7 +268,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     trendValue={
                         <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{currentQuyDoiTarget}%</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                 hqqdIsGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'
@@ -298,7 +298,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     trendValue={
                         <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
                             <span className="text-[11.5px] font-bold text-slate-700 dark:text-slate-200 tabular-nums">{currentTraGopTarget}%</span>
-                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                                 traGopIsGood
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40'

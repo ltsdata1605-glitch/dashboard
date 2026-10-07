@@ -199,7 +199,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 
                 {/* Hàng 2: Title */}
                 <div className="flex items-center justify-center w-full min-w-0">
-                    <h3 className="text-[10px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>
+                    <h3 className="text-[11px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>
                         {title}
                     </h3>
                 </div>
@@ -211,11 +211,11 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 
                 {/* Hàng 4: Label / Giá trị phụ */}
                 {trendValue ? (
-                    <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (
-                    <div className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
+                    <div className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight mt-0.5 w-full flex items-center justify-center">
                         {trendLabel}
                     </div>
                 ) : null}
