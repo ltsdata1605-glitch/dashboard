@@ -18,10 +18,23 @@ const HOST = '127.0.0.1';
 // Cho phép mọi cổng của localhost/127.0.0.1 vì cổng dev thay đổi (5173 khi `npm run dev`,
 // 4173 khi `npm run preview`...), nhưng chặn mọi tên miền bên ngoài.
 const LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+// Audit 2026-10-07 (GĐ3/T16): bản LIVE chạy ở https://dashboard.pro.vn — trước đây bị chặn nên tab So
+// giá trên trang thật không bao giờ dùng được. Thêm ĐÚNG 1 origin này (không mở cho mọi trang).
+const APP_ORIGINS = new Set(['https://dashboard.pro.vn']);
+const isAllowedOrigin = (origin) => !origin || LOCAL_ORIGIN.test(origin) || APP_ORIGINS.has(origin);
+
+// Chrome "Private Network Access": trang công khai (https://dashboard.pro.vn) gọi vào localhost phải
+// được server cho phép rõ ràng trong preflight, nếu không Chrome chặn trước khi tới CORS.
+app.use((req, res, next) => {
+  if (req.headers['access-control-request-private-network'] === 'true' && isAllowedOrigin(req.headers.origin)) {
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  }
+  next();
+});
 app.use(cors({
   origin: (origin, cb) => {
     // origin rỗng = gọi trực tiếp (curl, EventSource cùng origin) → vẫn cho qua.
-    if (!origin || LOCAL_ORIGIN.test(origin)) return cb(null, true);
+    if (isAllowedOrigin(origin)) return cb(null, true);
     // CỐ Ý ném lỗi (chặn ngay tại server) thay vì `cb(null, false)`: cách kia vẫn để request
     // CHẠY và chỉ trình duyệt chặn đọc kết quả — nghĩa là trang độc vẫn bắt được máy này đi cào
     // giá, chỉ là không đọc được kết quả. Ném lỗi thì handler không bao giờ chạy.
@@ -58,8 +71,12 @@ const activeConnections = new Map();
 app.post('/api/scrape-prices', async (req, res) => {
   const { products = [], competitors = [], mainSite = 'tgdd', sessionId } = req.body;
   
-  if (!products.length) {
+  if (!Array.isArray(products) || !products.length) {
     return res.status(400).json({ error: 'Danh sách sản phẩm trống' });
+  }
+  // Giới hạn khối lượng 1 lượt (audit T16) — mỗi sản phẩm mở trình duyệt cào nhiều trang.
+  if (products.length > 300 || !Array.isArray(competitors) || competitors.length > 10) {
+    return res.status(400).json({ error: 'Tối đa 300 sản phẩm và 10 trang mỗi lượt so giá' });
   }
   
   // Validate competitor keys
