@@ -51,6 +51,20 @@ async function suaMangTrenCloud(uid: string, sua: (records: SavedTaxRecord[], ex
 }
 
 /**
+ * Đổi khoá (id cục bộ hoặc createdAt) sang createdAt — CHỈ createdAt mới so được với bản trên cloud
+ * (id là khoá tự tăng riêng từng máy, audit D08).
+ */
+async function toCreatedAts(keys: (number | string)[]): Promise<Set<string>> {
+    const out = new Set<string>(keys.filter((k): k is string => typeof k === 'string'));
+    const numeric = keys.filter((k): k is number => typeof k === 'number');
+    if (numeric.length > 0) {
+        const local = await taxIndexedDbService.getAll();
+        for (const r of local) if (numeric.includes(r.id as number)) out.add(r.createdAt);
+    }
+    return out;
+}
+
+/**
  * Service đồng bộ dữ liệu tính thuế 3 lớp:
  * 1. IndexedDB (Lưu trữ cục bộ nhanh, hoạt động offline)
  * 2. LocalStorage (Lưu state form nhập gần nhất)
@@ -83,22 +97,29 @@ export const taxSyncService = {
                 const cloudData = snap.data();
                 const cloudRecords: SavedTaxRecord[] = cloudData?.records || [];
 
-                // Hợp nhất dữ liệu Cloud và Local theo thời gian tạo
+                // Hợp nhất theo `createdAt` — danh tính DUY NHẤT xuyên thiết bị (audit D08). `id` là khoá
+                // tự tăng của IndexedDB TỪNG MÁY: máy A và máy B đều có id 1 cho 2 bản ghi khác nhau. Trước
+                // đây bản cloud giữ nguyên id của máy khác → danh sách có 2 dòng cùng id, chọn/xoá/sửa
+                // tháng theo id chạm nhầm bản ghi. Nay bản chỉ có trên cloud được LƯU VÀO MÁY này (nhận id
+                // cục bộ riêng) — vừa hết trùng id, vừa xem lại được khi mất mạng.
+                const localByCreatedAt = new Map(localRecords.map(r => [r.createdAt, r]));
                 const recordMap = new Map<string, SavedTaxRecord>();
-
-                // Đưa local vào map
                 for (const r of localRecords) {
                     recordMap.set(r.createdAt, { ...r, syncedToCloud: false });
                 }
-
-                // Đưa cloud vào map (ghi đè hoặc bổ sung)
                 for (const cr of cloudRecords) {
-                    const existing = recordMap.get(cr.createdAt);
-                    recordMap.set(cr.createdAt, {
-                        ...cr,
-                        id: existing?.id || cr.id,
-                        syncedToCloud: true
-                    });
+                    const existing = localByCreatedAt.get(cr.createdAt);
+                    if (existing) {
+                        recordMap.set(cr.createdAt, { ...cr, id: existing.id, syncedToCloud: true });
+                        continue;
+                    }
+                    const { id: _cloudId, ...rest } = cr;
+                    try {
+                        const localId = await taxIndexedDbService.save({ ...rest, syncedToCloud: true });
+                        recordMap.set(cr.createdAt, { ...rest, id: localId, syncedToCloud: true });
+                    } catch (saveErr) {
+                        console.warn('[TaxSync] Không lưu được bản cloud vào máy, bỏ qua bản này:', saveErr);
+                    }
                 }
 
                 const mergedList = Array.from(recordMap.values()).sort(
@@ -154,8 +175,9 @@ export const taxSyncService = {
 
         const user = auth.currentUser;
         if (user) {
+            const createdAts = await toCreatedAts([idOrCreatedAt]);
             await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
-                (r.id === idOrCreatedAt || r.createdAt === idOrCreatedAt) ? { ...r, monthYear: newMonthYear } : r) : null);
+                createdAts.has(r.createdAt) ? { ...r, monthYear: newMonthYear } : r) : null);
         }
     },
 
@@ -167,9 +189,9 @@ export const taxSyncService = {
 
         const user = auth.currentUser;
         if (user) {
-            const keySet = new Set(idOrCreatedAts);
+            const createdAts = await toCreatedAts(idOrCreatedAts);
             await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
-                (keySet.has(r.id as number) || keySet.has(r.createdAt)) ? { ...r, monthYear: newMonthYear } : r) : null);
+                createdAts.has(r.createdAt) ? { ...r, monthYear: newMonthYear } : r) : null);
         }
     },
 

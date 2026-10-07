@@ -49,6 +49,7 @@ import { DEFAULT_DEPARTMENT_PATTERNS, rotateArray } from './constants';
 const App: React.FC = () => {
   const {
     isImportingRef,
+    hydratedScopeRef,
     monthYear, setMonthYear,
     startDay, setStartDay,
     duration, setDuration,
@@ -71,7 +72,7 @@ const App: React.FC = () => {
     shiftDefinitions, setShiftDefinitions,
     unresolvedConflicts, setUnresolvedConflicts,
     isDbLoaded,
-    setIsDataLoadedForSupermarket,
+    isDataLoadedForSupermarket, setIsDataLoadedForSupermarket,
     year, month,
     uniqueDepartments,
     staffCountByDept,
@@ -204,11 +205,15 @@ const App: React.FC = () => {
   }, [monthYear, startDay, duration, nams, nus, rules, departmentPatterns, busySchedule, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, staffList, departmentFilter, getKey]);
   useEffect(() => {
     if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current);
-    if (isDbLoaded && (nams.length > 0 || nus.length > 0)) { 
+    // Audit D06: trước đây chạy mỗi khi nams/nus/duration đổi — kể cả lúc NẠP dữ liệu đã lưu (mở tính
+    // năng, đổi tháng) → 1 giây sau tự sinh lịch mới đè lên lịch đã sửa tay. Chỉ tự sinh khi CHƯA có
+    // lịch cho phạm vi đang xem, hoặc lịch hiện có không khớp số ngày (người dùng đổi số ngày).
+    const scheduleFitsDuration = staffList.length > 0 && staffList.every(s => s.schedule.length === duration);
+    if (isDbLoaded && isDataLoadedForSupermarket && (nams.length > 0 || nus.length > 0) && !scheduleFitsDuration) {
         durationDebounceTimer.current = window.setTimeout(() => generateNewSchedule(), 1000);
     }
     return () => { if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current); };
-  }, [duration, isDbLoaded, nams, nus]);
+  }, [duration, isDbLoaded, isDataLoadedForSupermarket, nams, nus, staffList]);
   const getSortedStaffForExport = (): StaffMember[] => {
     const staffListCopy = structuredClone(staffList) as StaffMember[];
     const hasImportIndex = staffListCopy.some(s => s.importIndex !== undefined);
@@ -547,6 +552,7 @@ const App: React.FC = () => {
         } else {
             setDepartmentFilter('');
         }
+        hydratedScopeRef.current = `${supermarketName}|${monthYear}`; // dữ liệu nhập là bản đúng của phạm vi này
         setIsDataLoadedForSupermarket(true);
         setImportModalOpen(false); 
         setTimeout(() => {

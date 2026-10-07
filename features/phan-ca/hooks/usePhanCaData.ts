@@ -28,6 +28,12 @@ export function usePhanCaData() {
   const lastSyncedRef = useRef<{ [key: string]: string }>({});
   const staffListRef = useRef<StaffMember[]>([]);
   const isImportingRef = useRef<boolean>(false);
+  // Audit D05: phạm vi (siêu thị|tháng) mà state hiện tại ĐÃ NẠP XONG. Trước đây đổi tháng vẫn giữ
+  // isDataLoadedForSupermarket=true → effect lưu ghi lịch THÁNG CŨ vào khoá tháng mới trước khi kịp nạp
+  // (mất lịch tháng mới). Chỉ lưu khi phạm vi hiện tại == phạm vi đã nạp; kết quả nạp cũ (đổi tháng
+  // nhanh) bị bỏ.
+  const hydratedScopeRef = useRef<string>('');
+  const requestedScopeRef = useRef<string>('');
 
   const [monthYear, setMonthYear] = useState<string>(getDefaultMonthYear());
   const [startDay, setStartDay] = useState<number>(1);
@@ -163,6 +169,9 @@ export function usePhanCaData() {
       if(isDbLoaded && supermarkets.length === 0) setIsDataLoadedForSupermarket(true);
       return;
     }
+    const scope = `${currentSupermarket}|${monthYear}`;
+    requestedScopeRef.current = scope;
+    hydratedScopeRef.current = ''; // chặn mọi lượt lưu tới khi nạp xong đúng phạm vi này
     const loadSupermarketData = async () => {
       const savedNams = await syncAndLoadKey<StaffInitialData[]>(getKey('nams'), []);
       const savedNus = await syncAndLoadKey<StaffInitialData[]>(getKey('nus'), []);
@@ -178,6 +187,7 @@ export function usePhanCaData() {
       const savedHistory = await syncAndLoadKey<ScheduleHistoryEntry[]>(historyKey, []);
       const savedUnresolved = await syncAndLoadKey<UnresolvedConflict[]>(unresolvedKey, []);
       const savedBusySchedule = await syncAndLoadKey<BusySchedule>(busyScheduleKey, {});
+      if (requestedScopeRef.current !== scope) return; // người dùng đã đổi tháng/siêu thị — bỏ kết quả cũ
       // Populate lastSyncedRef to prevent immediate write-back of fetched data
       lastSyncedRef.current[getKey('nams')] = JSON.stringify(savedNams);
       lastSyncedRef.current[getKey('nus')] = JSON.stringify(savedNus);
@@ -202,6 +212,7 @@ export function usePhanCaData() {
       setUnresolvedConflicts(savedUnresolved);
       setStaffList(savedSchedule);
       setBusySchedule(savedBusySchedule);
+      hydratedScopeRef.current = scope;
       setIsDataLoadedForSupermarket(true);
     };
     loadSupermarketData();
@@ -252,6 +263,7 @@ export function usePhanCaData() {
 
   useEffect(() => {
     if (!isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket || isImportingRef.current) return;
+    if (hydratedScopeRef.current !== `${currentSupermarket}|${monthYear}`) return;
     idb.saveData(getKey('nams'), nams);
     idb.saveData(getKey('nus'), nus);
     idb.saveData(getKey('rules'), rules);
@@ -273,6 +285,7 @@ export function usePhanCaData() {
   // Hiệu ứng tự động đồng bộ đám mây (debounced 3s)
   useEffect(() => {
     if (!user || !isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket || isImportingRef.current) return;
+    if (hydratedScopeRef.current !== `${currentSupermarket}|${monthYear}`) return;
     const timer = setTimeout(async () => {
       const syncIfChanged = async (key: string, data: unknown) => {
         const serialized = JSON.stringify(data);
@@ -355,6 +368,7 @@ export function usePhanCaData() {
 
   return {
     isImportingRef,
+    hydratedScopeRef,
     monthYear, setMonthYear,
     startDay, setStartDay,
     duration, setDuration,
