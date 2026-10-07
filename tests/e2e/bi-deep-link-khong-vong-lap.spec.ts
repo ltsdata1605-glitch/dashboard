@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { openReportBi, seedCompetitionData, openCompetitionTable } from './helpers/seed';
+import { openReportBi, seedCompetitionData, openCompetitionTable, seedAnalysisEmployees } from './helpers/seed';
 
 /**
  * Deep link Report BI (?view= &mode= &sub=, commit 19a5336) — 2026-10-02 bản đầu làm Report BI SẬP trên trang thật:
@@ -30,6 +30,8 @@ test('Siêu thị: gạt Realtime ↔ Luỹ kế, mở Thi đua — không sập
 
 test('Nhân viên: bấm lần lượt 4 tab con → tab đổi thật, URL ?sub= theo, không sập', async ({ page }) => {
     await openReportBi(page);
+    // Nhân viên chặn khi chưa có danh sách chuẩn từ Phân Tích (3384f2b) — không có thì 4 tab con không hiện.
+    await seedAnalysisEmployees(page, [{ id: '101', name: 'Nguyễn Văn A', department: 'BP ĐIỆN MÁY' }]);
     await page.getByRole('button', { name: /^Nhân viên$/ }).first().click();
     await page.waitForTimeout(1500);
     for (const [tab, nhan] of [['installment', 'Trả chậm'], ['competition', 'Thi đua'], ['bonus', 'Thưởng'], ['revenue', 'Doanh thu']] as const) {

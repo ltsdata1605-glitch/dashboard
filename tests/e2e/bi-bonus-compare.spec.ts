@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { openReportBi, pasteIntoTile, TILE, SUMMARY_REALTIME, SUMMARY_LUYKE, TEST_SUPERMARKET } from './helpers/seed';
+import { openReportBi, pasteIntoTile, seedAnalysisEmployees, TILE, SUMMARY_REALTIME, SUMMARY_LUYKE, TEST_SUPERMARKET } from './helpers/seed';
 
 /** safeName của TEST_SUPERMARKET theo shortenSupermarketName(): "99 Hùng Vương" -> "Hùng Vương". */
 const SAFE_NAME = 'Hùng Vương';
@@ -83,6 +83,12 @@ test.describe('Report BI › Thưởng — menu chế độ xem + So sánh cùng
             { key: `config-${SAFE_NAME}-danhsach`, value: DANH_SACH },
             { key: `bonus-compare-${SAFE_NAME}`, value: COMPARE_STORE },
             { key: 'nhanvien-active-supermarkets', value: [TEST_SUPERMARKET] },
+        ]);
+        // Nhân viên chặn khi chưa có danh sách chuẩn từ Phân Tích (3384f2b) — nạp đúng 3 NV của DANH_SACH.
+        await seedAnalysisEmployees(page, [
+            { id: '111395', name: 'Chí Tâm', department: 'BP ĐIỆN MÁY' },
+            { id: '17952', name: 'Mỹ Hương', department: 'BP ĐIỆN MÁY' },
+            { id: '107617', name: 'Anh Nhân', department: 'BP ĐIỆN MÁY' },
         ]);
         await openBonusTab(page);
         await expect(page.getByText(/Hiệu suất làm việc/i).first()).toBeVisible({ timeout: 15_000 });
