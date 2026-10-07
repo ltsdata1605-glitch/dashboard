@@ -12,7 +12,7 @@ interface ConflictListModalProps {
 
 const ConflictListModal: React.FC<ConflictListModalProps> = ({ conflicts, onClose }) => {
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       title="Danh Sách Ca Cần Xử Lý"

@@ -13,7 +13,7 @@ interface HistoryModalProps {
 
 const HistoryModal: React.FC<HistoryModalProps> = ({ history, onRestore, onClose }) => {
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       title="Lịch Sử Thay Đổi & Khôi Phục"

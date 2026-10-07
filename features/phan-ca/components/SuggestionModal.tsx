@@ -20,7 +20,7 @@ const SuggestionModal: React.FC<SuggestionModalProps> = ({ suggestions, onAccept
   }
 
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       title={<span className="inline-flex items-center gap-1.5"><AppIcon name="idea" size="md" className="text-sky-600" />Gợi Ý Tối Ưu Lịch</span>}

@@ -36,7 +36,7 @@ const GoogleSheetExportModal: React.FC<GoogleSheetExportModalProps> = ({ data, o
   }
 
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       title="Xuất Mẫu Lịch Bận Ra Google Sheet"

@@ -707,7 +707,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
   }
 
   return (
-    <Modal isOpen onClose={onClose} title="Cập Nhật Ca Làm Việc" maxWidth="md">
+    <Modal panelClassName="phanca-root" isOpen onClose={onClose} title="Cập Nhật Ca Làm Việc" maxWidth="md">
         {renderHeader()}
         <div className="mt-2">
             {renderContent()}

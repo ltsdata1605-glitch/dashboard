@@ -1,5 +1,10 @@
 
-        /* Scoped tới .phanca-root (thay vì :root) để không leak custom property ra
+        /* Audit 2026-10-07 (GĐ4): MỌI quy tắc trong file đều chỉ áp trong .phanca-root (tiền tố
+           :where(.phanca-root) — độ ưu tiên 0, kiểu bên trong Phân ca giữ nguyên) và keyframe mang tên
+           phanca-*. Trước đây .animate-fade-in / @keyframes fadeIn / .glass / .spinner… ở đây ĐÈ lên
+           bản toàn app sau khi mở tab Phân ca (hiệu ứng mọi modal đổi theo thứ tự mở tab). Modal của
+           Phân ca (portal ra body) gắn panelClassName="phanca-root" để nhận biến + kiểu này.
+           Scoped tới .phanca-root (thay vì :root) để không leak custom property ra
            toàn cục — PhanCaView persist-mount vĩnh viễn sau lần mở tab đầu tiên,
            trước đây khai báo trên :root sẽ đè lên biến toàn app (RULES.md §2.5). */
         .phanca-root {
@@ -68,8 +73,7 @@
            override riêng cho dark mode thay vì chỉ đổi biến ở khối .dark .phanca-root */
         .dark .phanca-root .col-stat { background-color: var(--surface-1); }
         .dark .phanca-root .col-total { background-color: var(--surface-2); }
-        .dark .phanca-root .phan-ca-layout tbody tr:hover,
-        .dark .phanca-root .phan-ca-layout tbody tr:hover td.sticky-col { background-color: var(--surface-2) !important; }
+        .dark .phanca-root .phan-ca-layout tbody tr:hover, .dark .phanca-root .phan-ca-layout tbody tr:hover td.sticky-col { background-color: var(--surface-2) !important; }
         .dark .phanca-root .editable-cell:hover {
             background-color: rgba(129, 140, 248, 0.12) !important;
             box-shadow: inset 0 0 0 1.5px rgba(129, 140, 248, 0.3);
@@ -86,17 +90,17 @@
         .dark .phanca-root .cell-off-request::after { background-color: #fbbf24; box-shadow: 0 0 0 1.5px var(--surface-0); }
         .dark .phanca-root .glass { background: rgba(15, 23, 42, 0.75); }
 
-        * { box-sizing: border-box; }
+        /* Đã bỏ quy tắc box-sizing cho MỌI phần tử (toàn app) — Tailwind preflight đã đặt sẵn. */
 
         /* Body styles removed to prevent conflicts with dashboard */
 
         /* ═══════════════════════════════════════
            SCROLLBAR — Minimal & Refined
            ═══════════════════════════════════════ */
-        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
-        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        :where(.phanca-root) .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        :where(.phanca-root) .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        :where(.phanca-root) .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        :where(.phanca-root) .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
         /* ═══════════════════════════════════════
            TABLE STRUCTURE — Sharp & Dense
@@ -136,31 +140,31 @@
         /* ═══════════════════════════════════════
            SHIFT CELLS — Color-coded & Interactive
            ═══════════════════════════════════════ */
-        .cell-gh {
+        :where(.phanca-root) .cell-gh {
             background-color: var(--cell-gh-bg) !important;
             border-right-color: var(--cell-gh-border) !important;
         }
-        .cell-kho {
+        :where(.phanca-root) .cell-kho {
             background-color: var(--cell-kho-bg) !important;
             border-right-color: var(--cell-kho-border) !important;
         }
-        .cell-tn {
+        :where(.phanca-root) .cell-tn {
             background-color: var(--cell-tn-bg) !important;
             border-right-color: var(--cell-tn-border) !important;
         }
-        .cell-off {
+        :where(.phanca-root) .cell-off {
             background-color: var(--cell-off-bg) !important;
             color: var(--cell-off-text) !important;
         }
 
-        .editable-cell {
+        :where(.phanca-root) .editable-cell {
             cursor: pointer;
             position: relative;
             transition: all 0.15s ease;
             font-size: 14px;
             padding: 10px 4px !important;
         }
-        .editable-cell:hover {
+        :where(.phanca-root) .editable-cell:hover {
             background-color: rgba(99, 102, 241, 0.06) !important;
             box-shadow: inset 0 0 0 1.5px rgba(99, 102, 241, 0.25);
             z-index: 10;
@@ -169,7 +173,7 @@
         /* ═══════════════════════════════════════
            ROLE PILLS — Compact Badges
            ═══════════════════════════════════════ */
-        .role-pill {
+        :where(.phanca-root) .role-pill {
             display: inline-block;
             margin-top: 2px;
             font-size: 8.5px;
@@ -181,17 +185,17 @@
             line-height: 1.2;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
-        .pill-gh {
+        :where(.phanca-root) .pill-gh {
             background-color: var(--cell-gh-bg);
             color: var(--cell-gh-text);
             border: 1px solid var(--cell-gh-border);
         }
-        .pill-kho {
+        :where(.phanca-root) .pill-kho {
             background-color: var(--cell-kho-bg);
             color: var(--cell-kho-text);
             border: 1px solid var(--cell-kho-border);
         }
-        .pill-tn {
+        :where(.phanca-root) .pill-tn {
             background-color: var(--cell-tn-bg);
             color: var(--cell-tn-text);
             border: 1px solid var(--cell-tn-border);
@@ -200,7 +204,7 @@
         /* ═══════════════════════════════════════
            MANUAL CHANGE INDICATORS
            ═══════════════════════════════════════ */
-        .cell-manual::after {
+        :where(.phanca-root) .cell-manual::after {
             content: '';
             position: absolute;
             top: 3px;
@@ -210,29 +214,29 @@
             border-radius: 50%;
             box-shadow: 0 0 0 1.5px #fff;
         }
-        .cell-direct-edit::after { background-color: #10b981; }
-        .cell-swap-initiator::after { background-color: #f43f5e; }
-        .cell-swap-partner::after { background-color: #0ea5e9; }
-        .cell-off-request::after { background-color: #f59e0b; }
+        :where(.phanca-root) .cell-direct-edit::after { background-color: #10b981; }
+        :where(.phanca-root) .cell-swap-initiator::after { background-color: #f43f5e; }
+        :where(.phanca-root) .cell-swap-partner::after { background-color: #0ea5e9; }
+        :where(.phanca-root) .cell-off-request::after { background-color: #f59e0b; }
 
-        @keyframes pulse-soft {
+        @keyframes phanca-pulse-soft {
             0%, 100% { box-shadow: inset 0 0 0 0px rgba(244, 63, 94, 0); }
             50% { box-shadow: inset 0 0 0 2px rgba(244, 63, 94, 0.12); }
         }
-        .cell-needs-intervention { animation: pulse-soft 2.5s infinite; }
+        :where(.phanca-root) .cell-needs-intervention { animation: phanca-pulse-soft 2.5s infinite; }
 
         /* ═══════════════════════════════════════
            STAT COLUMNS
            ═══════════════════════════════════════ */
-        .col-stat { background-color: #fff; width: 40px; color: var(--text-secondary); }
-        .stat-warn { color: #e11d48; font-weight: 700; }
-        .col-total { color: var(--text-secondary); background-color: #fdfdfd; }
-        .col-total-final { color: var(--text-primary); font-weight: 700; background-color: var(--surface-1); }
+        :where(.phanca-root) .col-stat { background-color: #fff; width: 40px; color: var(--text-secondary); }
+        :where(.phanca-root) .stat-warn { color: #e11d48; font-weight: 700; }
+        :where(.phanca-root) .col-total { color: var(--text-secondary); background-color: #fdfdfd; }
+        :where(.phanca-root) .col-total-final { color: var(--text-primary); font-weight: 700; background-color: var(--surface-1); }
 
         /* ═══════════════════════════════════════
            FORM INPUTS — Clean & Flat
            ═══════════════════════════════════════ */
-        .config-input {
+        :where(.phanca-root) .config-input {
             border: 1.5px solid var(--border-light);
             border-radius: 6px;
             padding: 8px 12px;
@@ -243,27 +247,27 @@
             outline: none;
             color: var(--text-primary);
         }
-        .config-input:focus {
+        :where(.phanca-root) .config-input:focus {
             border-color: var(--brand-secondary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
         }
-        .config-input:hover:not(:focus) {
+        :where(.phanca-root) .config-input:hover:not(:focus) {
             border-color: var(--border-default);
         }
 
         /* ═══════════════════════════════════════
            EXPORT UTILITIES
            ═══════════════════════════════════════ */
-        .row-export-highlight {
+        :where(.phanca-root) .row-export-highlight {
             background-color: #fffbeb !important;
             box-shadow: inset 0 0 0 1.5px #fcd34d;
         }
-        .export-hidden { display: none !important; }
+        :where(.phanca-root) .export-hidden { display: none !important; }
 
         /* ═══════════════════════════════════════
            STAT BADGES
            ═══════════════════════════════════════ */
-        .stat-badge {
+        :where(.phanca-root) .stat-badge {
             display: inline-flex;
             align-items: center;
             padding: 4px 10px;
@@ -272,46 +276,46 @@
             font-size: 12px;
             text-transform: uppercase;
         }
-        .stat-badge-ok { background: #ecfdf5; color: #065f46; }
-        .stat-badge-warn { background: #fff1f2; color: #9f1239; }
+        :where(.phanca-root) .stat-badge-ok { background: #ecfdf5; color: #065f46; }
+        :where(.phanca-root) .stat-badge-warn { background: #fff1f2; color: #9f1239; }
 
         /* ═══════════════════════════════════════
            ANIMATIONS
            ═══════════════════════════════════════ */
-        .spinner {
+        :where(.phanca-root) .spinner {
             border: 3px solid rgba(67, 56, 202, 0.1);
             border-top: 3px solid var(--brand-primary);
             border-radius: 50%;
             width: 24px;
             height: 24px;
-            animation: spin 0.7s linear infinite;
+            animation: phanca-spin 0.7s linear infinite;
         }
-        @keyframes spin {
+        @keyframes phanca-spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
 
-        @keyframes bounce-in {
+        @keyframes phanca-bounce-in {
             0% { transform: translate(-50%, 100%); opacity: 0; }
             60% { transform: translate(-50%, -8%); opacity: 1; }
             100% { transform: translate(-50%, 0); opacity: 1; }
         }
-        .animate-bounce-in {
-            animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        :where(.phanca-root) .animate-bounce-in {
+            animation: phanca-bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        @keyframes fadeIn {
+        @keyframes phanca-fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease forwards;
+        :where(.phanca-root) .animate-fade-in {
+            animation: phanca-fadeIn 0.3s ease forwards;
         }
 
         /* ═══════════════════════════════════════
            GLASS UTILITY — Refined
            ═══════════════════════════════════════ */
-        .glass {
+        :where(.phanca-root) .glass {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px) saturate(180%);
             -webkit-backdrop-filter: blur(16px) saturate(180%);

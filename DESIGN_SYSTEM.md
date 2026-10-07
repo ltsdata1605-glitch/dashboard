@@ -7,6 +7,11 @@ Chuẩn thiết kế của dự án Dashboard YCX, chốt ngày **2026-09-10**.
 > Phân Tích làm chuẩn vàng"* **không còn đúng**.
 >
 > Thứ tự ưu tiên khi mâu thuẫn: `AGENT_RULES.md` > `RULES.md` > **file này**.
+>
+> **Cập nhật 2026-10-07 — chuẩn (B), chủ dự án chốt:** GIỮ phong cách đang chạy — thẻ/nút/modal **bo
+> mềm, đổ bóng nhẹ**; khung KHỐI DỮ LIỆU lớn và ô bảng vẫn **vuông**. Thay mục 0.4, mục 3 (dòng bo góc
+> + đổ bóng), mục 4.2, 4.3 bên dưới. Thang bo góc nằm ở MỘT chỗ: `styles/tokens.css` → class
+> `rounded-control` / `rounded-card` / `rounded-popup` / `rounded-overlay` (sinh ở `styles.css`).
 
 **Nguyên tắc gốc**: *mỗi pixel dành cho số, không dành cho trang trí.* Người dùng là quản lý siêu thị
 liếc màn hình giữa hai lượt khách — không phải người ngồi ngắm dashboard.
@@ -21,8 +26,9 @@ liếc màn hình giữa hai lượt khách — không phải người ngồi ng
    pill giữa bảng. Pill chiếm chiều ngang — thứ khan hiếm nhất ở bảng 48 cột.
 3. **Hai cấp đường kẻ, không hơn.** `--line-1` chia khối, `--line-2` chia dòng. Thêm cấp thứ ba là
    bắt đầu có viền lồng viền.
-4. **Không thẻ bo góc.** Bảng và vùng dữ liệu vuông góc, không đổ bóng. Bo góc và bóng nói *"tôi ở
-   tầng khác"* — chỉ dành cho thứ thật sự nổi lên trên (modal, dropdown). Đừng nói bừa.
+4. **Vùng số vuông, phần tử tương tác bo mềm** *(chuẩn B, 2026-10-07)*. Ô bảng và khung KHỐI DỮ LIỆU
+   lớn (khung chứa bảng/biểu đồ trên laptop) vuông góc, không bóng. Thẻ, thẻ KPI, nút, ô nhập, modal,
+   popup bo mềm theo đúng thang ở mục 3 — không tự đặt số khác.
 
 ---
 
@@ -107,11 +113,22 @@ thấp, cỡ 10px không đọc được.
 | Chiều cao dải nhóm | `24px` | thấp hơn dòng dữ liệu — nó là vách ngăn, không phải nội dung |
 | Vạch trạng thái | `3px` | mép trái dòng, thay cho pill |
 | Cột ghim trái | `min 148px` | viền phải `2px` để tách khỏi vùng cuộn |
-| Bo góc — bảng, vùng dữ liệu | `0` | |
-| Bo góc — nút, ô nhập | `4px` | ~~6px~~ |
-| Bo góc — modal, dropdown | `6px` | ~~12px~~ |
+| Bo góc — ô bảng, khung KHỐI DỮ LIỆU lớn trên laptop | `0` (`rounded-none`) | giữ như Phân tích/Report BI đang chạy |
+| Bo góc — nút, ô nhập, select | `8px` (`rounded-control`) | token `--btn-radius` / `--input-radius` |
+| Bo góc — thẻ, thẻ KPI, khung bảng độc lập (`DataTable`) | `16px` (`rounded-card`) | token `--card-radius` |
+| Bo góc — dropdown, menu, popup | `12px` (`rounded-popup`) | token `--popup-radius` |
+| Bo góc — modal, sheet | `16px` (`rounded-overlay`) | token `--modal-radius` |
+| Bo góc — tooltip | `6px` (`rounded-md`) | |
+| Bo góc — huy hiệu, viên, avatar | tròn (`rounded-full`) | |
 | Chiều cao nút | `30px` | trên điện thoại nâng lên `44px` |
-| Đổ bóng | chỉ modal/dropdown | bỏ `shadow-sm` trên mọi khối tĩnh |
+| Đổ bóng — thẻ tĩnh | `shadow-sm` (`--shadow-card`) | rê chuột: `shadow-md` (`--shadow-card-hover`) |
+| Đổ bóng — dropdown/popup | `shadow-lg` (`--shadow-dropdown`) | |
+| Đổ bóng — modal | `shadow-xl` (`--shadow-modal`) | |
+| Đổ bóng — khối dữ liệu vuông, ô bảng | không | |
+
+*(Thang cũ 4px/6px "Bảng điều khiển ca trực" — token `--console-radius-*` — không dùng cho phần tử
+mới.)* Cấm tự đặt `rounded-xl`/`rounded-2xl`/`rounded-[…]` cho thẻ/nút/modal mới: dùng class ngữ nghĩa
+ở trên để đổi 1 token là cả app đổi theo.
 
 **Viền dày `2px` chỉ dùng đúng 2 chỗ trong bảng**: mép phải cột ghim, và đầu mỗi nhóm cột.
 
@@ -128,10 +145,10 @@ dựng modal `fixed inset-0`.
 thường và người dùng không biết bấm được.
 
 ### 4.2 Input
-Tích hợp sẵn ring focus. Không hardcode class ring cục bộ. Bo `4px`.
+Tích hợp sẵn ring focus. Không hardcode class ring cục bộ. Bo `8px` (`rounded-control`).
 
 ### 4.3 Modal (`<Modal />`)
-Là thứ **duy nhất** được bo góc `6px` và đổ bóng. Luôn có nút `X` góc trên phải, đóng được bằng `Esc`,
+Bo `16px` (`rounded-overlay`), bóng `shadow-xl`. Luôn có nút `X` góc trên phải, đóng được bằng `Esc`,
 thân dài phải `overflow-y-auto`. Con số trong modal dùng đúng thang màu ngữ nghĩa như trong bảng —
 không có bảng màu riêng cho modal.
 *(Bản cũ nhắc `<ModalWrapper />` — component đó KHÔNG tồn tại, đừng đi tìm.)*

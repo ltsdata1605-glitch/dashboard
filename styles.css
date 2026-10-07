@@ -8,6 +8,17 @@
    với Tailwind dark: (chỉ đổi theo theme hệ điều hành), xem RULES.md §2.5. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* THANG BO GÓC DUY NHẤT (chuẩn B — chủ dự án chốt 2026-10-07, DESIGN_SYSTEM.md mục 3).
+   Giá trị nằm ở styles/tokens.css; đây chỉ sinh class Tailwind: rounded-control (nút/ô nhập 8px),
+   rounded-card (thẻ/KPI/khung bảng 16px), rounded-popup (dropdown/menu 12px), rounded-overlay
+   (modal/sheet 16px). Đổi 1 token ở tokens.css là mọi nơi dùng class tương ứng đổi theo. */
+@theme inline {
+  --radius-control: var(--btn-radius);
+  --radius-card: var(--card-radius);
+  --radius-popup: var(--popup-radius);
+  --radius-overlay: var(--modal-radius);
+}
+
 @theme {
   --font-sans: "UTM Avo", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 

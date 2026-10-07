@@ -164,7 +164,7 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
   };
 
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       title={TITLES[ruleKey]}

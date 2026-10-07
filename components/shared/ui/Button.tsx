@@ -71,19 +71,20 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // Guidelines của Apple. Đo thật trên iPhone 15 (2026-09-26) ở Report BI: 20 nút nhỏ hơn 44px,
     // nhỏ nhất chỉ 14px cao. Dùng `min-h`/`min-w` chứ KHÔNG đổi `h`: nhiều nơi tự đè `className="h-8"`,
     // mà theo CSS thì min-height vẫn thắng height — nên các nút đó cũng được chạm đủ rộng mà
-    // không phải sửa từng chỗ. Từ `sm:` trở lên trả về đúng chiều cao cũ để desktop không phình
-    // thanh công cụ, chiếm chỗ của số liệu (CLAUDE.md mục 2).
+    // không phải sửa từng chỗ. Audit 2026-10-07 (GĐ4): điều kiện là THIẾT BỊ CẢM ỨNG (`pointer-coarse:`)
+    // chứ không còn "màn hẹp hơn 640px" — iPhone xoay ngang (844px) và iPad (768–1024px) trước đây rơi
+    // vào cỡ desktop 32–36px. Máy dùng chuột giữ cỡ gọn cũ để không phình thanh công cụ (CLAUDE.md mục 2).
     //
     // CỐ Ý không áp cho `size="none"`: đó là nút tự lo style hoàn toàn (ô trong bảng, nhãn bấm
     // được, icon bọc trong dòng dữ liệu) — ép 44px ở đó sẽ phá vỡ mật độ bảng.
     const sizes: Record<ButtonSize, string> = {
-      sm: 'h-8 min-h-11 sm:min-h-0 px-3 text-xs rounded-md',
-      md: 'h-9 min-h-11 sm:min-h-0 px-4 text-sm rounded-md',
-      lg: 'h-11 px-6 text-base rounded-md',
+      sm: 'h-8 pointer-coarse:min-h-11 px-3 text-xs rounded-control',
+      md: 'h-9 pointer-coarse:min-h-11 px-4 text-sm rounded-control',
+      lg: 'h-11 px-6 text-base rounded-control',
       // `c9240cdd` (2026-09-26) hạ nút icon về `h-8 w-8` cho gọn trên desktop nhưng làm rơi luôn
       // `min-h-11 min-w-11` → mọi nút icon trên iPhone còn 28–32px (Báo cáo: 55 nút). Giữ đúng
-      // cỡ desktop đó, chỉ trả lại vùng chạm 44px dưới `sm:`.
-      icon: 'h-8 w-8 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 rounded-md p-0',
+      // cỡ desktop đó, chỉ trả lại vùng chạm 44px trên thiết bị cảm ứng.
+      icon: 'h-8 w-8 pointer-coarse:min-h-11 pointer-coarse:min-w-11 rounded-control p-0',
       none: '',
     };
 

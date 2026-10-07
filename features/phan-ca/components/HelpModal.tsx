@@ -9,7 +9,7 @@ interface HelpModalProps {
 
 const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       hideCloseButton

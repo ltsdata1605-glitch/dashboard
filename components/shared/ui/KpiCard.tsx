@@ -137,7 +137,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             data-kpi-border={style.borderHex}
             data-kpi-top-border={style.topHex}
             data-kpi-top-color={iconColor}
-            className={`kpi-overview-card preserve-rounded relative flex flex-col justify-between h-full rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs transition-all duration-300 group overflow-hidden shadow-xs hover:shadow-lg ${style.borderHover} ${
+            className={`kpi-overview-card preserve-rounded relative flex flex-col justify-between h-full rounded-card border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs transition-all duration-300 group overflow-hidden shadow-xs hover:shadow-lg ${style.borderHover} ${
                 isClickable ? 'cursor-pointer hover:-translate-y-1 active:scale-[0.98]' : 'hover:-translate-y-0.5'
             } premium-card-shadow`}
         >

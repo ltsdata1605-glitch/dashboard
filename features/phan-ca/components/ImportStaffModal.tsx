@@ -74,7 +74,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
   };
 
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       zIndex="z-[60]"

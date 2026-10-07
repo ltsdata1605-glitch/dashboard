@@ -310,7 +310,8 @@
   /* Card */
   --card-bg: var(--surface-primary);
   --card-border: var(--border-subtle);
-  --card-radius: var(--p-radius-xl);
+  /* Chuẩn (B) chủ dự án chốt 2026-10-07: thẻ / thẻ KPI / khung bảng bo 16px. */
+  --card-radius: var(--p-radius-2xl);
   --card-padding: var(--p-space-6);
   --card-shadow: var(--shadow-card);
   --card-shadow-hover: var(--shadow-card-hover);
@@ -336,6 +337,9 @@
   --input-text: var(--text-primary);
   --input-placeholder: var(--text-tertiary);
   --input-shadow-focus: var(--shadow-focus);
+
+  /* Popup / dropdown / menu nổi */
+  --popup-radius: var(--p-radius-xl);
 
   /* Modal */
   --modal-bg: var(--surface-primary);

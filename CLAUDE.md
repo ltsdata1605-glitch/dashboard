@@ -206,11 +206,16 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   `lint-ratchet`: `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` = 0, `iconRawSvg` = 1, `iconEmoji` = 113 (toàn là NỘI DUNG: tin nhắn LINE mẫu, bookmarklet, tên ngày lễ,
   văn bản copy ra ngoài) — chỉ được giảm. CẤM dùng emoji / ✓ ✕ ⚠ làm icon giao diện (nút, nhãn, tiêu đề, icon toast) — dùng AppIcon.
 - **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
-- **Bo góc** *(sửa 2026-09-10 theo chuẩn "Bảng điều khiển ca trực")*: `rounded` (4px — input/button),
-  `rounded-md` (6px — modal/dropdown, thứ NỔI LÊN trên). Bảng và vùng dữ liệu: `rounded-none`.
-  ❌ Bỏ `rounded-xl` cho card, ❌ bỏ `rounded-3xl`. Nguyên tắc: **bo góc và đổ bóng nói "tôi ở tầng
-  khác" — chỉ dùng cho thứ thật sự nổi lên trên**, đừng nói bừa.
-- **Đổ bóng** *(mới 2026-09-10)*: KHÔNG đổ bóng cho khối tĩnh. Chỉ modal và dropdown.
+- **Bo góc — chuẩn (B), chủ dự án chốt 2026-10-07: GIỮ phong cách bo mềm đang chạy**, đặt thành MỘT thang
+  dùng chung (giá trị ở `styles/tokens.css`, class sinh ở `styles.css` `@theme inline`):
+  `rounded-control` 8px (nút, ô nhập, select) · `rounded-card` 16px (thẻ, thẻ KPI, khung `DataTable`) ·
+  `rounded-popup` 12px (dropdown, menu) · `rounded-overlay` 16px (modal, sheet) · `rounded-md` 6px (tooltip) ·
+  `rounded-full` (huy hiệu, viên, avatar). **Ô bảng và khung KHỐI DỮ LIỆU lớn trên laptop vẫn vuông**
+  (`rounded-none`) — giữ như Phân tích/Report BI đang chạy. Phần tử MỚI dùng class ngữ nghĩa, không tự đặt
+  `rounded-xl`/`rounded-2xl`/`rounded-[…]`. *(Thay quy tắc 2026-09-10 "4px/6px, bỏ rounded-xl cho card" —
+  chủ dự án chọn không đổi giao diện sang phẳng.)*
+- **Đổ bóng** *(chuẩn B, 2026-10-07)*: thẻ tĩnh `shadow-sm`, rê chuột `shadow-md`; dropdown/popup `shadow-lg`;
+  modal `shadow-xl`. Khối dữ liệu vuông và ô bảng không đổ bóng.
 - **Mật độ bảng** *(mới 2026-09-10)*: dòng dữ liệu cao **26px** (đệm `3px 8px`), đầu bảng **28px** và
   bắt buộc dính trên (`sticky`), dải nhóm **24px**. Bảng nhiều cột phải **ghim cột đầu** (`sticky left`,
   viền phải 2px).
@@ -227,9 +232,9 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   dấu hiệu header bảng, `tracking-wider` **46 lần** vs `tracking-tight` **9 lần** — và `DESIGN_SYSTEM.md`
   cũng ghi `tracking-wider`. Quy tắc sai này đã khiến code mới viết theo bị lệch chuẩn; 8 header còn
   sót dùng `tracking-tight` là di sản của lỗi đó, dọn dần khi có dịp chạm vào file.
-- **Đồng nhất thiết kế** *(ĐẢO NGƯỢC 2026-09-10)*: chuẩn mới là **"Bảng điều khiển ca trực"**, áp cho
-  **Report BI trước** (Đợt 3), rồi **Phân Tích và các module còn lại đi theo** (Đợt 5).
-  Trước đây quy tắc là "lấy Phân Tích làm chuẩn vàng" — nay không còn đúng.
+- **Đồng nhất thiết kế** *(cập nhật 2026-10-07)*: mật độ, màu, chữ, bảng theo **"Bảng điều khiển ca trực"**;
+  riêng bo góc/đổ bóng theo chuẩn (B) ở trên. Mọi khu vực dùng chung một thang — đo bằng
+  `tests/e2e/chuan-thiet-ke-b.spec.ts` (kiểu tính toán thật: nút 8px, thẻ KPI 16px, modal 16px).
   Đặc tả đầy đủ (13 token màu kèm mã hex, thang chữ, mật độ, mẫu bảng 48 cột) ở `DESIGN_SYSTEM.md`.
   Nguyên tắc gốc: **mỗi pixel dành cho số, không dành cho trang trí** — người dùng là quản lý siêu thị
   liếc màn hình giữa hai lượt khách.

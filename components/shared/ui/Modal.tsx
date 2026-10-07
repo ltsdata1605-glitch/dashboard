@@ -167,6 +167,9 @@ export interface ModalProps {
   subTitle?: React.ReactNode;
   /** Override màu chữ của title, vd. "text-rose-700 dark:text-rose-400". Mặc định dùng màu slate chuẩn. */
   titleColorClass?: string;
+  /** Class thêm vào KHUNG modal — vd khu vực có CSS riêng theo phạm vi (Phân ca: "phanca-root") vì modal
+   *  được portal ra body, không nằm trong cây DOM của khu vực đó. Không dùng để đổi bo góc/bóng. */
+  panelClassName?: string;
   /** Nội dung tùy chỉnh (nút phụ...) hiển thị cạnh nút đóng trong header. */
   controls?: React.ReactNode;
   children: React.ReactNode;
@@ -195,6 +198,7 @@ export function Modal({
   title,
   subTitle,
   titleColorClass = 'text-slate-800 dark:text-slate-100',
+  panelClassName,
   controls,
   children,
   footer,
@@ -238,11 +242,10 @@ export function Modal({
 
   const isBottom = position === 'bottom';
   const showHeader = !hideHeader && !!(title || subTitle);
-  // Chuẩn "Bảng điều khiển ca trực" (2026-09-11): modal bo `rounded-md` (6px), không phải 16px.
-  // Bo góc nói "tôi ở tầng khác" — modal ĐÚNG là thứ nổi lên trên nên được bo, nhưng 16px là mức
-  // của thẻ trang trí, không phải của cửa sổ công cụ đặt trên bảng số dày.
-  const roundedClass = noRounded ? '' : (isBottom ? 'rounded-t-md sm:rounded-md' : 'rounded-md');
-  const roundedFooterClass = noRounded ? '' : (isBottom ? 'sm:rounded-b-md' : 'rounded-b-md');
+  // Chuẩn (B) chủ dự án chốt 2026-10-07: modal bo theo token --modal-radius (16px, class rounded-overlay).
+  // (Trước đó 2026-09-11 theo chuẩn "Bảng điều khiển ca trực" là 6px — đã thay.)
+  const roundedClass = noRounded ? '' : (isBottom ? 'rounded-t-overlay sm:rounded-overlay' : 'rounded-overlay');
+  const roundedFooterClass = noRounded ? '' : (isBottom ? 'sm:rounded-b-overlay' : 'rounded-b-overlay');
 
   // Portal ra document.body — tránh modal bị kẹt/lệch vị trí nếu component cha có
   // overflow-hidden hoặc transform (tạo stacking context riêng), đây là cách chuẩn
@@ -290,11 +293,12 @@ export function Modal({
             className={cn(
               // `dvh` chứ không `vh`: trên Safari iOS `90vh` tính cả phần màn hình nằm dưới thanh địa chỉ
               // → đáy modal (nút Lưu/Huỷ ở footer) bị che khi thanh địa chỉ đang hiện.
-              "relative w-full bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90dvh] overflow-hidden focus:outline-none",
+              "relative w-full bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col max-h-[90dvh] overflow-hidden focus:outline-none",
               // Sheet dính đáy màn hình: chừa vùng thanh Home của iPhone cho footer.
               isBottom && "pb-[env(safe-area-inset-bottom,0px)] sm:pb-0",
               roundedClass,
-              maxWidthClasses[maxWidth]
+              maxWidthClasses[maxWidth],
+              panelClassName
             )}
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside
           >

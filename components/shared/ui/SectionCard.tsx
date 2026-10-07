@@ -20,7 +20,7 @@ export const SectionCard = React.forwardRef<HTMLDivElement, SectionCardProps>(
         <div
             ref={ref}
             className={cn(
-                'bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 shadow-sm transition-shadow overflow-hidden',
+                'bg-white rounded-none lg:rounded-card border-y lg:border border-slate-200 shadow-sm transition-shadow overflow-hidden',
                 hoverable && 'lg:hover:shadow-md',
                 className
             )}

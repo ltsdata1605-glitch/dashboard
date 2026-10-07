@@ -170,7 +170,7 @@ export const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
       style={usePortal ? portalStyle : undefined}
       className={cn(
         usePortal ? 'fixed' : cn('absolute top-[calc(100%+8px)]', align === 'right' ? 'right-0' : 'left-0'),
-        'z-[var(--p-z-dropdown)] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden flex flex-col animate-fade-in',
+        'z-[var(--p-z-dropdown)] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-popup shadow-lg overflow-hidden flex flex-col animate-fade-in',
         maxHeightClass,
         panelWidthClass
       )}

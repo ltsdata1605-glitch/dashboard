@@ -201,7 +201,7 @@ export function DataTable<T>({
   return (
     <div
       className={cn(
-        'w-full rounded-xl border border-slate-200 dark:border-slate-700/50',
+        'w-full rounded-card border border-slate-200 dark:border-slate-700/50',
         overflowVisible ? 'overflow-visible' : 'overflow-hidden',
         className
       )}

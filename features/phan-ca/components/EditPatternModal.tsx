@@ -245,7 +245,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
 
   return (
     <>
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={handleClose}
       zIndex="z-[60]"

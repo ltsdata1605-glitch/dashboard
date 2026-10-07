@@ -10,7 +10,7 @@ interface BusyReportModalProps {
 
 const BusyReportModal: React.FC<BusyReportModalProps> = ({ report, onClose }) => {
   return (
-    <Modal
+    <Modal panelClassName="phanca-root"
       isOpen
       onClose={onClose}
       title="Đã Xử Lý Tự Động Lịch Bận"

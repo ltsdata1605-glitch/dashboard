@@ -304,7 +304,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
     );
 
     return (
-        <Modal
+        <Modal panelClassName="phanca-root"
             isOpen
             onClose={onClose}
             zIndex="z-[70]"
