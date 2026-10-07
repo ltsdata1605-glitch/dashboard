@@ -50,3 +50,17 @@ export const formatDiscountAmount = (oldVal: number, newVal: number): { num: str
     }
     return { num: Number((diff / 1000000).toFixed(1)).toString(), unit: 'triệu' };
 };
+
+/** Trần số tem cho MỘT sản phẩm — số lượng vượt mức này gần như chắc chắn là nhập nhầm. */
+export const MAX_TAGS_PER_PRODUCT = 500;
+
+/**
+ * Chuẩn hoá số lượng tem (audit 2026-10-07, D13): file JSON/ô nhập có thể đưa vào 1.5, "10", 1e100,
+ * NaN… — `Array(1.5)` ném RangeError, `Array(1e9)` treo tab, `Array("10")` ra đúng 1 phần tử (in 1 tem
+ * thay vì 10). Luôn trả số nguyên trong [1, MAX_TAGS_PER_PRODUCT].
+ */
+export const normalizeTagQuantity = (raw: unknown): number => {
+    const n = Math.floor(Number(raw));
+    if (!Number.isFinite(n) || n < 1) return 1;
+    return Math.min(n, MAX_TAGS_PER_PRODUCT);
+};

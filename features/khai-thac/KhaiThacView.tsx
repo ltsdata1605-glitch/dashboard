@@ -199,6 +199,10 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
         toast.success('Đã xoá đơn hàng');
     };
     const clearAll = async () => {
+        // Audit D12: HUỶ (không xả) bản nháp đang chờ ghi trước khi xoá — trước đây bộ hẹn giờ 300ms hoặc
+        // pagehide/unmount ghi nháp cũ TRỞ LẠI ngay sau khi người dùng vừa xoá tất cả.
+        if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
+        pendingDraft.current = null;
         try {
             await khaiThacDb.clearAll();
             setReports([]); setLeads([]); setFields([]);

@@ -3,7 +3,7 @@ import { parseCurrency } from './fileParser';
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
 import { fixOklchColors } from './uiService';
-import { calculateDiscountPercent } from '../utils/format';
+import { calculateDiscountPercent, normalizeTagQuantity } from '../utils/format';
 import { escapeHtml } from './batchImageExportService';
 
 /**
@@ -1287,7 +1287,7 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
     }
   }
 
-  const allTags = products.flatMap(p => Array(p.quantity).fill(p)).map(p => {
+  const allTags = products.flatMap(p => Array(normalizeTagQuantity(p.quantity)).fill(p)).map(p => {
     const qrUrl = qrCodeUrls.get(p.msp) || '';
     return generatePriceTagHTML(escapeProductText(p), escapeHtml(abbreviatedEmployeeName), settings, qrUrl);
   });

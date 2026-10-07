@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { normalizeTagQuantity } from '../utils/format';
 import { User } from 'firebase/auth';
 import { Product, InventoryItem, StickerEventUserData } from '../types';
 import { 
@@ -372,7 +373,7 @@ export function useStickerEventFile({
                           allNewDisplayedProducts.push({
                               ...product,
                               selected: false,
-                              quantity: item.quantity > 0 ? item.quantity : 1,
+                              quantity: normalizeTagQuantity(item.quantity),
                           });
                       }
                   } else {
