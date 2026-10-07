@@ -7382,3 +7382,16 @@ này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com
 
 **Chưa làm trong GĐ2 (ghi rõ):** D11 (thông báo "đã lưu" khi cloud lỗi ở Sticker/Khai thác — cần outbox, việc lớn), D17 (Worker phân tích: requestId/khôi phục khi crash). Đề xuất gộp vào GĐ3.
 **Deploy:** cần `npm run deploy:functions` (webhook D09, scheduler D10, relay D18). Frontend đã tương thích với functions cũ.
+
+## Audit 2026-10-07 — Giai đoạn 3: hiệu suất có số đo
+
+| Mục | Commit | Đo trước → sau | Kiểm chứng |
+|---|---|---|---|
+| Phân ca nạp 10 khoá | `e5ec9e61` | Trễ giả 150ms/khoá: **1504ms → 151ms** (chờ 1 vòng mạng thay 10) | `audit-gd3-phanca-load`; e2e Phân ca |
+| Tải Kho/cloud | `e5ec9e61` | 24 tháng × 5 chunk: đỉnh request đồng thời **120 → 12**, đủ 120/120 dòng | `audit-gd3-kho-concurrency` |
+| D17 Worker phân tích | `e5ec9e61` | Sập → dựng lại tối đa 2 lần, gửi lại dữ liệu; kết quả cũ (thế hệ/lượt cũ) bị bỏ | e2e `worker-phan-tich-tu-khoi-phuc` (đỏ trên code cũ) |
+| Máy quét AudioContext | `e5ec9e61` | 6 mã: **6 → 1** AudioContext | e2e `sticker-am-thanh-quet` (đỏ trên code cũ) |
+| So giá trên trang live | (commit này) | origin dashboard.pro.vn + Private Network Access; trang lạ 403; ≤300 sản phẩm | chạy server thật + curl preflight |
+
+**Không đổi:** đường nạp file 200k dòng đã tối ưu + đo ở Đợt 4 (2026-09-30), không đo lại.
+**Chưa làm:** D11 (outbox cho Sticker/Khai thác — báo "đã lưu" khi cloud lỗi). So giá cần chủ dự án `git pull` + khởi động lại server trên Mac; Safari có thể chặn https → http://localhost (dùng Chrome cho So giá).
