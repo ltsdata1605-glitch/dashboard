@@ -263,7 +263,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                 className="shrink-0 text-xs flex items-center gap-1 border-emerald-300 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
                                 title="Xuất và nạp ảnh mới nhất của khu vực này vào kho lệnh LINE ngay lập tức"
                             >
-                                <AppIcon name={dangSyncAnh ? 'loading' : 'cloudUpload'} size="sm" className={dangSyncAnh ? "animate-spin text-emerald-600" : "text-emerald-600"} />
+                                <AppIcon name={dangSyncAnh ? 'loading' : 'cloudUpload'} size="md" className={dangSyncAnh ? "animate-spin text-emerald-600" : "text-emerald-600"} />
                                 <span>{dangSyncAnh ? 'Đang nạp...' : 'Nạp ảnh ngay'}</span>
                             </Button>
                         </div>

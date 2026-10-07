@@ -46,7 +46,19 @@ export async function auditIcons(page: Page, mobile: boolean, rootSelector?: str
                 // nút xếp dọc (icon trên, chữ dưới — thanh điều hướng dưới) thì lệch dọc là đúng thiết kế
                 const doc = getComputedStyle(btn).flexDirection.startsWith('column');
                 if (b.height < 60 && !doc) {
-                    const dy = Math.abs((r.top + r.height / 2) - (b.top + b.height / 2));
+                    // Thẳng hàng = icon cân giữa NÚT, hoặc cân giữa DÒNG CHỮ của nút (tab gạch chân chỉ đệm dưới:
+                    // cả icon lẫn chữ cùng lệch khỏi tâm nút một khoảng như nhau — vẫn thẳng hàng với nhau).
+                    let dyChu = Infinity;
+                    const duyet = document.createTreeWalker(btn, NodeFilter.SHOW_TEXT);
+                    for (let n = duyet.nextNode(); n; n = duyet.nextNode()) {
+                        if (!(n.textContent || '').trim()) continue;
+                        const rg = document.createRange();
+                        rg.selectNodeContents(n);
+                        for (const tr of Array.from(rg.getClientRects())) {
+                            dyChu = Math.min(dyChu, Math.abs((r.top + r.height / 2) - (tr.top + tr.height / 2)));
+                        }
+                    }
+                    const dy = Math.min(dyChu, Math.abs((r.top + r.height / 2) - (b.top + b.height / 2)));
                     if (dy > 1.01) lech.push(`${nhan} [${ten(ic)}] lệch ${dy.toFixed(1)}px`);
                 }
                 const vaiTroPhu = /chevron|close|sort|check$/.test(ic.getAttribute('data-icon') || '');

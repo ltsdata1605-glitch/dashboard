@@ -261,10 +261,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
                     <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-md">
                         <Button variant="unstyled" size="none" onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
-                            <AppIcon name="checkboxOn" size="sm" /> Bật tất cả
+                            <AppIcon name="checkboxOn" size="md" /> Bật tất cả
                         </Button>
                         <Button variant="unstyled" size="none" onClick={() => handleSelectAll(false)} className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
-                            <AppIcon name="checkboxOff" size="sm" /> Tắt tất cả
+                            <AppIcon name="checkboxOff" size="md" /> Tắt tất cả
                         </Button>
                     </div>
                 </div>
@@ -310,8 +310,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
 
                                 {/* Nút thao tác nhóm */}
                                 <div className="flex items-center gap-0.5 shrink-0 opacity-90 md:opacity-0 md:group-hover/row:opacity-100 transition-opacity">
-                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors"><AppIcon name="show" size="sm" /></Button>
-                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"><AppIcon name="hide" size="sm" /></Button>
+                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors"><AppIcon name="show" size="sm" /></Button>
+                                    <Button variant="unstyled" size="none" onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="relative after:absolute after:-inset-2.5 after:content-[''] lg:after:hidden p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"><AppIcon name="hide" size="sm" /></Button>
                                     {isCustomGroup && (
                                         <Button variant="unstyled" size="none" onClick={() => handleDeleteGroup(mainHeader)} title="Xóa toàn bộ nhóm" className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded transition-colors ml-0.5"><AppIcon name="delete" size="sm" /></Button>
                                     )}
@@ -340,7 +340,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                             
                                             {/* Nút sửa & xoá chỉ hiện khi hover vào chip */}
                                             <div className="flex items-center ml-0.5 border-l border-slate-200 dark:border-slate-700 pl-1 opacity-0 group-hover/chip:opacity-100 transition-opacity">
-                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded transition-colors" title="Chỉnh sửa"><AppIcon name="edit" size="xs" /></Button>
+                                                <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="relative after:absolute after:-inset-[13px] after:content-[''] lg:after:hidden p-0.5 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded transition-colors" title="Chỉnh sửa"><AppIcon name="edit" size="xs" /></Button>
                                                 {col.isCustom && (
                                                     <Button variant="unstyled" size="none" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 rounded transition-colors" title="Xóa cột"><AppIcon name="delete" size="xs" /></Button>
                                                 )}

@@ -229,7 +229,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
                         <h3 className="font-bold text-[11px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
                         <Button variant="unstyled" size="none" onClick={addNewCard} className="text-[11px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-sky-50 text-sky-700 dark:bg-sky-500/20 dark:text-sky-400 font-semibold rounded-lg hover:bg-sky-100 transition-colors flex items-center gap-0.5 sm:gap-1">
-                            <AppIcon name="add" size="sm" /> Thêm
+                            <AppIcon name="add" size="md" /> Thêm
                         </Button>
                     </div>
                     <div className="flex-1 overflow-y-auto p-1.5 sm:p-4 space-y-1 sm:space-y-2 relative">
@@ -258,7 +258,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             : config.type === 'data' ? 'Bộ lọc Tùy Biên' : 'Công Thức'}
                                     </p>
                                 </div>
-                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-sky-700 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
+                                <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} aria-label={config.isVisible ? 'Ẩn thẻ' : 'Hiện thẻ'} className={`relative after:absolute after:-inset-[7px] after:content-[''] lg:after:hidden p-1.5 rounded-md ${config.isVisible ? 'text-sky-700 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
                                     <AppIcon name={config.isVisible ? 'show' : 'hide'} size="md" />
                                 </Button>
                             </div>
