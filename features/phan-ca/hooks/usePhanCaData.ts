@@ -17,6 +17,7 @@ import {
   SbhGenderBoost
 } from '../types';
 import { calculateSpecialHours } from '../utils/scheduleUtils';
+import { loadPhanCaScope } from './loadPhanCaScope';
 import { DEFAULT_SHIFT_DEFINITIONS, getDefaultMonthYear, DEFAULT_RULES, ZERO_REQUIREMENTS } from '../constants';
 
 // Toàn bộ state dữ liệu (được lưu IndexedDB + đồng bộ Firestore) và chuỗi effect
@@ -173,20 +174,14 @@ export function usePhanCaData() {
     requestedScopeRef.current = scope;
     hydratedScopeRef.current = ''; // chặn mọi lượt lưu tới khi nạp xong đúng phạm vi này
     const loadSupermarketData = async () => {
-      const savedNams = await syncAndLoadKey<StaffInitialData[]>(getKey('nams'), []);
-      const savedNus = await syncAndLoadKey<StaffInitialData[]>(getKey('nus'), []);
-      const savedRules = await syncAndLoadKey<SchedulingRules>(getKey('rules'), DEFAULT_RULES);
-      const savedPatterns = await syncAndLoadKey<{ [key: string]: string[] }>(getKey('departmentPatterns'), {});
-      const savedReqs = await syncAndLoadKey<DailyRequirements>(getKey('dailyRequirements'), ZERO_REQUIREMENTS);
-      const savedShiftDefs = await syncAndLoadKey<ShiftDefinitions>(getKey('shiftDefinitions'), DEFAULT_SHIFT_DEFINITIONS);
-      const scheduleKey = getKey(`schedule-${monthYear}`);
-      const historyKey = getKey(`history-${monthYear}`);
-      const unresolvedKey = getKey(`unresolved-${monthYear}`);
-      const busyScheduleKey = getKey(`busySchedule-${monthYear}`);
-      const savedSchedule = await syncAndLoadKey<StaffMember[]>(scheduleKey, []);
-      const savedHistory = await syncAndLoadKey<ScheduleHistoryEntry[]>(historyKey, []);
-      const savedUnresolved = await syncAndLoadKey<UnresolvedConflict[]>(unresolvedKey, []);
-      const savedBusySchedule = await syncAndLoadKey<BusySchedule>(busyScheduleKey, {});
+      const loaded = await loadPhanCaScope(syncAndLoadKey, getKey, monthYear, {
+        rules: DEFAULT_RULES, dailyRequirements: ZERO_REQUIREMENTS, shiftDefinitions: DEFAULT_SHIFT_DEFINITIONS,
+      });
+      const { scheduleKey, historyKey, unresolvedKey, busyScheduleKey } = loaded.keys;
+      const savedNams = loaded.nams, savedNus = loaded.nus, savedRules = loaded.rules;
+      const savedPatterns = loaded.departmentPatterns, savedReqs = loaded.dailyRequirements;
+      const savedShiftDefs = loaded.shiftDefinitions, savedSchedule = loaded.schedule;
+      const savedHistory = loaded.history, savedUnresolved = loaded.unresolved, savedBusySchedule = loaded.busySchedule;
       if (requestedScopeRef.current !== scope) return; // người dùng đã đổi tháng/siêu thị — bỏ kết quả cũ
       // Populate lastSyncedRef to prevent immediate write-back of fetched data
       lastSyncedRef.current[getKey('nams')] = JSON.stringify(savedNams);

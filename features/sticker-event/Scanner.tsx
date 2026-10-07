@@ -52,12 +52,26 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     onScanSuccessRef.current = onScanSuccess;
   });
 
+  // Audit 2026-10-07 (GĐ3): DÙNG LẠI 1 AudioContext cho cả phiên quét, đóng khi tắt máy quét. Trước đây
+  // mỗi lượt quét tạo 1 cái mới và không đóng — Safari iOS giới hạn số AudioContext đang mở, quét vài
+  // chục mã là tiếng bíp im hẳn (và mỗi cái còn giữ luồng âm thanh hệ thống).
+  const audioContextRef = useRef<AudioContext | null>(null);
+  useEffect(() => () => {
+    audioContextRef.current?.close().catch(() => undefined);
+    audioContextRef.current = null;
+  }, []);
+
   const playSound = useCallback((type: 'success' | 'error') => {
     // Web Audio API to play sounds without needing an <audio> element
     try {
-      // Safari cũ chỉ có webkitAudioContext, không có trong lib.dom chuẩn
-      const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
-      const audioContext = new AudioContextCtor();
+      if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
+        // Safari cũ chỉ có webkitAudioContext, không có trong lib.dom chuẩn
+        const AudioContextCtor = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+        audioContextRef.current = new AudioContextCtor();
+      }
+      const audioContext = audioContextRef.current;
+      // iOS treo context ở 'suspended' khi app vào nền — đánh thức lại trước khi phát.
+      if (audioContext.state === 'suspended') audioContext.resume().catch(() => undefined);
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       

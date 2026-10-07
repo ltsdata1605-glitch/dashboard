@@ -26,6 +26,11 @@ import { cleanRow, chunkData, BATCH_GROUP_SIZE } from './cloudDataService';
 import * as dbService from './dbService';
 import { getRowValue, parseKhoList } from '../utils/dataUtils';
 import { COL } from '../constants';
+import { mapWithLimit } from './mapWithLimit';
+
+/** Số file / chunk tải song song tối đa (audit GĐ3 — trước đây không giới hạn). Tối đa 3 × 4 = 12 request. */
+const FILE_CONCURRENCY = 3;
+const CHUNK_CONCURRENCY = 4;
 
 export interface KhoSalesFileMeta {
     fileId: string;
@@ -267,17 +272,12 @@ export async function pruneStaleKhoFiles(maKho: string): Promise<void> {
  */
 export async function downloadKhoFileRows(maKho: string, fileId: string, chunkCount: number, rev?: string): Promise<DataRow[]> {
     const chunksRef = chunksCollectionRef(maKho, fileId);
-    const chunkPromises: Promise<DataRow[]>[] = [];
-    for (let i = 0; i < chunkCount; i++) {
-        const chunkId = rev ? `${rev}_${i}` : `chunk_${i}`;
-        chunkPromises.push(
-            getDoc(doc(chunksRef, chunkId)).then(snap => {
-                if (!snap.exists()) throw new Error(`[KhoData] Thiếu ${chunkId} của file ${fileId} (Kho ${maKho}) — dữ liệu chưa đầy đủ.`);
-                return (snap.data().rows || []) as DataRow[];
-            })
-        );
-    }
-    const chunkResults = await Promise.all(chunkPromises);
+    const chunkIds = Array.from({ length: chunkCount }, (_, i) => (rev ? `${rev}_${i}` : `chunk_${i}`));
+    const chunkResults = await mapWithLimit(chunkIds, CHUNK_CONCURRENCY, chunkId =>
+        getDoc(doc(chunksRef, chunkId)).then(snap => {
+            if (!snap.exists()) throw new Error(`[KhoData] Thiếu ${chunkId} của file ${fileId} (Kho ${maKho}) — dữ liệu chưa đầy đủ.`);
+            return (snap.data().rows || []) as DataRow[];
+        }));
     const allRows: DataRow[] = [];
     for (const chunk of chunkResults) {
         for (const row of chunk) {
@@ -296,7 +296,7 @@ export async function downloadKhoFileRows(maKho: string, fileId: string, chunkCo
  */
 export async function downloadKhoSalesData(maKho: string): Promise<{ data: DataRow[]; files: KhoSalesFileMeta[] }> {
     const files = pickKhoFilesToLoad(await getKhoActiveFilesMeta(maKho));
-    const sources = await Promise.all(files.map(async f => ({ uploadedAt: f.uploadedAt, rows: await downloadKhoFileRows(maKho, f.fileId, f.chunkCount, f.rev) })));
+    const sources = await mapWithLimit(files, FILE_CONCURRENCY, async f => ({ uploadedAt: f.uploadedAt, rows: await downloadKhoFileRows(maKho, f.fileId, f.chunkCount, f.rev) }));
     return { data: selectLatestRowsByMonth(sources), files };
 }
 
@@ -432,7 +432,7 @@ async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; sna
     const files = pickKhoFilesToLoad(await getKhoActiveFilesMeta(maKho));
     const snapshot = computeFilesSnapshot(files);
 
-    const sources = await Promise.all(files.map(async (f) => {
+    const sources = await mapWithLimit(files, FILE_CONCURRENCY, async (f) => {
         const cacheKey = khoFileCacheKey(maKho, f.fileId);
         const cached = await dbService.getSetting<KhoFileCacheEntry>(cacheKey).catch(() => null);
         if (cached && cached.fileLastModified === f.fileLastModified && (cached.rev ?? null) === (f.rev ?? null)) {
@@ -444,7 +444,7 @@ async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; sna
             console.warn(`[KhoData] Không lưu được cache cục bộ cho file ${f.fileId} (Kho ${maKho}):`, err)
         );
         return { uploadedAt: f.uploadedAt, rows };
-    }));
+    });
 
     return { data: selectLatestRowsByMonth(sources), snapshot };
 }
@@ -465,7 +465,7 @@ export async function fetchAllowedKhoData(departmentId: string | undefined): Pro
     const allowedKhos = parseKhoList(departmentId);
     if (allowedKhos.length === 0) return { data: [], snapshot: '' };
 
-    const results = await Promise.all(allowedKhos.map(maKho => fetchKhoDataCached(maKho)));
+    const results = await mapWithLimit(allowedKhos, 2, maKho => fetchKhoDataCached(maKho));
     return {
         data: results.flatMap(r => r.data),
         snapshot: results.map(r => r.snapshot).join('|'),

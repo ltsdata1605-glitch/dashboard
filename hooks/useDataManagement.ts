@@ -945,8 +945,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const dataGenerationRef = useRef(0);
     const [workerCachedGeneration, setWorkerCachedGeneration] = useState(0);
 
+    // Audit D17: số lần đã dựng lại Worker sau khi sập (giới hạn để không lặp vô hạn nếu lỗi tái diễn).
+    const workerCrashCountRef = useRef(0);
+
     useEffect(() => {
-        import('../services/analytics.worker?worker').then((WorkerModule) => {
+        let disposed = false;
+        const spawnWorker = () => import('../services/analytics.worker?worker').then((WorkerModule) => {
+            if (disposed) return;
             const worker = new WorkerModule.default();
             workerRef.current = worker;
 
@@ -979,6 +984,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         // với processedData để giữ đúng tính atomic (như trước, mọi giá trị luôn
                         // tới từ 1 lần cập nhật).
                         const pending = pendingMainThreadDataQueueRef.current.shift();
+                        // Audit D17: kết quả của lượt đã bị thay thế (dữ liệu đổi thế hệ, hoặc đã có lượt
+                        // PROCESS mới hơn đang chờ) — BỎ, không áp số cũ lên màn hình. Lượt mới sẽ tới sau.
+                        if (pending && (pending.generation !== dataGenerationRef.current || pending.requestId !== processRequestIdRef.current)) break;
                         setAppState('dashboard');
                         setProcessedData(pending ? {
                             ...result,
@@ -1005,7 +1013,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         // Giữ hàng đợi FIFO đồng bộ với số message PROCESS thực đã gửi — nếu
                         // không shift() ở đây, lần PROCESS_SUCCESS kế tiếp sẽ nhận nhầm snapshot
                         // của lần gửi trước đó (lệch cặp).
-                        pendingMainThreadDataQueueRef.current.shift();
+                        const failed = pendingMainThreadDataQueueRef.current.shift();
+                        if (failed && (failed.generation !== dataGenerationRef.current || failed.requestId !== processRequestIdRef.current)) break;
                         console.error("Lỗi khi xử lý lại dữ liệu:", payload);
                         setStatus({ message: payload, type: 'error', progress: 0 });
                         setAppState('upload');
@@ -1016,12 +1025,28 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
             worker.onerror = (err) => {
                 console.error("Worker error in analytics worker:", err);
-                setStatus({ message: 'Lỗi luồng xử lý dữ liệu. Đang tải lại...', type: 'error', progress: 0 });
+                // Audit D17: trước đây chỉ HIỆN chữ "Đang tải lại..." mà không làm gì — màn hình xử lý quay
+                // mãi. Nay: bỏ mọi lượt PROCESS đang chờ (kết quả của chúng sẽ không bao giờ tới), dựng
+                // lại Worker (tối đa 2 lần) — setWorkerReady(true) khiến effect SET_DATA gửi lại dữ liệu.
+                pendingMainThreadDataQueueRef.current = [];
+                worker.terminate();
+                if (workerRef.current === worker) workerRef.current = null;
+                setWorkerReady(false);
+                if (workerCrashCountRef.current < 2 && !disposed) {
+                    workerCrashCountRef.current += 1;
+                    setStatus({ message: 'Luồng xử lý dữ liệu gặp lỗi — đang khởi động lại...', type: 'info', progress: 50 });
+                    spawnWorker();
+                } else {
+                    setIsFilterProcessing(false);
+                    setStatus({ message: 'Luồng xử lý dữ liệu gặp lỗi lặp lại. Vui lòng tải lại trang (F5).', type: 'error', progress: 0 });
+                }
             };
 
             setWorkerReady(true);
         });
+        spawnWorker();
         return () => {
+            disposed = true;
             if (workerRef.current) workerRef.current.terminate();
         };
     }, []);
@@ -1152,7 +1177,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         uncollectedOrders: DataRow[];
         /** Bộ lọc gửi kèm lượt PROCESS này — xem processedFilterState. */
         filterState: FilterState;
+        /** Thế hệ dữ liệu + số thứ tự lượt gửi — kết quả lệch với hiện tại là kết quả cũ (audit D17). */
+        generation: number;
+        requestId: number;
     }[]>([]);
+    const processRequestIdRef = useRef(0);
 
     const configRetryRef = useRef<Promise<void> | null>(null);
 
@@ -1211,6 +1240,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 unshippedOrders: computedUnshippedOrders,
                 uncollectedOrders: computedUncollectedOrders,
                 filterState,
+                generation: dataGenerationRef.current,
+                requestId: ++processRequestIdRef.current,
             });
             workerRef.current.postMessage({
                 type: 'PROCESS',

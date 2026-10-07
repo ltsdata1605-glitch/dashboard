@@ -13,6 +13,7 @@ import { db } from './firebase';
 import { doc, getDoc, getDocs, collection, writeBatch, serverTimestamp, FieldValue } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
+import { mapWithLimit } from './mapWithLimit';
 
 // Firestore document limit is 1MB. We target 800KB per chunk for safety.
 const MAX_CHUNK_BYTES = 800 * 1024;
@@ -228,19 +229,14 @@ export async function downloadProcessedData(
     console.warn(`[CloudData] Found cloud data: ${meta.totalRows} rows in ${meta.chunkCount} chunks`);
 
     // 2. Download all chunks in parallel
-    const chunkPromises: Promise<DataRow[]>[] = [];
-    for (let i = 0; i < meta.chunkCount; i++) {
-        const chunkId = meta.rev ? `${meta.rev}_${i}` : `chunk_${i}`;
-        chunkPromises.push(
-            getDoc(doc(salesDataRef, chunkId)).then(snap => {
-                // Audit D03: thiếu chunk là LỖI — không trả về "thành công" với một phần dữ liệu.
-                if (!snap.exists()) throw new Error(`[CloudData] Thiếu ${chunkId} — dữ liệu trên cloud chưa đầy đủ (đang được ghi?).`);
-                return (snap.data().rows || []) as DataRow[];
-            })
-        );
-    }
-
-    const chunkResults = await Promise.all(chunkPromises);
+    // Tối đa 6 chunk tải cùng lúc (audit GĐ3 — trước đây bắn tất cả song song).
+    const chunkIds = Array.from({ length: meta.chunkCount }, (_, i) => (meta.rev ? `${meta.rev}_${i}` : `chunk_${i}`));
+    const chunkResults = await mapWithLimit(chunkIds, 6, chunkId =>
+        getDoc(doc(salesDataRef, chunkId)).then(snap => {
+            // Audit D03: thiếu chunk là LỖI — không trả về "thành công" với một phần dữ liệu.
+            if (!snap.exists()) throw new Error(`[CloudData] Thiếu ${chunkId} — dữ liệu trên cloud chưa đầy đủ (đang được ghi?).`);
+            return (snap.data().rows || []) as DataRow[];
+        }));
 
     // 3. Merge chunks and restore Date objects
     const allRows: DataRow[] = [];
