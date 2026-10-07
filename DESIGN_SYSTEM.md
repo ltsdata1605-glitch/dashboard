@@ -177,6 +177,7 @@ chữ (canh theo chân chữ → lệch ~2px). Tên icon kiểu cũ còn trong D
 | Xuất 1 ảnh | `exportImage` | Camera | chủ dự án chốt "CHUẨN" |
 | Xuất ảnh hàng loạt | `exportBatch` | Images | |
 | Tải file xuống | `download` | Download | |
+| Xuất Excel | `spreadsheet` | FileSpreadsheet | mọi nút "Xuất Excel" (Thuế, Phân tích…) |
 | Nhập / tải file lên | `upload` | Upload | đồng bộ cloud: `cloudUpload` / `cloudDownload` |
 | Tìm kiếm | `search` | Search | không kết quả: `searchEmpty` |
 | Bộ lọc | `filter` | Filter | tuỳ chỉnh hiển thị/cột: `viewOptions` (SlidersHorizontal) |

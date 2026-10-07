@@ -63,7 +63,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   </li>
                   <li>
                       <span className="inline-flex items-center bg-emerald-200 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold py-1 px-3 rounded shadow-sm text-sm mr-2">
-                           <AppIcon name="refresh" size="md" />
+                           <AppIcon name="repeat" size="md" />
                            <span className="ml-2">Ca Xoay</span>
                       </span>
                        Cấu hình mẫu ca cho từng bộ phận.

@@ -176,7 +176,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                 className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 transition-all cursor-pointer"
                                 title="Tải file Excel (.xlsx) danh sách hoàn thuế"
                             >
-                                <AppIcon name="download" size="sm" />
+                                <AppIcon name="spreadsheet" size="md" />
                                 <span>Xuất Excel ({activeMonthLabel})</span>
                             </button>
                             <button
@@ -248,7 +248,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                             title={`Xuất riêng danh sách ${group.label} ra file Excel`}
                                             className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 dark:bg-emerald-950 dark:hover:bg-emerald-900 dark:text-emerald-300 flex items-center gap-1 transition-colors cursor-pointer"
                                         >
-                                            <AppIcon name="spreadsheet" size="xs" />
+                                            <AppIcon name="spreadsheet" size="md" />
                                             <span>Xuất Excel</span>
                                         </button>
                                     </div>
@@ -368,7 +368,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                                 onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
                                 className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
-                                <AppIcon name="spreadsheet" size="sm" />
+                                <AppIcon name="spreadsheet" size="md" />
                                 <span>Xuất Excel</span>
                             </button>
                         )}

@@ -377,7 +377,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                         onClick={onClearAll}
                         className="text-[11px] text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                     >
-                        <AppIcon name="delete" size="xs" />
+                        <AppIcon name="delete" size="md" />
                         <span>Xóa tất cả</span>
                     </button>
 
@@ -388,7 +388,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             className="px-2 py-1 rounded-lg text-[11px] font-semibold bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-1 cursor-pointer"
                             title="Sao chép bảng cho Google Sheets"
                         >
-                            {isCopied ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
+                            {isCopied ? <AppIcon name="check" size="md" className="text-emerald-600" /> : <AppIcon name="copy" size="md" />}
                             <span>{isCopied ? 'Đã copy!' : 'Copy Sheets'}</span>
                         </button>
                         <button
@@ -397,7 +397,7 @@ export const TaxHistorySidebar: React.FC<TaxHistorySidebarProps> = ({
                             className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer"
                             title="Xuất file Excel (.xlsx)"
                         >
-                            <AppIcon name="download" size="xs" />
+                            <AppIcon name="spreadsheet" size="md" />
                             <span>Xuất Excel</span>
                         </button>
                     </div>

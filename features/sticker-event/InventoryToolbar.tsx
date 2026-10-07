@@ -204,7 +204,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
             className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition-colors"
             title="Xuất danh sách thành ảnh PNG"
           >
-            <AppIcon name="imageDownload" size="sm" />
+            <AppIcon name="exportImage" size="md" />
             <span>Xuất ảnh</span>
           </Button>
         )}
