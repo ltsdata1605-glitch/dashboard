@@ -44,11 +44,15 @@ export const CheckThuongView: React.FC = () => {
                 iframeRef.current?.contentWindow?.postMessage({
                     type: 'CHECK_THUONG_INIT_DATA',
                     payload: saved
-                }, '*');
+                }, window.location.origin);
             }
         });
 
         const handleMessage = (e: MessageEvent) => {
+            // Audit 2026-10-07 (S11): MỌI loại tin chỉ nhận từ đúng iframe Check Thưởng của mình (cùng
+            // origin). Trước đây chỉ nhánh SHARE_RETRY kiểm — cửa sổ lạ giữ tham chiếu tới app (mở
+            // popup/khung) bơm được số thưởng giả và ghi đè 'checkthuong_data' đã lưu.
+            if (e.source !== iframeRef.current?.contentWindow || e.origin !== window.location.origin) return;
             if (e.data?.type === 'CHECK_THUONG_FILE_LOADED') {
                 setHasData(true);
                 if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
@@ -80,7 +84,7 @@ export const CheckThuongView: React.FC = () => {
                         iframeRef.current?.contentWindow?.postMessage({
                             type: 'CHECK_THUONG_INIT_DATA',
                             payload: saved
-                        }, '*');
+                        }, window.location.origin);
                     }
                 });
             } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED' || e.data?.type === 'CHECK_THUONG_DATA_RESPONSE') {
@@ -135,16 +139,16 @@ export const CheckThuongView: React.FC = () => {
                 iframeRef.current?.contentWindow?.postMessage({
                     type: 'CHECK_THUONG_INIT_DATA',
                     payload
-                }, '*');
+                }, window.location.origin);
             } else {
                 getUnifiedCheckThuongData().then((saved) => {
                     if (saved && saved.competitionData && saved.competitionData.length > 0) {
                         iframeRef.current?.contentWindow?.postMessage({
                             type: 'CHECK_THUONG_INIT_DATA',
                             payload: saved
-                        }, '*');
+                        }, window.location.origin);
                     } else {
-                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, '*');
+                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, window.location.origin);
                     }
                 });
             }
@@ -226,7 +230,7 @@ export const CheckThuongView: React.FC = () => {
                     iframe.contentWindow?.postMessage({
                         type: 'CHECK_THUONG_INIT_DATA',
                         payload: saved
-                    }, '*');
+                    }, window.location.origin);
                 }
             });
         };
@@ -257,7 +261,7 @@ export const CheckThuongView: React.FC = () => {
             type: 'CHECK_THUONG_SEARCH',
             code1: codes.code1,
             code2: codes.code2
-        }, '*');
+        }, window.location.origin);
     };
 
     const handleCodeChange = (field: 'code1' | 'code2', value: string) => {
@@ -267,7 +271,7 @@ export const CheckThuongView: React.FC = () => {
                 type: 'CHECK_THUONG_SEARCH',
                 code1: newCodes.code1,
                 code2: newCodes.code2
-            }, '*');
+            }, window.location.origin);
             return newCodes;
         });
     };
@@ -275,7 +279,7 @@ export const CheckThuongView: React.FC = () => {
     const handleChangeFile = () => {
         iframeRef.current?.contentWindow?.postMessage({
             type: 'CHECK_THUONG_CHANGE_FILE'
-        }, '*');
+        }, window.location.origin);
     };
 
     const handleSelectStoreFromLeaderboard = (storeCode: string) => {
@@ -284,7 +288,7 @@ export const CheckThuongView: React.FC = () => {
             type: 'CHECK_THUONG_SEARCH',
             code1: storeCode,
             code2: ''
-        }, '*');
+        }, window.location.origin);
         setActiveSubTab('search');
     };
 
@@ -313,7 +317,7 @@ export const CheckThuongView: React.FC = () => {
                     onClick={() => {
                         setActiveSubTab('leaderboard');
                         if (competitionData.length === 0) {
-                            iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA' }, '*');
+                            iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA' }, window.location.origin);
                         }
                     }}
                     className={`flex items-center gap-1 px-2.5 py-1 ${isMobile ? 'min-h-11' : ''} rounded-full text-xs font-bold transition-all ${
@@ -352,7 +356,7 @@ export const CheckThuongView: React.FC = () => {
                             variant="unstyled" size="none"
                             onClick={() => {
                                 setCodes(prev => ({ ...prev, code2: '' }));
-                                iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
+                                iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, window.location.origin);
                             }}
                             className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
                             title="Xoá mã kho đang so sánh"

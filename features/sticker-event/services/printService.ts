@@ -4,6 +4,15 @@ import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
 import { fixOklchColors } from './uiService';
 import { calculateDiscountPercent } from '../utils/format';
+import { escapeHtml } from './batchImageExportService';
+
+/**
+ * Audit 2026-10-07 (S12): tên/mã/khuyến mãi lấy từ file Excel nhập vào — escape mọi trường CHỮ trước
+ * khi chèn vào HTML tem (số giữ nguyên để các phép tính trong template không đổi). Chữ thường không
+ * có `< > & " '` nên tem in ra giống hệt trước.
+ */
+const escapeProductText = (product: Product): Product =>
+  Object.fromEntries(Object.entries(product).map(([k, v]) => [k, typeof v === 'string' ? escapeHtml(v) : v])) as unknown as Product;
 
 export interface ModernLayoutPositions {
   productName: { x: number; y: number; w: number; h: number };
@@ -1280,7 +1289,7 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
 
   const allTags = products.flatMap(p => Array(p.quantity).fill(p)).map(p => {
     const qrUrl = qrCodeUrls.get(p.msp) || '';
-    return generatePriceTagHTML(p, abbreviatedEmployeeName, settings, qrUrl);
+    return generatePriceTagHTML(escapeProductText(p), escapeHtml(abbreviatedEmployeeName), settings, qrUrl);
   });
   
   if (allTags.length === 0) {

@@ -2,6 +2,7 @@ import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas'
 import { StickerPage, PrintHistoryEntry, TicketDrawData } from './types';
 import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
 import { sanitizeTicketHtml, sanitizeTicketHtmlForDisplay, sanitizeTicketHtmlForPrint } from './ticketSanitize';
+import { escapeHtml } from '../services/batchImageExportService';
 
 /**
  * Sinh HTML in cho tất cả trang phiếu rút thăm từ data (không phụ thuộc DOM).
@@ -159,16 +160,18 @@ export const generatePageHtml = (
     if (page.code) {
         try {
             const url = generateBarcodeDataUrl(page.code);
-            barcodeHtml = `<div class="barcode"><img src="${url}" style="image-rendering:pixelated;width:100%;height:100%;object-fit:fill" alt="${page.code}" /></div>`;
+            barcodeHtml = `<div class="barcode"><img src="${url}" style="image-rendering:pixelated;width:100%;height:100%;object-fit:fill" alt="${escapeHtml(page.code)}" /></div>`;
         } catch (e) {
             console.error('Barcode error:', e);
         }
     }
 
     const subHeaderHtml = stickerType === 'gio_vang'
-        ? `<div class="sub-header">${subHeader || ''}</div>` : '';
+        ? `<div class="sub-header">${escapeHtml(subHeader || '')}</div>` : '';
 
-    const priceHtml = `<div class="extra2">${newPrice}</div>`;
+    // Audit 2026-10-07 (S12): mọi trường dưới đây là CHỮ THUẦN (tên/giá từ Excel, đầu/chân tem soạn bằng
+    // innerText) — escape để tên sản phẩm kiểu `<img onerror=…>` không thành thẻ HTML trong trang in.
+    const priceHtml = `<div class="extra2">${escapeHtml(newPrice)}</div>`;
 
     if (discountDisplayMode === 'amount') {
         const oldVal = Number(String(page.oldPrice).replace(/\D/g, ''));
@@ -184,13 +187,13 @@ export const generatePageHtml = (
 
     return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
         ${barcodeHtml}
-        <div class="header-text">${header || ''}</div>
+        <div class="header-text">${escapeHtml(header || '')}</div>
         ${subHeaderHtml}
-        <div class="extra1">${percent}</div>
-        <div class="old">${page.oldPrice}</div>
-        <div class="name">${page.label}</div>
+        <div class="extra1">${escapeHtml(percent)}</div>
+        <div class="old">${escapeHtml(page.oldPrice)}</div>
+        <div class="name">${escapeHtml(page.label)}</div>
         ${priceHtml}
-        <div class="footer-text">${footer || ''}</div>
+        <div class="footer-text">${escapeHtml(footer || '')}</div>
     </div>`;
 };
 

@@ -47,16 +47,26 @@ async function openTopThuong(page: import('@playwright/test').Page) {
     await sidebar.waitFor({ state: 'visible', timeout: 20_000 });
     await sidebar.locator('button:has(svg[data-icon="navRewardCheck"])').first().click();
 
-    // Bơm dữ liệu qua đúng kênh mà CheckThuongView.tsx đang lắng nghe (postMessage từ iframe).
+    // Bơm dữ liệu qua đúng kênh mà CheckThuongView.tsx đang lắng nghe (tin 'message' từ iframe).
+    // CheckThuongView chỉ nhận tin có e.source là ĐÚNG iframe của mình + cùng origin (audit S11). Tin thật
+    // do check-thuong.html gửi có đúng 2 thuộc tính đó (đo 2026-10-07). Gửi qua `frame.evaluate` của
+    // Playwright thì e.source lại là cửa sổ cha (đo cùng ngày), chèn <script> vào iframe cũng không qua
+    // → dựng MessageEvent mang đúng source/origin của tin thật.
     await page.waitForTimeout(1500);
     await page.evaluate((data) => {
-        window.postMessage({
-            type: 'CHECK_THUONG_FILE_LOADED',
-            competitionData: data,
-            fileName: 'du-lieu-gia.xlsx',
-            uploadTime: '18/09/2026 10:00',
-            code1: '910',
-        }, '*');
+        const iframe = document.querySelector('iframe[src*="check-thuong"]') as HTMLIFrameElement | null;
+        if (!iframe?.contentWindow) throw new Error('Không thấy iframe check-thuong');
+        window.dispatchEvent(new MessageEvent('message', {
+            origin: window.location.origin,
+            source: iframe.contentWindow,
+            data: {
+                type: 'CHECK_THUONG_FILE_LOADED',
+                competitionData: data,
+                fileName: 'du-lieu-gia.xlsx',
+                uploadTime: '18/09/2026 10:00',
+                code1: '910',
+            },
+        }));
     }, COMPETITION_DATA);
     await page.waitForTimeout(1200);
 
@@ -96,5 +106,22 @@ test.describe('Check Thưởng — Top thưởng (component React)', () => {
         // "910 - Siêu Thị A" có 2 dòng thô (Ngành 1 + Ngành 2) nhưng phải gộp thành 1 mục.
         const count = await page.getByText(/Siêu Thị A/).count();
         expect(count, 'Siêu Thị A bị lặp — dữ liệu chưa được gộp theo siêu thị').toBeLessThanOrEqual(2);
+    });
+
+    test('tin từ nguồn LẠ (không phải iframe Check Thưởng) bị bỏ qua — audit S11', async ({ page }) => {
+        await page.goto('/');
+        await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
+        const sidebar = page.locator('aside').first();
+        await sidebar.waitFor({ state: 'visible', timeout: 20_000 });
+        await sidebar.locator('button:has(svg[data-icon="navRewardCheck"])').first().click();
+        await page.waitForTimeout(1500);
+        await page.evaluate((data) => {
+            window.dispatchEvent(new MessageEvent('message', {
+                origin: 'https://trang-la.example', source: window,
+                data: { type: 'CHECK_THUONG_FILE_LOADED', competitionData: data, fileName: 'gia-mao.xlsx' },
+            }));
+        }, COMPETITION_DATA);
+        await page.waitForTimeout(1200);
+        await expect(page.getByRole('button', { name: /Top thưởng/i })).toHaveCount(0);
     });
 });

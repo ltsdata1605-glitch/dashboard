@@ -3287,6 +3287,8 @@
             versionModal.addEventListener('click', (event) => { if (event.target === event.currentTarget) { versionModal.classList.add('hidden'); } });
 
             window.addEventListener('message', (e) => {
+                // Chỉ nhận lệnh từ đúng trang Dashboard chứa iframe này (audit 2026-10-07, S11).
+                if (e.source !== window.parent || e.origin !== window.location.origin) return;
                 if (e.data && e.data.type === 'CHECK_THUONG_SEARCH') {
                     storeCodeInput1.value = e.data.code1 || '';
                     storeCodeInput2.value = e.data.code2 || '';
