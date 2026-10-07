@@ -7366,3 +7366,19 @@ này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com
 - Bot chưa khai Admin nào → DUYỆT vẫn ai cũng gõ được (giữ để không đứng việc cấp mã). Cần chủ dự án khai Admin cho từng bot.
 - Manager cùng Kho vẫn đọc được Channel Access Token của Bot Kho được kế thừa (client gửi token trực tiếp tới LINE). Chuyển token hẳn về server là việc lớn hơn — nên xoay token các bot vì trước đây mọi manager đều đọc được.
 - Ảnh cũ trong `bot_media` không có `ownerUid` → không xoá được từ client (chỉ ảnh hưởng nút dọn ảnh).
+
+## Audit 2026-10-07 — Giai đoạn 2: dữ liệu đúng, không mất
+
+| Mục | Commit | Sửa | Kiểm chứng |
+|---|---|---|---|
+| D02/D01/D03 Kho | `2414436` | Ô Kho theo (người tải, tháng) `m_{YYYYMM}_{uid}` ghi đè; đọc: mỗi tháng lấy nguồn mới nhất, bản chụp auto-id cũ chỉ lấy bản mới nhất mỗi người (tự hết trùng, không xoá gì); chunk theo phiên bản, thiếu chunk = lỗi; nhân viên mở lại app có dữ liệu | `audit-gd2a-kho-sync` 7 ca (6 đỏ trên code cũ); harness audit: doanh thu 1tr (trước 2tr), mở lại 1 dòng (trước 0) |
+| D04/D03/D14 cá nhân | `e0d4706` | Chunk đo byte UTF-8; `users/{uid}/salesData` theo phiên bản, kiểm số dòng; áp bản cloud ghi mới → chuyển registry → dọn cũ; khởi động lỗi chỉ dọn khi JSON hỏng | `audit-gd2b-cloud-chunks` 5 ca (5 đỏ); e2e mở lại app/IndexedDB 9/9 |
+| D05/D06/D08 | `d1a4561` | Phân ca chỉ lưu khi phạm vi siêu thị\|tháng đã nạp, không tự sinh đè lịch đã có; Thuế đối chiếu theo createdAt, bản cloud lưu vào máy để có id riêng | Harness audit F01: 0 lượt ghi sai (trước 11); `audit-gd2c-tax-identity` 3 ca (3 đỏ); e2e Phân ca/Thuế 8/8 |
+| D09/D10/D15 | `69e29b0` | `reserveCoupon` trong transaction ở 4 luồng cấp mã; không dọn coupon USED; báo cáo 22h theo ngày VN; `parseNumber` hiểu phẩy thập phân, `parseExcelDate` bỏ ngày không tồn tại | webhook test D09 (đỏ trên code cũ: 2 đơn cùng 1 mã), D10, `dataUtils.test` D15 |
+| D07 | `858b1ae` | Xoá bảng giá/tồn In Sticker bump mốc đồng bộ; máy khác áp trạng thái rỗng | `sticker-firestore-quota` +1 ca (đỏ trên code cũ) |
+| D18 | `a3a4d01` | Relay giữ việc bằng transaction + lease 3 phút, tối đa 3 lần; complete idempotent | `audit-gd2e-pmh-relay` 3 ca (3 đỏ) |
+| D16 | `7aa32de` | BI xoá nguồn thì xoá kết quả phân tích; KPI đầu bảng (tổng cụm) chỉ bù cho 'Tổng' hoặc báo cáo 1 siêu thị | e2e Report BI 39/39 (hồi quy). **Chưa có test riêng cho ca siêu thị thiếu cột.** |
+| D12/D13 | (commit này) | Khai thác huỷ nháp chờ ghi khi xoá tất cả; số lượng tem chuẩn hoá [1..500] | unit số lượng; e2e Khai thác/Sticker 11/11. D12 kiểm bằng đọc code (cuộc đua <300ms không tái hiện được qua UI) |
+
+**Chưa làm trong GĐ2 (ghi rõ):** D11 (thông báo "đã lưu" khi cloud lỗi ở Sticker/Khai thác — cần outbox, việc lớn), D17 (Worker phân tích: requestId/khôi phục khi crash). Đề xuất gộp vào GĐ3.
+**Deploy:** cần `npm run deploy:functions` (webhook D09, scheduler D10, relay D18). Frontend đã tương thích với functions cũ.
