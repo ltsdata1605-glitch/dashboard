@@ -7250,3 +7250,29 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   - Audit trình duyệt thêm Phân Ca, In Sticker, Bot LINE (icon-audit-man-goc: 11 màn × 390/1366).
   - Audit iPhone toàn dự án (`AUDIT_IPHONE=1 AUDIT_SEED=1`, 13 màn, tự bấm qua nút/modal): cỡ icon trong nút trên
     iPhone CHỈ còn 14/16/18/22px (đều thuộc thang mobile) — lúc audit ban đầu có 27 giá trị size khác nhau.
+
+
+---
+
+# Xử lý tồn đọng sau chuẩn hoá icon (2026-10-07)
+
+## 1. Tab Nhân viên chặn khi chưa có danh sách nhân viên từ Phân Tích (3384f2b)
+- Hành vi CÓ CHỦ ĐÍCH của chủ dự án → sửa DỮ LIỆU MẪU của test, không sửa ứng dụng.
+- `tests/e2e/helpers/seed.ts → seedAnalysisEmployees()`: nạp `analysis-employees-list` (+ bản `bi_`) đúng dạng
+  analysisEmployeeSyncService lưu thật (`name = formatEmployeeName(originalName)`), phát `analysis-employees-updated`.
+- Dùng ở `bi-bonus-compare.spec.ts` (3 bài) và `bi-deep-link-khong-vong-lap.spec.ts` (bài Nhân viên).
+
+## 2. Thẻ KPI thi đua đổi thiết kế (3f4c8c7)
+- `bi-competition-bonus-col`: chữ "2/4 nhóm" → "Tiến độ 2/4" là thiết kế mới → cập nhật kỳ vọng.
+- LỖI THẬT — ẢNH XUẤT THI ĐUA BỊ CẮT MÉP PHẢI (mất thẻ KPI thứ 4, viền phải, chú thích). Gốc:
+  `presetBi.ts` áp quy tắc "tên nhân viên" (`min-width: max-content`) cho MỌI div có chữ chứa " - " + chữ số →
+  khối bọc chứa tiêu đề "LUỸ KẾ ĐẾN NGÀY 6/10 - HÙNG VƯƠNG" bị ép rộng theo dải KPI (964px) trong khi khung chụp
+  ~800px. captureEngine.ts đã sửa đúng lỗi này từ trước (chỉ xét phần tử LÁ) — presetBi chưa theo. Sửa:
+  - chỉ xét mẫu tên trên phần tử lá;
+  - lưới KPI khi xuất `repeat(n, minmax(0, 1fr))` + thẻ `min-width:0` → dải KPI co đúng bằng bảng;
+  - số chính thẻ KPI 24px không `truncate` (trước bị cắt "51,03…"), tiêu đề/nhãn được xuống dòng;
+  - `fixCircularAvatars`: `.preserve-rounded` KHÔNG `rounded-full` thì giữ bo góc (thẻ KPI từng thành bầu dục);
+  - LƯỚI AN TOÀN: nội dung vẫn rộng hơn khung → nới khung theo nội dung thay vì cắt ảnh.
+  - Đo: bảng 756px, dải KPI 758px, khung 808px, 0 phần tử tràn khung.
+- `bi-competition-export-fit.spec.ts` trước chỉ nghe childList → đo lúc bản sao VỪA chèn (chưa dàn trang): đạt/đỏ
+  theo may rủi, che mất lỗi cắt mép. Nay nghe cả đổi style + kiểm "0 phần tử tràn khung".

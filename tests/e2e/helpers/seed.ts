@@ -1,3 +1,4 @@
+import { formatEmployeeName } from '../../../features/bi-dashboard/utils/nhanVienHelpers';
 import type { Page } from '@playwright/test';
 
 /** Siêu thị dùng trong dữ liệu giả — phải bắt đầu bằng "ĐM" và chứa " - " để parser nhận diện. */
@@ -136,4 +137,43 @@ export async function openCompetitionTable(page: Page) {
     await page.getByRole('button', { name: 'Realtime', exact: true }).first().click();
     await page.getByText('NHÓM THI ĐUA').waitFor({ timeout: 20_000 });
     await page.waitForTimeout(800);
+}
+
+/**
+ * Nạp DANH SÁCH NHÂN VIÊN CHUẨN như chức năng Phân Tích vẫn đẩy sang (analysisEmployeeSyncService:
+ * key `analysis-employees-list` + bản `bi_` trong BI_HUB_DATABASE_V2/settings) rồi phát event cho hook đang mount.
+ *
+ * Bắt buộc từ commit 3384f2b (2026-10-04): mục Nhân viên của Report BI CHẶN hẳn (chỉ hiện "Chưa có danh sách nhân
+ * viên từ chức năng Phân Tích") khi thiếu danh sách này — mọi test mở tab con Nhân viên phải nạp nó trước.
+ */
+export async function seedAnalysisEmployees(
+    page: Page,
+    employees: { id: string; name: string; department: string }[],
+) {
+    const payload = {
+        updatedAt: Date.now(),
+        totalCount: employees.length,
+        // `name` = đúng dạng Phân Tích lưu thật (analysisEmployeeSyncService: formatEmployeeName(originalName)).
+        employees: employees.map((e) => ({ ...e, name: formatEmployeeName(`${e.id} - ${e.name}`), originalName: `${e.id} - ${e.name}` })),
+    };
+    await page.evaluate(async (p) => {
+        const db = await new Promise<IDBDatabase>((resolve, reject) => {
+            const req = indexedDB.open('BI_HUB_DATABASE_V2');
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+        await new Promise<void>((resolve, reject) => {
+            const tx = db.transaction(['settings'], 'readwrite');
+            const store = tx.objectStore('settings');
+            store.put(p, 'analysis-employees-list');
+            store.put(p, 'bi_analysis-employees-list');
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+        db.close();
+        window.dispatchEvent(new CustomEvent('analysis-employees-updated', { detail: p }));
+        for (const key of ['analysis-employees-list', 'bi_analysis-employees-list']) {
+            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
+        }
+    }, payload);
 }

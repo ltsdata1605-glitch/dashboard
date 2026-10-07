@@ -60,7 +60,8 @@ test('bảng Thi đua Luỹ kế có cột THƯỞNG khớp theo tên nhóm vớ
     const cardText = (await bonusCard.innerText()).replace(/\s+/g, ' ');
     console.log('THẺ TỔNG THƯỞNG:', cardText);
     expect(cardText).toContain('5,176tr');
-    expect(cardText).toMatch(/2\/4 nhóm/);
+    // Thiết kế 3f4c8c7 (2026-10-04): nhãn chung "Tiến độ" đứng trước, bỏ chữ "nhóm" → "Tiến độ 2/4 · D.kiến …"
+    expect(cardText).toMatch(/Tiến độ\s*2\/4/);
     expect(cardText).toContain('D.kiến +2,849tr');
     const box = await kpi.boundingBox(); const first = await kpi.locator(':scope > div').first().boundingBox(); const last = await kpi.locator(':scope > div').last().boundingBox();
     expect(Math.abs((first?.y ?? 0) - (last?.y ?? 1))).toBeLessThan(2); // cùng 1 hàng ở 1280px
