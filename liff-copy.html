@@ -127,8 +127,11 @@
         // Gọi server đánh dấu USED + bot gửi xác nhận trích dẫn. Tham số qua query + POST không body →
         // "simple request" không tốn preflight OPTIONS; keepalive → đóng LIFF sớm request vẫn đi tới nơi.
         function markUsed(usedBy) {
+            // b/t: vé thẻ do bot ký (functions/src/liffTicket.ts) — thẻ cũ không có thì bỏ trống.
             const url = MARK_USED_BASE + '?action=mark-used&code=' + encodeURIComponent(couponCode)
-                + '&usedBy=' + encodeURIComponent(usedBy) + '&index=' + encodeURIComponent(cardIndex);
+                + '&usedBy=' + encodeURIComponent(usedBy) + '&index=' + encodeURIComponent(cardIndex)
+                + (urlParams.get('b') ? '&b=' + encodeURIComponent(urlParams.get('b')) : '')
+                + (urlParams.get('t') ? '&t=' + encodeURIComponent(urlParams.get('t')) : '');
             return fetch(url, { method: 'POST', keepalive: true }).then(r => r.json());
         }
         // ĐƯỜNG NHANH: đã có tên (cache từ lần trước) + copy tự động được → bắn request ngay, không chờ SDK/init.
