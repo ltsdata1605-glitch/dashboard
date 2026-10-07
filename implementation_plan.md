@@ -7240,7 +7240,7 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
     đổi "2/4 nhóm" → "Tiến độ 2/4", 3f4c8c7), bi-competition-export-fit (thẻ KPI rộng hơn bảng 218px, 3f4c8c7).
 - [x] **5** — In Sticker, Phân Ca, Bot LINE, modal xuất ảnh, phần SVG tay còn sót (2026-10-07):
   - ĐÃ XOÁ `features/sticker-event/Icons.tsx` (42 SVG) và `components/common/Icon.tsx`. Ratchet: iconDirectImport,
-    iconNumericSize, iconLegacyCall đều = 0; thêm chỉ số `iconRawSvg` (= 1, logo Google). Registry 222 icon.
+    iconNumericSize, iconLegacyCall đều = 0; thêm chỉ số `iconRawSvg` (= 1, logo Google). Registry 237 tên chức năng.
   - 33 SVG icon viết tay (Phân Ca: toolbar, chú thích, trợ giúp, lịch sử; Tuỳ chọn xuất ảnh; lỗi ErrorBoundary;
     bộ lọc…) → AppIcon theo chức năng (Ca Xoay = `repeat`, Tạo Lịch = `sparkles`, Xuất ảnh = `exportImage`…).
   - Tab/bước Bot LINE: icon truyền dạng component → tên chức năng. Tên `nav*` chỉ cho thanh điều hướng (sửa 8 chỗ
@@ -7248,3 +7248,5 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   - In Sticker: nút chế độ Phiếu/Sticker lệch 2.3px (icon `inline` giữa chữ) → `inline-flex`; icon trong nút có chữ → md.
   - Giữ `legacyIconNames.ts`: tên cũ còn trong dữ liệu người dùng đã lưu.
   - Audit trình duyệt thêm Phân Ca, In Sticker, Bot LINE (icon-audit-man-goc: 11 màn × 390/1366).
+  - Audit iPhone toàn dự án (`AUDIT_IPHONE=1 AUDIT_SEED=1`, 13 màn, tự bấm qua nút/modal): cỡ icon trong nút trên
+    iPhone CHỈ còn 14/16/18/22px (đều thuộc thang mobile) — lúc audit ban đầu có 27 giá trị size khác nhau.
