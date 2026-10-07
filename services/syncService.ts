@@ -1,6 +1,6 @@
 import { db, auth } from './firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { getAllSettings } from './dbService';
+import { getSettingsMatching } from './dbService';
 import { isHeavySyncKey } from './firestoreService';
 
 // Đọc thẳng sessionStorage (không qua React Context) — module thuần, không phải hook. Đây là
@@ -33,21 +33,19 @@ export const pushSettingsToFirebase = async () => {
     const user = auth.currentUser;
     if (!user || isDemoModeActive()) return;
     try {
-        const allSettings = await getAllSettings();
-        
         // Lọc chỉ đồng bộ các cấu hình tĩnh, dung lượng nhẹ. KHÔNG ĐỒNG BỘ data lớn.
-        const settingsToSync: Record<string, unknown> = {};
-        for (const key of Object.keys(allSettings)) {
-            if (
-                !EXCLUDED_SYNC_KEYS.has(key) && 
-                !key.startsWith('cached_') &&
-                !key.startsWith('lastModified_') &&
-                !key.startsWith('bi_') &&
-                !isHeavySyncKey(key)
-            ) {
-                settingsToSync[key] = allSettings[key];
-            }
-        }
+        // PERF FIX (2026-10-07): lọc theo TÊN khoá trước khi đọc giá trị — bản cũ getAllSettings() nạp và
+        // JSON.stringify cả khoDataCache_* (dữ liệu Kho hàng MB, lọt bộ lọc) rồi mới cắt vì quá 800KB:
+        // đứng hình ~6s + giữ kho settings lúc mở app trên điện thoại. 2 tiền tố Kho là cache riêng máy.
+        const settingsToSync = await getSettingsMatching(key =>
+            !EXCLUDED_SYNC_KEYS.has(key) &&
+            !key.startsWith('cached_') &&
+            !key.startsWith('lastModified_') &&
+            !key.startsWith('bi_') &&
+            !key.startsWith('khoDataCache_') &&
+            !key.startsWith('khoDataAppliedSnapshot::') &&
+            !isHeavySyncKey(key)
+        );
 
         // Safety: estimate size and trim if over limit without blocking the thread
         let jsonStr = JSON.stringify(settingsToSync);

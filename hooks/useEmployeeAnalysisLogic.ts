@@ -57,23 +57,30 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     useEffect(() => {
         let isMounted = true;
         const loadData = async () => {
-            const savedTabs = await getCustomTabs();
+            // PERF (2026-10-07): đọc SONG SONG mọi khoá cần cho lần nạp — bản cũ await tuần tự ~20 lượt
+            // (4 khoá tab + 16 cờ migrate), mỗi lượt xếp hàng sau các giao dịch IndexedDB khác lúc mở app,
+            // nên "Đang tải dữ liệu phân tích..." quay rất lâu trên điện thoại. Logic xử lý giữ nguyên.
+            const MIGRATE_VERSIONS = Array.from({ length: 15 }, (_, i) => 10 + i); // V10..V24
+            const [savedTabs, savedIndustryTabsRead, savedExploitationTabs, savedEfficiencyTabs, migratedFlags, hasMigratedPresetsV25] = await Promise.all([
+                getCustomTabs(),
+                getIndustryAnalysisCustomTabs(),
+                getSetting<CustomExploitationTabConfig[]>('customExploitationTabs'),
+                getSetting<CustomExploitationTabConfig[]>('efficiencyExploitationTabs'),
+                Promise.all(MIGRATE_VERSIONS.map(v => getSetting(`presetTabsMigratedV${v}`).then(f => f === true))),
+                getSetting('presetTabsMigratedV25').then(f => f === true),
+            ]);
             if (!isMounted) return;
             ghiNhanTrenDia('customTabs', savedTabs ?? []);
             if (savedTabs) {
                 const migratedTabs = savedTabs.map(tab => ({ ...tab, icon: tab.icon || 'bar-chart-3' }));
                 setCustomTabs(migratedTabs);
             }
-            const savedIndustryTabs = await getIndustryAnalysisCustomTabs();
-            if (!isMounted) return;
+            const savedIndustryTabs = savedIndustryTabsRead;
             ghiNhanTrenDia('industryAnalysisCustomTabs', savedIndustryTabs ?? []);
             if (savedIndustryTabs) {
                 setIndustryAnalysisTabs(savedIndustryTabs);
             }
-            const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
-            const savedEfficiencyTabs = await getSetting<CustomExploitationTabConfig[]>('efficiencyExploitationTabs');
-            if (!isMounted) return;
-            
+
             let finalExploitationTabs: CustomExploitationTabConfig[] = [];
             
             if (savedExploitationTabs) {
@@ -86,23 +93,20 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             // Migration logic V10-V24: mỗi version lịch sử chỉ đơn thuần áp lại preset mới nhất
             // (presetExploitationTabs luôn phản ánh bản mới nhất tại thời điểm build) và tự đánh dấu
             // đã migrate — 15 khối trước đây bị copy-paste giống hệt nhau, chỉ khác số version.
-            // Giữ nguyên đúng thứ tự tuần tự + gate isMounted giữa từng bước như code gốc.
-            for (let v = 10; v <= 24; v++) {
-                const flagKey = `presetTabsMigratedV${v}`;
-                const hasMigrated = await getSetting(flagKey) === true;
-                if (!isMounted) return;
-                if (!hasMigrated) {
+            // Cờ đã đọc song song ở đầu hàm; phần áp preset + ghi cờ vẫn tuần tự theo đúng thứ tự version.
+            for (let i = 0; i < MIGRATE_VERSIONS.length; i++) {
+                const flagKey = `presetTabsMigratedV${MIGRATE_VERSIONS[i]}`;
+                if (!migratedFlags[i]) {
                     // Filter out previous default tabs to prevent duplication
                     finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
                     // Thêm preset mới vào mảng
                     finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
                     await saveSetting(flagKey, true);
+                    if (!isMounted) return;
                 }
             }
 
             // Migration logic for V25 preset tabs (Ensure spChinh tab contains DGD column)
-            const hasMigratedPresetsV25 = await getSetting('presetTabsMigratedV25') === true;
-            if (!isMounted) return;
             if (!hasMigratedPresetsV25) {
                 const spChinhIndex = finalExploitationTabs.findIndex(tab => tab.id === 'spChinh');
                 const spChinhCols: CustomColumnConfig[] = [

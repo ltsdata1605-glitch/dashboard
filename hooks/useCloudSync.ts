@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback, createElement } from 'react';
 import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQueued, isHeavyKeyInFlight, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
-import { getAllSettings, getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService';
+import { getSettingsMatching, getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import toast from 'react-hot-toast';
@@ -70,13 +70,9 @@ export const useCloudSync = () => {
         clearSyncTimeout();
         
         try {
-            const allSettings = await getAllSettings();
-            
             // Chỉ khoá thuộc bộ đồng bộ nhẹ (loại khoá lớn/tạm/riêng máy — giới hạn 1MB của Firestore).
-            const settingsToSync: Record<string, unknown> = {};
-            for (const key of Object.keys(allSettings)) {
-                if (isLightSyncKey(key)) settingsToSync[key] = allSettings[key];
-            }
+            // Đọc riêng đúng các khoá đó — không nạp giá trị khoá lớn (khoDataCache_*) rồi bỏ đi.
+            const settingsToSync = await getSettingsMatching(isLightSyncKey);
 
             console.info(`[Cloud Sync] Đẩy cấu hình nhẹ lên Cloud (${Object.keys(settingsToSync).length} khoá).`);
             await syncToCloud(user, {

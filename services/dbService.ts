@@ -9,6 +9,8 @@ export {
     saveSettingFromCloud,
     touchLastModified,
     getAllSettings,
+    getAllSettingKeys,
+    getSettingsMatching,
     clearAllSettings,
     importAllSettings,
     mergeSettings,

@@ -7290,3 +7290,35 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   (icon Bật/Tắt tất cả, vùng chạm nút nhóm/sửa), nút xoá luật định dạng, Cấu hình KPI (Thêm, vùng chạm nút ẩn/hiện),
   Nạp ảnh ngay, Cấu hình liên kết báo cáo (BI). Audit "lệch" giờ chấp nhận icon cân giữa NÚT hoặc cân giữa DÒNG CHỮ.
   Còn ngoài tầm: modal sau nút có tác dụng phụ (xoá, lưu, xuất, gửi, đồng bộ) và modal cần dữ liệu thật/đăng nhập.
+
+---
+
+## Sửa app treo lâu lúc mở trên điện thoại (2026-10-07)
+
+**Triệu chứng (chủ dự án báo, Android, app cài từ dashboard.pro.vn):** kẹt lâu ở "Đang tải cấu hình cục bộ... 10%",
+sau đó khối "Phân tích nhân viên" quay mãi "Đang tải dữ liệu phân tích...".
+
+**Đo thật** (tài khoản test đăng nhập bằng custom token, chặn mọi lượt ghi cloud, giả lập Pixel 7, CPU chậm 6 lần,
+bọc `IDBDatabase.transaction` để đo từng giao dịch):
+- `cleanupGarbageKeys()` (gọi mỗi lần mở app ở `AuthContext`) duyệt `openCursor()` trong transaction **readwrite**
+  trên kho `settings`: con trỏ nạp GIÁ TRỊ của mọi khoá (gồm `khoDataCache_*` hàng MB) và khoá kho suốt lúc duyệt.
+  Mọi `getSetting` lúc mở app xếp hàng sau nó, hết giờ 10s → trả `null` → app tưởng mất cấu hình, tải lại từ cloud.
+  Bản dev: "Đang tải cấu hình cục bộ" kéo dài ~38s.
+- `pushSettingsToFirebase()` (`services/syncService.ts`) gọi `getAllSettings()` và bộ lọc KHÔNG loại `khoDataCache_*`
+  → `JSON.stringify` cả MB dữ liệu Kho (long task ~6s) rồi mới cắt vì quá 800KB.
+- `useDataManagement` (đồng bộ khoá nặng) và `useCloudSync.forceSync` cũng `getAllSettings()` chỉ để lấy tên khoá /
+  vài khoá nhẹ.
+- `useEmployeeAnalysisLogic` nạp tab bằng ~20 `await getSetting` TUẦN TỰ (4 khoá tab + 16 cờ migrate).
+
+**Sửa:**
+- `services/dbService/core.ts`: `cleanupGarbageKeys` đọc khoá bằng `getAllKeys()` readonly, chỉ mở readwrite ngắn khi
+  có khoá rác. Thêm `getAllSettingKeys()` và `getSettingsMatching(pred)` (lọc theo tên rồi mới get, cùng 1 tx readonly).
+- `services/syncService.ts`: dùng `getSettingsMatching`, loại thêm `khoDataCache_` / `khoDataAppliedSnapshot::`
+  (cache riêng máy — trước đây vẫn bị cắt vì là khoá lớn nhất, nay không nạp nữa).
+- `hooks/useDataManagement.ts`: `getAllSettingKeys()` thay `getAllSettings()`. `hooks/useCloudSync.ts`:
+  `getSettingsMatching(isLightSyncKey)`.
+- `hooks/useEmployeeAnalysisLogic.ts`: đọc song song mọi khoá ở đầu; áp preset + ghi cờ vẫn tuần tự như cũ.
+
+**Kết quả đo bản build production** (cùng hồ sơ trình duyệt có dữ liệu Kho 23.315 dòng, CPU x6): khối "Phân tích nhân
+viên" hiện xong ở 23–26s (trước) → 10–13s (sau). Bản dev: hết treo 38s ở "cấu hình cục bộ" (còn ~2,6s).
+`npm run check` xanh; vitest 1060 pass; e2e smoke/analysis-employees-sync/mo-lai-app/indexeddb-rieng: 9/9 pass.

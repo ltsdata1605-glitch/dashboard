@@ -377,6 +377,46 @@ export async function getAllSettings(): Promise<Record<string, unknown>> {
     }
 }
 
+// PERF (2026-10-07): getAllSettings() nạp GIÁ TRỊ mọi khoá — gồm khoDataCache_* hàng MB — nên lúc mở app
+// một lượt gọi chiếm kho settings nhiều giây trên điện thoại. Cần tên khoá hoặc một nhóm khoá nhỏ thì
+// dùng 2 hàm dưới: chỉ đọc khoá (getAllKeys), rồi chỉ get đúng khoá khớp, trong CÙNG 1 transaction readonly.
+export async function getAllSettingKeys(): Promise<string[]> {
+    try {
+        const db = await getDb();
+        return await new Promise<string[]>((resolve, reject) => {
+            const request = db.transaction(SETTINGS_STORE, 'readonly').objectStore(SETTINGS_STORE).getAllKeys();
+            request.onsuccess = () => resolve(request.result.map(String));
+            request.onerror = () => reject(request.error || new Error('Read keys failed'));
+        });
+    } catch (e) {
+        console.error('[IDB] getAllSettingKeys failed:', e);
+        return [];
+    }
+}
+
+export async function getSettingsMatching(match: (key: string) => boolean): Promise<Record<string, unknown>> {
+    try {
+        const db = await getDb();
+        return await new Promise<Record<string, unknown>>((resolve, reject) => {
+            const tx = db.transaction(SETTINGS_STORE, 'readonly');
+            const store = tx.objectStore(SETTINGS_STORE);
+            const settings: Record<string, unknown> = {};
+            const keysRequest = store.getAllKeys();
+            keysRequest.onsuccess = () => {
+                keysRequest.result.map(String).filter(match).forEach(key => {
+                    const request = store.get(key);
+                    request.onsuccess = () => { settings[key] = request.result; };
+                });
+            };
+            tx.oncomplete = () => resolve(settings);
+            tx.onerror = () => reject(tx.error || new Error('Read transaction failed'));
+        });
+    } catch (e) {
+        console.error('[IDB] getSettingsMatching failed:', e);
+        return {};
+    }
+}
+
 export async function clearAllSettings(): Promise<void> {
     try {
         const db = await getDb();
@@ -599,26 +639,25 @@ export function resetDbConnection(): void {
 export async function cleanupGarbageKeys(): Promise<void> {
     try {
         const db = await getDb();
+        // PERF FIX (2026-10-07, app treo ~40s ở "Đang tải cấu hình cục bộ..." trên điện thoại): bản cũ
+        // duyệt openCursor() trong transaction READWRITE — con trỏ nạp cả GIÁ TRỊ từng khoá (khoDataCache_*
+        // hàng MB) và khoá kho settings suốt lúc duyệt, mọi getSetting lúc mở app xếp hàng sau nó rồi hết
+        // giờ 10s trả null. Chỉ cần TÊN khoá: đọc bằng getAllKeys() readonly, có rác mới mở readwrite ngắn.
+        const keys = await new Promise<IDBValidKey[]>((resolve, reject) => {
+            const request = db.transaction(SETTINGS_STORE, 'readonly').objectStore(SETTINGS_STORE).getAllKeys();
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error || new Error('Cleanup key scan failed'));
+        });
+        const garbage = keys.map(String).filter(key =>
+            key.startsWith('lastModified_lastModified_') || (key.match(/lastModified_/g) || []).length > 1
+        );
+        if (garbage.length === 0) return;
         return new Promise<void>((resolve, reject) => {
             const tx = db.transaction(SETTINGS_STORE, 'readwrite');
             const store = tx.objectStore(SETTINGS_STORE);
-            const request = store.openCursor();
-            let count = 0;
-            request.onsuccess = () => {
-                const cursor = request.result;
-                if (cursor) {
-                    const key = String(cursor.key);
-                    if (key.startsWith('lastModified_lastModified_') || (key.match(/lastModified_/g) || []).length > 1) {
-                        store.delete(key);
-                        count++;
-                    }
-                    cursor.continue();
-                }
-            };
+            garbage.forEach(key => store.delete(key));
             tx.oncomplete = () => {
-                if (count > 0) {
-                    console.warn(`[IDB Cleanup] Cleaned up ${count} recursive lastModified garbage keys.`);
-                }
+                console.warn(`[IDB Cleanup] Cleaned up ${garbage.length} recursive lastModified garbage keys.`);
                 resolve();
             };
             tx.onerror = () => {

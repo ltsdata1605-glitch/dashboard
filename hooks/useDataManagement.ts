@@ -359,11 +359,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             // 2. Đồng bộ từng cấu hình nặng độc lập theo dấu thời gian
                             // PERF FIX: Batch tất cả IDB reads song song thay vì loop tuần tự
                             // (trước đó mỗi key gọi 2 IDB reads tuần tự → N×2 transactions chậm)
-                            const localSettings = await dbService.getAllSettings().catch(() => ({}));
+                            // Chỉ cần TÊN khoá: getAllSettings() nạp cả giá trị khoDataCache_* hàng MB, chiếm kho nhiều giây.
+                            const localKeys = await dbService.getAllSettingKeys();
                             const allHeavyKeys = Array.from(new Set([
                                 ...Array.from(HEAVY_SYNC_KEYS),
                                 ...Object.keys(heavyCloudData),
-                                ...Object.keys(localSettings).filter(k => isHeavySyncKey(k))
+                                ...localKeys.filter(k => isHeavySyncKey(k))
                             ])).filter(k => isHeavySyncKey(k));
 
                             // Batch fetch: 1 Promise.all thay vì N×2 await tuần tự
