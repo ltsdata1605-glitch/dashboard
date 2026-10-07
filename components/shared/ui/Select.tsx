@@ -33,7 +33,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            "flex h-9 pointer-coarse:min-h-11 w-full rounded-control border bg-white px-3 py-2 text-sm font-normal transition-colors appearance-none cursor-pointer",
+            "flex h-9 max-sm:min-h-11 pointer-coarse:min-h-11 w-full rounded-control border bg-white px-3 py-2 text-sm font-normal transition-colors appearance-none cursor-pointer",
             "border-slate-300 text-slate-900",
             "focus-visible:outline-none focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500",
             "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100",
