@@ -7285,3 +7285,8 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
 - `scripts/lint-ratchet.cjs`: chỉ số mới `iconEmoji` (baseline 113, toàn nội dung).
 - `tests/e2e/icon-audit-modal.spec.ts`: tự khám phá modal trên 13 tab (bấm nút an toàn, bỏ qua nút có tác dụng
   phụ), đo 4 tiêu chí icon bên trong từng modal ở 390px và 1366px. `helpers/iconAudit.ts` nhận `rootSelector`.
+- Mở rộng audit modal (2026-10-07): `helpers/modalExplorer.ts` khám phá cả modal con (2 tầng), nạp dữ liệu giả cho
+  Phân Tích (file bán hàng) và Report BI (thi đua + nhân viên). Kết quả: 44 lớp nổi được đo; sửa Cấu hình cột
+  (icon Bật/Tắt tất cả, vùng chạm nút nhóm/sửa), nút xoá luật định dạng, Cấu hình KPI (Thêm, vùng chạm nút ẩn/hiện),
+  Nạp ảnh ngay, Cấu hình liên kết báo cáo (BI). Audit "lệch" giờ chấp nhận icon cân giữa NÚT hoặc cân giữa DÒNG CHỮ.
+  Còn ngoài tầm: modal sau nút có tác dụng phụ (xoá, lưu, xuất, gửi, đồng bộ) và modal cần dữ liệu thật/đăng nhập.
