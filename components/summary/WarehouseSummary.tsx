@@ -16,6 +16,16 @@ import { useAuth } from '../../contexts/AuthContext';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
 import { registerAutoExport } from '../../services/analysisExportDestinations';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
+/** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
+ *  phải mảng hoặc có phần tử rỗng → migrateColumns() ném lỗi và bảng treo mãi ở "Đang tải cấu hình
+ *  cột…" (chủ dự án báo 2026-10-07). Chỉ giữ phần tử là object có `id` dạng chuỗi. */
+const sanitizeSavedColumns = (raw: unknown): WarehouseColumnConfig[] | null => {
+    if (!Array.isArray(raw)) return null;
+    const valid = raw.filter((c): c is WarehouseColumnConfig =>
+        !!c && typeof c === 'object' && typeof (c as WarehouseColumnConfig).id === 'string');
+    return valid.length > 0 ? valid : null;
+};
+
 const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnConfig[] => {
     const savedIds = new Set(savedConfig.map(c => c.id));
     const missingDefaults = DEFAULT_WAREHOUSE_COLUMNS.filter(c => !savedIds.has(c.id));
@@ -367,21 +377,17 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         const loadConfig = async () => {
             const CURRENT_VERSION = WAREHOUSE_COLUMN_CONFIG_VERSION; // Increment version to force clear old columns cache
             const savedVersion = await getSetting<string>('warehouseColumnConfigVersion');
-            
-            let config = await getWarehouseColumnConfig();
+            const saved = sanitizeSavedColumns(await getWarehouseColumnConfig());
+            let config: WarehouseColumnConfig[];
             let needsSave = false;
-            
-            if (!config || config.length === 0 || savedVersion !== CURRENT_VERSION) {
+
+            if (!saved || savedVersion !== CURRENT_VERSION) {
                 config = [...DEFAULT_WAREHOUSE_COLUMNS];
                 needsSave = true;
                 await saveSetting('warehouseColumnConfigVersion', CURRENT_VERSION);
             } else {
-                const migrated = migrateColumns(config);
-                const isDiff = JSON.stringify(migrated) !== JSON.stringify(config);
-                if (isDiff) {
-                    config = migrated;
-                    needsSave = true;
-                }
+                config = migrateColumns(saved);
+                needsSave = JSON.stringify(config) !== JSON.stringify(saved);
             }
             if (needsSave) {
                 try {
@@ -390,15 +396,33 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                     console.error("Failed to save migrated column config:", err);
                 }
             }
-            if (!cancelled) {
-                startTransition(() => {
-                    setColumns(config);
-                    setColumnsLoaded(true);
-                });
-            }
+            return config;
         };
-        loadConfig();
-        return () => { cancelled = true; };
+        let loaded = false;
+        const apply = (config: WarehouseColumnConfig[]) => {
+            if (cancelled) return;
+            startTransition(() => {
+                setColumns(config);
+                setColumnsLoaded(true);
+            });
+        };
+        // Lưới an toàn: đọc IndexedDB treo (tab khác giữ database, chép dữ liệu sang database riêng
+        // của tài khoản chậm…) thì sau 12 giây vẫn hiện bảng bằng cấu hình mặc định; cấu hình thật
+        // đến muộn hơn vẫn được áp đè lên.
+        const fallbackTimer = setTimeout(() => {
+            if (loaded) return;
+            console.warn('[WarehouseSummary] Đọc cấu hình cột quá lâu — tạm dùng cấu hình mặc định.');
+            apply([...DEFAULT_WAREHOUSE_COLUMNS]);
+        }, 12000);
+        loadConfig()
+            .then(config => { loaded = true; apply(config); })
+            .catch(err => {
+                loaded = true;
+                console.error('[WarehouseSummary] Không đọc được cấu hình cột — dùng cấu hình mặc định:', err);
+                apply([...DEFAULT_WAREHOUSE_COLUMNS]);
+            })
+            .finally(() => clearTimeout(fallbackTimer));
+        return () => { cancelled = true; clearTimeout(fallbackTimer); };
     }, []); // Column config is a user preference — load once on mount
 
     const handleSaveColumns = (newColumns: WarehouseColumnConfig[]) => {
