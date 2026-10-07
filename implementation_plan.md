@@ -7276,3 +7276,12 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
   - Đo: bảng 756px, dải KPI 758px, khung 808px, 0 phần tử tràn khung.
 - `bi-competition-export-fit.spec.ts` trước chỉ nghe childList → đo lúc bản sao VỪA chèn (chưa dàn trang): đạt/đỏ
   theo may rủi, che mất lỗi cắt mép. Nay nghe cả đổi style + kiểm "0 phần tử tràn khung".
+
+
+### Đợt dọn emoji-làm-icon + audit modal (2026-10-07)
+- Thay ~190 chỗ emoji / ✓ ✕ ⚠ ★ đang làm icon giao diện (dock Tự động, header, nhãn KPI, nút Thuế, banner Bot LINE,
+  icon toast…) bằng AppIcon đúng tên chức năng + size token. GIỮ emoji là nội dung (tin nhắn LINE, preview iPhone,
+  mẫu cú pháp, bookmarklet, caption ảnh gửi đi, văn bản copy, tên ngày lễ, Google Sheet, HTML ảnh xuất Check thưởng).
+- `scripts/lint-ratchet.cjs`: chỉ số mới `iconEmoji` (baseline 113, toàn nội dung).
+- `tests/e2e/icon-audit-modal.spec.ts`: tự khám phá modal trên 13 tab (bấm nút an toàn, bỏ qua nút có tác dụng
+  phụ), đo 4 tiêu chí icon bên trong từng modal ở 390px và 1366px. `helpers/iconAudit.ts` nhận `rootSelector`.

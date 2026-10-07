@@ -165,7 +165,11 @@ Không dùng thư viện icon khác, không vẽ SVG icon mới (ngoại lệ: l
 và căn bằng `inline-flex items-center` · cùng một nhóm action thì cùng token · nút chỉ có icon trên điện thoại
 có vùng bấm ≥ 44px (`Button size="icon"` đã có sẵn) · size px riêng (`px={…}`) chỉ khi có lý do, ghi chú tại chỗ ·
 không đặt size bằng `w-*`/`h-*` trên icon. `lint-ratchet` đếm `iconDirectImport`, `iconNumericSize`,
-`iconLegacyCall` (đều = 0 từ 2026-10-07) và `iconRawSvg` (= 1: logo Google nhiều màu ở màn đăng nhập) — chỉ được giảm.
+`iconLegacyCall` (đều = 0 từ 2026-10-07) và `iconRawSvg` (= 1: logo Google nhiều màu ở màn đăng nhập), `iconEmoji` (emoji trong .tsx + `icon: '<emoji>'` của toast;
+113 chỗ còn lại đều là nội dung — tin nhắn LINE, bookmarklet, tên ngày lễ, văn bản copy ra ngoài) — chỉ được giảm.
+**Không dùng emoji (hay ký tự ✓ ✕ ⚠ ★) làm icon giao diện**: mỗi hệ điều hành vẽ emoji một kiểu, không theo thang
+size/màu ngữ nghĩa. Icon toast react-hot-toast cũng là AppIcon (`icon: <AppIcon name="copy" size="md" />`; file `.ts` dùng
+`createElement`). Toast success/error đã có icon riêng → không thêm emoji vào chữ.
 Không đè nét bằng lớp `stroke-[…]` (unit test chặn). Tên `nav*` chỉ cho thanh điều hướng; nơi khác dùng tên chức năng
 (`bot`, `coupon`…). Icon cạnh chữ trong một dòng: bọc `inline-flex items-center gap-1`, đừng đặt icon `inline` giữa
 chữ (canh theo chân chữ → lệch ~2px). Tên icon kiểu cũ còn trong DỮ LIỆU đã lưu → `resolveIconName()`.

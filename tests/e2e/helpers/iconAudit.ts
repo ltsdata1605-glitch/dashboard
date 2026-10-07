@@ -50,7 +50,9 @@ export async function auditIcons(page: Page, mobile: boolean, rootSelector?: str
                     if (dy > 1.01) lech.push(`${nhan} [${ten(ic)}] lệch ${dy.toFixed(1)}px`);
                 }
                 const vaiTroPhu = /chevron|close|sort|check$/.test(ic.getAttribute('data-icon') || '');
-                if (chu && !vaiTroPhu && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
+                // Liên kết NẰM TRONG CÂU (<a> trong <p>/<li>) đi theo cỡ chữ của câu — không phải nút thanh công cụ.
+                const lienKetTrongCau = btn.tagName === 'A' && !!btn.closest('p, li');
+                if (chu && !vaiTroPhu && !lienKetTrongCau && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
             }
             // Vùng chạm thật = hộp nút + vùng mở rộng vô hình `after:-inset-*` (mẫu dùng ở dòng dữ liệu dày)
             const af = getComputedStyle(btn, '::after');

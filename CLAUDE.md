@@ -203,7 +203,8 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   Tên chức năng `nav*` CHỈ dùng cho thanh điều hướng (`components/layout/navIcons.ts`). Thang size `xs…hero`, mốc
   laptop/mobile `lg`, bảng icon chuẩn: `DESIGN_SYSTEM.md` mục 4.6. `components/common/Icon.tsx` và 2 file SVG tự vẽ
   `Icons.tsx` ĐÃ XOÁ (2026-10-07); tên icon kiểu cũ trong DỮ LIỆU đã lưu đổi qua `resolveIconName()`.
-  `lint-ratchet`: `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` = 0, `iconRawSvg` = 1 — chỉ được giảm.
+  `lint-ratchet`: `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` = 0, `iconRawSvg` = 1, `iconEmoji` = 113 (toàn là NỘI DUNG: tin nhắn LINE mẫu, bookmarklet, tên ngày lễ,
+  văn bản copy ra ngoài) — chỉ được giảm. CẤM dùng emoji / ✓ ✕ ⚠ làm icon giao diện (nút, nhãn, tiêu đề, icon toast) — dùng AppIcon.
 - **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
 - **Bo góc** *(sửa 2026-09-10 theo chuẩn "Bảng điều khiển ca trực")*: `rounded` (4px — input/button),
   `rounded-md` (6px — modal/dropdown, thứ NỔI LÊN trên). Bảng và vùng dữ liệu: `rounded-none`.
