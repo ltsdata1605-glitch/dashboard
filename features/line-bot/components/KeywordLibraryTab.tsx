@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Plus, Edit2, Trash2, Image, RefreshCw } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { KeywordReply } from '../types/lineBot.types';
 import { KeywordEditModal } from './KeywordEditModal';
@@ -44,14 +44,14 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                     <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1.5 text-slate-500 rounded-xl" title="Làm mới">
-                        <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+                        <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                     <Button
                         variant="primary"
                         onClick={handleCreateNew}
                         className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm"
                     >
-                        <Plus size={15} />
+                        <AppIcon name="add" size="md" />
                         <span>Thêm Từ Khoá</span>
                     </Button>
                 </div>
@@ -61,7 +61,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {keywords.length === 0 ? (
                     <div className="col-span-full p-12 text-center bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
-                        <Sparkles size={32} className="mx-auto text-slate-300 mb-2" />
+                        <AppIcon name="sparkles" size="state" className="mx-auto text-slate-300 mb-2" />
                         <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">Chưa có từ khoá tự động nào</p>
                         <p className="text-xs text-slate-400 mt-1">Bấm "Thêm Từ Khoá" để thiết lập các câu trả lời tự động.</p>
                     </div>
@@ -106,7 +106,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
 
                                 {kw.imageUrls && kw.imageUrls.length > 0 && (
                                     <div className="flex items-center gap-1 text-[11px] text-emerald-600 font-semibold">
-                                        <Image size={13} />
+                                        <AppIcon name="image" size="sm" />
                                         <span>Kèm {kw.imageUrls.length} hình ảnh</span>
                                     </div>
                                 )}
@@ -119,7 +119,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                     className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg"
                                     title="Chỉnh sửa"
                                 >
-                                    <Edit2 size={14} />
+                                    <AppIcon name="edit" size="sm" />
                                 </Button>
                                 <Button
                                     variant="ghost"
@@ -127,7 +127,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                     className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
                                     title="Xoá"
                                 >
-                                    <Trash2 size={14} />
+                                    <AppIcon name="delete" size="sm" />
                                 </Button>
                             </div>
                         </div>

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { PrintSettings } from './services/printService';
-import { TrashIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 
@@ -53,7 +53,7 @@ const FontUploadSection: React.FC<{
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
                         title="Xóa font này"
                     >
-                        <TrashIcon className="h-5 w-5" />
+                        <AppIcon name="delete" size="lg" />
                     </Button>
                 </div>
             ) : (

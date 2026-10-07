@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { db } from './firebase';
 import { collection, query, where, getDocs, limit, Query, DocumentData } from 'firebase/firestore';
-import { Search, Trash2, ShieldAlert, User as UserIcon, Users } from 'lucide-react';
+
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
@@ -98,7 +99,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
       onClose={onClose}
       title={
         <span className="flex items-center gap-2 text-lg">
-          <ShieldAlert className="w-5 h-5" />
+          <AppIcon name="securityAlert" size="lg" />
           Công cụ Super Admin
         </span>
       }
@@ -110,7 +111,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
             <label className="block text-sm font-medium text-slate-700">Tìm kiếm tài khoản theo Mã kho hoặc Tên đăng nhập</label>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   value={searchStoreId}
@@ -144,7 +145,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                   <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                     <div className="flex items-center gap-3">
                       <div className={`p-2 rounded-full ${u.role === 'admin' ? 'bg-amber-100 text-amber-600' : 'bg-sky-100 text-sky-600'}`}>
-                        <UserIcon className="w-5 h-5" />
+                        <AppIcon name="user" size="lg" />
                       </div>
                       <div>
                         <div className="font-bold text-slate-900">{u.username} <span className="text-xs font-normal text-slate-500">({u.email})</span></div>
@@ -162,14 +163,14 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                       className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-lg transition-colors ${u.username === 'admin' ? 'text-slate-300 cursor-not-allowed' : 'text-rose-500 hover:bg-rose-50'}`}
                       title={u.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <AppIcon name="delete" size="lg" />
                     </Button>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="border-2 border-dashed border-slate-100 rounded-xl">
-                <EmptyState icon={<Users size={20} />} title="Chưa có dữ liệu tìm kiếm" />
+                <EmptyState icon={<AppIcon name="users" size="lg" />} title="Chưa có dữ liệu tìm kiếm" />
               </div>
             )}
           </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, Plus, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import type { GroupFeatureConfig, LineGroup } from '../types/lineBot.types';
@@ -145,7 +145,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
             {/* Group Selector */}
             <div className="p-4 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 space-y-3">
                 <div className="flex items-center gap-2">
-                    <Settings size={18} className="text-slate-600 dark:text-slate-400" />
+                    <AppIcon name="settings" size="md" className="text-slate-600" />
                     <h3 className="font-bold text-slate-900 dark:text-white">Chọn Nhóm để Cấu Hình</h3>
                 </div>
                 <select
@@ -183,9 +183,9 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                                             {feature.label}
                                         </span>
                                         {currentConfig.features[feature.key] ? (
-                                            <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                            <AppIcon name="success" size="md" className="text-emerald-600" />
                                         ) : (
-                                            <XCircle size={16} className="text-slate-400 dark:text-slate-500 shrink-0" />
+                                            <AppIcon name="error" size="md" className="text-slate-400" />
                                         )}
                                     </div>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -213,7 +213,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                             disabled={isSaving}
                             className="flex-1 flex items-center justify-center gap-2"
                         >
-                            <Save size={16} />
+                            <AppIcon name="save" size="md" />
                             {isSaving ? 'Đang lưu...' : 'Lưu Cấu Hình'}
                         </Button>
                         <Button
@@ -221,7 +221,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
                             onClick={() => handleReset(currentConfig.groupId)}
                             className="px-4"
                         >
-                            <Trash2 size={16} />
+                            <AppIcon name="delete" size="md" />
                         </Button>
                     </div>
                 </div>

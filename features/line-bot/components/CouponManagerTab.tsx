@@ -1,20 +1,7 @@
 import React, { useState, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import {
-    Ticket,
-    Plus,
-    Download,
-    Search,
-    RotateCcw,
-    Trash2,
-    AlertTriangle,
-    CheckCircle2,
-    Clock,
-    RefreshCw,
-    Calendar,
-    Copy,
-    Check
-} from 'lucide-react';
+
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
@@ -154,12 +141,12 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         >
             {copiedCode === c.code ? (
                 <>
-                    <Check size={11} className="text-emerald-600 dark:text-emerald-400" />
+                    <AppIcon name="check" size="xs" className="text-emerald-600" />
                     <span>Đã copy</span>
                 </>
             ) : (
                 <>
-                    <Copy size={11} className="text-slate-400 shrink-0" />
+                    <AppIcon name="copy" size="xs" className="text-slate-400" />
                     <span className="tracking-wide">{c.code}</span>
                 </>
             )}
@@ -212,7 +199,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         : `Hạn dùng đến hết ngày ${formatDisplayDate(c.expiryDate)}`
                 }
             >
-                <Calendar size={11} className={c.expiryDate === todayVN ? 'text-amber-600' : 'text-slate-400'} />
+                <AppIcon name="calendar" size="xs" className={c.expiryDate === todayVN ? 'text-amber-600' : 'text-slate-400'} />
                 <span>{formatDisplayDate(c.expiryDate)}</span>
             </span>
         ) : (
@@ -224,18 +211,18 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         <>
         {c.status === 'UNUSED' || !c.status ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
-                <CheckCircle2 size={10} />
+                <AppIcon name="success" size="xs" />
                 Chưa dùng
             </span>
         ) : c.status === 'SENT' ? (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400">
-                <Clock size={10} />
+                <AppIcon name="clock" size="xs" />
                 Đã phát
             </span>
         ) : (
             <div className="leading-tight">
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400" title={c.revokeReason || 'Đã thu hồi về kho'}>
-                    <RotateCcw size={10} />
+                    <AppIcon name="reset" size="xs" />
                     Đã thu hồi
                 </span>
                 {c.revokeReason && (
@@ -266,7 +253,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/60"
                 title={`Đã copy mã lúc: ${formatDateTime(c.copiedAt)}`}
             >
-                <Clock size={10} className="text-emerald-500" />
+                <AppIcon name="clock" size="xs" className="text-emerald-500" />
                 {formatDateTime(c.copiedAt)}
             </span>
         ) : (
@@ -285,7 +272,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
                     title="Thu hồi về kho"
                 >
-                    <RotateCcw size={13} />
+                    <AppIcon name="reset" size="sm" />
                 </Button>
             )}
             <Button
@@ -295,7 +282,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-700 rounded-md transition-all active:scale-95 cursor-pointer`}
                 title={`Copy mã: ${c.code}`}
             >
-                {copiedCode === c.code ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
+                {copiedCode === c.code ? <AppIcon name="check" size="sm" className="text-emerald-600" /> : <AppIcon name="copy" size="sm" />}
             </Button>
             <Button
                 variant="ghost"
@@ -304,7 +291,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
                 title="Xoá mã này"
             >
-                <Trash2 size={13} />
+                <AppIcon name="delete" size="sm" />
             </Button>
         </div>
         </>
@@ -326,7 +313,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400 truncate pr-1">Tổng Mã Trong Kho</span>
                         <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-lg shrink-0">
-                            <Ticket size={13} className="sm:size-3.5" />
+                            <AppIcon name="coupon" size="sm" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
@@ -347,7 +334,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400 truncate pr-1">Chưa Dùng (Khả dụng)</span>
                         <div className="p-1 sm:p-1.5 bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
-                            <CheckCircle2 size={13} className="sm:size-3.5" />
+                            <AppIcon name="success" size="sm" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
@@ -370,7 +357,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400 truncate pr-1">Đã Phát Thành Công</span>
                         <div className="p-1 sm:p-1.5 bg-sky-100/80 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
-                            <Clock size={13} className="sm:size-3.5" />
+                            <AppIcon name="clock" size="sm" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
@@ -393,7 +380,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400 truncate pr-1">Đã Thu Hồi Về Kho</span>
                         <div className="p-1 sm:p-1.5 bg-amber-100/80 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
-                            <RotateCcw size={13} className="sm:size-3.5" />
+                            <AppIcon name="reset" size="sm" />
                         </div>
                     </div>
                     <div className="flex items-baseline justify-between gap-1 mt-0.5 sm:mt-1">
@@ -408,7 +395,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             {/* Low stock warning banner */}
             {isLowStock && (
                 <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5 shadow-2xs">
-                    <AlertTriangle size={16} className="text-amber-600 shrink-0" />
+                    <AppIcon name="warning" size="md" className="text-amber-600" />
                     <div className="text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
                         <span className="font-bold">Cảnh báo tồn kho thấp: </span>
                         Hiện tại chỉ còn <strong className="underline font-bold">{stockSummary.unused}</strong> mã chưa sử dụng. Hãy nạp thêm mã để đảm bảo phát liên tục.
@@ -435,7 +422,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 {/* Nhóm bộ lọc & tìm kiếm bên trái */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full lg:w-auto">
                     <div className="relative w-full sm:w-[180px] lg:w-[260px] xl:w-[300px] shrink-0">
-                        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                        <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
                             value={searchQuery}
@@ -523,7 +510,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-lg shrink-0 transition-colors active:scale-95"
                         title="Làm mới"
                     >
-                        <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+                        <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                 </div>
 
@@ -536,7 +523,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 rounded-lg transition-colors disabled:opacity-40 shrink-0 cursor-pointer active:scale-95"
                         title={`Xoá tất cả (${coupons.length}) mã trong kho`}
                     >
-                        <Trash2 size={14} className={isDeletingAll ? 'animate-spin' : ''} />
+                        <AppIcon name="delete" size="sm" className={isDeletingAll ? 'animate-spin' : ''} />
                     </Button>
 
                     <Button
@@ -545,7 +532,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors shrink-0 cursor-pointer active:scale-95"
                         title="Xuất danh sách ra file Excel"
                     >
-                        <Download size={14} />
+                        <AppIcon name="download" size="sm" />
                     </Button>
 
                     <Button
@@ -553,7 +540,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         onClick={() => setIsImportModalOpen(true)}
                         className="h-8 px-3 flex items-center gap-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs transition-colors whitespace-nowrap active:scale-95 cursor-pointer"
                     >
-                        <Plus size={14} />
+                        <AppIcon name="add" size="sm" />
                         <span>Nạp mã mới</span>
                     </Button>
                 </div>
@@ -753,7 +740,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     <div ref={hopXoaTatCaRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá toàn bộ kho mã" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-in zoom-in-95 duration-150">
                         <div className="flex items-center gap-3.5 text-rose-600 dark:text-rose-400">
                             <div className="p-3 bg-rose-100 dark:bg-rose-950/60 rounded-2xl shrink-0">
-                                <AlertTriangle size={24} />
+                                <AppIcon name="warning" size="xl" />
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -784,7 +771,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                 disabled={isDeletingAll}
                                 className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm disabled:opacity-50"
                             >
-                                {isDeletingAll ? <RefreshCw size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                {isDeletingAll ? <AppIcon name="refresh" size="sm" spin /> : <AppIcon name="delete" size="sm" />}
                                 <span>{isDeletingAll ? 'Đang xoá...' : 'Đồng ý xoá tất cả'}</span>
                             </Button>
                         </div>

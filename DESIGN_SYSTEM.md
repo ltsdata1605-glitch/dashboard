@@ -165,7 +165,10 @@ Không dùng thư viện icon khác, không vẽ SVG icon mới (ngoại lệ: l
 và căn bằng `inline-flex items-center` · cùng một nhóm action thì cùng token · nút chỉ có icon trên điện thoại
 có vùng bấm ≥ 44px (`Button size="icon"` đã có sẵn) · size px riêng (`px={…}`) chỉ khi có lý do, ghi chú tại chỗ ·
 không đặt size bằng `w-*`/`h-*` trên icon. `lint-ratchet` đếm `iconDirectImport`, `iconNumericSize`,
-`iconLegacyCall` — chỉ được giảm.
+`iconLegacyCall` (đều = 0 từ 2026-10-07) và `iconRawSvg` (= 1: logo Google nhiều màu ở màn đăng nhập) — chỉ được giảm.
+Không đè nét bằng lớp `stroke-[…]` (unit test chặn). Tên `nav*` chỉ cho thanh điều hướng; nơi khác dùng tên chức năng
+(`bot`, `coupon`…). Icon cạnh chữ trong một dòng: bọc `inline-flex items-center gap-1`, đừng đặt icon `inline` giữa
+chữ (canh theo chân chữ → lệch ~2px). Tên icon kiểu cũ còn trong DỮ LIỆU đã lưu → `resolveIconName()`.
 
 **Icon chuẩn theo chức năng** (đầy đủ trong `iconRegistry.ts`):
 

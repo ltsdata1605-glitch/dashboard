@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ScheduleHistoryEntry } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
@@ -26,9 +27,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ history, onRestore, onClose
       {history.length === 0 ? (
         <EmptyState
           icon={
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <AppIcon name="history" size="xl" />
           }
           title="Chưa có thay đổi nào được ghi lại cho lịch này."
           compact

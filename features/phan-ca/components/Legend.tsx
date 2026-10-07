@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ScheduleTargets, SbhGenderBoost } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -45,9 +46,7 @@ const Legend: React.FC<LegendProps> = ({
                     <div className="flex items-center gap-2 lg:gap-3 flex-wrap">
                         {/* Label */}
                         <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                            <svg className="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.532 1.532 0 012.287-.947c1.372.836 2.942-.734-2.106-2.106a1.532 1.532 0 01.947-2.287c1.561-.379-1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
-                            </svg>
+                            <AppIcon name="settings" size="md" className="text-slate-400" />
                             Mục tiêu
                         </span>
 
@@ -60,7 +59,7 @@ const Legend: React.FC<LegendProps> = ({
                             <span className="text-emerald-700 font-bold text-xs">KHO</span>
                             <span className="font-extrabold text-emerald-900 text-base">~{targets.kho}</span>
                             <span className="text-emerald-600 text-xs font-semibold">ngày</span>
-                            <svg className="h-3 w-3 text-slate-300 group-hover:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <AppIcon name="edit" size="xs" className="text-slate-300 group-hover:text-emerald-500 transition-colors" />
                         </Button>
 
                         {/* TN button */}
@@ -72,7 +71,7 @@ const Legend: React.FC<LegendProps> = ({
                             <span className="text-sky-700 font-bold text-xs">TN</span>
                             <span className="font-extrabold text-sky-900 text-base">~{targets.tn}</span>
                             <span className="text-sky-600 text-xs font-semibold">ngày</span>
-                            <svg className="h-3 w-3 text-slate-300 group-hover:text-sky-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <AppIcon name="edit" size="xs" className="text-slate-300 group-hover:text-sky-500 transition-colors" />
                         </Button>
 
                         {/* GH button */}
@@ -84,7 +83,7 @@ const Legend: React.FC<LegendProps> = ({
                             <span className="text-amber-700 font-bold text-xs">GH</span>
                             <span className="font-extrabold text-amber-900 text-base">~{targets.gh}</span>
                             <span className="text-amber-600 text-xs font-semibold">ngày</span>
-                            <svg className="h-3 w-3 text-slate-300 group-hover:text-amber-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <AppIcon name="edit" size="xs" className="text-slate-300 group-hover:text-amber-500 transition-colors" />
                         </Button>
 
                         {/* Separator */}
@@ -100,9 +99,7 @@ const Legend: React.FC<LegendProps> = ({
                                 <span className="font-semibold text-xs uppercase tracking-wider">Chênh SBH</span>
                                 <span className="font-extrabold text-base">{Math.round(targets.sbhDiff)}h</span>
                                 {targets.sbhDiff <= 3 ? (
-                                    <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
+                                    <AppIcon name="success" size="md" className="text-emerald-500" />
                                 ) : (
                                     <span className="text-[11px] font-bold bg-rose-600 text-white px-1.5 py-px uppercase">≤ 3h</span>
                                 )}

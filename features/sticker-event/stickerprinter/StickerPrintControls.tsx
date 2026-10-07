@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-    Printer, Settings, CheckCircle2, Upload, Plus, Trash2,
-    RotateCcw, Download, FileSpreadsheet, Package, History
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
 import { DEFAULT_HISTORY_ID, DEFAULT_DRAW_HISTORY_ENTRY } from '../hooks/useStickerPrinterData';
 import { StickerManualQueue } from './StickerManualQueue';
@@ -167,7 +164,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 <Button 
                     onClick={handlePrint}
                     className="flex-1 !bg-amber-400 hover:!bg-amber-500 !text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-amber-500/10 border-transparent"
-                    leftIcon={<Printer size={16} />}
+                    leftIcon={<AppIcon name="print" size="md" />}
                 >
                     BẤM ĐỂ IN ({stickerType === 'draw' ? Math.ceil(drawTotalTickets / 4) : (batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1))})
                 </Button>
@@ -175,7 +172,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     onClick={addCurrentPage}
                     className="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-transform shadow-md shadow-sky-500/10 border-transparent"
                     title="Thêm trang hiện tại vào hàng đợi in"
-                    leftIcon={<Plus size={16} />}
+                    leftIcon={<AppIcon name="add" size="md" />}
                 >
                     Thêm
                 </Button>
@@ -201,7 +198,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             <div className="p-4 bg-rose-50 dark:bg-rose-900/10 rounded-xl border border-rose-100 dark:border-rose-800/30 space-y-4">
                                 <div className="flex items-center justify-between border-b border-rose-200/40 dark:border-rose-800/40 pb-2">
                                     <p className="text-[11px] lg:text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
-                                        <Settings size={14} className="stroke-[2.5]" />
+                                        <AppIcon name="settings" size="sm" />
                                         Cấu hình in Phiếu Rút Thăm
                                     </p>
                                     <button
@@ -214,7 +211,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-lg hover:bg-rose-100/70 dark:hover:bg-rose-900/50 hover:text-rose-800 dark:hover:text-rose-200 transition-all shadow-xs active:scale-95 cursor-pointer"
                                         title="Khôi phục toàn bộ phiếu và cấu hình về mẫu mặc định"
                                     >
-                                        <RotateCcw size={12} className="stroke-[2.2]" />
+                                        <AppIcon name="reset" size="md" />
                                         Mặc định
                                     </button>
                                 </div>
@@ -302,7 +299,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 {/* File upload actions */}
                                 <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/30">
                                     <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-[11px] lg:text-xs">
-                                        <Upload size={14} />
+                                        <AppIcon name="upload" size="sm" />
                                         File giá ĐSD - TBBM
                                         <input type="file" accept=".xlsx, .xls, .csv" onChange={handleExcelUpload} className="hidden" />
                                     </label>
@@ -318,7 +315,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 {/* Import from template */}
                                 <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
                                     <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
-                                        <FileSpreadsheet size={12} />
+                                        <AppIcon name="spreadsheet" size="xs" />
                                         Nhập từ File Mẫu
                                     </p>
                                     <div className="flex gap-1.5">
@@ -327,11 +324,11 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             onClick={downloadTemplate}
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm"
                                         >
-                                            <Download size={10} />
+                                            <AppIcon name="download" size="xs" />
                                             Tải File Mẫu
                                         </Button>
                                         <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm">
-                                            <Upload size={10} />
+                                            <AppIcon name="upload" size="xs" />
                                             Nhập File Mẫu
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
                                         </label>
@@ -341,17 +338,17 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 {/* Import price file from ERP */}
                                 <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
                                     <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
-                                        <Package size={12} />
+                                        <AppIcon name="product" size="xs" />
                                         Nhập file in giá từ ERP
                                     </p>
                                     <div className="grid grid-cols-1 gap-2">
                                         <label className="flex items-center justify-center gap-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm text-center">
-                                            <Upload size={10} />
+                                            <AppIcon name="upload" size="xs" />
                                             Máy Lọc Nước (Mẫu in 99)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
                                         </label>
                                         <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm text-center">
-                                            <Upload size={10} />
+                                            <AppIcon name="upload" size="xs" />
                                             Điện Tử/Lạnh (Mẫu in 97)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'appliance')} className="hidden" />
                                         </label>
@@ -406,7 +403,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         {/* Guide Section */}
                         <div className="mt-4 border-t border-slate-100 dark:border-slate-700/60 pt-4 space-y-2.5">
                             <div className="flex items-center gap-1.5">
-                                <Settings size={13} className="text-sky-500" />
+                                <AppIcon name="settings" size="sm" className="text-sky-500" />
                                 <span className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">H.Dẫn in & Sử dụng</span>
                             </div>
                             
@@ -479,7 +476,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 {activeSubTab === 'history' && (
                     <div className="space-y-2 animate-in fade-in duration-200 pb-2">
                         {filteredHistory.length === 0 ? (
-                            <EmptyState icon={<History size={20} />} title="Chưa có lịch sử in" compact />
+                            <EmptyState icon={<AppIcon name="history" size="lg" />} title="Chưa có lịch sử in" compact />
                         ) : (
                             filteredHistory.map(entry => {
                                 const isDefault = entry.id === DEFAULT_HISTORY_ID;
@@ -522,7 +519,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
                                             title="Khôi phục"
                                         >
-                                            <RotateCcw size={13} />
+                                            <AppIcon name="reset" size="md" />
                                         </Button>
                                         {!isDefault && (
                                             <Button
@@ -531,7 +528,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
                                                 title="Xóa"
                                             >
-                                                <Trash2 size={13} />
+                                                <AppIcon name="delete" size="sm" />
                                             </Button>
                                         )}
                                     </div>

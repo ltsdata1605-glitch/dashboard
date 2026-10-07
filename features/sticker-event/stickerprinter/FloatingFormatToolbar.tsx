@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bold, Italic, Underline } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface FloatingFormatToolbarProps {
@@ -625,7 +625,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                 title="In đậm (Bold)"
             >
-                <Bold size={13} className="stroke-[2.5]" />
+                <AppIcon name="textBold" size="sm" />
             </Button>
 
             {/* Italic button */}
@@ -636,7 +636,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                 title="In nghiêng (Italic)"
             >
-                <Italic size={13} className="stroke-[2.5]" />
+                <AppIcon name="textItalic" size="sm" />
             </Button>
 
             {/* Underline button */}
@@ -647,7 +647,7 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                 title="Gạch chân (Underline)"
             >
-                <Underline size={13} className="stroke-[2.5]" />
+                <AppIcon name="textUnderline" size="sm" />
             </Button>
 
             {/* Tooltip arrow */}

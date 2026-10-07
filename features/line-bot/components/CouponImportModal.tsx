@@ -1,18 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import {
-    X,
-    Upload,
-    Sparkles,
-    Trash2,
-    CheckCircle2,
-    Calendar,
-    History,
-    Clock,
-    RefreshCw,
-    AlertTriangle,
-    Layers
-} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, ParsedImportItem } from '../types/lineBot.types';
@@ -314,11 +302,11 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                 {/* Modal Header */}
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2">
-                        <Upload size={18} className="text-emerald-500" />
+                        <AppIcon name="upload" size="md" className="text-emerald-500" />
                         <span>Nạp Mã PMH & Quản Lý Lần Nạp</span>
                     </h3>
                     <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                        <X size={18} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -334,7 +322,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                         >
-                            <Sparkles size={14} />
+                            <AppIcon name="sparkles" size="sm" />
                             <span>Dán Danh Sách Mã (Tự Động Bóc Tách)</span>
                         </button>
                         <button
@@ -346,7 +334,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                     : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                         >
-                            <History size={14} />
+                            <AppIcon name="history" size="sm" />
                             <span>Lịch Sử Các Lần Nạp ({importBatches.length} đợt)</span>
                         </button>
                     </div>
@@ -416,7 +404,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             className="absolute right-3 top-3 text-[11px] text-slate-400 hover:text-rose-500 bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 flex items-center gap-1 transition-colors"
                                             title="Xoá nội dung ô dán"
                                         >
-                                            <Trash2 size={12} />
+                                            <AppIcon name="delete" size="xs" />
                                             <span>Xoá nội dung</span>
                                         </button>
                                     )}
@@ -428,7 +416,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                 <div className="space-y-3 pt-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <CheckCircle2 size={16} className="text-emerald-500" />
+                                            <AppIcon name="success" size="md" className="text-emerald-500" />
                                             <span className="text-xs font-bold text-slate-800 dark:text-white">
                                                 Đã nhận diện: <strong className="text-emerald-600">{parsedItems.length} mã hợp lệ</strong> ({groupedProducts.length} sản phẩm)
                                             </span>
@@ -488,7 +476,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                                 className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
                                                                 title={`Xoá toàn bộ ${g.count} mã của sản phẩm này`}
                                                             >
-                                                                <Trash2 size={14} />
+                                                                <AppIcon name="delete" size="sm" />
                                                             </button>
                                                         </td>
                                                     </tr>
@@ -508,7 +496,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80">
                                 <div className="flex items-center gap-2.5">
                                     <div className="p-2 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 rounded-lg">
-                                        <Layers size={18} />
+                                        <AppIcon name="layers" size="md" />
                                     </div>
                                     <div>
                                         <div className="text-xs font-bold text-slate-800 dark:text-white">
@@ -527,7 +515,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                             {/* Danh sách các đợt nạp */}
                             {importBatches.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-12 text-center text-slate-400 dark:text-slate-500 space-y-2">
-                                    <History size={40} className="text-slate-300 dark:text-slate-600 mb-1" />
+                                    <AppIcon name="history" size="state" className="text-slate-300 mb-1" />
                                     <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Chưa có lịch sử đợt nạp nào trong kho</p>
                                     <p className="text-xs max-w-sm text-slate-400">
                                         Khi bạn dán và nạp mã, các đợt nạp sẽ được lưu trữ và hiển thị tại đây để bạn kiểm soát và xoá nhanh khi cần.
@@ -546,7 +534,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                         Đợt #{importBatches.length - index}
                                                     </span>
                                                     <span className="text-xs font-semibold text-slate-800 dark:text-white flex items-center gap-1">
-                                                        <Clock size={13} className="text-slate-400" />
+                                                        <AppIcon name="clock" size="sm" className="text-slate-400" />
                                                         {new Date(batch.importedAt).toLocaleString('vi-VN')}
                                                     </span>
                                                     <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
@@ -600,9 +588,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                     title="Xoá toàn bộ mã thuộc đợt nạp này"
                                                 >
                                                     {deletingBatchId === batch.id ? (
-                                                        <RefreshCw size={13} className="animate-spin" />
+                                                        <AppIcon name="refresh" size="sm" spin />
                                                     ) : (
-                                                        <Trash2 size={13} />
+                                                        <AppIcon name="delete" size="sm" />
                                                     )}
                                                     <span>Xoá đợt này</span>
                                                 </Button>
@@ -622,7 +610,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                             {/* Widget Chọn Ngày Hết Hạn */}
                             <div className="flex items-center gap-2 flex-wrap">
                                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-emerald-500/50 transition-colors">
-                                    <Calendar size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                    <AppIcon name="calendar" size="md" className="text-emerald-600" />
                                     <label htmlFor="import-expiry-date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none whitespace-nowrap">
                                         Hạn dùng:
                                     </label>
@@ -641,7 +629,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                             className="p-0.5 text-slate-400 hover:text-rose-500 transition-colors rounded"
                                             title="Xoá hạn dùng (không thời hạn)"
                                         >
-                                            <X size={13} />
+                                            <AppIcon name="close" size="sm" />
                                         </button>
                                     )}
                                 </div>
@@ -691,7 +679,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                     <div ref={hopXoaRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá đợt nạp mã" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-rose-200 dark:border-rose-900/50 space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-600 rounded-xl">
-                                <AlertTriangle size={24} />
+                                <AppIcon name="warning" size="xl" />
                             </div>
                             <div>
                                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -725,9 +713,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                 className="px-4 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-1.5 shadow-sm"
                             >
                                 {deletingBatchId === batchToDelete.id ? (
-                                    <RefreshCw size={14} className="animate-spin" />
+                                    <AppIcon name="refresh" size="sm" spin />
                                 ) : (
-                                    <Trash2 size={14} />
+                                    <AppIcon name="delete" size="sm" />
                                 )}
                                 <span>{deletingBatchId === batchToDelete.id ? 'Đang xoá...' : 'Đồng ý xoá đợt này'}</span>
                             </Button>

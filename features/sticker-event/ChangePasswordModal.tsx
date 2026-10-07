@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { auth } from './firebase';
 import { updatePassword } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
-import { ShieldIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 
@@ -64,7 +64,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
             maxWidth="sm"
             title={
                 <span className="flex items-center gap-2 text-xl">
-                    <ShieldIcon className="h-6 w-6 text-sky-600" />
+                    <AppIcon name="security" size="xl" className="text-sky-600" />
                     Đổi mật khẩu
                 </span>
             }

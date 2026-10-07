@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Save,
-    Copy,
-    Check,
-    Key,
-    Sliders,
-    ExternalLink
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { LineBotConfig, LineGroup } from '../types/lineBot.types';
 import { LineBotInfo } from '../services/lineMessagingService';
 import { LineBotStatusCard } from './LineBotStatusCard';
-import { Clock, Users, Building2, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface LineBotSettingsTabProps {
@@ -107,7 +100,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 rounded-xl bg-sky-600 text-white shadow-xs shrink-0">
-                            <Building2 size={20} />
+                            <AppIcon name="department" size="lg" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
@@ -165,7 +158,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         title="Mở cài đặt Messaging API trên LINE Official Account Manager (@428gkuok)"
                     >
                         <span>Webhook URL Cá Nhân Hoá (Dán vào LINE Developers Console)</span>
-                        <ExternalLink size={13} className="text-sky-600 dark:text-sky-400 group-hover:translate-x-0.5 transition-transform" />
+                        <AppIcon name="externalLink" size="sm" className="text-sky-600 group-hover:translate-x-0.5 transition-transform" />
                     </a>
                 </div>
 
@@ -191,7 +184,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         }`}
                         title="Sao chép URL vào clipboard"
                     >
-                        {copiedUrl ? <Check size={13} /> : <Copy size={13} />}
+                        {copiedUrl ? <AppIcon name="check" size="sm" /> : <AppIcon name="copy" size="sm" />}
                         <span>{copiedUrl ? 'Đã chép' : 'Sao chép'}</span>
                     </button>
                 </div>
@@ -204,7 +197,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             {/* Form Fields */}
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <Key size={16} className="text-emerald-500" />
+                    <AppIcon name="apiKey" size="md" className="text-emerald-500" />
                     <span>Khoá API & Bí mật Channel</span>
                 </h4>
 
@@ -219,7 +212,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         >
                             <span>Channel Access Token (Dài hạn)</span>
                             <span className="text-rose-500">*</span>
-                            <ExternalLink size={12} className="text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+                            <AppIcon name="externalLink" size="xs" className="text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
                         </a>
                         <a
                             href="https://developers.line.biz/console/channel/2011672044/messaging-api"
@@ -228,7 +221,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             className="min-h-11 sm:min-h-0 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
                         >
                             <span>Mở LINE Developers</span>
-                            <ExternalLink size={10} />
+                            <AppIcon name="externalLink" size="xs" />
                         </a>
                     </div>
                     <textarea
@@ -251,7 +244,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         >
                             <span>Channel Secret</span>
                             <span className="text-rose-500">*</span>
-                            <ExternalLink size={12} className="text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+                            <AppIcon name="externalLink" size="xs" className="text-emerald-600 group-hover:translate-x-0.5 transition-transform" />
                         </a>
                         <div className="flex items-center gap-2">
                             <a
@@ -262,7 +255,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                                 title="Lấy Channel Secret tại Basic settings"
                             >
                                 <span>LINE Developers (Basics)</span>
-                                <ExternalLink size={10} />
+                                <AppIcon name="externalLink" size="xs" />
                             </a>
                             <span className="text-slate-300 dark:text-slate-600">•</span>
                             <a
@@ -273,7 +266,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                                 title="Mở Cài đặt trên LINE Official Account Manager"
                             >
                                 <span>LINE Manager (@428gkuok)</span>
-                                <ExternalLink size={10} />
+                                <AppIcon name="externalLink" size="xs" />
                             </a>
                         </div>
                     </div>
@@ -319,7 +312,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             {/* Automation & Rules */}
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <Sliders size={16} className="text-sky-500" />
+                    <AppIcon name="viewOptions" size="md" className="text-sky-500" />
                     <span>Quy tắc tự động hoá & Cấp phát mã</span>
                 </h4>
 
@@ -357,14 +350,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     </span>
                 </div>
 
-
             </div>
 
             {/* Thông Báo & Báo Cáo Định Kỳ (6h00 & 22h00) */}
             <div className="p-5 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <Clock size={16} className="text-amber-500" />
+                        <AppIcon name="clock" size="md" className="text-amber-500" />
                         <span>Thông Báo & Báo Cáo Định Kỳ (6h00 & 22h00)</span>
                     </h4>
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
@@ -379,7 +371,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 {/* Chọn nhóm LINE */}
                 <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex items-center gap-1.5">
-                        <Users size={14} className="text-sky-500" />
+                        <AppIcon name="users" size="sm" className="text-sky-500" />
                         <span>Nhóm LINE nhận tin nhắn định kỳ:</span>
                     </label>
                     <select
@@ -456,7 +448,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     disabled={isSaving}
                     className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all disabled:opacity-50"
                 >
-                    <Save size={16} />
+                    <AppIcon name="save" size="md" />
                     <span>{isSaving ? 'Đang lưu...' : 'Lưu cấu hình Bot'}</span>
                 </Button>
             </div>

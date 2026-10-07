@@ -10,7 +10,8 @@ import { ICON_REGISTRY, type IconName } from './iconRegistry';
  * 'refresh-cw' → refresh, 'settings'/'settings-2' → settings…
  *
  * Có thêm 6 tên mà bảng cũ KHÔNG có nên từng âm thầm hiện dấu hỏi: 'alert-octagon', 'trending-down',
- * 'message-square', 'arrow-up-narrow-wide', 'arrow-down-wide-narrow', 'user-plus'. Xoá file này khi `iconLegacyCall` của lint-ratchet về 0.
+ * 'message-square', 'arrow-up-narrow-wide', 'arrow-down-wide-narrow', 'user-plus'. KHÔNG xoá file này dù `iconLegacyCall` đã về 0 (2026-10-07): tên cũ còn nằm trong DỮ LIỆU người
+ * dùng đã lưu (cấu hình thẻ KPI, cột tuỳ chỉnh… trên IndexedDB/Firestore), không chỉ trong code.
  */
 export const LEGACY_ICON_NAMES: Record<string, IconName> = {
   'activity': 'activity',

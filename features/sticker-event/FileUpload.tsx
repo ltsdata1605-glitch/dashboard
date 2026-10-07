@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilePlusIcon } from './Icons';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 
 interface FileUploadProps {
   onFileChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -25,7 +25,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileChange, fileName, disable
           disabled={disabled}
           multiple
         />
-        <FilePlusIcon className="h-6 w-6 text-emerald-600" />
+        <AppIcon name="fileAdd" size="xl" className="text-emerald-600" />
       </label>
       {fileName && (
         <p className="text-xs text-slate-500 truncate max-w-[100px]" title={fileName}>

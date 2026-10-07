@@ -1,15 +1,5 @@
 import React, { useState } from 'react';
-import {
-    Clock,
-    Plus,
-    Play,
-    Edit2,
-    Trash2,
-    CheckCircle2,
-    Calendar,
-    Users,
-    RefreshCw
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { BotSchedule, LineGroup } from '../types/lineBot.types';
 import { ScheduleEditModal } from './ScheduleEditModal';
@@ -62,7 +52,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                     <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                         <h3 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">Lịch Hẹn Thông Báo</h3>
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 border border-sky-200/80 shrink-0">
-                            <Users size={11} /> {groups.length} nhóm
+                            <AppIcon name="users" size="xs" /> {groups.length} nhóm
                         </span>
                     </div>
                     <p className="text-[11px] sm:text-xs text-slate-500 truncate hidden sm:block">Tự động phát thông báo tới các nhóm chat theo giờ định sẵn.</p>
@@ -75,14 +65,14 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                         className="h-8 w-8 p-0 flex items-center justify-center text-slate-500 hover:text-sky-600 rounded-lg border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
                         title="Làm mới danh sách và nhóm"
                     >
-                        <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+                        <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                     <Button
                         variant="primary"
                         onClick={handleCreateNew}
                         className="h-8 px-3 flex items-center gap-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs active:scale-95 transition-all cursor-pointer whitespace-nowrap"
                     >
-                        <Plus size={14} />
+                        <AppIcon name="add" size="sm" />
                         <span>Thêm Lịch</span>
                     </Button>
                 </div>
@@ -92,7 +82,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 sm:gap-3">
                 {schedules.length === 0 ? (
                     <div className="col-span-full p-8 text-center bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs">
-                        <Clock size={28} className="mx-auto text-slate-300 mb-1.5" />
+                        <AppIcon name="clock" size="state" className="mx-auto text-slate-300 mb-1.5" />
                         <p className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">Chưa có lịch hẹn thông báo nào</p>
                         <p className="text-[11px] text-slate-400 mt-0.5">Bấm "Thêm Lịch" để tạo lịch gửi thông báo tự động.</p>
                     </div>
@@ -135,10 +125,10 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                             )}
                                         </div>
                                         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
-                                            <Calendar size={11} className="text-slate-400 shrink-0" />
+                                            <AppIcon name="calendar" size="xs" className="text-slate-400" />
                                             <span className="truncate">{getRepeatLabel()}</span>
                                             <span className="text-slate-300 dark:text-slate-600">•</span>
-                                            <Users size={11} className="text-slate-400 shrink-0" />
+                                            <AppIcon name="users" size="xs" className="text-slate-400" />
                                             <span>{sched.targetType === 'ALL_GROUPS' ? 'Tất cả nhóm' : `${sched.targetGroupIds?.length || 0} nhóm`}</span>
                                         </p>
                                     </div>
@@ -171,7 +161,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                             className="h-6.5 px-2 text-[11px] font-semibold text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-md flex items-center gap-1 active:scale-95 transition-all"
                                             title="Kích hoạt gửi ngay bây giờ"
                                         >
-                                            <Play size={11} className={isThisTriggering ? 'animate-spin' : ''} />
+                                            <AppIcon name="play" size="xs" className={isThisTriggering ? 'animate-spin' : ''} />
                                             <span>{isThisTriggering ? 'Gửi...' : 'Gửi ngay'}</span>
                                         </Button>
 
@@ -182,7 +172,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                             className="h-6.5 w-6.5 p-0 flex items-center justify-center text-slate-400 hover:text-sky-600 rounded-md active:scale-95 transition-all"
                                             title="Chỉnh sửa"
                                         >
-                                            <Edit2 size={12} />
+                                            <AppIcon name="edit" size="xs" />
                                         </Button>
 
                                         <Button
@@ -192,7 +182,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                             className="h-6.5 w-6.5 p-0 flex items-center justify-center text-slate-400 hover:text-rose-600 rounded-md active:scale-95 transition-all"
                                             title="Xoá"
                                         >
-                                            <Trash2 size={12} />
+                                            <AppIcon name="delete" size="xs" />
                                         </Button>
                                     </div>
                                 </div>

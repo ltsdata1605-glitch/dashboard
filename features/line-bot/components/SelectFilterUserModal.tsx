@@ -1,20 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import {
-    X,
-    Users,
-    Search,
-    RefreshCw,
-    MessageSquare,
-    MessageCircle,
-    UserCheck,
-    Plus,
-    Check,
-    Filter,
-    Sparkles,
-    CheckSquare,
-    Square
-} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { InteractedUser } from '../types/lineBot.types';
@@ -171,7 +157,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                            <Users size={20} />
+                            <AppIcon name="users" size="lg" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
@@ -195,7 +181,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl"
                             title="Làm mới danh sách"
                         >
-                            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                            <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
                         </Button>
                         <Button
                             variant="ghost"
@@ -203,7 +189,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                             className="p-2 text-slate-400 hover:text-rose-500 rounded-xl"
                             title="Đóng"
                         >
-                            <X size={18} />
+                            <AppIcon name="close" size="md" />
                         </Button>
                     </div>
                 </div>
@@ -212,7 +198,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}
                     <div className="relative">
-                        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <AppIcon name="search" size="md" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             value={searchTerm}
@@ -225,7 +211,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                 onClick={() => setSearchTerm('')}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
                             >
-                                <X size={14} />
+                                <AppIcon name="close" size="sm" />
                             </button>
                         )}
                     </div>
@@ -256,7 +242,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <Sparkles size={13} />
+                            <AppIcon name="sparkles" size="sm" />
                             <span>Chưa thêm ({counts.notAdded})</span>
                         </button>
 
@@ -268,7 +254,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <UserCheck size={13} />
+                            <AppIcon name="userCheck" size="sm" />
                             <span>Đã trong danh sách ({counts.added})</span>
                         </button>
 
@@ -280,7 +266,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <MessageSquare size={13} />
+                            <AppIcon name="message" size="sm" />
                             <span>Từ Nhóm LINE ({counts.group})</span>
                         </button>
 
@@ -292,7 +278,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <MessageCircle size={13} />
+                            <AppIcon name="message" size="sm" />
                             <span>Nhắn riêng / Bạn bè ({counts.direct})</span>
                         </button>
                     </div>
@@ -306,9 +292,9 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                 className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 hover:text-emerald-600 font-semibold transition-colors"
                             >
                                 {selectedIds.size > 0 ? (
-                                    <CheckSquare size={15} className="text-emerald-600" />
+                                    <AppIcon name="checkboxOn" size="md" className="text-emerald-600" />
                                 ) : (
-                                    <Square size={15} className="text-slate-400" />
+                                    <AppIcon name="checkboxOff" size="md" className="text-slate-400" />
                                 )}
                                 <span>
                                     {selectedIds.size > 0
@@ -323,7 +309,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                     onClick={handleBatchAddSelected}
                                     className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs animate-in fade-in"
                                 >
-                                    <Plus size={14} />
+                                    <AppIcon name="add" size="sm" />
                                     <span>Thêm {selectedIds.size} người đã chọn</span>
                                 </Button>
                             )}
@@ -335,13 +321,13 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                 <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
                     {isLoading ? (
                         <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                            <RefreshCw size={24} className="animate-spin text-emerald-500" />
+                            <AppIcon name="refresh" size="xl" spin className="text-emerald-500" />
                             <span className="text-xs">Đang nạp danh sách người dùng tương tác...</span>
                         </div>
                     ) : filteredUsers.length === 0 ? (
                         <div className="py-12 px-4 text-center space-y-3">
                             <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 flex items-center justify-center mx-auto">
-                                <Users size={24} />
+                                <AppIcon name="users" size="xl" />
                             </div>
                             <div>
                                 <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">
@@ -388,14 +374,14 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                 className="text-slate-400 hover:text-emerald-600 transition-colors shrink-0"
                                             >
                                                 {isSelected ? (
-                                                    <CheckSquare size={18} className="text-emerald-600" />
+                                                    <AppIcon name="checkboxOn" size="md" className="text-emerald-600" />
                                                 ) : (
-                                                    <Square size={18} className="text-slate-300 dark:text-slate-600" />
+                                                    <AppIcon name="checkboxOff" size="md" className="text-slate-300" />
                                                 )}
                                             </button>
                                         ) : (
                                             <div className="w-[18px] shrink-0 flex items-center justify-center">
-                                                <Check size={14} className="text-emerald-600" />
+                                                <AppIcon name="check" size="sm" className="text-emerald-600" />
                                             </div>
                                         )}
 
@@ -433,7 +419,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                 </h4>
                                                 {inFilter && (
                                                     <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/60">
-                                                        <Check size={10} />
+                                                        <AppIcon name="check" size="xs" />
                                                         <span>Đang lọc</span>
                                                     </span>
                                                 )}
@@ -442,12 +428,12 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                             <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400 truncate">
                                                 {user.lastInteractionType === 'GROUP' ? (
                                                     <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                                                        <MessageSquare size={11} />
+                                                        <AppIcon name="message" size="xs" />
                                                         <span className="truncate">{user.lastGroupName || 'Nhóm LINE'}</span>
                                                     </span>
                                                 ) : (
                                                     <span className="flex items-center gap-1 text-sky-600 dark:text-sky-400 font-medium">
-                                                        <MessageCircle size={11} />
+                                                        <AppIcon name="message" size="xs" />
                                                         <span>Nhắn riêng / Bạn bè</span>
                                                     </span>
                                                 )}
@@ -487,7 +473,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                                                 }}
                                                 className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs"
                                             >
-                                                <Plus size={13} />
+                                                <AppIcon name="add" size="sm" />
                                                 <span>Thêm vào lọc</span>
                                             </Button>
                                         )}

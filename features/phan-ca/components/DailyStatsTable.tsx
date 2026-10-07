@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { StaffMember, ScheduleConfig, DailyRequirements, UnresolvedConflict } from '../types';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -59,9 +60,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
             <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-md lg:rounded-lg flex items-center justify-center shrink-0 bg-sky-100 text-sky-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 lg:h-4 lg:w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 3a1 1 0 011-1h2a1 1 0 011 1v13a1 1 0 01-1 1h-2a1 1 0 01-1-1V3z" />
-                        </svg>
+                        <AppIcon name="chartBar" size="md" />
                     </div>
                     <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Thống Kê Nhân Sự Theo Ca</h3>
                 </div>
@@ -72,9 +71,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex items-center gap-2 bg-rose-100 text-rose-700 font-bold py-1 px-3 rounded-none border border-rose-200 text-xs hover:bg-rose-200 transition-colors shadow-sm"
                         title="Hiển thị danh sách các ca cần tìm người thay thế"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
+                        <AppIcon name="alert" size="sm" />
                         <span>{unresolvedConflicts.length} ca cần xử lý</span>
                     </Button>
                 )}

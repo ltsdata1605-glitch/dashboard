@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../shared/ui/icon/AppIcon';
 
 /**
  * A sleek, minimal overlay that appears over the dashboard content
@@ -42,9 +43,7 @@ const FilterProcessingOverlay: React.FC<{ isVisible: boolean }> = ({ isVisible }
                     <div className="absolute inset-0 rounded-full border-[3px] border-slate-200 dark:border-slate-700" />
                     <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-indigo-500 dark:border-t-indigo-400 animate-spin" />
                     <div className="absolute inset-1.5 rounded-full bg-gradient-to-br from-sky-50 to-white dark:from-sky-900/30 dark:to-slate-800 flex items-center justify-center">
-                        <svg className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
-                        </svg>
+                        <AppIcon name="filter" size="sm" className="text-sky-500" />
                     </div>
                 </div>
 

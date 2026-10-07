@@ -20,24 +20,25 @@
 import type React from 'react';
 import {
   Activity, Apple, ArchiveRestore, ArrowDown, ArrowLeft, ArrowLeftRight, ArrowRight, ArrowUp, ArrowUpDown, Award,
-  Backpack, BadgeCheck, Banknote, BatteryCharging, Bell, BellOff, Bot, Briefcase, Bug, Building2, Cable, Calculator,
-  Calendar, CalendarCheck, CalendarClock, CalendarRange, CalendarX, Camera, ChartColumn, ChartGantt, ChartLine,
-  ChartPie, ChartSpline, Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ChevronsDownUp,
-  ChevronsUpDown, CircleAlert, CircleCheck, CircleDollarSign, CircleHelp, CircleMinus, CirclePlus, CircleX,
-  ClipboardList, ClipboardPaste, Clock, Cloud, CloudDownload, CloudUpload, Code, Coffee, Columns2, Compass, Contact,
-  Copy, Cpu, CreditCard, Crown, Database, Download, Droplets, EllipsisVertical, ExternalLink, Eye, EyeOff, Factory,
-  Fan, FastForward, FileCheck, FileKey2, FileScan, FileSpreadsheet, FileText, Film, Filter, Flame,
-  GalleryHorizontalEnd, Gamepad2, Gift, Glasses, Globe, GripVertical, HardDrive, Hash, Headphones, History, House,
-  Images, Inbox, Info, Key, Keyboard, Laptop, Layers, LayoutDashboard, LayoutGrid, LayoutTemplate, Lightbulb, Link,
-  List, LoaderCircle, Lock, LogIn, LogOut, Mail, MapPin, Maximize2, Medal, Megaphone, MemoryStick, Menu,
-  MessageCircle, Minimize2, Minus, MousePointer2, MousePointerClick, Package, PackageX, Paintbrush, Palette,
+  Backpack, BadgeCheck, Banknote, Barcode, Battery, BatteryCharging, Bell, BellOff, Bold, BookOpen, Bot, Briefcase,
+  Bug, Building2, Cable, Calculator, Calendar, CalendarCheck, CalendarClock, CalendarRange, CalendarX, Camera,
+  ChartColumn, ChartGantt, ChartLine, ChartPie, ChartSpline, Check, ChefHat, ChevronDown, ChevronLeft, ChevronRight,
+  ChevronUp, ChevronsDownUp, ChevronsUpDown, CircleAlert, CircleCheck, CircleDollarSign, CircleHelp, CircleMinus,
+  CirclePlus, CircleX, ClipboardList, ClipboardPaste, Clock, Cloud, CloudDownload, CloudUpload, Code, Coffee, Coins,
+  Columns2, Compass, Contact, Copy, CornerDownLeft, Cpu, CreditCard, Crown, Database, Download, Droplets,
+  EllipsisVertical, ExternalLink, Eye, EyeOff, Factory, Fan, FastForward, FileCheck, FileKey2, FilePlus, FileScan,
+  FileSpreadsheet, FileText, Film, Filter, Flame, Flashlight, FlashlightOff, FolderOpen, GalleryHorizontalEnd,
+  Gamepad2, Gift, Glasses, Globe, GripVertical, HardDrive, Hash, Headphones, History, House, Image, ImageDown,
+  Images, Inbox, Info, Italic, Key, Keyboard, Laptop, Layers, LayoutDashboard, LayoutGrid, LayoutTemplate, Lightbulb,
+  Link, List, LoaderCircle, Lock, LogIn, LogOut, Mail, MapPin, Maximize2, Medal, Megaphone, MemoryStick, Menu,
+  MessageCircle, Mic, Minimize2, Minus, MousePointer2, MousePointerClick, Package, PackageX, Paintbrush, Palette,
   PanelRightClose, Pause, Pencil, Percent, Phone, Play, PlugZap, Plus, Printer, QrCode, Radio, Receipt, RefreshCw,
-  Rocket, RotateCcw, Router, Save, ScanLine, Search, SearchX, Send, Server, Settings, Share, Share2, Shield,
-  ShieldAlert, ShieldCheck, ShoppingBag, Sigma, Signal, SlidersHorizontal, Smartphone, SmartphoneNfc, Sparkles,
-  Speaker, Square, SquareCheck, SquarePlay, SquarePlus, Star, Store, Swords, Table2, Tablet, Tag, Target,
-  ThermometerSnowflake, Ticket, Tornado, Trash2, TrendingDown, TrendingUp, TriangleAlert, Trophy, Truck, Tv, Type,
-  Upload, User, UserCheck, UserCog, UserMinus, UserPlus, UserX, Users, Wallet, Warehouse, Watch, Waves, Webcam, Wind,
-  Wrench, X, Zap,
+  Repeat, Rocket, RotateCcw, Router, Save, ScanLine, Search, SearchX, Send, Server, Settings, Share, Share2, Shield,
+  ShieldAlert, ShieldCheck, ShoppingBag, Sigma, Signal, SlidersHorizontal, Smartphone, SmartphoneNfc, Smile,
+  Sparkles, Speaker, Square, SquareCheck, SquarePlay, SquarePlus, Star, Store, SwitchCamera, Swords, Table2, Tablet,
+  Tag, Target, Terminal, ThermometerSnowflake, Ticket, Tornado, Trash2, TrendingDown, TrendingUp, TriangleAlert,
+  Trophy, Truck, Tv, Type, Underline, Upload, User, UserCheck, UserCog, UserMinus, UserPlus, UserX, Users, Wallet,
+  Warehouse, Watch, Waves, Webcam, Wifi, Wind, Wrench, X, Zap,
 } from 'lucide-react';
 import { LineIcon } from './brandIcons';
 
@@ -243,6 +244,32 @@ export const ICON_REGISTRY = {
   localStorage: HardDrive,           // lưu trên máy
   panelClose: PanelRightClose,       // đóng thanh bên
   click: MousePointerClick,          // hướng dẫn thao tác bấm
+
+  // ── Bổ sung Giai đoạn 5 (In Sticker, Phân Ca, Bot LINE) ───────────────────────────────────
+  fileAdd: FilePlus,                 // thêm tệp / tạo mới từ tệp
+  switchCamera: SwitchCamera,        // đổi camera trước/sau khi quét
+  image: Image,                      // ảnh (chọn/đính kèm ảnh)
+  imageDownload: ImageDown,          // tải ảnh về
+  barcode: Barcode,
+  textBold: Bold,
+  textItalic: Italic,
+  textUnderline: Underline,
+  guide: BookOpen,                   // hướng dẫn sử dụng
+  coins: Coins,                      // điểm / xu / mệnh giá
+  enter: CornerDownLeft,             // xác nhận bằng phím Enter
+  flashOn: Flashlight,               // bật đèn flash khi quét
+  flashOff: FlashlightOff,
+  folder: FolderOpen,
+  repeat: Repeat,                    // lặp lại theo lịch
+  tools: Wrench,
+  bot: Bot,
+  coupon: Ticket,                    // mã coupon / PMH
+  command: Terminal,                 // cú pháp lệnh bot
+  // Mô phỏng thanh trạng thái/khung chat iPhone (IPhoneChatPreview) — chỉ để vẽ khung xem trước
+  wifi: Wifi,
+  batteryLevel: Battery,
+  mic: Mic,
+  emoji: Smile,
 
   // ── Ngành hàng / đồ vật (icon minh hoạ nhóm sản phẩm ở Phân tích, Report BI) ────────────────
   laptop: Laptop,

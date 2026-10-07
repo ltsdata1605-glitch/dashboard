@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import { CheckCircle2, Package } from 'lucide-react';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -59,7 +59,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     }`}
                 >
                     <span className="lg:hidden">Giá Sốc</span>
-                    <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <CheckCircle2 size={14} className="inline mr-1 text-sky-600 dark:text-sky-400" />}Giá Sốc</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <AppIcon name="success" size="md" className="text-sky-600" />}Giá Sốc</span>
                 </Button>
                 <Button
                     variant="ghost"
@@ -71,7 +71,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     }`}
                 >
                     <span className="lg:hidden">Giờ Vàng</span>
-                    <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <CheckCircle2 size={14} className="inline mr-1 text-amber-600 dark:text-amber-400" />}Giờ Vàng</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <AppIcon name="success" size="md" className="text-amber-600" />}Giờ Vàng</span>
                 </Button>
                 <Button
                     variant="ghost"
@@ -83,7 +83,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     }`}
                 >
                     <span className="lg:hidden">Phiếu</span>
-                    <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'draw' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'draw' && <AppIcon name="success" size="md" className="text-rose-600" />}Phiếu</span>
                 </Button>
                 <Button
                     variant="ghost"
@@ -95,7 +95,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                     }`}
                 >
                     <span className="lg:hidden">Sticker</span>
-                    <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Sticker</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'event' && <AppIcon name="success" size="md" className="text-emerald-600" />}<AppIcon name="product" size="md" />Sticker</span>
                 </Button>
             </div>
 

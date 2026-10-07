@@ -193,7 +193,18 @@ function countIconLegacyCall(content) {
   return total;
 }
 
-const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall'];
+/**
+ * iconRawSvg (thêm 2026-10-07): icon SVG VIẾT THẲNG trong JSX (thẻ <svg> có viewBox icon 24×24 hoặc 20×20).
+ * Icon phải đi qua AppIcon. Ngoại lệ: thư mục registry (logo thương hiệu), và logo nhiều màu (Google ở LoginView,
+ * nằm trong baseline). Không đếm SVG biểu đồ/minh hoạ có viewBox khác.
+ */
+const RAW_SVG_ICON_PATTERN = /<svg\b[^>]*viewBox=["']0 0 (?:24 24|20 20)["']/g;
+function countIconRawSvg(content, file = '') {
+  if (file.startsWith(ICON_REGISTRY_DIR)) return 0;
+  return (content.match(RAW_SVG_ICON_PATTERN) || []).length;
+}
+
+const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg'];
 
 function computeViolations() {
   const files = walk(ROOT, []);
@@ -207,6 +218,7 @@ function computeViolations() {
       iconDirectImport: countIconDirectImport(content, relPath(file)),
       iconNumericSize: countIconNumericSize(content),
       iconLegacyCall: countIconLegacyCall(content),
+      iconRawSvg: countIconRawSvg(content, relPath(file)),
     };
     if (METRIC_KEYS.some((k) => counts[k])) {
       result[relPath(file)] = counts;
@@ -291,6 +303,6 @@ if (require.main === module) {
 
 module.exports = {
   countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar,
-  countIconDirectImport, countIconNumericSize, countIconLegacyCall,
+  countIconDirectImport, countIconNumericSize, countIconLegacyCall, countIconRawSvg,
   computeViolations, saveBaseline, METRIC_KEYS,
 };

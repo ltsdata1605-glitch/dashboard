@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Trash2, Zap } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { HOURS_CONFIG } from '../constants';
 import * as idb from '../db/idb';
 import { DailyRequirements, SchedulingRules, ShiftDefinitions, StaffInitialData } from '../types';
@@ -269,10 +269,10 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute top-1 right-1 text-sky-400 hover:text-sky-600 dark:hover:text-sky-200 font-bold p-1"
                     title="Đóng hướng dẫn"
                 >
-                    <X size={16} />
+                    <AppIcon name="close" size="md" />
                 </Button>
                 <h4 className="font-black flex items-center gap-1.5 uppercase tracking-wider mb-1.5">
-                    <Zap size={14} />
+                    <AppIcon name="quick" size="sm" />
                     Hướng dẫn nhanh
                 </h4>
                 <ul className="list-disc list-inside space-y-0.5 ml-1 text-[11px]">
@@ -407,7 +407,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                 title={!reqsForAi ? 'Cần nhập Yêu Cầu nhân sự tối thiểu/ca trước' : undefined}
                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 text-xs font-bold transition-all disabled:opacity-50 rounded"
             >
-                <Zap size={14} />
+                <AppIcon name="quick" size="sm" />
                 Gợi ý AI
             </Button>
           </div>
@@ -451,7 +451,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                         </div>
                         <div className="col-span-1 text-center absolute right-2">
                             <Button variant="ghost" onClick={() => handleRemovePattern(index)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 font-bold p-1 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition rounded" title="Xóa dòng này">
-                                <Trash2 size={16} />
+                                <AppIcon name="delete" size="md" />
                             </Button>
                         </div>
                     </div>

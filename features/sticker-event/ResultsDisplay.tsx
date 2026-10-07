@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, memo } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Product } from './types';
-import { InfoIcon, SearchIcon, CheckboxIcon, CheckboxCheckedIcon, MinusCircleIcon, PlusCircleIcon, PrintIcon, Trash2Icon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
 
@@ -122,7 +122,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 title={result.selected ? "Bỏ chọn" : "Chọn in"}
                 className="text-slate-500 hover:text-sky-600 transition-colors p-1 active:scale-95"
             >
-                {result.selected ? <CheckboxCheckedIcon className="h-7 w-7 text-sky-600" /> : <CheckboxIcon className="h-7 w-7" />}
+                {result.selected ? <AppIcon name="checkboxOn" size="state" className="text-sky-600" /> : <AppIcon name="checkboxOff" size="state" />}
             </Button>
 
             <div className="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200">
@@ -133,7 +133,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                     className="p-1.5 text-slate-500 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors active:scale-90"
                     title="Giảm số lượng"
                 >
-                    <MinusCircleIcon className="h-5 w-5" />
+                    <AppIcon name="removeCircle" size="lg" />
                 </Button>
                 <input
                     type="number" inputMode="decimal"
@@ -152,7 +152,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                     className="p-1.5 text-slate-500 hover:text-slate-800 transition-colors active:scale-90"
                     title="Tăng số lượng"
                 >
-                    <PlusCircleIcon className="h-5 w-5" />
+                    <AppIcon name="addCircle" size="lg" />
                 </Button>
             </div>
         </div>
@@ -166,7 +166,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 title="In ngay 1 sản phẩm này"
                 className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-bold rounded bg-sky-50 hover:bg-sky-100 transition-colors active:scale-95"
             >
-                <PrintIcon className="h-3.5 w-3.5" />
+                <AppIcon name="print" size="sm" />
                 <span>In</span>
             </Button>
             
@@ -176,7 +176,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                 title="Xóa sản phẩm"
                 className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors active:scale-90"
             >
-                <Trash2Icon className="h-4.5 w-4.5" />
+                <AppIcon name="delete" size="md" />
             </Button>
         </div>
     </div>
@@ -195,7 +195,7 @@ const InstructionsPanel = () => (
   <div className="text-left p-8 bg-white rounded-2xl shadow-xl border-2 border-sky-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
     <div className="flex items-center gap-4 mb-6">
         <div className="p-3 bg-sky-100 rounded-full">
-            <InfoIcon className="h-8 w-8 text-sky-600" />
+            <AppIcon name="info" size="state" className="text-sky-600" />
         </div>
         <div>
             <h3 className="text-2xl font-bold text-slate-900">Hướng dẫn sử dụng Hệ thống In Sticker Event</h3>
@@ -338,7 +338,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
   return (
       <div className="flex items-center justify-center bg-white rounded-none lg:rounded-2xl border-y lg:border border-slate-200 shadow-sm lg:hover:shadow-md transition-shadow min-h-[400px]">
           <EmptyState
-              icon={<SearchIcon className="h-12 w-12 text-slate-400" />}
+              icon={<AppIcon name="search" size="hero" className="text-slate-400" />}
               title="Sẵn sàng tìm kiếm"
               description="Danh sách kết quả của bạn đang trống. Sử dụng thanh tìm kiếm hoặc các công cụ nhanh để thêm sản phẩm."
           />

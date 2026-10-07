@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw, Percent, Coins, Barcode, SearchX, Inbox } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+
 import { StickerPage, SavedStickerList } from './types';
 import { Button, Input, EmptyState } from '../../../components/shared/ui';
 import { resolvePagePrices } from './pageHtmlUtils';
@@ -130,14 +131,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 }`}
                                 title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
                             >
-                                {discountDisplayMode === 'percent' ? <Percent size={14} /> : <Coins size={14} />}
+                                {discountDisplayMode === 'percent' ? <AppIcon name="percent" size="sm" /> : <AppIcon name="coins" size="sm" />}
                             </Button>
                             
                             {showOnboarding && (
                                 <div className="absolute right-0 top-9 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="font-bold flex items-center justify-between">
                                         <span>💡 Kiểu giảm giá mới!</span>
-                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><X size={12} /></Button>
+                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><AppIcon name="close" size="xs" /></Button>
                                     </div>
                                     <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
                                     <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[11px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
@@ -158,7 +159,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             }`}
                             title={showBarcode ? "Mã Vạch: Đang bật (Click để tắt)" : "Mã Vạch: Đang tắt (Click để bật)"}
                         >
-                            <Barcode size={14} />
+                            <AppIcon name="barcode" size="sm" />
                         </Button>
                     </div>
                 </div>
@@ -211,14 +212,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                     }`}
                                     title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
                                 >
-                                    {discountDisplayMode === 'percent' ? <Percent size={13} /> : <Coins size={13} />}
+                                    {discountDisplayMode === 'percent' ? <AppIcon name="percent" size="sm" /> : <AppIcon name="coins" size="sm" />}
                                 </Button>
                                 
                                 {showOnboarding && (
                                     <div className="absolute right-0 top-8 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="font-bold flex items-center justify-between">
                                             <span>💡 Kiểu giảm giá mới!</span>
-                                            <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><X size={12} /></Button>
+                                            <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><AppIcon name="close" size="xs" /></Button>
                                         </div>
                                         <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
                                         <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-sky-600 font-bold px-2 py-0.5 rounded text-[11px] hover:bg-sky-50 transition-colors shadow-sm">Đã hiểu</Button>
@@ -239,7 +240,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 }`}
                                 title={showBarcode ? "Mã Vạch: Đang bật (Click để tắt)" : "Mã Vạch: Đang tắt (Click để bật)"}
                             >
-                                <Barcode size={13} />
+                                <AppIcon name="barcode" size="sm" />
                             </Button>
 
                             {/* Divider line */}
@@ -253,7 +254,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 className="h-7 w-7 text-sky-600 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Lưu danh sách"
                             >
-                                <Save size={13} />
+                                <AppIcon name="save" size="sm" />
                             </Button>
 
                             {/* Clear list button */}
@@ -264,7 +265,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Xóa tất cả"
                             >
-                                <Trash2 size={13} />
+                                <AppIcon name="delete" size="sm" />
                             </Button>
                         </div>
                     </div>
@@ -389,12 +390,12 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                     onClick={(e) => { e.stopPropagation(); removeManualPage(page.id); }}
                                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-rose-500 transition-colors shrink-0 p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                 >
-                                    <X size={14} />
+                                    <AppIcon name="close" size="sm" />
                                 </Button>
                             </div>
                         ))}
                         {filteredPages.length === 0 && (
-                            <EmptyState icon={<SearchX size={16} />} title="Không tìm thấy sticker phù hợp" compact />
+                            <EmptyState icon={<AppIcon name="searchEmpty" size="md" />} title="Không tìm thấy sticker phù hợp" compact />
                         )}
                     </div>
                 </div>
@@ -409,10 +410,10 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full p-0 text-inherit flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-sky-600 transition-colors shrink-0"
                     >
                         <span className="flex items-center gap-2">
-                            <ImageIcon size={16} className="text-emerald-500" />
+                            <AppIcon name="image" size="md" className="text-emerald-500" />
                             Danh sách đã lưu ({savedLists.length})
                         </span>
-                        {showSavedLists ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        {showSavedLists ? <AppIcon name="chevronUp" size="md" /> : <AppIcon name="chevronDown" size="md" />}
                     </Button>
                     {showSavedLists && (
                         <div className="mt-3 space-y-2 flex-1 overflow-y-auto pr-1">
@@ -433,7 +434,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[11px] font-bold"
                                             title="Tải danh sách"
                                         >
-                                            <RotateCcw size={13} />
+                                            <AppIcon name="reset" size="md" />
                                         </Button>
                                         <Button
                                             variant="ghost"
@@ -441,7 +442,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-lg hover:bg-rose-200 transition-colors"
                                             title="Xóa"
                                         >
-                                            <Trash2 size={13} />
+                                            <AppIcon name="delete" size="sm" />
                                         </Button>
                                     </div>
                                 </div>
@@ -452,7 +453,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
             )}
             {manualPages.length === 0 && savedLists.length === 0 && (
                 <EmptyState
-                    icon={<Inbox size={20} />}
+                    icon={<AppIcon name="empty" size="lg" />}
                     title="Danh sách in trống"
                     description="Thêm sticker vào hàng đợi để in hàng loạt."
                     compact

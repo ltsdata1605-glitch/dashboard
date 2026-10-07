@@ -150,9 +150,9 @@ export const CheckThuongTopTable: React.FC<CheckThuongTopTableProps> = ({
                     <span className="inline-flex items-center shrink-0">
                         {isActive ? (
                             sortOrder === 'asc' ? (
-                                <AppIcon name="arrowUp" size="sm" className="text-sky-600 stroke-[2.5]" />
+                                <AppIcon name="arrowUp" size="sm" className="text-sky-600" />
                             ) : (
-                                <AppIcon name="arrowDown" size="sm" className="text-sky-600 stroke-[2.5]" />
+                                <AppIcon name="arrowDown" size="sm" className="text-sky-600" />
                             )
                         ) : (
                             <AppIcon name="sort" size="xs" className="opacity-0 group-hover/th:opacity-60 transition-opacity text-slate-400" />

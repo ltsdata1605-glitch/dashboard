@@ -1,24 +1,6 @@
 import React, { useState } from 'react';
-import {
-    Wifi,
-    Battery,
-    Signal,
-    ChevronLeft,
-    Phone,
-    Menu,
-    Search,
-    Plus,
-    Camera,
-    Image as ImageIcon,
-    Mic,
-    Smile,
-    Bot,
-    Send,
-    Copy,
-    Check,
-    Sparkles,
-    BookOpen
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+
 import toast from 'react-hot-toast';
 
 interface IPhoneChatPreviewProps {
@@ -138,10 +120,10 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
 
                         {/* Status Icons */}
                         <div className="w-12 flex items-center justify-end gap-1.5 text-slate-800 dark:text-slate-200">
-                            <Signal size={12} className="stroke-[2.5]" />
-                            <Wifi size={12} className="stroke-[2.5]" />
+                            <AppIcon name="simCard" size="xs" />
+                            <AppIcon name="wifi" size="xs" />
                             <div className="flex items-center gap-0.5">
-                                <Battery size={14} className="stroke-[2]" />
+                                <AppIcon name="batteryLevel" size="sm" />
                             </div>
                         </div>
                     </div>
@@ -153,13 +135,13 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                                 type="button"
                                 className="text-slate-700 dark:text-slate-200 flex items-center -ml-1 hover:text-emerald-600 transition-colors"
                             >
-                                <ChevronLeft size={22} />
+                                <AppIcon name="chevronLeft" size="md" />
                                 <span className="text-[10px] font-bold px-1.5 py-0.2 bg-emerald-500 text-white rounded-full font-mono">12</span>
                             </button>
                             
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white ring-2 ring-emerald-200 dark:ring-emerald-950 shadow-xs">
-                                    <Bot size={17} />
+                                    <AppIcon name="bot" size="md" />
                                 </div>
                                 <div className="leading-tight">
                                     <h4 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1">
@@ -176,13 +158,13 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                         {/* Header Actions */}
                         <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
                             <button type="button" className="p-1 hover:text-emerald-600">
-                                <Search size={15} />
+                                <AppIcon name="search" size="md" />
                             </button>
                             <button type="button" className="p-1 hover:text-emerald-600">
-                                <Phone size={15} />
+                                <AppIcon name="call" size="md" />
                             </button>
                             <button type="button" className="p-1 hover:text-emerald-600">
-                                <Menu size={16} />
+                                <AppIcon name="menu" size="md" />
                             </button>
                         </div>
                     </div>
@@ -292,7 +274,7 @@ ${otherName}
 
                                 <div className="flex justify-start items-start gap-1.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
-                                        <Bot size={12} />
+                                        <AppIcon name="bot" size="xs" />
                                     </div>
                                     
                                     <div className="w-full max-w-[92%] space-y-2.5">
@@ -340,7 +322,7 @@ ${otherName}
                                                     >
                                                         {copiedCode === mockCode1 ? (
                                                             <>
-                                                                <Check size={13} className="stroke-[3]" />
+                                                                <AppIcon name="check" size="sm" />
                                                                 <span>Đã copy {mockCode1}!</span>
                                                             </>
                                                         ) : (
@@ -392,7 +374,7 @@ ${otherName}
                                                     >
                                                         {copiedCode === mockCode2 ? (
                                                             <>
-                                                                <Check size={13} className="stroke-[3]" />
+                                                                <AppIcon name="check" size="sm" />
                                                                 <span>Đã copy {mockCode2}!</span>
                                                             </>
                                                         ) : (
@@ -451,14 +433,14 @@ ${otherName}
                                                             <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
                                                                 <span>VWQU13YUQX</span>
                                                                 <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
-                                                                    {copiedCode === 'VWQU13YUQX' ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
+                                                                    {copiedCode === 'VWQU13YUQX' ? <AppIcon name="check" size="xs" /> : <AppIcon name="copy" size="xs" />}
                                                                 </span>
                                                             </div>
 
                                                             <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
                                                                 {copiedCode === 'VWQU13YUQX' ? (
                                                                     <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
-                                                                        <Check size={10} /> Đã copy mã!
+                                                                        <AppIcon name="check" size="xs" /> Đã copy mã!
                                                                     </span>
                                                                 ) : (
                                                                     <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
@@ -532,7 +514,7 @@ ${otherName}
 
                                 <div className="flex justify-start items-start gap-1.5">
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
-                                        <Bot size={12} />
+                                        <AppIcon name="bot" size="xs" />
                                     </div>
                                     <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-1.5">
                                         <div className="flex items-center justify-between">
@@ -648,7 +630,7 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
 
                                 <div className="flex justify-start items-start gap-1.5 w-full">
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
-                                        <Bot size={12} />
+                                        <AppIcon name="bot" size="xs" />
                                     </div>
                                     
                                     {/* LINE Flex Message Card (Bubble) */}
@@ -709,14 +691,14 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                     <div className="font-mono font-bold text-sm text-slate-900 dark:text-white tracking-wider my-0.5 flex items-center justify-center gap-1.5">
                                                         <span>{activeCouponCode}</span>
                                                         <span className="p-0.5 rounded text-emerald-600 dark:text-emerald-400 bg-white dark:bg-slate-800 shadow-2xs border border-emerald-200 dark:border-emerald-800">
-                                                            {copiedCode === activeCouponCode ? <Check size={11} className="stroke-[3]" /> : <Copy size={11} />}
+                                                            {copiedCode === activeCouponCode ? <AppIcon name="check" size="xs" /> : <AppIcon name="copy" size="xs" />}
                                                         </span>
                                                     </div>
 
                                                     <div className="text-[8px] text-emerald-600/90 dark:text-emerald-400/90 font-medium flex items-center justify-center gap-1">
                                                         {copiedCode === activeCouponCode ? (
                                                             <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-in zoom-in-90 duration-150">
-                                                                <Check size={10} /> Đã copy mã!
+                                                                <AppIcon name="check" size="xs" /> Đã copy mã!
                                                             </span>
                                                         ) : (
                                                             <span className="text-[7.5px] text-slate-400">📋 Chạm để copy</span>
@@ -743,12 +725,12 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
 
                                 <div className="flex justify-start items-start gap-1.5 animate-in fade-in slide-in-from-bottom-2 duration-150">
                                     <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs text-[10px]">
-                                        <Bot size={12} />
+                                        <AppIcon name="bot" size="xs" />
                                     </div>
                                     <div className="bg-white dark:bg-slate-850 text-slate-800 dark:text-slate-200 p-2.5 rounded-2xl rounded-tl-xs shadow-xs border border-slate-200/80 dark:border-slate-800 max-w-[92%] space-y-2">
                                         <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800">
                                             <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 flex items-center gap-1 font-sans">
-                                                <BookOpen size={12} />
+                                                <AppIcon name="guide" size="xs" />
                                                 <span>HƯỚNG DẪN SỬ DỤNG BOT PMH</span>
                                             </span>
                                             <span className="text-[9px] text-slate-400 font-mono">13:48</span>
@@ -820,19 +802,19 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                 type="button"
                                 className="w-7 h-7 rounded-full text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
                             >
-                                <Plus size={16} />
+                                <AppIcon name="add" size="md" />
                             </button>
                             <button
                                 type="button"
                                 className="w-7 h-7 rounded-full text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
                             >
-                                <Camera size={15} />
+                                <AppIcon name="exportImage" size="md" />
                             </button>
                             <button
                                 type="button"
                                 className="w-7 h-7 rounded-full text-slate-500 dark:text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center transition-colors"
                             >
-                                <ImageIcon size={15} />
+                                <AppIcon name="image" size="md" />
                             </button>
 
                             {/* Fake input text box */}
@@ -846,14 +828,14 @@ tkMode === 'event' ? `📊 BÁO CÁO TỒN KHO PMH EVENT
                                                 ? 'Gõ "e4 [MĐH]" để nhận mã...'
                                                 : 'Gõ "hd" để xem hướng dẫn...'}
                                 </span>
-                                <Smile size={14} className="text-slate-400 shrink-0" />
+                                <AppIcon name="emoji" size="sm" className="text-slate-400" />
                             </div>
 
                             <button
                                 type="button"
                                 className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs hover:bg-emerald-600 transition-colors"
                             >
-                                <Mic size={14} />
+                                <AppIcon name="mic" size="sm" />
                             </button>
                         </div>
 

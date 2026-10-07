@@ -109,13 +109,12 @@ describe('lint-ratchet — chỉ số icon', () => {
 });
 
 describe('Lớp chuyển tiếp tên icon cũ → tên chức năng (Giai đoạn 2)', () => {
-  it('mọi tên trong ICON_MAP của components/common/Icon.tsx đều đổi được sang tên chức năng', async () => {
-    const { resolveIconName } = await import('../../components/shared/ui/icon/legacyIconNames');
-    const src = readFileSync('components/common/Icon.tsx', 'utf8');
-    const legacy = [...src.slice(src.indexOf('const ICON_MAP')).matchAll(/'([a-z0-9-]+)':\s*[A-Za-z0-9]+/g)].map((m) => m[1]);
-    expect(legacy.length).toBeGreaterThan(150);
-    const missing = legacy.filter((n) => !resolveIconName(n));
-    expect(missing).toEqual([]);
+  it('mọi tên cũ trong bảng chuyển tiếp trỏ tới icon có thật (components/common/Icon.tsx đã xoá 2026-10-07)', async () => {
+    const { LEGACY_ICON_NAMES } = await import('../../components/shared/ui/icon/legacyIconNames');
+    // 191 tên của ICON_MAP cũ + 6 tên từng ra dấu hỏi. Vẫn GIỮ bảng vì tên cũ còn nằm trong DỮ LIỆU người dùng
+    // đã lưu (vd cấu hình thẻ KPI: icon 'trending-up') — xoá bảng là các thẻ đó hiện dấu hỏi.
+    expect(Object.keys(LEGACY_ICON_NAMES).length).toBeGreaterThanOrEqual(197);
+    for (const [cu, moi] of Object.entries(LEGACY_ICON_NAMES)) expect(ICON_REGISTRY, cu).toHaveProperty(moi);
   });
 
   it('3 tên bảng cũ KHÔNG có (từng âm thầm hiện dấu hỏi) nay ra đúng icon', async () => {
@@ -159,6 +158,27 @@ describe('Test e2e không bám vào HÌNH icon', () => {
     const bad = walk('tests/e2e')
       .filter((p) => /\.(ts|tsx)$/.test(p) && !/icon-|iconAudit/.test(p))
       .filter((p) => /svg\.lucide-|lucide-[a-z]/.test(readFileSync(p, 'utf8')));
+    expect(bad).toEqual([]);
+  });
+});
+
+describe('lint-ratchet — iconRawSvg (Giai đoạn 5)', () => {
+  it('đếm SVG icon viết thẳng (viewBox 24/20), bỏ qua registry và SVG biểu đồ', () => {
+    const src = '<svg viewBox="0 0 24 24"><path/></svg><svg className="x" viewBox="0 0 20 20"/><svg viewBox="0 0 400 200"/>';
+    expect(ratchet.countIconRawSvg(src, 'features/a.tsx')).toBe(2);
+    expect(ratchet.countIconRawSvg(src, 'components/shared/ui/icon/brandIcons.tsx')).toBe(0);
+  });
+});
+
+describe('Nét icon đồng đều', () => {
+  it('không AppIcon nào tự đè độ dày nét bằng lớp stroke-[…] (CSS thắng strokeWidth=2 của AppIcon)', async () => {
+    const { readdirSync, statSync } = await import('node:fs');
+    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => {
+      const p = `${d}/${f}`;
+      return statSync(p).isDirectory() ? walk(p) : [p];
+    });
+    const bad = ['components', 'features'].flatMap(walk).filter((p) => p.endsWith('.tsx'))
+      .flatMap((p) => (readFileSync(p, 'utf8').match(/<AppIcon\b[^>]*stroke-\[[^>]*\/>/g) || []).map((m) => `${p}: ${m}`));
     expect(bad).toEqual([]);
   });
 });

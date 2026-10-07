@@ -1,5 +1,5 @@
 import React from 'react';
-import { RefreshCw, X } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -23,9 +23,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
       {/* Banner header — kéo lề âm để tràn hết chiều rộng body (Modal mặc định có padding p-5) */}
       <div className="-mx-5 -mt-5 mb-5 bg-sky-600 dark:bg-sky-700 p-4 flex justify-between items-center text-white">
           <h2 className="text-xl font-bold uppercase flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <AppIcon name="guide" size="xl" />
               Hướng dẫn sử dụng phần mềm phân ca tự động
           </h2>
           <Button
@@ -33,7 +31,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
               onClick={onClose}
               className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-white hover:text-sky-100 transition-colors shrink-0"
           >
-              <X size={28} />
+              <AppIcon name="close" size="md" />
           </Button>
       </div>
 
@@ -53,9 +51,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   <li>
                       <span className="inline-flex rounded-md shadow-sm align-middle mr-2">
                           <span className="bg-sky-200 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 font-bold py-1 px-2.5 rounded-l-md flex items-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                              </svg>
+                              <AppIcon name="link" size="md" />
                           </span>
                           <span className="bg-sky-200 dark:bg-sky-900/40 text-sky-700 dark:text-sky-300 font-bold py-1 px-2.5 rounded-r-md border-l border-sky-400 dark:border-sky-700">Nhập DS</span>
                       </span>
@@ -67,7 +63,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   </li>
                   <li>
                       <span className="inline-flex items-center bg-emerald-200 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold py-1 px-3 rounded shadow-sm text-sm mr-2">
-                           <RefreshCw size={16} />
+                           <AppIcon name="refresh" size="md" />
                            <span className="ml-2">Ca Xoay</span>
                       </span>
                        Cấu hình mẫu ca cho từng bộ phận.
@@ -114,9 +110,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   <li><strong>Bộ phận:</strong> Lọc để xem lịch riêng của từng bộ phận hoặc xem tất cả.</li>
                   <li>
                       <strong className="inline-flex items-center bg-sky-600 text-white font-bold py-1 px-3 rounded-md text-sm shadow-md align-middle">
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5" />
-                          </svg>
+                          <AppIcon name="sparkles" size="md" className="mr-2" />
                           Tạo Lịch
                       </strong>: Bấm nút này để chạy thuật toán phân ca. Mỗi khi thay đổi nhân sự hoặc quy tắc, cần bấm lại nút này.
                   </li>

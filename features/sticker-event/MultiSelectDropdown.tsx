@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 
 interface MultiSelectDropdownProps {
   label: string;
@@ -64,9 +65,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
               ? selectedValues[0] 
               : `Đã chọn ${selectedValues.length}`}
         </span>
-        <svg className={`w-3 h-3 text-slate-400 transition-transform shrink-0 ml-1 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-        </svg>
+        <AppIcon name="chevronDown" size="xs" className={`text-slate-400 transition-transform ml-1 ${isOpen ? 'rotate-180' : ''}`} />
       </div>
 
       {isOpen && (

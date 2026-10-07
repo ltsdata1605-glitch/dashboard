@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { Select } from '../../../components/shared/ui/Select';
@@ -167,9 +168,7 @@ const Controls: React.FC<ControlsProps> = ({
           disabled={isGenerateDisabled}
           title={isGenerateDisabled ? "Vui lòng nhập danh sách nhân viên và tạo Ca Xoay trước." : "Tạo lịch làm việc mới"}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5" />
-          </svg>
+          <AppIcon name="sparkles" size="md" />
           Tạo Lịch
         </Button>
       </div>

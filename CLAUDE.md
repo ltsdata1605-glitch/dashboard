@@ -198,10 +198,12 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`.
 - **Icon** *(chuẩn hoá 2026-10-02)*: mọi icon gọi qua `<AppIcon name="<chức năng>" size="<token>" />` hoặc
   `<Button icon="…">` (`components/shared/ui/icon/` — thuộc `components/shared/ui/*` nên cả 5 khu vực dùng hợp lệ).
-  CẤM import `lucide-react` ngoài `iconRegistry.ts`, cấm `size={số}` trên icon, cấm vẽ SVG icon mới / dùng
-  `components/common/Icon.tsx` (đã deprecated — `size` của nó tính bằng đơn vị Tailwind, lẫn với px của lucide).
-  Thang size `xs…hero`, mốc laptop/mobile `lg`, bảng icon chuẩn theo chức năng: `DESIGN_SYSTEM.md` mục 4.6.
-  `lint-ratchet` đếm `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` — chỉ được giảm.
+  CẤM import `lucide-react` ngoài `iconRegistry.ts`, cấm `size={số}` trên icon, cấm vẽ `<svg>` icon trong JSX
+  (ngoại lệ: logo thương hiệu nhiều màu — Google ở LoginView), cấm lớp `stroke-[…]` trên AppIcon (nét luôn 2).
+  Tên chức năng `nav*` CHỈ dùng cho thanh điều hướng (`components/layout/navIcons.ts`). Thang size `xs…hero`, mốc
+  laptop/mobile `lg`, bảng icon chuẩn: `DESIGN_SYSTEM.md` mục 4.6. `components/common/Icon.tsx` và 2 file SVG tự vẽ
+  `Icons.tsx` ĐÃ XOÁ (2026-10-07); tên icon kiểu cũ trong DỮ LIỆU đã lưu đổi qua `resolveIconName()`.
+  `lint-ratchet`: `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` = 0, `iconRawSvg` = 1 — chỉ được giảm.
 - **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
 - **Bo góc** *(sửa 2026-09-10 theo chuẩn "Bảng điều khiển ca trực")*: `rounded` (4px — input/button),
   `rounded-md` (6px — modal/dropdown, thứ NỔI LÊN trên). Bảng và vùng dữ liệu: `rounded-none`.

@@ -1,17 +1,6 @@
 import React, { useState } from 'react';
-import {
-    ShieldCheck,
-    Plus,
-    Trash2,
-    Send,
-    UserCheck,
-    HelpCircle,
-    Copy,
-    Check,
-    RefreshCw,
-    Users,
-    Sparkles
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { LineAdmin, AdminRole, InteractedUser } from '../types/lineBot.types';
@@ -110,7 +99,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
             {/* Guide box */}
             <div className="p-4 bg-sky-50/70 dark:bg-sky-950/20 border border-sky-100 dark:border-sky-900/40 rounded-2xl space-y-2">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300">
-                    <HelpCircle size={15} />
+                    <AppIcon name="help" size="md" />
                     <span>Cách lấy LINE User ID của Quản lý / Admin</span>
                 </div>
                 <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1 pl-1">
@@ -125,7 +114,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
             <div className="p-5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <ShieldCheck size={16} className="text-emerald-500" />
+                        <AppIcon name="securityOk" size="md" className="text-emerald-500" />
                         <span>Khai Báo Admin Mới</span>
                     </h4>
 
@@ -135,7 +124,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         onClick={() => setIsSelectModalOpen(true)}
                         className="px-3 py-1.5 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 border border-sky-200 dark:border-sky-800/80 rounded-xl flex items-center gap-1.5 shadow-2xs transition-all active:scale-95 self-start sm:self-auto cursor-pointer"
                     >
-                        <Users size={14} className="text-sky-600 dark:text-sky-400" />
+                        <AppIcon name="users" size="sm" className="text-sky-600" />
                         <span>Chọn từ tương tác BOT</span>
                         {interactedUsers.length > 0 && (
                             <span className="px-1.5 py-0.2 rounded-full text-[11px] font-bold bg-sky-600 text-white">
@@ -171,7 +160,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                 className="min-h-11 sm:min-h-0 text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-0.5 cursor-pointer"
                                 title="Chọn người từ lịch sử tương tác của BOT"
                             >
-                                <Users size={11} />
+                                <AppIcon name="users" size="xs" />
                                 <span>Chọn người</span>
                             </button>
                         </div>
@@ -207,7 +196,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                             disabled={isSubmitting}
                             className="w-full py-2 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-xl shadow-2xs flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
                         >
-                            <Plus size={15} />
+                            <AppIcon name="add" size="md" />
                             <span>{isSubmitting ? 'Đang thêm...' : 'Thêm Admin'}</span>
                         </Button>
                     </div>
@@ -221,7 +210,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                         Danh Sách Admin Được Cấp Quyền ({admins.length})
                     </span>
                     <Button variant="ghost" onClick={onRefresh} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 p-1 text-slate-400 rounded-lg hover:text-sky-600" title="Làm mới">
-                        <RefreshCw size={14} className={isLoading ? 'animate-spin' : ''} />
+                        <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
                 </div>
 
@@ -279,7 +268,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                                     className="p-1.5 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded-lg"
                                                     title="Gửi tin nhắn test"
                                                 >
-                                                    <Send size={14} className={testingId === a.id ? 'animate-spin' : ''} />
+                                                    <AppIcon name="send" size="sm" className={testingId === a.id ? 'animate-spin' : ''} />
                                                 </Button>
                                                 <Button
                                                     variant="ghost"
@@ -287,7 +276,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                                     className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
                                                     title="Xoá"
                                                 >
-                                                    <Trash2 size={14} />
+                                                    <AppIcon name="delete" size="sm" />
                                                 </Button>
                                             </div>
                                         </td>

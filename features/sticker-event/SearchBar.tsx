@@ -1,8 +1,7 @@
 import React from 'react';
-import { QRIcon } from './Icons';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Product } from './types';
 import { Button } from '../../components/shared/ui/Button';
-import { Search, X, ScanLine, ChevronRight } from 'lucide-react';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -56,7 +55,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         } ${disabled ? 'bg-slate-50 dark:bg-slate-900 opacity-60' : ''}`}>
           {/* Icon Search */}
           <div className="pl-2.5 pr-1 text-slate-400 flex items-center pointer-events-none">
-            <Search className={`${compact ? 'h-3.5 w-3.5' : isMobile ? 'h-4 w-4' : 'h-4.5 w-4.5'} text-slate-400`} />
+            <AppIcon name="search" size={compact ? 'sm' : 'md'} className="text-slate-400" />
           </div>
 
           {/* Input text */}
@@ -78,7 +77,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors mr-1 cursor-pointer"
               title="Xóa tìm kiếm"
             >
-              <X className="h-3.5 w-3.5" />
+              <AppIcon name="close" size="sm" />
             </button>
           )}
 
@@ -94,7 +93,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 isMobile ? 'bg-sky-50/80 text-sky-600 text-xs px-2' : ''
               }`}
             >
-              <ScanLine className="h-4 w-4" />
+              <AppIcon name="scan" size="md" />
               {isMobile && <span className="text-[11px] font-semibold hidden xs:inline">Quét</span>}
             </Button>
           </div>
@@ -126,7 +125,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     {suggestion.sanPham}
                   </p>
                 </div>
-                <ChevronRight className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <AppIcon name="chevronRight" size="sm" className="text-slate-400" />
               </li>
             ))}
             {showNoResults && (

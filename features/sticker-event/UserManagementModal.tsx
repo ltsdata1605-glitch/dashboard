@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { fetchAllUsers, updateUserRole, clearAllUsers, deleteUserDoc } from './services/firebaseService';
-import { UserIcon, ShieldIcon, ShieldAlertIcon, Loader2Icon, Trash2Icon } from './Icons';
 import { auth } from './firebase';
 import { signOut } from 'firebase/auth';
 import { Button } from '../../components/shared/ui/Button';
@@ -134,7 +134,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
             onClose={onClose}
             title={
                 <span className="flex items-center gap-2 text-xl">
-                    <UserIcon className="h-6 w-6 text-sky-600" />
+                    <AppIcon name="user" size="xl" className="text-sky-600" />
                     Quản lý người dùng
                 </span>
             }
@@ -147,7 +147,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                         onClick={handleResetAllUsers}
                         className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-medium text-sm"
                     >
-                        <Trash2Icon className="h-4 w-4" />
+                        <AppIcon name="delete" size="md" />
                         Xóa tất cả người dùng
                     </Button>
                     <Button
@@ -163,7 +163,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                 <div className="-m-5 p-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12">
-                            <Loader2Icon className="h-10 w-10 text-sky-600 animate-spin mb-4" />
+                            <AppIcon name="loading" size="state" spin className="text-sky-600 mb-4" />
                             <p className="text-slate-500">Đang tải danh sách người dùng...</p>
                         </div>
                     ) : error ? (
@@ -176,7 +176,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                 <div key={user.uid} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2 rounded-full ${user.role === 'admin' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'}`}>
-                                            {user.role === 'admin' ? <ShieldAlertIcon className="h-5 w-5" /> : <ShieldIcon className="h-5 w-5" />}
+                                            {user.role === 'admin' ? <AppIcon name="securityAlert" size="lg" /> : <AppIcon name="security" size="lg" />}
                                         </div>
                                         <div>
                                             <p className="font-bold text-slate-900">{user.email}</p>
@@ -201,7 +201,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-slate-400"
                                             title={user.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
                                         >
-                                            <Trash2Icon className="h-5 w-5" />
+                                            <AppIcon name="delete" size="lg" />
                                         </Button>
                                     </div>
                                 </div>
@@ -220,11 +220,11 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                     title={
                         <span className="flex items-center gap-3 text-lg">
                             {confirmAction.type === 'error' ? (
-                                <ShieldAlertIcon className="h-6 w-6 text-rose-600" />
+                                <AppIcon name="securityAlert" size="xl" className="text-rose-600" />
                             ) : confirmAction.type === 'info' ? (
-                                <ShieldIcon className="h-6 w-6 text-sky-600" />
+                                <AppIcon name="security" size="xl" className="text-sky-600" />
                             ) : (
-                                <ShieldAlertIcon className="h-6 w-6 text-amber-600" />
+                                <AppIcon name="securityAlert" size="xl" className="text-amber-600" />
                             )}
                             {confirmAction.title}
                         </span>

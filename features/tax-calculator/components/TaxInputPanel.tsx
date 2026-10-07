@@ -953,7 +953,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
                             : 'border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900'
                         }`}
                       >
-                        {isChecked && <AppIcon name="check" size="xs" className="stroke-[3]" />}
+                        {isChecked && <AppIcon name="check" size="xs" />}
                       </div>
 
                       <span title={item.name} className={`text-xs min-w-0 leading-snug sm:truncate ${isChecked ? 'font-bold text-rose-950 dark:text-rose-100' : 'font-medium'}`}>

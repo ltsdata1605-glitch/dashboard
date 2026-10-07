@@ -741,7 +741,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             ))}
                         </div>
                         <div className="flex items-center justify-center gap-2 mt-3 text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                            <svg className="w-3.5 h-3.5 animate-spin text-sky-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
+                            <AppIcon name="loading" size="sm" spin className="text-sky-400" />
                             Đang tải cấu hình cột...
                         </div>
                     </div>

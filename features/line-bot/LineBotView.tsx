@@ -1,21 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import {
-    Bot,
-    Ticket,
-    MessageSquare,
-    Clock,
-    Sparkles,
-    ShieldCheck,
-    Settings,
-    HelpCircle,
-    ShieldAlert,
-    CheckCircle2,
-    XCircle,
-    ListFilter,
-    Building2,
-    User,
-    LogIn
-} from 'lucide-react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
+import type { IconName } from '../../components/shared/ui/icon/iconRegistry';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/shared/ui/Button';
@@ -95,7 +80,7 @@ export default function LineBotView() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[65vh] p-6 text-center animate-in fade-in">
                 <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-3xl mb-4 border border-rose-200 dark:border-rose-900/60 shadow-sm">
-                    <ShieldAlert size={42} />
+                    <AppIcon name="securityAlert" size="hero" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
                     Tính Năng Giới Hạn Quyền Quản Lý
@@ -111,15 +96,15 @@ export default function LineBotView() {
         );
     }
 
-    const tabs: Array<{ id: LineBotTab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }> = [
-        { id: 'coupons', label: 'Coupon Event', icon: Ticket },
-        { id: 'filtered', label: 'Coupon Lọc', icon: ListFilter },
-        { id: 'schedules', label: 'Gửi Notify', icon: Clock },
-        { id: 'keywords', label: 'Chat BOT', icon: Sparkles },
-        { id: 'admins', label: 'Admin', icon: ShieldCheck },
-        { id: 'group-features', label: 'Cấu hình Nhóm', icon: Settings },
-        { id: 'syntax', label: 'Cú pháp & Lọc', icon: MessageSquare },
-        { id: 'settings', label: 'Cấu Hình Bot', icon: Settings }
+    const tabs: Array<{ id: LineBotTab; label: string; icon: IconName }> = [
+        { id: 'coupons', label: 'Coupon Event', icon: 'coupon' },
+        { id: 'filtered', label: 'Coupon Lọc', icon: 'filter' },
+        { id: 'schedules', label: 'Gửi Notify', icon: 'schedule' },
+        { id: 'keywords', label: 'Chat BOT', icon: 'sparkles' },
+        { id: 'admins', label: 'Admin', icon: 'securityOk' },
+        { id: 'group-features', label: 'Cấu hình Nhóm', icon: 'users' },
+        { id: 'syntax', label: 'Cú pháp & Lọc', icon: 'command' },
+        { id: 'settings', label: 'Cấu Hình Bot', icon: 'settings' }
     ];
 
     return (
@@ -139,7 +124,7 @@ export default function LineBotView() {
                             />
                         ) : (
                             <div className="p-1.5 sm:p-2 bg-sky-600 text-white rounded-lg sm:rounded-xl shadow-xs shrink-0">
-                                <Bot size={16} />
+                                <AppIcon name="bot" size="md" />
                             </div>
                         )}
                         <div className="min-w-0">
@@ -154,22 +139,22 @@ export default function LineBotView() {
                                     </span>
                                 ) : (
                                     <span className="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 flex items-center gap-1 shrink-0 whitespace-nowrap">
-                                        <XCircle size={10} /> Chưa kết nối
+                                        <AppIcon name="error" size="xs" /> Chưa kết nối
                                     </span>
                                 )}
 
                                 {/* Badge phạm vi Bot */}
                                 {isInheriting ? (
                                     <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/80 dark:border-sky-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bạn đang dùng chung Bot và kho mã do quản lý khác trong cùng kho tạo">
-                                        <Building2 size={10} /> Kho {currentDept} (Kế thừa)
+                                        <AppIcon name="department" size="xs" /> Kho {currentDept} (Kế thừa)
                                     </span>
                                 ) : scopeMode === 'warehouse' && currentDept ? (
                                     <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 border border-sky-200/80 dark:border-sky-800/60 flex items-center gap-1 shrink-0 whitespace-nowrap" title="Bot đại diện chính của kho này">
-                                        <Building2 size={10} /> Kho {currentDept} (Bot kho)
+                                        <AppIcon name="department" size="xs" /> Kho {currentDept} (Bot kho)
                                     </span>
                                 ) : (
                                     <span className="px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 dark:bg-slate-700/80 text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 whitespace-nowrap">
-                                        <User size={10} /> Bot Cá Nhân
+                                        <AppIcon name="user" size="xs" /> Bot Cá Nhân
                                     </span>
                                 )}
                             </div>
@@ -193,7 +178,7 @@ export default function LineBotView() {
                                 title="Đăng nhập tài khoản Google quản lý để tự động thừa kế Bot Kho"
                                 className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 sm:px-3 text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-lg border border-sky-600 shadow-2xs transition-all active:scale-95 cursor-pointer"
                             >
-                                <LogIn size={13} />
+                                <AppIcon name="login" size="md" />
                                 <span>{isLoggingIn ? 'Đang kết nối...' : 'Đăng nhập để thừa kế'}</span>
                             </Button>
                         ) : (
@@ -206,7 +191,7 @@ export default function LineBotView() {
                                 title={`Đang đăng nhập: ${user.email || user.displayName || 'Tài khoản'}. Bấm để chuyển sang tài khoản Google quản lý khác.`}
                                 className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2 sm:px-2.5 text-[11px] font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200/80 dark:border-slate-700/80 shadow-2xs transition-all active:scale-95 cursor-pointer"
                             >
-                                <LogIn size={12} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                                <AppIcon name="login" size="md" className="text-sky-600" />
                                 <span className="hidden md:inline text-slate-500 dark:text-slate-400 max-w-[110px] truncate">{user.displayName || user.email?.split('@')[0]}</span>
                                 <span>{isLoggingIn ? '...' : 'Đổi tài khoản'}</span>
                             </Button>
@@ -220,7 +205,7 @@ export default function LineBotView() {
                             title="Hướng dẫn tạo Bot"
                             className="flex items-center justify-center gap-1.5 h-7.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 px-2.5 text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-lg border border-sky-200/80 dark:border-sky-800/80 shadow-2xs transition-all active:scale-95"
                         >
-                            <HelpCircle size={13} className="text-sky-600 dark:text-sky-400" />
+                            <AppIcon name="help" size="md" className="text-sky-600" />
                             <span className="hidden sm:inline">Hướng dẫn tạo Bot</span>
                         </Button>
                     </div>
@@ -239,11 +224,11 @@ export default function LineBotView() {
                     }`}>
                         <div className="flex items-center gap-2 min-w-0">
                             {isInheriting ? (
-                                <Building2 size={16} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                                <AppIcon name="department" size="md" className="text-sky-600" />
                             ) : hasWarehouseBot && scopeMode === 'personal' ? (
-                                <Sparkles size={16} className="text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                                <AppIcon name="sparkles" size="md" className="text-amber-600 animate-pulse" />
                             ) : (
-                                <Building2 size={16} className="text-sky-600 dark:text-sky-400 shrink-0" />
+                                <AppIcon name="department" size="md" className="text-sky-600" />
                             )}
                             <div className="min-w-0 leading-snug">
                                 {isInheriting ? (
@@ -303,7 +288,6 @@ export default function LineBotView() {
                         className="flex items-center gap-1 overflow-x-auto p-1 bg-slate-100/90 dark:bg-slate-800/70 rounded-xl border border-slate-200/70 dark:border-slate-700/60 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]"
                     >
                     {tabs.map(tab => {
-                        const IconComp = tab.icon;
                         const isActive = activeSubTab === tab.id;
                         return (
                             <button
@@ -317,7 +301,7 @@ export default function LineBotView() {
                                         : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/40'
                                 }`}
                             >
-                                <IconComp size={13} className={isActive ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <AppIcon name={tab.icon} size="md" className={isActive ? 'text-sky-600' : 'text-slate-400'} />
                                 <span>{tab.label}</span>
                             </button>
                         );

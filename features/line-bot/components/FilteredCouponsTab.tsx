@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-    Filter,
-    RefreshCw,
-    Trash2,
-    CheckCircle2,
-    Clock,
-    Search,
-    Copy,
-    Check,
-    Ticket,
-    UserCheck,
-    AlertCircle,
-    Calendar
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { FilteredCouponRecord } from '../types/lineBot.types';
@@ -124,7 +112,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">{stats.total}</span>
                     </div>
                     <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
-                        <Ticket size={14} />
+                        <AppIcon name="coupon" size="sm" />
                     </div>
                 </div>
 
@@ -139,7 +127,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         </div>
                     </div>
                     <div className="p-1 sm:p-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
-                        <CheckCircle2 size={14} />
+                        <AppIcon name="success" size="sm" />
                     </div>
                 </div>
 
@@ -149,7 +137,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         <span className="text-base sm:text-xl font-black text-amber-600 dark:text-amber-400 tabular-nums tracking-tight">{stats.unused}</span>
                     </div>
                     <div className="p-1 sm:p-1.5 bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
-                        <Clock size={14} />
+                        <AppIcon name="clock" size="sm" />
                     </div>
                 </div>
             </div>
@@ -158,7 +146,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
             <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
                 {/* Search Bar */}
                 <div className="relative w-full sm:w-[220px] lg:w-[260px] shrink-0">
-                    <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
                         type="text"
                         value={searchQuery}
@@ -219,7 +207,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                         className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 active:scale-95 transition-all"
                         title="Làm mới danh sách"
                     >
-                        <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
+                        <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
 
                     {coupons.length > 0 && (
@@ -231,7 +219,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                             className="h-8 w-8 p-0 flex items-center justify-center text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 rounded-lg border border-rose-200/80 active:scale-95 transition-all"
                             title="Xóa toàn bộ lịch sử lọc"
                         >
-                            <Trash2 size={13} />
+                            <AppIcon name="delete" size="sm" />
                         </Button>
                     )}
                 </div>
@@ -241,12 +229,12 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
             <div className="bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
                 {isLoading ? (
                     <div className="p-8 text-center text-slate-400 flex flex-col items-center gap-2">
-                        <RefreshCw size={20} className="animate-spin text-sky-500" />
+                        <AppIcon name="refresh" size="lg" spin className="text-sky-500" />
                         <span className="text-xs">Đang tải danh sách coupon lọc được...</span>
                     </div>
                 ) : filteredList.length === 0 ? (
                     <div className="p-8 text-center text-slate-400 flex flex-col items-center gap-2">
-                        <AlertCircle size={28} className="text-slate-300 dark:text-slate-600" />
+                        <AppIcon name="alert" size="state" className="text-slate-300" />
                         <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">
                             {searchQuery ? 'Không tìm thấy coupon nào khớp từ khóa' : 'Chưa có coupon nào được lọc'}
                         </span>
@@ -291,17 +279,17 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                             : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-600'
                                                     }`}
                                                 >
-                                                    {copiedCode === item.code ? <Check size={11} className="text-emerald-600" /> : <Copy size={11} className="text-slate-400" />}
+                                                    {copiedCode === item.code ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" className="text-slate-400" />}
                                                     <span>{copiedCode === item.code ? 'Đã copy' : item.code}</span>
                                                 </button>
                                             </div>
                                             {isUsed ? (
                                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
-                                                    <CheckCircle2 size={10} /> ĐÃ DÙNG
+                                                    <AppIcon name="success" size="xs" /> ĐÃ DÙNG
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
-                                                    <Clock size={10} /> CHƯA DÙNG
+                                                    <AppIcon name="clock" size="xs" /> CHƯA DÙNG
                                                 </span>
                                             )}
                                         </div>
@@ -381,12 +369,12 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                     >
                                                         {copiedCode === item.code ? (
                                                             <>
-                                                                <Check size={11} className="text-emerald-600 dark:text-emerald-400" />
+                                                                <AppIcon name="check" size="xs" className="text-emerald-600" />
                                                                 <span>Đã copy</span>
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Copy size={11} className="text-slate-400 shrink-0" />
+                                                                <AppIcon name="copy" size="xs" className="text-slate-400" />
                                                                 <span className="tracking-wide">{item.code}</span>
                                                             </>
                                                         )}
@@ -406,11 +394,11 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                 <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     {isUsed ? (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200">
-                                                            <CheckCircle2 size={10} /> ĐÃ SỬ DỤNG
+                                                            <AppIcon name="success" size="xs" /> ĐÃ SỬ DỤNG
                                                         </span>
                                                     ) : (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200">
-                                                            <Clock size={10} /> CHƯA DÙNG
+                                                            <AppIcon name="clock" size="xs" /> CHƯA DÙNG
                                                         </span>
                                                     )}
                                                 </td>

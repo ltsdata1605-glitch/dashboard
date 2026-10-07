@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { SavedList, SavedListItem } from './types';
 import { fetchSavedListsFromFirestore, deleteSavedListFromFirestore, fetchSavedListItems } from './services/firebaseService';
-import { TrashIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
-import { Images } from 'lucide-react';
 
 interface SavedListsModalProps {
     storeId: string;
@@ -128,7 +127,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                         </div>
                     ) : lists.length === 0 ? (
                         <div className="flex items-center justify-center h-full">
-                            <EmptyState icon={<Images size={24} />} title="Chưa có danh sách nào được lưu" />
+                            <EmptyState icon={<AppIcon name="exportBatch" size="xl" />} title="Chưa có danh sách nào được lưu" />
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -163,7 +162,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
                                             title="Xóa danh sách"
                                         >
-                                            <TrashIcon className="h-5 w-5" />
+                                            <AppIcon name="delete" size="lg" />
                                         </Button>
                                     </div>
                                 </div>

@@ -1,20 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import {
-    X,
-    Users,
-    Search,
-    Copy,
-    Check,
-    RefreshCw,
-    MessageSquare,
-    MessageCircle,
-    ShieldCheck,
-    UserCheck,
-    Plus,
-    Clock,
-    Sparkles
-} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { InteractedUser, LineAdmin, AdminRole } from '../types/lineBot.types';
@@ -155,7 +141,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-                            <Users size={20} />
+                            <AppIcon name="users" size="lg" />
                         </div>
                         <div>
                             <div className="flex items-center gap-2">
@@ -179,7 +165,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl"
                             title="Làm mới danh sách"
                         >
-                            <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+                            <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
                         </Button>
                         <Button
                             variant="ghost"
@@ -187,7 +173,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                             className="p-2 text-slate-400 hover:text-rose-500 rounded-xl"
                             title="Đóng"
                         >
-                            <X size={18} />
+                            <AppIcon name="close" size="md" />
                         </Button>
                     </div>
                 </div>
@@ -196,7 +182,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}
                     <div className="relative">
-                        <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <AppIcon name="search" size="md" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
                             type="text"
                             value={searchTerm}
@@ -209,7 +195,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                 onClick={() => setSearchTerm('')}
                                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
                             >
-                                <X size={14} />
+                                <AppIcon name="close" size="sm" />
                             </button>
                         )}
                     </div>
@@ -240,7 +226,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <Sparkles size={13} />
+                            <AppIcon name="sparkles" size="sm" />
                             <span>Chưa là Admin</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'NON_ADMIN' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
@@ -257,7 +243,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <MessageSquare size={13} />
+                            <AppIcon name="message" size="sm" />
                             <span>Từ Nhóm LINE</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'GROUP' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
@@ -274,7 +260,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         >
-                            <MessageCircle size={13} />
+                            <AppIcon name="message" size="sm" />
                             <span>Nhắn riêng 1-1</span>
                             <span className={`text-[11px] px-1.5 py-0.2 rounded-full ${
                                 channelFilter === 'DIRECT' ? 'bg-sky-700/80 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
@@ -289,13 +275,13 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
                     {isLoading ? (
                         <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                            <RefreshCw size={24} className="animate-spin text-sky-500" />
+                            <AppIcon name="refresh" size="xl" spin className="text-sky-500" />
                             <span className="text-xs">Đang nạp danh sách người dùng tương tác...</span>
                         </div>
                     ) : filteredUsers.length === 0 ? (
                         <div className="py-12 px-4 text-center space-y-3">
                             <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-500 flex items-center justify-center mx-auto">
-                                <Users size={24} />
+                                <AppIcon name="users" size="xl" />
                             </div>
                             <div>
                                 <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200">
@@ -352,9 +338,9 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                 title={user.lastInteractionType === 'GROUP' ? 'Tương tác trong nhóm' : 'Nhắn tin trực tiếp'}
                                             >
                                                 {user.lastInteractionType === 'GROUP' ? (
-                                                    <MessageSquare size={9} />
+                                                    <AppIcon name="message" size="xs" />
                                                 ) : (
-                                                    <MessageCircle size={9} />
+                                                    <AppIcon name="message" size="xs" />
                                                 )}
                                             </div>
                                         </div>
@@ -399,9 +385,9 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     title="Sao chép LINE User ID"
                                                 >
                                                     {copiedId === user.lineUserId ? (
-                                                        <Check size={12} className="text-emerald-500" />
+                                                        <AppIcon name="check" size="xs" className="text-emerald-500" />
                                                     ) : (
-                                                        <Copy size={12} />
+                                                        <AppIcon name="copy" size="xs" />
                                                     )}
                                                 </button>
                                             </div>
@@ -415,7 +401,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                 )}
                                                 {user.lastInteractedAt && (
                                                     <span className="flex items-center gap-0.5 flex-shrink-0">
-                                                        <Clock size={10} />
+                                                        <AppIcon name="clock" size="xs" />
                                                         <span>{formatTime(user.lastInteractedAt)}</span>
                                                     </span>
                                                 )}
@@ -427,7 +413,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                     <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
                                         {isExisting ? (
                                             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-emerald-700 dark:text-emerald-300 text-xs font-bold">
-                                                <UserCheck size={14} />
+                                                <AppIcon name="userCheck" size="sm" />
                                                 <span>
                                                     Đã là Admin (
                                                     {existingAdmin.role === 'SUPER_ADMIN'
@@ -461,9 +447,9 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                     className="py-1.5 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center gap-1.5 whitespace-nowrap"
                                                 >
                                                     {isSubmitting ? (
-                                                        <RefreshCw size={13} className="animate-spin" />
+                                                        <AppIcon name="refresh" size="sm" spin />
                                                     ) : (
-                                                        <Plus size={14} />
+                                                        <AppIcon name="add" size="sm" />
                                                     )}
                                                     <span>{isSubmitting ? 'Đang thêm...' : 'Thêm Admin'}</span>
                                                 </Button>
@@ -479,7 +465,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                 {/* Footer Tip */}
                 <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5">
-                        <Sparkles size={13} className="text-amber-500 flex-shrink-0" />
+                        <AppIcon name="sparkles" size="sm" className="text-amber-500" />
                         <span>
                             Chưa thấy người cần thêm? Bảo họ nhắn chữ <strong>id</strong> vào nhóm hoặc chat riêng với BOT!
                         </span>

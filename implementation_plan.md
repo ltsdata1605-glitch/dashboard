@@ -7238,5 +7238,13 @@ gồm Phân Ca, In Sticker, Bot LINE, Khai thác; được xoá 2 file `Icons.ts
     line-gui-anh-va-hen-gio ×6 (gửi LINE tạm tắt, 7c9f96b), bi-bonus-compare ×3 + bi-deep-link ×1 (Nhân viên chặn
     khi chưa có danh sách từ Phân tích, 3384f2b — dữ liệu mẫu của test thiếu), bi-competition-bonus-col (chữ thẻ KPI
     đổi "2/4 nhóm" → "Tiến độ 2/4", 3f4c8c7), bi-competition-export-fit (thẻ KPI rộng hơn bảng 218px, 3f4c8c7).
-- [ ] **5** — Landing, bộ xuất ảnh, In Sticker (xoá `features/sticker-event/Icons.tsx`), Phân Ca, Bot LINE, Khai thác;
-  xoá `components/common/Icon.tsx` khi `iconLegacyCall` về 0.
+- [x] **5** — In Sticker, Phân Ca, Bot LINE, modal xuất ảnh, phần SVG tay còn sót (2026-10-07):
+  - ĐÃ XOÁ `features/sticker-event/Icons.tsx` (42 SVG) và `components/common/Icon.tsx`. Ratchet: iconDirectImport,
+    iconNumericSize, iconLegacyCall đều = 0; thêm chỉ số `iconRawSvg` (= 1, logo Google). Registry 222 icon.
+  - 33 SVG icon viết tay (Phân Ca: toolbar, chú thích, trợ giúp, lịch sử; Tuỳ chọn xuất ảnh; lỗi ErrorBoundary;
+    bộ lọc…) → AppIcon theo chức năng (Ca Xoay = `repeat`, Tạo Lịch = `sparkles`, Xuất ảnh = `exportImage`…).
+  - Tab/bước Bot LINE: icon truyền dạng component → tên chức năng. Tên `nav*` chỉ cho thanh điều hướng (sửa 8 chỗ
+    Bot LINE đang dùng `navLineBot`). Bỏ 20 lớp `stroke-[…]` đè nét (unit test chặn).
+  - In Sticker: nút chế độ Phiếu/Sticker lệch 2.3px (icon `inline` giữa chữ) → `inline-flex`; icon trong nút có chữ → md.
+  - Giữ `legacyIconNames.ts`: tên cũ còn trong dữ liệu người dùng đã lưu.
+  - Audit trình duyệt thêm Phân Ca, In Sticker, Bot LINE (icon-audit-man-goc: 11 màn × 390/1366).

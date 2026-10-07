@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import { X, Clock, Calendar, Check, MessageSquare, Repeat } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { BotSchedule, LineGroup, ScheduleRepeatType } from '../types/lineBot.types';
@@ -175,11 +175,11 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
             <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Lịch hẹn gửi tin" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
-                        <Clock size={16} className="text-emerald-500" />
+                        <AppIcon name="clock" size="md" className="text-emerald-500" />
                         <span>{schedule?.id ? 'Chỉnh Sửa Lịch Hẹn' : 'Tạo Lịch Hẹn Thông Báo'}</span>
                     </h3>
                     <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                        <X size={18} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -230,7 +230,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                     {/* Chu Kỳ Lặp */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-                            <Repeat size={13} className="text-sky-600 dark:text-sky-400" />
+                            <AppIcon name="repeat" size="sm" className="text-sky-600" />
                             <span>Chu Kỳ Lặp</span>
                         </label>
                         <select
@@ -249,7 +249,7 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                     {repeatType === 'ONCE' ? (
                         <div>
                             <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1.5">
-                                <Calendar size={13} className="text-emerald-500" />
+                                <AppIcon name="calendar" size="sm" className="text-emerald-500" />
                                 <span>Ngày phát thông báo (Một lần duy nhất) <span className="text-rose-500">*</span></span>
                             </label>
                             <input

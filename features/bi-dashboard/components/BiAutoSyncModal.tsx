@@ -234,7 +234,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                                     : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
                                         }`}>
                                             {isCompleted ? (
-                                                <AppIcon name="check" size="md" className="stroke-[2.5]" />
+                                                <AppIcon name="check" size="md" />
                                             ) : isCurrent ? (
                                                 <AppIcon name="loading" size="md" spin />
                                             ) : (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, ShieldCheck, Database, RefreshCw, BookOpen, CheckCircle2 } from 'lucide-react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 
@@ -17,7 +17,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
       title={
         <span className="flex items-center gap-3">
           <span className="p-2 bg-sky-50 rounded-lg">
-            <BookOpen className="h-5 w-5 text-sky-600" />
+            <AppIcon name="guide" size="lg" className="text-sky-600" />
           </span>
           Hướng dẫn sử dụng
         </span>
@@ -41,7 +41,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           {/* Nguyên lý hoạt động */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <RefreshCw className="h-5 w-5 text-sky-500" />
+              <AppIcon name="refresh" size="lg" className="text-sky-500" />
               <h3 className="text-base font-bold text-slate-800">1. Nguyên lý hoạt động</h3>
             </div>
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
@@ -56,7 +56,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           {/* Chức năng Nhân viên */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <User className="h-5 w-5 text-sky-500" />
+              <AppIcon name="user" size="lg" className="text-sky-500" />
               <h3 className="text-base font-bold text-slate-800">2. Chức năng dành cho Nhân viên</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -69,7 +69,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
                 'Tùy chỉnh bố cục in (1, 2, 4, 10 sticker/trang).'
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3 p-3 bg-white border border-slate-100 rounded-lg shadow-sm">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                  <AppIcon name="success" size="md" className="text-emerald-500 mt-0.5" />
                   <span className="text-sm text-slate-600">{item}</span>
                 </div>
               ))}
@@ -79,7 +79,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           {/* Chức năng Quản lý */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <ShieldCheck className="h-5 w-5 text-amber-500" />
+              <AppIcon name="securityOk" size="lg" className="text-amber-500" />
               <h3 className="text-base font-bold text-slate-800">3. Chức năng dành cho Quản lý</h3>
             </div>
             <div className="space-y-3">
@@ -105,7 +105,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
           {/* Cách cập nhật dữ liệu */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <Database className="h-5 w-5 text-emerald-500" />
+              <AppIcon name="database" size="lg" className="text-emerald-500" />
               <h3 className="text-base font-bold text-slate-800">4. Quy trình dành cho Quản lý</h3>
             </div>
             <div className="space-y-4">

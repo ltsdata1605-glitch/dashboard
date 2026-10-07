@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import { XIcon, SwitchCameraIcon, CheckCircleIcon, XCircleIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
-import { Flashlight, FlashlightOff, Keyboard, CornerDownLeft } from 'lucide-react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 /** `torch` là thuộc tính NGOÀI chuẩn (Chrome Android hỗ trợ, iOS Safari thì không) nên không có
@@ -393,7 +392,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         {/* Bộ đếm số mã đã quét trong phiên — khỏi phải đóng máy quét ra đếm */}
         {scannedCount > 0 && !scanResult && (
           <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 bg-emerald-600 text-white text-[11px] font-bold px-2.5 py-1 rounded">
-            <CheckCircleIcon className="h-3.5 w-3.5" />
+            <AppIcon name="success" size="sm" />
             Đã quét {scannedCount}
           </div>
         )}
@@ -413,8 +412,8 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           <div className={`absolute inset-0 z-30 flex flex-col items-center justify-center text-white font-bold transition-all duration-300 ${scanResult.type === 'success' ? 'bg-slate-800/95' : 'bg-rose-950/95'}`}>
             <div className={`p-6 rounded-full mb-4 ${scanResult.type === 'success' ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`}>
               {scanResult.type === 'success' ? 
-                <CheckCircleIcon className="h-24 w-24 text-emerald-400 animate-bounce" /> : 
-                <XCircleIcon className="h-24 w-24 text-rose-400 animate-pulse" />
+                <AppIcon name="success" size="md" className="text-emerald-400 animate-bounce" /> : 
+                <AppIcon name="error" size="md" className="text-rose-400 animate-pulse" />
               }
             </div>
             <h3 className="text-2xl mb-2">{scanResult.type === 'success' ? 'THÀNH CÔNG' : 'LỖI'}</h3>
@@ -457,7 +456,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
               className="flex-1 min-w-0 h-11 px-3 text-sm rounded border border-slate-300 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
             />
             <Button type="submit" variant="primary" size="none" disabled={!manualCode.trim()} className="h-11 px-4 rounded text-sm font-bold gap-1.5">
-              <CornerDownLeft className="h-4 w-4" />
+              <AppIcon name="enter" size="md" />
               Thêm
             </Button>
           </form>
@@ -474,7 +473,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
             title={hasTorch ? 'Bật/tắt đèn pin' : 'Thiết bị này không có đèn pin'}
             className={`h-11 rounded text-sm font-bold gap-2 ${isTorchOn ? 'bg-amber-400 border-amber-400 text-slate-900 hover:bg-amber-300' : ''}`}
           >
-            {isTorchOn ? <Flashlight className="h-4 w-4" /> : <FlashlightOff className="h-4 w-4" />}
+            {isTorchOn ? <AppIcon name="flashOn" size="md" /> : <AppIcon name="flashOff" size="md" />}
             {isTorchOn ? 'Tắt đèn' : 'Đèn pin'}
           </Button>
           <Button
@@ -483,7 +482,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
             onClick={() => setShowManualInput(v => !v)}
             className={`h-11 rounded text-sm font-bold gap-2 ${showManualInput ? 'bg-sky-100 border-sky-300 text-sky-800 hover:bg-sky-200' : ''}`}
           >
-            <Keyboard className="h-4 w-4" />
+            <AppIcon name="keyboard" size="md" />
             Nhập mã tay
           </Button>
         </div>
@@ -495,7 +494,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           onClick={onClose}
           className="w-full mt-2 h-12 rounded text-base font-bold gap-2"
         >
-          <XIcon className="h-5 w-5" />
+          <AppIcon name="close" size="md" />
           Đóng / Dừng quét
         </Button>
       </div>
@@ -507,7 +506,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
                 className="p-2 rounded-full bg-slate-900/60 text-white hover:bg-slate-900/80 transition-colors"
                 aria-label="Chuyển camera"
             >
-                <SwitchCameraIcon className="h-6 w-6" />
+                <AppIcon name="switchCamera" size="xl" />
             </Button>
           )}
           <Button
@@ -516,7 +515,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
             className="p-2 rounded-full bg-slate-900/60 text-white hover:bg-slate-900/80 transition-colors"
             aria-label="Đóng máy quét"
           >
-            <XIcon className="h-6 w-6" />
+            <AppIcon name="close" size="md" />
           </Button>
        </div>
     </div>,

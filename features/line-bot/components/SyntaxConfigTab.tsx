@@ -1,18 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-    Save,
-    BarChart2,
-    UserCheck,
-    Plus,
-    X,
-    Terminal,
-    Users,
-    Sparkles,
-    Zap,
-    Eye,
-    BookOpen,
-    RotateCcw
-} from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { LineBotConfig, InteractedUser } from '../types/lineBot.types';
@@ -180,7 +167,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                 >
                     <div className="flex items-center justify-between flex-wrap gap-2">
                         <div className="flex items-center gap-2">
-                            <UserCheck size={18} className="text-emerald-600 dark:text-emerald-400" />
+                            <AppIcon name="userCheck" size="md" className="text-emerald-600" />
                             <h3 className="font-bold text-slate-800 dark:text-white text-sm">
                                 Cấu Hình Tên Người Để Lọc PMH
                             </h3>
@@ -198,7 +185,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-xl transition-all shadow-2xs"
                                 title="Mở danh sách người dùng bot trong nhóm hoặc chat riêng để chọn nhanh"
                             >
-                                <Users size={14} />
+                                <AppIcon name="users" size="sm" />
                                 <span>Chọn từ tương tác Bot ({interactedUsers.length})</span>
                             </Button>
                             <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300/50">
@@ -248,7 +235,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             className={`relative after:absolute after:-inset-4 after:content-[''] ${isSelected ? 'text-white/80 hover:text-white' : 'text-slate-400 hover:text-rose-500'} transition-colors ml-0.5`}
                                             title={`Xoá "${name}"`}
                                         >
-                                            <X size={13} />
+                                            <AppIcon name="close" size="sm" />
                                         </button>
                                     </span>
                                 );
@@ -280,7 +267,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 onClick={handleAddName}
                                 className="flex items-center gap-1 px-3 py-2 text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl"
                             >
-                                <Plus size={14} />
+                                <AppIcon name="add" size="sm" />
                                 <span>Thêm</span>
                             </Button>
                             <Button
@@ -289,7 +276,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                 className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300/80 dark:border-emerald-700 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-xl shadow-2xs whitespace-nowrap"
                                 title="Mở danh sách thành viên trong nhóm hoặc nhắn riêng với Bot để chọn"
                             >
-                                <Users size={14} />
+                                <AppIcon name="users" size="sm" />
                                 <span>Tìm &amp; Chọn</span>
                             </Button>
                         </div>
@@ -299,7 +286,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             <div className="pt-1 space-y-1.5">
                                 <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                                     <span className="flex items-center gap-1 font-medium">
-                                        <Sparkles size={12} className="text-amber-500" />
+                                        <AppIcon name="sparkles" size="xs" className="text-amber-500" />
                                         <span>Gợi ý thành viên Bot ({suggestedUsers.length}):</span>
                                     </span>
                                     <button
@@ -319,7 +306,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-300 border border-slate-200/80 dark:border-slate-700 hover:border-emerald-300 rounded-lg text-[11px] font-medium transition-all group shadow-2xs"
                                             title={`Click để thêm nhanh: ${u.displayName}`}
                                         >
-                                            <Plus size={11} className="text-slate-400 group-hover:text-emerald-600" />
+                                            <AppIcon name="add" size="xs" className="text-slate-400 group-hover:text-emerald-600" />
                                             <span className="truncate max-w-[130px] font-semibold">{u.displayName}</span>
                                             <span className="text-[11px] text-slate-400">
                                                 {u.lastInteractionType === 'GROUP' ? '(Nhóm)' : '(1-1)'}
@@ -338,19 +325,17 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             disabled={isSaving}
                             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs disabled:opacity-50"
                         >
-                            <Save size={14} />
+                            <AppIcon name="save" size="sm" />
                             <span>{isSaving ? 'Đang lưu...' : 'Lưu Danh Sách Tên Lọc'}</span>
                         </Button>
                     </div>
                 </div>
 
-
-
                 {/* 2. CÚ PHÁP TRA CỨU TỒN KHO & NHẬN MÃ (Hệ thống "tk" Mới) */}
                 <div className="p-5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-sm space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <Terminal size={17} className="text-emerald-500" />
+                            <AppIcon name="command" size="md" className="text-emerald-500" />
                             <h3 className="font-bold text-slate-800 dark:text-white text-sm">
                                 Cú Pháp Tra Cứu Tồn Kho &amp; Nhận Mã (Lệnh &quot;tk&quot; Mới)
                             </h3>
@@ -382,7 +367,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             <span>Đang xem trên iPhone</span>
                                         </span>
                                     )}
-                                    <BarChart2 size={14} className={previewTab === 'tk' && tkMode === 'all' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                                    <AppIcon name="chartBar" size="sm" className={previewTab === 'tk' && tkMode === 'all' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
                                 </div>
                             </div>
                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -420,7 +405,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                                 <span>Đang xem trên iPhone</span>
                                             </span>
                                         )}
-                                        <BarChart2 size={14} className={previewTab === 'tk' && tkMode === 'event' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                                        <AppIcon name="chartBar" size="sm" className={previewTab === 'tk' && tkMode === 'event' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
                                     </div>
                                 </div>
                                 <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -457,7 +442,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                                 <span>Đang xem trên iPhone</span>
                                             </span>
                                         )}
-                                        <BarChart2 size={14} className={previewTab === 'tk' && tkMode === 'gvgs' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                        <AppIcon name="chartBar" size="sm" className={previewTab === 'tk' && tkMode === 'gvgs' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
                                     </div>
                                 </div>
                                 <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -525,7 +510,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             <span>Đang xem trên iPhone</span>
                                         </span>
                                     )}
-                                    <Zap size={14} className={previewTab === 'issue' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                                    <AppIcon name="quick" size="sm" className={previewTab === 'issue' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
                                 </div>
                             </div>
                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -566,7 +551,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                             <span>Đang xem trên iPhone</span>
                                         </span>
                                     )}
-                                    <BookOpen size={14} className={previewTab === 'hd' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
+                                    <AppIcon name="guide" size="sm" className={previewTab === 'hd' ? 'text-amber-600 dark:text-amber-400' : 'text-slate-400'} />
                                 </div>
                             </div>
                             <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">

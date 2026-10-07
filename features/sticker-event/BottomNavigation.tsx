@@ -1,6 +1,7 @@
 import React from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import { Home, ScanLine, Save, Filter, Wrench } from 'lucide-react';
+
 import { Button } from '../../components/shared/ui/Button';
 import { useActiveTab } from '../../contexts/LayoutContext';
 
@@ -49,12 +50,12 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
       }}
     >
       <Button variant="unstyled" onClick={() => onTabChange('home')} className={navItemClass(activeTab === 'home')}>
-        <Home className={`w-5 h-5 ${activeTab === 'home' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
+        <AppIcon name="home" size="lg" />
         <span className="text-[11px] leading-none">Trang chủ</span>
       </Button>
 
       <Button variant="unstyled" onClick={() => onTabChange('tools')} className={navItemClass(activeTab === 'tools')}>
-        <Wrench className={`w-5 h-5 ${activeTab === 'tools' ? 'stroke-[2.4]' : 'stroke-[1.8]'}`} />
+        <AppIcon name="tools" size="lg" />
         <span className="text-[11px] leading-none">Công cụ</span>
       </Button>
 
@@ -66,18 +67,18 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         className="flex flex-col items-center justify-center w-full h-full relative active:scale-90 transition-transform"
       >
         <div className="absolute -top-4.5 bg-sky-600 text-white p-3 rounded-full shadow-lg shadow-sky-600/30 border-4 border-white">
-          <ScanLine className="w-5 h-5 stroke-[2.2]" />
+          <AppIcon name="scan" size="lg" />
         </div>
         <span className="text-[11px] font-bold text-sky-700 mt-6.5 leading-none whitespace-nowrap">Quét mã</span>
       </Button>
 
       <Button variant="unstyled" onClick={onSaveListClick} className={navItemClass(false)}>
-        <Save className="w-5 h-5 stroke-[1.8]" />
+        <AppIcon name="save" size="lg" />
         <span className="text-[11px] leading-none">Lưu DS</span>
       </Button>
 
       <Button variant="unstyled" onClick={onFilterClick} className={navItemClass(false)}>
-        <Filter className="w-5 h-5 stroke-[1.8]" />
+        <AppIcon name="filter" size="lg" />
         <span className="text-[11px] leading-none">Lọc</span>
       </Button>
     </div>,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { UnresolvedConflict } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
@@ -50,9 +51,7 @@ const ConflictListModal: React.FC<ConflictListModalProps> = ({ conflicts, onClos
         ) : (
           <EmptyState
             icon={
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <AppIcon name="success" size="xl" />
             }
             title="Không có ca nào cần xử lý."
             compact

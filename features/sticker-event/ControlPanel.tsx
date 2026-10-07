@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { Product } from './types';
 import FileUpload from './FileUpload';
 import SearchBar from './SearchBar';
-import { PrintIcon, SettingsIcon, StarIcon, TagIcon, TrashIcon, ExportIcon, ImportIcon, PenSquareIcon, InventoryIcon, FilePlusIcon, UserIcon } from './Icons';
-import { Trash2, ShieldAlert, Info, Cloud, Save, FolderOpen, FileDown, FileUp } from 'lucide-react';
+
 import { Button } from '../../components/shared/ui/Button';
 import { useActiveTab } from '../../contexts/LayoutContext';
 
@@ -143,7 +143,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     className="flex items-center gap-1 text-[11px] font-semibold text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2 py-1 rounded-lg transition-colors shrink-0"
                                     title="Xóa toàn bộ dữ liệu tồn kho và giá trên hệ thống"
                                 >
-                                    <Trash2 className="h-3 w-3" />
+                                    <AppIcon name="delete" size="xs" />
                                     <span>Xóa DL</span>
                                 </Button>
                             )}
@@ -163,7 +163,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 disabled={selectedCount === 0}
                                 className="w-full h-10 rounded-xl text-xs font-bold gap-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-700 hover:to-sky-700 text-white shadow-xs transition-all disabled:opacity-40"
                             >
-                                <PrintIcon className="h-4 w-4" />
+                                <AppIcon name="print" size="md" />
                                 <span>In đã chọn ({selectedCount})</span>
                             </Button>
                             <Button
@@ -183,7 +183,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                         <div className="bg-slate-50/70 dark:bg-slate-850/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                                    <Cloud className="h-3 w-3 text-sky-500" />
+                                    <AppIcon name="cloud" size="xs" className="text-sky-500" />
                                     Dữ liệu nguồn
                                 </span>
                                 <div className="flex items-center gap-1.5">
@@ -203,7 +203,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         className="p-0.5 text-slate-400 hover:text-sky-600 transition-colors"
                                         title="Xem hướng dẫn quy trình in"
                                     >
-                                        <Info className="h-3.5 w-3.5" />
+                                        <AppIcon name="info" size="sm" />
                                     </Button>
                                 </div>
                             </div>
@@ -230,7 +230,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         }`}
                                     >
                                         <div className="w-6 h-6 rounded-lg bg-sky-100 dark:bg-sky-950/80 text-sky-600 flex items-center justify-center shrink-0">
-                                            <InventoryIcon className="h-3.5 w-3.5" />
+                                            <AppIcon name="warehouse" size="sm" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <span className="text-xs font-bold block leading-tight truncate">Tồn Kho</span>
@@ -262,7 +262,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         }`}
                                     >
                                         <div className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 flex items-center justify-center shrink-0">
-                                            <FilePlusIcon className="h-3.5 w-3.5" />
+                                            <AppIcon name="fileAdd" size="sm" />
                                         </div>
                                         <div className="min-w-0 flex-1">
                                             <span className="text-xs font-bold block leading-tight truncate">Bảng Giá</span>
@@ -283,7 +283,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         onClick={props.onOpenUserManagement}
                                         className="h-8 rounded-lg text-xs font-semibold gap-1.5 whitespace-nowrap bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-300"
                                     >
-                                        <UserIcon className="h-3.5 w-3.5 text-slate-500" />
+                                        <AppIcon name="user" size="sm" className="text-slate-500" />
                                         <span>Người dùng</span>
                                     </Button>
                                 )}
@@ -293,7 +293,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                         onClick={props.onOpenSuperAdminTools}
                                         className="h-8 flex items-center justify-center gap-1.5 rounded-lg text-xs font-bold whitespace-nowrap border border-rose-200/80 dark:border-rose-900/50 bg-rose-50/70 hover:bg-rose-100/80 dark:bg-rose-950/30 text-rose-700 dark:text-rose-300 transition-colors"
                                     >
-                                        <ShieldAlert className="h-3.5 w-3.5" />
+                                        <AppIcon name="securityAlert" size="sm" />
                                         <span>Super Admin</span>
                                     </Button>
                                 )}
@@ -305,10 +305,10 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                     {isAdmin && props.showManagerInstructions && (
                         <div className="bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-xl p-3 relative">
                             <Button variant="unstyled" onClick={props.onCloseInstructions} className="absolute top-2 right-2 text-sky-500 hover:text-sky-700">
-                                <TrashIcon className="h-3.5 w-3.5" />
+                                <AppIcon name="delete" size="sm" />
                             </Button>
                             <h3 className="text-xs font-bold text-sky-900 dark:text-sky-200 mb-1.5 flex items-center gap-1.5">
-                                <ShieldAlert className="h-3.5 w-3.5" />
+                                <AppIcon name="securityAlert" size="sm" />
                                 Hướng dẫn Quản lý
                             </h3>
                             <div className="space-y-1 text-[11px] leading-relaxed text-sky-800 dark:text-sky-300">
@@ -333,7 +333,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     className="flex items-center gap-1 text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-lg hover:border-sky-300 transition-colors disabled:opacity-40 shadow-2xs"
                                     title="Đồng bộ danh sách hiện tại lên Cloud"
                                 >
-                                    <Cloud className="w-3 h-3 text-sky-500" />
+                                    <AppIcon name="cloud" size="xs" className="text-sky-500" />
                                     <span>Cloud</span>
                                 </Button>
                             </div>
@@ -346,7 +346,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 title="Nhập sản phẩm thủ công để in"
                                 className="w-full h-8.5 rounded-xl text-xs font-bold gap-1.5 bg-white dark:bg-slate-800 border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-950/40 text-sky-700 dark:text-sky-300 transition-colors"
                             >
-                                <PenSquareIcon className="h-3.5 w-3.5 text-sky-600" />
+                                <AppIcon name="edit" size="sm" className="text-sky-600" />
                                 <span>Nhập sản phẩm thủ công</span>
                             </Button>
 
@@ -359,7 +359,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     title="Lưu danh sách hiện tại"
                                     className="h-8 rounded-lg text-xs font-semibold gap-1.5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-200"
                                 >
-                                    <Save className="h-3.5 w-3.5 text-slate-500" />
+                                    <AppIcon name="save" size="sm" className="text-slate-500" />
                                     <span>Lưu DS</span>
                                 </Button>
                                 <Button
@@ -369,7 +369,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     title="Mở danh sách đã lưu"
                                     className="h-8 rounded-lg text-xs font-semibold gap-1.5 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-700 dark:text-slate-200"
                                 >
-                                    <FolderOpen className="h-3.5 w-3.5 text-slate-500" />
+                                    <AppIcon name="folder" size="sm" className="text-slate-500" />
                                     <span>DS đã lưu</span>
                                 </Button>
                             </div>
@@ -383,7 +383,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     title="Nhập danh sách từ tệp .json"
                                     className="h-7.5 rounded-lg text-[11px] font-semibold gap-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-600 dark:text-slate-300"
                                 >
-                                    <ImportIcon className="h-3 w-3 text-slate-400" />
+                                    <AppIcon name="upload" size="xs" className="text-slate-400" />
                                     <span>Nhập</span>
                                 </Button>
                                 <Button
@@ -394,7 +394,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     title="Xuất danh sách ra tệp .json"
                                     className="h-7.5 rounded-lg text-[11px] font-semibold gap-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-600 dark:text-slate-300"
                                 >
-                                    <ExportIcon className="h-3 w-3 text-slate-400" />
+                                    <AppIcon name="download" size="xs" className="text-slate-400" />
                                     <span>Xuất</span>
                                 </Button>
                                 <Button
@@ -404,7 +404,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     title="Cài đặt khổ in, mẫu tem"
                                     className="h-7.5 rounded-lg text-[11px] font-semibold gap-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-100 text-slate-600 dark:text-slate-300"
                                 >
-                                    <SettingsIcon className="h-3 w-3 text-slate-400" />
+                                    <AppIcon name="settings" size="xs" className="text-slate-400" />
                                     <span>Cài đặt</span>
                                 </Button>
                                 <Button
@@ -415,7 +415,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     title="Xoá danh sách đang hiển thị"
                                     className="h-7.5 rounded-lg text-[11px] font-semibold gap-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 hover:border-rose-200 transition-colors"
                                 >
-                                    <TrashIcon className="h-3 w-3 text-rose-500" />
+                                    <AppIcon name="delete" size="xs" className="text-rose-500" />
                                     <span>Xóa</span>
                                 </Button>
                             </div>

@@ -1,18 +1,7 @@
 import React, { useState, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import {
-    X,
-    ExternalLink,
-    Copy,
-    Check,
-    CheckCircle2,
-    Key,
-    Globe,
-    Bot,
-    Sparkles,
-    ChevronRight,
-    ChevronLeft
-} from 'lucide-react';
+
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -46,7 +35,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
         {
             step: 1,
             title: 'Tạo Provider & Channel trên LINE Developers',
-            icon: Globe,
+            icon: 'web' as const,
             desc: 'Truy cập LINE Developers Console để khởi tạo Channel cho Bot của bạn.',
             content: (
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
@@ -58,7 +47,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-semibold rounded-lg border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors"
                     >
                         <span>Mở LINE Developers Console</span>
-                        <ExternalLink size={15} />
+                        <AppIcon name="externalLink" size="md" />
                     </a>
                     <p>2. Đăng nhập bằng tài khoản LINE cá nhân hoặc LINE Business.</p>
                     <p>3. Chọn <strong>Create a new provider</strong> ➔ Đặt tên (Ví dụ: <em>QL_Kho910</em> hoặc Tên của bạn).</p>
@@ -70,7 +59,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
         {
             step: 2,
             title: 'Lấy Channel Access Token (Dài hạn)',
-            icon: Key,
+            icon: 'apiKey' as const,
             desc: 'Tạo mã Token để Dashboard kết nối và điều khiển Bot gửi tin nhắn.',
             content: (
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
@@ -85,7 +74,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
         {
             step: 3,
             title: 'Lấy Channel Secret (Bảo mật)',
-            icon: Sparkles,
+            icon: 'sparkles' as const,
             desc: 'Lấy mã bí mật của Channel để xác thực các yêu cầu gửi đến Bot.',
             content: (
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
@@ -99,7 +88,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
         {
             step: 4,
             title: 'Cấu hình Webhook URL cá nhân hoá',
-            icon: Bot,
+            icon: 'bot' as const,
             desc: 'Dán đường dẫn Webhook do hệ thống cấp riêng cho tài khoản của bạn.',
             content: (
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
@@ -111,7 +100,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                             onClick={handleCopyWebhook}
                             className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 px-2.5 py-1 text-xs rounded-md shadow-sm hover:bg-slate-50 shrink-0"
                         >
-                            {copiedUrl ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                            {copiedUrl ? <AppIcon name="check" size="sm" className="text-emerald-600" /> : <AppIcon name="copy" size="sm" />}
                             <span className="ml-1">{copiedUrl ? 'Đã copy' : 'Copy'}</span>
                         </Button>
                     </div>
@@ -125,7 +114,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
         {
             step: 5,
             title: 'Thêm bạn & Mời Bot vào nhóm chat',
-            icon: CheckCircle2,
+            icon: 'success' as const,
             desc: 'Hoàn tất và bắt đầu sử dụng Bot để phát mã PMH và nhận thông báo.',
             content: (
                 <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
@@ -143,7 +132,6 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
     ];
 
     const currentData = steps[currentStep - 1];
-    const StepIcon = currentData.icon;
 
     return (
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
@@ -152,7 +140,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                     <div className="flex items-center gap-2.5">
                         <div className="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                            <Bot size={22} />
+                            <AppIcon name="bot" size="lg" />
                         </div>
                         <div>
                             <h2 className="text-base font-bold text-slate-800 dark:text-white">Hướng dẫn tự tạo & Cấu hình BOT LINE</h2>
@@ -160,7 +148,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         </div>
                     </div>
                     <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                        <X size={18} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -180,7 +168,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                 <div className="p-6 overflow-y-auto flex-1 space-y-4">
                     <div className="flex items-center gap-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
                         <div className="p-2 bg-emerald-500 text-white rounded-lg">
-                            <StepIcon size={20} />
+                            <AppIcon name={currentData.icon} size="lg" />
                         </div>
                         <div>
                             <h3 className="font-bold text-slate-800 dark:text-white text-sm">{currentData.title}</h3>
@@ -201,7 +189,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         disabled={currentStep === 1}
                         className="flex items-center gap-1 text-xs font-semibold text-slate-600 dark:text-slate-300 disabled:opacity-30"
                     >
-                        <ChevronLeft size={16} />
+                        <AppIcon name="chevronLeft" size="md" />
                         <span>Bước trước</span>
                     </Button>
 
@@ -224,7 +212,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                             className="flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg"
                         >
                             <span>Tiếp theo</span>
-                            <ChevronRight size={16} />
+                            <AppIcon name="chevronRight" size="md" />
                         </Button>
                     ) : (
                         <Button
@@ -233,7 +221,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                             className="flex items-center gap-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg"
                         >
                             <span>Đã hiểu & Bắt đầu</span>
-                            <Check size={16} />
+                            <AppIcon name="check" size="md" />
                         </Button>
                     )}
                 </div>

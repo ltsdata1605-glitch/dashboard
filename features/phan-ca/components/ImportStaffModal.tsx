@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ImportedStaff, StaffWithGender } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
@@ -83,7 +83,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>Hủy bỏ</Button>
-          <Button onClick={handleConfirm} rightIcon={<ArrowRight size={16} />}>Lưu & Tiếp Tục</Button>
+          <Button onClick={handleConfirm} rightIcon={<AppIcon name="next" size="md" />}>Lưu & Tiếp Tục</Button>
         </div>
       }
     >

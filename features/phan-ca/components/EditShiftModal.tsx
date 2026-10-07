@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowLeftRight, ChevronLeft, Search, AlertTriangle, X } from 'lucide-react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ScheduleInfo, StaffStats, SchedulingRules, StaffMember, DailyRequirements, Solution, EditShiftModalInfo, BusySchedule, SolutionAction } from '../types';
 import { calculateTotalHours, findAutomaticReplacement } from '../utils/scheduleUtils';
 import toast from 'react-hot-toast';
@@ -364,7 +364,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
         </div>
          {currentShift.warning && (
             <div className="mt-2 p-2 bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded text-sm font-semibold text-center">
-                <AlertTriangle size={16} className="inline mr-1.5 align-text-bottom" />
+                <AppIcon name="warning" size="md" className="inline mr-1.5 align-text-bottom" />
                 {currentShift.warning}
             </div>
         )}
@@ -460,7 +460,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                     onClick={() => setView('manual_swap')}
                     className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full text-inherit w-full bg-sky-50 dark:bg-sky-900/20 border-2 border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 font-black py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-sm"
                 >
-                    <ArrowLeftRight size={20} />
+                    <AppIcon name="swap" size="lg" />
                     HOÁN ĐỔI CA THỦ CÔNG
                 </Button>
 
@@ -495,7 +495,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
       <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
               <Button variant="ghost" onClick={resetFlow} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400">
-                  <ChevronLeft size={24} />
+                  <AppIcon name="chevronLeft" size="md" />
               </Button>
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Chọn đối tác hoán đổi ca</h3>
           </div>
@@ -509,7 +509,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                   onChange={(e) => setSwapSearchTerm(e.target.value)}
                   autoFocus
               />
-              <Search size={20} className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" />
+              <AppIcon name="search" size="lg" className="absolute left-3 top-2.5 text-slate-400" />
           </div>
 
           <div className="max-h-60 overflow-y-auto pr-1 space-y-2 custom-scroll">
@@ -529,7 +529,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
                               }}
                               className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-lg text-xs font-black shadow-md transition-all active:scale-95 flex items-center gap-2"
                           >
-                              <ArrowLeftRight size={16} />
+                              <AppIcon name="swap" size="md" />
                               ĐỔI
                           </Button>
                       </div>
@@ -537,7 +537,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
               ) : (
                   <div className="bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
                       <EmptyState
-                          icon={<Search size={20} />}
+                          icon={<AppIcon name="search" size="lg" />}
                           title="Không tìm thấy nhân viên phù hợp"
                           compact
                       />

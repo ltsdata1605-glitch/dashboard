@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useModalBehavior } from '../../../components/shared/ui/Modal';
-import { X, Sparkles, Image as ImageIcon, Trash2, UploadCloud, Loader2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { KeywordReply, KeywordMatchType } from '../types/lineBot.types';
@@ -194,11 +194,11 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
             >
                 <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <h3 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
-                        <Sparkles size={16} className="text-emerald-500" />
+                        <AppIcon name="sparkles" size="md" className="text-emerald-500" />
                         <span>{keyword?.id ? 'Chỉnh Sửa Từ Khoá' : 'Thêm Từ Khoá Tự Động'}</span>
                     </h3>
                     <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 rounded-lg">
-                        <X size={18} />
+                        <AppIcon name="close" size="md" />
                     </Button>
                 </div>
 
@@ -295,13 +295,13 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                             >
                                 {isUploading ? (
                                     <div className="flex items-center gap-2 py-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                                        <Loader2 size={18} className="animate-spin" />
+                                        <AppIcon name="loading" size="md" spin />
                                         <span>Đang xử lý và tải ảnh lên...</span>
                                     </div>
                                 ) : (
                                     <>
                                         <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <UploadCloud size={20} />
+                                            <AppIcon name="cloudUpload" size="lg" />
                                         </div>
                                         <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">
                                             Bấm để chọn ảnh từ máy hoặc kéo thả vào đây
@@ -346,7 +346,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                                 title="Xem ảnh gốc"
                                                 onClick={e => e.stopPropagation()}
                                             >
-                                                <ExternalLink size={14} />
+                                                <AppIcon name="externalLink" size="sm" />
                                             </a>
                                             <button
                                                 type="button"
@@ -357,7 +357,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                                 className="p-1.5 rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-sm"
                                                 title="Xoá ảnh này"
                                             >
-                                                <Trash2 size={14} />
+                                                <AppIcon name="delete" size="sm" />
                                             </button>
                                         </div>
                                     </div>

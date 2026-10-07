@@ -1,13 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Product } from './types';
 import { parseCurrency } from './services/fileParser';
-import { TrashIcon, MinusCircleIcon, PlusCircleIcon } from './Icons';
 import { formatCurrency as formatCurrencyForDisplay } from './utils/format';
 import { ManualProductDoc } from './services/firebaseService';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 import { EmptyState } from '../../components/shared/ui/EmptyState';
-import { PackageX } from 'lucide-react';
 
 export interface ManualProductWithId extends Product {
     firebaseId?: string; // ID from Firestore document
@@ -331,7 +330,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         {manualProducts.length === 0 ? (
                             <div className="border-2 border-dashed border-slate-200 rounded-xl">
                                 <EmptyState
-                                    icon={<PackageX size={20} />}
+                                    icon={<AppIcon name="productOff" size="lg" />}
                                     title="Chưa có sản phẩm nào"
                                     description='Nhập thông tin ở trên và bấm "Thêm sản phẩm".'
                                     compact
@@ -389,7 +388,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-rose-600 transition-colors flex-shrink-0"
                                                 title="Xóa sản phẩm"
                                             >
-                                                <TrashIcon className="h-4 w-4" />
+                                                <AppIcon name="delete" size="md" />
                                             </Button>
                                         </div>
                                     );

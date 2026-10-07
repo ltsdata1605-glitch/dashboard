@@ -401,7 +401,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                                             ? 'bg-emerald-600 border-emerald-600 text-white'
                                                             : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'
                                                     }`}>
-                                                        {isSelected && <AppIcon name="check" size="xs" className="stroke-[3]" />}
+                                                        {isSelected && <AppIcon name="check" size="xs" />}
                                                     </div>
                                                     <AppIcon name="lineBrand" size="md" className={isSelected ? 'text-[#06C755]' : 'text-slate-400'} />
                                                     <span className="truncate">{g.groupName}</span>

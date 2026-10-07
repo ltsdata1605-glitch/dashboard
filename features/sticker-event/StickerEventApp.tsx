@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { Product, InventoryItem, SavedListItem } from './types';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { loadData, clearData, saveDisplayedProducts } from './services/fileParser';
@@ -22,10 +23,9 @@ import SaveListModal from './SaveListModal';
 import AlertModal from './AlertModal';
 import ConfirmModal from './ConfirmModal';
 import ErrorBoundary from './ErrorBoundary';
-import { WarningIcon } from './Icons';
+
 import SuperAdminModal from './SuperAdminModal';
 import UserGuideModal from './UserGuideModal';
-import { Info, Printer, FolderOpen } from 'lucide-react';
 import { auth } from './firebase';
 import { exportElementAsImage, downloadBlob } from './services/uiService';
 import { exportProductsInBatches } from './services/batchImageExportService';
@@ -528,7 +528,7 @@ export default function App(): React.JSX.Element {
                   className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
                   title="Danh sách đã lưu"
                 >
-                  <FolderOpen className="h-4 w-4" />
+                  <AppIcon name="folder" size="md" />
                 </Button>
               )}
               {isMobile && (
@@ -538,7 +538,7 @@ export default function App(): React.JSX.Element {
                   className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-sky-600 rounded-lg transition-colors"
                   title="Hướng dẫn sử dụng"
                 >
-                  <Info className="h-4 w-4" />
+                  <AppIcon name="info" size="md" />
                 </Button>
               )}
               {!isMobile && userData?.role !== 'staff' && (
@@ -557,7 +557,7 @@ export default function App(): React.JSX.Element {
                   className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors"
                   title="Hướng dẫn sử dụng"
                 >
-                  <Info className="h-4 w-4" />
+                  <AppIcon name="info" size="md" />
                 </Button>
               )}
               <Button
@@ -644,7 +644,7 @@ export default function App(): React.JSX.Element {
                     return (
                       <div className={`${isQuota ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-rose-50 border-rose-200 text-rose-700'} border p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4`} role="alert">
                         <div className="flex items-center gap-3">
-                            <WarningIcon className={`h-5 w-5 ${isQuota ? 'text-amber-500' : 'text-rose-500'} shrink-0`} />
+                            <AppIcon name="warning" size="lg" className={isQuota ? 'text-amber-500' : 'text-rose-500'} />
                             <p className="text-sm font-medium">{error}</p>
                         </div>
                         {!isQuota && (
@@ -754,7 +754,7 @@ export default function App(): React.JSX.Element {
               onClick={handlePrintSelected}
               className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black text-xs px-4 py-2.5 rounded-xl flex items-center gap-1.5 shadow-md shadow-sky-500/30 active:scale-95 transition-all shrink-0 border-0 cursor-pointer"
             >
-              <Printer className="h-4 w-4" />
+              <AppIcon name="print" size="md" />
               <span>IN NGAY ({selectedCount})</span>
             </Button>
           </div>

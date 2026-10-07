@@ -5,7 +5,7 @@ import { evaluateExpression, hasOperator } from './utils/expression';
 /**
  * Danh mục mặt hàng cố định của từng nhóm. `short` là nhãn viết tắt dùng trong văn bản báo cáo
  * gửi Zalo/Line — GIỮ NGUYÊN như app gốc vì nhân viên đã quen mẫu đó.
- * `icon` là tên icon lucide (kebab-case) dùng qua `components/common/Icon`.
+ * `icon` là tên icon (tên cũ kebab-case hoặc tên chức năng) — vẽ qua `<AppIcon name={resolveIconName(icon)}>`.
  */
 export interface CatalogItem {
     key: string;

@@ -11,7 +11,9 @@ import { auditIcons } from './helpers/iconAudit';
  *   - `nutChuNhoHon`: icon nằm trong nút CÓ CHỮ nhưng nhỏ hơn token md (icon chính trên thanh công cụ phải md);
  *   - `vungCham`: nút chỉ có icon, nhỏ hơn 44px trên điện thoại.
  */
-const TABS = ['analysis', 'check-thuong', 'reports', 'settings', 'tools-tax', 'tools-coupon', 'tools-price-compare', 'help'];
+const TABS = ['analysis', 'check-thuong', 'reports', 'settings', 'tools-tax', 'tools-coupon', 'tools-price-compare', 'help',
+    // Giai đoạn 5 (2026-10-07)
+    'tools-phanca', 'tools-print-sticker', 'tools-line-bot'];
 
 async function vaoDungThu(page: Page) {
     await page.goto('/?tab=analysis');
