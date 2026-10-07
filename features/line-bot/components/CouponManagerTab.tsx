@@ -540,7 +540,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         onClick={() => setIsImportModalOpen(true)}
                         className="h-8 px-3 flex items-center gap-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs transition-colors whitespace-nowrap active:scale-95 cursor-pointer"
                     >
-                        <AppIcon name="add" size="sm" />
+                        <AppIcon name="add" size="md" />
                         <span>Nạp mã mới</span>
                     </Button>
                 </div>
