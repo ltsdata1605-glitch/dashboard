@@ -134,7 +134,12 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         }
 
         // Target elements with truncate class or matching employee name pattern (chỉ áp dụng khi không phải captureAsDisplayed)
-        if (!captureAsDisplayed && (el.classList.contains('truncate') || isEmployeeNamePattern(text))) {
+        // Mẫu tên nhân viên CHỈ xét trên phần tử LÁ (sửa 2026-10-07, cùng cách captureEngine.ts đã sửa): textContent của
+        // div bọc gộp text các con, nên khối chứa tiêu đề "LUỸ KẾ ĐẾN NGÀY 6/10 - HÙNG VƯƠNG" (có " - " và chữ số) khớp
+        // mẫu và bị ép `min-width: max-content` → cả thẻ nở theo bề rộng tự nhiên của dải KPI (964px) trong khi khung
+        // chụp ~800px → ảnh Thi đua bị CẮT MÉP PHẢI (mất thẻ thứ 4, viền phải, chú thích).
+        const matchesEmployeeName = isEmployeeNamePattern(text) && el.children.length === 0;
+        if (!captureAsDisplayed && (el.classList.contains('truncate') || matchesEmployeeName)) {
             // KHÔNG can thiệp vào các thẻ KPI (industry-kpi-card, kpi-overview-card) để tránh làm bung vỡ lưới thẻ
             if (el.closest('.industry-kpi-card, .kpi-overview-card, .kpi-card, .premium-card-shadow')) {
                 el.style.setProperty('overflow', 'hidden', 'important');
@@ -1180,6 +1185,12 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         kpiGrid.style.setProperty('margin-bottom', '8px', 'important');
         kpiGrid.style.setProperty('gap', '6px', 'important');
         kpiGrid.style.setProperty('width', '100%', 'important');
+        // CỘT CO ĐƯỢC (sửa 2026-10-07): thẻ KPI thiết kế mới (3f4c8c7) có bề rộng tối thiểu ~234px/thẻ (nhãn viết
+        // hoa không xuống dòng, nhãn "Tiến độ"…). Lưới `1fr` = minmax(auto, 1fr) không co dưới mức đó → 4 thẻ đòi
+        // 964px, kéo khối cha + bảng (width:100%) giãn ra trong khi khung chụp chỉ ~800px → ẢNH BỊ CẮT MÉP PHẢI
+        // (mất thẻ thứ 4, viền phải, chú thích). minmax(0, 1fr) + min-width:0 cho thẻ co về đúng bề rộng bảng.
+        const soThe = kpiGrid.children.length;
+        if (soThe > 0) kpiGrid.style.setProperty('grid-template-columns', `repeat(${soThe}, minmax(0, 1fr))`, 'important');
 
         // Thu gọn từng thẻ KPI & đảm bảo giữ viền sắc nét
         const isDarkMode = document.documentElement.classList.contains('dark');
@@ -1187,10 +1198,25 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         kpiGrid.children && Array.from(kpiGrid.children).forEach((child) => {
             if (!(child instanceof HTMLElement)) return;
             child.style.setProperty('padding', '6px 8px', 'important');
+            child.style.setProperty('min-width', '0', 'important');
+            child.style.setProperty('overflow', 'hidden', 'important');
             child.style.setProperty('border-radius', '0', 'important');
             child.style.setProperty('border', `1px solid ${cardBorderColor}`, 'important');
             child.style.setProperty('box-sizing', 'border-box', 'important');
 
+            // Thẻ KPI thiết kế mới (3f4c8c7): số chính 36px + `truncate` — trong ảnh thẻ co theo bảng (~185px) nên số bị
+            // cắt "51,03…". Ảnh số liệu KHÔNG được mất số: hạ cỡ số, bỏ cắt; tiêu đề/nhãn được xuống dòng thay vì "…".
+            child.querySelectorAll<HTMLElement>('.kpi-overview-value span, .kpi-overview-value div').forEach((numEl) => {
+                numEl.style.setProperty('font-size', '24px', 'important');
+                numEl.style.setProperty('line-height', '1.15', 'important');
+                numEl.style.setProperty('overflow', 'visible', 'important');
+                numEl.style.setProperty('text-overflow', 'clip', 'important');
+            });
+            child.querySelectorAll<HTMLElement>('.kpi-overview-title, .kpi-overview-footer span').forEach((t) => {
+                t.style.setProperty('white-space', 'normal', 'important');
+                t.style.setProperty('overflow', 'visible', 'important');
+                t.style.setProperty('text-overflow', 'clip', 'important');
+            });
             // Cỡ số chính trong thẻ KPI
             child.querySelectorAll<HTMLElement>('.text-xl, .text-2xl, .text-3xl').forEach((numEl) => {
                 numEl.style.setProperty('font-size', '18px', 'important');
@@ -1580,7 +1606,7 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
             }
         }
 
-        const finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
+        let finalWidth = Math.ceil(contentWidth) + exportPadding * 2;
 
         // Đảm bảo clone và captureContainer có bề rộng chuẩn xác, có box-sizing: border-box và padding an toàn
         clone.style.setProperty('box-sizing', 'border-box', 'important');
@@ -1646,6 +1672,21 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
                 parent.style.setProperty('box-sizing', 'border-box', 'important');
             }
         });
+
+        // LƯỚI AN TOÀN (2026-10-07): nội dung vẫn rộng hơn khung (khối có bề rộng tối thiểu mà các bước trên không co
+        // được) → NỚI khung theo nội dung thay vì để html-to-image cắt mất mép phải. Ảnh hơi rộng còn hơn mất số liệu.
+        const canRong = Math.ceil(clone.scrollWidth + exportPadding);
+        if (!forcedWidth && canRong > finalWidth + 1) {
+            console.warn(`Ảnh xuất: nội dung rộng ${canRong}px > khung ${finalWidth}px — nới khung để không cắt mép phải.`);
+            finalWidth = canRong;
+            for (const el of [clone, captureContainer]) {
+                if (!el) continue;
+                el.style.setProperty('width', `${finalWidth}px`, 'important');
+                el.style.setProperty('min-width', `${finalWidth}px`, 'important');
+                el.style.setProperty('max-width', `${finalWidth}px`, 'important');
+            }
+            await new Promise(resolve => requestAnimationFrame(() => resolve(null)));
+        }
 
         // Đo chiều cao chính xác sau khi đã set width và layout hoàn chỉnh
         const finalHeight = Math.ceil(clone.offsetHeight || clone.scrollHeight || clone.getBoundingClientRect().height);

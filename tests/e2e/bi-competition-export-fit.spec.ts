@@ -43,11 +43,17 @@ test('xuất ảnh Thi đua: thẻ KPI rộng bằng bảng, cột vừa nội d
                         table: Math.round(table.getBoundingClientRect().width),
                         kpi: Math.round(kpi.getBoundingClientRect().width),
                         box: Math.round(box.getBoundingClientRect().width),
+                        // phần tử (ngoài bảng) rộng hơn khung chụp = sẽ bị CẮT MÉP PHẢI trong ảnh
+                        tran: Array.from(box.querySelectorAll<HTMLElement>('*')).filter((e) => !e.closest('table')
+                            && e.getBoundingClientRect().right > box.getBoundingClientRect().right + 1).length,
                     };
                 }
             });
         });
-        obs.observe(document.body, { childList: true, subtree: true });
+        // Nghe cả đổi STYLE: bước co bảng/ép khung chỉ đổi style, không chèn phần tử. Trước 2026-10-07 chỉ nghe
+        // childList → số đo là lúc bản sao VỪA chèn (chưa dàn trang) → test đạt/đỏ theo may rủi, che mất lỗi thật
+        // ảnh bị cắt mép phải (khung 800px nhưng bảng 962px, dải KPI 964px).
+        obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
     });
 
     const dl = page.waitForEvent('download', { timeout: 90_000 });
@@ -55,7 +61,7 @@ test('xuất ảnh Thi đua: thẻ KPI rộng bằng bảng, cột vừa nội d
     const file = await dl;
     await file.saveAs('test-results/competition-export.png');
 
-    const fit = await page.evaluate(() => (window as unknown as { __fit: { table: number; kpi: number; box: number } | null }).__fit);
+    const fit = await page.evaluate(() => (window as unknown as { __fit: { table: number; kpi: number; box: number; tran: number } | null }).__fit);
     console.log('BỀ RỘNG LÚC CHỤP:', JSON.stringify(fit), '| file:', file.suggestedFilename());
     expect(fit, 'không bắt được bản sao off-screen lúc chụp').not.toBeNull();
     expect(fit!.table).toBeGreaterThan(300);
@@ -64,4 +70,5 @@ test('xuất ảnh Thi đua: thẻ KPI rộng bằng bảng, cột vừa nội d
     // Khung chụp = bảng + đệm 2 mép của các khối bọc (~36px), không được rộng hơn nhiều hơn thế.
     expect(fit!.box - fit!.table, `khung ${fit!.box}px vs bảng ${fit!.table}px`).toBeLessThanOrEqual(64);
     expect(fit!.box).toBeGreaterThanOrEqual(fit!.table);
+    expect(fit!.tran, 'có phần tử tràn khỏi khung chụp → ảnh bị cắt mép phải').toBe(0);
 });

@@ -357,6 +357,9 @@ export function fixCircularAvatars(root: HTMLElement): void {
 
     // 2. Xử lý các phần tử container tròn hoặc pill badge
     root.querySelectorAll<HTMLElement>('.rounded-full, [class*="rounded-full"], .preserve-rounded').forEach((el) => {
+        // `preserve-rounded` mà KHÔNG phải rounded-full = "giữ nguyên bo góc của nó" (vd thẻ KPI .kpi-overview-card),
+        // không phải avatar/viên thuốc. Trước 2026-10-07 nhánh dưới gán bo 9999px → thẻ KPI trong ảnh thành BẦU DỤC.
+        if (!/\brounded-full\b/.test(el.getAttribute('class') || '')) return;
         const hasImg = !!el.querySelector('img');
         const w = el.offsetWidth || parseFloat(el.style.width) || 0;
         const h = el.offsetHeight || parseFloat(el.style.height) || 0;
