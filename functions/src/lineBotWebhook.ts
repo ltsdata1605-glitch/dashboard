@@ -4,8 +4,9 @@
 
 import { onRequest } from 'firebase-functions/v2/https';
 import { verifyLineSignature } from './lineSignature';
+import { signLiffUris, verifyLiffTicket, LEGACY_LIFF_UNTIL } from './liffTicket';
 import * as crypto from 'crypto';
-import { db } from './firebaseAdmin';
+import { db, auth as adminAuth } from './firebaseAdmin';
 import { FieldPath } from 'firebase-admin/firestore';
 import { isRelistUnusedCommand, getVnMonthStartIso, selectUnusedThisMonth } from './relistUnused';
 import { formatShortUserName } from './userName';
@@ -1603,6 +1604,32 @@ function filterPmhByUsers(text: string, candidateNames: string[], liffId?: strin
     };
 }
 
+const MEDIA_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+/** Kiểm "chữ ký" đầu file (magic bytes) — MIME khai báo có thể nói dối. */
+function looksLikeImage(base64: string): boolean {
+    const head = Buffer.from(base64.slice(0, 24), 'base64');
+    const hex = head.toString('hex');
+    return hex.startsWith('ffd8ff') /* JPEG */ || hex.startsWith('89504e47') /* PNG */
+        || hex.startsWith('47494638') /* GIF */
+        || (head.slice(0, 4).toString('ascii') === 'RIFF' && head.slice(8, 12).toString('ascii') === 'WEBP');
+}
+
+/**
+ * Người chat có được DUYỆT / thu hồi mã hộ người khác không (audit 2026-10-07, S08). Chữ ký
+ * x-line-signature chỉ chứng minh sự kiện đến từ LINE — KHÔNG chứng minh người gõ là Admin.
+ * Danh sách Admin quản lý ở Dashboard (line_bots/{uid}/admins, role SUPER_ADMIN/APPROVER).
+ * Bot CHƯA khai Admin nào → giữ hành vi cũ (ai cũng duyệt được) để không làm đứng việc cấp mã;
+ * khai ít nhất 1 Admin là chế độ chặt tự bật.
+ */
+async function canApproveOnBot(uid: string, senderUserId: string): Promise<boolean> {
+    const adminsSnap = await db.collection('line_bots').doc(uid).collection('admins').get();
+    const active = adminsSnap.docs.map(d => d.data()).filter(a => a.active !== false);
+    if (active.length === 0) return true;
+    return Boolean(senderUserId) && active.some(a =>
+        a.lineUserId === senderUserId && (a.role === 'SUPER_ADMIN' || a.role === 'APPROVER'));
+}
+
 export const lineBotWebhook = onRequest(
     { region: DEFAULT_REGION, cors: true },
     async (req, res) => {
@@ -1628,7 +1655,9 @@ export const lineBotWebhook = onRequest(
                         }
                         base64Data = snaps.map((s) => String(s.data()?.base64 || '')).join('');
                     }
-                    const contentType = String(data.contentType || 'image/jpeg');
+                    // Audit B5: chỉ phục vụ đúng loại ẢNH — trước đây trả nguyên contentType đã lưu (kể cả
+                    // text/html) → trang HTML tuỳ ý chạy trên domain của function.
+                    const contentType = MEDIA_IMAGE_TYPES.includes(String(data.contentType)) ? String(data.contentType) : 'image/jpeg';
                     if (!base64Data) {
                         res.status(404).send('Image data empty');
                         return;
@@ -1636,6 +1665,8 @@ export const lineBotWebhook = onRequest(
                     const cleanBase64 = base64Data.replace(/^data:image\/[a-zA-Z0-9+]+;base64,/, '');
                     const buffer = Buffer.from(cleanBase64, 'base64');
                     res.setHeader('Content-Type', contentType);
+                    res.setHeader('X-Content-Type-Options', 'nosniff');
+                    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
                     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
                     res.setHeader('Content-Length', buffer.length);
                     res.status(200).send(buffer);
@@ -1660,18 +1691,33 @@ export const lineBotWebhook = onRequest(
         // 0. Action: Tải ảnh trực tiếp lên Cloud (Upload Media Proxy)
         if (action === 'uploadMedia') {
             try {
+                // Audit S07: trước đây ẩn danh ghi được document tuỳ ý (kể cả ghi đè ID có sẵn, MIME tuỳ ý).
+                const idToken = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+                const caller = idToken ? await adminAuth.verifyIdToken(idToken).catch(() => null) : null;
+                if (!caller) {
+                    res.status(401).json({ success: false, error: 'Cần đăng nhập Dashboard để tải ảnh.' });
+                    return;
+                }
                 const { base64, contentType, mediaId: customId, name } = req.body || {};
                 if (!base64) {
                     res.status(400).json({ success: false, error: 'Thiếu dữ liệu base64 hình ảnh' });
                     return;
                 }
-                const mediaId = customId || `media_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
                 const cleanBase64 = String(base64).replace(/^data:image\/[a-zA-Z0-9+]+;base64,/, '');
-                await db.collection('bot_media').doc(mediaId).set({
+                const type = String(contentType || 'image/jpeg');
+                if (!MEDIA_IMAGE_TYPES.includes(type) || cleanBase64.length > 1_048_000 || !looksLikeImage(cleanBase64)) {
+                    res.status(400).json({ success: false, error: 'Chỉ nhận ảnh JPEG/PNG/WebP/GIF dưới 1MB.' });
+                    return;
+                }
+                const mediaId = /^[A-Za-z0-9_-]{6,80}$/.test(String(customId || '')) ? String(customId)
+                    : `media_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+                // create() — lỗi nếu ID đã tồn tại: không ghi đè ảnh của người khác.
+                await db.collection('bot_media').doc(mediaId).create({
                     id: mediaId,
                     base64: cleanBase64,
-                    contentType: contentType || 'image/jpeg',
-                    name: name || 'image.jpg',
+                    contentType: type,
+                    name: String(name || 'image.jpg').slice(0, 120),
+                    ownerUid: caller.uid,
                     createdAt: new Date().toISOString()
                 });
                 const url = `https://${DEFAULT_REGION}-dashboa-7e20b.cloudfunctions.net/lineBotWebhook?mediaId=${mediaId}`;
@@ -1730,14 +1776,33 @@ export const lineBotWebhook = onRequest(
             }
 
             try {
-                // Tốc độ là ưu tiên (LIFF đang chờ xoay): 1 truy vấn lấy bot → quét SONG SONG cả 2 collection
-                // của mọi bot → cập nhật USED và push xác nhận SONG SONG → trả lời. Trước đây tuần tự từng bước.
-                const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
-                const uids = botsSnap.empty
-                    ? (await db.collection('line_bots').limit(5).get()).docs.map(d => d.id)
-                    : botsSnap.docs.map(d => d.id);
+                // Audit 2026-10-07 (S06): thẻ mới mang vé `b` (bot) + `t` (HMAC Channel Secret) — chỉ chạm
+                // đúng bot đó. Thẻ cũ chưa có vé: giữ cách quét mọi bot tới LEGACY_LIFF_UNTIL rồi từ chối.
+                const botParam = String(req.body?.b || req.query.b || '').trim();
+                const ticket = String(req.body?.t || req.query.t || '').trim();
+                let uids: string[];
                 const tokenByUid = new Map<string, string>();
-                botsSnap.docs.forEach(d => tokenByUid.set(d.id, String(d.data()?.channelAccessToken || '')));
+                if (botParam || ticket) {
+                    const botSnap = botParam ? await db.collection('line_bots').doc(botParam).get() : null;
+                    const botCfg = botSnap?.exists ? botSnap.data() : null;
+                    if (!botCfg || !verifyLiffTicket(String(botCfg.channelSecret || ''), code, ticket)) {
+                        res.status(403).json({ success: false, error: 'Thẻ coupon không hợp lệ.' });
+                        return;
+                    }
+                    uids = [botParam];
+                    tokenByUid.set(botParam, String(botCfg.channelAccessToken || ''));
+                } else if (Date.now() < LEGACY_LIFF_UNTIL) {
+                    // Tốc độ là ưu tiên (LIFF đang chờ xoay): 1 truy vấn lấy bot → quét SONG SONG cả 2 collection
+                    // của mọi bot → cập nhật USED và push xác nhận SONG SONG → trả lời.
+                    const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
+                    uids = botsSnap.empty
+                        ? (await db.collection('line_bots').limit(5).get()).docs.map(d => d.id)
+                        : botsSnap.docs.map(d => d.id);
+                    botsSnap.docs.forEach(d => tokenByUid.set(d.id, String(d.data()?.channelAccessToken || '')));
+                } else {
+                    res.status(403).json({ success: false, error: 'Thẻ coupon cũ đã hết hạn dùng nút copy. Vui lòng yêu cầu thẻ mới.' });
+                    return;
+                }
 
                 const scans = await Promise.all(uids.flatMap(bUid => [
                     db.collection('line_bots').doc(bUid).collection('filtered_coupons').where('code', '==', code).get()
@@ -2162,10 +2227,8 @@ export const lineBotWebhook = onRequest(
                     let cmdDoc = await db.collection('line_bots').doc(uid).collection('report_commands').doc(cleanCmd).get();
                     let cmdData = cmdDoc.exists ? cmdDoc.data() : null;
 
-                    if (!cmdData) {
-                        const globalDoc = await db.collection('report_commands').doc(cleanCmd).get();
-                        if (globalDoc.exists) cmdData = globalDoc.data();
-                    }
+                    // Audit S09: bỏ tra bảng lệnh TOÀN HỆ THỐNG (report_commands/{cmd}) — bot này từng trả ảnh
+                    // báo cáo của bot/Kho khác. Lệnh chỉ đọc theo bot (Dashboard luôn ghi bản theo bot).
 
                     // Fallback mặc định cho lệnh "bc": nếu chưa có trong collection, tìm ảnh Chi Tiết Theo Kho mới nhất trong bot_media
                     if (!cmdData && cleanCmd === 'bc') {
@@ -2173,9 +2236,11 @@ export const lineBotWebhook = onRequest(
                             const mSnap = await db.collection('bot_media')
                                 .where('source', '==', 'analysis-export')
                                 .orderBy('createdAt', 'desc')
-                                .limit(10)
+                                .limit(30)
                                 .get();
                             const matchDoc = mSnap.docs.find(d => {
+                                // Chỉ ảnh do CHÍNH chủ bot xuất (ownerUid) — trước đây lấy ảnh mới nhất của bất kỳ ai.
+                                if (d.data().ownerUid !== uid) return false;
                                 const n = (d.data().name || '').toLowerCase();
                                 return n.includes('chi tiết theo kho') || n.includes('chi tiet theo kho') || n.includes('kho tổng hợp');
                             });
@@ -2279,6 +2344,19 @@ export const lineBotWebhook = onRequest(
                         const cDoc = querySnap.docs[0];
                         const cData = cDoc.data();
                         const now = new Date().toISOString();
+
+                        // Audit S08: mã ĐÃ DÙNG là lịch sử, không trả về kho; chỉ người nhận mã (hoặc
+                        // Admin bot) được trả — trước đây ai trong nhóm cũng thu hồi được mã của người khác.
+                        const isRecipient = Boolean(senderUserId) && cData.recipientId === senderUserId;
+                        const refuse = cData.status === 'USED'
+                            ? '⚠️ Mã này đã được SỬ DỤNG — không thể trả về kho.'
+                            : (!isRecipient && !(await canApproveOnBot(uid, senderUserId)))
+                                ? '⛔ Chỉ người đã nhận mã này (hoặc Admin bot) mới được huỷ/trả mã.'
+                                : '';
+                        if (refuse) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: refuse, quoteToken: event.message?.quoteToken }]);
+                            continue;
+                        }
 
                         await cDoc.ref.update({
                             status: 'UNUSED',
@@ -2413,7 +2491,7 @@ export const lineBotWebhook = onRequest(
                         orderId: d.data.orderId ? String(d.data.orderId) : undefined,
                         cardIndex: Number(d.data.cardIndex) || undefined,
                     }));
-                    const flexMessages = createFilteredPmhFlexMessages(items, (config as any).liffId);
+                    const flexMessages = signLiffUris(createFilteredPmhFlexMessages(items, (config as any).liffId), uid, config.channelSecret);
                     const messages: any[] = [...flexMessages];
                     if (unusedDocs.length > MAX_CARDS) {
                         messages.push({
@@ -2777,6 +2855,7 @@ export const lineBotWebhook = onRequest(
                             cardIndex: seqStock > 0 ? seqStock : undefined,
                             liffId: (config as any).liffId
                         });
+                        signLiffUris(flexMsg, uid, config.channelSecret);
 
                         const sendOk = await replyLineMessage(token, replyToken, [flexMsg]);
                         if (!sendOk) {
@@ -2823,8 +2902,17 @@ export const lineBotWebhook = onRequest(
                 // 3.5. Kiểm tra lệnh DUYỆT từ Admin (ví dụ: DUYỆT 12345678 hoặc DUYỆT / OK / ALL)
                 const isApprovalAll = /^(?:duyệt|duyet|ok|all|approve)$/i.test(cleanText);
                 const approvalMatch = cleanText.match(/^(?:duyệt|duyet|approve)\s+([A-Za-z0-9_-]{4,25})/i);
+                const senderCanApprove = (isApprovalAll || approvalMatch) ? await canApproveOnBot(uid, senderUserId) : false;
+                if ((isApprovalAll || approvalMatch) && !senderCanApprove && /^(?:duyệt|duyet|approve)/i.test(cleanText)) {
+                    await replyLineMessage(token, replyToken, [{
+                        type: 'text',
+                        text: '⛔ Chỉ Admin của bot (khai báo trên Dashboard YCX) mới được duyệt cấp mã.',
+                        quoteToken: event.message?.quoteToken
+                    }]);
+                    continue;
+                }
 
-                if (isApprovalAll) {
+                if (isApprovalAll && senderCanApprove) {
                     await cleanupExpiredCoupons(uid);
                     const pendingSnap = await db.collection('line_bots').doc(uid).collection('pending_requests')
                         .where('status', '==', 'PENDING').get();
@@ -2925,7 +3013,7 @@ export const lineBotWebhook = onRequest(
                     continue;
                 }
 
-                if (approvalMatch) {
+                if (approvalMatch && senderCanApprove) {
                     await cleanupExpiredCoupons(uid);
                     const targetOrderId = approvalMatch[1].trim().toUpperCase();
                     const pendingDoc = await db.collection('line_bots').doc(uid).collection('pending_requests').doc(targetOrderId).get();
@@ -3021,6 +3109,7 @@ export const lineBotWebhook = onRequest(
                         cardIndex: seqApprove > 0 ? seqApprove : undefined,
                         liffId: (config as any).liffId
                     });
+                    signLiffUris(flexMsg, uid, config.channelSecret);
 
                     await replyLineMessage(token, replyToken, [flexMsg]);
                     continue;
@@ -3119,7 +3208,7 @@ export const lineBotWebhook = onRequest(
 
                     // Danh sách rút gọn (bỏ thẻ trùng) -> phải dựng lại thẻ Flex theo đúng số thứ tự mới
                     const flexMessages = newItems.length > 0
-                        ? createFilteredPmhFlexMessages(newItems, (config as any).liffId)
+                        ? signLiffUris(createFilteredPmhFlexMessages(newItems, (config as any).liffId), uid, config.channelSecret)
                         : [];
 
                     // Tự động lưu các coupon lọc được vào Firestore để Admin theo dõi
@@ -3379,6 +3468,7 @@ export const lineBotWebhook = onRequest(
                             cardIndex: seqForm > 0 ? seqForm : undefined,
                             liffId: (config as any).liffId
                         });
+                        signLiffUris(flexMsg, uid, config.channelSecret);
 
                         await replyLineMessage(token, replyToken, [flexMsg]);
                         continue;

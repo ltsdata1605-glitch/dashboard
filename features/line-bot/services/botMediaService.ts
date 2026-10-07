@@ -94,10 +94,13 @@ export async function uploadBotImage(file: File): Promise<string> {
 
     // 2. Dự phòng: Gửi qua Cloud Function proxy
     try {
+        // Máy chủ bắt buộc ID token Firebase (functions/src/lineBotWebhook.ts uploadMedia — audit S07)
+        const idToken = await getAuth(db.app).currentUser?.getIdToken().catch(() => '') ?? '';
         const response = await fetch(`${WEBHOOK_BASE_URL}?action=uploadMedia`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${idToken}`
             },
             body: JSON.stringify({
                 mediaId,
