@@ -39,6 +39,8 @@ export interface SalesDataMeta {
     version: number;         // for future migration
     uploadedFrom: string;    // 'laptop' | 'mobile'
     isRealtime?: boolean;
+    /** Phiên bản chunk (`${rev}_${i}`) — không có = bản cũ, chunk ở `chunk_${i}`. */
+    rev?: string;
     updatedAt?: FieldValue;  // serverTimestamp
 }
 
@@ -77,13 +79,14 @@ export function chunkData(data: DataRow[]): DataRow[][] {
     let currentSize = 2; // for '[]' wrapper
 
     for (const row of data) {
-        const rowStr = JSON.stringify(row);
-        const rowSize = rowStr.length + 1; // +1 for comma separator
+        // Audit D04: đo BYTE UTF-8 (thứ Firestore giới hạn 1MiB), không phải số ký tự — tiếng Việt có
+        // dấu tốn 2-3 byte/ký tự nên chunk "800 nghìn ký tự" từng thành ~1,1MB và bị từ chối.
+        const rowSize = utf8ByteLength(JSON.stringify(row)) + 1; // +1 for comma separator
 
         if (currentSize + rowSize > MAX_CHUNK_BYTES && currentChunk.length > 0) {
             chunks.push(currentChunk);
             currentChunk = [row];
-            currentSize = 2 + rowStr.length;
+            currentSize = 2 + rowSize;
         } else {
             currentChunk.push(row);
             currentSize += rowSize;
@@ -95,6 +98,19 @@ export function chunkData(data: DataRow[]): DataRow[][] {
     }
 
     return chunks;
+}
+
+/** Số byte UTF-8 của chuỗi — không cấp phát bộ đệm như TextEncoder (gọi cho từng dòng). */
+export function utf8ByteLength(str: string): number {
+    let bytes = 0;
+    for (let i = 0; i < str.length; i++) {
+        const c = str.charCodeAt(i);
+        if (c < 0x80) bytes += 1;
+        else if (c < 0x800) bytes += 2;
+        else if (c >= 0xd800 && c <= 0xdbff) { bytes += 4; i++; } // cặp surrogate (emoji…) = 4 byte
+        else bytes += 3;
+    }
+    return bytes;
 }
 
 /**
@@ -143,18 +159,19 @@ export async function uploadProcessedData(
         isRealtime: !!isRealtime
     };
 
-    const docsToWrite: { ref: ReturnType<typeof doc>; data: Record<string, unknown> }[] = chunks.map((chunk, index) => ({
-        ref: doc(salesDataRef, `chunk_${index}`),
-        data: { rows: chunk }
-    }));
-    docsToWrite.push({ ref: doc(salesDataRef, 'meta'), data: { ...meta, updatedAt: serverTimestamp() } });
-
-    for (let i = 0; i < docsToWrite.length; i += BATCH_GROUP_SIZE) {
-        const group = docsToWrite.slice(i, i + BATCH_GROUP_SIZE);
+    // Audit D03: chunk ghi vào PHIÊN BẢN MỚI (`${rev}_${i}`), meta (trỏ tới rev) ghi SAU CÙNG. Trước đây
+    // ghi đè thẳng chunk_0..n qua nhiều lần commit — lỗi/đua giữa chừng để lại bộ chunk nửa cũ nửa mới
+    // mà thiết bị khác vẫn đọc như "thành công".
+    const rev = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const chunkDocs = chunks.map((chunk, index) => ({ ref: doc(salesDataRef, `${rev}_${index}`), data: { rows: chunk } }));
+    for (let i = 0; i < chunkDocs.length; i += BATCH_GROUP_SIZE) {
         const batch = writeBatch(db);
-        group.forEach(({ ref, data: docData }) => batch.set(ref, docData));
+        chunkDocs.slice(i, i + BATCH_GROUP_SIZE).forEach(({ ref, data: docData }) => batch.set(ref, docData));
         await batch.commit();
     }
+    const metaBatch = writeBatch(db);
+    metaBatch.set(doc(salesDataRef, 'meta'), { ...meta, rev, updatedAt: serverTimestamp() });
+    await metaBatch.commit();
 
     if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('ycx-sales-data-uploaded', {
@@ -162,17 +179,11 @@ export async function uploadProcessedData(
         }));
     }
 
-    // 3. Clean up old chunks that are no longer needed
-    //    (e.g., if previous upload had 5 chunks but this one only has 3)
+    // 3. Dọn chunk của phiên bản cũ (kể cả chunk_* kiểu cũ) — sau khi meta đã trỏ sang bản mới.
     try {
         const snapshot = await getDocs(salesDataRef);
         const staleRefs = snapshot.docs
-            .filter(docSnap => {
-                const id = docSnap.id;
-                if (!id.startsWith('chunk_')) return false;
-                const chunkIndex = parseInt(id.replace('chunk_', ''), 10);
-                return chunkIndex >= chunks.length;
-            })
+            .filter(docSnap => docSnap.id !== 'meta' && !docSnap.id.startsWith(`${rev}_`))
             .map(docSnap => docSnap.ref);
 
         for (let i = 0; i < staleRefs.length; i += BATCH_GROUP_SIZE) {
@@ -219,9 +230,11 @@ export async function downloadProcessedData(
     // 2. Download all chunks in parallel
     const chunkPromises: Promise<DataRow[]>[] = [];
     for (let i = 0; i < meta.chunkCount; i++) {
+        const chunkId = meta.rev ? `${meta.rev}_${i}` : `chunk_${i}`;
         chunkPromises.push(
-            getDoc(doc(salesDataRef, `chunk_${i}`)).then(snap => {
-                if (!snap.exists()) return [];
+            getDoc(doc(salesDataRef, chunkId)).then(snap => {
+                // Audit D03: thiếu chunk là LỖI — không trả về "thành công" với một phần dữ liệu.
+                if (!snap.exists()) throw new Error(`[CloudData] Thiếu ${chunkId} — dữ liệu trên cloud chưa đầy đủ (đang được ghi?).`);
                 return (snap.data().rows || []) as DataRow[];
             })
         );
@@ -241,6 +254,9 @@ export async function downloadProcessedData(
         }
     }
 
+    if (typeof meta.totalRows === 'number' && allRows.length !== meta.totalRows) {
+        throw new Error(`[CloudData] Số dòng tải về (${allRows.length}) khác metadata (${meta.totalRows}) — bỏ qua bản không toàn vẹn.`);
+    }
     console.warn(`[CloudData] Downloaded ${allRows.length} rows from cloud`);
     return { data: allRows, meta };
 }

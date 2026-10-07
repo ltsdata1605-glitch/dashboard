@@ -540,7 +540,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const msg = e instanceof Error ? e.message : 'Dữ liệu bộ đệm bị hỏng. Bạn hãy F5 để thử lại.';
                 setStatus({ message: msg, type: 'error', progress: 0 });
                 setAppState('upload');
-                await Promise.all([dbService.clearAllSalesFiles(), dbService.clearProductConfig()]);
+                // Audit D14: trước đây MỌI lỗi (IndexedDB chậm/hết giờ, hết dung lượng, lỗi tạm…) đều xoá
+                // sạch dữ liệu bán hàng + cấu hình — mất bản duy nhất chỉ vì 1 lần mở app trục trặc. Nay
+                // chỉ dọn khi dữ liệu HỎNG THẬT (JSON không đọc được — mở lại lần nào cũng lỗi y hệt).
+                if (e instanceof SyntaxError) {
+                    await Promise.all([dbService.clearAllSalesFiles(), dbService.clearProductConfig()]);
+                }
             } finally {
                 setIsHardProcessing(false);
             }

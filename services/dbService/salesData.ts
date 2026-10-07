@@ -68,6 +68,20 @@ function restoreParsedDates(rows: DataRow[] | null | undefined): void {
 }
 
 // --- Sales Data ---
+/**
+ * Dọn các file cũ SAU KHI registry đã trỏ sang bản mới. Lỗi ở đây chỉ để lại dữ liệu thừa, không mất
+ * bản đang dùng.
+ */
+async function deleteReplacedSalesFiles(oldRegistry: UploadedFileRegistryItem[], keepId?: string): Promise<void> {
+    for (const file of oldRegistry) {
+        if (file.id === keepId) continue;
+        await deleteSalesFileData(file.id).catch(err => console.warn('[IDB] Không dọn được file cũ', file.id, err));
+    }
+    await clearSalesData().catch(err => console.warn('[IDB] Không dọn được salesData cũ', err));
+}
+
+// Audit D14: hai hàm dưới đây trước đây XOÁ SẠCH dữ liệu cũ TRƯỚC khi ghi bản cloud — ghi lỗi (hết
+// dung lượng, tab bị đóng…) là mất cả bản cũ lẫn bản mới. Nay: ghi bản mới → chuyển registry → dọn cũ.
 export async function saveSyncCloudData(
     data: DataRow[],
     filename: string,
@@ -75,14 +89,13 @@ export async function saveSyncCloudData(
     fileLastModified: number
 ): Promise<void> {
     try {
-        // 1. Clear all existing sales files & registry
-        await clearAllSalesFiles();
-
-        // 2. Save this sync file's data
+        const oldRegistry = await getSalesFilesRegistry();
         const syncId = 'cloud_sync_' + savedAt;
+
+        // 1. Ghi dữ liệu bản mới (khoá riêng — bản cũ vẫn nguyên)
         await saveSalesFileData(syncId, data);
 
-        // 3. Add to files registry
+        // 2. Chuyển registry sang bản mới — từ đây app đọc bản mới
         const item: UploadedFileRegistryItem = {
             id: syncId,
             filename,
@@ -92,6 +105,11 @@ export async function saveSyncCloudData(
             isActive: true
         };
         await saveSalesFilesRegistry([item]);
+
+        // 3. Dọn bản cũ (file lịch sử + realtime tạm)
+        dropTempRealtimeCache();
+        await clearTempRealtimeData().catch(err => console.warn('[IDB] Không dọn được realtime tạm cũ', err));
+        await deleteReplacedSalesFiles(oldRegistry, syncId);
     } catch (error) {
         console.error('[IDB] saveSyncCloudData failed:', error);
         throw error;
@@ -105,10 +123,9 @@ export async function saveSyncCloudRealtimeData(
     fileLastModified: number
 ): Promise<void> {
     try {
-        // 1. Clear all existing sales files & registry
-        await clearAllSalesFiles();
+        const oldRegistry = await getSalesFilesRegistry();
 
-        // 2. Save this sync file's data as temporary realtime data
+        // 1. Ghi bản realtime mới (ghi đè đúng khoá tempRealtimeData trong 1 transaction)
         const stored: StoredSalesData = {
             data,
             filename,
@@ -122,7 +139,12 @@ export async function saveSyncCloudRealtimeData(
             tx.objectStore(APP_STORE).put(JSON.stringify(stored), 'tempRealtimeData');
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
+            tx.onabort = () => reject(tx.error ?? new Error('IndexedDB transaction aborted'));
         });
+
+        // 2. Bản cloud là bản gộp đầy đủ → registry rỗng, rồi dọn file lịch sử cũ
+        await saveSalesFilesRegistry([]);
+        await deleteReplacedSalesFiles(oldRegistry);
     } catch (error) {
         console.error('[IDB] saveSyncCloudRealtimeData failed:', error);
         throw error;
