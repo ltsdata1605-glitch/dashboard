@@ -121,7 +121,9 @@ export function parseExcelDate(excelDate: any): Date | null {
             const second = match[6] ? parseInt(match[6], 10) : 0;
 
             const date = new Date(year, month, day, hour, minute, second);
-            if (!isNaN(date.getTime())) return date;
+            // Audit D15: ngày KHÔNG TỒN TẠI (31/02) — Date tự "lăn" sang 03/03; trả null thay vì ngày sai.
+            if (isNaN(date.getTime()) || date.getDate() !== day || date.getMonth() !== month) return null;
+            return date;
         }
 
         const date = new Date(excelDate);
@@ -403,11 +405,24 @@ export const parseNumber = (str: unknown): number => {
     if (str === null || str === undefined || str === '') return 0;
     if (typeof str === 'number') return str;
 
-    let cleaned = String(str).replace(/[\s%,\+]/g, '');
+    let cleaned = String(str).replace(/[\s%\+]/g, '');
 
-    // Xử lý dấu phẩy ngàn (chuẩn VN): nếu có chấm phân cách phần ngàn
-    if (cleaned.indexOf('.') !== cleaned.lastIndexOf('.') || /\.\d{3}($|\.)/.test(cleaned)) {
-        cleaned = cleaned.replace(/\./g, '');
+    // Audit D15: trước đây XOÁ MỌI dấu phẩy → "45,5%" thành 455, "12,5" thành 125. Dấu phẩy là THẬP
+    // PHÂN khi: có cả chấm lẫn phẩy và phẩy đứng SAU CÙNG ("1.234,56"), hoặc chỉ có ĐÚNG 1 dấu phẩy và
+    // theo sau là 1-2 chữ số ("45,5", "12,50"). Mọi dạng ngàn quen thuộc ("1,234,567", "1,234",
+    // "1.234.567", "+1,200") đọc như cũ.
+    const hasDot = cleaned.includes('.');
+    const commaCount = (cleaned.match(/,/g) || []).length;
+    const decimalComma = (hasDot && commaCount > 0 && cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.'))
+        || (!hasDot && commaCount === 1 && /,\d{1,2}$/.test(cleaned));
+    if (decimalComma) {
+        cleaned = cleaned.replace(/\./g, '').replace(',', '.');
+    } else {
+        cleaned = cleaned.replace(/,/g, '');
+        // Xử lý dấu chấm ngàn (chuẩn VN): nếu có chấm phân cách phần ngàn
+        if (cleaned.indexOf('.') !== cleaned.lastIndexOf('.') || /\.\d{3}($|\.)/.test(cleaned)) {
+            cleaned = cleaned.replace(/\./g, '');
+        }
     }
 
     const num = parseFloat(cleaned);

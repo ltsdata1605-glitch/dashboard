@@ -1604,6 +1604,23 @@ function filterPmhByUsers(text: string, candidateNames: string[], liffId?: strin
     };
 }
 
+/**
+ * Giữ chỗ 1 coupon trong TRANSACTION (audit 2026-10-07, D09): chỉ chuyển sang SENT nếu lúc ghi mã vẫn
+ * còn UNUSED. Trước đây chọn mã từ 1 lần đọc rồi update thẳng — 2 yêu cầu đến cùng lúc đọc cùng 1 mã
+ * UNUSED và cùng được cấp → 1 coupon giao cho 2 người.
+ */
+async function reserveCoupon(ref: FirebaseFirestore.DocumentReference, updates: FirebaseFirestore.UpdateData<FirebaseFirestore.DocumentData>): Promise<boolean> {
+    return db.runTransaction(async (tx) => {
+        const snap = await tx.get(ref);
+        const status = snap.data()?.status;
+        if (!snap.exists || (status && status !== 'UNUSED')) return false;
+        tx.update(ref, updates);
+        return true;
+    });
+}
+
+const COUPON_BUSY_TEXT = '⏳ Mã vừa chọn đã được cấp cho người khác cùng lúc. Vui lòng gửi lại yêu cầu.';
+
 const MEDIA_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
 /** Kiểm "chữ ký" đầu file (magic bytes) — MIME khai báo có thể nói dối. */
@@ -2832,7 +2849,7 @@ export const lineBotWebhook = onRequest(
                         // được một thẻ cụ thể để đối chiếu.
                         const seqStock = await allocatePmhSequence(uid, 1, new Date(), couponKind(shortCatForSeq));
 
-                        await chosenDoc.ref.update({
+                        if (!(await reserveCoupon(chosenDoc.ref, {
                             status: 'SENT',
                             orderId: claimCmd.orderId || '',
                             recipient: displayName,
@@ -2840,7 +2857,10 @@ export const lineBotWebhook = onRequest(
                             // Lưu lại để "csd" và xác nhận sử dụng (mark-used) gọi đúng số thẻ
                             ...(seqStock > 0 ? { cardIndex: seqStock } : {}),
                             updatedAt: now
-                        });
+                        }))) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: COUPON_BUSY_TEXT, quoteToken: event.message?.quoteToken }]);
+                            continue;
+                        }
 
                         const mdhLine = claimCmd.orderId ? `\nMĐH Áp dụng: ${claimCmd.orderId}` : '';
                         const shortCat = shortCatForSeq;
@@ -2970,14 +2990,16 @@ export const lineBotWebhook = onRequest(
                             availableDocs.splice(chosenIdx, 1);
                             const cData = chosenDoc.data();
 
-                            await chosenDoc.ref.update({
+                            if (!(await reserveCoupon(chosenDoc.ref, {
                                 status: 'SENT',
                                 warehouse: pData.warehouse || '',
                                 orderId: pData.orderId,
                                 recipient: pData.managerName || 'Nhân viên',
                                 recipientId: pData.senderUserId || '',
                                 updatedAt: now
-                            });
+                            }))) {
+                                continue; // mã vừa bị lượt khác giữ — yêu cầu này vẫn PENDING, lần duyệt sau xử lý
+                            }
 
                             await pDoc.ref.update({
                                 status: 'APPROVED',
@@ -3078,7 +3100,7 @@ export const lineBotWebhook = onRequest(
                     // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
                     const seqApprove = await allocatePmhSequence(uid, 1, new Date(), couponKind(pData.category === 'EVENT' ? 'Event' : 'Giờ Vàng'));
 
-                    await chosenDoc.ref.update({
+                    if (!(await reserveCoupon(chosenDoc.ref, {
                         status: 'SENT',
                         warehouse: pData.warehouse || '',
                         orderId: targetOrderId,
@@ -3086,7 +3108,10 @@ export const lineBotWebhook = onRequest(
                         recipientId: pData.senderUserId || senderUserId,
                         ...(seqApprove > 0 ? { cardIndex: seqApprove } : {}),
                         updatedAt: now
-                    });
+                    }))) {
+                        await replyLineMessage(token, replyToken, [{ type: 'text', text: COUPON_BUSY_TEXT, quoteToken: event.message?.quoteToken }]);
+                        continue;
+                    }
 
                     await pendingDoc.ref.update({
                         status: 'APPROVED',
@@ -3427,7 +3452,7 @@ export const lineBotWebhook = onRequest(
                         // Cùng bộ đếm theo tháng với thẻ "LỌC PMH" — xem pmhSequence.ts
                         const seqForm = await allocatePmhSequence(uid, 1, new Date(), couponKind(String(cData.type || parsed.couponType || '')));
 
-                        await couponDoc.ref.update({
+                        if (!(await reserveCoupon(couponDoc.ref, {
                             status: 'SENT',
                             warehouse: parsed.warehouse || '',
                             orderId: parsed.orderId,
@@ -3435,7 +3460,10 @@ export const lineBotWebhook = onRequest(
                             recipientId: senderUserId,
                             ...(seqForm > 0 ? { cardIndex: seqForm } : {}),
                             updatedAt: now
-                        });
+                        }))) {
+                            await replyLineMessage(token, replyToken, [{ type: 'text', text: COUPON_BUSY_TEXT, quoteToken: event.message?.quoteToken }]);
+                            continue;
+                        }
 
                         // Đếm số mã còn lại của sản phẩm này sau khi cấp
                         const targetKey = (cData.productName || cData.type || '').trim();

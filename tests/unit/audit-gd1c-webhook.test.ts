@@ -38,7 +38,12 @@ vi.mock('../../functions/src/firebaseAdmin', () => ({
     db: {
         collection: (c: string) => colRef(c),
         batch: () => { const ops: (() => Promise<void>)[] = []; return { update: (r: any, v: Doc) => ops.push(() => r.update(v)), commit: async () => { for (const o of ops) await o(); } }; },
-        runTransaction: async () => { throw new Error('not used'); },
+        // Transaction giả: chạy tuần tự (JS 1 luồng) — đủ để tái hiện 2 yêu cầu cùng đọc 1 mã UNUSED.
+        runTransaction: async (fn: (tx: any) => Promise<unknown>) => fn({
+            get: (r: any) => r.get(),
+            update: (r: any, v: Doc) => { store.set(r.path, { ...(store.get(r.path) ?? {}), ...v }); },
+            set: (r: any, v: Doc) => { store.set(r.path, { ...v }); },
+        }),
     },
     stickerDb: {},
     auth: { verifyIdToken: async (t: string) => { const uid = verifiedTokens.get(t); if (!uid) throw new Error('bad token'); return { uid }; } },
@@ -183,5 +188,37 @@ describe('S08 — lệnh DUYỆT / huỷ mã trong nhóm LINE', () => {
         expect(store.get('line_bots/botA/coupons/c3')?.status).toBe('SENT');
         await lineEvent('huy CODE33', 'Ukhach');
         expect(store.get('line_bots/botA/coupons/c3')?.status).toBe('UNUSED');
+    });
+});
+
+describe('D09 — 2 lệnh DUYỆT cùng lúc không cấp 1 mã cho 2 người', () => {
+    beforeEach(() => {
+        lineTexts.length = 0;
+        vi.stubGlobal('fetch', async (_u: string, init?: any) => {
+            try { for (const m of JSON.parse(init?.body ?? '{}').messages ?? []) if (m.text) lineTexts.push(m.text); } catch { /* không phải JSON */ }
+            return { ok: true, status: 200, json: async () => ({ displayName: 'Admin' }) };
+        });
+        store.set('line_bots/botA/admins/a1', { lineUserId: 'Uadmin', role: 'APPROVER', active: true });
+        store.set('line_bots/botA/pending_requests/ORDER111', { status: 'PENDING', requestedProduct: 'PMH', senderUserId: 'U1', orderId: 'ORDER111' });
+        store.set('line_bots/botA/pending_requests/ORDER222', { status: 'PENDING', requestedProduct: 'PMH', senderUserId: 'U2', orderId: 'ORDER222' });
+        store.set('line_bots/botA/coupons/only', { code: 'ONLYONE1', status: 'UNUSED', productName: 'PMH', type: 'PMH' });
+    });
+
+    it('chỉ 1 yêu cầu nhận mã, yêu cầu kia được báo gửi lại', async () => {
+        await Promise.all([lineEvent('DUYỆT ORDER111', 'Uadmin'), lineEvent('DUYỆT ORDER222', 'Uadmin')]);
+        const approved = ['ORDER111', 'ORDER222'].filter((o) => store.get(`line_bots/botA/pending_requests/${o}`)?.status === 'APPROVED');
+        expect(approved).toHaveLength(1);
+        const recipient = store.get('line_bots/botA/coupons/only')?.recipientId;
+        expect(recipient === 'U1' || recipient === 'U2').toBe(true);
+        expect(lineTexts.some((t) => t.includes('đã được cấp cho người khác'))).toBe(true);
+    });
+});
+
+const { isUsedOnVnDay } = await import('../../functions/src/lineBotScheduler');
+describe('D10 — báo cáo theo NGÀY VIỆT NAM', () => {
+    it('lượt dùng 06:30 sáng giờ VN (23:30 UTC hôm trước) được tính vào hôm nay', () => {
+        expect(isUsedOnVnDay('2026-10-06T23:30:00.000Z', '2026-10-07')).toBe(true);
+        expect(isUsedOnVnDay('2026-10-07T17:30:00.000Z', '2026-10-07')).toBe(false); // 00:30 ngày 8 giờ VN
+        expect(isUsedOnVnDay('', '2026-10-07')).toBe(false);
     });
 });

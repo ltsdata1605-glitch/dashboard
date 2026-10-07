@@ -286,8 +286,10 @@ export const lineBotFirestoreService = {
             const expiredDocs: Array<{ doc: any; data: Coupon }> = [];
             for (const d of snap.docs) {
                 const data = d.data() as Coupon;
-                // Thu gom toàn bộ các mã hết hạn trong kho (bao gồm chưa dùng UNUSED hoặc đã thu hồi REVOKED)
-                const isStockCoupon = data.status !== 'SENT';
+                // Thu gom các mã hết hạn CÒN TRONG KHO (chưa dùng UNUSED / đã thu hồi REVOKED). Audit D10:
+                // trước đây chỉ loại SENT nên mã ĐÃ DÙNG (USED) hết hạn cũng bị xoá — mất lịch sử sử dụng
+                // mà báo cáo/đối soát cần.
+                const isStockCoupon = !data.status || data.status === 'UNUSED' || data.status === 'REVOKED';
                 if (isStockCoupon && data.expiryDate && data.expiryDate < todayVN) {
                     expiredDocs.push({ doc: d, data });
                 }

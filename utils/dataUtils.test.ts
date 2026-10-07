@@ -15,6 +15,7 @@ import {
     computeRbacFilteredData,
     computeUniqueFilterOptions,
     formatCleanDisplayName,
+    parseExcelDate,
 } from './dataUtils';
 
 /**
@@ -465,3 +466,25 @@ describe('formatCleanDisplayName', () => {
     });
 });
 
+
+describe('Audit D15 — đọc số/ngày kiểu Việt Nam', () => {
+    it('dấu phẩy thập phân', () => {
+        expect(parseNumber('45,5%')).toBe(45.5);
+        expect(parseNumber('12,5')).toBe(12.5);
+        expect(parseNumber('12,50')).toBe(12.5);
+        expect(parseNumber('1.234,56')).toBe(1234.56);
+    });
+    it('dạng ngàn quen thuộc giữ nguyên', () => {
+        expect(parseNumber('1,234,567')).toBe(1234567);
+        expect(parseNumber('1,234')).toBe(1234);
+        expect(parseNumber('1,234.5')).toBe(1234.5);
+        expect(parseNumber('1.234.567')).toBe(1234567);
+        expect(parseNumber('+1,200')).toBe(1200);
+        expect(parseNumber('0.5')).toBe(0.5);
+    });
+    it('ngày không tồn tại trả null, ngày hợp lệ giữ nguyên', () => {
+        expect(parseExcelDate('31/02/2026')).toBeNull();
+        expect(parseExcelDate('29/02/2024')?.getDate()).toBe(29);
+        expect(parseExcelDate('28/02/2026 10:30')?.getMonth()).toBe(1);
+    });
+});

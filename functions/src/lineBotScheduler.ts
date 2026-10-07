@@ -14,6 +14,19 @@ import {
 } from './lineBotWebhook';
 import { dueSlot, renderTemplate, vnNow, type ScheduleLike } from './lineBotScheduleDue';
 
+/**
+ * `usedAt` lưu dạng ISO UTC (new Date().toISOString()) — phải đổi sang NGÀY VIỆT NAM (UTC+7) rồi mới so
+ * với todayVN. Audit D10: so thẳng tiền tố chuỗi UTC làm lượt dùng 00:00–06:59 giờ VN (vẫn là "hôm qua"
+ * theo UTC) rơi khỏi báo cáo ngày.
+ */
+export function isUsedOnVnDay(usedAt: unknown, todayVN: string): boolean {
+    if (typeof usedAt !== 'string' || !usedAt) return false;
+    const t = Date.parse(usedAt);
+    if (Number.isNaN(t)) return usedAt.startsWith(todayVN);
+    return new Date(t + 7 * 3600_000).toISOString().slice(0, 10) === todayVN;
+}
+
+
 const SCHEDULER_REGION = 'asia-southeast1';
 
 /**
@@ -411,7 +424,7 @@ export const dailyEveningUsageSummary = onSchedule(
                         const data = docItem.data();
                         const usedAt = data.usedAt || data.filteredAt || '';
                         // Kiểm tra xem thời gian sử dụng có trong ngày hôm nay không
-                        if (usedAt.startsWith(todayVN) || (data.usedAt && data.usedAt.includes(todayVN))) {
+                        if (isUsedOnVnDay(usedAt, todayVN)) {
                             usedItemsList.push({
                                 recipient: data.recipient || '',
                                 usedBy: data.usedBy || data.recipient || 'Nhân viên',
@@ -434,7 +447,7 @@ export const dailyEveningUsageSummary = onSchedule(
                     for (const docItem of cSnap.docs) {
                         const data = docItem.data();
                         const usedAt = data.usedAt || data.sentAt || '';
-                        if (usedAt.startsWith(todayVN)) {
+                        if (isUsedOnVnDay(usedAt, todayVN)) {
                             // Tránh trùng mã đã lấy ở filtered_coupons
                             if (!usedItemsList.some(item => item.code === data.code)) {
                                 usedItemsList.push({
