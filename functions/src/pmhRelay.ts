@@ -20,6 +20,9 @@ import { allocatePmhSequence } from './pmhSequence';
 
 const REGION = 'asia-southeast1';
 const QUEUE_COL = 'pmh_relay_queue';
+/** Thời gian 1 tab userscript được giữ 1 việc trước khi lượt poll khác được lấy lại (audit D18). */
+const LEASE_MS = 3 * 60 * 1000;
+const MAX_ATTEMPTS = 3;
 
 interface RelayQueueDoc {
     ownerUid: string;
@@ -63,24 +66,39 @@ export const pmhRelayPoll = onRequest({ region: REGION, cors: true }, async (req
     const uid = await resolveToken(req.headers.authorization);
     if (!uid) { res.status(401).json({ error: 'invalid-token' }); return; }
 
-    const snap = await db.collection(QUEUE_COL)
-        .where('ownerUid', '==', uid)
-        .where('status', '==', 'pending')
-        .orderBy('createdAt', 'asc')
-        .limit(5)
-        .get();
+    // Audit D18: trước đây "đánh dấu processing" bằng batch NGOÀI transaction — 2 tab userscript poll
+    // cùng lúc nhận cùng 1 việc (mã bị lấy 2 lần); việc đang processing mà tab chết thì treo vĩnh viễn.
+    // Nay mỗi việc được GIỮ trong transaction kèm hạn (leaseUntil); quá hạn thì lượt poll sau lấy lại,
+    // quá MAX_ATTEMPTS lần thì đánh dấu lỗi để người dùng thấy.
+    const now = Date.now();
+    const [pendingSnap, processingSnap] = await Promise.all([
+        db.collection(QUEUE_COL).where('ownerUid', '==', uid).where('status', '==', 'pending')
+            .orderBy('createdAt', 'asc').limit(5).get(),
+        db.collection(QUEUE_COL).where('ownerUid', '==', uid).where('status', '==', 'processing').limit(10).get(),
+    ]);
+    const candidates = [
+        ...processingSnap.docs.filter(d => Number(d.get('leaseUntil') || 0) < now),
+        ...pendingSnap.docs,
+    ].slice(0, 5);
 
-    const items = snap.docs.map(d => ({
-        id: d.id,
-        form: (d.data() as RelayQueueDoc).form,
-    }));
-
-    // Đánh dấu processing để không poll lại
-    const batch = db.batch();
-    for (const d of snap.docs) {
-        batch.update(d.ref, { status: 'processing', updatedAt: FieldValue.serverTimestamp() });
+    const items: { id: string; form: string }[] = [];
+    for (const d of candidates) {
+        const claimed = await db.runTransaction(async (tx) => {
+            const cur = await tx.get(d.ref);
+            const data = cur.data() as (RelayQueueDoc & { leaseUntil?: number; attempts?: number }) | undefined;
+            if (!data) return null;
+            const expired = data.status === 'processing' && Number(data.leaseUntil || 0) < now;
+            if (data.status !== 'pending' && !expired) return null;
+            const attempts = Number(data.attempts || 0) + 1;
+            if (attempts > MAX_ATTEMPTS) {
+                tx.update(d.ref, { status: 'error', errorReason: 'quá số lần thử', updatedAt: FieldValue.serverTimestamp() });
+                return null;
+            }
+            tx.update(d.ref, { status: 'processing', leaseUntil: now + LEASE_MS, attempts, updatedAt: FieldValue.serverTimestamp() });
+            return data.form;
+        });
+        if (claimed !== null) items.push({ id: d.id, form: claimed });
     }
-    if (!snap.empty) await batch.commit();
 
     res.json({ items });
 });
@@ -108,11 +126,18 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
     const data = docSnap.data() as RelayQueueDoc;
     if (data.ownerUid !== uid) { res.status(403).json({ error: 'forbidden' }); return; }
 
-    await docRef.update({
-        status: 'done',
-        result: { codes: codes || [], errors: errors || [] },
-        updatedAt: FieldValue.serverTimestamp(),
+    // Audit D18: gửi kết quả LẦN 2 (mạng chập chờn, userscript thử lại) không được đẩy LINE lần nữa.
+    const firstCompletion = await db.runTransaction(async (tx) => {
+        const cur = await tx.get(docRef);
+        if (cur.get('status') === 'done') return false;
+        tx.update(docRef, {
+            status: 'done',
+            result: { codes: codes || [], errors: errors || [] },
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+        return true;
     });
+    if (!firstCompletion) { res.json({ ok: true, duplicate: true }); return; }
 
     // Gửi LINE message (Ưu tiên dạng Thẻ Flex Message chuẩn giao diện)
     const botDoc = await db.collection('line_bots').doc(uid).get();
