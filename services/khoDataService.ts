@@ -44,21 +44,71 @@ export interface KhoSalesFileMeta {
      * mốc tính retention 24 tháng, ưu tiên hơn uploadedAt (ngày bấm tải lên), khớp đúng cách
      * `dbService/salesData.ts` đang tính cho hệ thống lũy kế cục bộ. */
     maxDate?: number;
+    /** Ô theo THÁNG (định dạng YYYY-MM, hoặc 'nodate') — có ở file ghi từ 2026-10-07. File cũ không
+     *  có trường này là "bản chụp gộp" (auto-id Lũy kế / realtime_{uid}). Xem selectLatestRowsByMonth. */
+    month?: string;
+    /** Phiên bản chunk: chunk nằm ở `${rev}_${i}`. Không có = file cũ, chunk ở `chunk_${i}`. */
+    rev?: string;
+}
+
+/** Tháng của 1 dòng (YYYY-MM) — đọc được cả Date (lúc tải lên) lẫn chuỗi ISO (lúc tải xuống). */
+export function rowMonthKey(row: DataRow): string {
+    const raw = row.parsedDate as unknown;
+    const d = raw instanceof Date ? raw : (typeof raw === 'string' || typeof raw === 'number') ? new Date(raw) : null;
+    if (!d || isNaN(d.getTime())) return 'nodate';
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+/**
+ * Audit 2026-10-07 (D02): MỖI lượt đồng bộ lên Kho là BẢN CHỤP ĐẦY ĐỦ dữ liệu đã gộp của người tải
+ * (getMergedSalesData) — trước đây file Lũy kế dùng ID mới mỗi lần nên các bản chụp nằm chồng lên nhau
+ * và bị CỘNG DỒN khi đọc (cùng dữ liệu tải 2 lần → doanh thu x2).
+ *
+ * Quy tắc đọc: với MỖI THÁNG, chỉ lấy các dòng từ NGUỒN MỚI NHẤT (uploadedAt) có dữ liệu tháng đó.
+ * Không xoá gì trên cloud — dữ liệu đã trùng từ trước tự hết trùng khi đọc.
+ */
+export function selectLatestRowsByMonth(sources: { uploadedAt: number; rows: DataRow[] }[]): DataRow[] {
+    const covered = new Set<string>();
+    const out: DataRow[] = [];
+    for (const src of [...sources].sort((a, b) => b.uploadedAt - a.uploadedAt)) {
+        const monthsHere = new Set<string>();
+        for (const row of src.rows) {
+            const m = rowMonthKey(row);
+            if (covered.has(m)) continue;
+            monthsHere.add(m);
+            out.push(row);
+        }
+        monthsHere.forEach(m => covered.add(m));
+    }
+    return out;
+}
+
+/**
+ * Chọn file cần tải: mọi ô theo tháng + với file cũ (bản chụp gộp, không có `month`) chỉ bản MỚI
+ * NHẤT của từng người tải — các bản cũ hơn của cùng người là bản chụp trước đó, đã bị bản mới bao trùm.
+ */
+export function pickKhoFilesToLoad(files: KhoSalesFileMeta[]): KhoSalesFileMeta[] {
+    const monthSlots = files.filter(f => f.month);
+    const newestLegacyByUploader = new Map<string, KhoSalesFileMeta>();
+    for (const f of files) {
+        if (f.month) continue;
+        const cur = newestLegacyByUploader.get(f.uploadedByUid);
+        if (!cur || f.uploadedAt > cur.uploadedAt) newestLegacyByUploader.set(f.uploadedByUid, f);
+    }
+    return [...monthSlots, ...newestLegacyByUploader.values()];
 }
 
 const filesCollectionRef = (maKho: string) => collection(db, 'khoData', maKho, 'salesFiles');
 const chunksCollectionRef = (maKho: string, fileId: string) => collection(db, 'khoData', maKho, 'salesFiles', fileId, 'chunks');
 
 /**
- * Tải dữ liệu 1 file lên Kho dùng chung.
+ * Tải dữ liệu lên Kho dùng chung — 1 Ô CHO MỖI (người tải, tháng): `m_{YYYYMM}_{uid}`.
  *
- * Realtime: fileId CỐ ĐỊNH theo uploader (`realtime_{uid}`) — mỗi quản lý chỉ có đúng 1
- * "bản Realtime hiện tại" của riêng họ trong Kho, tải lại sẽ GHI ĐÈ bản cũ của chính họ
- * (không tích luỹ vô hạn). Nếu 2 quản lý cùng Kho đều tải Realtime, cả 2 bản cùng tồn tại
- * song song (mỗi người 1 slot riêng) và được gộp khi tải xuống.
- *
- * Lũy kế: fileId MỚI mỗi lần tải (Firestore auto-id) — mỗi file lũy kế là 1 giai đoạn dữ
- * liệu riêng biệt (vd "Tháng 5", "Tháng 6"), không được ghi đè lẫn nhau.
+ * Audit 2026-10-07 (D02/D03): dữ liệu truyền vào luôn là bản gộp đầy đủ của người tải, nên đồng bộ
+ * lại nhiều lần GHI ĐÈ đúng các ô tháng đó thay vì tạo thêm bản mới. Chunk ghi vào phiên bản mới
+ * (`${rev}_${i}`), metadata (trỏ tới `rev`) ghi SAU CÙNG — người đọc giữa chừng vẫn thấy trọn bản cũ,
+ * không bao giờ thấy bản trộn nửa cũ nửa mới. Chunk của phiên bản cũ dọn sau khi metadata đã trỏ sang.
+ * (`isRealtime` giữ trong metadata để hiển thị; không còn quyết định cách đặt ID.)
  */
 export async function uploadKhoSalesData(
     user: User,
@@ -71,12 +121,32 @@ export async function uploadKhoSalesData(
 ): Promise<void> {
     if (!user || !maKho || data.length === 0) return;
 
+    const rowsByMonth = new Map<string, DataRow[]>();
+    for (const row of data) {
+        const m = rowMonthKey(row);
+        if (!rowsByMonth.has(m)) rowsByMonth.set(m, []);
+        rowsByMonth.get(m)!.push(row);
+    }
+
+    for (const [month, rows] of rowsByMonth) {
+        await uploadKhoMonthSlot(user, maKho, month, rows, filename, fileLastModified, isRealtime, uploadedByName);
+    }
+}
+
+async function uploadKhoMonthSlot(
+    user: User,
+    maKho: string,
+    month: string,
+    data: DataRow[],
+    filename: string,
+    fileLastModified: number,
+    isRealtime: boolean,
+    uploadedByName?: string
+): Promise<void> {
     const cleanedData = data.map(cleanRow);
     const chunks = chunkData(cleanedData);
 
-    // Ngày dữ liệu gần nhất trong file — dùng cho retention (pruneStaleKhoFiles), không phải
-    // ngày tải lên. Quét trên `data` gốc (còn Date object) trước khi cleanRow chuyển thành
-    // chuỗi ISO cho cleanedData.
+    // Ngày dữ liệu gần nhất — dùng cho retention (pruneStaleKhoFiles). Quét trên `data` gốc (còn Date).
     let maxDate: number | undefined;
     for (const row of data) {
         const d = row.parsedDate;
@@ -86,65 +156,53 @@ export async function uploadKhoSalesData(
     }
 
     const filesRef = filesCollectionRef(maKho);
-    const fileRef = isRealtime ? doc(filesRef, `realtime_${user.uid}`) : doc(filesRef);
-    const fileId = fileRef.id;
-    const chunksRef = chunksCollectionRef(maKho, fileId);
+    const fileRef = doc(filesRef, `m_${month.replace('-', '')}_${user.uid}`);
+    const chunksRef = chunksCollectionRef(maKho, fileRef.id);
+    const rev = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const now = Date.now();
 
     const meta: Omit<KhoSalesFileMeta, 'fileId'> = {
         maKho,
-        filename,
+        filename: month === 'nodate' ? filename : `${filename} · tháng ${month.slice(5)}/${month.slice(0, 4)}`,
         uploadedByUid: user.uid,
         uploadedByName: uploadedByName || user.email || user.uid,
-        uploadedAt: Date.now(),
-        fileLastModified,
+        uploadedAt: now,
+        // Đổi theo MỖI lần ghi (khoá cache phía đọc) — fileLastModified của bản gộp có thể không đổi
+        // dù nội dung đổi (vd vừa xoá 1 file cục bộ).
+        fileLastModified: Math.max(fileLastModified || 0, now),
         totalRows: data.length,
         chunkCount: chunks.length,
         isRealtime,
         isActive: true,
-        version: 1,
+        version: 2,
+        month,
+        rev,
         ...(maxDate !== undefined ? { maxDate } : {}),
     };
 
-    // Gộp chunk + meta thành các nhóm writeBatch (không còn Promise.all(setDoc...) rời rạc
-    // từng document) — cùng nguyên tắc đã áp dụng ở cloudDataService.ts: giảm số lượt ghi ĐỘC
-    // LẬP bắn song song, tránh cạn hàng đợi write stream của Firestore SDK khi Kho có file
-    // nhiều chunk (xem implementation_plan.md mục 60).
-    const docsToWrite: { ref: ReturnType<typeof doc>; data: Record<string, unknown> }[] = chunks.map((chunk, index) => ({
-        ref: doc(chunksRef, `chunk_${index}`),
-        data: { rows: chunk }
-    }));
-    docsToWrite.push({ ref: fileRef, data: { ...meta, updatedAt: serverTimestamp() } });
-
-    for (let i = 0; i < docsToWrite.length; i += BATCH_GROUP_SIZE) {
-        const group = docsToWrite.slice(i, i + BATCH_GROUP_SIZE);
+    // Chunk trước (phiên bản mới, chưa ai trỏ tới) — gộp writeBatch như cloudDataService.ts.
+    const chunkDocs = chunks.map((chunk, index) => ({ ref: doc(chunksRef, `${rev}_${index}`), data: { rows: chunk } }));
+    for (let i = 0; i < chunkDocs.length; i += BATCH_GROUP_SIZE) {
         const batch = writeBatch(db);
-        group.forEach(({ ref, data: docData }) => batch.set(ref, docData));
+        chunkDocs.slice(i, i + BATCH_GROUP_SIZE).forEach(({ ref, data: d }) => batch.set(ref, d));
         await batch.commit();
     }
+    // Metadata SAU CÙNG — đây là thời điểm "công bố" phiên bản mới.
+    const metaBatch = writeBatch(db);
+    metaBatch.set(fileRef, { ...meta, updatedAt: serverTimestamp() });
+    await metaBatch.commit();
 
-    // Dọn chunk cũ dư ra nếu lần tải này ít chunk hơn lần trước (chỉ áp dụng cho slot
-    // Realtime bị ghi đè — file lũy kế luôn là fileId mới nên không có chunk cũ để dọn).
-    if (isRealtime) {
-        try {
-            const snapshot = await getDocs(chunksRef);
-            const staleRefs = snapshot.docs
-                .filter(docSnap => {
-                    const id = docSnap.id;
-                    if (!id.startsWith('chunk_')) return false;
-                    const idx = parseInt(id.replace('chunk_', ''), 10);
-                    return idx >= chunks.length;
-                })
-                .map(docSnap => docSnap.ref);
-
-            for (let i = 0; i < staleRefs.length; i += BATCH_GROUP_SIZE) {
-                const group = staleRefs.slice(i, i + BATCH_GROUP_SIZE);
-                const batch = writeBatch(db);
-                group.forEach(ref => batch.delete(ref));
-                await batch.commit();
-            }
-        } catch (e) {
-            console.warn('[KhoData] Failed to cleanup stale realtime chunks:', e);
+    // Dọn chunk của phiên bản cũ (lỗi ở đây chỉ để lại rác, không ảnh hưởng dữ liệu đang đọc).
+    try {
+        const snapshot = await getDocs(chunksRef);
+        const staleRefs = snapshot.docs.filter(d => !d.id.startsWith(`${rev}_`)).map(d => d.ref);
+        for (let i = 0; i < staleRefs.length; i += BATCH_GROUP_SIZE) {
+            const batch = writeBatch(db);
+            staleRefs.slice(i, i + BATCH_GROUP_SIZE).forEach(ref => batch.delete(ref));
+            await batch.commit();
         }
+    } catch (e) {
+        console.warn('[KhoData] Không dọn được chunk phiên bản cũ:', e);
     }
 }
 
@@ -187,7 +245,8 @@ export async function pruneStaleKhoFiles(maKho: string): Promise<void> {
     const files = await getKhoAllFilesMeta(maKho);
     const cutoffTime = Date.now() - KHO_RETENTION_MONTHS * 30 * 24 * 60 * 60 * 1000;
 
-    const activeLuyKe = files.filter(f => f.isActive && !f.isRealtime);
+    // Ô theo tháng (có `month`) cũng là dữ liệu tích luỹ — áp retention dù cờ isRealtime của lượt tải là gì.
+    const activeLuyKe = files.filter(f => f.isActive && (!f.isRealtime || !!f.month));
     const isWithinRetention = (f: KhoSalesFileMeta) => (f.maxDate ?? f.uploadedAt) >= cutoffTime;
 
     if (activeLuyKe.length > 0 && activeLuyKe.every(f => !isWithinRetention(f))) return;
@@ -203,13 +262,19 @@ export async function pruneStaleKhoFiles(maKho: string): Promise<void> {
 
 /**
  * Tải toàn bộ chunk dữ liệu của 1 file cụ thể, gộp lại thành mảng DataRow[].
+ * Audit D03: THIẾU chunk là LỖI (ném ra) — trước đây chunk thiếu bị coi như rỗng và trả về
+ * "thành công" với một phần dữ liệu (số liệu thiếu mà không ai biết).
  */
-export async function downloadKhoFileRows(maKho: string, fileId: string, chunkCount: number): Promise<DataRow[]> {
+export async function downloadKhoFileRows(maKho: string, fileId: string, chunkCount: number, rev?: string): Promise<DataRow[]> {
     const chunksRef = chunksCollectionRef(maKho, fileId);
     const chunkPromises: Promise<DataRow[]>[] = [];
     for (let i = 0; i < chunkCount; i++) {
+        const chunkId = rev ? `${rev}_${i}` : `chunk_${i}`;
         chunkPromises.push(
-            getDoc(doc(chunksRef, `chunk_${i}`)).then(snap => (snap.exists() ? (snap.data().rows || []) as DataRow[] : []))
+            getDoc(doc(chunksRef, chunkId)).then(snap => {
+                if (!snap.exists()) throw new Error(`[KhoData] Thiếu ${chunkId} của file ${fileId} (Kho ${maKho}) — dữ liệu chưa đầy đủ.`);
+                return (snap.data().rows || []) as DataRow[];
+            })
         );
     }
     const chunkResults = await Promise.all(chunkPromises);
@@ -230,10 +295,9 @@ export async function downloadKhoFileRows(maKho: string, fileId: string, chunkCo
  * Trả kèm danh sách metadata (để tầng gọi tự cache/so sánh fileLastModified sau này).
  */
 export async function downloadKhoSalesData(maKho: string): Promise<{ data: DataRow[]; files: KhoSalesFileMeta[] }> {
-    const files = await getKhoActiveFilesMeta(maKho);
-    const rowsByFile = await Promise.all(files.map(f => downloadKhoFileRows(maKho, f.fileId, f.chunkCount)));
-    const data = rowsByFile.flat();
-    return { data, files };
+    const files = pickKhoFilesToLoad(await getKhoActiveFilesMeta(maKho));
+    const sources = await Promise.all(files.map(async f => ({ uploadedAt: f.uploadedAt, rows: await downloadKhoFileRows(maKho, f.fileId, f.chunkCount, f.rev) })));
+    return { data: selectLatestRowsByMonth(sources), files };
 }
 
 /** Ẩn (không xoá) 1 file khỏi kết quả gộp — dùng cho retention/quản lý sau này (mục 5). */
@@ -340,6 +404,7 @@ export async function syncDataToKhoIfManager(
 interface KhoFileCacheEntry {
     data: DataRow[];
     fileLastModified: number;
+    rev?: string | null;
 }
 
 const khoFileCacheKey = (maKho: string, fileId: string) => `khoDataCache_${maKho}_${fileId}`;
@@ -349,7 +414,7 @@ const khoFileCacheKey = (maKho: string, fileId: string) => `khoDataCache_${maKho
  * worker xử lý hay không. */
 function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
     return JSON.stringify(
-        files.map(f => ({ id: f.fileId, t: f.fileLastModified })).sort((a, b) => a.id.localeCompare(b.id))
+        files.map(f => ({ id: f.fileId, t: f.fileLastModified, r: f.rev ?? null })).sort((a, b) => a.id.localeCompare(b.id))
     );
 }
 
@@ -364,25 +429,24 @@ function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
  * Phân Tích chậm dần theo thời gian khi Kho tích luỹ nhiều tháng dữ liệu Lũy kế (mục 39b).
  */
 async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; snapshot: string }> {
-    const files = await getKhoActiveFilesMeta(maKho);
+    const files = pickKhoFilesToLoad(await getKhoActiveFilesMeta(maKho));
     const snapshot = computeFilesSnapshot(files);
 
-    const rowsByFile = await Promise.all(files.map(async (f) => {
+    const sources = await Promise.all(files.map(async (f) => {
         const cacheKey = khoFileCacheKey(maKho, f.fileId);
         const cached = await dbService.getSetting<KhoFileCacheEntry>(cacheKey).catch(() => null);
-        if (cached && cached.fileLastModified === f.fileLastModified) {
-            return cached.data;
+        if (cached && cached.fileLastModified === f.fileLastModified && (cached.rev ?? null) === (f.rev ?? null)) {
+            return { uploadedAt: f.uploadedAt, rows: cached.data };
         }
 
-        const rows = await downloadKhoFileRows(maKho, f.fileId, f.chunkCount);
-        dbService.saveSetting(cacheKey, { data: rows, fileLastModified: f.fileLastModified } as KhoFileCacheEntry).catch(err =>
+        const rows = await downloadKhoFileRows(maKho, f.fileId, f.chunkCount, f.rev);
+        dbService.saveSetting(cacheKey, { data: rows, fileLastModified: f.fileLastModified, rev: f.rev ?? null } as KhoFileCacheEntry).catch(err =>
             console.warn(`[KhoData] Không lưu được cache cục bộ cho file ${f.fileId} (Kho ${maKho}):`, err)
         );
-        return rows;
+        return { uploadedAt: f.uploadedAt, rows };
     }));
 
-    const data = rowsByFile.flat();
-    return { data, snapshot };
+    return { data: selectLatestRowsByMonth(sources), snapshot };
 }
 
 /**

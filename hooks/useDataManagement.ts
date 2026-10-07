@@ -59,6 +59,9 @@ interface DataManagementProps {
 export const useDataManagement = ({ filterState, configUrl, setStatus, setAppState, appState }: DataManagementProps) => {
     const { user, userRole, departmentId, employeeName, isDemoMode } = useAuth();
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
+    // Đọc được trong effect bất đồng bộ (đồng bộ Kho) mà không phải thêm originalData vào deps.
+    const originalDataLengthRef = useRef(0);
+    originalDataLengthRef.current = originalData.length;
     const [fileRegistry, setFileRegistry] = useState<UploadedFileRegistryItem[]>([]);
     const [hasRealtimeData, setHasRealtimeData] = useState(false);
     const [baseFilteredData, setBaseFilteredData] = useState<DataRow[]>([]);
@@ -580,7 +583,10 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (cancelled || khoRows.length === 0) return;
 
                 const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
-                if (lastApplied === snapshot) return; // Dữ liệu Kho không đổi — giữ nguyên dashboard hiện tại.
+                // Audit D01: chỉ bỏ qua khi dashboard ĐANG CÓ dữ liệu. Dấu "đã áp dụng" lưu qua phiên, còn dữ
+                // liệu Kho đã áp thì KHÔNG lưu cục bộ — nhân viên (không tự tải file) mở lại app thấy
+                // originalData rỗng nhưng dấu vẫn khớp → trước đây bỏ qua và màn hình trống.
+                if (lastApplied === snapshot && originalDataLengthRef.current > 0) return;
 
                 setStatus({ message: `Nạp dữ liệu Kho (${khoRows.length.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                 const srcData = normalizeSalesData(khoRows);
