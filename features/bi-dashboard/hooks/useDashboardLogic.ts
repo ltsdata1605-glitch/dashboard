@@ -22,6 +22,9 @@ import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { parseBaseTargetQuyDoi } from '../services/employeeParser';
 import { getMonthProgress, extractDateFromData } from '../services/metricService';
 
+/** Kết quả phân tích rỗng — dùng khi nguồn bị xoá (hằng ngoài hook để tham chiếu ổn định). */
+const EMPTY_SUMMARY_PARSED: { kpis: Record<string, string>, table: { headers: string[], rows: string[][] } } = { kpis: {}, table: { headers: [], rows: [] } };
+
 export const useDashboardLogic = (isActive?: boolean) => {
     // --- State Management ---
     const [activeMainTab, setActiveMainTab] = useIndexedDBState<MainTab>('dashboard-main-tab', 'realtime');
@@ -110,7 +113,9 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const [summaryRealtimeParsed, setSummaryRealtimeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: string[][] } }>({ kpis: {}, table: { headers: [], rows: [] } });
     useEffect(() => {
-        if (!summaryRealtime || isActive === false) return;
+        if (isActive === false) return;
+        // Audit D16: nguồn đã bị xoá → xoá luôn kết quả đã phân tích (trước đây giữ KPI cũ âm thầm).
+        if (!summaryRealtime) { setSummaryRealtimeParsed(EMPTY_SUMMARY_PARSED); return; }
         let isMounted = true;
         runWorkerTask('PARSE_SUMMARY', summaryRealtime).then(res => {
             if (isMounted && res) setSummaryRealtimeParsed(res);
@@ -120,7 +125,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const [summaryLuyKeParsed, setSummaryLuyKeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: string[][] } }>({ kpis: {}, table: { headers: [], rows: [] } });
     useEffect(() => {
-        if (!summaryLuyKe || isActive === false) return;
+        if (isActive === false) return;
+        if (!summaryLuyKe) { setSummaryLuyKeParsed(EMPTY_SUMMARY_PARSED); return; }
         let isMounted = true;
         runWorkerTask('PARSE_SUMMARY', summaryLuyKe).then(res => {
             if (isMounted && res) setSummaryLuyKeParsed(res);
@@ -130,7 +136,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const [competitionRealtimeBySupermarket, setCompetitionRealtimeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
     useEffect(() => {
-        if (!competitionRealtime || isActive === false) return;
+        if (isActive === false) return;
+        if (!competitionRealtime) { setCompetitionRealtimeBySupermarket({}); return; }
         let isMounted = true;
         runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionRealtime).then(res => {
             if (isMounted && res) setCompetitionRealtimeBySupermarket(res);
@@ -140,7 +147,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
 
     const [localCompetitionLuyKeBySupermarket, setLocalCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
     useEffect(() => {
-        if (!localCompetitionLuyKe || isActive === false) return;
+        if (isActive === false) return;
+        if (!localCompetitionLuyKe) { setLocalCompetitionLuyKeBySupermarket({}); return; }
         let isMounted = true;
         runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', localCompetitionLuyKe).then(res => {
             if (isMounted && res) setLocalCompetitionLuyKeBySupermarket(res);
@@ -651,20 +659,29 @@ export const useDashboardLogic = (isActive?: boolean) => {
             }
         }
 
-        if (!kpis.dtDuKienQD && sourceData.kpis.dtDuKienQD) kpis.dtDuKienQD = sourceData.kpis.dtDuKienQD;
-        if (!kpis.dtDuKien && sourceData.kpis.dtDuKien) kpis.dtDuKien = sourceData.kpis.dtDuKien;
-        if (!kpis.targetQD && sourceData.kpis.targetQD) kpis.targetQD = sourceData.kpis.targetQD;
-        if (!kpis.htTargetQD && sourceData.kpis.htTargetQD) kpis.htTargetQD = sourceData.kpis.htTargetQD;
-        if (!kpis.tlpv && sourceData.kpis.tlpv) kpis.tlpv = sourceData.kpis.tlpv;
-        if (!kpis.lkhach && sourceData.kpis.lkhach) kpis.lkhach = sourceData.kpis.lkhach;
-        if (!kpis.lbill && sourceData.kpis.lbill) kpis.lbill = sourceData.kpis.lbill;
-        if ((!kpis.lbillBH || kpis.lbillBH === 'N/A') && (sourceData.kpis.lbillBH || sourceData.kpis.lbill)) {
-            kpis.lbillBH = sourceData.kpis.lbillBH || sourceData.kpis.lbill;
+        // Audit D16: KPI đầu bảng (sourceData.kpis) là của TỔNG CỤM khi báo cáo có nhiều siêu thị — chỉ
+        // được lấy bù cho siêu thị đang xem khi đang xem 'Tổng' hoặc báo cáo chỉ có đúng 1 siêu thị.
+        // Trước đây siêu thị thiếu cột (vd DT Dự Kiến) hiện số của cả cụm như số của mình.
+        const supermarketRowCount = sourceData.table.rows.filter(r => r[0] && !r[0].trim().startsWith('Tổng')).length;
+        const headerKpisBelongToActive = activeSupermarket === 'Tổng' || supermarketRowCount <= 1;
+        if (headerKpisBelongToActive) {
+            if (!kpis.dtDuKienQD && sourceData.kpis.dtDuKienQD) kpis.dtDuKienQD = sourceData.kpis.dtDuKienQD;
+            if (!kpis.dtDuKien && sourceData.kpis.dtDuKien) kpis.dtDuKien = sourceData.kpis.dtDuKien;
+            if (!kpis.targetQD && sourceData.kpis.targetQD) kpis.targetQD = sourceData.kpis.targetQD;
+            if (!kpis.htTargetQD && sourceData.kpis.htTargetQD) kpis.htTargetQD = sourceData.kpis.htTargetQD;
+            if (!kpis.tlpv && sourceData.kpis.tlpv) kpis.tlpv = sourceData.kpis.tlpv;
+            if (!kpis.lkhach && sourceData.kpis.lkhach) kpis.lkhach = sourceData.kpis.lkhach;
+            if (!kpis.lbill && sourceData.kpis.lbill) kpis.lbill = sourceData.kpis.lbill;
+            if ((!kpis.lbillBH || kpis.lbillBH === 'N/A') && (sourceData.kpis.lbillBH || sourceData.kpis.lbill)) {
+                kpis.lbillBH = sourceData.kpis.lbillBH || sourceData.kpis.lbill;
+            }
+            if (!kpis.lbillBH) kpis.lbillBH = 'N/A';
+            if (!kpis.lbillTH) kpis.lbillTH = sourceData.kpis.lbillTH || 'N/A';
+            if (!kpis.luotKhachChange && sourceData.kpis.luotKhachChange) kpis.luotKhachChange = sourceData.kpis.luotKhachChange;
+            if (!kpis.tlpvChange && sourceData.kpis.tlpvChange) kpis.tlpvChange = sourceData.kpis.tlpvChange;
         }
         if (!kpis.lbillBH) kpis.lbillBH = 'N/A';
-        if (!kpis.lbillTH) kpis.lbillTH = sourceData.kpis.lbillTH || 'N/A';
-        if (!kpis.luotKhachChange && sourceData.kpis.luotKhachChange) kpis.luotKhachChange = sourceData.kpis.luotKhachChange;
-        if (!kpis.tlpvChange && sourceData.kpis.tlpvChange) kpis.tlpvChange = sourceData.kpis.tlpvChange;
+        if (!kpis.lbillTH) kpis.lbillTH = 'N/A';
 
         // Tự động đồng bộ số liệu Realtime mới nhất từ báo cáo Siêu thị Ngành hàng (nếu người dùng đã dán)
         if (isRealtime && activeSupermarket !== 'Tổng' && industryRealtimeParsed) {
