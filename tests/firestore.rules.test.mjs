@@ -189,6 +189,67 @@ async function main() {
     await check('User đăng nhập vẫn ĐỌC được tổng lượt truy cập',
         assertSucceeds(statsDoc(employeeSame).get()));
 
+    // ═══ Audit 2026-10-07 GĐ1b — Bot LINE theo Mã Kho (S13) ═══
+    await testEnv.withSecurityRulesDisabled(async (ctx) => {
+        const db = ctx.firestore();
+        await db.doc('line_bots/ownerA').set({ userId: 'ownerA', departmentId: 'TESTKHO', active: true, channelAccessToken: 'secret-A', isWarehouseShared: true });
+        await db.doc('line_bots/ownerA/coupons/c1').set({ code: 'X1', status: 'UNUSED' });
+        await db.doc('line_bots/ownerMulti').set({ userId: 'ownerMulti', departmentId: 'ALL (Super Admin),TESTKHO', active: true, channelAccessToken: 'secret-M' });
+        await db.doc('bot_media/old1').set({ base64: 'AAAA', ownerUid: 'managerA' });
+        await db.doc('report_commands/bc').set({ imageUrl: 'https://x' });
+        await db.doc('stores/K1/savedLists/l1').set({ name: 'list K1' });
+        await db.doc('stores/SUPERADMIN/savedLists/g1').set({ name: 'chung' });
+    });
+    const bot = (ctx, id = 'ownerA') => ctx.firestore().doc(`line_bots/${id}`);
+    const botCoupon = (ctx, id = 'ownerA') => ctx.firestore().doc(`line_bots/${id}/coupons/c1`);
+
+    await check('Bot: manager CÙNG Kho đọc được bot (kế thừa Bot Kho)', assertSucceeds(bot(managerA).get()));
+    await check('Bot: manager KHÁC Kho KHÔNG đọc được bot (token/secret)', assertFails(bot(managerOther).get()));
+    await check('Bot: manager khác Kho KHÔNG đọc được coupon', assertFails(botCoupon(managerOther).get()));
+    await check('Bot: manager khác Kho KHÔNG ghi được coupon', assertFails(botCoupon(managerOther).set({ status: 'USED' })));
+    await check('Bot: manager cùng Kho đọc/ghi coupon', assertSucceeds(botCoupon(managerA).set({ code: 'X1', status: 'UNUSED' })));
+    await check('Bot: nhân viên cùng Kho KHÔNG đọc bot', assertFails(bot(employeeSame).get()));
+    await check('Bot: bot nhiều Kho ("ALL (Super Admin),TESTKHO") — manager TESTKHO đọc được', assertSucceeds(bot(managerA, 'ownerMulti').get()));
+    await check('Bot: manager cùng Kho KHÔNG đổi được departmentId bot người khác',
+        assertFails(bot(managerA).update({ departmentId: 'OTHERKHO' })));
+    await check('Bot: manager cùng Kho sửa cấu hình thường được', assertSucceeds(bot(managerA).update({ autoApprove: false })));
+    await check('Bot: list theo đúng Kho của mình được',
+        assertSucceeds(managerA.firestore().collection('line_bots').where('departmentId', '==', 'TESTKHO').where('active', '==', true).get()));
+    await check('Bot: list theo nhiều Kho (in) của mình được',
+        assertSucceeds(managerMulti.firestore().collection('line_bots').where('departmentId', 'in', ['TESTKHO', 'OTHERKHO']).where('active', '==', true).get()));
+    await check('Bot: list Kho khác bị chặn',
+        assertFails(managerOther.firestore().collection('line_bots').where('departmentId', '==', 'TESTKHO').get()));
+    await check('Bot: list MỌI bot (quét toàn hệ thống) bị chặn',
+        assertFails(managerA.firestore().collection('line_bots').where('active', '==', true).get()));
+    await check('Bot: chủ bot tạo bot của chính mình', assertSucceeds(bot(managerOther, 'managerOther').set({ userId: 'managerOther', departmentId: 'OTHERKHO' })));
+    await check('Bot: KHÔNG tạo bot dưới uid người khác', assertFails(bot(managerA, 'someoneElse').set({ departmentId: 'TESTKHO' })));
+
+    // bot_media (S07) + report_commands toàn hệ thống (S09)
+    const media = (ctx, id) => ctx.firestore().doc(`bot_media/${id}`);
+    await check('Media: chưa đăng nhập KHÔNG đọc được', assertFails(media(anon, 'old1').get()));
+    await check('Media: user đăng nhập tạo ảnh mới', assertSucceeds(media(employeeSame, 'new1').set({ base64: 'AAAA', ownerUid: 'employeeSame' })));
+    await check('Media: KHÔNG ghi đè ảnh của người khác', assertFails(media(employeeOther, 'old1').set({ base64: 'BBBB' })));
+    await check('Media: KHÔNG xoá ảnh của người khác', assertFails(media(employeeOther, 'old1').delete()));
+    await check('Media: người tạo xoá được ảnh của mình', assertSucceeds(media(managerA, 'old1').delete()));
+    await check('Media: ảnh > 1MB bị chặn', assertFails(media(employeeSame, 'big').set({ base64: 'A'.repeat(1048001) })));
+    await check('report_commands toàn hệ thống: KHÔNG đọc công khai', assertFails(anon.firestore().doc('report_commands/bc').get()));
+    await check('report_commands toàn hệ thống: KHÔNG ghi', assertFails(managerA.firestore().doc('report_commands/bc').set({ imageUrl: 'https://evil' })));
+
+    // In Sticker savedLists (S14)
+    const stickerStaffK1 = testEnv.authenticatedContext('sK1', { stickerRole: 'staff', stickerStoreId: 'K1' });
+    const stickerStaffK2 = testEnv.authenticatedContext('sK2', { stickerRole: 'staff', stickerStoreId: 'K2' });
+    const stickerSuper = testEnv.authenticatedContext('sSA', { stickerRole: 'superadmin', stickerStoreId: 'SUPERADMIN' });
+    const list = (ctx, store, id) => ctx.firestore().doc(`stores/${store}/savedLists/${id}`);
+    await check('Sticker: nhân viên K1 đọc danh sách K1', assertSucceeds(list(stickerStaffK1, 'K1', 'l1').get()));
+    await check('Sticker: nhân viên K2 KHÔNG đọc danh sách K1', assertFails(list(stickerStaffK2, 'K1', 'l1').get()));
+    await check('Sticker: nhân viên K2 KHÔNG ghi đè danh sách K1', assertFails(list(stickerStaffK2, 'K1', 'l1').set({ name: 'x' })));
+    await check('Sticker: nhân viên K2 KHÔNG ghi itemChunks của K1', assertFails(stickerStaffK2.firestore().doc('stores/K1/savedLists/l1/itemChunks/chunk_0').set({ items: '[]' })));
+    await check('Sticker: mọi người vẫn ĐỌC danh sách dùng chung SUPERADMIN', assertSucceeds(list(stickerStaffK2, 'SUPERADMIN', 'g1').get()));
+    await check('Sticker: nhân viên KHÔNG ghi vào kho SUPERADMIN', assertFails(list(stickerStaffK2, 'SUPERADMIN', 'g1').set({ name: 'x' })));
+    await check('Sticker: superadmin ghi kho SUPERADMIN', assertSucceeds(list(stickerSuper, 'SUPERADMIN', 'g2').set({ name: 'y' })));
+    await check('Sticker: user app gốc CHƯA duyệt (không có departmentId) KHÔNG vào kho K1',
+        assertFails(testEnv.authenticatedContext('pend', { role: 'pending', departmentId: null }).firestore().doc('stores/K1/metadata/sync').get()));
+
     await testEnv.cleanup();
 
     console.log(`\n=== KẾT QUẢ: ${pass} pass / ${fail} fail (tổng ${pass + fail}) ===`);

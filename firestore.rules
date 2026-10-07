@@ -149,40 +149,87 @@ service cloud.firestore {
       match /state/{doc} { allow read, write: if isSelf(uid); }
     }
 
+    // Audit 2026-10-07 (S14): trước đây savedLists/itemChunks cho MỌI user đăng nhập đọc/ghi mọi kho,
+    // và kho 'SUPERADMIN' ai cũng GHI được. Giữ nguyên quyền ĐỌC kho 'SUPERADMIN' (danh sách dùng
+    // chung — fetchSavedListsFromFirestore cố ý đọc kho của mình + 'SUPERADMIN'), chỉ siết quyền GHI
+    // về đúng kho của mình. Lưu ý: rules là phép OR giữa các match — match savedLists phải chặt bằng
+    // match wildcard bên dưới, nếu không nó mở lại quyền.
+    // token.departmentId chỉ có ở tài khoản app gốc ĐÃ DUYỆT (functions/src/claims.ts).
+    function canUseStickerStore(storeId) {
+      return isSignedIn() && (isStickerSuperAdmin() || myStickerStoreId() == storeId || request.auth.token.departmentId == storeId);
+    }
+    function canReadStickerStore(storeId) {
+      return canUseStickerStore(storeId) || (isSignedIn() && storeId == 'SUPERADMIN');
+    }
+
     match /stores/{storeId}/savedLists/{listId} {
-      allow read, write: if isSignedIn();
+      allow read:  if canReadStickerStore(storeId);
+      allow write: if canUseStickerStore(storeId);
 
       match /itemChunks/{chunkId} {
-        allow read, write: if isSignedIn();
+        allow read:  if canReadStickerStore(storeId);
+        allow write: if canUseStickerStore(storeId);
       }
     }
 
     match /stores/{storeId}/{document=**} {
-      allow read, write: if isSignedIn() && (isStickerSuperAdmin() || myStickerStoreId() == storeId || request.auth.token.departmentId == storeId || storeId == 'SUPERADMIN');
+      allow read:  if canReadStickerStore(storeId);
+      allow write: if canUseStickerStore(storeId);
     }
 
     // ───────────────────────────────────────────────────────────────────────────
     // PHÂN HỆ BOT LINE QUẢN LÝ PMH (Multi-tenant theo Quản lý & Kế thừa theo Mã Kho)
     // ───────────────────────────────────────────────────────────────────────────
-    match /line_bots/{userId} {
-      allow read, write: if isSignedIn() && (isSelf(userId) || isManager());
+    // Audit 2026-10-07 (S13): trước đây MỌI manager (mọi Kho) đọc/ghi được MỌI bot — kể cả Channel
+    // Access Token / Channel Secret của bot người khác. Nay: chủ bot, admin, hoặc manager CÙNG Mã Kho
+    // với bot (tính năng "kế thừa Bot Kho" — features/line-bot/hooks/useBotScope.ts effectiveBotId).
+    // departmentId của bot có thể là nhiều Kho nối dấu phẩy ("910,911").
+    function botKhos(data) {
+      return data.departmentId is string ? data.departmentId.replace('\\s+', '').split(',') : [];
+    }
+    function canUseBot(userId, data) {
+      return isSelf(userId) || isAdmin() || (isManager() && botKhos(data).hasAny(myKhos()));
+    }
+    function botOwnerKeysUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['departmentId', 'userId', 'ownerEmail', 'ownerName', 'isWarehouseShared']);
+    }
 
-      match /{subcollection=**} {
-        allow read, write: if isSignedIn() && (isSelf(userId) || isManager());
+    match /line_bots/{userId} {
+      allow get:    if isSignedIn() && canUseBot(userId, resource.data);
+      // list (findWarehouseBot): query PHẢI lọc departmentId ==/in các Kho của chính mình.
+      allow list:   if isSignedIn() && (isAdmin() || (isManager() && resource.data.departmentId in myKhos()));
+      allow create: if isSelf(userId) || isAdmin();
+      allow update: if isSignedIn() && canUseBot(userId, resource.data)
+                    && (isSelf(userId) || isAdmin() || botOwnerKeysUnchanged());
+      allow delete: if isSelf(userId) || isAdmin();
+
+      // `/{sub}/{rest=**}` chứ KHÔNG phải `/{sub=**}`: ở rules_version 2, `{x=**}` khớp cả 0 cấp —
+      // tức khớp chính document bot và mở quyền ghi đè cả bot (vượt botOwnerKeysUnchanged ở trên).
+      match /{subcollection}/{rest=**} {
+        allow read, write: if isSignedIn() && (isSelf(userId) || isAdmin()
+          || (isManager() && botKhos(get(/databases/$(database)/documents/line_bots/$(userId)).data).hasAny(myKhos())));
       }
     }
 
     // ───────────────────────────────────────────────────────────────────────────
     // BỘ NHỚ LƯU TRỮ HÌNH ẢNH BOT LINE (Tải ảnh trực tiếp & Phục vụ webhook)
     // ───────────────────────────────────────────────────────────────────────────
+    // Audit S07/S13: trước đây ĐỌC công khai (kể cả chưa đăng nhập) và mọi user GHI ĐÈ được ảnh của
+    // người khác. Client chỉ TẠO ảnh mới (ID ngẫu nhiên) — LINE tải ảnh qua Cloud Function
+    // (?mediaId=, Admin SDK), không đọc Firestore trực tiếp. Mỗi document ≤ ~1MB base64.
     match /bot_media/{mediaId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read: if false;
+      allow create: if isSignedIn()
+                    && (!('base64' in request.resource.data) || request.resource.data.base64.size() <= 1048000);
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.get('ownerUid', '') == request.auth.uid;
     }
 
+    // Audit S09: bảng lệnh báo cáo TOÀN HỆ THỐNG (không theo bot) từng làm bot này trả ảnh báo cáo
+    // của bot/Kho khác. Lệnh nay chỉ đọc theo bot (line_bots/{uid}/report_commands) — khoá hẳn.
     match /report_commands/{cmd} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow read, write: if false;
     }
   }
 }

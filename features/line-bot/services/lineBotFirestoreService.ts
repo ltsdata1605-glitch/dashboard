@@ -16,6 +16,8 @@ import {
     orderBy,
     limit
 } from 'firebase/firestore';
+import { getApp } from 'firebase/app';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../../../services/firebase';
 import {
     LineBotConfig,
@@ -47,6 +49,18 @@ export const lineBotFirestoreService = {
             const userDepts = cleanDept.split(',').map(s => s.trim()).filter(Boolean);
             if (userDepts.length === 0) return null;
 
+            // 0. Tìm ở server (functions/src/lineBotScope.ts) — quét được cả bot mang nhiều Mã Kho mà
+            //    không cần rules cho đọc mọi bot (audit 2026-10-07, S13). Chưa deploy hàm → rơi xuống
+            //    cách cũ bên dưới (chỉ còn các query khớp đúng Kho mà rules mới vẫn cho phép).
+            try {
+                const call = httpsCallable<{ departmentId: string }, { bot: WarehouseBotSummary | null }>(
+                    getFunctions(getApp()), 'lineBotFindWarehouseBot');
+                const res = await call({ departmentId: cleanDept });
+                return res.data.bot ?? null;
+            } catch (fnErr) {
+                console.warn('[lineBotFirestoreService] lineBotFindWarehouseBot chưa sẵn sàng, dùng truy vấn trực tiếp:', fnErr);
+            }
+
             let sharedDoc: any = null;
 
             // 1. Thử query theo mảng 'in' nếu có nhiều kho (Firestore hỗ trợ 'in' tới 10 phần tử)
@@ -64,8 +78,10 @@ export const lineBotFirestoreService = {
                 });
             }
 
-            // 2. Nếu chưa thấy hoặc chỉ có 1 kho, query chính xác theo chuỗi ban đầu
-            if (!sharedDoc) {
+            // 2. Chỉ 1 kho: query chính xác. (Nhiều kho thì bước 1 đã đủ — query cả chuỗi "910,911"
+            //    bị rules mới từ chối vì chuỗi đó không phải 1 Mã Kho.) Bước quét MỌI bot đang hoạt
+            //    động trước đây đã bỏ: rules không còn cho manager đọc bot của Kho khác.
+            if (!sharedDoc && userDepts.length === 1) {
                 const q = query(
                     collection(db, ROOT_COLLECTION),
                     where('departmentId', '==', cleanDept),
@@ -76,24 +92,6 @@ export const lineBotFirestoreService = {
                 sharedDoc = snap.docs.find(d => {
                     const data = d.data();
                     return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
-                });
-            }
-
-            // 3. Nếu vẫn chưa thấy, quét các bot đang active để đối chiếu mềm (nếu bot lưu nhiều mã hoặc mã chứa nhau)
-            if (!sharedDoc && userDepts.length > 0) {
-                const qActive = query(
-                    collection(db, ROOT_COLLECTION),
-                    where('active', '==', true),
-                    limit(30)
-                );
-                const snapActive = await getDocs(qActive);
-                sharedDoc = snapActive.docs.find(d => {
-                    const data = d.data();
-                    if (data.isWarehouseShared === false || !data.channelAccessToken) return false;
-                    const botDept = String(data.departmentId || '').trim();
-                    const botDepts = botDept.split(',').map(s => s.trim()).filter(Boolean);
-                    // Kiểm tra có bất kỳ mã kho nào trùng nhau không
-                    return userDepts.some(ud => botDepts.includes(ud) || botDept.includes(ud));
                 });
             }
 

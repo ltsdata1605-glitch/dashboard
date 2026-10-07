@@ -11,7 +11,7 @@
  *     web không gọi được vì CORS); không có userscript thì qua action `pushImage` của Cloud Function (cần deploy).
  */
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { lineBotFirestoreService } from '../features/line-bot/services/lineBotFirestoreService';
 import { sanitizeReportCommand, getReportCommand, reportKeyFromFilename } from './analysisExportDestinations';
 
@@ -180,7 +180,7 @@ async function uploadLineImage(base64: string, name: string, contentType = 'imag
     const id = mediaId || `report_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     await setDoc(doc(db, 'bot_media', id), {
         id, base64, contentType, name, size: Math.round(base64.length * 0.75),
-        createdAt: new Date().toISOString(), source: 'analysis-export',
+        createdAt: new Date().toISOString(), source: 'analysis-export', ownerUid: auth.currentUser?.uid ?? '',
     });
     return `${WEBHOOK_URL}?mediaId=${id}`;
 }
@@ -196,11 +196,11 @@ async function uploadLineHdImage(base64: string, contentType: string, name: stri
         return `${t.uploadUrl}#${id}`;
     }
     for (let i = 0; i < parts.length; i++) {
-        await setDoc(doc(db, 'bot_media', `${id}_p${i}`), { id: `${id}_p${i}`, base64: parts[i], part: i, createdAt: new Date().toISOString(), source: 'analysis-export' });
+        await setDoc(doc(db, 'bot_media', `${id}_p${i}`), { id: `${id}_p${i}`, base64: parts[i], part: i, createdAt: new Date().toISOString(), source: 'analysis-export', ownerUid: auth.currentUser?.uid ?? '' });
     }
     await setDoc(doc(db, 'bot_media', id), {
         id, parts: parts.length, contentType, name, size: Math.round(base64.length * 0.75),
-        createdAt: new Date().toISOString(), source: 'analysis-export',
+        createdAt: new Date().toISOString(), source: 'analysis-export', ownerUid: auth.currentUser?.uid ?? '',
     });
     return `${WEBHOOK_URL}?mediaId=${id}`;
 }
@@ -265,7 +265,6 @@ export async function syncReportCommandConfig(params: {
     try {
         await Promise.all([
             setDoc(doc(db, 'line_bots', params.botId, 'report_commands', cmd), data, { merge: true }),
-            setDoc(doc(db, 'report_commands', cmd), data, { merge: true }).catch(() => {}),
         ]);
         console.info(`[LINE] Đã đồng bộ cấu hình lệnh "${cmd}" cho "${params.reportKey}"`);
     } catch (e) {
@@ -300,7 +299,6 @@ export async function saveReportCommandImage(params: {
     try {
         await Promise.all([
             setDoc(doc(db, 'line_bots', params.botId, 'report_commands', cmd), data, { merge: true }),
-            setDoc(doc(db, 'report_commands', cmd), data, { merge: true }).catch(() => {}),
         ]);
         console.info(`[LINE] Đã nạp ảnh mới cho lệnh "${cmd}" (${params.reportKey})`);
     } catch (e) {

@@ -1,4 +1,5 @@
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { db } from '../../../services/firebase';
 
 const WEBHOOK_BASE_URL = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net/lineBotWebhook';
@@ -82,7 +83,9 @@ export async function uploadBotImage(file: File): Promise<string> {
             contentType: compressed.contentType,
             name: file.name,
             size: compressed.size,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            // firestore.rules bot_media: chỉ người tạo mới xoá được (deleteBotImage)
+            ownerUid: getAuth(db.app).currentUser?.uid ?? ''
         });
         return `${WEBHOOK_BASE_URL}?mediaId=${mediaId}`;
     } catch (firestoreError) {

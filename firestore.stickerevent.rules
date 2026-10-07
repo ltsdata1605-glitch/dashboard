@@ -30,8 +30,18 @@ service cloud.firestore {
       match /state/{doc} { allow read, write: if isSelf(uid); }
     }
 
+    // Database CŨ (In Sticker đã di trú sang (default) — xem firestore.rules). Siết giống bên đó
+    // (audit 2026-10-07, S14): đọc kho mình + kho dùng chung 'SUPERADMIN', chỉ GHI kho mình.
+    function canUseStore(storeId) {
+      return isSignedIn() && (isSuperAdmin() || myStoreId() == storeId || request.auth.token.departmentId == storeId);
+    }
+    function canReadStore(storeId) {
+      return canUseStore(storeId) || (isSignedIn() && storeId == 'SUPERADMIN');
+    }
+
     match /stores/{storeId}/savedLists/{listId} {
-      allow read, write: if isSignedIn();
+      allow read:  if canReadStore(storeId);
+      allow write: if canUseStore(storeId);
 
       // Danh sách lớn (vd admin lưu toàn bộ tồn kho chưa lọc) được chunk vào subcollection
       // riêng (xem saveListToFirestore trong features/sticker-event/services/firebaseService.ts)
@@ -43,12 +53,14 @@ service cloud.firestore {
       // đọc/ghi bình thường — giữ ĐÚNG mức permissive như doc cha (isSignedIn() thôi, không
       // check storeId) để không đổi hành vi phân quyền hiện có của tính năng lưu danh sách.
       match /itemChunks/{chunkId} {
-        allow read, write: if isSignedIn();
+        allow read:  if canReadStore(storeId);
+        allow write: if canUseStore(storeId);
       }
     }
 
     match /stores/{storeId}/{document=**} {
-      allow read, write: if isSignedIn() && (isSuperAdmin() || myStoreId() == storeId || request.auth.token.departmentId == storeId || storeId == 'SUPERADMIN');
+      allow read:  if canReadStore(storeId);
+      allow write: if canUseStore(storeId);
     }
   }
 }
