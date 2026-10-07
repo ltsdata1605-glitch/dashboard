@@ -263,7 +263,8 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                     <form id="manual-form-top" onSubmit={editingId ? handleSaveEdit : handleAddProduct} className="p-5 space-y-3 bg-slate-50 border-b border-slate-200">
                         {editingId && (
                             <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                                <span className="text-amber-700 font-medium">✏️ Đang chỉnh sửa sản phẩm — Thay đổi thông tin và bấm "Lưu thay đổi"</span>
+                                <AppIcon name="edit" size="sm" className="shrink-0 text-amber-600" />
+                                <span className="text-amber-700 font-medium">Đang chỉnh sửa sản phẩm — Thay đổi thông tin và bấm "Lưu thay đổi"</span>
                                 <Button type="button" variant="ghost" onClick={handleCancelEdit} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 ml-auto text-amber-600 hover:text-amber-800 font-medium text-xs underline">Hủy sửa</Button>
                             </div>
                         )}
@@ -293,8 +294,8 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                     <Button type="button" variant="ghost" onClick={handleCancelEdit} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-100 h-10 px-4 py-2">
                                         Hủy sửa
                                     </Button>
-                                    <Button type="submit" variant="ghost" disabled={isSaving} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 h-10 px-6 py-2 disabled:opacity-50">
-                                        {isSaving ? 'Đang lưu...' : '💾 Lưu thay đổi'}
+                                    <Button type="submit" variant="ghost" disabled={isSaving} icon={isSaving ? undefined : 'save'} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 h-10 px-6 py-2 disabled:opacity-50">
+                                        {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
                                     </Button>
                                 </div>
                             ) : (

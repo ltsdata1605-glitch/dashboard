@@ -204,7 +204,28 @@ function countIconRawSvg(content, file = '') {
   return (content.match(RAW_SVG_ICON_PATTERN) || []).length;
 }
 
-const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg'];
+/**
+ * iconEmoji (thêm 2026-10-07): emoji / ký tự ✓ ✕ ⚠ ★ dùng LÀM ICON giao diện. Icon phải là AppIcon (đúng thang
+ * size, đúng màu ngữ nghĩa, hiển thị như nhau trên mọi máy — emoji thì mỗi hệ điều hành vẽ một kiểu).
+ * Đếm: trong .tsx mọi emoji ngoài dòng comment; trong .ts chỉ option toast `icon: '<emoji>'`. Emoji là NỘI DUNG
+ * (tin nhắn LINE mẫu, văn bản copy ra ngoài, tên ngày lễ…) nằm sẵn trong baseline — thêm mới thì chỉnh baseline
+ * thủ công kèm lý do. Mũi tên kiểu chữ ➔ không tính.
+ */
+const EMOJI_PATTERN = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{2793}\u{2795}-\u{27BF}\u{2B50}]/gu;
+const TOAST_EMOJI_ICON_PATTERN = /\bicon:\s*['"`][\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B50}]/gu;
+function countIconEmoji(content, file = '') {
+  if (file.startsWith(ICON_REGISTRY_DIR)) return 0;
+  if (!file.endsWith('.tsx')) return (content.match(TOAST_EMOJI_ICON_PATTERN) || []).length;
+  let total = 0;
+  for (const line of content.split('\n')) {
+    const t = line.trim();
+    if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*') || t.startsWith('{/*')) continue;
+    total += (line.match(EMOJI_PATTERN) || []).length;
+  }
+  return total;
+}
+
+const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji'];
 
 function computeViolations() {
   const files = walk(ROOT, []);
@@ -219,6 +240,7 @@ function computeViolations() {
       iconNumericSize: countIconNumericSize(content),
       iconLegacyCall: countIconLegacyCall(content),
       iconRawSvg: countIconRawSvg(content, relPath(file)),
+      iconEmoji: countIconEmoji(content, relPath(file)),
     };
     if (METRIC_KEYS.some((k) => counts[k])) {
       result[relPath(file)] = counts;
@@ -303,6 +325,6 @@ if (require.main === module) {
 
 module.exports = {
   countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar,
-  countIconDirectImport, countIconNumericSize, countIconLegacyCall, countIconRawSvg,
+  countIconDirectImport, countIconNumericSize, countIconLegacyCall, countIconRawSvg, countIconEmoji,
   computeViolations, saveBaseline, METRIC_KEYS,
 };

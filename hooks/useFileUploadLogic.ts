@@ -1,4 +1,5 @@
-import { useState, useRef, startTransition, useEffect } from 'react';
+import { useState, useRef, startTransition, useEffect, createElement } from 'react';
+import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import SalesWorker from '../services/worker?worker';
 import confetti from 'canvas-confetti';
 import type { DataRow, Status, AppState, ProductConfig, ProcessedData, FilterState } from '../types';
@@ -574,13 +575,13 @@ export const useFileUploadLogic = ({
                 // tác upload do người dùng chủ động chọn file), KHÔNG đặt ở loadInitialData/Kho-sync
                 // để tránh tung hoa mỗi lần mở lại app.
                 confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
-                toast.success(`✨ Đã tải lên và xử lý thành công ${merged.data.length.toLocaleString('vi-VN')} dòng dữ liệu!`, { duration: 3500 });
+                toast.success(`Đã tải lên và xử lý thành công ${merged.data.length.toLocaleString('vi-VN')} dòng dữ liệu!`, { duration: 3500 });
 
                 // Sync the merged result to Firebase
                 if (user && !isCloudSync) {
                     (async () => {
                         try {
-                            toast('☁️ Đang đồng bộ dữ liệu gộp lên đám mây...', { id: 'cloud-sync-start', duration: 2000 });
+                            toast('Đang đồng bộ dữ liệu gộp lên đám mây...', { icon: createElement(AppIcon, { name: 'cloud', size: 'md', className: 'text-sky-600' }), id: 'cloud-sync-start', duration: 2000 });
                             const { uploadProcessedData } = await import('../services/cloudDataService');
                             await uploadProcessedData(user, merged.data, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime);
                             const { syncDataToKhoIfManager } = await import('../services/khoDataService');
@@ -588,7 +589,7 @@ export const useFileUploadLogic = ({
                             toast.success('Đã đồng bộ dữ liệu lên đám mây!', { id: 'cloud-sync-done' });
                         } catch (err) {
                             console.error('Cloud data sync failed:', err);
-                            toast('Dữ liệu đã lưu trên máy. Đồng bộ đám mây sẽ thử lại sau.', { icon: '☁️', id: 'cloud-sync-fail' });
+                            toast('Dữ liệu đã lưu trên máy. Đồng bộ đám mây sẽ thử lại sau.', { icon: createElement(AppIcon, { name: 'cloud', size: 'md', className: 'text-amber-600' }), id: 'cloud-sync-fail' });
                         }
                     })();
                 }

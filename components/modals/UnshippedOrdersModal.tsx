@@ -358,7 +358,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
 
         navigator.clipboard.writeText(text).then(() => {
             const toast = document.createElement('div');
-            toast.textContent = `✓ Đã sao chép ${employeeIds.length} nhân viên, ${totalOrders} đơn hàng`;
+            toast.textContent = `Đã sao chép ${employeeIds.length} nhân viên, ${totalOrders} đơn hàng`;
             toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
             document.body.appendChild(toast);
             requestAnimationFrame(() => { toast.style.opacity = '1'; });
@@ -370,19 +370,19 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         setIsExporting(true);
         const toastEl = document.createElement('div');
         toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
-        toastEl.textContent = '📊 Đang tạo Google Sheet...';
+        toastEl.textContent = 'Đang tạo Google Sheet...';
         document.body.appendChild(toastEl);
 
         const attemptExport = async (retryCount = 0): Promise<void> => {
             // Always force fresh login with consent to guarantee spreadsheets scope
-            toastEl.textContent = '🔑 Đang xác thực Google...';
+            toastEl.textContent = 'Đang xác thực Google...';
             sessionStorage.removeItem('googleOAuthToken');
             const { loginWithGoogleForceConsent } = await import('../../services/firebase');
             await loginWithGoogleForceConsent();
             let token = sessionStorage.getItem('googleOAuthToken');
             if (!token) throw new Error('Không thể lấy token xác thực.');
 
-            toastEl.textContent = '📊 Đang tạo Google Sheet...';
+            toastEl.textContent = 'Đang tạo Google Sheet...';
             const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
 
             const finalOrders = salesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
@@ -430,7 +430,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-            toastEl.textContent = `📊 Đang ghi ${rows.length} đơn hàng...`;
+            toastEl.textContent = `Đang ghi ${rows.length} đơn hàng...`;
 
             try {
                 const url = await exportToGoogleSheet(token, {
@@ -460,7 +460,7 @@ Link: ${url}`;
                 toastEl.innerHTML = '';
 
                 const msgDiv = document.createElement('div');
-                msgDiv.textContent = '✅ Đã tạo Google Sheet & sao chép tin nhắn!';
+                msgDiv.textContent = 'Đã tạo Google Sheet & sao chép tin nhắn!';
                 msgDiv.style.fontWeight = '600';
                 toastEl.appendChild(msgDiv);
 
@@ -470,7 +470,7 @@ Link: ${url}`;
                 const openBtn = document.createElement('a');
                 openBtn.href = url;
                 openBtn.target = '_blank';
-                openBtn.textContent = '📄 Mở Sheet';
+                openBtn.textContent = 'Mở Sheet';
                 openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
 
                 const closeBtn = document.createElement('button');
@@ -486,7 +486,7 @@ Link: ${url}`;
             } catch (apiErr: unknown) {
                 // If AUTH_EXPIRED and haven't retried yet, re-login and try once more
                 if (getErrorMessage(apiErr) === 'AUTH_EXPIRED' && retryCount < 1) {
-                    toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
+                    toastEl.textContent = 'Token hết hạn, đang xác thực lại...';
                     return attemptExport(retryCount + 1);
                 }
                 throw apiErr;
@@ -499,13 +499,13 @@ Link: ${url}`;
             console.error('Google Sheets export error:', err);
             const errMsg = getErrorMessage(err).toLowerCase();
             if (errMsg.includes('popup') || errMsg.includes('cancel')) {
-                toastEl.textContent = '❌ Đăng nhập bị huỷ.';
+                toastEl.textContent = 'Đăng nhập bị huỷ.';
             } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
-                toastEl.textContent = '🌐 Không có kết nối mạng.';
+                toastEl.textContent = 'Không có kết nối mạng.';
             } else if (errMsg === 'auth_expired') {
-                toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
+                toastEl.textContent = 'Phiên đăng nhập hết hạn. Vui lòng thử lại.';
             } else {
-                toastEl.textContent = `⚠️ Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
+                toastEl.textContent = `Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
             }
             toastEl.style.background = '#dc2626';
             setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
@@ -650,7 +650,7 @@ Link: ${url}`;
                                                                             if (orderId) {
                                                                                 navigator.clipboard.writeText(orderId).then(() => {
                                                                                     const toast = document.createElement('div');
-                                                                                    toast.textContent = `✓ Đã sao chép: ${orderId}`;
+                                                                                    toast.textContent = `Đã sao chép: ${orderId}`;
                                                                                     toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
                                                                                     document.body.appendChild(toast);
                                                                                     requestAnimationFrame(() => { toast.style.opacity = '1'; });

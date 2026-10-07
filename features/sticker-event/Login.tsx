@@ -384,7 +384,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         
         {/* Welcome / Instruction Message */}
         <div className="bg-sky-50 text-sky-800 p-4 rounded-lg mb-6 text-sm border border-sky-100">
-            <p className="font-semibold mb-2">👋 Chào mừng bạn!</p>
+            <p className="font-semibold mb-2">Chào mừng bạn!</p>
             <ul className="list-disc pl-5 space-y-1">
                 <li>Nếu bạn là <strong>Quản lý</strong>: Vui lòng tạo tài khoản Admin để tải lên dữ liệu giá và tồn kho.</li>
                 <li>Nếu bạn là <strong>Nhân viên</strong>: Vui lòng tạo tài khoản Nhân viên (chỉ cần nhập User và Mã kho, không cần mật khẩu).</li>

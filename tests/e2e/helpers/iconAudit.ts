@@ -10,8 +10,11 @@ import type { Page } from '@playwright/test';
  */
 export type IconAuditResult = { legacy: string[]; lech: string[]; nutChuNhoHon: string[]; vungCham: string[] };
 
-export async function auditIcons(page: Page, mobile: boolean): Promise<IconAuditResult> {
-    return page.evaluate(({ mobile }) => {
+export async function auditIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<IconAuditResult> {
+    return page.evaluate(({ mobile, rootSelector }) => {
+        // `rootSelector`: chỉ đo bên trong vùng này (vd modal đang mở `[role="dialog"]`), mặc định cả trang.
+        const roots: ParentNode[] = rootSelector ? Array.from(document.querySelectorAll(rootSelector)) : [document];
+        const tim = (sel: string) => roots.flatMap((r) => Array.from(r.querySelectorAll(sel)));
         const nhin = (el: Element) => {
             const r = el.getBoundingClientRect();
             if (r.width === 0 || r.height === 0) return false;
@@ -21,7 +24,7 @@ export async function auditIcons(page: Page, mobile: boolean): Promise<IconAudit
         const ten = (el: Element) => (el.getAttribute('data-icon') || el.getAttribute('class') || '').slice(0, 40);
         const legacy: string[] = [], lech: string[] = [], nutChuNhoHon: string[] = [], vungCham: string[] = [];
         // svg icon "trần" (lucide hoặc tự vẽ 24x24 viewBox) không qua AppIcon. Bỏ qua svg biểu đồ (recharts) và logo.
-        for (const svg of Array.from(document.querySelectorAll('svg'))) {
+        for (const svg of tim('svg')) {
             if (!nhin(svg) || svg.closest('.recharts-wrapper, .recharts-surface')) continue;
             if (svg.classList.contains('ycx-icon')) continue;
             if (svg.getAttribute('viewBox') !== '0 0 24 24') continue;
@@ -30,7 +33,7 @@ export async function auditIcons(page: Page, mobile: boolean): Promise<IconAudit
             legacy.push(`${ten(svg)} ${Math.round(r.width)}px`);
         }
         const md = mobile ? 18 : 16;
-        for (const btn of Array.from(document.querySelectorAll('button, [role="button"], a'))) {
+        for (const btn of tim('button, [role="button"], a')) {
             if (!nhin(btn)) continue;
             const icons = Array.from(btn.querySelectorAll(':scope svg.ycx-icon')).filter(nhin);
             if (icons.length === 0) continue;
@@ -57,5 +60,5 @@ export async function auditIcons(page: Page, mobile: boolean): Promise<IconAudit
             if (mobile && !chu && Math.min(vw, vh) < 43.5) vungCham.push(`${nhan} ${Math.round(vw)}x${Math.round(vh)} ${btn.outerHTML.slice(0, 160)}`);
         }
         return { legacy, lech, nutChuNhoHon, vungCham };
-    }, { mobile });
+    }, { mobile, rootSelector });
 }

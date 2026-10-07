@@ -2,9 +2,10 @@
  * Hook quản lý kho mã Coupon PMH
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, createElement } from 'react';
 import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
@@ -42,7 +43,7 @@ export function useCouponManager(overrideUserId?: string) {
             const cleanupRes = await lineBotFirestoreService.cleanupExpiredCoupons(userId);
             if (cleanupRes.deleted > 0) {
                 toast.success(`Đã tự động xoá ${cleanupRes.deleted} mã PMH hết hạn khỏi kho (${cleanupRes.products.slice(0, 2).join(', ')}${cleanupRes.products.length > 2 ? '...' : ''})`, {
-                    icon: '🧹'
+                    icon: createElement(AppIcon, { name: 'delete', size: 'md', className: 'text-sky-600' })
                 });
             }
 

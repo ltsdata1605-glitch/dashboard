@@ -154,7 +154,7 @@ const StatusTile: React.FC<{
             spread: 70,
             origin: { y: 0.6 }
         });
-        toast.success(`✨ Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
+        toast.success(`Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
     };
 
     const handleTileClick = async () => {
@@ -169,7 +169,7 @@ const StatusTile: React.FC<{
                         fireSuccessCelebration();
                         return;
                     } else {
-                        toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                        toast.error(`Dữ liệu dán vào không đúng định dạng của ô "${title}"!\nDữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
                             duration: 5000,
                             id: `paste-err-${title}`
                         });
@@ -177,7 +177,7 @@ const StatusTile: React.FC<{
                         return;
                     }
                 } else {
-                    toast('Bộ nhớ tạm (Clipboard) trống. Vui lòng copy báo cáo từ MWG trước!', { icon: '📋' });
+                    toast('Bộ nhớ tạm (Clipboard) trống. Vui lòng copy báo cáo từ MWG trước!', { icon: <AppIcon name="copy" size="md" className="text-sky-600" /> });
                     setIsPasting(true);
                     return;
                 }
@@ -249,7 +249,7 @@ const StatusTile: React.FC<{
                                 if (ok !== false) {
                                     fireSuccessCelebration();
                                 } else {
-                                    toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                                    toast.error(`Dữ liệu dán vào không đúng định dạng của ô "${title}"!\nDữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
                                         duration: 5000,
                                         id: `paste-err-${title}`
                                     });
@@ -423,7 +423,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
     const notifySkippedNames = (skippedNames: string[]) => {
         if (skippedNames.length === 0) return;
-        toast(`Chưa cấu hình Mã Kho cho: ${skippedNames.join(', ')} — dữ liệu các siêu thị này CHƯA được chia sẻ.`, { icon: '⚠️', duration: 8000 });
+        toast(`Chưa cấu hình Mã Kho cho: ${skippedNames.join(', ')} — dữ liệu các siêu thị này CHƯA được chia sẻ.`, { icon: <AppIcon name="warning" size="md" className="text-amber-600" />, duration: 8000 });
     };
 
     const addUpdate = (id: string, message: string, category: UpdateCategory) => {
@@ -630,7 +630,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             });
 
             const modeLabel = payload.mode === 'realtime' ? 'Realtime' : 'Luỹ kế';
-            toast.success(`✨ Tự động cập nhật thành công ${res.successCount} mục dữ liệu ${modeLabel}!`, { duration: 4000 });
+            toast.success(`Tự động cập nhật thành công ${res.successCount} mục dữ liệu ${modeLabel}!`, { duration: 4000 });
 
             const nowTs = getDetailedTimestamp();
             if (payload.mode === 'realtime') {
@@ -959,7 +959,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionRealtime(val);
                                             setCompetitionRealtimeTs(getDetailedTimestamp());
                                             addUpdate('competition-realtime', 'Thi đua Realtime', 'Thi Đua Cụm');
-                                            if (isPortedCompetitionRealtimeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
+                                            if (isPortedCompetitionRealtimeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: <AppIcon name="warning" size="md" className="text-amber-600" />, duration: 8000 });
                                             return true;
                                         } else {
                                             setErrors(p => ({...p, competitionRealtime: 'Sai định dạng Thi đua Realtime.'}));
@@ -991,7 +991,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             setCompetitionLuyKe(val);
                                             setCompetitionLuyKeTs(getDetailedTimestamp());
                                             addUpdate('competition-luy-ke', 'Thi đua Luỹ kế', 'Thi Đua Cụm');
-                                            if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: '⚠️', duration: 8000 });
+                                            if (isPortedCompetitionLuyKeFormat(val)) toast(PORTED_FORMAT_WARNING, { icon: <AppIcon name="warning" size="md" className="text-amber-600" />, duration: 8000 });
                                             if (canManageSharedBiData && user) {
                                                 uploadCompetitionLuyKeIfManager(user, allowedKhos, val, supermarketNameToKho, employeeName)
                                                     .then(({ skippedNames }) => notifySkippedNames(skippedNames))

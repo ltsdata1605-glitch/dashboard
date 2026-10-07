@@ -87,7 +87,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                             </div>,
                             {
                                 duration: 6000,
-                                icon: notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '❌' : '🔔'
+                                icon: notif.type === 'success' ? <AppIcon name="success" size="md" className="text-emerald-600" />
+                                    : notif.type === 'warning' ? <AppIcon name="warning" size="md" className="text-amber-600" />
+                                    : notif.type === 'error' ? <AppIcon name="error" size="md" className="text-rose-600" />
+                                    : <AppIcon name="notification" size="md" className="text-sky-600" />
                             }
                         );
                     }

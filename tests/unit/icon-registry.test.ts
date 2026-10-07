@@ -170,6 +170,13 @@ describe('lint-ratchet — iconRawSvg (Giai đoạn 5)', () => {
   });
 });
 
+describe('lint-ratchet — iconEmoji (emoji làm icon, 2026-10-07)', () => {
+  it('.tsx: đếm emoji và ✓ ✕ ⚠ ngoài comment, không đếm mũi tên ➔; .ts: chỉ đếm option toast icon', () => {
+    expect(ratchet.countIconEmoji('<p>💡 Gợi ý ➔ bước 2</p>\n<span>✓</span>\n// 💡 comment', 'features/a.tsx')).toBe(2);
+    expect(ratchet.countIconEmoji("toast('Xong', { icon: '📋' });\nconst tinNhan = '📢 THÔNG BÁO';", 'hooks/a.ts')).toBe(1);
+  });
+});
+
 describe('Nét icon đồng đều', () => {
   it('không AppIcon nào tự đè độ dày nét bằng lớp stroke-[…] (CSS thắng strokeWidth=2 của AppIcon)', async () => {
     const { readdirSync, statSync } = await import('node:fs');

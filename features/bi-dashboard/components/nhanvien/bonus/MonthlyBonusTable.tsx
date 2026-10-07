@@ -234,7 +234,7 @@ export const MonthlyBonusTable: React.FC<MonthlyBonusTableProps> = ({
                 {yearToggleHeader}
                 <EmptyState
                     title="Chưa có dữ liệu tháng nào"
-                    description='Vào "⚡ Tự động" > Năm hoặc Tháng để đổ dữ liệu.'
+                    description='Vào "Tự động" > Năm hoặc Tháng để đổ dữ liệu.'
                 />
             </div>
         );

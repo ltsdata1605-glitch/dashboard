@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, startTransition, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, startTransition, useCallback, useRef, createElement } from 'react';
+import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppState, UploadedFileRegistryItem, CrossSellingConfig } from '../types';
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
@@ -129,11 +130,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             toast.success(`Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`, {
                 id: 'auto-cloud-sync',
                 duration: 3500,
-                icon: '☁️'
+                icon: createElement(AppIcon, { name: 'cloud', size: 'md', className: 'text-emerald-600' })
             });
         } catch (e: unknown) {
             console.error('Lỗi khi tự động nạp dữ liệu từ đám mây:', e);
-            toast.error(`⚠️ Lỗi tự động nạp dữ liệu đám mây: ${getErrorMessage(e)}`);
+            toast.error(`Lỗi tự động nạp dữ liệu đám mây: ${getErrorMessage(e)}`);
         }
     }, [setAppState]);
 
@@ -580,7 +581,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
                 if (lastApplied === snapshot) return; // Dữ liệu Kho không đổi — giữ nguyên dashboard hiện tại.
 
-                setStatus({ message: `📊 Nạp dữ liệu Kho (${khoRows.length.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
+                setStatus({ message: `Nạp dữ liệu Kho (${khoRows.length.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                 const srcData = normalizeSalesData(khoRows);
                 // PERF FIX: cùng lý do startTransition ở loadInitialData phía trên — tránh đứng
                 // hình UI trong lúc React tính lại các useMemo nặng.

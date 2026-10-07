@@ -462,7 +462,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                      if (orderId && orderId !== '-') {
                                                                          navigator.clipboard.writeText(orderId).then(() => {
                                                                              const toast = document.createElement('div');
-                                                                             toast.textContent = `✓ Đã sao chép: ${orderId}`;
+                                                                             toast.textContent = `Đã sao chép: ${orderId}`;
                                                                              toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
                                                                              document.body.appendChild(toast);
                                                                              requestAnimationFrame(() => { toast.style.opacity = '1'; });

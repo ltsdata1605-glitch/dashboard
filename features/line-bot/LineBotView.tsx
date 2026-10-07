@@ -233,23 +233,23 @@ export default function LineBotView() {
                             <div className="min-w-0 leading-snug">
                                 {isInheriting ? (
                                     <p className="font-semibold sm:truncate">
-                                        🏢 Đang <strong>kế thừa Bot Kho {currentDept}</strong> (do {warehouseBot?.ownerName || warehouseBot?.ownerEmail || 'Quản lý khác'} tạo). Đang dùng chung kho mã & cấu hình Bot.
+                                        Đang <strong>kế thừa Bot Kho {currentDept}</strong> (do {warehouseBot?.ownerName || warehouseBot?.ownerEmail || 'Quản lý khác'} tạo). Đang dùng chung kho mã & cấu hình Bot.
                                     </p>
                                 ) : scopeMode === 'warehouse' ? (
                                     <p className="font-semibold sm:truncate">
-                                        🏢 Bot LINE của <strong>Kho {currentDept}</strong> (Bạn là người khởi tạo). Các tài khoản cùng mã kho này sẽ tự động kế thừa và dùng chung.
+                                        Bot LINE của <strong>Kho {currentDept}</strong> (Bạn là người khởi tạo). Các tài khoản cùng mã kho này sẽ tự động kế thừa và dùng chung.
                                     </p>
                                 ) : hasWarehouseBot ? (
                                     <p className="font-semibold sm:truncate">
-                                        💡 Kho <strong>{currentDept}</strong> đã có sẵn Bot LINE "{warehouseBot?.botName}". Bạn có muốn dùng chung cùng các Quản lý khác không?
+                                        Kho <strong>{currentDept}</strong> đã có sẵn Bot LINE "{warehouseBot?.botName}". Bạn có muốn dùng chung cùng các Quản lý khác không?
                                     </p>
                                 ) : isDemoMode || !user ? (
                                     <p className="font-medium text-slate-600 dark:text-slate-300 sm:truncate">
-                                        🏢 Đang ở chế độ xem thử Kho <strong>{currentDept}</strong>. Đăng nhập Google để tự động kiểm tra và thừa kế Bot của kho.
+                                        Đang ở chế độ xem thử Kho <strong>{currentDept}</strong>. Đăng nhập Google để tự động kiểm tra và thừa kế Bot của kho.
                                     </p>
                                 ) : (
                                     <p className="font-medium text-slate-500 dark:text-slate-400 sm:truncate">
-                                        🏢 Mã kho tài khoản Google: <strong>Kho {currentDept}</strong>. Bot bạn cấu hình tại đây sẽ được chia sẻ cho các quản lý cùng kho.
+                                        Mã kho tài khoản Google: <strong>Kho {currentDept}</strong>. Bot bạn cấu hình tại đây sẽ được chia sẻ cho các quản lý cùng kho.
                                     </p>
                                 )}
                             </div>

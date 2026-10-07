@@ -87,7 +87,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             {/* Content */}
             <div className="p-5 bg-white dark:bg-slate-900 space-y-4">
                 <div className="p-3.5 bg-amber-50/50 dark:bg-amber-955/10 rounded-xl border border-amber-100/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
-                    <p className="font-semibold mb-1">💡 Ảnh hưởng đến báo cáo:</p>
+                    <p className="font-semibold mb-1 inline-flex items-center gap-1"><AppIcon name="idea" size="xs" className="text-amber-600" />Ảnh hưởng đến báo cáo:</p>
                     <p>Các dòng doanh thu thuộc nhóm hàng này sẽ bị <strong>bỏ qua hoàn toàn</strong> trong tất cả các thẻ KPI, bảng tổng hợp và biểu đồ xu hướng để tránh tính toán sai lệch nhóm.</p>
                 </div>
 

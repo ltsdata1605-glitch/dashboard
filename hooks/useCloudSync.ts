@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, createElement } from 'react';
+import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQueued, isHeavyKeyInFlight, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
 import { getAllSettings, getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService';
@@ -95,14 +96,15 @@ export const useCloudSync = () => {
             setLastError(getErrorMessage(err) || 'Đồng bộ dữ liệu thất bại. Lỗi mạng hoặc hết phiên.');
             
             if (errCode === 'resource-exhausted' || errMsg.includes('quota') || errMsg.includes('429')) {
-                toast('⏳ Đã lưu cài đặt vào máy. Đồng bộ lên đám mây sẽ tự động thử lại sau.', { 
+                toast('Đã lưu cài đặt vào máy. Đồng bộ lên đám mây sẽ tự động thử lại sau.', { 
                     id: 'quota-limit',
-                    icon: '☁️',
+                    icon: createElement(AppIcon, { name: 'cloud', size: 'md', className: 'text-amber-600' }),
                     duration: 4000
                 });
             } else if (errMsg.includes('unauthenticated') || errMsg.includes('permission-denied')) {
-                toast('🔑 Phiên đăng nhập hết hạn. Đăng nhập lại để đồng bộ cài đặt.', { 
+                toast('Phiên đăng nhập hết hạn. Đăng nhập lại để đồng bộ cài đặt.', { 
                     id: 'auth-expired',
+                    icon: createElement(AppIcon, { name: 'apiKey', size: 'md', className: 'text-amber-600' }),
                     duration: 5000
                 });
             }

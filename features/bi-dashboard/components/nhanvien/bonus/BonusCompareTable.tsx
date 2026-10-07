@@ -170,7 +170,7 @@ export const BonusCompareTable: React.FC<BonusCompareTableProps> = ({
         return (
             <EmptyState
                 title={!current && !previous ? 'Chưa có dữ liệu so sánh cùng kỳ' : 'Lượt so sánh chưa trọn vẹn — thiếu 1 kỳ'}
-                description='Vào "⚡ Tự động" > So sánh cùng kỳ để đổ dữ liệu 2 kỳ.'
+                description='Vào "Tự động" > So sánh cùng kỳ để đổ dữ liệu 2 kỳ.'
             />
         );
     }

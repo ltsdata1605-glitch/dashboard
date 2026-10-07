@@ -334,7 +334,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                     <span className="hide-on-export"><AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down') ?? 'help'} size="xs" /></span>
                                                 )}
                                                 {copyKey === h.key && (
-                                                    <span className="ml-1 text-emerald-700 text-[11px] font-bold animate-pulse absolute -top-1 right-1 hide-on-export">✓</span>
+                                                    <span className="ml-1 text-emerald-700 animate-pulse absolute -top-1 right-1 hide-on-export" aria-label="Đã sao chép"><AppIcon name="check" size="xs" /></span>
                                                 )}
                                             </div>
                                         )}

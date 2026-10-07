@@ -417,7 +417,7 @@ const EmployeeProfileCard: React.FC<{
             {/* KPI Grid with Micro Progress Bars */}
             <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.2fr 0.9fr 1.3fr' }}>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💰 DTQĐ</p>
+                    <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="money" size="xs" />DTQĐ</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
@@ -426,7 +426,7 @@ const EmployeeProfileCard: React.FC<{
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Chậm</p>
+                    <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="card" size="xs" />Trả Chậm</p>
                     <span className={`js-kpi-value text-lg font-black block ${(empInstallment?.totalPercent || 0) >= targetTraGop ? "text-slate-800 dark:text-white" : "text-rose-700 dark:text-rose-400"}`} title={`Target Trả chậm: ${targetTraGop}%`}>{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1">
@@ -434,7 +434,7 @@ const EmployeeProfileCard: React.FC<{
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
-                    <p className="js-kpi-label text-[11px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
+                    <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="trophy" size="xs" />Thưởng</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
                     <div className="js-kpi-sub flex gap-2 text-[11px] text-slate-500 mt-1.5">
                         <span>ERP: <strong className="text-sky-700">{empBonus ? f(empBonus.erp) : '-'}</strong></span>

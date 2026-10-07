@@ -362,14 +362,14 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                                                 >
                                                     {user.lastInteractionType === 'GROUP' ? (
                                                         <>
-                                                            <span>👥</span>
+                                                            <AppIcon name="users" size="xs" />
                                                             <span className="truncate max-w-[140px]">
                                                                 {user.lastGroupName || 'Nhóm LINE'}
                                                             </span>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <span>💬</span>
+                                                            <AppIcon name="message" size="xs" />
                                                             <span>Nhắn riêng 1-1</span>
                                                         </>
                                                     )}

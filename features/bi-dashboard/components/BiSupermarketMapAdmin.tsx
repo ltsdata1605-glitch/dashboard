@@ -142,8 +142,8 @@ const BiSupermarketMapAdmin: React.FC<BiSupermarketMapAdminProps> = ({
                         .slice(0, 4)
                         .join('\n');
                     const moreMsg = count > 4 ? `\n...và ${count - 4} siêu thị khác` : '';
-                    toast.success(`⚡ Đã tự động cập nhật Mã Kho cho ${count} siêu thị:\n${listSummary}${moreMsg}`, {
-                        icon: '🤖',
+                    toast.success(`Đã tự động cập nhật Mã Kho cho ${count} siêu thị:\n${listSummary}${moreMsg}`, {
+                        icon: <AppIcon name="bot" size="md" className="text-sky-600" />,
                         duration: 6000,
                     });
                 })

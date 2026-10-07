@@ -33,9 +33,9 @@ const LoginView: React.FC = () => {
             } else if (errCode === 'auth/operation-not-supported-in-this-environment') {
                 errMsg = 'Môi trường này không hỗ trợ cửa sổ popup. Vui lòng nhấn nút Đăng nhập chuyển hướng bên dưới.';
             } else if (errCode === 'auth/internal-error') {
-                errMsg = 'Lỗi kết nối xác thực Google (auth/internal-error).\nThường do trình duyệt chặn cookie bên thứ 3 hoặc tiện ích AdBlock/chặn pop-up can thiệp.\n\n👉 Anh/Chị có thể chọn "Đăng nhập chuyển hướng" (không cần cookie) hoặc nhấn "Vào ngay bằng Chế độ Dùng Thử" bên dưới!';
+                errMsg = 'Lỗi kết nối xác thực Google (auth/internal-error).\nThường do trình duyệt chặn cookie bên thứ 3 hoặc tiện ích AdBlock/chặn pop-up can thiệp.\n\nAnh/Chị có thể chọn "Đăng nhập chuyển hướng" (không cần cookie) hoặc nhấn "Vào ngay bằng Chế độ Dùng Thử" bên dưới!';
             } else if (errCode === 'auth/network-request-failed') {
-                errMsg = 'Lỗi kết nối xác thực Google (auth/network-request-failed).\nNguyên nhân: Mạng Wifi/4G chập chờn, hoặc trình duyệt chặn cookie/popup xác thực của Google.\n\n👉 Cách xử lý nhanh nhất:\n1. Nhấn nút "🔄 Đăng nhập chuyển hướng (Không cần cookie)" ngay bên dưới để vào trực tiếp.\n2. Hoặc mở trang bằng trình duyệt Chrome / Safari chính thay vì trình duyệt tích hợp của Zalo/Facebook.';
+                errMsg = 'Lỗi kết nối xác thực Google (auth/network-request-failed).\nNguyên nhân: Mạng Wifi/4G chập chờn, hoặc trình duyệt chặn cookie/popup xác thực của Google.\n\nCách xử lý nhanh nhất:\n1. Nhấn nút "Đăng nhập chuyển hướng (Không cần cookie)" ngay bên dưới để vào trực tiếp.\n2. Hoặc mở trang bằng trình duyệt Chrome / Safari chính thay vì trình duyệt tích hợp của Zalo/Facebook.';
             } else if (errCode === 'auth/invalid-api-key' || errCode === 'auth/api-key-not-valid') {
                 errMsg = 'Mã cấu hình Firebase API Key không hợp lệ. Vui lòng kiểm tra lại services/firebase.ts.';
             }
@@ -88,8 +88,9 @@ const LoginView: React.FC = () => {
                         <p className="leading-relaxed">
                             Anh/Chị đang truy cập qua trình duyệt của <strong>Zalo/Facebook</strong>. Trình duyệt này chặn cửa sổ đăng nhập Google.
                         </p>
-                        <p className="font-semibold text-sky-700 dark:text-sky-400">
-                            👉 Vui lòng nhấn vào nút ba dấu chấm (...) ở góc màn hình rồi chọn "Mở bằng trình duyệt" (hoặc "Mở bằng Safari / Chrome") để đăng nhập nhé!
+                        <p className="font-semibold text-sky-700 dark:text-sky-400 flex items-start gap-1.5">
+                            <AppIcon name="pointer" size="sm" className="mt-0.5 shrink-0" />
+                            <span>Vui lòng nhấn vào nút ba dấu chấm (...) ở góc màn hình rồi chọn "Mở bằng trình duyệt" (hoặc "Mở bằng Safari / Chrome") để đăng nhập nhé!</span>
                         </p>
                     </div>
                 )}
@@ -104,14 +105,14 @@ const LoginView: React.FC = () => {
                                 disabled={isLoggingIn}
                                 className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1"
                             >
-                                🔄 Đăng nhập chuyển hướng (Không cần cookie) &rarr;
+                                <AppIcon name="refresh" size="md" />Đăng nhập chuyển hướng (Không cần cookie) &rarr;
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setDemoMode(true)}
                                 className="text-xs font-bold text-sky-700 dark:text-sky-300 hover:underline inline-flex items-center gap-1"
                             >
-                                ⚡ Vào ngay bằng Chế độ Dùng Thử &rarr;
+                                <AppIcon name="quick" size="md" />Vào ngay bằng Chế độ Dùng Thử &rarr;
                             </button>
                         </div>
                     </div>

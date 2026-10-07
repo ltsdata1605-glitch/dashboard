@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { ConfirmDialog } from '../../../../../components/shared/ui/ConfirmDialog';
 import {
     getCurrentRangeDefault,
@@ -250,7 +251,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                         {canResume && resumeInfo && onResume && (
                             <div className="p-3 bg-amber-50 dark:bg-amber-900/25 border border-amber-300 dark:border-amber-700/60 rounded-xl flex items-center justify-between gap-3">
                                 <div className="space-y-0.5">
-                                    <p className="text-xs font-bold text-amber-800 dark:text-amber-300">💡 Có đợt chạy trước chưa hoàn tất:</p>
+                                    <p className="inline-flex items-center gap-1 text-xs font-bold text-amber-800 dark:text-amber-300"><AppIcon name="idea" size="sm" className="text-sky-600" />Có đợt chạy trước chưa hoàn tất:</p>
                                     <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium">{resumeInfo.label}</p>
                                 </div>
                                 <Button
@@ -326,9 +327,10 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                         )}
                                     </p>
                                     <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-2.5">
-                                        <p className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                                            ⚠ Sẽ chạy {yearPlan.length} tháng × {employeeCount} nhân viên ≈ {yearEstimate.totalRequests} lượt lấy dữ liệu,
-                                            mất khoảng {yearEstimate.estimatedMinutes} phút. Tiếp tục?
+                                        <p className="flex items-start gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+                                            <AppIcon name="warning" size="sm" className="text-amber-600 mt-0.5 shrink-0" />
+                                            <span>Sẽ chạy {yearPlan.length} tháng × {employeeCount} nhân viên ≈ {yearEstimate.totalRequests} lượt lấy dữ liệu,
+                                            mất khoảng {yearEstimate.estimatedMinutes} phút. Tiếp tục?</span>
                                         </p>
                                     </div>
                                 </>
@@ -383,7 +385,7 @@ export const AutoBonusRangePickerModal: React.FC<AutoBonusRangePickerModalProps>
                                 Sẽ chạy: <span className="tabular-nums">{customFrom} → {customTo}</span>
                             </p>
                         ) : (
-                            <p className="text-xs font-bold text-rose-600 dark:text-rose-400">⚠ {rangeValidation.error}</p>
+                            <p className="flex items-start gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400"><AppIcon name="warning" size="sm" className="text-rose-600 mt-0.5 shrink-0" /><span>{rangeValidation.error}</span></p>
                         )}
                     </div>
                 )}

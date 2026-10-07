@@ -173,7 +173,7 @@ export const LeadsTab: React.FC<LeadsTabProps> = ({ leads, staffName, onAdd, onU
                                                     <a href={`tel:${l.phone}`} className="text-[13px] tabular-nums text-sky-700 hover:underline" title="Gọi">{l.phone}</a>
                                                     {l.product && <span className="text-[12px] text-slate-500 truncate" title={l.product}>· {l.product}</span>}
                                                     <span className="text-[11.5px] text-slate-400 tabular-nums">· {ago(l.createdAt, now)} trước</span>
-                                                    {overdue && <span className="text-[11px] font-bold text-rose-700">⚠ quá 2h</span>}
+                                                    {overdue && <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700"><AppIcon name="warning" size="xs" className="text-rose-600" />quá 2h</span>}
                                                 </div>
                                                 {l.notes && <p className="text-[12px] text-slate-500 truncate" title={l.notes}>Ghi chú: {l.notes}</p>}
                                             </div>

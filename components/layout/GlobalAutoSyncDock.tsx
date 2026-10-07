@@ -215,7 +215,7 @@ export default function GlobalAutoSyncDock() {
         ghiYcxLog(`Bắt đầu lượt Tự động ${TEN_YCX[mode]}`);
         if (requested !== mode) {
             ghiYcxLog('Hôm nay là ngày 01 — chưa có ngày nào để luỹ kế, chạy Realtime');
-            toast('Hôm nay là ngày 01 — YCX Luỹ kế chạy Realtime', { icon: '📅' });
+            toast('Hôm nay là ngày 01 — YCX Luỹ kế chạy Realtime', { icon: <AppIcon name="calendar" size="md" className="text-sky-600" /> });
         }
 
         ycxStopRef.current = listenYcxJob(jobId, (m) => {
@@ -522,7 +522,7 @@ export default function GlobalAutoSyncDock() {
                                     BI Realtime
                                 </span>
                                 <span className="text-[11px] font-semibold text-amber-100/90 leading-none mt-1 truncate">
-                                    {nhanHen('bi-realtime') || '⚡ Hôm nay'}
+                                    {nhanHen('bi-realtime') || 'Hôm nay'}
                                 </span>
                             </div>
                         </button>
@@ -549,7 +549,7 @@ export default function GlobalAutoSyncDock() {
                                     BI Luỹ kế
                                 </span>
                                 <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1 truncate">
-                                    {nhanHen('bi-luyke') || '📈 Tháng đến nay'}
+                                    {nhanHen('bi-luyke') || 'Tháng đến nay'}
                                 </span>
                             </div>
                         </button>
@@ -578,7 +578,7 @@ export default function GlobalAutoSyncDock() {
                                     Đổ Thưởng
                                 </span>
                                 <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1 truncate">
-                                    {bonusStatus.isBusy ? `⚡ ${bonusStatus.label || 'Đang xử lý...'}` : (nhanHen('bonus') || '🎁 Nhân viên')}
+                                    {bonusStatus.isBusy ? (bonusStatus.label || 'Đang xử lý...') : (nhanHen('bonus') || 'Nhân viên')}
                                 </span>
                             </div>
                         </button>
@@ -607,7 +607,7 @@ export default function GlobalAutoSyncDock() {
                                     YCX Realtime
                                 </span>
                                 <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1 truncate">
-                                    {ycxDangChay && ycxMode === 'realtime' ? '⚡ Đang chạy… bấm để xem' : (nhanHen('ycx-realtime') || '⚡ Đổ & cập nhật')}
+                                    {ycxDangChay && ycxMode === 'realtime' ? 'Đang chạy… bấm để xem' : (nhanHen('ycx-realtime') || 'Đổ & cập nhật')}
                                 </span>
                             </div>
                         </button>
@@ -637,7 +637,7 @@ export default function GlobalAutoSyncDock() {
                                     YCX Luỹ kế
                                 </span>
                                 <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1 truncate">
-                                    {ycxDangChay && ycxMode === 'luyke' ? '⚡ Đang chạy… bấm để xem' : (nhanHen('ycx-luyke') || '📅 01 → hôm qua')}
+                                    {ycxDangChay && ycxMode === 'luyke' ? 'Đang chạy… bấm để xem' : (nhanHen('ycx-luyke') || '01 → hôm qua')}
                                 </span>
                             </div>
                         </button>

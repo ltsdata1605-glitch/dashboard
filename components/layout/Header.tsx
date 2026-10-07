@@ -98,15 +98,16 @@ const Header: React.FC<HeaderProps> = ({
                     className="w-full bg-rose-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between overflow-hidden relative mb-2 rounded-lg shadow-sm"
                 >
                     <div className="flex-1 overflow-hidden relative h-5 flex items-center">
-                        <div className="absolute whitespace-nowrap animate-marquee will-change-transform">
-                            ⚠️ Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."}
+                        <div className="absolute whitespace-nowrap animate-marquee will-change-transform flex items-center gap-1">
+                            <AppIcon name="warning" size="xs" className="shrink-0" />
+                            <span>Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."}</span>
                         </div>
                     </div>
                 </div>
             )}
             {/* Portal timestamp into mobile top bar subtitle */}
             {mounted && fileInfo && document.getElementById('mobile-topbar-subtitle') && createPortal(
-                <>📅 Cập nhật: {fileInfo.savedAt}</>,
+                <span className="inline-flex items-center gap-1"><AppIcon name="calendar" size="xs" />Cập nhật: {fileInfo.savedAt}</span>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
             {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}

@@ -586,8 +586,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {products.length > 0 && (
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
           <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <h3 className="font-medium text-slate-800 dark:text-slate-200">
-              📋 Danh sách sản phẩm ({products.length} sản phẩm)
+            <h3 className="font-medium text-slate-800 dark:text-slate-200 inline-flex items-center gap-1.5">
+              <AppIcon name="checklist" size="sm" className="text-slate-500" />Danh sách sản phẩm ({products.length} sản phẩm)
             </h3>
             <Button
               variant="primary"
@@ -711,7 +711,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                         : 'text-slate-500 dark:text-slate-400'
                     }`}>
                       {site.name}
-                      {site.key === mainSite && <span className="ml-1 text-[11px]">★</span>}
+                      {site.key === mainSite && <AppIcon name="star" size="xs" label="Site chính" className="ml-1 inline-block align-middle" />}
                     </th>
                   ))}
                   <th className="text-right px-3 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap min-w-[100px]">Chênh lệch</th>
@@ -741,7 +741,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                       <td className="px-3 py-2.5 text-slate-600 dark:text-slate-300 font-mono text-xs">{r.product.sku || '—'}</td>
                       <td className="px-3 py-2.5">
                         <div className="text-slate-800 dark:text-slate-200 text-sm">{r.product.name}</div>
-                        <div className="text-xs text-slate-400 mt-0.5">🔍 {r.product.searchQuery}</div>
+                        <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-1"><AppIcon name="search" size="xs" className="shrink-0" />{r.product.searchQuery}</div>
                       </td>
                       {allDisplaySites.map(site => {
                         const p = r.prices[site.key];
@@ -761,8 +761,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                                 }`}>
                                   {formatVND(p.price)}
                                 </span>
-                                {isMin && <span className="ml-1 text-xs">✅</span>}
-                                {isMax && <span className="ml-1 text-xs">🔴</span>}
+                                {isMin && <AppIcon name="success" size="xs" label="Giá thấp nhất" className="ml-1 inline-block align-middle text-emerald-600" />}
+                                {isMax && <AppIcon name="trendUp" size="xs" label="Giá cao nhất" className="ml-1 inline-block align-middle text-rose-600" />}
                                 {p.link && (
                                   <a
                                     href={p.link}
@@ -776,7 +776,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
                               </div>
                             ) : (
                               <span className="text-slate-400 dark:text-slate-500 text-xs italic">
-                                {p?.error ? '⚠ Lỗi' : 'Không KD'}
+                                {p?.error ? <span className="inline-flex items-center gap-1"><AppIcon name="warning" size="xs" className="text-amber-600" />Lỗi</span> : 'Không KD'}
                               </span>
                             )}
                           </td>
@@ -802,8 +802,8 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
           
           {/* Summary footer */}
           <div className="px-4 py-3 bg-slate-50 dark:bg-slate-700/30 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>
-              ✅ Giá thấp nhất &nbsp; 🔴 Giá cao nhất &nbsp; Không KD = Không kinh doanh
+            <span className="inline-flex items-center gap-1 flex-wrap">
+              <AppIcon name="success" size="xs" className="text-emerald-600" />Giá thấp nhất &nbsp; <AppIcon name="trendUp" size="xs" className="text-rose-600" />Giá cao nhất &nbsp; Không KD = Không kinh doanh
             </span>
             <span>
               Cập nhật: {new Date().toLocaleString('vi-VN')}

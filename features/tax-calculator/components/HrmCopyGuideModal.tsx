@@ -54,7 +54,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         className="relative after:absolute after:-inset-y-4 after:inset-x-0 after:content-[''] sm:after:hidden text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1"
                     >
                         Mở trang Chi tiết lương
-                        <AppIcon name="externalLink" size="xs" />
+                        <AppIcon name="externalLink" size="md" />
                     </a>
                 </div>
                 <ol className="space-y-2">
@@ -85,7 +85,7 @@ export const HrmCopyGuideModal: React.FC<HrmCopyGuideModalProps> = ({ isOpen, on
                         aria-label="Mở trang Xem chi tiết thưởng"
                     >
                         Mở trang Xem chi tiết thưởng
-                        <AppIcon name="externalLink" size="xs" />
+                        <AppIcon name="externalLink" size="md" />
                     </a>
                 </div>
                 <ol className="space-y-2">

@@ -433,9 +433,10 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         {searchQuery && (
                             <button
                                 onClick={() => setSearchQuery('')}
+                                aria-label="Xoá tìm kiếm"
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-0.5 after:absolute after:-inset-3.5 after:content-[''] sm:after:hidden"
                             >
-                                ✕
+                                <AppIcon name="close" size="sm" />
                             </button>
                         )}
                     </div>
@@ -582,7 +583,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                     {(c.expiryDate || c.recipient || c.copiedAt) && (
                                         <div className="pl-6 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
                                             {c.expiryDate && <span>{renderExpiry(c)}</span>}
-                                            {c.recipient && <span className="truncate max-w-[140px]">👤 <b className="text-slate-700 dark:text-slate-300">{c.recipient}</b></span>}
+                                            {c.recipient && <span className="inline-flex items-center gap-1 min-w-0 max-w-[140px]"><AppIcon name="user" size="xs" className="shrink-0" /><b className="truncate text-slate-700 dark:text-slate-300">{c.recipient}</b></span>}
                                             {c.copiedAt && <span>{renderCopiedAt(c)}</span>}
                                         </div>
                                     )}

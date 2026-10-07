@@ -133,7 +133,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                 fontName: activeFont
             });
             // Báo theo kết quả thật: đóng bảng chia sẻ / chờ chạm lại thì không báo "thành công".
-            if (ketQua === 'shared' || ketQua === 'downloaded') toast.success(`Đã xuất ảnh Top ${exportLimit} siêu thị thành công!`, { id: toastId, icon: '📸' });
+            if (ketQua === 'shared' || ketQua === 'downloaded') toast.success(`Đã xuất ảnh Top ${exportLimit} siêu thị thành công!`, { id: toastId, icon: <AppIcon name="exportImage" size="md" className="text-sky-600" /> });
             else toast.dismiss(toastId);
         } catch (err: any) {
             console.error('Export Image Error:', err);
@@ -160,7 +160,7 @@ export const CheckThuongLeaderboardView: React.FC<CheckThuongLeaderboardViewProp
                 fontName: activeFont
             });
             // Báo theo kết quả thật: đóng bảng chia sẻ / chờ chạm lại thì không báo "thành công".
-            if (ketQua === 'shared' || ketQua === 'downloaded') toast.success(`Đã xuất ảnh Top ${topStores.length} kênh ${channel} thành công!`, { id: toastId, icon: '📸' });
+            if (ketQua === 'shared' || ketQua === 'downloaded') toast.success(`Đã xuất ảnh Top ${topStores.length} kênh ${channel} thành công!`, { id: toastId, icon: <AppIcon name="exportImage" size="md" className="text-sky-600" /> });
             else toast.dismiss(toastId);
         } catch (err: any) {
             console.error('Export Channel Image Error:', err);

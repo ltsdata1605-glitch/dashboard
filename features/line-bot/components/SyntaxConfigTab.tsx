@@ -88,7 +88,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
             filterUserNames: updated
         });
         if (success) {
-            toast.success(`⚡ Đã thêm & tự động lưu "${trimmed}" lên Bot Cloud!`);
+            toast.success(`Đã thêm & tự động lưu "${trimmed}" lên Bot Cloud!`);
         }
     };
 
@@ -109,7 +109,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
             filterUserNames: updated
         });
         if (success) {
-            toast.success(`⚡ Đã thêm & tự động lưu "${trimmed}" lên Bot Cloud!`);
+            toast.success(`Đã thêm & tự động lưu "${trimmed}" lên Bot Cloud!`);
         }
     };
 
@@ -220,7 +220,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                                         }`}
                                         title={`Bấm để xem mô phỏng thẻ của "${name}" trên iPhone`}
                                     >
-                                        <span>👤 {name}</span>
+                                        <span className="inline-flex items-center gap-1"><AppIcon name="user" size="xs" />{name}</span>
                                         {isSelected && (
                                             <span className="text-[11px] bg-white/25 px-1 rounded text-white font-normal">
                                                 iPhone
@@ -623,7 +623,7 @@ export const SyntaxConfigTab: React.FC<SyntaxConfigTabProps> = ({
                             autoApprove,
                             filterUserNames: updated
                         });
-                        toast.success(`⚡ Đã thêm & lưu ${newNames.length} tên lên Bot Cloud!`);
+                        toast.success(`Đã thêm & lưu ${newNames.length} tên lên Bot Cloud!`);
                     }
                 }}
             />

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { StaffMember, ScheduleConfig, ScheduleTargets } from '../types';
 import { 
     calculateTotalHours, calculateSpecialHours, calculateNormalHours,
@@ -100,7 +101,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
             rows.push(
                 <tr key={`dept-${staff.department}`} className="bg-slate-50">
                     <td colSpan={isIndividualExport ? 8 + duration : 10 + duration} className="p-3 text-left font-black text-slate-400 border-y border-slate-200 uppercase tracking-[0.15em] text-xs sticky left-0 z-10">
-                        🏢 {staff.department}
+                        <span className="inline-flex items-center gap-1"><AppIcon name="store" size="xs" />{staff.department}</span>
                     </td>
                 </tr>
             );

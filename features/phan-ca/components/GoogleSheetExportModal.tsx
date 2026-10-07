@@ -21,7 +21,7 @@ const GoogleSheetExportModal: React.FC<GoogleSheetExportModalProps> = ({ data, o
   const handleCopy = () => {
     if (textareaRef.current) {
       navigator.clipboard.writeText(textareaRef.current.value).then(() => {
-        setCopyButtonText('✅ Đã sao chép!');
+        setCopyButtonText('Đã sao chép!');
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         timeoutRef.current = window.setTimeout(() => setCopyButtonText('Sao chép vào Clipboard'), 2000);
       }).catch(err => {
@@ -44,7 +44,7 @@ const GoogleSheetExportModal: React.FC<GoogleSheetExportModalProps> = ({ data, o
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>Đóng</Button>
-          <Button onClick={handleCopy} className="min-w-[180px]">{copyButtonText}</Button>
+          <Button onClick={handleCopy} icon={copyButtonText === 'Đã sao chép!' ? 'success' : undefined} className="min-w-[180px]">{copyButtonText}</Button>
           <Button variant="secondary" onClick={handleOpenSheet}>Mở Google Sheet mới</Button>
         </div>
       }

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, startTransition } from 'react';
 import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import type { IconName } from '../shared/ui/icon/iconRegistry';
 import type { WarehouseColumnConfig } from '../../types';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { useDashboardContext, DashboardContextType } from '../../contexts/DashboardContext';
@@ -909,10 +910,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                             let extraIcon = null;
                                             let classNameStr = customColor ? "font-bold" : "font-bold text-amber-500";
                                             if (value !== undefined && value >= 120) {
-                                                extraIcon = <span title="Tuyệt đỉnh" className="ml-1 text-[13px]">🔥</span>;
+                                                extraIcon = <span title="Tuyệt đỉnh" className="ml-1 inline-flex"><AppIcon name="flame" size="xs" label="Tuyệt đỉnh" className="text-amber-600" /></span>;
                                                 if (!customColor) classNameStr = "font-black text-rose-700 drop-shadow-sm";
                                             } else if (value !== undefined && value >= 100) {
-                                                extraIcon = <span title="Đạt Mục Tiêu" className="ml-1 text-[13px]">🏆</span>;
+                                                extraIcon = <span title="Đạt Mục Tiêu" className="ml-1 inline-flex"><AppIcon name="trophy" size="xs" label="Đạt Mục Tiêu" className="text-amber-500" /></span>;
                                                 if (!customColor) classNameStr = "font-extrabold text-emerald-700";
                                             }
                                             content = (
@@ -1057,10 +1058,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {(() => {
-                                const GROUP_ICONS: Record<string, string> = {
-                                    'MÃ KHO': '🏪', 'DOANH THU': '📊', 'SP CHÍNH': '⭐', 'MÙA VỤ': '☀️',
-                                    'SL PHỤ KIỆN': '🔌', 'SL DỊCH VỤ': '🔔', 'SL GIA DỤNG': '🏠',
-                                    'HIỆU QUẢ': '🎯', 'THU HỘ': '💰', 'TRẢ CHẬM': '⏰'
+                                const GROUP_ICONS: Record<string, IconName> = {
+                                    'MÃ KHO': 'store', 'DOANH THU': 'chartBar', 'SP CHÍNH': 'star', 'MÙA VỤ': 'calendar',
+                                    'SL PHỤ KIỆN': 'accessory', 'SL DỊCH VỤ': 'tools', 'SL GIA DỤNG': 'appliance',
+                                    'HIỆU QUẢ': 'target', 'THU HỘ': 'money', 'TRẢ CHẬM': 'clock'
                                 };
                                 const rows: React.ReactNode[] = [];
                                 let lastGroupName = '';
@@ -1074,12 +1075,14 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     if (col.mainHeader && col.mainHeader !== lastGroupName) {
                                         lastGroupName = col.mainHeader;
                                         const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
-                                        const icon = GROUP_ICONS[col.mainHeader.toUpperCase()] || '📋';
+                                        const icon: IconName = GROUP_ICONS[col.mainHeader.toUpperCase()] || 'checklist';
                                         rows.push(
                                             <tr key={`group-${col.mainHeader}-${colIdx}`} className={styles.sub}>
                                                 <td colSpan={groupDividerColSpan} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[11px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ${styles.sub}`}>
-                                                    <span className="mr-1.5">{icon}</span>
-                                                    {col.mainHeader}
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        <AppIcon name={icon} size="xs" />
+                                                        {col.mainHeader}
+                                                    </span>
                                                 </td>
                                             </tr>
                                         );

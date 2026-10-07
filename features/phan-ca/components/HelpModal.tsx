@@ -124,7 +124,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
                   <li><strong>Các nút Kho / Thu Ngân / GH:</strong>
                       <ul className="list-circle pl-5 mt-1 text-slate-600 dark:text-slate-400">
                           <li>Hiển thị số ngày <em>trung bình</em> mà một nhân viên phải làm vị trí đó trong tháng.</li>
-                          <li><strong>Bấm vào nút có biểu tượng bút chì ✏️</strong> để thay đổi định mức.</li>
+                          <li><strong className="inline-flex items-center gap-1">Bấm vào nút có biểu tượng bút chì <AppIcon name="edit" size="xs" /></strong> để thay đổi định mức.</li>
                       </ul>
                   </li>
                   <li><strong>Checkbox "Cân bằng ca ĐB (+1 Nữ, -1 Nam)":</strong>

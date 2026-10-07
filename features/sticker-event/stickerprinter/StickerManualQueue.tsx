@@ -137,7 +137,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             {showOnboarding && (
                                 <div className="absolute right-0 top-9 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="font-bold flex items-center justify-between">
-                                        <span>💡 Kiểu giảm giá mới!</span>
+                                        <span className="inline-flex items-center gap-1"><AppIcon name="idea" size="xs" />Kiểu giảm giá mới!</span>
                                         <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><AppIcon name="close" size="xs" /></Button>
                                     </div>
                                     <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
@@ -218,7 +218,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 {showOnboarding && (
                                     <div className="absolute right-0 top-8 z-50 w-56 bg-sky-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-sky-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="font-bold flex items-center justify-between">
-                                            <span>💡 Kiểu giảm giá mới!</span>
+                                            <span className="inline-flex items-center gap-1"><AppIcon name="idea" size="xs" />Kiểu giảm giá mới!</span>
                                             <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-sky-200 hover:text-white"><AppIcon name="close" size="xs" /></Button>
                                         </div>
                                         <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>

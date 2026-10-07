@@ -241,7 +241,7 @@ export const TaxCalculatorView: React.FC = () => {
       hasDay20Slip: (record.incomeDay20 || 0) > 0,
     });
     setShowHistoryModal(false);
-    toast.success(`Đã khôi phục dữ liệu: ${record.name}`, { icon: '⚡' });
+    toast.success(`Đã khôi phục dữ liệu: ${record.name}`, { icon: <AppIcon name="quick" size="md" className="text-sky-600" /> });
   };
 
   const handleDeleteRecord = async (id: number) => {
@@ -351,7 +351,7 @@ export const TaxCalculatorView: React.FC = () => {
                   e.preventDefault();
                   toast(
                     'Kéo thả nút này lên thanh Dấu trang của trình duyệt, rồi bấm vào dấu trang đó ở trang cần chụp.',
-                    { icon: '📸', duration: 6000 }
+                    { icon: <AppIcon name="exportImage" size="md" className="text-sky-600" />, duration: 6000 }
                   );
                 }}
                 className="min-h-11 sm:min-h-0 px-2 py-1.5 text-xs font-medium text-sky-700 dark:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/40 rounded-lg transition-colors flex items-center gap-1 cursor-grab active:cursor-grabbing select-none no-underline"

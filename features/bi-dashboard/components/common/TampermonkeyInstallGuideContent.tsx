@@ -38,7 +38,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
         setCopiedLink(true);
         toast.success('Đã sao chép "chrome://extensions"! Mở tab mới và dán (Ctrl+V) vào ô địa chỉ.', {
             duration: 4000,
-            icon: '📋',
+            icon: <AppIcon name="copy" size="md" className="text-sky-600" />,
         });
         setTimeout(() => setCopiedLink(false), 3000);
     };
@@ -48,7 +48,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
         setCopiedSettingsLink(true);
         toast.success('Đã sao chép link thiết lập! Mở tab mới và dán (Ctrl+V) vào ô địa chỉ.', {
             duration: 4000,
-            icon: '📋',
+            icon: <AppIcon name="copy" size="md" className="text-sky-600" />,
         });
         setTimeout(() => setCopiedSettingsLink(false), 3000);
     };
@@ -64,7 +64,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     spread: 70,
                     origin: { y: 0.6 }
                 });
-                toast.success('🎉 Tuyệt vời! Tiện ích Tampermonkey & Script đã kết nối thành công!', {
+                toast.success('Tuyệt vời! Tiện ích Tampermonkey & Script đã kết nối thành công!', {
                     duration: 4000,
                 });
                 setTimeout(() => {
@@ -136,7 +136,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     <div className="ml-8 p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs space-y-2">
                         <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
                             <AppIcon name="warning" size="md" className="text-amber-600" />
-                            <span className="uppercase text-[11px] tracking-wide">⚠️ Bắt buộc: Bật "Chế độ dành cho nhà phát triển"</span>
+                            <span className="uppercase text-[11px] tracking-wide">Bắt buộc: Bật "Chế độ dành cho nhà phát triển"</span>
                         </div>
                         <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
                             Google Chrome phiên bản mới yêu cầu bật chế độ này thì Tampermonkey mới được phép hoạt động:
@@ -239,7 +239,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
 
                         {/* Gợi ý thêm: Pin to toolbar */}
                         <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
-                            <span className="text-amber-500 font-bold shrink-0">💡 Gợi ý:</span>
+                            <span className="inline-flex items-center gap-1 text-amber-500 font-bold shrink-0"><AppIcon name="idea" size="xs" className="text-sky-600" />Gợi ý:</span>
                             <span>Gạt BẬT thêm <b className="text-slate-700 dark:text-slate-200">"Pin to toolbar"</b> để ghim biểu tượng Tampermonkey lên thanh công cụ trình duyệt cho dễ theo dõi.</span>
                         </div>
                     </div>

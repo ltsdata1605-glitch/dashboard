@@ -20,7 +20,7 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
         try {
             await navigator.clipboard.writeText(code);
             setCopiedKey(key);
-            toast.success(`Đã sao chép mã ${name} vào clipboard!`, { icon: '📋' });
+            toast.success(`Đã sao chép mã ${name} vào clipboard!`, { icon: <AppIcon name="copy" size="md" className="text-sky-600" /> });
             setTimeout(() => setCopiedKey(null), 3000);
         } catch {
             toast.error('Không thể tự động sao chép, vui lòng thử lại.');
@@ -116,13 +116,13 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                     draggable
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: '🖱️', duration: 4000 });
+                                        toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: <AppIcon name="click" size="md" className="text-sky-600" />, duration: 4000 });
                                     }}
                                     className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
                                     <AppIcon name="sparkles" size="md" className="text-sky-100" />
-                                    <span>⚡ Copy All 1-Click</span>
+                                    <span>Copy All 1-Click</span>
                                 </a>
                             </div>
 
@@ -142,13 +142,13 @@ export const AutoClickGuideModal: React.FC<AutoClickGuideModalProps> = ({ isOpen
                                     draggable
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: '🖱️', duration: 4000 });
+                                        toast.success('Hãy dùng chuột kéo nút này thả lên thanh Dấu trang (Bookmarks)!', { icon: <AppIcon name="click" size="md" className="text-sky-600" />, duration: 4000 });
                                     }}
                                     className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-sky-600 to-sky-600 hover:from-sky-500 hover:to-sky-500 text-white font-bold text-xs rounded-lg shadow-md shadow-sky-600/30 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-95 transition-all border border-sky-400/40"
                                     title="Kéo thả nút này lên thanh Dấu trang của trình duyệt"
                                 >
                                     <AppIcon name="copy" size="md" className="text-sky-100" />
-                                    <span>📋 CopyAll Toàn Trang</span>
+                                    <span>CopyAll Toàn Trang</span>
                                 </a>
                             </div>
                         </div>

@@ -141,8 +141,10 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         />
                         <span>Cho phép các Quản lý cùng mã kho <strong>{deptId || 'này'}</strong> kế thừa và dùng chung Bot</span>
                     </label>
-                    <span className="text-[11px] text-slate-400 italic">
-                        {isWarehouseShared ? '✓ Tài khoản cùng kho sẽ được dùng chung kho coupon & bot' : '🔒 Bot hoạt động riêng cho tài khoản này'}
+                    <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 italic">
+                        {isWarehouseShared
+                            ? <><AppIcon name="check" size="xs" className="text-emerald-600" />Tài khoản cùng kho sẽ được dùng chung kho coupon & bot</>
+                            : <><AppIcon name="lock" size="xs" />Bot hoạt động riêng cho tài khoản này</>}
                     </span>
                 </div>
             </div>
@@ -189,8 +191,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     </button>
                 </div>
 
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    💡 Vào LINE Developers Console ➔ Channel của bạn ➔ Tab <strong>Messaging API</strong> ➔ Dán link này vào mục <strong>Webhook URL</strong>, bật <strong>Use webhook (ON)</strong> và bấm <strong>Verify</strong>.
+                <p className="flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                    <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" /><span>Vào LINE Developers Console ➔ Channel của bạn ➔ Tab <strong>Messaging API</strong> ➔ Dán link này vào mục <strong>Webhook URL</strong>, bật <strong>Use webhook (ON)</strong> và bấm <strong>Verify</strong>.</span>
                 </p>
             </div>
 
@@ -303,8 +305,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         placeholder="2011679071-BclvutpD"
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
-                        💡 Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 PMH 1 đã được sử dụng lúc HH:mm!\n↳ User: [Tên]"</em>
+                    <p className="flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+                        <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" /><span>Giúp nhân viên chạm vào ô mã là tự động copy vào bàn phím và gửi ngay tin nhắn: <em>"👉 PMH 1 đã được sử dụng lúc HH:mm!\n↳ User: [Tên]"</em></span>
                     </p>
                 </div>
             </div>
@@ -383,15 +385,15 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         {groups && groups.length > 0 ? (
                             groups.map(g => (
                                 <option key={g.groupId} value={g.groupId}>
-                                    👥 {g.groupName || g.groupId} ({g.groupId.slice(0, 10)}...)
+                                    {g.groupName || g.groupId} ({g.groupId.slice(0, 10)}...)
                                 </option>
                             ))
                         ) : (
                             <option value="" disabled>Chưa có nhóm LINE nào (Mời bot vào nhóm trước)</option>
                         )}
                     </select>
-                    <span className="text-[11px] text-slate-400 block mt-1">
-                        💡 Để xuất hiện nhóm trong danh sách này, hãy mời Bot vào nhóm LINE của bạn và nhắn 1 tin bất kỳ.
+                    <span className="flex items-start gap-1.5 text-[11px] text-slate-400 mt-1">
+                        <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" />Để xuất hiện nhóm trong danh sách này, hãy mời Bot vào nhóm LINE của bạn và nhắn 1 tin bất kỳ.
                     </span>
                 </div>
 
@@ -399,7 +401,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-800 dark:text-white">🌅 06h00 Sáng: Báo cáo tồn kho ("tk")</span>
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-amber-600" />06h00 Sáng: Báo cáo tồn kho ("tk")</span>
                             <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-mono">Tự ngắt nếu 0 mã</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
@@ -421,7 +423,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-800 dark:text-white">🌙 22h00 Tối: Tổng kết coupon đã dùng hôm nay</span>
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-sky-600" />22h00 Tối: Tổng kết coupon đã dùng hôm nay</span>
                             <span className="text-[11px] font-semibold bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded font-mono">Dạng Thẻ Flex</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">

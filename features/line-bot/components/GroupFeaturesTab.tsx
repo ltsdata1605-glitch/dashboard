@@ -118,7 +118,7 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
         try {
             setIsSaving(true);
             await lineBotFirestoreService.saveGroupFeatureConfig(currentConfig);
-            toast.success(`✅ Lưu cấu hình nhóm ${currentGroup?.groupName || 'này'} thành công`);
+            toast.success(`Lưu cấu hình nhóm ${currentGroup?.groupName || 'này'} thành công`);
         } catch (error) {
             console.error('Lỗi lưu cấu hình:', error);
             toast.error('Không thể lưu cấu hình nhóm');
@@ -166,8 +166,8 @@ export const GroupFeaturesTab: React.FC<GroupFeaturesTabProps> = ({ userId, grou
             {currentConfig && currentGroup && (
                 <div className="space-y-3">
                     <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-900/40">
-                        <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
-                            📌 Nhóm: <span className="font-bold">{currentGroup.groupName}</span>
+                        <p className="flex items-center gap-1.5 text-sm font-semibold text-emerald-900 dark:text-emerald-200">
+                            <AppIcon name="users" size="sm" className="shrink-0" />Nhóm: <span className="font-bold">{currentGroup.groupName}</span>
                         </p>
                     </div>
 

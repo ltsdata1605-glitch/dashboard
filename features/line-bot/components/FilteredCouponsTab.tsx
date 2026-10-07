@@ -157,9 +157,10 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                     {searchQuery && (
                         <button
                             onClick={() => setSearchQuery('')}
+                            aria-label="Xoá tìm kiếm"
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs p-0.5 after:absolute after:-inset-3.5 after:content-[''] sm:after:hidden"
                         >
-                            ✕
+                            <AppIcon name="close" size="sm" />
                         </button>
                     )}
                 </div>
@@ -309,7 +310,7 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                             <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
                                                 <span>{item.orderId ? `MĐH: ${item.orderId}` : ''}</span>
                                                 {isUsed && (
-                                                    <span>👤 {item.usedBy || 'Ai đó'} • {timeStr}</span>
+                                                    <span className="inline-flex items-center gap-1"><AppIcon name="user" size="xs" />{item.usedBy || 'Ai đó'} • {timeStr}</span>
                                                 )}
                                             </div>
                                         )}
@@ -404,8 +405,8 @@ export const FilteredCouponsTab: React.FC<FilteredCouponsTabProps> = ({ userId }
                                                 </td>
                                                 <td className="py-1.5 px-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                                     {isUsed && item.usedBy ? (
-                                                        <span className="font-bold text-slate-800 dark:text-slate-200">
-                                                            👤 {item.usedBy}
+                                                        <span className="inline-flex items-center gap-1 font-bold text-slate-800 dark:text-slate-200">
+                                                            <AppIcon name="user" size="xs" />{item.usedBy}
                                                         </span>
                                                     ) : (
                                                         <span className="text-slate-400 italic text-[11px]">Chưa có</span>

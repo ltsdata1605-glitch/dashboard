@@ -146,7 +146,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         try {
             const currentSm = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
             const res = await saveAnalysisEmployees(sourceArray, currentSm, true); // bấm tay: luôn đẩy lên
-            toast.success(`Đã đồng bộ ${res.totalCount} nhân viên sang Report BI & Cloud thành công!`, { icon: '🚀' });
+            toast.success(`Đã đồng bộ ${res.totalCount} nhân viên sang Report BI & Cloud thành công!`);
         } catch (err) {
             console.error('Lỗi đồng bộ nhân viên sang Report BI:', err);
             toast.error('Lỗi khi đồng bộ danh sách nhân viên lên Cloud.');

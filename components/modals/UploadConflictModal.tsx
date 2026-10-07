@@ -100,8 +100,9 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             {conflicts.map((conflict, idx) => (
                                 <div key={idx} className="flex flex-col gap-1 text-[11px] bg-white dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="font-bold text-slate-700 dark:text-slate-300 truncate max-w-[200px]" title={conflict.conflictingFilename}>
-                                            📄 {conflict.conflictingFilename}
+                                        <span className="font-bold text-slate-700 dark:text-slate-300 max-w-[200px] inline-flex items-center gap-1 min-w-0" title={conflict.conflictingFilename}>
+                                            <AppIcon name="report" size="xs" className="text-slate-500 shrink-0" />
+                                            <span className="truncate">{conflict.conflictingFilename}</span>
                                         </span>
                                         <span className={`px-1 rounded text-[11px] font-extrabold uppercase shrink-0 ${
                                             conflict.targetType === 'realtime' 
@@ -112,7 +113,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                                         </span>
                                     </div>
                                     {conflict.type === 'exact_duplicate' ? (
-                                        <span className="text-amber-700 dark:text-amber-500 font-medium">⚠️ Trùng lặp hoàn toàn tên tệp & thời gian</span>
+                                        <span className="text-amber-700 dark:text-amber-500 font-medium inline-flex items-center gap-1"><AppIcon name="warning" size="xs" className="text-amber-600" />Trùng lặp hoàn toàn tên tệp & thời gian</span>
                                     ) : (
                                         <div className="text-slate-500 dark:text-slate-400 flex flex-col gap-0.5 pl-4">
                                             <span>

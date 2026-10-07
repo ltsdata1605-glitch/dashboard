@@ -290,7 +290,7 @@ const GroupCombobox: React.FC<{
                                     <span className="truncate flex-1">{group}</span>
                                     <div className="flex items-center gap-1 shrink-0">
                                         {isSelected && (
-                                            <span className="text-[11px] text-sky-600 font-bold">✓</span>
+                                            <AppIcon name="check" size="xs" className="text-sky-600" label="Đang chọn" />
                                         )}
                                         {onDeleteGroup && (
                                             <Button
@@ -388,7 +388,7 @@ const StatusTile: React.FC<{
             spread: 70,
             origin: { y: 0.6 }
         });
-        toast.success(`✨ Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
+        toast.success(`Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
     };
 
     const handleTileClick = async () => {
@@ -403,7 +403,7 @@ const StatusTile: React.FC<{
                         fireSuccessCelebration();
                         return;
                     } else {
-                        toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                        toast.error(`Dữ liệu dán vào không đúng định dạng của ô "${title}"!\nDữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
                             duration: 5000,
                             id: `paste-err-${title}`
                         });
@@ -411,7 +411,7 @@ const StatusTile: React.FC<{
                         return;
                     }
                 } else {
-                    toast('Bộ nhớ tạm (Clipboard) trống. Vui lòng sao chép dữ liệu trước!', { icon: '📋' });
+                    toast('Bộ nhớ tạm (Clipboard) trống. Vui lòng sao chép dữ liệu trước!', { icon: <AppIcon name="copy" size="md" className="text-sky-600" /> });
                     setIsPasting(true);
                     return;
                 }
@@ -482,7 +482,7 @@ const StatusTile: React.FC<{
                                 if (ok !== false) {
                                     fireSuccessCelebration();
                                 } else {
-                                    toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${title}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+                                    toast.error(`Dữ liệu dán vào không đúng định dạng của ô "${title}"!\nDữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
                                         duration: 5000,
                                         id: `paste-err-${title}`
                                     });
@@ -1201,7 +1201,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                 if (detectedStore && !isSupermarketMatch(detectedStore, supermarketName, supermarketMap)) {
                     toast((t) => (
                         <div className="flex flex-col gap-1">
-                            <span className="font-bold text-amber-600 dark:text-amber-400">⚠️ Chú ý tên siêu thị!</span>
+                            <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400"><AppIcon name="warning" size="sm" className="text-amber-600" />Chú ý tên siêu thị!</span>
                             <span className="text-xs">
                                 Dữ liệu vừa dán có vẻ của siêu thị <b>{shortenSupermarketName(detectedStore)}</b>, trong khi bạn đang chọn tab <b>{shortenSupermarketName(supermarketName)}</b>.
                             </span>
@@ -1213,7 +1213,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             return true;
         } else {
             setErrors(p => ({...p, [key]: 'Dữ liệu sai định dạng.'}));
-            toast.error(`⚠️ Dữ liệu dán vào không đúng định dạng của ô "${tileTitle}"!\n🛡️ Dữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
+            toast.error(`Dữ liệu dán vào không đúng định dạng của ô "${tileTitle}"!\nDữ liệu ban đầu vẫn được giữ nguyên an toàn.`, {
                 duration: 5000,
                 id: `err-${key}`
             });

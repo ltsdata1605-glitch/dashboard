@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { BonusAutoSummary } from '../../../hooks/useBonusAutoBridge';
 import { MultiMonthSummary } from '../../../hooks/useMultiMonthBonusRun';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 
 const SUCCESS_DURATION_MS = 5000;
 const TOAST_ID = 'ycx-auto-bonus-result';
@@ -56,14 +57,14 @@ const SuccessToastBody: React.FC<{ id: string; headline: string; onExpire: () =>
                 mounted ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
             }`}
         >
-            <p className="text-xs sm:text-sm font-bold pr-6">{headline}</p>
+            <p className="flex items-start gap-1.5 text-xs sm:text-sm font-bold pr-6"><AppIcon name="success" size="sm" className="text-emerald-600 mt-0.5 shrink-0" /><span>{headline}</span></p>
             <Button
                 variant="ghost"
                 onClick={() => { toast.dismiss(id); onExpire(); }}
                 className="absolute top-2 right-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 h-6 w-6 p-0 flex items-center justify-center rounded-full transition-colors"
                 aria-label="Đóng"
             >
-                ✕
+                <AppIcon name="close" size="sm" />
             </Button>
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-sky-100 dark:bg-sky-950">
                 <div
@@ -91,7 +92,7 @@ const IssueToastBody: React.FC<{
                     className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 h-6 w-6 p-0 flex items-center justify-center rounded-full flex-shrink-0"
                     aria-label="Đóng"
                 >
-                    ✕
+                    <AppIcon name="close" size="sm" />
                 </Button>
             </div>
             <Button
@@ -113,7 +114,7 @@ export function showAutoBonusResultToast(
     const allOk = !summary.stoppedEarly && summary.successCount === summary.total && summary.total > 0;
 
     if (allOk) {
-        const headline = `✅ ${summary.total}/${summary.total} nhân viên cập nhật thành công`;
+        const headline = `${summary.total}/${summary.total} nhân viên cập nhật thành công`;
         toast.custom(
             (t) => <SuccessToastBody id={t.id} headline={headline} onExpire={handlers.onDismissed} />,
             { id: TOAST_ID, duration: LONG_DURATION_MS },
@@ -122,7 +123,7 @@ export function showAutoBonusResultToast(
         const errorCount = summary.total - summary.successCount;
         const headline = summary.stoppedEarly
             ? `⏹ Đã dừng: xong ${summary.total} nhân viên (${summary.successCount} thành công${errorCount > 0 ? `, ${errorCount} lỗi` : ''})`
-            : `⚠️ ${summary.successCount}/${summary.total} thành công, ${errorCount} lỗi`;
+            : `${summary.successCount}/${summary.total} thành công, ${errorCount} lỗi`;
         toast.custom(
             (t) => <IssueToastBody id={t.id} headline={headline} onViewDetail={handlers.onViewDetail} onDismiss={handlers.onDismissed} />,
             { id: TOAST_ID, duration: LONG_DURATION_MS },
@@ -147,7 +148,7 @@ export function showMultiMonthResultToast(
     const allOk = !summary.stoppedEarly && errorMonths === 0 && summary.monthsDone === summary.monthsTotal && summary.monthsTotal > 0;
 
     if (allOk) {
-        const headline = `✅ Xong ${summary.monthsTotal}/${summary.monthsTotal} ${unit}`;
+        const headline = `Xong ${summary.monthsTotal}/${summary.monthsTotal} ${unit}`;
         toast.custom(
             (t) => <SuccessToastBody id={t.id} headline={headline} onExpire={handlers.onDismissed} />,
             { id: MULTI_MONTH_TOAST_ID, duration: LONG_DURATION_MS },
@@ -155,7 +156,7 @@ export function showMultiMonthResultToast(
     } else {
         const headline = summary.stoppedEarly
             ? `⏹ Đã dừng: xong ${summary.monthsDone}/${summary.monthsTotal} ${unit}${errorMonths > 0 ? ` · ${errorMonths} ${unit} lỗi` : ''}`
-            : `⚠️ Xong ${summary.monthsDone}/${summary.monthsTotal} ${unit} · ${errorMonths} ${unit} lỗi`;
+            : `Xong ${summary.monthsDone}/${summary.monthsTotal} ${unit} · ${errorMonths} ${unit} lỗi`;
         toast.custom(
             (t) => <IssueToastBody id={t.id} headline={headline} onViewDetail={handlers.onViewDetail} onDismiss={handlers.onDismissed} />,
             { id: MULTI_MONTH_TOAST_ID, duration: LONG_DURATION_MS },

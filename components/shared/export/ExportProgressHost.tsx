@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button } from '../ui/Button';
+import { AppIcon } from '../ui/icon/AppIcon';
 import {
     type ExportJobState, getExportState, subscribeExportState, registerExportHostMount,
     requestCancelExport, closeExportPanel,
@@ -43,8 +44,8 @@ function Panel({ s }: { s: ExportJobState }) {
             <div className="w-full max-w-sm rounded-md bg-white shadow-xl border border-slate-200">
                 <div className="flex items-center gap-3 px-4 pt-4">
                     {xong ? (
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white text-sm font-bold ${failed.length || s.cancelRequested ? 'bg-amber-500' : 'bg-emerald-600'}`} aria-hidden>
-                            {failed.length || s.cancelRequested ? '!' : '✓'}
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white ${failed.length || s.cancelRequested ? 'bg-amber-500' : 'bg-emerald-600'}`} aria-hidden>
+                            <AppIcon name={failed.length || s.cancelRequested ? 'alert' : 'check'} size="sm" />
                         </span>
                     ) : (
                         <span className="h-8 w-8 shrink-0 rounded-full border-[3px] border-sky-100 border-t-sky-600 animate-spin" aria-hidden />

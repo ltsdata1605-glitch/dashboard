@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { UseBonusAutoBridgeResult, BonusAutoStatus } from '../../../hooks/useBonusAutoBridge';
 import { UseMultiMonthBonusRunResult, MultiMonthStatus, MultiMonthProgress } from '../../../hooks/useMultiMonthBonusRun';
 
@@ -107,7 +108,8 @@ export const AutoBonusPanel: React.FC<AutoBonusPanelProps> = ({
                 onClick={handleTrigger}
                 className="inline-flex items-center gap-1.5 h-7.5 sm:h-8 px-2.5 sm:px-3 text-[11px] sm:text-xs font-bold bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/40 rounded-md transition-all active:scale-95 disabled:opacity-60 disabled:active:scale-100 shrink-0"
             >
-                <span>⚡ Tự động</span>
+                <AppIcon name="quick" size="md" />
+                <span>Tự động</span>
             </Button>
             {!isBusy && canResume && resumeInfo && (
                 <Button

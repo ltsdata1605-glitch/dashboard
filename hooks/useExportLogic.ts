@@ -417,18 +417,18 @@ export const useExportLogic = ({
 
         const toastEl = document.createElement('div');
         toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
-        toastEl.textContent = '📊 Đang tạo Google Sheet...';
+        toastEl.textContent = 'Đang tạo Google Sheet...';
         document.body.appendChild(toastEl);
 
         try {
-            toastEl.textContent = '🔑 Đang xác thực Google...';
+            toastEl.textContent = 'Đang xác thực Google...';
             sessionStorage.removeItem('googleOAuthToken');
             const { loginWithGoogleForceConsent } = await import('../services/firebase');
             await loginWithGoogleForceConsent();
             let token = sessionStorage.getItem('googleOAuthToken');
             if (!token) throw new Error('Không thể lấy token xác thực.');
 
-            toastEl.textContent = '📊 Đang tạo Google Sheet...';
+            toastEl.textContent = 'Đang tạo Google Sheet...';
             const { exportToGoogleSheet } = await import('../services/googleSheetsService');
 
             const headers = [
@@ -473,7 +473,7 @@ export const useExportLogic = ({
             const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-            toastEl.textContent = `📊 Đang ghi ${rows.length} đơn hàng...`;
+            toastEl.textContent = `Đang ghi ${rows.length} đơn hàng...`;
 
             const url = await exportToGoogleSheet(token, {
                 title: `Đơn Hàng Chưa Thu Chưa Hủy - ${dateStr} ${timeStr}`,
@@ -509,7 +509,7 @@ Link: ${url}`;
             toastEl.innerHTML = '';
 
             const msgDiv = document.createElement('div');
-            msgDiv.textContent = '✅ Đã tạo Google Sheet & sao chép tin nhắn!';
+            msgDiv.textContent = 'Đã tạo Google Sheet & sao chép tin nhắn!';
             msgDiv.style.fontWeight = '600';
             toastEl.appendChild(msgDiv);
 
@@ -519,7 +519,7 @@ Link: ${url}`;
             const openBtn = document.createElement('a');
             openBtn.href = url;
             openBtn.target = '_blank';
-            openBtn.textContent = '📄 Mở Sheet';
+            openBtn.textContent = 'Mở Sheet';
             openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
 
             const closeBtn = document.createElement('button');
@@ -541,7 +541,7 @@ Link: ${url}`;
         } catch (error: unknown) {
             console.error("Lỗi khi xuất google sheet:", error);
             toastEl.style.backgroundColor = '#dc2626';
-            toastEl.textContent = `❌ Lỗi: ${getErrorMessage(error) || 'Không thể xuất file'}`;
+            toastEl.textContent = `Lỗi: ${getErrorMessage(error) || 'Không thể xuất file'}`;
             setTimeout(() => {
                 toastEl.style.opacity = '0';
                 setTimeout(() => toastEl.remove(), 200);

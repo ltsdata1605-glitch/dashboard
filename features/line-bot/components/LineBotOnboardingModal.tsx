@@ -125,7 +125,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         <li><strong>Auto-reply messages</strong>: Chọn <em>Disabled</em> (để Bot tự xử lý qua mã nguồn).</li>
                         <li><strong>Greeting messages</strong>: Chọn <em>Disabled</em>.</li>
                     </ul>
-                    <p className="text-emerald-600 dark:text-emerald-400 font-semibold">🎉 Chúc mừng! Bot của bạn đã sẵn sàng hoạt động 24/7!</p>
+                    <p className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold"><AppIcon name="sparkles" size="sm" />Chúc mừng! Bot của bạn đã sẵn sàng hoạt động 24/7!</p>
                 </div>
             )
         }

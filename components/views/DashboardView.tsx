@@ -402,8 +402,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     <h4 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
                                         Dữ liệu đám mây mới
                                     </h4>
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 shrink-0">
-                                        📊 {pendingCloudSync.meta.totalRows.toLocaleString('vi-VN')} dòng
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 shrink-0">
+                                        <AppIcon name="chartBar" size="xs" />{pendingCloudSync.meta.totalRows.toLocaleString('vi-VN')} dòng
                                     </span>
                                 </div>
                                 <p className="text-[11px] text-slate-500 mt-1 leading-normal">
@@ -585,7 +585,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                                                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
                                                         </span>
-                                                        ⚠️ PHÁT HIỆN {unconfiguredGroups.length} NHÓM HÀNG MỚI CHƯA CẤU HÌNH (DỮ LIỆU ĐANG BỊ BỎ QUA)
+                                                        <AppIcon name="warning" size="sm" className="text-amber-600 shrink-0" />PHÁT HIỆN {unconfiguredGroups.length} NHÓM HÀNG MỚI CHƯA CẤU HÌNH (DỮ LIỆU ĐANG BỊ BỎ QUA)
                                                     </div>
                                                     <div className="text-[11px] font-bold underline underline-offset-2 flex items-center gap-0.5">
                                                         <span>Xem & Cập nhật</span>

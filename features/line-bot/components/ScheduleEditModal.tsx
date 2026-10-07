@@ -260,8 +260,8 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                 className="min-h-11 sm:min-h-0 w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-semibold font-mono"
                                 required
                             />
-                            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
-                                💡 Lịch sẽ phát đúng vào ngày này và tự động tạm tắt sau khi hoàn thành.
+                            <p className="flex items-start gap-1.5 text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                                <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0 text-sky-600" />Lịch sẽ phát đúng vào ngày này và tự động tạm tắt sau khi hoàn thành.
                             </p>
                         </div>
                     ) : (
@@ -271,13 +271,13 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                                     Ngày phát thông báo trong tuần
                                 </label>
                                 {repeatType === 'DAILY' && (
-                                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
-                                        ✓ Phát đều đặn mỗi ngày
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold">
+                                        <AppIcon name="check" size="xs" />Phát đều đặn mỗi ngày
                                     </span>
                                 )}
                                 {repeatType === 'WEEKDAYS' && (
-                                    <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
-                                        ✓ Thứ 2 đến Thứ 6
+                                    <span className="inline-flex items-center gap-1 text-[11px] text-sky-600 dark:text-sky-400 font-semibold">
+                                        <AppIcon name="check" size="xs" />Thứ 2 đến Thứ 6
                                     </span>
                                 )}
                                 {repeatType === 'CUSTOM' && (
@@ -325,8 +325,8 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                             <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                                 {groups.length === 0 ? (
                                     <div className="space-y-2 py-1">
-                                        <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
-                                            💡 Bot chưa có nhóm nào được lưu. Bạn có thể:
+                                        <p className="flex items-start gap-1.5 text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                                            <AppIcon name="idea" size="xs" className="mt-0.5 shrink-0" />Bot chưa có nhóm nào được lưu. Bạn có thể:
                                         </p>
                                         <ul className="text-[11px] text-slate-500 dark:text-slate-400 space-y-1 list-disc pl-4">
                                             <li>Mời Bot vào nhóm và gõ lệnh <strong>id</strong> trong nhóm để Bot tự nhận.</li>

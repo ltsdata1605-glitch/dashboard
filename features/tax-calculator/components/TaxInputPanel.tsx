@@ -214,7 +214,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Không đọc được nội dung dán vào.';
       setErrorDay5(msg);
-      toast.error(`❌ ${msg}`, { duration: 6000 });
+      toast.error(msg, { duration: 6000 });
       return false;
     }
   };
@@ -232,7 +232,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Không đọc được nội dung dán vào.';
       setErrorDay20(msg);
-      toast.error(`❌ ${msg}`, { duration: 6000 });
+      toast.error(msg, { duration: 6000 });
       return false;
     }
   };
@@ -247,7 +247,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
     try {
       const text = await navigator.clipboard.readText();
       if (!text || !text.trim()) {
-        toast('Bộ nhớ tạm đang trống. Mở trang HRM, bấm Ctrl+A rồi Ctrl+C trước nhé!', { icon: '📋' });
+        toast('Bộ nhớ tạm đang trống. Mở trang HRM, bấm Ctrl+A rồi Ctrl+C trước nhé!', { icon: <AppIcon name="copy" size="md" className="text-sky-600" /> });
         setPasteSlot(slot);
         return;
       }
@@ -277,7 +277,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       console.error('Lỗi khi phân tích Bảng lương ngày 5:', err);
       const msg = err instanceof Error ? err.message : 'Không thể xử lý hình ảnh Bảng lương ngày 5.';
       setErrorDay5(msg);
-      toast.error(`❌ ${msg}`, { id: toastId, duration: 6000 });
+      toast.error(msg, { id: toastId, duration: 6000 });
     } finally {
       setUploadingSlot(null);
       e.target.value = '';
@@ -303,7 +303,7 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
       console.error('Lỗi khi phân tích Bảng thưởng ngày 20:', err);
       const msg = err instanceof Error ? err.message : 'Không thể xử lý hình ảnh Bảng thưởng ngày 20.';
       setErrorDay20(msg);
-      toast.error(`❌ ${msg}`, { id: toastId, duration: 6000 });
+      toast.error(msg, { id: toastId, duration: 6000 });
     } finally {
       setUploadingSlot(null);
       e.target.value = '';
@@ -809,8 +809,8 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
             {/* Lỗi do khoá chung hết hạn mức / bị vô hiệu: người dùng tự cứu được bằng API Key
                 riêng (miễn phí), nên đưa lối đi ngay cạnh thông báo lỗi. */}
             {isApiKeyRelatedError(errorDay5 || errorDay20 || '') && onOpenApiKeyConfig && (
-              <Button variant="outline" size="sm" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
-                🔑 Dùng API Key riêng của bạn (miễn phí)
+              <Button variant="outline" size="sm" icon="apiKey" onClick={onOpenApiKeyConfig} className="text-[11px] h-7">
+                Dùng API Key riêng của bạn (miễn phí)
               </Button>
             )}
           </div>
@@ -834,16 +834,16 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               <button
                 type="button"
                 onClick={handleSelectAllVisibleItems}
-                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800 rounded-md hover:bg-rose-50 cursor-pointer whitespace-nowrap"
+                className="min-h-11 sm:min-h-0 inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800 rounded-md hover:bg-rose-50 cursor-pointer whitespace-nowrap"
               >
-                ✓ Hết
+                <AppIcon name="check" size="md" />Hết
               </button>
               <button
                 type="button"
                 onClick={handleDeselectVisibleItems}
-                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:text-rose-600 cursor-pointer whitespace-nowrap"
+                className="min-h-11 sm:min-h-0 px-2 py-0.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:text-rose-600 cursor-pointer whitespace-nowrap inline-flex items-center gap-1"
               >
-                ✕ Bỏ
+                <AppIcon name="close" size="md" />Bỏ
               </button>
               <button
                 type="button"
@@ -893,25 +893,25 @@ export const TaxInputPanel: React.FC<TaxInputPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setBonusFilter('hot')}
-                className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                   bonusFilter === 'hot'
                     ? 'bg-rose-600 text-white shadow-2xs'
                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-rose-50'
                 }`}
               >
-                🔥 Nóng ({hotBonusItems.length})
+                <AppIcon name="flame" size="md" />Nóng ({hotBonusItems.length})
               </button>
               {mainBonusItems.length > 0 && (
                 <button
                   type="button"
                   onClick={() => setBonusFilter('main')}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                     bonusFilter === 'main'
                       ? 'bg-sky-600 text-white shadow-2xs'
                       : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-sky-50'
                   }`}
                 >
-                  💼 Chính ({mainBonusItems.length})
+                  <AppIcon name="briefcase" size="md" />Chính ({mainBonusItems.length})
                 </button>
               )}
               <button

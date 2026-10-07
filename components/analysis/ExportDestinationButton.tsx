@@ -270,13 +270,13 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
 
                         <div className="mt-2 space-y-1 text-[11px] text-slate-600 dark:text-slate-400 bg-white/70 dark:bg-slate-900/60 p-2 rounded-lg border border-emerald-100 dark:border-emerald-900/40">
                             <div className="flex items-start gap-1.5">
-                                <span className="text-[#06C755] font-black shrink-0">✓</span>
+                                <AppIcon name="check" size="xs" className="text-[#06C755] shrink-0 mt-0.5" />
                                 <span>
                                     Chỉ cần gõ <b>"{sanitizeReportCommand(commandInput) || 'bc'}"</b> (hoặc <b>.{sanitizeReportCommand(commandInput) || 'bc'}</b>, <b>/{sanitizeReportCommand(commandInput) || 'bc'}</b>) trong nhóm LINE là Bot tự động reply ảnh báo cáo mới nhất ngay!
                                 </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                                <span className="text-[#06C755] font-black shrink-0">✓</span>
+                                <AppIcon name="check" size="xs" className="text-[#06C755] shrink-0 mt-0.5" />
                                 <span>
                                     Phản hồi qua tin nhắn Reply: <b>Hoàn toàn MIỄN PHÍ và KHÔNG GIỚI HẠN</b> lượt gửi theo chính sách LINE Developers (không tính vào 200 tin Push/tháng).
                                 </span>

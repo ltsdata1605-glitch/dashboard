@@ -429,13 +429,13 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 <div className="border-t border-slate-200/60 dark:border-slate-700/60 pt-2 space-y-1.5 text-[11px] text-slate-600 dark:text-slate-300">
                                     {stickerType === 'draw' ? (
                                         <>
-                                            <p>⚡ <strong>Sửa nhanh:</strong> Nhập nội dung ở phiếu số 1 (trang 1). Các phiếu còn lại tự động đồng bộ theo.</p>
-                                            <p>⚡ <strong>Nhảy số:</strong> Bật chế độ "Tự động nhảy số" để hệ thống tự động tăng dần từ số bắt đầu.</p>
+                                            <p className="flex items-start gap-1.5"><AppIcon name="quick" size="xs" className="mt-0.5 shrink-0 text-amber-600" /><span><strong>Sửa nhanh:</strong> Nhập nội dung ở phiếu số 1 (trang 1). Các phiếu còn lại tự động đồng bộ theo.</span></p>
+                                            <p className="flex items-start gap-1.5"><AppIcon name="quick" size="xs" className="mt-0.5 shrink-0 text-amber-600" /><span><strong>Nhảy số:</strong> Bật chế độ "Tự động nhảy số" để hệ thống tự động tăng dần từ số bắt đầu.</span></p>
                                         </>
                                     ) : (
                                         <>
-                                            <p>⚡ <strong>Sửa nhanh:</strong> Click trực tiếp vào chữ trên sticker ở khung preview.</p>
-                                            <p>⚡ <strong>Tính % tự động:</strong> Chỉ cần nhập Giá cũ & Giá mới.</p>
+                                            <p className="flex items-start gap-1.5"><AppIcon name="quick" size="xs" className="mt-0.5 shrink-0 text-amber-600" /><span><strong>Sửa nhanh:</strong> Click trực tiếp vào chữ trên sticker ở khung preview.</span></p>
+                                            <p className="flex items-start gap-1.5"><AppIcon name="quick" size="xs" className="mt-0.5 shrink-0 text-amber-600" /><span><strong>Tính % tự động:</strong> Chỉ cần nhập Giá cũ & Giá mới.</span></p>
                                         </>
                                     )}
                                 </div>
@@ -491,7 +491,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 >
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate flex items-center gap-1.5">
-                                            {isDefault && <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded">📌 Mặc định</span>}
+                                            {isDefault && <span className="inline-flex items-center shrink-0 px-1.5 py-0.5 text-[11px] font-black uppercase tracking-wider bg-amber-100 dark:bg-amber-800/40 text-amber-700 dark:text-amber-300 rounded"><AppIcon name="star" size="xs" className="mr-0.5" />Mặc định</span>}
                                             {entry.label}
                                         </p>
                                         <div className="flex gap-1.5 mt-1 text-[11px] text-slate-400">

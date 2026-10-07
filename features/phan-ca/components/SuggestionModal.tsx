@@ -1,4 +1,5 @@
 import React from 'react';
+import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ScheduleSuggestion } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
@@ -22,7 +23,7 @@ const SuggestionModal: React.FC<SuggestionModalProps> = ({ suggestions, onAccept
     <Modal
       isOpen
       onClose={onClose}
-      title="💡 Gợi Ý Tối Ưu Lịch"
+      title={<span className="inline-flex items-center gap-1.5"><AppIcon name="idea" size="md" className="text-sky-600" />Gợi Ý Tối Ưu Lịch</span>}
       maxWidth="lg"
       footer={
         <div className="flex justify-end gap-3">
