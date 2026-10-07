@@ -7347,3 +7347,22 @@ bảo mật. Vì vậy GĐ0 chỉ chặn luồng đó đụng vào tài khoản 
 **Rủi ro:** nhân viên có tài khoản bị liên kết thêm Google sẽ không vào được luồng nhân viên (hiện không có trường hợp
 này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com` tạo sau mốc sẽ mất quyền superadmin.
 **Rollback:** redeploy functions từ commit trước — KHÔNG nên, vì mở lại lỗ chiếm tài khoản.
+
+## Audit bảo mật 2026-10-07 — Giai đoạn 1: phân quyền & phiên (chủ dự án duyệt "tiếp tục phần tiếp theo")
+
+| Phần | Commit | Nội dung | Kiểm chứng |
+|---|---|---|---|
+| 1a | `edac2f6` | `functions/src/claims.ts`: gộp claims root+Sticker (không xoá nhau); chưa duyệt/hết hạn/từ chối/khoá → token role `pending`, không Kho | `tests/unit/audit-gd1a-claims.test.ts` 4 ca (3 đỏ trên code cũ) |
+| 1b | `1a2bfbe` | Rules: `line_bots` chỉ chủ/admin/manager CÙNG Mã Kho; `bot_media` không đọc công khai, chỉ tạo mới ≤1MB; `report_commands` toàn hệ thống khoá; savedLists Sticker chỉ ghi kho mình. Callable `lineBotFindWarehouseBot` thay quét mọi bot ở client | `npm run test:rules` 71/71 (17 ca mới đỏ trên rules cũ). Phát hiện thêm: `{x=**}` ở rules v2 khớp cả document cha |
+| 1c | `956c7e4` | Webhook: vé thẻ coupon `b`/`t` (HMAC Channel Secret) cho mark-used, thẻ cũ dùng tới 15/11/2026; uploadMedia cần ID token, không ghi đè, chỉ ảnh thật; ?mediaId= chỉ MIME ảnh + nosniff; DUYỆT chỉ Admin bot (khi bot đã khai Admin); huỷ mã chỉ người nhận/Admin, không trả mã USED | `tests/unit/audit-gd1c-*.test.ts` 11 ca chạy thân handler thật (8 đỏ trên code cũ) |
+| 1d | `26b1956` | Check thưởng: mọi tin kiểm `e.source`/origin; In Sticker escape chữ trong HTML tem | e2e check-thuong 4/4 (ca nguồn lạ đỏ trên code cũ), unit HTML tem, e2e sticker 2/2 |
+
+**Thứ tự deploy (frontend đã tương thích ngược, có thể lên trước):**
+1. Frontend (gh-pages) — an toàn với functions/rules cũ.
+2. `npm run deploy:functions` (thêm `lineBotFindWarehouseBot`, cập nhật session/admin/sticker/webhook/pmhRelay/gemini).
+3. `npm run deploy:rules` — SAU functions: rules mới chặn quét mọi bot, client cần callable mới để tìm Bot Kho có nhiều Mã Kho.
+
+**Còn để lại (ghi rõ):**
+- Bot chưa khai Admin nào → DUYỆT vẫn ai cũng gõ được (giữ để không đứng việc cấp mã). Cần chủ dự án khai Admin cho từng bot.
+- Manager cùng Kho vẫn đọc được Channel Access Token của Bot Kho được kế thừa (client gửi token trực tiếp tới LINE). Chuyển token hẳn về server là việc lớn hơn — nên xoay token các bot vì trước đây mọi manager đều đọc được.
+- Ảnh cũ trong `bot_media` không có `ownerUid` → không xoá được từ client (chỉ ảnh hưởng nút dọn ảnh).
