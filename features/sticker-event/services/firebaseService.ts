@@ -237,14 +237,20 @@ export const clearStoreDataOnFirestore = async (storeId: string, collectionName:
     const previousChunkCount = await readPreviousChunkCount(storeId, collectionName);
     try {
         await deleteChunkRange(storeId, collectionName, 0, previousChunkCount ?? LEGACY_MAX_CHUNKS);
-        // Hạ `chunkCount` về 0 để lượt dọn kế tiếp không phải xoá gì nữa. Giữ `lastUpdated` cũ
-        // (không bump) — bump lên sẽ khiến mọi máy khác tưởng có dữ liệu mới và tải lại vô ích.
+        // Audit D07: PHẢI bump mốc thời gian — trước đây cố ý giữ `lastUpdated` cũ nên máy khác không
+        // biết dữ liệu đã bị xoá và vẫn in tem bằng bảng GIÁ CŨ. Bump lên 1 lần chỉ tốn 1 lượt đọc chunk
+        // (rỗng) ở mỗi máy, đổi lại mọi máy cùng về trạng thái "đã xoá".
         const metaKey = CHUNK_META_KEY[collectionName];
         if (metaKey) {
+            const now = Timestamp.now();
             await setDoc(doc(db, 'stores', storeId, 'metadata', metaKey), {
                 totalItems: 0,
-                chunkCount: 0
+                chunkCount: 0,
+                lastUpdated: now
             }, { merge: true });
+            await setDoc(doc(db, 'stores', storeId, 'metadata', 'sync'), metaKey === 'products'
+                ? { productsLastUpdated: now, totalProducts: 0 }
+                : { inventoryLastUpdated: now, totalInventory: 0 }, { merge: true });
         }
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, `stores/${storeId}/${collectionName}`);

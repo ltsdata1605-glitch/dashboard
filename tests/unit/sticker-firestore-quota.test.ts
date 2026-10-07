@@ -237,6 +237,17 @@ describe('Hạn mức Firestore — clearStoreDataOnFirestore', () => {
         expect(ops.deletes).toBe(0);
         expect(ops.batchCommits).toBe(0);                // không gửi request nào lên mạng
     });
+
+    it('audit D07: xoá xong BUMP mốc đồng bộ — máy khác biết dữ liệu đã bị xoá (không in giá cũ)', async () => {
+        await uploadInventoryToFirestore(STORE_ID, makeInventory(300));
+        expect(store.get(`stores/${STORE_ID}/metadata/sync`)).toMatchObject({ totalInventory: 300 });
+        await clearStoreDataOnFirestore(STORE_ID, 'inventoryChunks');
+        // (Timestamp giả của bộ test cố định 1 giá trị — kiểm việc GHI LẠI sync, không so lớn hơn.)
+        const after = store.get(`stores/${STORE_ID}/metadata/sync`) as { inventoryLastUpdated?: unknown; totalInventory: number };
+        expect(after.totalInventory).toBe(0);
+        expect(after.inventoryLastUpdated).toBeDefined();
+        expect(store.get(`stores/${STORE_ID}/metadata/inventory`)).toHaveProperty('lastUpdated');
+    });
 });
 
 

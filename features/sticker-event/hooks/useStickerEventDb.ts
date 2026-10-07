@@ -187,7 +187,11 @@ export function useStickerEventDb({
                 shouldFetchInventory ? fetchInventoryFromFirestore(storeId) : Promise.resolve(localInventory),
             ]);
             
-            if (shouldFetchProducts && firestoreProducts.length > 0) {
+            // Audit D07: cloud MỚI HƠN mà rỗng = bảng giá đã bị xoá ở máy khác → áp cả trạng thái rỗng.
+            // (Lỗi tải ném ra ngoài — handleFirestoreError — nên mảng rỗng ở đây là rỗng THẬT.)
+            const productsDeletedOnCloud = firestoreLatestProducts > localLatestProducts && localProducts.length > 0;
+            const inventoryDeletedOnCloud = firestoreLatestInv > localLatestInv && localInventory.length > 0;
+            if (shouldFetchProducts && (firestoreProducts.length > 0 || productsDeletedOnCloud)) {
                 setAllProducts(firestoreProducts);
                 if (firestoreLatestProducts > 0) setUploadTimestamp(new Date(firestoreLatestProducts));
                 saveData(firestoreProducts, {
@@ -197,7 +201,7 @@ export function useStickerEventDb({
                 });
             }
 
-            if (shouldFetchInventory && firestoreInventory.length > 0) {
+            if (shouldFetchInventory && (firestoreInventory.length > 0 || inventoryDeletedOnCloud)) {
                 setInventory(firestoreInventory);
                 if (firestoreLatestInv > 0) setInventoryUploadTimestamp(new Date(firestoreLatestInv));
                 saveInventoryData(firestoreInventory, new Date(firestoreLatestInv));
