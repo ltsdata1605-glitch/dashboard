@@ -121,16 +121,30 @@ export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY], memory: '5
 export const parseSalarySlipWithGemini = onCall(
   // 512MiB: Cloud Run cấp CPU theo RAM nên container khởi động & parse JSON nhanh hơn hẳn 256MiB.
   // timeout 120s: ảnh dài (phiếu lương chụp dọc) có lúc chạm trần 60s mặc định rồi hỏng cả lượt.
-  { secrets: [GEMINI_API_KEY], region: GEMINI_REGION, memory: '512MiB', timeoutSeconds: 120 },
+  // maxInstances: trần chi phí — OCR phiếu lương là thao tác thưa, 10 instance song song là dư.
+  { secrets: [GEMINI_API_KEY], region: GEMINI_REGION, memory: '512MiB', timeoutSeconds: 120, maxInstances: 10 },
   async (request) => {
+  // Audit 2026-10-07 (S10): trước đây hàm này KHÔNG kiểm đăng nhập — ai biết URL cũng gọi được
+  // Gemini bằng khoá của dự án (tốn tiền + hạn mức). Đúng như generateWithGemini ở trên.
+  if (!request.auth) {
+    throw new HttpsError('unauthenticated', 'Cần đăng nhập để dùng chức năng đọc phiếu lương.');
+  }
+
   const { base64Data, mimeType, targetSlip } = (request.data ?? {}) as {
     base64Data?: string;
     mimeType?: string;
     targetSlip?: 'day5' | 'day20' | 'auto';
   };
 
-  if (!base64Data || !mimeType) {
+  if (!base64Data || !mimeType || typeof base64Data !== 'string' || typeof mimeType !== 'string') {
     throw new HttpsError('invalid-argument', 'Thiếu dữ liệu hình ảnh phiếu lương.');
+  }
+  if (!/^image\/(jpeg|png|webp)$/.test(mimeType)) {
+    throw new HttpsError('invalid-argument', 'Chỉ nhận ảnh JPEG/PNG/WebP.');
+  }
+  // Client đã thu ảnh về ≤ 900×1800 JPEG (~vài trăm KB) — 6 triệu ký tự base64 (~4.5MB) là trần rộng.
+  if (base64Data.length > 6_000_000) {
+    throw new HttpsError('invalid-argument', 'Ảnh phiếu lương quá lớn.');
   }
 
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY.value() });

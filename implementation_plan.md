@@ -7322,3 +7322,28 @@ bọc `IDBDatabase.transaction` để đo từng giao dịch):
 **Kết quả đo bản build production** (cùng hồ sơ trình duyệt có dữ liệu Kho 23.315 dòng, CPU x6): khối "Phân tích nhân
 viên" hiện xong ở 23–26s (trước) → 10–13s (sau). Bản dev: hết treo 38s ở "cấu hình cục bộ" (còn ~2,6s).
 `npm run check` xanh; vitest 1060 pass; e2e smoke/analysis-employees-sync/mo-lai-app/indexeddb-rieng: 9/9 pass.
+
+## Audit bảo mật 2026-10-07 — Giai đoạn 0: siết xác thực (chủ dự án duyệt 2026-10-07)
+
+Nguồn: bộ audit ngoài (S01/S02/S10) + đối chiếu trên HEAD `dda2e9c`. Kế hoạch đầy đủ 7 giai đoạn giữ ngoài repo
+(repo public) cho tới khi các giai đoạn bảo mật deploy xong.
+
+**Quyết định chủ dự án:** đăng nhập Nhân viên In Sticker GIỮ NGUYÊN (không mật khẩu) — dữ liệu In Sticker không cần
+bảo mật. Vì vậy GĐ0 chỉ chặn luồng đó đụng vào tài khoản KHÔNG phải nhân viên.
+
+**File thay đổi:**
+- `functions/src/stickerEvent.ts`
+  - `assertStaffOnlyAccount()`: `stickerStaffAuth` chỉ thao tác trên tài khoản `<tên>@example.com` chỉ có provider
+    `password`, không phải Admin kho / email superadmin. Username chứa `@` hoặc tên dành riêng (`admin`, `21707`) bị
+    từ chối. Kiểm TRƯỚC mọi thao tác ghi (đổi mật khẩu, hồ sơ, claims, token).
+  - `isSuperAdminCaller()`: superadmin quyết định theo email trong ID token (Google đã xác minh), tài khoản
+    `@example.com` cũ chỉ được nếu tạo trước 2026-10-07. Username KHÔNG còn quyết định quyền; `stickerRegister`
+    từ chối username dành riêng với người không phải superadmin.
+- `functions/src/gemini.ts` — `parseSalarySlipWithGemini`: bắt buộc đăng nhập, chỉ nhận ảnh JPEG/PNG/WebP,
+  trần 6 triệu ký tự base64, `maxInstances: 10`. (Hệ quả: Chế độ Dùng Thử chưa đăng nhập không đọc phiếu lương
+  qua máy chủ nữa — vẫn dùng được khoá Gemini riêng của người dùng nếu có.)
+- `tests/unit/audit-gd0-xac-thuc.test.ts` — chạy thật thân callable trên Auth/Firestore giả.
+
+**Rủi ro:** nhân viên có tài khoản bị liên kết thêm Google sẽ không vào được luồng nhân viên (hiện không có trường hợp
+này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com` tạo sau mốc sẽ mất quyền superadmin.
+**Rollback:** redeploy functions từ commit trước — KHÔNG nên, vì mở lại lỗ chiếm tài khoản.
