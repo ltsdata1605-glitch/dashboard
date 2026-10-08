@@ -672,8 +672,10 @@ export const saveUserState = async (userId: string, state: { displayedProducts: 
       console.warn(`[Cloud Sync Sticker] displayedProducts quá lớn (${state.displayedProducts.length} sản phẩm) để đồng bộ trạng thái phiên — chỉ lưu bộ lọc, dùng "Lưu danh sách" nếu cần lưu chắc chắn.`);
     }
   } catch (error) {
+    // Audit D11 (2026-10-08): trước đây nuốt lỗi → nút "Đồng bộ trạng thái lên Cloud" luôn báo THÀNH CÔNG và
+    // nhánh thử lại của lượt tự đồng bộ (useStickerEventState) không bao giờ chạy. Mọi nơi gọi đã có .catch.
     console.error("Error saving user state:", error);
-    // Silent fail for state sync to not interrupt UX
+    throw error;
   }
 };
 

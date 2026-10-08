@@ -63,6 +63,18 @@ interface UseStickerEventDbProps {
   setManualProducts: React.Dispatch<React.SetStateAction<ManualProductWithId[]>>;
 }
 
+// Audit D11 (2026-10-08): 3 thao tác sản phẩm nhập tay cập nhật màn hình trước rồi ghi cloud ngầm; lỗi ghi
+// trước đây chỉ console.error → màn hình nói "có", cloud nói "không", lần tải sau sản phẩm biến mất/hiện lại.
+// Mất mạng KHÔNG đi vào đây: Firestore (persistentLocalCache) tự xếp hàng ghi trong IndexedDB và gửi lại khi
+// có mạng — promise chỉ treo chờ. Chỉ lỗi bị TỪ CHỐI hẳn (quyền, hạn mức…) mới reject → trả màn hình về như
+// cũ và báo rõ.
+const cloudWriteFailReason = (err: unknown): string => {
+  const m = err instanceof Error ? err.message : String(err);
+  if (/insufficient permissions|permission-denied/i.test(m)) return 'tài khoản không có quyền ghi vào kho này';
+  if (/Quota|RESOURCE_EXHAUSTED/i.test(m)) return 'đã hết hạn mức Cloud trong ngày';
+  return 'Cloud từ chối lượt ghi';
+};
+
 export function useStickerEventDb({
   user,
   userData,
@@ -332,13 +344,22 @@ export function useStickerEventDb({
         }
       }).catch(err => {
         console.error('Background Firebase save failed:', err);
+        setManualProducts(prev => prev.filter(p => p.firebaseId !== tempId));
+        setAllProducts(prev => prev.filter(p => (p as ManualProductWithId).firebaseId !== tempId));
+        setDisplayedProducts(prev => {
+          const updated = prev.filter(p => (p as ManualProductWithId).firebaseId !== tempId);
+          saveDisplayedProducts(updated);
+          return updated;
+        });
+        showAlert(`Chưa lưu được sản phẩm "${product.sanPham}" (${cloudWriteFailReason(err)}). Sản phẩm đã được gỡ khỏi danh sách — hãy thử thêm lại sau.`, 'Lưu sản phẩm thất bại');
       });
     }
 
     return tempId;
-  }, [userData, employeeName, user, setDisplayedProducts]);
+  }, [userData, employeeName, user, setDisplayedProducts, showAlert]);
 
   const handleManualDelete = useCallback(async (docId: string) => {
+    const removed = manualProducts.find(p => p.firebaseId === docId);
     setManualProducts(prev => prev.filter(p => p.firebaseId !== docId));
     setAllProducts(prev => prev.filter(p => (p as ManualProductWithId).firebaseId !== docId));
     setDisplayedProducts(prev => {
@@ -352,12 +373,18 @@ export function useStickerEventDb({
       invalidateSyncMetaMemoryCache(userData.storeId);
       deleteManualProduct(userData.storeId, docId).catch(err => {
         console.error('Background Firebase delete failed:', err);
+        if (removed) {
+          setManualProducts(prev => prev.some(p => p.firebaseId === docId) ? prev : [...prev, removed]);
+          setAllProducts(prev => prev.some(p => (p as ManualProductWithId).firebaseId === docId) ? prev : [...prev, removed]);
+        }
+        showAlert(`Chưa xoá được sản phẩm${removed ? ` "${removed.sanPham}"` : ''} trên Cloud (${cloudWriteFailReason(err)}). Sản phẩm vẫn còn trong kho dữ liệu.`, 'Xoá sản phẩm thất bại');
       });
     }
-  }, [userData, setDisplayedProducts]);
+  }, [userData, setDisplayedProducts, manualProducts, showAlert]);
 
   const handleManualUpdate = useCallback(async (product: ManualProductWithId) => {
     if (!product.firebaseId) return;
+    const previous = manualProducts.find(p => p.firebaseId === product.firebaseId);
     
     setManualProducts(prev => prev.map(p => p.firebaseId === product.firebaseId ? product : p));
     setAllProducts(prev => prev.map(p => (p as ManualProductWithId).firebaseId === product.firebaseId ? product : p));
@@ -382,9 +409,14 @@ export function useStickerEventDb({
       invalidateSyncMetaMemoryCache(userData.storeId);
       saveManualProduct(userData.storeId, docData, product.firebaseId).catch(err => {
         console.error('Background Firebase update failed:', err);
+        if (previous) {
+          setManualProducts(prev => prev.map(p => p.firebaseId === previous.firebaseId ? previous : p));
+          setAllProducts(prev => prev.map(p => (p as ManualProductWithId).firebaseId === previous.firebaseId ? previous : p));
+        }
+        showAlert(`Chưa lưu được thay đổi của "${product.sanPham}" (${cloudWriteFailReason(err)}). Đã trả về giá trị cũ.`, 'Sửa sản phẩm thất bại');
       });
     }
-  }, [userData, employeeName, user]);
+  }, [userData, employeeName, user, manualProducts, showAlert]);
 
   const executeClearAll = useCallback(async () => {
     setIsLoading(true);

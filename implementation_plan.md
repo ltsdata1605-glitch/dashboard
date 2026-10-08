@@ -7462,3 +7462,14 @@ mới khi registry hỏng; lọc hạn lưu giữ lỗi thì chỉ cảnh báo, 
 dữ liệu tệp vừa ghi nếu registry chưa lưu). Test: `tests/e2e/registry-luu-hong-khong-mat-du-lieu.spec.ts` (2 bài,
 đều đỏ trên code cũ).
 **Phần D11 còn lại** (outbox cho In Sticker/Khai thác/Thuế báo "đã lưu" trước khi cloud xác nhận) — chưa làm.
+
+## Audit D11 phần còn lại — In Sticker / Khai thác / Thuế không báo "đã lưu" khi chưa lưu (2026-10-08)
+
+| Khu | Vấn đề đo được | Sửa | Kiểm chứng |
+|---|---|---|---|
+| In Sticker — nút "Đồng bộ trạng thái lên Cloud" | `saveUserState` nuốt lỗi → luôn báo "thành công"; nhánh thử lại của lượt tự đồng bộ không bao giờ chạy | ném lỗi; "Lưu danh sách" coi trạng thái phiên là phụ (không biến lượt lưu thành lỗi) | typecheck + e2e Sticker hiện có |
+| In Sticker — sản phẩm nhập tay (thêm/sửa/xoá) | màn hình cập nhật trước, cloud từ chối (quyền/hạn mức) chỉ console.error | từ chối → trả màn hình về như cũ + `showAlert` nêu lý do. **Mất mạng không vào nhánh này**: Firestore In Sticker bật `persistentLocalCache` = SDK đã có hàng chờ bền, tự gửi lại | đọc code (Firestore thật không giả lập được permission-denied trong e2e) |
+| Khai thác (IndexedDB là nơi lưu DUY NHẤT) | thêm/sửa/xoá khách, mục tuỳ chỉnh, xoá đơn: ghi không chờ rồi báo thành công; nháp tự lưu nuốt lỗi | chờ ghi xong mới báo; hỏng → toast lỗi + hoàn tác; nháp hỏng → 1 toast | e2e `khai-thac-luu-hong-bao-loi` (đỏ trên code cũ) + `khai-thac` |
+| Thuế | cloud hỏng vẫn kèm toast "Đã lưu … & Firebase Cloud"; không gửi lại; xoá/đổi tháng hỏng thì lần mở sau bản CLOUD đè lại máy | **hàng chờ** `taxCloudOutbox_v1:<uid>` (localStorage): ghi lại createdAt thao tác hỏng, `getAllRecords` gửi lại trước khi hợp nhất, hợp nhất tôn trọng thao tác chờ; toast theo kết quả thật | unit `audit-d11-tax-hang-cho` (3 bài, đỏ trên code cũ) |
+
+Ghi chú: `tax-paste-hrm` › "tiêu đề thẻ mở được trang HRM" đỏ cả trên code cũ trong container (cần mở trang ngoài) — không thuộc CI.

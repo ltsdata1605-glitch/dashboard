@@ -184,7 +184,7 @@ export const TaxCalculatorView: React.FC = () => {
           ? `Khoản nhận thay (${(result.netRefundToFriend > 0 ? (result.netRefundToFriend + result.taxOnProxyAmount) : input.proxyAmount).toLocaleString('vi-VN')} đ)`
           : undefined;
 
-      await taxSyncService.saveRecord({
+      const daLuu = await taxSyncService.saveRecord({
         name: input.name || 'Người kê khai',
         monthYear: input.monthYear,
         incomeDay5: input.incomeDay5,
@@ -206,10 +206,11 @@ export const TaxCalculatorView: React.FC = () => {
         createdAt: new Date().toISOString(),
       });
       setIsSaved(true);
+      // Audit D11: cloud hỏng thì taxSyncService đã báo lỗi + xếp hàng gửi lại — không báo kèm "& Firebase Cloud".
       toast.success(
         opts?.silent
           ? 'Đã tự động lưu kết quả vào lịch sử'
-          : isCloudUser
+          : daLuu.cloud === 'ok'
             ? 'Đã lưu vào lịch sử (IndexedDB & Firebase Cloud)'
             : 'Đã lưu vào bộ nhớ máy (IndexedDB)'
       );

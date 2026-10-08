@@ -32,7 +32,7 @@ function catTheoDungLuong(records: SavedTaxRecord[]): SavedTaxRecord[] {
  * có ai ghi chen vào. Cùng document, cùng định dạng — không đổi rules, không di trú.
  * `sua` trả null = không cần ghi. Trả về false nếu cloud lỗi (bản trên máy vẫn đã lưu).
  */
-async function suaMangTrenCloud(uid: string, sua: (records: SavedTaxRecord[], exists: boolean) => SavedTaxRecord[] | null): Promise<boolean> {
+async function suaMangTrenCloud(uid: string, sua: (records: SavedTaxRecord[], exists: boolean) => SavedTaxRecord[] | null, imLang = false): Promise<boolean> {
     const docRef = doc(db, 'users', uid, 'setting', FIRESTORE_DOC_KEY);
     try {
         await runTransaction(db, async (tx) => {
@@ -45,9 +45,63 @@ async function suaMangTrenCloud(uid: string, sua: (records: SavedTaxRecord[], ex
     } catch (err) {
         console.error('[TaxSync] Lỗi đồng bộ Firestore:', err);
         // Trước đây chỉ log — người dùng tưởng đã lên cloud. Nay báo rõ.
-        toast.error('Đã lưu trên máy này nhưng CHƯA đồng bộ lên cloud (mất mạng?). Thiết bị khác sẽ chưa thấy thay đổi này.', { id: 'tax-cloud-sync', duration: 6000 });
+        if (!imLang) toast.error('Đã lưu trên máy này nhưng CHƯA đồng bộ lên cloud (mất mạng?) — sẽ tự gửi lại lần mở Thuế sau.', { id: 'tax-cloud-sync', duration: 6000 });
         return false;
     }
+}
+
+/**
+ * Audit D11 (2026-10-08) — HÀNG CHỜ gửi lại lên cloud. Firestore của app gốc không bật bộ đệm offline và
+ * `runTransaction` luôn cần mạng, nên mất mạng = lượt ghi cloud hỏng ngay. Trước đây hỏng là thôi: bản ghi mới
+ * không bao giờ lên cloud; tệ hơn, xoá / đổi tháng hỏng thì lần mở sau getAllRecords lấy bản CLOUD đè lại máy
+ * → bản đã xoá hiện về, tháng vừa sửa trở lại tháng cũ. Nay ghi lại createdAt của thao tác hỏng; lần
+ * getAllRecords sau gửi lại trước khi hợp nhất, và lúc hợp nhất tôn trọng thao tác còn chờ.
+ * Lưu localStorage theo uid (vài chục chuỗi createdAt — nhỏ), không lẫn giữa các tài khoản.
+ */
+type HangCho = { upsert: string[]; del: string[]; clearAll: boolean };
+const khoaHangCho = (uid: string) => `taxCloudOutbox_v1:${uid}`;
+export function docHangCho(uid: string): HangCho {
+    try {
+        const v = JSON.parse(localStorage.getItem(khoaHangCho(uid)) || 'null');
+        if (v && Array.isArray(v.upsert) && Array.isArray(v.del)) return { upsert: v.upsert, del: v.del, clearAll: !!v.clearAll };
+    } catch { /* hỏng thì coi như trống */ }
+    return { upsert: [], del: [], clearAll: false };
+}
+function ghiHangCho(uid: string, h: HangCho) {
+    try {
+        if (!h.upsert.length && !h.del.length && !h.clearAll) localStorage.removeItem(khoaHangCho(uid));
+        else localStorage.setItem(khoaHangCho(uid), JSON.stringify(h));
+    } catch { /* localStorage đầy/bị chặn — mất hàng chờ, chỉ còn bản trên máy */ }
+}
+function themVaoHangCho(uid: string, loai: 'upsert' | 'del', createdAts: Iterable<string>) {
+    const h = docHangCho(uid);
+    for (const c of createdAts) {
+        if (loai === 'del') { h.upsert = h.upsert.filter(x => x !== c); if (!h.del.includes(c)) h.del.push(c); }
+        else if (!h.del.includes(c) && !h.upsert.includes(c)) h.upsert.push(c);
+    }
+    ghiHangCho(uid, h);
+}
+
+/** Gửi lại hàng chờ. Trả về hàng chờ CÒN LẠI (rỗng nếu đã gửi xong). */
+async function guiHangCho(uid: string): Promise<HangCho> {
+    const h = docHangCho(uid);
+    if (!h.upsert.length && !h.del.length && !h.clearAll) return h;
+    const local = await taxIndexedDbService.getAll();
+    const banMay = new Map(local.map(r => [r.createdAt, r]));
+    const ok = await suaMangTrenCloud(uid, current => {
+        let next = h.clearAll ? [] : current;
+        if (h.del.length) next = next.filter(r => !h.del.includes(r.createdAt));
+        for (const c of h.upsert) {
+            const r = banMay.get(c);
+            if (!r) continue; // đã xoá trên máy sau đó
+            next = [{ ...r, syncedToCloud: true }, ...next.filter(x => x.createdAt !== c)];
+        }
+        return catTheoDungLuong(next);
+    }, true);
+    if (!ok) return h;
+    const trong: HangCho = { upsert: [], del: [], clearAll: false };
+    ghiHangCho(uid, trong);
+    return trong;
 }
 
 /**
@@ -90,12 +144,17 @@ export const taxSyncService = {
         }
 
         try {
+            const conCho = await guiHangCho(user.uid);
+            const choXoa = new Set(conCho.del);
+            const choGhi = new Set(conCho.upsert);
             const docRef = doc(db, 'users', user.uid, 'setting', FIRESTORE_DOC_KEY);
             const snap = await getDoc(docRef);
 
             if (snap.exists()) {
                 const cloudData = snap.data();
-                const cloudRecords: SavedTaxRecord[] = cloudData?.records || [];
+                // Thao tác còn chờ gửi thắng bản cloud: đã xoá trên máy → không kéo về lại; đã sửa trên máy → giữ bản máy.
+                const cloudRecords: SavedTaxRecord[] = conCho.clearAll ? [] : (cloudData?.records || [])
+                    .filter((r: SavedTaxRecord) => !choXoa.has(r.createdAt) && !choGhi.has(r.createdAt));
 
                 // Hợp nhất theo `createdAt` — danh tính DUY NHẤT xuyên thiết bị (audit D08). `id` là khoá
                 // tự tăng của IndexedDB TỪNG MÁY: máy A và máy B đều có id 1 cho 2 bản ghi khác nhau. Trước
@@ -138,7 +197,7 @@ export const taxSyncService = {
     /**
      * Lưu một bản ghi tính thuế mới: lưu vào IndexedDB và đẩy lên Firestore
      */
-    async saveRecord(record: Omit<SavedTaxRecord, 'id'>): Promise<number> {
+    async saveRecord(record: Omit<SavedTaxRecord, 'id'>): Promise<{ id: number; cloud: 'ok' | 'pending' | 'none' }> {
         // 1. Lưu vào IndexedDB
         const localId = await taxIndexedDbService.save(record);
 
@@ -146,13 +205,15 @@ export const taxSyncService = {
         const user = auth.currentUser;
         if (user) {
             const newCloudRecord: SavedTaxRecord = { ...record, id: localId, syncedToCloud: true };
-            await suaMangTrenCloud(user.uid, current => catTheoDungLuong([
+            const ok = await suaMangTrenCloud(user.uid, current => catTheoDungLuong([
                 newCloudRecord,
                 ...current.filter(r => r.createdAt !== record.createdAt),
             ]));
+            if (!ok) themVaoHangCho(user.uid, 'upsert', [record.createdAt]);
+            return { id: localId, cloud: ok ? 'ok' : 'pending' };
         }
 
-        return localId;
+        return { id: localId, cloud: 'none' };
     },
 
     /**
@@ -163,7 +224,8 @@ export const taxSyncService = {
 
         const user = auth.currentUser;
         if (user && createdAt) {
-            await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.filter(r => r.createdAt !== createdAt) : null);
+            const ok = await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.filter(r => r.createdAt !== createdAt) : null);
+            if (!ok) themVaoHangCho(user.uid, 'del', [createdAt]);
         }
     },
 
@@ -176,8 +238,9 @@ export const taxSyncService = {
         const user = auth.currentUser;
         if (user) {
             const createdAts = await toCreatedAts([idOrCreatedAt]);
-            await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
+            const ok = await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
                 createdAts.has(r.createdAt) ? { ...r, monthYear: newMonthYear } : r) : null);
+            if (!ok) themVaoHangCho(user.uid, 'upsert', createdAts);
         }
     },
 
@@ -190,8 +253,9 @@ export const taxSyncService = {
         const user = auth.currentUser;
         if (user) {
             const createdAts = await toCreatedAts(idOrCreatedAts);
-            await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
+            const ok = await suaMangTrenCloud(user.uid, (current, exists) => exists ? current.map(r =>
                 createdAts.has(r.createdAt) ? { ...r, monthYear: newMonthYear } : r) : null);
+            if (!ok) themVaoHangCho(user.uid, 'upsert', createdAts);
         }
     },
 
@@ -209,8 +273,12 @@ export const taxSyncService = {
                     records: [],
                     updatedAt: serverTimestamp()
                 }, { merge: true });
+                ghiHangCho(user.uid, { upsert: [], del: [], clearAll: false });
             } catch (err) {
                 console.error('[TaxSync] Lỗi xóa Firestore:', err);
+                // Trước chỉ log: mở lại thì getAllRecords kéo cả lịch sử cloud về lại máy. Nay xếp hàng xoá.
+                ghiHangCho(user.uid, { upsert: [], del: [], clearAll: true });
+                toast.error('Đã xoá trên máy này nhưng CHƯA xoá được trên cloud — sẽ tự xoá lại lần mở Thuế sau.', { id: 'tax-cloud-sync', duration: 6000 });
             }
         }
     }

@@ -90,7 +90,11 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
         if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
         const next = pendingDraft.current;
         pendingDraft.current = null;
-        if (next) khaiThacDb.saveDraft(next).catch(e => console.error('[khai-thac] saveDraft', e));
+        if (next) khaiThacDb.saveDraft(next).catch(e => {
+            console.error('[khai-thac] saveDraft', e);
+            // Một thông báo duy nhất (id cố định) — nháp tự lưu mỗi lần gõ, không bắn chồng hàng chục toast.
+            toast.error('Bản nháp đang nhập chưa lưu được trên máy (bộ nhớ trình duyệt có thể đã đầy).', { id: 'khai-thac-draft-loi' });
+        });
     }, []);
     const persistDraft = useCallback((next: ReportDraft, immediate: boolean) => {
         pendingDraft.current = next;
@@ -119,18 +123,34 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
     const onOther = useCallback((group: ItemGroup, patch: Partial<{ name: string; count: number }>) =>
         updateDraft(p => ({ ...p, others: { ...p.others, [group]: { ...p.others[group], ...patch } } }), patch.name === undefined), [updateDraft]);
 
+    // Audit D11 (2026-10-08): IndexedDB là nơi lưu DUY NHẤT của khu này (không có bản cloud) — trước đây ghi
+    // không chờ rồi báo "Đã thêm/Đã xoá" ngay; ghi hỏng (bộ nhớ đầy, Safari chặn) thì mở lại là mất mà người
+    // dùng tưởng đã lưu. Nay: chỉ báo thành công SAU khi ghi xong; hỏng → báo lỗi + trả màn hình về như cũ.
+    const ghi = async (viec: Promise<unknown>, nhan: string, hoanTac: () => void): Promise<boolean> => {
+        try {
+            await viec;
+            return true;
+        } catch (e) {
+            console.error(`[khai-thac] ${nhan}`, e);
+            hoanTac();
+            toast.error(`Không lưu được trên máy (${nhan}) — bộ nhớ trình duyệt có thể đã đầy. Thao tác đã được hoàn tác.`);
+            return false;
+        }
+    };
+
     // ── Mục tuỳ chỉnh ──
-    const addField = (f: Omit<CustomField, 'id'>) => {
+    const addField = async (f: Omit<CustomField, 'id'>) => {
         const field: CustomField = { ...f, id: `cf_${newId()}` };
+        const prev = fields;
         const next = [...fields, field];
         setFields(next);
-        khaiThacDb.saveCustomFields(next).catch(e => console.error('[khai-thac] saveCustomFields', e));
-        toast.success(`Đã thêm mục "${field.name}"`);
+        if (await ghi(khaiThacDb.saveCustomFields(next), 'thêm mục', () => setFields(prev))) toast.success(`Đã thêm mục "${field.name}"`);
     };
-    const deleteField = (f: CustomField) => {
+    const deleteField = async (f: CustomField) => {
+        const prev = fields;
         const next = fields.filter(x => x.id !== f.id);
         setFields(next);
-        khaiThacDb.saveCustomFields(next).catch(e => console.error('[khai-thac] saveCustomFields', e));
+        if (!(await ghi(khaiThacDb.saveCustomFields(next), 'xoá mục', () => setFields(prev)))) return;
         updateDraft(p => {
             const counts = { ...p.counts, [f.group]: { ...p.counts[f.group] } };
             delete counts[f.group][f.id];
@@ -194,7 +214,8 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
         toast.success('Đã tải lại đơn để sửa — bấm Báo cáo để ghi thành đơn mới');
     };
     const deleteReport = async (id: string) => {
-        await khaiThacDb.deleteReport(id).catch(e => console.error('[khai-thac] deleteReport', e));
+        // Trước: lỗi xoá vẫn gỡ khỏi màn hình + báo "Đã xoá" → mở lại đơn hiện về.
+        if (!(await ghi(khaiThacDb.deleteReport(id), 'xoá đơn', () => undefined))) return;
         setReports(prev => prev.filter(r => r.id !== id));
         toast.success('Đã xoá đơn hàng');
     };
@@ -215,20 +236,26 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
     };
 
     // ── Khách hàng ──
-    const addLead = (l: Pick<Lead, 'name' | 'phone' | 'product' | 'notes'>) => {
+    const addLead = async (l: Pick<Lead, 'name' | 'phone' | 'product' | 'notes'>) => {
         const lead: Lead = { ...l, id: newId(), status: 'Chưa liên hệ', statusDetails: '', createdAt: Date.now(), updatedAt: Date.now() };
         setLeads(prev => [...prev, lead]);
-        khaiThacDb.saveLead(lead).catch(e => console.error('[khai-thac] saveLead', e));
-        toast.success(`Đã thêm khách ${lead.name}`);
+        if (await ghi(khaiThacDb.saveLead(lead), 'thêm khách', () => setLeads(prev => prev.filter(x => x.id !== lead.id)))) {
+            toast.success(`Đã thêm khách ${lead.name}`);
+        }
     };
     const updateLead = (lead: Lead) => {
+        const cu = leads.find(x => x.id === lead.id);
         setLeads(prev => prev.map(x => (x.id === lead.id ? lead : x)));
-        khaiThacDb.saveLead(lead).catch(e => console.error('[khai-thac] saveLead', e));
+        void ghi(khaiThacDb.saveLead(lead), 'cập nhật khách', () => {
+            if (cu) setLeads(prev => prev.map(x => (x.id === lead.id ? cu : x)));
+        });
     };
-    const removeLead = (id: string) => {
+    const removeLead = async (id: string) => {
+        const cu = leads.find(x => x.id === id);
         setLeads(prev => prev.filter(x => x.id !== id));
-        khaiThacDb.deleteLead(id).catch(e => console.error('[khai-thac] deleteLead', e));
-        toast.success('Đã xoá khách hàng');
+        if (await ghi(khaiThacDb.deleteLead(id), 'xoá khách', () => { if (cu) setLeads(prev => [...prev, cu]); })) {
+            toast.success('Đã xoá khách hàng');
+        }
     };
 
     // Nhắc khách quá 2h chưa liên hệ — một lần mỗi lần mở tab (không lặp mỗi phút như app gốc).

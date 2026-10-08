@@ -433,10 +433,11 @@ export default function App(): React.JSX.Element {
 
       await saveListToFirestore(targetStoreId, usernameToSave, listName, itemsToSave);
       
+      // Danh sách đã lưu xong; trạng thái phiên chỉ là phụ — lỗi ở đây không biến lượt lưu thành "thất bại".
       await saveUserState(user!.uid, {
         displayedProducts,
         inventoryFilters
-      });
+      }).catch(err => console.warn('[Sticker] Lưu danh sách xong nhưng chưa đồng bộ được trạng thái phiên:', err));
       
       showAlert('Đã lưu danh sách thành công!');
     } catch (err) {
