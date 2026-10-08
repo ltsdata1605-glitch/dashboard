@@ -236,6 +236,12 @@ async function main() {
     await check('report_commands toàn hệ thống: KHÔNG đọc công khai', assertFails(anon.firestore().doc('report_commands/bc').get()));
     await check('report_commands toàn hệ thống: KHÔNG ghi', assertFails(managerA.firestore().doc('report_commands/bc').set({ imageUrl: 'https://evil' })));
 
+    // line_bots: client KHÔNG được ghi lại 3 field bí mật (chặn tab cũ làm lộ lại token)
+    await check('line_bots: chủ bot KHÔNG ghi lại channelAccessToken', assertFails(managerA.firestore().doc('line_bots/ownerA').set({ channelAccessToken: 'x' }, { merge: true })));
+    await check('line_bots: chủ bot KHÔNG ghi lại channelSecret/pmhRelayToken', assertFails(managerA.firestore().doc('line_bots/ownerA').set({ channelSecret: 'x', pmhRelayToken: 'y' }, { merge: true })));
+    await check('line_bots: admin cũng KHÔNG ghi bí mật', assertFails(adminUser.firestore().doc('line_bots/ownerA').set({ channelAccessToken: 'x' }, { merge: true })));
+    await check('line_bots: vẫn lưu cấu hình thường + cờ hasToken', assertSucceeds(managerA.firestore().doc('line_bots/ownerA').set({ autoApprove: true, hasToken: true }, { merge: true })));
+
     // line_bot_secrets (S13): bí mật bot — không ai ở client đọc/ghi được, kể cả chủ bot và admin
     for (const [ten, ctx] of [['chủ bot/manager cùng Kho', managerA], ['nhân viên', employeeSame], ['admin', adminUser], ['chưa đăng nhập', anon]]) {
         await check(`line_bot_secrets: ${ten} KHÔNG đọc`, assertFails(ctx.firestore().doc('line_bot_secrets/ownerA').get()));

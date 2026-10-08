@@ -7523,3 +7523,10 @@ manager cùng Kho; bản đã xoá khỏi `line_bots` nhưng vẫn nằm trong l
 token mới ở Bot LINE › Cài đặt rồi Lưu (đi qua `saveSecrets`).
 **Lưu ý:** 5 e2e gửi LINE đang `skip` (gửi LINE tạm tắt) còn dựng đường userscript — khi bật lại phải viết lại theo đường
 Cloud Function. Tab trình duyệt mở bản cũ sẽ mất token tới khi tải lại trang. Ngoài ra `pmhRelayToken` hiện chỉ đặt tay trong DB.
+
+### Bổ sung (2026-10-08, sau khi chủ dự án xoay token)
+- Tab giao diện CŨ chưa tải lại trang đã ghi lại Token/Secret vào `line_bots` 2 lần (sau S5). Code mới không ghi (đã grep).
+  Chặn tận gốc ở rules: client KHÔNG ghi `channelAccessToken`/`channelSecret`/`pmhRelayToken` vào `line_bots`
+  (`noBotSecretsWritten()`; tab cũ lưu sẽ nhận permission-denied thay vì làm lộ lại). Rules emulator 83/83.
+- Script di trú thêm `--strip --force` (coi `line_bot_secrets` là nguồn đúng, vẫn đòi nó có đủ giá trị).
+- LINE cho nhiều Channel Access Token cùng hiệu lực, nên "token còn dùng được" không chứng minh là bản mới nhất.

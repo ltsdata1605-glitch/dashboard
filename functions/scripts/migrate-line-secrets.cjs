@@ -10,6 +10,8 @@
  *               Không ghi đè bí mật đã khác ở line_bot_secrets (báo xung đột, bỏ qua).
  *   --strip     (S5) XOÁ 3 field bí mật khỏi line_bots — chỉ khi line_bot_secrets đã có giá trị GIỐNG HỆT.
  *               Bot không khớp thì giữ nguyên và báo.
+ *   --force     (kèm --strip) xoá dù khác nhau, coi line_bot_secrets là nguồn đúng (dùng khi tab giao diện cũ
+ *               ghi lại bản cũ vào line_bots). Vẫn đòi line_bot_secrets có đủ giá trị.
  *
  * Xác thực: Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS hoặc gcloud ADC).
  *     cd functions && node scripts/migrate-line-secrets.cjs [--apply|--strip] [--project dashboa-7e20b]
@@ -22,6 +24,7 @@ const KEYS = ['channelAccessToken', 'channelSecret', 'pmhRelayToken'];
 const args = process.argv.slice(2);
 const APPLY = args.includes('--apply');
 const STRIP = args.includes('--strip');
+const FORCE = args.includes('--force');
 const projIdx = args.indexOf('--project');
 const PROJECT = projIdx >= 0 ? args[projIdx + 1] : 'dashboa-7e20b';
 if (APPLY && STRIP) { console.error('Chọn một: --apply hoặc --strip'); process.exit(2); }
@@ -51,7 +54,7 @@ const nonEmpty = (v) => typeof v === 'string' && v.trim() !== '';
     if (STRIP) {
       const strippable = KEYS.filter((k) => k in data);
       if (strippable.length === 0) continue;
-      const allSame = strippable.every((k) => !nonEmpty(data[k]) || (nonEmpty(sec[k]) && sec[k] === data[k].trim()));
+      const allSame = strippable.every((k) => !nonEmpty(data[k]) || (nonEmpty(sec[k]) && (FORCE || sec[k] === data[k].trim())));
       if (!allSame) { stat.stripSkipped++; console.log('    ⚠ KHÔNG xoá: line_bot_secrets chưa khớp field cũ'); continue; }
       const upd = {};
       for (const k of strippable) upd[k] = FieldValue.delete();

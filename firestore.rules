@@ -195,13 +195,21 @@ service cloud.firestore {
         .hasAny(['departmentId', 'userId', 'ownerEmail', 'ownerName', 'isWarehouseShared']);
     }
 
+    // Bí mật bot KHÔNG được nằm trong line_bots (xem line_bot_secrets): chặn client (kể cả tab cũ chưa tải lại
+    // trang) ghi lại 3 field này — nếu không, bản giao diện cũ sẽ làm lộ lại Token cho mọi manager cùng Kho.
+    function botSecretKeys() { return ['channelAccessToken', 'channelSecret', 'pmhRelayToken']; }
+    function noBotSecretsWritten() {
+      return !request.resource.data.diff(resource == null ? {} : resource.data).affectedKeys().hasAny(botSecretKeys());
+    }
+
     match /line_bots/{userId} {
       allow get:    if isSignedIn() && canUseBot(userId, resource.data);
       // list (findWarehouseBot): query PHẢI lọc departmentId ==/in các Kho của chính mình.
       allow list:   if isSignedIn() && (isAdmin() || (isManager() && resource.data.departmentId in myKhos()));
-      allow create: if isSelf(userId) || isAdmin();
+      allow create: if (isSelf(userId) || isAdmin()) && noBotSecretsWritten();
       allow update: if isSignedIn() && canUseBot(userId, resource.data)
-                    && (isSelf(userId) || isAdmin() || botOwnerKeysUnchanged());
+                    && (isSelf(userId) || isAdmin() || botOwnerKeysUnchanged())
+                    && noBotSecretsWritten();
       allow delete: if isSelf(userId) || isAdmin();
 
       // `/{sub}/{rest=**}` chứ KHÔNG phải `/{sub=**}`: ở rules_version 2, `{x=**}` khớp cả 0 cấp —
