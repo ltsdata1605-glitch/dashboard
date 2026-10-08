@@ -1,17 +1,4 @@
 {
-  "components/analysis/ExportDestinationButton.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 4,
-    "offScaleRadius": 0
-  },
   "components/charts/RevenueCalendar.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -60,19 +47,6 @@
     "tinyText": 0,
     "offScaleRadius": 0,
     "iconRawSvg": 0
-  },
-  "components/common/MultiSelectDropdown.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 1,
-    "offScaleRadius": 0
   },
   "components/common/ProcessingLoader.tsx": {
     "nonSemanticColor": 0,
@@ -125,7 +99,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 1,
     "rawOverlay": 0,
-    "tinyText": 1,
+    "tinyText": 0,
     "offScaleRadius": 0
   },
   "components/layout/MobileBottomNav.tsx": {
@@ -160,7 +134,7 @@
     "iconLegacyCall": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 2,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "iconRawSvg": 0
   },
@@ -198,19 +172,6 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0
-  },
-  "components/summary/WarehouseSettingsModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 1,
-    "offScaleRadius": 0
   },
   "components/summary/WarehouseSummary.tsx": {
     "nonSemanticColor": 0,
@@ -332,7 +293,7 @@
     "iconLegacyCall": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 2,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "iconRawSvg": 0
   },
@@ -358,32 +319,6 @@
     "tinyText": 0,
     "offScaleRadius": 0
   },
-  "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiCard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 4,
-    "offScaleRadius": 0
-  },
-  "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiGrid.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 4,
-    "offScaleRadius": 0
-  },
   "features/bi-dashboard/components/dashboard/KpiOverview.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 2,
@@ -403,7 +338,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 1,
-    "tinyText": 1,
+    "tinyText": 0,
     "offScaleRadius": 0
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
@@ -433,7 +368,7 @@
     "iconLegacyCall": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 2,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "iconRawSvg": 0
   },
@@ -445,19 +380,6 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0
-  },
-  "features/khai-thac/components/DashboardTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 4,
-    "offScaleRadius": 0
   },
   "features/line-bot/components/AdminDeclarationTab.tsx": {
     "nonSemanticColor": 0,
@@ -518,7 +440,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 1,
-    "tinyText": 1,
+    "tinyText": 0,
     "offScaleRadius": 0
   },
   "features/line-bot/components/LineBotOnboardingModal.tsx": {

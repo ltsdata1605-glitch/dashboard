@@ -197,7 +197,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className="industry-kpi-num text-[18px] sm:text-[20px] font-black tracking-tight tabular-nums text-slate-800 leading-none">
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[10px] sm:text-[10.5px] font-bold uppercase tracking-wider text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[11px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 leading-none">
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
@@ -206,7 +206,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className="industry-kpi-num text-[20px] sm:text-[22px] font-black tracking-tight tabular-nums text-slate-800 leading-none">
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[10.5px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[11px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 leading-none">
                                 SL
                             </span>
                         </div>
@@ -214,7 +214,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                 </div>
 
                 {/* Footer Sub-Metric - 1 dòng ngang gọn gàng */}
-                <div className="flex items-center justify-between gap-1 pt-1.5 mt-auto border-t border-slate-100 text-[10.5px] leading-none">
+                <div className="flex items-center justify-between gap-1 pt-1.5 mt-auto border-t border-slate-100 text-[11px] leading-none">
                     <span className="text-slate-400 font-medium truncate">
                         {isRevenueFocus ? 'Số lượng' : (isRealtime ? 'DTQĐ' : 'QĐ')}
                     </span>

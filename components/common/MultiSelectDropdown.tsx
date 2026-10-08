@@ -136,7 +136,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 >
                     <AppIcon name={resolveIconName(iconName) ?? 'help'} size="md" />
                     {isFiltered && (
-                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[10px] flex items-center justify-center font-bold">
+                        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[11px] flex items-center justify-center font-bold">
                             {selected.length}
                         </span>
                     )}

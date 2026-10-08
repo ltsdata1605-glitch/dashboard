@@ -210,7 +210,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                 <AppIcon name="lineBrand" size="md" />
                 {laLine ? (
                     groupCount > 1 ? (
-                        <span className="absolute -top-1 -right-1 bg-[#06C755] text-white text-[9px] font-black px-1 min-w-[15px] h-[15px] rounded-full flex items-center justify-center shadow-sm">
+                        <span className="absolute -top-1 -right-1 bg-[#06C755] text-white text-[11px] font-black px-1 min-w-[16px] h-[16px] rounded-full flex items-center justify-center shadow-sm">
                             {groupCount}
                         </span>
                     ) : (
@@ -218,7 +218,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                     )
                 ) : (
                     currentCmd ? (
-                        <span className="absolute -top-1 -right-1 bg-sky-500 text-white text-[8px] font-black px-0.5 min-w-[14px] h-[14px] rounded-full flex items-center justify-center shadow-sm" title={`Lệnh: ${currentCmd}`}>
+                        <span className="absolute -top-1 -right-1 bg-sky-500 text-white text-[11px] font-black px-0.5 min-w-[16px] h-[16px] rounded-full flex items-center justify-center shadow-sm" title={`Lệnh: ${currentCmd}`}>
                             /
                         </span>
                     ) : null
@@ -234,7 +234,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                 <span>Cú pháp gõ lệnh nhận ảnh trên LINE</span>
                             </label>
                             {commandInput.trim() && (
-                                <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow-sm">
+                                <span className="text-[11px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow-sm">
                                     Lệnh: {sanitizeReportCommand(commandInput)}
                                 </span>
                             )}
@@ -321,7 +321,7 @@ export function ExportDestinationButton({ reportKey, className = '' }: { reportK
                                     Tự động gửi vào nhóm LINE{botName ? ` (bot ${botName})` : ''}
                                 </span>
                                 {LINE_EXPORT_TEMPORARILY_DISABLED ? (
-                                    <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
+                                    <span className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-800">
                                         Đang tạm tắt
                                     </span>
                                 ) : (

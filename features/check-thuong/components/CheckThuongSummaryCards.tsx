@@ -56,7 +56,7 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
                 iconColor="amber"
                 title="Quán Quân #1"
                 badge={
-                    <span className="px-1.5 py-0.5 text-[10px] font-black uppercase rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/50">
+                    <span className="px-1.5 py-0.5 text-[11px] font-black uppercase rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/50">
                         TOP 1
                     </span>
                 }
@@ -82,7 +82,7 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
                 isGood={stats.avgAchievedPercent >= 80}
                 trendLabel="Tỉ lệ đạt"
                 trendValue={
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold tabular-nums shrink-0 ${
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
                         stats.avgAchievedPercent >= 80
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50'
                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50'

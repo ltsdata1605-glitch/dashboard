@@ -212,7 +212,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                     <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
                                         Allow User Scripts
                                     </span>
-                                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-600 text-white rounded uppercase">
+                                    <span className="px-1.5 py-0.5 text-[11px] font-bold bg-emerald-600 text-white rounded uppercase">
                                         Gạt BẬT (Xanh)
                                     </span>
                                 </div>
@@ -227,7 +227,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                     <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
                                         Site access
                                     </span>
-                                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-600 text-white rounded">
+                                    <span className="px-1.5 py-0.5 text-[11px] font-bold bg-sky-600 text-white rounded">
                                         "On all sites"
                                     </span>
                                 </div>

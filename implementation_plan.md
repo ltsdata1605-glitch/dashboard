@@ -7530,3 +7530,11 @@ Cloud Function. Tab trình duyệt mở bản cũ sẽ mất token tới khi t�
   (`noBotSecretsWritten()`; tab cũ lưu sẽ nhận permission-denied thay vì làm lộ lại). Rules emulator 83/83.
 - Script di trú thêm `--strip --force` (coi `line_bot_secrets` là nguồn đúng, vẫn đòi nó có đủ giá trị).
 - LINE cho nhiều Channel Access Token cùng hiệu lực, nên "token còn dùng được" không chứng minh là bản mới nhất.
+
+### GĐ4 dọn dần — chữ nhỏ hơn 11px (2026-10-08)
+`tinyText` 82 → 50: nâng `text-[8|9|10|10.5px]` lên `text-[11px]` ở 12 file (Khai thác, Check thưởng, KPI ngành hàng BI,
+xuất ảnh, v.v.); 2 huy hiệu số tròn ở `ExportDestinationButton` nới 14–15px → 16px để chứa chữ 11px. KHÔNG đụng
+`IPhoneChatPreview` (xem trước LINE, cỡ chữ nhỏ có chủ đích — 50 chỗ còn lại) và `ResultsDisplay` (mẫu tem minh hoạ khung
+cố định, tăng chữ sẽ tràn). `npm run check` xanh (baseline tự hạ); e2e Khai thác/Check thưởng/xuất ảnh/chuẩn thiết kế 28 qua, 1 skip.
+Chưa xem ảnh chụp từng màn — nên liếc các thẻ KPI ngành hàng BI trên laptop để chắc chữ không tràn.
+

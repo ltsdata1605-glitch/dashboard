@@ -332,7 +332,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                                         />
 
                                         {/* Badge số thứ tự */}
-                                        <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-slate-900/70 text-white text-[10px] font-bold backdrop-blur-xs">
+                                        <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded-md bg-slate-900/70 text-white text-[11px] font-bold backdrop-blur-xs">
                                             #{i + 1}
                                         </div>
 

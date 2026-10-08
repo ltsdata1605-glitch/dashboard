@@ -96,25 +96,25 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({ reports, fields, sta
                 ) : (
                     <>
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 lg:gap-3" data-testid="kpi-strip">
-                            <KpiCard icon="banknote" iconColor="sky" title="Tổng doanh số" trendLabel="Số đơn" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/40 tabular-nums shrink-0">{s.orders}</span>}>
+                            <KpiCard icon="banknote" iconColor="sky" title="Tổng doanh số" trendLabel="Số đơn" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/40 tabular-nums shrink-0">{s.orders}</span>}>
                                 <div className="flex items-baseline justify-center gap-1 w-full overflow-hidden">
                                     <span className="text-[22px] sm:text-[26px] lg:text-[30px] font-black leading-none tracking-tight tabular-nums text-slate-900 dark:text-white">{fmtTr(s.revenueTotal)}</span>
                                     <span className="text-[12px] sm:text-[14px] font-extrabold text-slate-400 dark:text-slate-500">Tr</span>
                                 </div>
                             </KpiCard>
-                            <KpiCard icon="credit-card" iconColor="emerald" title="Trả góp" trendLabel="Tỉ lệ" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40 tabular-nums shrink-0">{pct(s.traGopCount, s.orders)}%</span>}>
+                            <KpiCard icon="credit-card" iconColor="emerald" title="Trả góp" trendLabel="Tỉ lệ" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40 tabular-nums shrink-0">{pct(s.traGopCount, s.orders)}%</span>}>
                                 <div className="flex items-baseline justify-center gap-1 w-full overflow-hidden">
                                     <span className="text-[22px] sm:text-[26px] lg:text-[30px] font-black leading-none tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">{s.traGopCount}</span>
                                     <span className="text-[12px] sm:text-[14px] font-extrabold text-slate-400 dark:text-slate-500">đơn</span>
                                 </div>
                             </KpiCard>
-                            <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tỉ lệ" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/40 tabular-nums shrink-0">{pct(s.moViCount, s.orders)}%</span>}>
+                            <KpiCard icon="wallet" iconColor="sky" title="Mở Ví" trendLabel="Tỉ lệ" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border border-sky-200/50 dark:border-sky-800/40 tabular-nums shrink-0">{pct(s.moViCount, s.orders)}%</span>}>
                                 <div className="flex items-baseline justify-center gap-1 w-full overflow-hidden">
                                     <span className="text-[22px] sm:text-[26px] lg:text-[30px] font-black leading-none tracking-tight tabular-nums text-sky-700 dark:text-sky-400">{s.moViCount}</span>
                                     <span className="text-[12px] sm:text-[14px] font-extrabold text-slate-400 dark:text-slate-500">đơn</span>
                                 </div>
                             </KpiCard>
-                            <KpiCard icon="swords" iconColor="rose" title="Chiến giá" trendLabel="Bảo hiểm" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40 tabular-nums shrink-0">{fmtTr(s.insuranceTr)} Tr</span>}>
+                            <KpiCard icon="swords" iconColor="rose" title="Chiến giá" trendLabel="Bảo hiểm" trendValue={<span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50 dark:border-rose-800/40 tabular-nums shrink-0">{fmtTr(s.insuranceTr)} Tr</span>}>
                                 <div className="flex items-baseline justify-center gap-1 w-full overflow-hidden">
                                     <span className="text-[22px] sm:text-[26px] lg:text-[30px] font-black leading-none tracking-tight tabular-nums text-rose-700 dark:text-rose-400">{s.priceWarCount}</span>
                                     <span className="text-[12px] sm:text-[14px] font-extrabold text-slate-400 dark:text-slate-500">đơn</span>

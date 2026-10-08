@@ -303,7 +303,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                     <h4 className={`text-xs font-bold uppercase tracking-wider ${styles.text} truncate`}>
                                         {mainHeader}
                                     </h4>
-                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${allVisible ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : visibleCount > 0 ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}>
+                                    <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ${allVisible ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : visibleCount > 0 ? 'bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300' : 'bg-slate-100 text-slate-400 dark:bg-slate-800'}`}>
                                         {visibleCount}/{cols.length}
                                     </span>
                                 </div>

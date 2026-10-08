@@ -200,7 +200,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                                                     className="w-full h-full object-cover pointer-events-none" 
                                                 />
                                             </div>
-                                            <span className="text-[10px] text-slate-600 dark:text-slate-400 text-center truncate w-full mt-1.5 font-medium group-hover:text-sky-600 dark:group-hover:text-sky-400">
+                                            <span className="text-[11px] text-slate-600 dark:text-slate-400 text-center truncate w-full mt-1.5 font-medium group-hover:text-sky-600 dark:group-hover:text-sky-400">
                                                 {avatar.name}
                                             </span>
                                             {isSelected && (
