@@ -73,6 +73,29 @@ jobs:
         run: npm run typecheck:functions
 
   # ───────────────────────────────────────────────────────────────────────────────────────────
+  # Firestore Rules chạy trên emulator thật (audit GĐ6, 2026-10-08). `firestore.rules` là lớp bảo vệ
+  # cuối cùng của dữ liệu siêu thị (khoData, biData, line_bots, stickerUsers, stores…) — trước đây
+  # 71 test của nó chỉ chạy khi có người nhớ gõ `npm run test:rules`. `--project demo-rules`: tiền tố
+  # demo- cho emulator chạy không cần đăng nhập Firebase, không chạm project thật.
+  rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Cài dependency
+        run: npm ci
+      - name: Firestore Rules (emulator)
+        run: npx firebase emulators:exec --project demo-rules --only firestore "node tests/firestore.rules.test.mjs"
+
+  # ───────────────────────────────────────────────────────────────────────────────────────────
   # Test E2E (Playwright). Tách JOB RIÊNG, chạy song song với `check`, để khi đỏ thì biết ngay
   # hỏng ở tầng nào mà không phải đọc log chung.
   #

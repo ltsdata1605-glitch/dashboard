@@ -416,6 +416,9 @@ export default function GlobalAutoSyncDock() {
             <aside
                 aria-label="Thao tác tự động Auto Sync Pro"
                 data-testid="ycx-auto-dock"
+                // Trạng thái dò userscript (không hiển thị): chân khung đã bỏ dòng "bản 7.x" ở 41eb025f, test cần chờ
+                // đúng lúc khung nhận ra userscript trước khi bấm. 'checking' → 'none' | số phiên bản.
+                data-userscript={ycxScript.checked ? (ycxScript.installed ? (ycxScript.version || '?') : 'none') : 'checking'}
                 className={`preserve-rounded hidden lg:flex flex-col fixed right-4 xl:right-7 top-32 z-40 transition-all duration-300 ease-out no-print hide-on-export select-none animate-in fade-in slide-in-from-right-4 ${
                     isDockCollapsed ? 'w-auto p-1.5' : 'w-[224px] p-3 gap-2.5'
                 } rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800 shadow-[0_20px_48px_-12px_rgba(0,0,0,0.18),0_4px_16px_rgba(0,0,0,0.06),inset_0_1px_1px_rgba(255,255,255,0.9)] dark:shadow-[0_24px_50px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.1)]`}

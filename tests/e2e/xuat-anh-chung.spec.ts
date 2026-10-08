@@ -85,17 +85,30 @@ test('co cột vừa nội dung: ô dữ liệu 1 dòng, không cột nào bị 
     expect(r.anhCao).toBeGreaterThan(r.anhCaoKhongChan + 10);
 });
 
-test('bảng hẹp vẫn ra ảnh tối thiểu 680px', async ({ page }) => {
+// Quy tắc 680px đổi ở f1c95973 (2026-10-03, chủ dự án): tối thiểu 680px CHỈ khi ảnh có cụm thẻ KPI; bảng
+// trơn thì ảnh vừa khít bảng, không kéo dãn thừa trắng. Test cũ còn đòi 688 cho bảng trơn nên đỏ từ đó.
+test('bảng trơn hẹp: ảnh vừa khít bảng; có cụm thẻ KPI: tối thiểu 680px', async ({ page }) => {
     await page.goto('/');
-    const rong = await page.evaluate(async (path) => {
+    const r = await page.evaluate(async (path) => {
         const m = (await import(/* @vite-ignore */ path)) as Mod;
-        const el = document.createElement('div');
-        el.innerHTML = '<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>';
-        document.body.appendChild(el);
-        const b = await m.exportElementAsImage(el, 'nho.png', { mode: 'blob-only', scale: 1 });
-        return (await createImageBitmap(b!)).width;
+        const xuat = async (html: string) => {
+            const el = document.createElement('div');
+            el.innerHTML = html;
+            document.body.appendChild(el);
+            const b = await m.exportElementAsImage(el, 'nho.png', { mode: 'blob-only', scale: 1 });
+            el.remove();
+            return (await createImageBitmap(b!)).width;
+        };
+        const bang = '<table><tr><th>A</th><th>B</th></tr><tr><td>1</td><td>2</td></tr></table>';
+        return {
+            tron: await xuat(bang),
+            coKpi: await xuat(`<div class="kpi-grid"><div>DT 44Tr</div></div>${bang}`),
+        };
     }, MOD);
-    expect(rong).toBe(688);
+    console.log('Bề rộng ảnh — bảng trơn:', r.tron, '| có thẻ KPI:', r.coKpi);
+    expect(r.tron).toBeGreaterThan(0);
+    expect(r.tron).toBeLessThan(680);
+    expect(r.coKpi).toBe(688);
 });
 
 test('xuất lẻ: hiện bảng chờ "Đang chụp ảnh…" rồi tự tắt', async ({ page }) => {

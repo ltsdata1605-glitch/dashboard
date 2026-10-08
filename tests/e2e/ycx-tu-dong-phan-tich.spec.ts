@@ -85,7 +85,7 @@ test('Phân tích: khung AUTO SYNC YCX → mở báo cáo 77 → tiến trình �
     const dock = page.getByTestId('ycx-auto-dock');
     await expect(dock).toBeVisible();
     await expect(dock).toContainText('Auto Sync');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 5000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     await page.screenshot({ path: test.info().outputPath('1-khung.png') });
 
     const popupP = page.waitForEvent('popup');
@@ -129,7 +129,7 @@ test('Phân tích: tab MWG báo lỗi → khung hiện lỗi + nút Chạy lại
     test.setTimeout(60_000);
     await moPhanTichCoUserscript(page);
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 5000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: /Tự động YCX Realtime/ }).click();
     const jobId = new URL((await popupP).url()).searchParams.get('ycx_job')!;
@@ -146,7 +146,7 @@ test('Phân tích: chưa cài userscript → bấm khung hiện hướng dẫn c
     await page.goto('/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText('chưa cài', { timeout: 5000 });
+    await expect(dock).toHaveAttribute('data-userscript', 'none', { timeout: 5000 });
     let moPopup = false;
     page.on('popup', () => { moPopup = true; });
     await dock.getByRole('button', { name: /Tự động YCX Realtime/ }).click();
@@ -174,7 +174,7 @@ test('Phân tích: YCX Luỹ kế ngày 15 → mở báo cáo 77 chế độ luy
     test.setTimeout(120_000);
     await moPhanTichCoUserscript(page, '2026-10-15T09:00:00');
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 5000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     await expect(dock).toContainText('YCX Luỹ kế');
 
     const popupP = page.waitForEvent('popup');
@@ -205,7 +205,7 @@ test('Phân tích: bấm YCX Luỹ kế vào NGÀY 01 → chạy Realtime', asyn
     test.setTimeout(60_000);
     await moPhanTichCoUserscript(page, '2026-10-01T09:00:00');
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 5000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 5000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
     expect((await popupP).url()).toMatch(/\?ycx_ycx=realtime&ycx_job=ycx-/);

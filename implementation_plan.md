@@ -7424,3 +7424,25 @@ này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com
 **Chưa làm:** service worker offline (IOS-07 — chỉ làm nếu chủ dự án cần mở app khi mất mạng).
 **Cần iPhone thật** (Playwright không giả được): quyền camera + đèn xanh tắt khi đóng máy quét; nút Mở/Chia sẻ PDF;
 in tem ra máy in; Google đăng nhập; mở từ Màn hình chính; chuyển nền rồi quay lại; phóng to 2 ngón.
+
+## Audit 2026-10-07 — Giai đoạn 6: tài liệu & phát hành
+
+**CI xanh lại** — job e2e Chromium đỏ liên tục từ run 228 (2026-10-03) ở 3 spec, cả 3 do test chưa theo kịp thay đổi
+có chủ đích của chủ dự án (không phải lỗi app):
+
+| Spec | Nguyên nhân | Sửa |
+|---|---|---|
+| `xuat-anh-chung` | `f1c95973`: tối thiểu 680px chỉ khi có cụm thẻ KPI; test còn đòi 688 cho bảng trơn | Test kiểm cả 2: bảng trơn 91px (vừa khít), có thẻ KPI 688px |
+| `ycx-tu-dong-phan-tich` (5 bài) | `41eb025f`: chân khung Auto Sync bỏ dòng "bản 7.x" mà test dùng để chờ dò userscript | Khung thêm `data-userscript` (không hiển thị); test chờ theo thuộc tính |
+| `line-gui-anh-va-hen-gio` | `7c9f96b3`: tạm tắt gửi LINE (+ chờ "bản 7.x") | 5 bài gửi LINE `skip` khi `LINE_EXPORT_TEMPORARILY_DISABLED` (đọc từ source — bật lại là tự chạy); 2 bài còn lại pass |
+
+**CI thêm job `rules`**: 71 test Firestore Rules chạy trên emulator (`--project demo-rules`, Java 21). Typecheck
+Cloud Functions đã có từ trước (A37).
+
+**CLAUDE.md**: In Sticker đã di trú sang `(default)` (đo trên code: `firestoreDatabaseId: "(default)"`,
+`STICKER_DB_ID = '(default)'`, rules `stickerUsers`/`stores` trong `firestore.rules`) — bản cũ còn bảo thêm rules vào
+`firestore.stickerevent.rules` (không có tác dụng). Quy tắc 680px ghi đúng theo `f1c95973`.
+
+**Chờ chủ dự án:** (1) deploy functions + rules từ Mac; (2) sau đó mới commit bộ tài liệu audit vào repo (repo công
+khai); (3) có xoá database In Sticker cũ `ai-studio-16672ec9-…` + bỏ map trong `firebase.json` không — việc phá huỷ,
+cần xác nhận dữ liệu cũ không còn dùng.

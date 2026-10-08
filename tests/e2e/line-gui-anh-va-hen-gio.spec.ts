@@ -13,6 +13,10 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * Bot/nhóm LINE giả qua `__YCX_TEST_LINE__` (chỉ bản dev). Lượt gọi api.line.me bị chặn ở shim GM_xmlhttpRequest —
  * kiểm đúng nội dung gửi đi, không gửi thật.
  */
+// Chủ dự án tạm tắt gửi LINE (7c9f96b, 2026-10-04) bằng cờ LINE_EXPORT_TEMPORARILY_DISABLED. Các bài GỬI LINE bỏ
+// qua trong lúc tắt (giống services/analysisExportDestinations.test.ts) — đặt cờ về false là chúng tự chạy lại.
+// Đọc cờ từ source thay vì import: module đó kéo theo Firebase, không nạp được trong tiến trình Node của Playwright.
+const LINE_TAT = /export const LINE_EXPORT_TEMPORARILY_DISABLED\s*=\s*true/.test(readFileSync(resolve(fileURLToPath(new URL('.', import.meta.url)), '../../services/analysisExportDestinations.ts'), 'utf-8'));
 const USERSCRIPT = readFileSync(resolve(fileURLToPath(new URL('.', import.meta.url)), '../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js'), 'utf-8');
 const NHOM = 'C0123456789abcdef0123456789abcdef';
 const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -84,6 +88,7 @@ async function napDuLieu(page: Page) {
 const lineCalls = (page: Page) => page.evaluate(() => (window as unknown as W).__line);
 
 test('đích xuất ảnh: chọn nhóm LINE ở nút → bấm xuất là GỬI LINE (không tải về), nhớ sau khi tải lại trang', async ({ page }) => {
+    test.skip(LINE_TAT, 'gửi LINE đang tạm tắt (7c9f96b)');
     test.setTimeout(150_000);
     await chuanBi(page);
     await napDuLieu(page);
@@ -123,6 +128,7 @@ test('đích xuất ảnh: chọn nhóm LINE ở nút → bấm xuất là GỬI
 });
 
 test('Auto Sync YCX Realtime nạp xong → TỰ gửi các ảnh đã đặt "nhóm LINE" (chỉ các ảnh đó)', async ({ page }) => {
+    test.skip(LINE_TAT, 'gửi LINE đang tạm tắt (7c9f96b)');
     test.setTimeout(150_000);
     await chuanBi(page);
     // Đặt trước: "Tổng Quan Doanh Thu" và "Chi Tiết Theo Kho" gửi nhóm LINE; còn lại tải về
@@ -134,7 +140,7 @@ test('Auto Sync YCX Realtime nạp xong → TỰ gửi các ảnh đã đặt "n
     }, NHOM);
 
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 8000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 8000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     const popupP = page.waitForEvent('popup');
     await dock.getByRole('button', { name: 'Tự động YCX Realtime' }).click();
     const jobId = new URL((await popupP).url()).searchParams.get('ycx_job')!;
@@ -155,7 +161,7 @@ test('hẹn giờ: đặt 09:00 cho YCX Realtime trên nút → đến giờ t�
     test.setTimeout(120_000);
     await chuanBi(page, { homNay: '2026-10-15T08:58:00' });
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 8000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 8000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
 
     await page.getByTestId('sched-ycx-realtime').click();
     const modal = page.getByTestId('sched-modal-ycx-realtime');
@@ -207,6 +213,7 @@ test('userscript 7.16: cầu LINE chỉ gửi đúng định dạng (ID nhóm sa
 });
 
 test('ảnh nét (2026-10-02): function có ghép HD → ảnh GỐC là PNG nguyên bản chụp 3x, xem trước ≤1MB riêng', async ({ page }) => {
+    test.skip(LINE_TAT, 'gửi LINE đang tạm tắt (7c9f96b)');
     test.setTimeout(150_000);
     await chuanBi(page, { hd: true });
     await napDuLieu(page);
@@ -228,10 +235,11 @@ test('ảnh nét (2026-10-02): function có ghép HD → ảnh GỐC là PNG ngu
 });
 
 test('hẹn giờ + KHU VỰC: chọn "Chi tiết theo kho" → nhóm Quản Lý; đến giờ đổ dữ liệu xong chỉ gửi đúng khu vực đó', async ({ page }) => {
+    test.skip(LINE_TAT, 'gửi LINE đang tạm tắt (7c9f96b)');
     test.setTimeout(180_000);
     await chuanBi(page, { homNay: '2026-10-15T08:58:00' });
     const dock = page.getByTestId('ycx-auto-dock');
-    await expect(dock).toContainText(/bản 7\.\d+/, { timeout: 8000 });
+    await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 8000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     // Nút "Tổng Quan" vẫn đặt đích nhóm 910 — lượt có chọn khu vực KHÔNG được gửi nó
     await page.evaluate(async (nhom) => {
         const duongDan = '/services/analysisExportDestinations.ts';
@@ -273,6 +281,7 @@ test('hẹn giờ + KHU VỰC: chọn "Chi tiết theo kho" → nhóm Quản Lý
 });
 
 test('hẹn giờ Report BI Luỹ kế + khu vực: đổ dữ liệu xong → Report BI tự chụp Thi đua Tổng & Doanh thu Tổng → gửi LINE', async ({ page }) => {
+    test.skip(LINE_TAT, 'gửi LINE đang tạm tắt (7c9f96b)');
     test.setTimeout(180_000);
     const { seedCompetitionData } = await import('./helpers/seed');
     await chuanBi(page, { url: '/?tab=employees' });
