@@ -233,15 +233,42 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         });
     }, [setHighlightedEmpArray]);
 
-    const [selectedCompArray, setSelectedCompArray] = useIndexedDBState<string[]>('global-selected-competitions', []);
-    const selectedCompetitions = useMemo(() => new Set(selectedCompArray), [selectedCompArray]);
+    const [selectedCompArray, setSelectedCompArray] = useIndexedDBState<string[]>('global-selected-competitions', ['all']);
+
+    const allCompetitionTitles = useMemo(() => {
+        return (Object.values(competitionData || {}).filter(Boolean) as { headers?: CompetitionHeader[] }[])
+            .flatMap(c => c?.headers ? c.headers.map(h => h.originalTitle) : []);
+    }, [competitionData]);
+
+    const selectedCompetitions = useMemo(() => {
+        // Mặc định chọn tất cả nếu chưa lưu cấu hình, mảng rỗng hoặc chứa cờ 'all'
+        if (!selectedCompArray || selectedCompArray.length === 0 || selectedCompArray.includes('all')) {
+            return new Set(allCompetitionTitles);
+        }
+        // Người dùng chủ động bỏ chọn tất cả
+        if (selectedCompArray.length === 1 && (selectedCompArray[0] === 'none' || selectedCompArray[0] === '__none__')) {
+            return new Set<string>();
+        }
+        return new Set(selectedCompArray);
+    }, [selectedCompArray, allCompetitionTitles]);
+
     const setSelectedCompetitions = useCallback((updater: React.SetStateAction<Set<string>>) => {
         setSelectedCompArray(prevArray => {
-            const prevSet = new Set(prevArray || []);
-            const newSet = typeof updater === 'function' ? updater(prevSet) : updater;
+            const currentSet = (!prevArray || prevArray.length === 0 || prevArray.includes('all'))
+                ? new Set(allCompetitionTitles)
+                : (prevArray.length === 1 && (prevArray[0] === 'none' || prevArray[0] === '__none__'))
+                    ? new Set<string>()
+                    : new Set(prevArray);
+            const newSet = typeof updater === 'function' ? updater(currentSet) : updater;
+            if (newSet.size === 0) {
+                return ['none'];
+            }
+            if (allCompetitionTitles.length > 0 && newSet.size === allCompetitionTitles.length && allCompetitionTitles.every(t => newSet.has(t))) {
+                return ['all'];
+            }
             return Array.from(newSet);
         });
-    }, [setSelectedCompArray]);
+    }, [setSelectedCompArray, allCompetitionTitles]);
 
     const [employeeCompetitionTargets, setEmployeeCompetitionTargets] = useState<Map<string, Map<string, number>>>(new Map());
 
