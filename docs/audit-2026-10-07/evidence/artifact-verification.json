@@ -1,0 +1,15 @@
+{
+  "checked": "Copied/configurable evidence outputs and artifact structure",
+  "auth_cases": 5,
+  "backend_cases": 7,
+  "gemini_unauth_fixture": true,
+  "postmessage_fixture": true,
+  "tax_cases": 3,
+  "data_fixture_groups": 5,
+  "feature_fixture_cases": 7,
+  "report_security_groups": 14,
+  "report_data_groups": 18,
+  "plan_tasks": 23,
+  "all_assertions_pass": true,
+  "limits": "Mocks offline; no deployed backend/rules/IAM or real Safari validation; not full framework test suite"
+}

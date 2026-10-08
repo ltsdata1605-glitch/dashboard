@@ -1,0 +1,148 @@
+{
+  "scope": "Original callable bodies, mocked Auth/Firestore, zero production calls",
+  "limitations": "Does not test deployed code, actual Firebase rules engine, IAM, token verification or real browsers.",
+  "results": [
+    {
+      "finding": "AUTH-01",
+      "pass": true,
+      "observed": "Unauthenticated registration changed existing admin Auth password, demoted sticker profile and minted token for victim UID.",
+      "events": [
+        {
+          "operation": "updateAuth",
+          "uid": "victim-admin",
+          "fields": [
+            "password"
+          ]
+        },
+        {
+          "operation": "set",
+          "key": "stickerUsers/victim-admin"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "victim-admin",
+          "claims": {
+            "stickerRole": "staff",
+            "stickerStoreId": "LAB"
+          }
+        },
+        {
+          "operation": "mintCustomToken",
+          "uid": "victim-admin"
+        }
+      ]
+    },
+    {
+      "finding": "AUTH-02",
+      "pass": true,
+      "observed": "Ordinary authenticated identity received superadmin by supplying reserved username.",
+      "events": [
+        {
+          "operation": "set",
+          "key": "stickerUsers/ordinary-attacker"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "ordinary-attacker",
+          "claims": {
+            "stickerRole": "superadmin",
+            "stickerStoreId": "LABNEW"
+          }
+        }
+      ]
+    },
+    {
+      "finding": "AUTH-05",
+      "pass": true,
+      "observed": "After revoke and fresh resolveSession, status is expired but role remains manager and department claim LAB remains authorized.",
+      "events": [
+        {
+          "operation": "update",
+          "key": "users/lab-manager"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "lab-manager",
+          "claims": {
+            "role": "manager",
+            "departmentId": "LAB"
+          }
+        },
+        {
+          "operation": "update",
+          "key": "users/lab-manager"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "lab-manager",
+          "claims": {
+            "role": "manager",
+            "departmentId": "LAB"
+          }
+        }
+      ]
+    },
+    {
+      "finding": "AUTH-06",
+      "pass": true,
+      "observed": "Sticker resolve erased root claims; root resolve erased sticker claims.",
+      "events": [
+        {
+          "operation": "update",
+          "key": "users/dual-zone"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "dual-zone",
+          "claims": {
+            "role": "manager",
+            "departmentId": "LAB"
+          }
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "dual-zone",
+          "claims": {
+            "stickerRole": "staff",
+            "stickerStoreId": "LAB"
+          }
+        },
+        {
+          "operation": "update",
+          "key": "users/dual-zone"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "dual-zone",
+          "claims": {
+            "role": "manager",
+            "departmentId": "LAB"
+          }
+        }
+      ]
+    },
+    {
+      "finding": "AUTH-03",
+      "pass": true,
+      "observed": "Unapproved user receives arbitrary requested department in issued claims. Rules allow signed-in users with matching department to read khoData/biData (static analysis; emulator not executed).",
+      "events": [
+        {
+          "operation": "update",
+          "key": "users/new-user"
+        },
+        {
+          "operation": "update",
+          "key": "users/new-user"
+        },
+        {
+          "operation": "replaceClaims",
+          "uid": "new-user",
+          "claims": {
+            "role": "pending",
+            "departmentId": "UNAPPROVED_WAREHOUSE"
+          }
+        }
+      ]
+    }
+  ]
+}

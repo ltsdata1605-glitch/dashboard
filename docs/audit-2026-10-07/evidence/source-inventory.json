@@ -1,0 +1,3979 @@
+{
+  "archive_sha256": "84f751763e3a357e0b65ee3faa512addc99f0306df7b6bfe9067567667403901",
+  "file_count": 980,
+  "top_level_counts": {
+    "progress.md": 1,
+    "eslint.config.js": 1,
+    "findings.md": 1,
+    "firebase.json": 1,
+    "RULES.md": 1,
+    "package-lock.json": 1,
+    "index.html": 1,
+    "AGENT_RULES.md": 1,
+    "KE_HOACH_NANG_CAP_MOBILE_APP_IPHONE.md": 1,
+    "task_plan.md": 1,
+    "package.json": 1,
+    "KE_HOACH_TONG_THE.md": 1,
+    "App.tsx": 1,
+    "violations-baseline.json": 1,
+    "vitest.config.ts": 1,
+    "firestore.stickerevent.rules": 1,
+    "DESIGN_SYSTEM.md": 1,
+    "vite.config.ts": 1,
+    "netlify.toml": 1,
+    "constants.ts": 1,
+    "implementation_plan_pmh_relay.md": 1,
+    "global.d.ts": 1,
+    ".gitignore": 1,
+    "playwright.config.ts": 1,
+    "implementation_plan.md": 1,
+    "metadata.json": 1,
+    "CLAUDE.md": 1,
+    "tsconfig.json": 1,
+    "index.tsx": 1,
+    "types.ts": 1,
+    ".firebaserc": 1,
+    "styles.css": 1,
+    "firestore.rules": 1,
+    "README.md": 1,
+    "NOTES.md": 1,
+    "hooks": 18,
+    "price-scraper-server": 9,
+    "contexts": 4,
+    "scripts": 9,
+    "styles": 1,
+    "tests": 176,
+    ".agents": 109,
+    "functions": 27,
+    ".vscode": 1,
+    "public": 48,
+    "utils": 10,
+    ".claude": 2,
+    "services": 54,
+    ".github": 1,
+    "features": 328,
+    "components": 148
+  },
+  "files": [
+    {
+      "file": "progress.md",
+      "bytes": 1161
+    },
+    {
+      "file": "eslint.config.js",
+      "bytes": 6059
+    },
+    {
+      "file": "findings.md",
+      "bytes": 2716
+    },
+    {
+      "file": "firebase.json",
+      "bytes": 725
+    },
+    {
+      "file": "RULES.md",
+      "bytes": 21625
+    },
+    {
+      "file": "package-lock.json",
+      "bytes": 584482
+    },
+    {
+      "file": "index.html",
+      "bytes": 10402
+    },
+    {
+      "file": "AGENT_RULES.md",
+      "bytes": 1591
+    },
+    {
+      "file": "KE_HOACH_NANG_CAP_MOBILE_APP_IPHONE.md",
+      "bytes": 19889
+    },
+    {
+      "file": "task_plan.md",
+      "bytes": 2348
+    },
+    {
+      "file": "package.json",
+      "bytes": 2951
+    },
+    {
+      "file": "KE_HOACH_TONG_THE.md",
+      "bytes": 25737
+    },
+    {
+      "file": "App.tsx",
+      "bytes": 22367
+    },
+    {
+      "file": "violations-baseline.json",
+      "bytes": 6699
+    },
+    {
+      "file": "vitest.config.ts",
+      "bytes": 895
+    },
+    {
+      "file": "firestore.stickerevent.rules",
+      "bytes": 3318
+    },
+    {
+      "file": "DESIGN_SYSTEM.md",
+      "bytes": 16296
+    },
+    {
+      "file": "vite.config.ts",
+      "bytes": 3437
+    },
+    {
+      "file": "netlify.toml",
+      "bytes": 120
+    },
+    {
+      "file": "constants.ts",
+      "bytes": 31304
+    },
+    {
+      "file": "implementation_plan_pmh_relay.md",
+      "bytes": 2768
+    },
+    {
+      "file": "global.d.ts",
+      "bytes": 1704
+    },
+    {
+      "file": ".gitignore",
+      "bytes": 819
+    },
+    {
+      "file": "playwright.config.ts",
+      "bytes": 4553
+    },
+    {
+      "file": "implementation_plan.md",
+      "bytes": 595950
+    },
+    {
+      "file": "metadata.json",
+      "bytes": 234
+    },
+    {
+      "file": "CLAUDE.md",
+      "bytes": 30986
+    },
+    {
+      "file": "tsconfig.json",
+      "bytes": 706
+    },
+    {
+      "file": "index.tsx",
+      "bytes": 536
+    },
+    {
+      "file": "types.ts",
+      "bytes": 20093
+    },
+    {
+      "file": ".firebaserc",
+      "bytes": 55
+    },
+    {
+      "file": "styles.css",
+      "bytes": 21532
+    },
+    {
+      "file": "firestore.rules",
+      "bytes": 11709
+    },
+    {
+      "file": "README.md",
+      "bytes": 550
+    },
+    {
+      "file": "NOTES.md",
+      "bytes": 2844
+    },
+    {
+      "file": "hooks/useSystemTraffic.ts",
+      "bytes": 8357
+    },
+    {
+      "file": "hooks/useDashboardLogic.ts",
+      "bytes": 15389
+    },
+    {
+      "file": "hooks/usePendingApprovalCount.ts",
+      "bytes": 2551
+    },
+    {
+      "file": "hooks/useCloudSync.ts",
+      "bytes": 22664
+    },
+    {
+      "file": "hooks/useEmployeeAnalysisLogic.ts",
+      "bytes": 25859
+    },
+    {
+      "file": "hooks/useFileUploadLogic.ts",
+      "bytes": 32556
+    },
+    {
+      "file": "hooks/useTrendChartLogic.ts",
+      "bytes": 6357
+    },
+    {
+      "file": "hooks/useWarehouseTargets.ts",
+      "bytes": 655
+    },
+    {
+      "file": "hooks/useStableCallback.ts",
+      "bytes": 1022
+    },
+    {
+      "file": "hooks/presetExploitationTabs.ts",
+      "bytes": 26369
+    },
+    {
+      "file": "hooks/useHeadToHeadLogic.ts",
+      "bytes": 24341
+    },
+    {
+      "file": "hooks/useEmployeeAnalysisTabs.ts",
+      "bytes": 3745
+    },
+    {
+      "file": "hooks/useIndustryGridLogic.ts",
+      "bytes": 11399
+    },
+    {
+      "file": "hooks/useExportLogic.ts",
+      "bytes": 30230
+    },
+    {
+      "file": "hooks/useDataManagement.ts",
+      "bytes": 83751
+    },
+    {
+      "file": "hooks/useWarehouseLogic.ts",
+      "bytes": 22369
+    },
+    {
+      "file": "hooks/useFilterState.ts",
+      "bytes": 5049
+    },
+    {
+      "file": "hooks/useEmployeeAnalysisData.ts",
+      "bytes": 6473
+    },
+    {
+      "file": "price-scraper-server/debug-scraper.js",
+      "bytes": 3377
+    },
+    {
+      "file": "price-scraper-server/package-lock.json",
+      "bytes": 79850
+    },
+    {
+      "file": "price-scraper-server/debug-all-sites.js",
+      "bytes": 5590
+    },
+    {
+      "file": "price-scraper-server/package.json",
+      "bytes": 378
+    },
+    {
+      "file": "price-scraper-server/server.js",
+      "bytes": 7886
+    },
+    {
+      "file": "price-scraper-server/quick_debug.js",
+      "bytes": 1651
+    },
+    {
+      "file": "contexts/AuthContext.tsx",
+      "bytes": 19570
+    },
+    {
+      "file": "contexts/DashboardContext.tsx",
+      "bytes": 3142
+    },
+    {
+      "file": "contexts/LayoutContext.tsx",
+      "bytes": 6612
+    },
+    {
+      "file": "contexts/SyncContext.tsx",
+      "bytes": 1067
+    },
+    {
+      "file": "scripts/e2e-auth-setup.mjs",
+      "bytes": 2222
+    },
+    {
+      "file": "scripts/lint-ratchet.cjs",
+      "bytes": 16119
+    },
+    {
+      "file": "styles/tokens.css",
+      "bytes": 17576
+    },
+    {
+      "file": "tests/firestore.rules.test.mjs",
+      "bytes": 11802
+    },
+    {
+      "file": ".agents/AGENTS.md",
+      "bytes": 9445
+    },
+    {
+      "file": "functions/package-lock.json",
+      "bytes": 114533
+    },
+    {
+      "file": "functions/package.json",
+      "bytes": 608
+    },
+    {
+      "file": "functions/.gitignore",
+      "bytes": 51
+    },
+    {
+      "file": "functions/tsconfig.json",
+      "bytes": 367
+    },
+    {
+      "file": ".vscode/extensions.json",
+      "bytes": 59
+    },
+    {
+      "file": "public/CNAME",
+      "bytes": 17
+    },
+    {
+      "file": "public/liff-copy.html",
+      "bytes": 18811
+    },
+    {
+      "file": "public/prevent-pull-to-refresh.js",
+      "bytes": 1736
+    },
+    {
+      "file": "public/favicon.svg",
+      "bytes": 604
+    },
+    {
+      "file": "public/reload-on-chunk-error.js",
+      "bytes": 1911
+    },
+    {
+      "file": "public/check-thuong.html",
+      "bytes": 244641
+    },
+    {
+      "file": "public/manifest.webmanifest",
+      "bytes": 766
+    },
+    {
+      "file": "utils/lazyWithRetry.ts",
+      "bytes": 2153
+    },
+    {
+      "file": "utils/couponSampleData.ts",
+      "bytes": 2375
+    },
+    {
+      "file": "utils/dataUtils.ts",
+      "bytes": 51186
+    },
+    {
+      "file": "utils/couponFormatter.ts",
+      "bytes": 2102
+    },
+    {
+      "file": "utils/departmentFilter.ts",
+      "bytes": 2070
+    },
+    {
+      "file": "utils/localDbScope.ts",
+      "bytes": 21056
+    },
+    {
+      "file": "utils/departmentFilter.test.ts",
+      "bytes": 1918
+    },
+    {
+      "file": "utils/chartConfig.ts",
+      "bytes": 286
+    },
+    {
+      "file": "utils/localDbScope.test.ts",
+      "bytes": 3875
+    },
+    {
+      "file": "utils/dataUtils.test.ts",
+      "bytes": 23105
+    },
+    {
+      "file": ".claude/launch.json",
+      "bytes": 242
+    },
+    {
+      "file": ".claude/skills",
+      "bytes": 17
+    },
+    {
+      "file": "services/analytics.worker.ts",
+      "bytes": 4745
+    },
+    {
+      "file": "services/autoSyncSchedule.test.ts",
+      "bytes": 3992
+    },
+    {
+      "file": "services/metricService.ts",
+      "bytes": 1677
+    },
+    {
+      "file": "services/scheduleHeartbeat.worker.ts",
+      "bytes": 369
+    },
+    {
+      "file": "services/ycxAutoSyncService.ts",
+      "bytes": 9348
+    },
+    {
+      "file": "services/analysisExportDestinations.ts",
+      "bytes": 8403
+    },
+    {
+      "file": "services/googleSheetsService.ts",
+      "bytes": 6675
+    },
+    {
+      "file": "services/notificationService.ts",
+      "bytes": 3366
+    },
+    {
+      "file": "services/presencePolicy.ts",
+      "bytes": 2533
+    },
+    {
+      "file": "services/analysisExportDestinations.test.ts",
+      "bytes": 5081
+    },
+    {
+      "file": "services/alertService.ts",
+      "bytes": 5326
+    },
+    {
+      "file": "services/filterService.ts",
+      "bytes": 16483
+    },
+    {
+      "file": "services/kpiService.ts",
+      "bytes": 4066
+    },
+    {
+      "file": "services/systemAnnouncementService.ts",
+      "bytes": 2621
+    },
+    {
+      "file": "services/managedUsersCache.test.ts",
+      "bytes": 3587
+    },
+    {
+      "file": "services/syncService.ts",
+      "bytes": 5724
+    },
+    {
+      "file": "services/lineReportDelivery.ts",
+      "bytes": 20747
+    },
+    {
+      "file": "services/pendingApprovalsStore.ts",
+      "bytes": 7453
+    },
+    {
+      "file": "services/dataService.ts",
+      "bytes": 28728
+    },
+    {
+      "file": "services/trendService.ts",
+      "bytes": 2391
+    },
+    {
+      "file": "services/salesJsonChunks.ts",
+      "bytes": 4333
+    },
+    {
+      "file": "services/adminUserService.ts",
+      "bytes": 3092
+    },
+    {
+      "file": "services/uiService.ts",
+      "bytes": 611
+    },
+    {
+      "file": "services/salesJsonWriter.worker.ts",
+      "bytes": 2389
+    },
+    {
+      "file": "services/sessionService.ts",
+      "bytes": 1822
+    },
+    {
+      "file": "services/autoSyncSchedule.ts",
+      "bytes": 11334
+    },
+    {
+      "file": "services/checkThuongIframeService.ts",
+      "bytes": 5157
+    },
+    {
+      "file": "services/periodService.ts",
+      "bytes": 13070
+    },
+    {
+      "file": "services/industryService.ts",
+      "bytes": 1477
+    },
+    {
+      "file": "services/heavySyncPolicy.ts",
+      "bytes": 6849
+    },
+    {
+      "file": "services/periodService.test.ts",
+      "bytes": 10351
+    },
+    {
+      "file": "services/alertService.test.ts",
+      "bytes": 6584
+    },
+    {
+      "file": "services/summaryService.test.ts",
+      "bytes": 6691
+    },
+    {
+      "file": "services/pivotService.test.ts",
+      "bytes": 17048
+    },
+    {
+      "file": "services/ycxAutoSyncService.test.ts",
+      "bytes": 1260
+    },
+    {
+      "file": "services/cloudDataService.ts",
+      "bytes": 10115
+    },
+    {
+      "file": "services/firestoreService.ts",
+      "bytes": 27428
+    },
+    {
+      "file": "services/filterService.test.ts",
+      "bytes": 5745
+    },
+    {
+      "file": "services/productConfigSerialization.ts",
+      "bytes": 3034
+    },
+    {
+      "file": "services/summaryService.ts",
+      "bytes": 16291
+    },
+    {
+      "file": "services/dbService.ts",
+      "bytes": 852
+    },
+    {
+      "file": "services/employeeService.ts",
+      "bytes": 25848
+    },
+    {
+      "file": "services/khoDataService.ts",
+      "bytes": 19326
+    },
+    {
+      "file": "services/batchExportResult.ts",
+      "bytes": 3368
+    },
+    {
+      "file": "services/firebase.ts",
+      "bytes": 4083
+    },
+    {
+      "file": "services/managedUsersCache.ts",
+      "bytes": 3532
+    },
+    {
+      "file": "services/localDataOwner.ts",
+      "bytes": 14026
+    },
+    {
+      "file": "services/worker.ts",
+      "bytes": 11547
+    },
+    {
+      "file": "services/pivotService.ts",
+      "bytes": 15741
+    },
+    {
+      "file": ".github/workflows/check.yml",
+      "bytes": 18030
+    },
+    {
+      "file": "features/khai-thac/types.ts",
+      "bytes": 2949
+    },
+    {
+      "file": "features/khai-thac/catalog.ts",
+      "bytes": 8488
+    },
+    {
+      "file": "features/khai-thac/KhaiThacView.tsx",
+      "bytes": 15742
+    },
+    {
+      "file": "features/phan-ca/PhanCaView.tsx",
+      "bytes": 39218
+    },
+    {
+      "file": "features/phan-ca/constants.ts",
+      "bytes": 2406
+    },
+    {
+      "file": "features/phan-ca/phanca.css",
+      "bytes": 14846
+    },
+    {
+      "file": "features/phan-ca/metadata.json",
+      "bytes": 289
+    },
+    {
+      "file": "features/phan-ca/types.ts",
+      "bytes": 5881
+    },
+    {
+      "file": "features/bi-dashboard/biDensity.css",
+      "bytes": 5360
+    },
+    {
+      "file": "features/sticker-event/InventoryToolbar.tsx",
+      "bytes": 10495
+    },
+    {
+      "file": "features/sticker-event/MultiSelectDropdown.tsx",
+      "bytes": 4660
+    },
+    {
+      "file": "features/sticker-event/Login.tsx",
+      "bytes": 23885
+    },
+    {
+      "file": "features/sticker-event/SavedListsModal.tsx",
+      "bytes": 9755
+    },
+    {
+      "file": "features/sticker-event/UserGuideModal.tsx",
+      "bytes": 9016
+    },
+    {
+      "file": "features/sticker-event/PrintSettingsModal.tsx",
+      "bytes": 9937
+    },
+    {
+      "file": "features/sticker-event/UserManagementModal.tsx",
+      "bytes": 13429
+    },
+    {
+      "file": "features/sticker-event/firebase-applet-config.json",
+      "bytes": 350
+    },
+    {
+      "file": "features/sticker-event/ErrorBoundary.tsx",
+      "bytes": 2386
+    },
+    {
+      "file": "features/sticker-event/BottomNavigation.tsx",
+      "bytes": 4385
+    },
+    {
+      "file": "features/sticker-event/ResultsDisplay.tsx",
+      "bytes": 19860
+    },
+    {
+      "file": "features/sticker-event/FilterModal.tsx",
+      "bytes": 2078
+    },
+    {
+      "file": "features/sticker-event/ManualInputModal.tsx",
+      "bytes": 22488
+    },
+    {
+      "file": "features/sticker-event/PdfPreviewModal.tsx",
+      "bytes": 1597
+    },
+    {
+      "file": "features/sticker-event/SuperAdminModal.tsx",
+      "bytes": 7479
+    },
+    {
+      "file": "features/sticker-event/StickerEventApp.tsx",
+      "bytes": 39828
+    },
+    {
+      "file": "features/sticker-event/FileUpload.tsx",
+      "bytes": 1420
+    },
+    {
+      "file": "features/sticker-event/AlertModal.tsx",
+      "bytes": 1305
+    },
+    {
+      "file": "features/sticker-event/ChangePasswordModal.tsx",
+      "bytes": 4986
+    },
+    {
+      "file": "features/sticker-event/ControlPanel.tsx",
+      "bytes": 29207
+    },
+    {
+      "file": "features/sticker-event/ConfirmModal.tsx",
+      "bytes": 2260
+    },
+    {
+      "file": "features/sticker-event/Scanner.tsx",
+      "bytes": 24595
+    },
+    {
+      "file": "features/sticker-event/StickerPrinterView.tsx",
+      "bytes": 12652
+    },
+    {
+      "file": "features/sticker-event/types.ts",
+      "bytes": 3575
+    },
+    {
+      "file": "features/sticker-event/firebase.ts",
+      "bytes": 3761
+    },
+    {
+      "file": "features/sticker-event/LayoutSelectionModal.tsx",
+      "bytes": 5767
+    },
+    {
+      "file": "features/sticker-event/SaveListModal.tsx",
+      "bytes": 2213
+    },
+    {
+      "file": "features/sticker-event/SearchBar.tsx",
+      "bytes": 6263
+    },
+    {
+      "file": "features/tax-calculator/index.ts",
+      "bytes": 368
+    },
+    {
+      "file": "features/tax-calculator/TaxCalculatorView.tsx",
+      "bytes": 22749
+    },
+    {
+      "file": "features/check-thuong/index.ts",
+      "bytes": 338
+    },
+    {
+      "file": "features/line-bot/index.ts",
+      "bytes": 237
+    },
+    {
+      "file": "features/line-bot/LineBotView.tsx",
+      "bytes": 27943
+    },
+    {
+      "file": "features/khai-thac/utils/exportImage.ts",
+      "bytes": 1456
+    },
+    {
+      "file": "features/khai-thac/utils/reportText.ts",
+      "bytes": 3288
+    },
+    {
+      "file": "features/khai-thac/utils/aggregate.ts",
+      "bytes": 6049
+    },
+    {
+      "file": "features/khai-thac/utils/expression.ts",
+      "bytes": 4085
+    },
+    {
+      "file": "features/khai-thac/components/CustomFieldModal.tsx",
+      "bytes": 2906
+    },
+    {
+      "file": "features/khai-thac/components/CounterRow.tsx",
+      "bytes": 4040
+    },
+    {
+      "file": "features/khai-thac/components/GroupSection.tsx",
+      "bytes": 7952
+    },
+    {
+      "file": "features/khai-thac/components/DashboardTab.tsx",
+      "bytes": 15020
+    },
+    {
+      "file": "features/khai-thac/components/HistoryTab.tsx",
+      "bytes": 13292
+    },
+    {
+      "file": "features/khai-thac/components/LeadsTab.tsx",
+      "bytes": 15280
+    },
+    {
+      "file": "features/khai-thac/components/ReportEntryTab.tsx",
+      "bytes": 9177
+    },
+    {
+      "file": "features/khai-thac/services/khaiThacDb.ts",
+      "bytes": 11840
+    },
+    {
+      "file": "features/phan-ca/hooks/usePhanCaData.ts",
+      "bytes": 20060
+    },
+    {
+      "file": "features/phan-ca/utils/stringUtils.ts",
+      "bytes": 1018
+    },
+    {
+      "file": "features/phan-ca/utils/scheduleUtils.ts",
+      "bytes": 63097
+    },
+    {
+      "file": "features/phan-ca/utils/excelImport.ts",
+      "bytes": 2647
+    },
+    {
+      "file": "features/phan-ca/utils/exportUtils.ts",
+      "bytes": 2244
+    },
+    {
+      "file": "features/phan-ca/components/Controls.tsx",
+      "bytes": 6918
+    },
+    {
+      "file": "features/phan-ca/components/BusyReportModal.tsx",
+      "bytes": 3347
+    },
+    {
+      "file": "features/phan-ca/components/AiSuggestPatternModal.tsx",
+      "bytes": 30187
+    },
+    {
+      "file": "features/phan-ca/components/SuggestionModal.tsx",
+      "bytes": 2873
+    },
+    {
+      "file": "features/phan-ca/components/VerticalIndividualSchedule.tsx",
+      "bytes": 9984
+    },
+    {
+      "file": "features/phan-ca/components/Legend.tsx",
+      "bytes": 14675
+    },
+    {
+      "file": "features/phan-ca/components/EditShiftModal.tsx",
+      "bytes": 42784
+    },
+    {
+      "file": "features/phan-ca/components/HelpModal.tsx",
+      "bytes": 15191
+    },
+    {
+      "file": "features/phan-ca/components/ConflictListModal.tsx",
+      "bytes": 2826
+    },
+    {
+      "file": "features/phan-ca/components/HistoryModal.tsx",
+      "bytes": 2296
+    },
+    {
+      "file": "features/phan-ca/components/ImportStaffModal.tsx",
+      "bytes": 8270
+    },
+    {
+      "file": "features/phan-ca/components/EditPatternModal.tsx",
+      "bytes": 28443
+    },
+    {
+      "file": "features/phan-ca/components/PhanCaToolbar.tsx",
+      "bytes": 9666
+    },
+    {
+      "file": "features/phan-ca/components/ScheduleTable.tsx",
+      "bytes": 14029
+    },
+    {
+      "file": "features/phan-ca/components/ScheduleRow.tsx",
+      "bytes": 9357
+    },
+    {
+      "file": "features/phan-ca/components/EditRulesModal.tsx",
+      "bytes": 6996
+    },
+    {
+      "file": "features/phan-ca/components/GoogleSheetExportModal.tsx",
+      "bytes": 4349
+    },
+    {
+      "file": "features/phan-ca/components/DailyStatsTable.tsx",
+      "bytes": 11127
+    },
+    {
+      "file": "features/phan-ca/services/googleSheetsService.ts",
+      "bytes": 6894
+    },
+    {
+      "file": "features/phan-ca/services/googleSheetsExport.ts",
+      "bytes": 17189
+    },
+    {
+      "file": "features/phan-ca/services/uiService.ts",
+      "bytes": 757
+    },
+    {
+      "file": "features/phan-ca/services/scheduleService.ts",
+      "bytes": 25004
+    },
+    {
+      "file": "features/phan-ca/services/firestoreSync.ts",
+      "bytes": 1778
+    },
+    {
+      "file": "features/phan-ca/services/firebase.ts",
+      "bytes": 2975
+    },
+    {
+      "file": "features/phan-ca/services/geminiService.ts",
+      "bytes": 958
+    },
+    {
+      "file": "features/phan-ca/db/idb.ts",
+      "bytes": 2263
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useDashboardLogic.ts",
+      "bytes": 45972
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useBiAutoSync.tsx",
+      "bytes": 8523
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useIndustryViewLogic.ts",
+      "bytes": 9103
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useWorker.ts",
+      "bytes": 3269
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useDepartments.ts",
+      "bytes": 3307
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useEmployeeAvatar.ts",
+      "bytes": 11226
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useExportOptions.ts",
+      "bytes": 1821
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useBonusAutoBridge.ts",
+      "bytes": 8091
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useNhanVienData.ts",
+      "bytes": 46842
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useCheckThuongBonus.ts",
+      "bytes": 7374
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useReportBiAuth.ts",
+      "bytes": 1586
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useIndexedDBState.ts",
+      "bytes": 8393
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useRevenueData.ts",
+      "bytes": 24037
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useCompetitionData.ts",
+      "bytes": 10177
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useMonthlyBonusArchive.ts",
+      "bytes": 3485
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useBonusCompareData.ts",
+      "bytes": 3140
+    },
+    {
+      "file": "features/bi-dashboard/hooks/useMultiMonthBonusRun.ts",
+      "bytes": 16075
+    },
+    {
+      "file": "features/bi-dashboard/contexts/ExportOptionsContext.tsx",
+      "bytes": 1105
+    },
+    {
+      "file": "features/bi-dashboard/store/configStore.ts",
+      "bytes": 957
+    },
+    {
+      "file": "features/bi-dashboard/types/nhanVienTypes.ts",
+      "bytes": 3140
+    },
+    {
+      "file": "features/bi-dashboard/workers/analytics.worker.ts",
+      "bytes": 2098
+    },
+    {
+      "file": "features/bi-dashboard/utils/dashboardHelpers.test.ts",
+      "bytes": 45675
+    },
+    {
+      "file": "features/bi-dashboard/utils/mobileUi.ts",
+      "bytes": 2490
+    },
+    {
+      "file": "features/bi-dashboard/utils/dashboardHelpers.ts",
+      "bytes": 75225
+    },
+    {
+      "file": "features/bi-dashboard/utils/cartoonAvatars.test.ts",
+      "bytes": 1974
+    },
+    {
+      "file": "features/bi-dashboard/utils/detailDataParser.ts",
+      "bytes": 30093
+    },
+    {
+      "file": "features/bi-dashboard/utils/thiDuaNhanVienApi.test.ts",
+      "bytes": 5490
+    },
+    {
+      "file": "features/bi-dashboard/utils/image.png",
+      "bytes": 362725
+    },
+    {
+      "file": "features/bi-dashboard/utils/dbMigration.ts",
+      "bytes": 11520
+    },
+    {
+      "file": "features/bi-dashboard/utils/danhSachSieuThi.test.ts",
+      "bytes": 3840
+    },
+    {
+      "file": "features/bi-dashboard/utils/tableTokens.ts",
+      "bytes": 2080
+    },
+    {
+      "file": "features/bi-dashboard/utils/nhanVienHelpers.ts",
+      "bytes": 49183
+    },
+    {
+      "file": "features/bi-dashboard/utils/db.ts",
+      "bytes": 13151
+    },
+    {
+      "file": "features/bi-dashboard/utils/bonusParser.ts",
+      "bytes": 5863
+    },
+    {
+      "file": "features/bi-dashboard/utils/bonusBridge.ts",
+      "bytes": 5436
+    },
+    {
+      "file": "features/bi-dashboard/utils/bonusDateRange.ts",
+      "bytes": 8355
+    },
+    {
+      "file": "features/bi-dashboard/utils/nhanVienHelpers.test.ts",
+      "bytes": 2545
+    },
+    {
+      "file": "features/bi-dashboard/utils/traChamApi.test.ts",
+      "bytes": 5581
+    },
+    {
+      "file": "features/bi-dashboard/utils/bonusHistory.ts",
+      "bytes": 2456
+    },
+    {
+      "file": "features/bi-dashboard/utils/bonusJobRunner.ts",
+      "bytes": 4259
+    },
+    {
+      "file": "features/bi-dashboard/utils/directApiSerializer.test.ts",
+      "bytes": 13272
+    },
+    {
+      "file": "features/bi-dashboard/utils/bonusDateRange.test.ts",
+      "bytes": 3248
+    },
+    {
+      "file": "features/bi-dashboard/utils/cartoonAvatars.ts",
+      "bytes": 53844
+    },
+    {
+      "file": "features/bi-dashboard/components/DataUpdater.tsx",
+      "bytes": 72985
+    },
+    {
+      "file": "features/bi-dashboard/components/TileLinkModal.tsx",
+      "bytes": 7676
+    },
+    {
+      "file": "features/bi-dashboard/components/Slider.tsx",
+      "bytes": 3575
+    },
+    {
+      "file": "features/bi-dashboard/components/LuyKeMonthPickerModal.tsx",
+      "bytes": 3834
+    },
+    {
+      "file": "features/bi-dashboard/components/Dashboard.tsx",
+      "bytes": 34138
+    },
+    {
+      "file": "features/bi-dashboard/components/BiWrapper.tsx",
+      "bytes": 18557
+    },
+    {
+      "file": "features/bi-dashboard/components/NhanVien.tsx",
+      "bytes": 32233
+    },
+    {
+      "file": "features/bi-dashboard/components/Card.tsx",
+      "bytes": 2211
+    },
+    {
+      "file": "features/bi-dashboard/components/SupermarketConfig.tsx",
+      "bytes": 87702
+    },
+    {
+      "file": "features/bi-dashboard/components/TargetHero.tsx",
+      "bytes": 42220
+    },
+    {
+      "file": "features/bi-dashboard/components/BiSupermarketMapAdmin.tsx",
+      "bytes": 19565
+    },
+    {
+      "file": "features/bi-dashboard/components/dataValidationAndSafety.test.ts",
+      "bytes": 3515
+    },
+    {
+      "file": "features/bi-dashboard/components/BiAutoSyncModal.tsx",
+      "bytes": 22241
+    },
+    {
+      "file": "features/bi-dashboard/components/AutoClickGuideModal.tsx",
+      "bytes": 31072
+    },
+    {
+      "file": "features/bi-dashboard/components/ExportButton.tsx",
+      "bytes": 6069
+    },
+    {
+      "file": "features/bi-dashboard/services/employeeParser.test.ts",
+      "bytes": 8769
+    },
+    {
+      "file": "features/bi-dashboard/services/thangLuyKe.test.ts",
+      "bytes": 837
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionSummaryCalc.test.ts",
+      "bytes": 12102
+    },
+    {
+      "file": "features/bi-dashboard/services/checkThuongBonus.ts",
+      "bytes": 10429
+    },
+    {
+      "file": "features/bi-dashboard/services/metricService.ts",
+      "bytes": 8073
+    },
+    {
+      "file": "features/bi-dashboard/services/globalBonusService.test.ts",
+      "bytes": 2930
+    },
+    {
+      "file": "features/bi-dashboard/services/globalBonusService.ts",
+      "bytes": 14402
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionViewCalc.test.ts",
+      "bytes": 5137
+    },
+    {
+      "file": "features/bi-dashboard/services/biDataService.ts",
+      "bytes": 11981
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionSortAndCalc.ts",
+      "bytes": 25804
+    },
+    {
+      "file": "features/bi-dashboard/services/biSupermarketMapService.ts",
+      "bytes": 15424
+    },
+    {
+      "file": "features/bi-dashboard/services/industryKpiCalc.ts",
+      "bytes": 9863
+    },
+    {
+      "file": "features/bi-dashboard/services/kpiOverviewCalc.test.ts",
+      "bytes": 15656
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionCommentaryCalc.test.ts",
+      "bytes": 9694
+    },
+    {
+      "file": "features/bi-dashboard/services/analysisEmployeeSyncService.ts",
+      "bytes": 12683
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionCommentaryCalc.ts",
+      "bytes": 15201
+    },
+    {
+      "file": "features/bi-dashboard/services/uiService.ts",
+      "bytes": 440
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionGroupCalc.test.ts",
+      "bytes": 7051
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionSortAndCalc.test.ts",
+      "bytes": 18476
+    },
+    {
+      "file": "features/bi-dashboard/services/employeeParser.ts",
+      "bytes": 22500
+    },
+    {
+      "file": "features/bi-dashboard/services/kpiOverviewCalc.ts",
+      "bytes": 8288
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionViewCalc.ts",
+      "bytes": 6877
+    },
+    {
+      "file": "features/bi-dashboard/services/autoNavigationService.test.ts",
+      "bytes": 7554
+    },
+    {
+      "file": "features/bi-dashboard/services/checkThuongBonus.test.ts",
+      "bytes": 5197
+    },
+    {
+      "file": "features/bi-dashboard/services/metricService.test.ts",
+      "bytes": 3159
+    },
+    {
+      "file": "features/bi-dashboard/services/biSupermarketMapService.test.ts",
+      "bytes": 7826
+    },
+    {
+      "file": "features/bi-dashboard/services/autoNavigationService.ts",
+      "bytes": 4692
+    },
+    {
+      "file": "features/bi-dashboard/services/biAutoSyncService.version.test.ts",
+      "bytes": 1640
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionGroupCalc.ts",
+      "bytes": 8081
+    },
+    {
+      "file": "features/bi-dashboard/services/summaryTableCalc.test.ts",
+      "bytes": 17667
+    },
+    {
+      "file": "features/bi-dashboard/services/individualCompetitionCalc.test.ts",
+      "bytes": 9868
+    },
+    {
+      "file": "features/bi-dashboard/services/industryKpiCalc.test.ts",
+      "bytes": 7343
+    },
+    {
+      "file": "features/bi-dashboard/services/summaryTableCalc.ts",
+      "bytes": 24368
+    },
+    {
+      "file": "features/bi-dashboard/services/individualCompetitionCalc.ts",
+      "bytes": 4950
+    },
+    {
+      "file": "features/bi-dashboard/services/dbService.ts",
+      "bytes": 10584
+    },
+    {
+      "file": "features/bi-dashboard/services/employeeTargetKeys.test.ts",
+      "bytes": 812
+    },
+    {
+      "file": "features/bi-dashboard/services/tileLinkService.ts",
+      "bytes": 6922
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionSummaryCalc.parity.test.ts",
+      "bytes": 11925
+    },
+    {
+      "file": "features/bi-dashboard/services/tileLinkService.test.ts",
+      "bytes": 4222
+    },
+    {
+      "file": "features/bi-dashboard/services/biAutoSyncService.ts",
+      "bytes": 24214
+    },
+    {
+      "file": "features/bi-dashboard/services/competitionSummaryCalc.ts",
+      "bytes": 12221
+    },
+    {
+      "file": "features/bi-dashboard/components/shared/Badges.tsx",
+      "bytes": 1820
+    },
+    {
+      "file": "features/bi-dashboard/components/shared/Pill.tsx",
+      "bytes": 1469
+    },
+    {
+      "file": "features/bi-dashboard/components/common/TampermonkeyInstallGuideContent.tsx",
+      "bytes": 22304
+    },
+    {
+      "file": "features/bi-dashboard/components/common/TampermonkeyInstallGuideModal.tsx",
+      "bytes": 1094
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/CompetitionView.tsx",
+      "bytes": 30624
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/KpiOverview.tsx",
+      "bytes": 20280
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/IndustryView.tsx",
+      "bytes": 57714
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/DashboardWidgets.tsx",
+      "bytes": 2526
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/SafeHeaderText.test.ts",
+      "bytes": 3710
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/SafeHeaderText.tsx",
+      "bytes": 1532
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/DashboardHeader.tsx",
+      "bytes": 15296
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/SummaryTableView.tsx",
+      "bytes": 51293
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx",
+      "bytes": 57594
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx",
+      "bytes": 63833
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/CompetitionGroupView.tsx",
+      "bytes": 21872
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/InstallmentTab.tsx",
+      "bytes": 32488
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/RevenueTab.tsx",
+      "bytes": 52003
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx",
+      "bytes": 65757
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/BonusTab.tsx",
+      "bytes": 14901
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx",
+      "bytes": 37530
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/industryKpi/index.ts",
+      "bytes": 218
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiGrid.tsx",
+      "bytes": 10630
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiCard.tsx",
+      "bytes": 9890
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/industryKpi/AddIndustryKpiModal.tsx",
+      "bytes": 12780
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/competition/CompetitionKpiCards.tsx",
+      "bytes": 5915
+    },
+    {
+      "file": "features/bi-dashboard/components/dashboard/competition/CompetitionListView.tsx",
+      "bytes": 28905
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/revenue/ColorSettingsModal.tsx",
+      "bytes": 9899
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/revenue/RevenueDesktopRow.tsx",
+      "bytes": 9538
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/revenue/colorSettings.test.ts",
+      "bytes": 4661
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/revenue/ImportPrevMonthModal.tsx",
+      "bytes": 1866
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/shared/TimeProgressBar.tsx",
+      "bytes": 4560
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/shared/AvatarPickerModal.tsx",
+      "bytes": 15173
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/shared/AvatarDisplay.tsx",
+      "bytes": 9318
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/AutoBonusRangePickerModal.tsx",
+      "bytes": 23313
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/bonusTableHelpers.tsx",
+      "bytes": 5793
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/AutoBonusToasts.tsx",
+      "bytes": 7905
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/BonusDesktopRow.tsx",
+      "bytes": 4949
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/MonthlyBonusTable.tsx",
+      "bytes": 19837
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/AutoBonusInstallGuideModal.tsx",
+      "bytes": 1870
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/BonusCompareTable.tsx",
+      "bytes": 23120
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/MultiMonthResultDetailModal.tsx",
+      "bytes": 5342
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/BonusDataModal.tsx",
+      "bytes": 7917
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/bonusRevenueMatching.test.ts",
+      "bytes": 8474
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/BonusDailyTable.tsx",
+      "bytes": 27325
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/useBonusViewData.ts",
+      "bytes": 25340
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/hrmWindow.ts",
+      "bytes": 509
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/AutoBonusErrorDetailModal.tsx",
+      "bytes": 4037
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/BonusDisplayRow.ts",
+      "bytes": 516
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/AutoBonusPanel.tsx",
+      "bytes": 6691
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/BonusGroupListTable.tsx",
+      "bytes": 13310
+    },
+    {
+      "file": "features/bi-dashboard/components/nhanvien/bonus/GlobalAutoBonusManager.tsx",
+      "bytes": 13403
+    },
+    {
+      "file": "features/bi-dashboard/services/uiExport/colorUtils.ts",
+      "bytes": 169
+    },
+    {
+      "file": "features/bi-dashboard/services/uiExport/imageExport.ts",
+      "bytes": 620
+    },
+    {
+      "file": "features/bi-dashboard/services/uiExport/blobUtils.ts",
+      "bytes": 219
+    },
+    {
+      "file": "features/sticker-event/hooks/useStickerEventState.ts",
+      "bytes": 21489
+    },
+    {
+      "file": "features/sticker-event/hooks/useStickerPrinterData.ts",
+      "bytes": 80905
+    },
+    {
+      "file": "features/sticker-event/hooks/useStickerEventDb.ts",
+      "bytes": 18999
+    },
+    {
+      "file": "features/sticker-event/hooks/useStickerEventFile.ts",
+      "bytes": 17008
+    },
+    {
+      "file": "features/sticker-event/hooks/useStickerEventPrint.ts",
+      "bytes": 6012
+    },
+    {
+      "file": "features/sticker-event/hooks/useStickerEventAuth.ts",
+      "bytes": 654
+    },
+    {
+      "file": "features/sticker-event/utils/format.ts",
+      "bytes": 2718
+    },
+    {
+      "file": "features/sticker-event/services/printService.ts",
+      "bytes": 63293
+    },
+    {
+      "file": "features/sticker-event/services/sessionSyncPolicy.ts",
+      "bytes": 3041
+    },
+    {
+      "file": "features/sticker-event/services/adminUserService.ts",
+      "bytes": 843
+    },
+    {
+      "file": "features/sticker-event/services/uiService.ts",
+      "bytes": 759
+    },
+    {
+      "file": "features/sticker-event/services/firebaseService.ts",
+      "bytes": 36735
+    },
+    {
+      "file": "features/sticker-event/services/sessionService.ts",
+      "bytes": 2031
+    },
+    {
+      "file": "features/sticker-event/services/fileParser.test.ts",
+      "bytes": 6574
+    },
+    {
+      "file": "features/sticker-event/services/batchImageExportService.test.ts",
+      "bytes": 6661
+    },
+    {
+      "file": "features/sticker-event/services/dbService.ts",
+      "bytes": 9592
+    },
+    {
+      "file": "features/sticker-event/services/batchImageExportService.ts",
+      "bytes": 19008
+    },
+    {
+      "file": "features/sticker-event/services/fileParser.ts",
+      "bytes": 21769
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/StickerModeToolbar.tsx",
+      "bytes": 9060
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/pageHtmlUtils.ts",
+      "bytes": 11756
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/StickerPrintControls.tsx",
+      "bytes": 36884
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/StickerManualQueue.tsx",
+      "bytes": 30327
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/stickerBackgroundHelpers.ts",
+      "bytes": 2268
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/stickerPreviewStyles.ts",
+      "bytes": 29107
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/StickerPrintPreview.tsx",
+      "bytes": 23357
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/useContentEditable.ts",
+      "bytes": 1830
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/discountHelpers.tsx",
+      "bytes": 1017
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/FloatingFormatToolbar.tsx",
+      "bytes": 31088
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/ticketSanitize.ts",
+      "bytes": 3579
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/excelParsers.ts",
+      "bytes": 19464
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/DrawTicketBlock.tsx",
+      "bytes": 12328
+    },
+    {
+      "file": "features/sticker-event/stickerprinter/types.ts",
+      "bytes": 2205
+    },
+    {
+      "file": "features/tax-calculator/types/tax.types.ts",
+      "bytes": 6075
+    },
+    {
+      "file": "features/tax-calculator/components/TaxInputPanel.tsx",
+      "bytes": 56170
+    },
+    {
+      "file": "features/tax-calculator/components/TaxHistorySidebar.tsx",
+      "bytes": 25946
+    },
+    {
+      "file": "features/tax-calculator/components/HrmCopyGuideModal.tsx",
+      "bytes": 7484
+    },
+    {
+      "file": "features/tax-calculator/components/TaxHistoryModal.tsx",
+      "bytes": 25815
+    },
+    {
+      "file": "features/tax-calculator/components/TaxPaymentQrCard.tsx",
+      "bytes": 12409
+    },
+    {
+      "file": "features/tax-calculator/components/TaxResultPanel.tsx",
+      "bytes": 33790
+    },
+    {
+      "file": "features/tax-calculator/components/ApiKeyConfigModal.tsx",
+      "bytes": 8201
+    },
+    {
+      "file": "features/tax-calculator/components/TaxBracketModal.tsx",
+      "bytes": 8906
+    },
+    {
+      "file": "features/tax-calculator/services/bankCatalog.ts",
+      "bytes": 5848
+    },
+    {
+      "file": "features/tax-calculator/services/taxExportExcelService.test.ts",
+      "bytes": 2679
+    },
+    {
+      "file": "features/tax-calculator/services/taxExportExcelService.ts",
+      "bytes": 9587
+    },
+    {
+      "file": "features/tax-calculator/services/bankCatalog.test.ts",
+      "bytes": 2034
+    },
+    {
+      "file": "features/tax-calculator/services/salarySlipOcrService.ts",
+      "bytes": 21298
+    },
+    {
+      "file": "features/tax-calculator/services/taxSyncService.ts",
+      "bytes": 8421
+    },
+    {
+      "file": "features/tax-calculator/services/screenshotBookmarklet.ts",
+      "bytes": 6078
+    },
+    {
+      "file": "features/tax-calculator/services/taxHistoryGrouping.test.ts",
+      "bytes": 2421
+    },
+    {
+      "file": "features/tax-calculator/services/hrmSlipTextParser.ts",
+      "bytes": 16931
+    },
+    {
+      "file": "features/tax-calculator/services/taxHistoryGrouping.ts",
+      "bytes": 3395
+    },
+    {
+      "file": "features/tax-calculator/services/taxIndexedDbService.ts",
+      "bytes": 5102
+    },
+    {
+      "file": "features/tax-calculator/services/hrmSlipTextParser.test.ts",
+      "bytes": 12110
+    },
+    {
+      "file": "features/tax-calculator/services/taxCalculatorService.ts",
+      "bytes": 9183
+    },
+    {
+      "file": "features/check-thuong/types/index.ts",
+      "bytes": 826
+    },
+    {
+      "file": "features/check-thuong/components/CheckThuongChannelTopGrid.tsx",
+      "bytes": 16584
+    },
+    {
+      "file": "features/check-thuong/components/CheckThuongSummaryCards.tsx",
+      "bytes": 5208
+    },
+    {
+      "file": "features/check-thuong/components/CheckThuongFilterBar.tsx",
+      "bytes": 8110
+    },
+    {
+      "file": "features/check-thuong/components/CheckThuongLeaderboardView.tsx",
+      "bytes": 11912
+    },
+    {
+      "file": "features/check-thuong/components/CheckThuongTopTable.tsx",
+      "bytes": 29231
+    },
+    {
+      "file": "features/check-thuong/services/checkThuongCalc.test.ts",
+      "bytes": 8433
+    },
+    {
+      "file": "features/check-thuong/services/checkThuongImageExport.ts",
+      "bytes": 10500
+    },
+    {
+      "file": "features/check-thuong/services/checkThuongCalc.ts",
+      "bytes": 7521
+    },
+    {
+      "file": "features/line-bot/hooks/useKeywordLibrary.ts",
+      "bytes": 2624
+    },
+    {
+      "file": "features/line-bot/hooks/useScheduleManager.ts",
+      "bytes": 6746
+    },
+    {
+      "file": "features/line-bot/hooks/useCouponManager.ts",
+      "bytes": 10494
+    },
+    {
+      "file": "features/line-bot/hooks/useLineBotConfig.ts",
+      "bytes": 5512
+    },
+    {
+      "file": "features/line-bot/hooks/useBotScope.ts",
+      "bytes": 3979
+    },
+    {
+      "file": "features/line-bot/hooks/useAdminDeclaration.ts",
+      "bytes": 3857
+    },
+    {
+      "file": "features/line-bot/types/lineBot.types.ts",
+      "bytes": 8513
+    },
+    {
+      "file": "features/line-bot/components/CouponImportModal.tsx",
+      "bytes": 44653
+    },
+    {
+      "file": "features/line-bot/components/KeywordLibraryTab.tsx",
+      "bytes": 8222
+    },
+    {
+      "file": "features/line-bot/components/LineBotSettingsTab.tsx",
+      "bytes": 30174
+    },
+    {
+      "file": "features/line-bot/components/CouponManagerTab.tsx",
+      "bytes": 50815
+    },
+    {
+      "file": "features/line-bot/components/ScheduleEditModal.tsx",
+      "bytes": 28002
+    },
+    {
+      "file": "features/line-bot/components/SelectFilterUserModal.tsx",
+      "bytes": 29348
+    },
+    {
+      "file": "features/line-bot/components/LineBotOnboardingModal.tsx",
+      "bytes": 13700
+    },
+    {
+      "file": "features/line-bot/components/LineBotStatusCard.tsx",
+      "bytes": 4548
+    },
+    {
+      "file": "features/line-bot/components/KeywordEditModal.tsx",
+      "bytes": 19552
+    },
+    {
+      "file": "features/line-bot/components/SelectInteractedUserModal.tsx",
+      "bytes": 29872
+    },
+    {
+      "file": "features/line-bot/components/GroupFeaturesTab.tsx",
+      "bytes": 11342
+    },
+    {
+      "file": "features/line-bot/components/SyntaxConfigTab.tsx",
+      "bytes": 41538
+    },
+    {
+      "file": "features/line-bot/components/FilteredCouponsTab.tsx",
+      "bytes": 30537
+    },
+    {
+      "file": "features/line-bot/components/AdminDeclarationTab.tsx",
+      "bytes": 18741
+    },
+    {
+      "file": "features/line-bot/components/IPhoneChatPreview.tsx",
+      "bytes": 62913
+    },
+    {
+      "file": "features/line-bot/components/ScheduleManagerTab.tsx",
+      "bytes": 12922
+    },
+    {
+      "file": "features/line-bot/services/botMediaService.ts",
+      "bytes": 4773
+    },
+    {
+      "file": "features/line-bot/services/lineBotFirestoreService.ts",
+      "bytes": 35687
+    },
+    {
+      "file": "features/line-bot/services/couponParser.ts",
+      "bytes": 71698
+    },
+    {
+      "file": "features/line-bot/services/lineMessagingService.ts",
+      "bytes": 7140
+    },
+    {
+      "file": "price-scraper-server/scrapers/index.js",
+      "bytes": 16650
+    },
+    {
+      "file": "price-scraper-server/utils/productMatcher.js",
+      "bytes": 7784
+    },
+    {
+      "file": "price-scraper-server/utils/nameNormalizer.js",
+      "bytes": 4506
+    },
+    {
+      "file": "scripts/pwa/tao-icon-splash.mjs",
+      "bytes": 3525
+    },
+    {
+      "file": "scripts/sao-luu/sao-luu.cjs",
+      "bytes": 4847
+    },
+    {
+      "file": "scripts/sao-luu/README.md",
+      "bytes": 1891
+    },
+    {
+      "file": "scripts/dong-bo-may-tinh/go-cai-dat.sh",
+      "bytes": 289
+    },
+    {
+      "file": "scripts/dong-bo-may-tinh/cai-dat.sh",
+      "bytes": 2108
+    },
+    {
+      "file": "scripts/dong-bo-may-tinh/dong-bo.sh",
+      "bytes": 2963
+    },
+    {
+      "file": "scripts/dong-bo-may-tinh/README.md",
+      "bytes": 2519
+    },
+    {
+      "file": "tests/bench/gen-sales-xlsx.mjs",
+      "bytes": 2145
+    },
+    {
+      "file": "tests/bench/filter-100k.test.ts",
+      "bytes": 4024
+    },
+    {
+      "file": "tests/fixtures/hrm-luong-ngay5-b.txt",
+      "bytes": 1672
+    },
+    {
+      "file": "tests/fixtures/hrm-thuong-ngay20-nhieu-dot-ck.txt",
+      "bytes": 1991
+    },
+    {
+      "file": "tests/fixtures/hrm-luong-ngay5-thu-gon.txt",
+      "bytes": 1129
+    },
+    {
+      "file": "tests/fixtures/danh-sach-nhan-vien-nhieu-bo-phan.xlsx",
+      "bytes": 16553
+    },
+    {
+      "file": "tests/fixtures/hrm-thuong-ngay20.txt",
+      "bytes": 1661
+    },
+    {
+      "file": "tests/fixtures/hrm-luong-ngay5.txt",
+      "bytes": 1653
+    },
+    {
+      "file": "tests/unit/batch-export-result.test.ts",
+      "bytes": 3177
+    },
+    {
+      "file": "tests/unit/tax-sync-giao-dich.test.ts",
+      "bytes": 3957
+    },
+    {
+      "file": "tests/unit/line-bot-used-confirm-text.test.ts",
+      "bytes": 4054
+    },
+    {
+      "file": "tests/unit/heavy-sync-policy.test.ts",
+      "bytes": 6158
+    },
+    {
+      "file": "tests/unit/analysis-employees-from-dept-map.test.ts",
+      "bytes": 2786
+    },
+    {
+      "file": "tests/unit/sticker-session-sync-policy.test.ts",
+      "bytes": 4053
+    },
+    {
+      "file": "tests/unit/coupon-parser.test.ts",
+      "bytes": 54830
+    },
+    {
+      "file": "tests/unit/tax-calculator.test.ts",
+      "bytes": 9877
+    },
+    {
+      "file": "tests/unit/sticker-upload-timeout.test.ts",
+      "bytes": 3846
+    },
+    {
+      "file": "tests/unit/light-sync-keys.test.ts",
+      "bytes": 3214
+    },
+    {
+      "file": "tests/unit/reset-du-lieu-bao-cao-chung.test.ts",
+      "bytes": 3327
+    },
+    {
+      "file": "tests/unit/center-active-strip.test.ts",
+      "bytes": 723
+    },
+    {
+      "file": "tests/unit/sticker-roles-and-cross-device.test.ts",
+      "bytes": 24064
+    },
+    {
+      "file": "tests/unit/csp-frame-src-va-cdn-pin.test.ts",
+      "bytes": 6521
+    },
+    {
+      "file": "tests/unit/report-bi-analysis-employee-only.test.ts",
+      "bytes": 1867
+    },
+    {
+      "file": "tests/unit/no-hardcoded-api-keys.test.ts",
+      "bytes": 2364
+    },
+    {
+      "file": "tests/unit/interacted-users.test.ts",
+      "bytes": 4331
+    },
+    {
+      "file": "tests/unit/line-bot-user-name.test.ts",
+      "bytes": 1339
+    },
+    {
+      "file": "tests/unit/lazy-with-retry.test.ts",
+      "bytes": 2489
+    },
+    {
+      "file": "tests/unit/system-announcement.test.ts",
+      "bytes": 2448
+    },
+    {
+      "file": "tests/unit/bi-worker-phuc-hoi.test.ts",
+      "bytes": 3008
+    },
+    {
+      "file": "tests/unit/analytics-worker-set-data-khuc.test.ts",
+      "bytes": 2798
+    },
+    {
+      "file": "tests/unit/line-bot-notify-may-chu.test.ts",
+      "bytes": 4158
+    },
+    {
+      "file": "tests/unit/khai-thac.test.ts",
+      "bytes": 13176
+    },
+    {
+      "file": "tests/unit/line-bot-webhook-chu-ky.test.ts",
+      "bytes": 4834
+    },
+    {
+      "file": "tests/unit/line-bot-signature.test.ts",
+      "bytes": 1697
+    },
+    {
+      "file": "tests/unit/line-bot-pmh-form-strict.test.ts",
+      "bytes": 2643
+    },
+    {
+      "file": "tests/unit/line-bot-relist-unused.test.ts",
+      "bytes": 2801
+    },
+    {
+      "file": "tests/unit/product-config-serialization.test.ts",
+      "bytes": 2590
+    },
+    {
+      "file": "tests/unit/super-admin-kho.test.ts",
+      "bytes": 3248
+    },
+    {
+      "file": "tests/unit/worker-timeout.test.ts",
+      "bytes": 705
+    },
+    {
+      "file": "tests/unit/ios-xuat-anh.test.ts",
+      "bytes": 2535
+    },
+    {
+      "file": "tests/unit/bot-media-upload.test.ts",
+      "bytes": 838
+    },
+    {
+      "file": "tests/unit/lint-ratchet-patterns.test.ts",
+      "bytes": 4797
+    },
+    {
+      "file": "tests/unit/install-hint.test.ts",
+      "bytes": 1982
+    },
+    {
+      "file": "tests/unit/line-bot-pmh-sequence-theo-loai.test.ts",
+      "bytes": 5331
+    },
+    {
+      "file": "tests/unit/phan-ca-nap-du-bo-phan.test.ts",
+      "bytes": 1928
+    },
+    {
+      "file": "tests/unit/sticker-firestore-quota.test.ts",
+      "bytes": 26992
+    },
+    {
+      "file": "tests/unit/sticker-background-helpers.test.ts",
+      "bytes": 3185
+    },
+    {
+      "file": "tests/unit/heavy-sync-chunk-cleanup.test.ts",
+      "bytes": 6616
+    },
+    {
+      "file": "tests/unit/pending-approvals-store.test.ts",
+      "bytes": 7542
+    },
+    {
+      "file": "tests/unit/line-bot-pmh-sequence.test.ts",
+      "bytes": 1022
+    },
+    {
+      "file": "tests/unit/icon-registry.test.ts",
+      "bytes": 10364
+    },
+    {
+      "file": "tests/unit/line-bot-group-features.test.ts",
+      "bytes": 3652
+    },
+    {
+      "file": "tests/unit/line-bot-coupon-lookup.test.ts",
+      "bytes": 2781
+    },
+    {
+      "file": "tests/unit/sales-json-chunks.test.ts",
+      "bytes": 4081
+    },
+    {
+      "file": "tests/unit/cau-noi-dto-a29.test.ts",
+      "bytes": 5241
+    },
+    {
+      "file": "tests/unit/light-sync-policy.test.ts",
+      "bytes": 2265
+    },
+    {
+      "file": "tests/unit/presence-policy.test.ts",
+      "bytes": 3775
+    },
+    {
+      "file": "tests/unit/line-bot-schedule-due.test.ts",
+      "bytes": 3593
+    },
+    {
+      "file": "tests/e2e/o-nhap-a17.spec.ts",
+      "bytes": 2205
+    },
+    {
+      "file": "tests/e2e/pending-approvals-poll-rate.spec.ts",
+      "bytes": 3227
+    },
+    {
+      "file": "tests/e2e/chi-tiet-kho-cau-hinh-cot-hong.spec.ts",
+      "bytes": 2077
+    },
+    {
+      "file": "tests/e2e/click-plus-auto-toggle.spec.ts",
+      "bytes": 16227
+    },
+    {
+      "file": "tests/e2e/bi-competition.spec.ts",
+      "bytes": 5182
+    },
+    {
+      "file": "tests/e2e/tax-api-key-fallback.spec.ts",
+      "bytes": 3104
+    },
+    {
+      "file": "tests/e2e/nhan-giu-xem-chu-thich.spec.ts",
+      "bytes": 2852
+    },
+    {
+      "file": "tests/e2e/khai-thac.spec.ts",
+      "bytes": 10690
+    },
+    {
+      "file": "tests/e2e/bi-chuyen-che-do-khong-sap.spec.ts",
+      "bytes": 1970
+    },
+    {
+      "file": "tests/e2e/phan-quyen-tai-danh-sach.spec.ts",
+      "bytes": 5996
+    },
+    {
+      "file": "tests/e2e/analysis-employees-sync.spec.ts",
+      "bytes": 2403
+    },
+    {
+      "file": "tests/e2e/so-gia-dien-thoai-va-huy.spec.ts",
+      "bytes": 3469
+    },
+    {
+      "file": "tests/e2e/sticker-firestore-write-rate.spec.ts",
+      "bytes": 8461
+    },
+    {
+      "file": "tests/e2e/mo-lai-app-dung-cho-cu.spec.ts",
+      "bytes": 3950
+    },
+    {
+      "file": "tests/e2e/pivot-table.spec.ts",
+      "bytes": 9734
+    },
+    {
+      "file": "tests/e2e/modal-tu-dung-hanh-vi.spec.ts",
+      "bytes": 2266
+    },
+    {
+      "file": "tests/e2e/modal-ngan-xep.spec.ts",
+      "bytes": 4717
+    },
+    {
+      "file": "tests/e2e/ios-du-lieu-that.spec.ts",
+      "bytes": 3791
+    },
+    {
+      "file": "tests/e2e/khai-thac-giu-du-lieu-theo-tai-khoan.spec.ts",
+      "bytes": 5942
+    },
+    {
+      "file": "tests/e2e/mobile-iphone-6-module.spec.ts",
+      "bytes": 6198
+    },
+    {
+      "file": "tests/e2e/perf-nap-du-lieu-lon.spec.ts",
+      "bytes": 9135
+    },
+    {
+      "file": "tests/e2e/bi-nhan-vien-theo-sieu-thi.spec.ts",
+      "bytes": 4035
+    },
+    {
+      "file": "tests/e2e/modal-sheet-vuot-dong.spec.ts",
+      "bytes": 4437
+    },
+    {
+      "file": "tests/e2e/real-data-config.spec.ts",
+      "bytes": 9286
+    },
+    {
+      "file": "tests/e2e/icon-audit-bi.spec.ts",
+      "bytes": 3742
+    },
+    {
+      "file": "tests/e2e/bi-mobile-iphone.spec.ts",
+      "bytes": 5837
+    },
+    {
+      "file": "tests/e2e/icon-dieu-huong.spec.ts",
+      "bytes": 4401
+    },
+    {
+      "file": "tests/e2e/sticker-toc-do-quet-ma.spec.ts",
+      "bytes": 6777
+    },
+    {
+      "file": "tests/e2e/xuat-hang-loat-dien-thoai-chia-se-mot-lan.spec.ts",
+      "bytes": 6567
+    },
+    {
+      "file": "tests/e2e/luu-du-lieu-ngoai-luong-chinh.spec.ts",
+      "bytes": 9222
+    },
+    {
+      "file": "tests/e2e/bi-sync-kiem-phien-ban.spec.ts",
+      "bytes": 2869
+    },
+    {
+      "file": "tests/e2e/check-thuong-top-feature.spec.ts",
+      "bytes": 5146
+    },
+    {
+      "file": "tests/e2e/tmp-diag2.spec.ts",
+      "bytes": 1419
+    },
+    {
+      "file": "tests/e2e/system-traffic-stats.spec.ts",
+      "bytes": 5454
+    },
+    {
+      "file": "tests/e2e/smoke.spec.ts",
+      "bytes": 1031
+    },
+    {
+      "file": "tests/e2e/hen-gio-bi-va-bo-lo.spec.ts",
+      "bytes": 3956
+    },
+    {
+      "file": "tests/e2e/bi-competition-export-fit.spec.ts",
+      "bytes": 6582
+    },
+    {
+      "file": "tests/e2e/phan-tich-xuat-hang-loat-theo-kho.spec.ts",
+      "bytes": 10264
+    },
+    {
+      "file": "tests/e2e/anh-man-chao-a22.spec.ts",
+      "bytes": 1788
+    },
+    {
+      "file": "tests/e2e/check-thuong-xuat-anh-ten-dac-biet.spec.ts",
+      "bytes": 2452
+    },
+    {
+      "file": "tests/e2e/bi-sync-luy-ke.spec.ts",
+      "bytes": 13978
+    },
+    {
+      "file": "tests/e2e/kpi-style-real-user.spec.ts",
+      "bytes": 6768
+    },
+    {
+      "file": "tests/e2e/icon-thanh-cong-cu-bi.spec.ts",
+      "bytes": 5584
+    },
+    {
+      "file": "tests/e2e/bi-auto-sync-modal-tien-trinh.spec.ts",
+      "bytes": 4578
+    },
+    {
+      "file": "tests/e2e/check-thuong-iphone-khong-cat.spec.ts",
+      "bytes": 5749
+    },
+    {
+      "file": "tests/e2e/xuat-anh-chung.spec.ts",
+      "bytes": 10154
+    },
+    {
+      "file": "tests/e2e/real-data.spec.ts",
+      "bytes": 5261
+    },
+    {
+      "file": "tests/e2e/indexeddb-rieng-theo-tai-khoan.spec.ts",
+      "bytes": 8923
+    },
+    {
+      "file": "tests/e2e/bi-sync-cap-nhat-xong-tu-chay-tiep.spec.ts",
+      "bytes": 6736
+    },
+    {
+      "file": "tests/e2e/bi-competition-bonus-col.spec.ts",
+      "bytes": 5025
+    },
+    {
+      "file": "tests/e2e/bi-sync-realtime-ngay.spec.ts",
+      "bytes": 8569
+    },
+    {
+      "file": "tests/e2e/super-admin-kho-dung-chung.spec.ts",
+      "bytes": 11127
+    },
+    {
+      "file": "tests/e2e/sticker-nut-va-quet-ma.spec.ts",
+      "bytes": 7216
+    },
+    {
+      "file": "tests/e2e/line-gui-anh-va-hen-gio.spec.ts",
+      "bytes": 21497
+    },
+    {
+      "file": "tests/e2e/bi-bonus-compare.spec.ts",
+      "bytes": 10488
+    },
+    {
+      "file": "tests/e2e/bi-du-lieu-khong-lan-giua-tai-khoan.spec.ts",
+      "bytes": 5200
+    },
+    {
+      "file": "tests/e2e/phan-quyen-3-tab.spec.ts",
+      "bytes": 5051
+    },
+    {
+      "file": "tests/e2e/csp-sweep.spec.ts",
+      "bytes": 2630
+    },
+    {
+      "file": "tests/e2e/ios-xuat-anh-chia-se.spec.ts",
+      "bytes": 4327
+    },
+    {
+      "file": "tests/e2e/xuat-anh-hang-loat-ket-qua.spec.ts",
+      "bytes": 2628
+    },
+    {
+      "file": "tests/e2e/auth-fresh-login-no-flash.spec.ts",
+      "bytes": 7747
+    },
+    {
+      "file": "tests/e2e/bi-sync-chi-tab-lam-viec.spec.ts",
+      "bytes": 3331
+    },
+    {
+      "file": "tests/e2e/bi-deep-link-khong-vong-lap.spec.ts",
+      "bytes": 3855
+    },
+    {
+      "file": "tests/e2e/icon-audit-man-goc.spec.ts",
+      "bytes": 2392
+    },
+    {
+      "file": "tests/e2e/tnb-pmh-userscript.spec.ts",
+      "bytes": 9181
+    },
+    {
+      "file": "tests/e2e/check-thuong-startup.spec.ts",
+      "bytes": 3115
+    },
+    {
+      "file": "tests/e2e/ui-dung-chung-dot-2.spec.ts",
+      "bytes": 5708
+    },
+    {
+      "file": "tests/e2e/bi-import-employees-button.spec.ts",
+      "bytes": 1798
+    },
+    {
+      "file": "tests/e2e/keo-tai-lai-trang.spec.ts",
+      "bytes": 3636
+    },
+    {
+      "file": "tests/e2e/ycx-tu-dong-report-mwg.spec.ts",
+      "bytes": 15818
+    },
+    {
+      "file": "tests/e2e/tax-iphone-khong-cat-chu.spec.ts",
+      "bytes": 2430
+    },
+    {
+      "file": "tests/e2e/khai-thac-luu-cam-ket.spec.ts",
+      "bytes": 2733
+    },
+    {
+      "file": "tests/e2e/pwa-iphone.spec.ts",
+      "bytes": 4135
+    },
+    {
+      "file": "tests/e2e/ui-baseline.spec.ts",
+      "bytes": 11293
+    },
+    {
+      "file": "tests/e2e/du-lieu-that-tour.spec.ts",
+      "bytes": 12774
+    },
+    {
+      "file": "tests/e2e/ycx-tu-dong-phan-tich.spec.ts",
+      "bytes": 14176
+    },
+    {
+      "file": "tests/e2e/perf-audit.spec.ts",
+      "bytes": 3688
+    },
+    {
+      "file": "tests/e2e/phan-tich-mat-mang-cau-hinh.spec.ts",
+      "bytes": 1568
+    },
+    {
+      "file": "tests/e2e/anh-bi-mat-do-a20.spec.ts",
+      "bytes": 2734
+    },
+    {
+      "file": "tests/e2e/iframe-tabs-csp.spec.ts",
+      "bytes": 6587
+    },
+    {
+      "file": "tests/e2e/table-rules.spec.ts",
+      "bytes": 10929
+    },
+    {
+      "file": "tests/e2e/bang-iphone-ghim-cot-vien-mo.spec.ts",
+      "bytes": 6021
+    },
+    {
+      "file": "tests/e2e/check-thuong-luu-du-lieu.spec.ts",
+      "bytes": 5467
+    },
+    {
+      "file": "tests/e2e/tax-paste-hrm.spec.ts",
+      "bytes": 12968
+    },
+    {
+      "file": "tests/e2e/xuat-anh-giao-anh-chung.spec.ts",
+      "bytes": 8026
+    },
+    {
+      "file": "tests/e2e/bi-sync-khong-phat-lai-ket-qua-cu.spec.ts",
+      "bytes": 2774
+    },
+    {
+      "file": "tests/e2e/analysis-only-all-in-one.spec.ts",
+      "bytes": 3877
+    },
+    {
+      "file": "tests/e2e/bi-auto-sync-xong-dong-modal.spec.ts",
+      "bytes": 5134
+    },
+    {
+      "file": "tests/e2e/doi-tai-khoan-don-du-lieu.spec.ts",
+      "bytes": 6030
+    },
+    {
+      "file": "tests/e2e/o-nhap-va-dai-chon-iphone.spec.ts",
+      "bytes": 3082
+    },
+    {
+      "file": "tests/e2e/ios-report-bi-check-thuong.spec.ts",
+      "bytes": 8773
+    },
+    {
+      "file": "tests/e2e/icon-audit-modal.spec.ts",
+      "bytes": 8245
+    },
+    {
+      "file": "tests/e2e/xss-header-sanitization.spec.ts",
+      "bytes": 3616
+    },
+    {
+      "file": "tests/e2e/audit-iphone-toan-du-an.spec.ts",
+      "bytes": 23822
+    },
+    {
+      "file": "tests/e2e/tax-qr-and-export.spec.ts",
+      "bytes": 14385
+    },
+    {
+      "file": "tests/e2e/phan-tich-performance-modal.spec.ts",
+      "bytes": 6354
+    },
+    {
+      "file": "tests/e2e/bi-auto-luy-ke-dashboard.spec.ts",
+      "bytes": 6778
+    },
+    {
+      "file": "tests/e2e/anh-modal-a13.spec.ts",
+      "bytes": 1898
+    },
+    {
+      "file": "tests/e2e/helpers/modalHarness.tsx",
+      "bytes": 1778
+    },
+    {
+      "file": "tests/e2e/helpers/couponHarness.tsx",
+      "bytes": 900
+    },
+    {
+      "file": "tests/e2e/helpers/sheetHarness.tsx",
+      "bytes": 1258
+    },
+    {
+      "file": "tests/e2e/helpers/biVersionHarness.tsx",
+      "bytes": 1893
+    },
+    {
+      "file": "tests/e2e/helpers/iconAudit.ts",
+      "bytes": 5771
+    },
+    {
+      "file": "tests/e2e/helpers/seed.ts",
+      "bytes": 9961
+    },
+    {
+      "file": "tests/e2e/helpers/inputHarness.tsx",
+      "bytes": 485
+    },
+    {
+      "file": "tests/e2e/helpers/modalSizeHarness.tsx",
+      "bytes": 7434
+    },
+    {
+      "file": "tests/e2e/helpers/biAutoSyncHarness.tsx",
+      "bytes": 1453
+    },
+    {
+      "file": "tests/e2e/helpers/uiHarness.tsx",
+      "bytes": 2791
+    },
+    {
+      "file": "tests/e2e/helpers/gen-barcode-y4m.cjs",
+      "bytes": 2838
+    },
+    {
+      "file": "tests/e2e/helpers/salesFixture.ts",
+      "bytes": 5873
+    },
+    {
+      "file": "tests/e2e/helpers/tabsHarness.tsx",
+      "bytes": 959
+    },
+    {
+      "file": "tests/e2e/helpers/realDataContext.ts",
+      "bytes": 1557
+    },
+    {
+      "file": "tests/e2e/helpers/tableSnapshot.ts",
+      "bytes": 5398
+    },
+    {
+      "file": "tests/e2e/helpers/tuDungModalHarness.tsx",
+      "bytes": 836
+    },
+    {
+      "file": "tests/e2e/helpers/priceHarness.tsx",
+      "bytes": 601
+    },
+    {
+      "file": "tests/e2e/helpers/customTokenLogin.ts",
+      "bytes": 3819
+    },
+    {
+      "file": "tests/e2e/helpers/modalExplorer.ts",
+      "bytes": 8273
+    },
+    {
+      "file": ".agents/skills/git-pushing/SKILL.md",
+      "bytes": 1428
+    },
+    {
+      "file": ".agents/skills/planning-with-files/examples.md",
+      "bytes": 4426
+    },
+    {
+      "file": ".agents/skills/planning-with-files/reference.md",
+      "bytes": 8066
+    },
+    {
+      "file": ".agents/skills/planning-with-files/SKILL.md",
+      "bytes": 6079
+    },
+    {
+      "file": ".agents/skills/executing-plans/SKILL.md",
+      "bytes": 2652
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/find-polluter.sh",
+      "bytes": 1528
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/test-pressure-2.md",
+      "bytes": 2283
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/condition-based-waiting.md",
+      "bytes": 3516
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/SKILL.md",
+      "bytes": 10261
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/test-pressure-1.md",
+      "bytes": 1900
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/defense-in-depth.md",
+      "bytes": 3650
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/test-academic.md",
+      "bytes": 653
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/CREATION-LOG.md",
+      "bytes": 4268
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/condition-based-waiting-example.ts",
+      "bytes": 5054
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/test-pressure-3.md",
+      "bytes": 2692
+    },
+    {
+      "file": ".agents/skills/systematic-debugging/root-cause-tracing.md",
+      "bytes": 5327
+    },
+    {
+      "file": ".agents/skills/clean-code/SKILL.md",
+      "bytes": 4669
+    },
+    {
+      "file": ".agents/skills/firebase/SKILL.md",
+      "bytes": 18923
+    },
+    {
+      "file": ".agents/skills/analyze-project/SKILL.md",
+      "bytes": 12741
+    },
+    {
+      "file": ".agents/skills/tailwind-patterns/SKILL.md",
+      "bytes": 7256
+    },
+    {
+      "file": ".agents/skills/slides/SKILL.md",
+      "bytes": 1137
+    },
+    {
+      "file": ".agents/skills/typescript-expert/SKILL.md",
+      "bytes": 14791
+    },
+    {
+      "file": ".agents/skills/frontend-design/LICENSE.txt",
+      "bytes": 10174
+    },
+    {
+      "file": ".agents/skills/frontend-design/SKILL.md",
+      "bytes": 8260
+    },
+    {
+      "file": ".agents/skills/react-best-practices/AGENTS.md",
+      "bytes": 60535
+    },
+    {
+      "file": ".agents/skills/react-best-practices/SKILL.md",
+      "bytes": 5649
+    },
+    {
+      "file": ".agents/skills/react-best-practices/metadata.json",
+      "bytes": 921
+    },
+    {
+      "file": ".agents/skills/react-best-practices/README.md",
+      "bytes": 3360
+    },
+    {
+      "file": ".agents/skills/architecture/patterns-reference.md",
+      "bytes": 2307
+    },
+    {
+      "file": ".agents/skills/architecture/examples.md",
+      "bytes": 2430
+    },
+    {
+      "file": ".agents/skills/architecture/context-discovery.md",
+      "bytes": 1591
+    },
+    {
+      "file": ".agents/skills/architecture/pattern-selection.md",
+      "bytes": 2638
+    },
+    {
+      "file": ".agents/skills/architecture/SKILL.md",
+      "bytes": 2205
+    },
+    {
+      "file": ".agents/skills/architecture/trade-off-analysis.md",
+      "bytes": 1579
+    },
+    {
+      "file": ".agents/skills/web-performance-optimization/SKILL.md",
+      "bytes": 16449
+    },
+    {
+      "file": ".agents/skills/documentation-and-adrs/SKILL.md",
+      "bytes": 8851
+    },
+    {
+      "file": ".agents/skills/google-sheets-automation/SKILL.md",
+      "bytes": 4325
+    },
+    {
+      "file": ".agents/skills/interview-me/SKILL.md",
+      "bytes": 14490
+    },
+    {
+      "file": ".agents/skills/react-patterns/SKILL.md",
+      "bytes": 4465
+    },
+    {
+      "file": ".agents/skills/react-component-performance/SKILL.md",
+      "bytes": 5081
+    },
+    {
+      "file": ".agents/skills/performance-optimizer/SKILL.md",
+      "bytes": 8841
+    },
+    {
+      "file": ".agents/skills/performance-optimizer/README.md",
+      "bytes": 465
+    },
+    {
+      "file": ".agents/skills/retail-revenue-dashboard-expert/SKILL.md",
+      "bytes": 10357
+    },
+    {
+      "file": ".agents/skills/git-pushing/scripts/smart_commit.sh",
+      "bytes": 927
+    },
+    {
+      "file": ".agents/skills/planning-with-files/scripts/init-session.sh",
+      "bytes": 2254
+    },
+    {
+      "file": ".agents/skills/planning-with-files/scripts/check-complete.sh",
+      "bytes": 1160
+    },
+    {
+      "file": ".agents/skills/planning-with-files/templates/progress.md",
+      "bytes": 4001
+    },
+    {
+      "file": ".agents/skills/planning-with-files/templates/findings.md",
+      "bytes": 3561
+    },
+    {
+      "file": ".agents/skills/planning-with-files/templates/task_plan.md",
+      "bytes": 4613
+    },
+    {
+      "file": ".agents/skills/analyze-project/examples/sample_session_analysis_report.md",
+      "bytes": 4556
+    },
+    {
+      "file": ".agents/skills/slides/references/copywriting-formulas.md",
+      "bytes": 2604
+    },
+    {
+      "file": ".agents/skills/slides/references/slide-strategies.md",
+      "bytes": 2715
+    },
+    {
+      "file": ".agents/skills/slides/references/html-template.md",
+      "bytes": 9004
+    },
+    {
+      "file": ".agents/skills/slides/references/layout-patterns.md",
+      "bytes": 3691
+    },
+    {
+      "file": ".agents/skills/slides/references/create.md",
+      "bytes": 153
+    },
+    {
+      "file": ".agents/skills/typescript-expert/references/typescript-cheatsheet.md",
+      "bytes": 7424
+    },
+    {
+      "file": ".agents/skills/typescript-expert/references/utility-types.ts",
+      "bytes": 8629
+    },
+    {
+      "file": ".agents/skills/typescript-expert/references/tsconfig-strict.json",
+      "bytes": 3426
+    },
+    {
+      "file": ".agents/skills/typescript-expert/scripts/ts_diagnostic.py",
+      "bytes": 6219
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-activity.md",
+      "bytes": 564
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-dependencies.md",
+      "bytes": 824
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-batch-dom-css.md",
+      "bytes": 1902
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-cache-storage.md",
+      "bytes": 1651
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-transitions.md",
+      "bytes": 1055
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-animate-svg-wrapper.md",
+      "bytes": 1185
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/server-parallel-fetching.md",
+      "bytes": 1515
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-hydration-no-flicker.md",
+      "bytes": 2308
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/server-after-nonblocking.md",
+      "bytes": 2012
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-combine-iterations.md",
+      "bytes": 753
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/client-event-listeners.md",
+      "bytes": 1969
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/async-api-routes.md",
+      "bytes": 1125
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-defer-reads.md",
+      "bytes": 973
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-early-exit.md",
+      "bytes": 1133
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/bundle-conditional.md",
+      "bytes": 866
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-cache-property-access.md",
+      "bytes": 532
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-min-max-loop.md",
+      "bytes": 2105
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/async-suspense-boundaries.md",
+      "bytes": 2510
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-content-visibility.md",
+      "bytes": 815
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-svg-precision.md",
+      "bytes": 588
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-memo.md",
+      "bytes": 1148
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/async-defer-await.md",
+      "bytes": 2028
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/bundle-preload.md",
+      "bytes": 1149
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/server-cache-lru.md",
+      "bytes": 1353
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/client-swr-dedup.md",
+      "bytes": 1159
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-hoist-regexp.md",
+      "bytes": 1028
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/_sections.md",
+      "bytes": 1554
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-set-map-lookups.md",
+      "bytes": 532
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-cache-function-results.md",
+      "bytes": 1949
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/bundle-barrel-imports.md",
+      "bytes": 2370
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-derived-state.md",
+      "bytes": 724
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-lazy-state-init.md",
+      "bytes": 2016
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/advanced-event-handler-refs.md",
+      "bytes": 1478
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/bundle-defer-third-party.md",
+      "bytes": 920
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/advanced-use-latest.md",
+      "bytes": 1191
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/_template.md",
+      "bytes": 631
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-conditional-render.md",
+      "bytes": 980
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/async-parallel.md",
+      "bytes": 654
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/server-serialization.md",
+      "bytes": 996
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-tosorted-immutable.md",
+      "bytes": 1782
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/async-dependencies.md",
+      "bytes": 942
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/bundle-dynamic-imports.md",
+      "bytes": 791
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-length-check-first.md",
+      "bytes": 1752
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/js-index-maps.md",
+      "bytes": 837
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/server-cache-react.md",
+      "bytes": 681
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rerender-functional-setstate.md",
+      "bytes": 2968
+    },
+    {
+      "file": ".agents/skills/react-best-practices/rules/rendering-hoist-jsx.md",
+      "bytes": 1039
+    },
+    {
+      "file": ".agents/skills/react-component-performance/agents/openai.yaml",
+      "bytes": 238
+    },
+    {
+      "file": ".agents/skills/react-component-performance/references/examples.md",
+      "bytes": 2381
+    },
+    {
+      "file": "functions/scripts/clean-sticker-target-default.cjs",
+      "bytes": 5918
+    },
+    {
+      "file": "functions/scripts/audit-firestore-readonly.cjs",
+      "bytes": 26792
+    },
+    {
+      "file": "functions/scripts/migrate-sticker-to-default.cjs",
+      "bytes": 12912
+    },
+    {
+      "file": "functions/src/couponLookup.ts",
+      "bytes": 3295
+    },
+    {
+      "file": "functions/src/lineBotWebhook.ts",
+      "bytes": 174806
+    },
+    {
+      "file": "functions/src/relistUnused.ts",
+      "bytes": 1693
+    },
+    {
+      "file": "functions/src/pmhForm.ts",
+      "bytes": 2230
+    },
+    {
+      "file": "functions/src/index.ts",
+      "bytes": 701
+    },
+    {
+      "file": "functions/src/lineBotScheduler.ts",
+      "bytes": 24174
+    },
+    {
+      "file": "functions/src/notifications.ts",
+      "bytes": 1829
+    },
+    {
+      "file": "functions/src/pmhRelay.ts",
+      "bytes": 14369
+    },
+    {
+      "file": "functions/src/stickerEvent.ts",
+      "bytes": 18406
+    },
+    {
+      "file": "functions/src/session.ts",
+      "bytes": 7622
+    },
+    {
+      "file": "functions/src/userName.ts",
+      "bytes": 2653
+    },
+    {
+      "file": "functions/src/pmhSequence.ts",
+      "bytes": 4587
+    },
+    {
+      "file": "functions/src/lineBotScheduleDue.ts",
+      "bytes": 3765
+    },
+    {
+      "file": "functions/src/superAdminDept.ts",
+      "bytes": 1254
+    },
+    {
+      "file": "functions/src/gemini.ts",
+      "bytes": 12758
+    },
+    {
+      "file": "functions/src/groupFeatureHelper.ts",
+      "bytes": 3203
+    },
+    {
+      "file": "functions/src/firebaseAdmin.ts",
+      "bytes": 949
+    },
+    {
+      "file": "functions/src/lineSignature.ts",
+      "bytes": 1503
+    },
+    {
+      "file": "functions/src/pmhFlexCard.ts",
+      "bytes": 8201
+    },
+    {
+      "file": "functions/src/admin.ts",
+      "bytes": 7728
+    },
+    {
+      "file": "public/frame/bg_phieu.png",
+      "bytes": 190161
+    },
+    {
+      "file": "public/frame/GVO2-scaled.png",
+      "bytes": 65767
+    },
+    {
+      "file": "public/frame/X24_NEW.png",
+      "bytes": 29569
+    },
+    {
+      "file": "public/frame/bg_phieutgd.png",
+      "bytes": 332788
+    },
+    {
+      "file": "public/frame/X24.png",
+      "bytes": 31222
+    },
+    {
+      "file": "public/splash/iphone-1179x2556.png",
+      "bytes": 48204
+    },
+    {
+      "file": "public/splash/iphone-750x1334.png",
+      "bytes": 25011
+    },
+    {
+      "file": "public/splash/iphone-1170x2532.png",
+      "bytes": 48367
+    },
+    {
+      "file": "public/splash/iphone-1125x2436.png",
+      "bytes": 47365
+    },
+    {
+      "file": "public/splash/iphone-1206x2622.png",
+      "bytes": 48308
+    },
+    {
+      "file": "public/splash/iphone-1284x2778.png",
+      "bytes": 49580
+    },
+    {
+      "file": "public/splash/iphone-828x1792.png",
+      "bytes": 27566
+    },
+    {
+      "file": "public/splash/iphone-1242x2688.png",
+      "bytes": 49792
+    },
+    {
+      "file": "public/splash/iphone-1320x2868.png",
+      "bytes": 51891
+    },
+    {
+      "file": "public/splash/iphone-1290x2796.png",
+      "bytes": 48876
+    },
+    {
+      "file": "public/splash/iphone-640x1136.png",
+      "bytes": 23962
+    },
+    {
+      "file": "public/splash/iphone-1242x2208.png",
+      "bytes": 47066
+    },
+    {
+      "file": "public/scripts/tnb-pmh-auto-lay-ma.user.js",
+      "bytes": 34948
+    },
+    {
+      "file": "public/scripts/mwg-auto-thu-thap-diem-thuong.user.js",
+      "bytes": 239639
+    },
+    {
+      "file": "public/fonts/SamsungSharpSans-Bold_SMCPS.ttf",
+      "bytes": 448812
+    },
+    {
+      "file": "public/fonts/UTM Avo.ttf",
+      "bytes": 39308
+    },
+    {
+      "file": "public/fonts/UTM AvoBold.ttf",
+      "bytes": 39364
+    },
+    {
+      "file": "public/fonts/SamsungSharpSans-Medium_SMCP.ttf",
+      "bytes": 420656
+    },
+    {
+      "file": "public/fonts/FVHShopeeText-Bold.otf",
+      "bytes": 20424
+    },
+    {
+      "file": "public/fonts/ShopeeDisplay-Black.ttf",
+      "bytes": 286140
+    },
+    {
+      "file": "public/fonts/ShopeeDisplay-ExtraBold.ttf",
+      "bytes": 292020
+    },
+    {
+      "file": "public/fonts/Roboto-VariableFont_wdth,wght.ttf",
+      "bytes": 487768
+    },
+    {
+      "file": "public/fonts/UTM Colossalis.ttf",
+      "bytes": 40016
+    },
+    {
+      "file": "public/fonts/ShopeeDisplay-Light.ttf",
+      "bytes": 306200
+    },
+    {
+      "file": "public/fonts/Alata-Regular.ttf",
+      "bytes": 348308
+    },
+    {
+      "file": "public/fonts/SF-Pro-Display-Thin.otf",
+      "bytes": 2253252
+    },
+    {
+      "file": "public/fonts/ShopeeDisplay-Bold.ttf",
+      "bytes": 302104
+    },
+    {
+      "file": "public/stickerevent/_redirects",
+      "bytes": 19
+    },
+    {
+      "file": "public/icons/apple-touch-icon-167.png",
+      "bytes": 7581
+    },
+    {
+      "file": "public/icons/apple-touch-icon-152.png",
+      "bytes": 7046
+    },
+    {
+      "file": "public/icons/apple-touch-icon-120.png",
+      "bytes": 4202
+    },
+    {
+      "file": "public/icons/icon-512.png",
+      "bytes": 92739
+    },
+    {
+      "file": "public/icons/apple-touch-icon-180.png",
+      "bytes": 9431
+    },
+    {
+      "file": "public/icons/icon-192.png",
+      "bytes": 8302
+    },
+    {
+      "file": "public/icons/icon-maskable-512.png",
+      "bytes": 43029
+    },
+    {
+      "file": "public/Tuts/Coupon.png",
+      "bytes": 1713899
+    },
+    {
+      "file": "components/pivot/PivotTable.tsx",
+      "bytes": 27797
+    },
+    {
+      "file": "components/pivot/AlertRulesPanel.tsx",
+      "bytes": 10696
+    },
+    {
+      "file": "components/tables/MonthlyTrendTableRow.tsx",
+      "bytes": 14319
+    },
+    {
+      "file": "components/tables/MonthlyTrendTable.tsx",
+      "bytes": 8399
+    },
+    {
+      "file": "components/tables/SummaryTable.tsx",
+      "bytes": 38190
+    },
+    {
+      "file": "components/tables/SummaryTableRow.tsx",
+      "bytes": 21296
+    },
+    {
+      "file": "components/kpis/KpiCards.tsx",
+      "bytes": 35954
+    },
+    {
+      "file": "components/employees/HeadToHeadTab.tsx",
+      "bytes": 26482
+    },
+    {
+      "file": "components/employees/PerformanceTable.tsx",
+      "bytes": 9490
+    },
+    {
+      "file": "components/employees/EmployeeAnalysisContent.tsx",
+      "bytes": 16099
+    },
+    {
+      "file": "components/employees/EmployeeAnalysisModals.tsx",
+      "bytes": 6341
+    },
+    {
+      "file": "components/employees/ContestTable.tsx",
+      "bytes": 37902
+    },
+    {
+      "file": "components/employees/EmployeeAnalysisFilters.tsx",
+      "bytes": 1662
+    },
+    {
+      "file": "components/employees/EmployeeAnalysisTabs.tsx",
+      "bytes": 5271
+    },
+    {
+      "file": "components/employees/TopSellerList.tsx",
+      "bytes": 12059
+    },
+    {
+      "file": "components/employees/EmployeeAnalysis.tsx",
+      "bytes": 21610
+    },
+    {
+      "file": "components/employees/IndustryAnalysisTab.tsx",
+      "bytes": 38464
+    },
+    {
+      "file": "components/upload/UploadSection.tsx",
+      "bytes": 9651
+    },
+    {
+      "file": "components/upload/KhoFileManager.tsx",
+      "bytes": 6620
+    },
+    {
+      "file": "components/upload/FileHistoryManager.tsx",
+      "bytes": 8851
+    },
+    {
+      "file": "components/upload/StatusDisplay.tsx",
+      "bytes": 2296
+    },
+    {
+      "file": "components/layout/GlobalAutoSyncDock.tsx",
+      "bytes": 55571
+    },
+    {
+      "file": "components/layout/MobileBottomNav.tsx",
+      "bytes": 11606
+    },
+    {
+      "file": "components/layout/installHint.ts",
+      "bytes": 1970
+    },
+    {
+      "file": "components/layout/navIcons.ts",
+      "bytes": 1188
+    },
+    {
+      "file": "components/layout/PendingApprovalBanner.tsx",
+      "bytes": 1743
+    },
+    {
+      "file": "components/layout/Footer.tsx",
+      "bytes": 1382
+    },
+    {
+      "file": "components/layout/AutoSyncScheduleButton.tsx",
+      "bytes": 12860
+    },
+    {
+      "file": "components/layout/NotificationDropdown.tsx",
+      "bytes": 20373
+    },
+    {
+      "file": "components/layout/Sidebar.tsx",
+      "bytes": 19914
+    },
+    {
+      "file": "components/layout/InstallAppHint.tsx",
+      "bytes": 3020
+    },
+    {
+      "file": "components/layout/Header.tsx",
+      "bytes": 15602
+    },
+    {
+      "file": "components/layout/FontSelector.tsx",
+      "bytes": 10385
+    },
+    {
+      "file": "components/shared/DrillDownModal.tsx",
+      "bytes": 10235
+    },
+    {
+      "file": "components/common/MultiSelectDropdown.tsx",
+      "bytes": 14851
+    },
+    {
+      "file": "components/common/SingleSelectDropdown.tsx",
+      "bytes": 9595
+    },
+    {
+      "file": "components/common/ErrorBoundary.tsx",
+      "bytes": 4012
+    },
+    {
+      "file": "components/common/ExportLoader.tsx",
+      "bytes": 620
+    },
+    {
+      "file": "components/common/ProcessingLoader.tsx",
+      "bytes": 8900
+    },
+    {
+      "file": "components/common/SkeletonLoader.tsx",
+      "bytes": 5864
+    },
+    {
+      "file": "components/common/SearchableSelect.tsx",
+      "bytes": 6542
+    },
+    {
+      "file": "components/common/ExportOptionsModal.tsx",
+      "bytes": 6179
+    },
+    {
+      "file": "components/common/FilterProcessingOverlay.tsx",
+      "bytes": 3711
+    },
+    {
+      "file": "components/common/DebugPanel.tsx",
+      "bytes": 3052
+    },
+    {
+      "file": "components/common/FilterChip.tsx",
+      "bytes": 2524
+    },
+    {
+      "file": "components/common/LoadingOverlay.tsx",
+      "bytes": 400
+    },
+    {
+      "file": "components/filters/FilterSection.tsx",
+      "bytes": 30996
+    },
+    {
+      "file": "components/filters/FilterBar.tsx",
+      "bytes": 10264
+    },
+    {
+      "file": "components/summary/WarehouseSettingsModal.tsx",
+      "bytes": 27811
+    },
+    {
+      "file": "components/summary/WarehouseSummary.tsx",
+      "bytes": 107235
+    },
+    {
+      "file": "components/views/CouponConverterView.tsx",
+      "bytes": 17992
+    },
+    {
+      "file": "components/views/DashboardView.tsx",
+      "bytes": 56880
+    },
+    {
+      "file": "components/views/LandingPageView.tsx",
+      "bytes": 7038
+    },
+    {
+      "file": "components/views/PriceComparisonView.tsx",
+      "bytes": 38223
+    },
+    {
+      "file": "components/views/UserManagementView.tsx",
+      "bytes": 83376
+    },
+    {
+      "file": "components/views/SettingsView.tsx",
+      "bytes": 591
+    },
+    {
+      "file": "components/views/BarcodeCanvas.tsx",
+      "bytes": 4329
+    },
+    {
+      "file": "components/views/AboutView.tsx",
+      "bytes": 10899
+    },
+    {
+      "file": "components/views/PendingApprovalView.tsx",
+      "bytes": 17561
+    },
+    {
+      "file": "components/views/ExternalToolView.tsx",
+      "bytes": 707
+    },
+    {
+      "file": "components/views/LoginView.tsx",
+      "bytes": 11387
+    },
+    {
+      "file": "components/views/CheckThuongView.tsx",
+      "bytes": 25449
+    },
+    {
+      "file": "components/analysis/ExportDestinationButton.tsx",
+      "bytes": 28659
+    },
+    {
+      "file": "components/modals/UploadTypeSelectionModal.tsx",
+      "bytes": 5152
+    },
+    {
+      "file": "components/modals/ChangelogModal.tsx",
+      "bytes": 9428
+    },
+    {
+      "file": "components/modals/FileHistoryModal.tsx",
+      "bytes": 10056
+    },
+    {
+      "file": "components/modals/EmployeeManagerModal.tsx",
+      "bytes": 21149
+    },
+    {
+      "file": "components/modals/UnconfiguredGroupsModal.tsx",
+      "bytes": 17844
+    },
+    {
+      "file": "components/modals/CrossSellingBuilderModal.tsx",
+      "bytes": 32832
+    },
+    {
+      "file": "components/modals/UnshippedOrdersModal.tsx",
+      "bytes": 46075
+    },
+    {
+      "file": "components/modals/FileNamingModal.tsx",
+      "bytes": 5745
+    },
+    {
+      "file": "components/modals/GtdhTargetModal.tsx",
+      "bytes": 9537
+    },
+    {
+      "file": "components/modals/PerformanceModal.tsx",
+      "bytes": 37796
+    },
+    {
+      "file": "components/modals/UncollectedOrdersModal.tsx",
+      "bytes": 47000
+    },
+    {
+      "file": "components/modals/UploadConflictModal.tsx",
+      "bytes": 12204
+    },
+    {
+      "file": "components/modals/EmployeeCategoryTable.tsx",
+      "bytes": 10865
+    },
+    {
+      "file": "components/modals/AdminAnnouncementModal.tsx",
+      "bytes": 7573
+    },
+    {
+      "file": "components/charts/SavedCalendarCard.tsx",
+      "bytes": 9498
+    },
+    {
+      "file": "components/charts/RevenueCalendar.tsx",
+      "bytes": 16188
+    },
+    {
+      "file": "components/charts/TrendChart.tsx",
+      "bytes": 43950
+    },
+    {
+      "file": "components/charts/IndustryGrid.tsx",
+      "bytes": 35929
+    },
+    {
+      "file": "components/tables/summary/SummaryTableFilterBar.tsx",
+      "bytes": 7658
+    },
+    {
+      "file": "components/tables/summary/SummaryTableUtils.ts",
+      "bytes": 6570
+    },
+    {
+      "file": "components/tables/summary/SummaryTableComparisonBar.tsx",
+      "bytes": 22788
+    },
+    {
+      "file": "components/tables/summary/CrossSellingTable.tsx",
+      "bytes": 14400
+    },
+    {
+      "file": "components/tables/summary/useSummaryTableLogic.ts",
+      "bytes": 19222
+    },
+    {
+      "file": "components/tables/summary/SummaryTableHeader.tsx",
+      "bytes": 15747
+    },
+    {
+      "file": "components/tables/summary/FilterPopover.tsx",
+      "bytes": 14025
+    },
+    {
+      "file": "components/tables/summary/hooks/useSummaryExpand.ts",
+      "bytes": 5228
+    },
+    {
+      "file": "components/tables/summary/hooks/useSummaryComparison.ts",
+      "bytes": 18152
+    },
+    {
+      "file": "components/tables/summary/hooks/useSummaryFilters.ts",
+      "bytes": 10068
+    },
+    {
+      "file": "components/kpis/modals/KpiCardConfigModal.tsx",
+      "bytes": 35520
+    },
+    {
+      "file": "components/employees/industry/IndustryTableUtils.tsx",
+      "bytes": 4851
+    },
+    {
+      "file": "components/employees/industry/useIndustryAnalysisLogic.ts",
+      "bytes": 37816
+    },
+    {
+      "file": "components/employees/head-to-head/HeadToHeadTable.tsx",
+      "bytes": 20650
+    },
+    {
+      "file": "components/employees/head-to-head/HeadToHeadConfigModal.tsx",
+      "bytes": 27574
+    },
+    {
+      "file": "components/employees/performance/PerformanceSingleTable.tsx",
+      "bytes": 41336
+    },
+    {
+      "file": "components/employees/performance/PerformanceTableUtils.tsx",
+      "bytes": 6089
+    },
+    {
+      "file": "components/employees/modals/ColumnConfigModal.tsx",
+      "bytes": 23117
+    },
+    {
+      "file": "components/employees/modals/StructureModals.tsx",
+      "bytes": 6897
+    },
+    {
+      "file": "components/employees/modals/CustomExploitationTabModal.tsx",
+      "bytes": 40191
+    },
+    {
+      "file": "components/employees/modals/column-config/FormattingRulesForm.tsx",
+      "bytes": 6452
+    },
+    {
+      "file": "components/employees/modals/column-config/DataColumnForm.tsx",
+      "bytes": 8548
+    },
+    {
+      "file": "components/employees/modals/column-config/TargetColumnForm.tsx",
+      "bytes": 3784
+    },
+    {
+      "file": "components/employees/modals/column-config/CalculatedColumnForm.tsx",
+      "bytes": 6999
+    },
+    {
+      "file": "components/shared/ui/StatCard.tsx",
+      "bytes": 4093
+    },
+    {
+      "file": "components/shared/ui/useCenterActiveInStrip.ts",
+      "bytes": 1624
+    },
+    {
+      "file": "components/shared/ui/index.ts",
+      "bytes": 2522
+    },
+    {
+      "file": "components/shared/ui/MultiSelectDropdown.tsx",
+      "bytes": 11472
+    },
+    {
+      "file": "components/shared/ui/SectionCard.tsx",
+      "bytes": 1419
+    },
+    {
+      "file": "components/shared/ui/Skeleton.tsx",
+      "bytes": 3650
+    },
+    {
+      "file": "components/shared/ui/ProgressBar.tsx",
+      "bytes": 3175
+    },
+    {
+      "file": "components/shared/ui/imageDelivery.ts",
+      "bytes": 3423
+    },
+    {
+      "file": "components/shared/ui/Badge.tsx",
+      "bytes": 1988
+    },
+    {
+      "file": "components/shared/ui/EmptyState.tsx",
+      "bytes": 1429
+    },
+    {
+      "file": "components/shared/ui/FeatureLandingLayout.tsx",
+      "bytes": 6226
+    },
+    {
+      "file": "components/shared/ui/SectionHeader.tsx",
+      "bytes": 3422
+    },
+    {
+      "file": "components/shared/ui/Card.tsx",
+      "bytes": 3123
+    },
+    {
+      "file": "components/shared/ui/Tabs.tsx",
+      "bytes": 7485
+    },
+    {
+      "file": "components/shared/ui/ShareRetryToast.tsx",
+      "bytes": 1589
+    },
+    {
+      "file": "components/shared/ui/TouchTitleHint.tsx",
+      "bytes": 5490
+    },
+    {
+      "file": "components/shared/ui/DataTable.tsx",
+      "bytes": 14806
+    },
+    {
+      "file": "components/shared/ui/Input.tsx",
+      "bytes": 5128
+    },
+    {
+      "file": "components/shared/ui/Dropdown.tsx",
+      "bytes": 7736
+    },
+    {
+      "file": "components/shared/ui/tableScrollCue.ts",
+      "bytes": 4632
+    },
+    {
+      "file": "components/shared/ui/Modal.tsx",
+      "bytes": 18216
+    },
+    {
+      "file": "components/shared/ui/Select.tsx",
+      "bytes": 2926
+    },
+    {
+      "file": "components/shared/ui/Tooltip.tsx",
+      "bytes": 2850
+    },
+    {
+      "file": "components/shared/ui/ConfirmDialog.tsx",
+      "bytes": 2725
+    },
+    {
+      "file": "components/shared/ui/Button.tsx",
+      "bytes": 6227
+    },
+    {
+      "file": "components/shared/ui/KpiCard.tsx",
+      "bytes": 11292
+    },
+    {
+      "file": "components/shared/ui/BatchShareToast.tsx",
+      "bytes": 3022
+    },
+    {
+      "file": "components/shared/ui/utils.ts",
+      "bytes": 758
+    },
+    {
+      "file": "components/shared/export/exportProgress.ts",
+      "bytes": 7919
+    },
+    {
+      "file": "components/shared/export/index.ts",
+      "bytes": 1343
+    },
+    {
+      "file": "components/shared/export/captureEngine.ts",
+      "bytes": 82224
+    },
+    {
+      "file": "components/shared/export/exportLayout.ts",
+      "bytes": 20522
+    },
+    {
+      "file": "components/shared/export/khongBanSao.test.ts",
+      "bytes": 2058
+    },
+    {
+      "file": "components/shared/export/presetBi.ts",
+      "bytes": 101704
+    },
+    {
+      "file": "components/shared/export/ExportProgressHost.tsx",
+      "bytes": 6402
+    },
+    {
+      "file": "components/shared/ui/icon/index.ts",
+      "bytes": 531
+    },
+    {
+      "file": "components/shared/ui/icon/iconTokens.ts",
+      "bytes": 2136
+    },
+    {
+      "file": "components/shared/ui/icon/legacyIconNames.ts",
+      "bytes": 6807
+    },
+    {
+      "file": "components/shared/ui/icon/renderIcon.tsx",
+      "bytes": 863
+    },
+    {
+      "file": "components/shared/ui/icon/iconRegistry.ts",
+      "bytes": 14959
+    },
+    {
+      "file": "components/shared/ui/icon/AppIcon.tsx",
+      "bytes": 2342
+    },
+    {
+      "file": "components/shared/ui/icon/brandIcons.tsx",
+      "bytes": 1823
+    },
+    {
+      "file": "components/views/settings/SettingsAccountTab.tsx",
+      "bytes": 30540
+    },
+    {
+      "file": "services/dbService/settings.ts",
+      "bytes": 8512
+    },
+    {
+      "file": "services/dbService/kpiConfig.ts",
+      "bytes": 1637
+    },
+    {
+      "file": "services/dbService/salesData.ts",
+      "bytes": 41645
+    },
+    {
+      "file": "services/dbService/warehouseConfig.ts",
+      "bytes": 2771
+    },
+    {
+      "file": "services/dbService/core.ts",
+      "bytes": 27150
+    }
+  ]
+}

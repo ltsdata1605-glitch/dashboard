@@ -1,0 +1,7 @@
+{"test":"anonymous mark-used cross-owner","authProvided":false,"signatureChecks":0,"http":200,"result":{"success":true,"updatedCount":2,"alreadyUsed":false,"quotedSent":false},"ownerA":{"code":"MOCKCODE1","status":"USED","usedBy":"Forged display name","usedAt":"2026-10-07T10:40:47.303Z"},"ownerB":{"code":"MOCKCODE1","status":"USED","usedBy":"Forged display name","usedAt":"2026-10-07T10:40:47.303Z"}}
+{"test":"anonymous upload arbitrary ID/type","signatureChecks":0,"http":200,"success":true,"wroteVictimId":true,"contentType":"text/html"}
+{"test":"parallel e1 same coupon","allocationCount":2,"recipientIds":["U11111111111111111111111111111111","U22222222222222222222222222222222"],"response1":200,"response2":200}
+{"test":"nonadmin approve all","approved":"APPROVED","approvedBy":"U99999999999999999999999999999999","adminCollectionQueried":false,"http":200}
+{"test":"nonrecipient cancel USED coupon","statusAfter":"UNUSED","http":200}
+{"test":"UTC prefix compared to VN day","usedAt":"2026-10-06T18:00:00.000Z","localVNDate":"2026-10-07","todayVN":"2026-10-07","reported":false}
+{"test":"cleanup expired USED predicate","usedStatus":"USED","expiryDate":"2026-10-06","todayVN":"2026-10-07","willDelete":true}

@@ -1,0 +1,23 @@
+{
+  "method": "Execute original taxSyncService.ts via builtin TS transform with in-memory Firebase/IndexedDB stubs; no network",
+  "results": [
+    {
+      "case": "Two devices have same auto-increment id=1; update one record",
+      "expected": "Only chosen stable record updated",
+      "observed": "Both cloud records updated",
+      "reproduced": true
+    },
+    {
+      "case": "Read cloud history on second device",
+      "expected": "Cloud records cached locally for offline access",
+      "observed": "UI gets cloud record but local history remains empty",
+      "reproduced": true
+    },
+    {
+      "case": "UI selection/delete uses colliding id=1",
+      "expected": "Record identity unique across devices",
+      "observed": "Merged history contains two records with id=1; deletion can remove different local/cloud records",
+      "reproduced": true
+    }
+  ]
+}

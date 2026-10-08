@@ -1,0 +1,7 @@
+{"test":"F01-real-hook-offline-adapters","before":"fixture-october","afterLocal":"fixture-september","afterState":"fixture-september","writeCount":11}
+{"test":"F05-real-generator-no-DOM","rawEventHandlerRetained":true,"note":"HTML output only; no browser execution claimed"}
+{"test":"F09-Array-semantic","quantity":1.5,"error":"RangeError"}
+{"test":"F09-Array-semantic","quantity":"10","count":1}
+{"test":"F09-Array-semantic","quantity":1e+100,"error":"RangeError"}
+{"test":"F03-real-delete-plus-real-loader-offline-adapters","deletedChunkCount":1,"syncTimestampAfterDelete":1,"productFetches":0,"productStillDisplayed":"old-price"}
+{"test":"F03-forced-new-cloud-timestamp-empty-result","productFetches":1,"productStillDisplayed":"old-price"}

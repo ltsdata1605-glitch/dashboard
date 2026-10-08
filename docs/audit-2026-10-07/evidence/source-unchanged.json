@@ -1,0 +1,6 @@
+{
+  "source_files_compared": 980,
+  "changed_files": [],
+  "original_archive_sha256": "84f751763e3a357e0b65ee3faa512addc99f0306df7b6bfe9067567667403901",
+  "method": "Byte-for-byte comparison against all non-directory ZIP entries; added dependency directories excluded"
+}

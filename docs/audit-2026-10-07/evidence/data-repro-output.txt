@@ -1,0 +1,5 @@
+UTF8_CHUNK [{"rows":768,"utf16Chars":818579,"utf8Bytes":1110419,"minimumStringBytes":1090560},{"rows":32,"utf16Chars":34113,"utf8Bytes":46273,"minimumStringBytes":45440}]
+KHO_DUPLICATION {"files":2,"rows":2,"actualRevenue":2000000,"expectedRevenue":1000000}
+MISSING_CHUNK_ACCEPTED {"returnedRows":1,"metaTotalRows":2,"rejected":false}
+PARSERS {"invalidDateInput":"31/02/2026","actualDate":"2026-03-03T00:00:00.000Z","decimalInput":"45,5%","actualNumber":455,"roundtripInput":"12,5","roundtripResult":125}
+KHO_REOPEN {"firstPageLoad":{"rows":2,"appStates":["processing"]},"secondPageLoad":{"rows":0,"appStates":[]},"settingsKeys":["khoDataCache_910_auto_1","khoDataCache_910_auto_2","khoDataAppliedSnapshot::910"]}

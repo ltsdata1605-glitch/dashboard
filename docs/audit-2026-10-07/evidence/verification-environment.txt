@@ -1,0 +1,13 @@
+Archive: dashboard-main (2).zip (provided by user)
+Extracted: /workspace/project-audit/dashboard-main
+No original application source changed; no push/deploy or production-data calls made.
+Runtime: Node 24.19.0, npm 11.9.0 (repo CI Node22).
+npm ci --ignore-scripts --no-audit --no-fund: attempted; network proxy unreachable, stopped installation.
+curl --connect-timeout 5 --max-time 10 https://registry.npmjs.org/typescript: exit7, Failed to connect to proxy port8080.
+npm run typecheck: exit127, tsc not found.
+npm run test:unit: exit127, vitest not found.
+npm run build: exit127, vite not found.
+These exits describe unavailable tooling, not proven source build failures.
+Native Node TS syntax parsing:459 non-declaration .ts files,0 parser errors; excludes .tsx, and does not establish type safety.
+Auth, LINE and Tax: original function/service bodies executed with local stubs. See separate proof results.
+Firestore Rules emulator, real Firebase/IAM, actual Safari/iPhone: not run.

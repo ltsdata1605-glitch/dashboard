@@ -1,0 +1,19 @@
+{
+  "scope": "Original message handler with fake UI/storage, no browser or network",
+  "untrustedOriginAccepted": true,
+  "saved": [
+    {
+      "key": "checkthuong_data",
+      "value": {
+        "competitionData": [
+          [
+            "FAKE_OFFLINE_TAMPER"
+          ]
+        ],
+        "fileName": "fake.xlsx",
+        "lastModified": 9999999999999
+      }
+    }
+  ],
+  "limitations": "Browser exploit requires attacker to hold window reference (parent/opener/frame) and CheckThuongView listener mounted. Deployed CSP/COOP/framing policy was not checked. Does not demonstrate data exfiltration; reply targets app iframe, not sender."
+}

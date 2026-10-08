@@ -1,0 +1,5 @@
+{
+  "method": "Native Node24 TS parsing only; no typecheck, no imports/execution, no TSX checking",
+  "checked": 459,
+  "failures": []
+}
