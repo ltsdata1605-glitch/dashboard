@@ -109,7 +109,7 @@ export function useStickerEventDb({
       // Bọc toàn bộ các hoạt động Firestore bằng timeout
       await runWithTimeout((async () => {
         // Verify store has an admin (for Staff users) — TRƯỚC ĐÂY tự query trực tiếp
-        // collection(db, 'users') từ client, nhưng firestore.stickerevent.rules (đã siết lại
+        // collection(db, 'users') từ client, nhưng firestore.rules (khi còn database riêng là firestore.stickerevent.rules — đã siết lại
         // để chặn leo thang quyền) chỉ cho phép admin/superadmin `list` trên users — staff gọi
         // thẳng LUÔN bị "Missing or insufficient permissions" (bug thật, không phải giả
         // thuyết). Giờ dùng thẳng `storeHasAdmin` do stickerResolveSession()/stickerRegister()
