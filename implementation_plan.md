@@ -7538,3 +7538,15 @@ xuất ảnh, v.v.); 2 huy hiệu số tròn ở `ExportDestinationButton` nới
 cố định, tăng chữ sẽ tràn). `npm run check` xanh (baseline tự hạ); e2e Khai thác/Check thưởng/xuất ảnh/chuẩn thiết kế 28 qua, 1 skip.
 Chưa xem ảnh chụp từng màn — nên liếc các thẻ KPI ngành hàng BI trên laptop để chắc chữ không tràn.
 
+## Offline — mở app khi mất mạng (chủ dự án chốt "cần", 2026-10-08)
+- `scripts/sw-template.js` + plugin `ycx-offline-sw` trong `vite.config.ts` sinh `dist/sw.js` mỗi lần build: danh sách tải sẵn
+  = file CỦA BẢN BUILD NÀY trong `/assets/` + `/icons/` + manifest + favicon (84 file, 8,2 MB; phông/ảnh khung lưu khi dùng lần đầu).
+  `VERSION` băm từ danh sách + index.html → mỗi bản có cache riêng, cache cũ tự bị dọn khi worker mới kích hoạt.
+- Điều hướng: ƯU TIÊN MẠNG (quá 4 giây/lỗi thì dùng bản lưu) để không kẹt bản cũ; `/assets/*` và phông: ưu tiên bản lưu (tên có mã băm).
+  Yêu cầu khác origin (Firebase, LINE, Google) KHÔNG đụng tới. Đăng ký ở `index.tsx` chỉ khi `import.meta.env.PROD`;
+  bản mới nhận ở lần mở kế tiếp (không tự tải lại giữa lúc đang làm việc).
+- Test `tests/e2e/offline-app-shell.spec.ts` (dựng `vite preview` trên dist, bỏ qua nếu chưa build): tải trang → chờ SW lưu >60 file → TẮT MẠNG → tải lại
+  vẫn dựng màn thật; kiểm ngược: bỏ SW thì tải lại offline lỗi `ERR_INTERNET_DISCONNECTED`. 2/2 xanh. Đo bằng trình duyệt thật (Chromium), chưa thử iPhone.
+- Giới hạn cần biết: offline chỉ dùng được dữ liệu ĐÃ LƯU TRÊN MÁY (IndexedDB); đăng nhập Google, đồng bộ cloud, gửi LINE, So giá… cần mạng.
+  Lần đầu mở app PHẢI có mạng để tải sẵn. Phần "cài vào Màn hình chính" trên iPhone cần kiểm thật.
+

@@ -2,6 +2,40 @@ import path from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import fs from 'fs';
+import crypto from 'crypto';
+
+
+/**
+ * Sinh dist/sw.js (service worker offline) từ scripts/sw-template.js: nhúng danh sách file cần tải sẵn
+ * (index.html, /assets/**, icon, manifest) và một VERSION băm từ tên file + nội dung index.html — mỗi bản build mới
+ * có cache riêng, cache cũ tự bị dọn khi worker mới kích hoạt.
+ */
+function offlineServiceWorker() {
+  let emitted: string[] = [];
+  const walk = (dir: string, base = ''): string[] =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? walk(path.join(dir, e.name), `${base}${e.name}/`) : [`${base}${e.name}`]);
+  return {
+    name: 'ycx-offline-sw',
+    apply: 'build' as const,
+    // Chỉ lấy file của CHÍNH bản build này (dist/assets có thể còn file bản cũ nếu outDir không được dọn).
+    writeBundle(_options: unknown, bundle: Record<string, unknown>) { emitted = Object.keys(bundle); },
+    closeBundle() {
+      const dist = path.resolve(__dirname, 'dist');
+      if (!fs.existsSync(path.join(dist, 'index.html'))) return;
+      const files = walk(dist);
+      const precache = files
+        .filter((f) => (f.startsWith('assets/') && emitted.includes(f)) || f.startsWith('icons/') || f === 'favicon.svg' || f === 'manifest.webmanifest'
+          || f === 'prevent-pull-to-refresh.js' || f === 'reload-on-chunk-error.js')
+        .map((f) => `/${f}`);
+      const version = crypto.createHash('sha1')
+        .update(precache.join('|')).update(fs.readFileSync(path.join(dist, 'index.html'))).digest('hex').slice(0, 12);
+      const tpl = fs.readFileSync(path.resolve(__dirname, 'scripts/sw-template.js'), 'utf8');
+      fs.writeFileSync(path.join(dist, 'sw.js'), tpl.replace('__VERSION__', version).replace('__PRECACHE__', JSON.stringify(precache)));
+    },
+  };
+}
 
 export default defineConfig(() => {
     return {
@@ -23,6 +57,7 @@ export default defineConfig(() => {
       plugins: [
         react(),
         tailwindcss(),
+        offlineServiceWorker(),
       ],
       build: {
         chunkSizeWarningLimit: 700,
