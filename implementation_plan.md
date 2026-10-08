@@ -7482,7 +7482,7 @@ nguyên, hook chỉ gọi lại. Test: `tests/unit/audit-d16-summary-kpi-fallbac
 báo cáo nhiều siêu thị KHÔNG nhận số cả cụm; 'Tổng' và báo cáo 1 siêu thị vẫn được bù; số của chính siêu thị không bị ghi đè.
 Kiểm đột biến: bỏ điều kiện (luôn bù) → 2/5 ca đỏ; khôi phục → 5/5 xanh. `npm run check` xanh, unit 1135 qua.
 
-## Thiết kế — chuyển token/secret Bot LINE về server (audit S13/S14/B3) — CHỜ DUYỆT (2026-10-08)
+## Thiết kế — chuyển token/secret Bot LINE về server (audit S13/S14/B3) — ĐÃ TRIỂN KHAI S1–S5 (2026-10-08)
 
 **Hiện trạng (đo trên code):** `channelAccessToken`, `channelSecret`, `pmhRelayToken` nằm ngay trong document
 `line_bots/{uid}`. Rules cho phép chủ bot, admin và manager CÙNG Mã Kho đọc cả document ⇒ manager đọc được token bot
@@ -7508,3 +7508,18 @@ S1 helper + đọc có dự phòng · S2 hai callable · S3 client dùng botId �
 **Cần chủ dự án quyết:** (1) đồng ý hướng này; (2) manager cùng Kho vẫn được GỬI qua bot Kho (qua callable) nhưng không
 xem được token — đúng ý? (3) lúc chạy S5 có khung giờ ít bán hàng không (S4 chỉ sao chép, S5 mới đổi dữ liệu thật).
 **Rollback:** S1–S4 chỉ thêm; S5 giữ bản sao field cũ trong `line_bot_secrets` nên khôi phục được.
+
+### Kết quả triển khai (2026-10-08, chủ dự án duyệt "chạy ngay")
+| Bước | Việc | Kiểm chứng |
+|---|---|---|
+| S1 | `functions/src/lineBotSecrets.ts`: `withSecrets`, `botsWithSecrets`, `findBotUidByRelayToken`, `canCallerUseBot`; webhook/scheduler/relay/scope đọc kho bí mật (dự phòng field cũ) | `audit-s13-line-secrets` + 92 test LINE cũ xanh (sửa mock 2 file) |
+| S2 | Action `saveSecrets` (chủ bot/admin); `verifyToken/sendTestPush/pushImage/sendBroadcast/getProfile` nhận `botId` + ID token, quyền = canUseBot. **Khác thiết kế ban đầu:** dùng action HTTP của webhook (có sẵn CORS, giống `uploadMedia`) thay vì callable mới | 11 ca: manager cùng Kho gửi được, Kho khác/nhân viên/ẩn danh bị chặn, token không có trong phản hồi |
+| S3 | Client không đọc/ghi token: ô nhập để trống khi đã lưu; gửi theo `botId`; **bỏ đường userscript push** (cần token thô ở trình duyệt) — chỉ còn Cloud Function | tsc, eslint 0 lỗi, unit 1146, `npm run check` xanh, e2e LINE 2 pass/5 skip (như trước) |
+| S4 | `functions/scripts/migrate-line-secrets.cjs` (dry-run / `--apply` / `--strip`, không in giá trị) | 2 bot; sao chép 2/2, đối chiếu khớp |
+| S5 | Rules `line_bot_secrets` khoá hẳn; `--strip` xoá 3 field khỏi `line_bots` (chỉ khi bản sao khớp) | rules emulator 79/79 (8 ca mới); sau strip webhook thật vẫn thấy secret (401 chữ ký, không phải "chưa cấu hình") |
+
+**Còn lại:** S6 — XOAY Channel Access Token + Channel Secret của 2 bot trên LINE Developers (token cũ từng lộ cho mọi
+manager cùng Kho; bản đã xoá khỏi `line_bots` nhưng vẫn nằm trong lịch sử/bản sao Firestore export). Sau khi xoay: dán
+token mới ở Bot LINE › Cài đặt rồi Lưu (đi qua `saveSecrets`).
+**Lưu ý:** 5 e2e gửi LINE đang `skip` (gửi LINE tạm tắt) còn dựng đường userscript — khi bật lại phải viết lại theo đường
+Cloud Function. Tab trình duyệt mở bản cũ sẽ mất token tới khi tải lại trang. Ngoài ra `pmhRelayToken` hiện chỉ đặt tay trong DB.

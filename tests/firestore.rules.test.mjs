@@ -197,6 +197,7 @@ async function main() {
         await db.doc('line_bots/ownerMulti').set({ userId: 'ownerMulti', departmentId: 'ALL (Super Admin),TESTKHO', active: true, channelAccessToken: 'secret-M' });
         await db.doc('bot_media/old1').set({ base64: 'AAAA', ownerUid: 'managerA' });
         await db.doc('report_commands/bc').set({ imageUrl: 'https://x' });
+        await db.doc('line_bot_secrets/ownerA').set({ channelAccessToken: 'secret-A', channelSecret: 'sec-A' });
         await db.doc('stores/K1/savedLists/l1').set({ name: 'list K1' });
         await db.doc('stores/SUPERADMIN/savedLists/g1').set({ name: 'chung' });
     });
@@ -234,6 +235,12 @@ async function main() {
     await check('Media: ảnh > 1MB bị chặn', assertFails(media(employeeSame, 'big').set({ base64: 'A'.repeat(1048001) })));
     await check('report_commands toàn hệ thống: KHÔNG đọc công khai', assertFails(anon.firestore().doc('report_commands/bc').get()));
     await check('report_commands toàn hệ thống: KHÔNG ghi', assertFails(managerA.firestore().doc('report_commands/bc').set({ imageUrl: 'https://evil' })));
+
+    // line_bot_secrets (S13): bí mật bot — không ai ở client đọc/ghi được, kể cả chủ bot và admin
+    for (const [ten, ctx] of [['chủ bot/manager cùng Kho', managerA], ['nhân viên', employeeSame], ['admin', adminUser], ['chưa đăng nhập', anon]]) {
+        await check(`line_bot_secrets: ${ten} KHÔNG đọc`, assertFails(ctx.firestore().doc('line_bot_secrets/ownerA').get()));
+        await check(`line_bot_secrets: ${ten} KHÔNG ghi`, assertFails(ctx.firestore().doc('line_bot_secrets/ownerA').set({ channelAccessToken: 'x' })));
+    }
 
     // In Sticker savedLists (S14)
     const stickerStaffK1 = testEnv.authenticatedContext('sK1', { stickerRole: 'staff', stickerStoreId: 'K1' });

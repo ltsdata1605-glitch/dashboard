@@ -226,6 +226,13 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.get('ownerUid', '') == request.auth.uid;
     }
 
+    // Audit S13/S14/B3: Channel Access Token / Channel Secret / pmhRelayToken của Bot LINE. KHÔNG client nào
+    // (kể cả admin, chủ bot) đọc/ghi được — chỉ Cloud Functions (Admin SDK bỏ qua rules). Ghi qua
+    // lineBotWebhook?action=saveSecrets; client chỉ thấy cờ hasToken/hasSecret trong line_bots/{uid}.
+    match /line_bot_secrets/{botId} {
+      allow read, write: if false;
+    }
+
     // Audit S09: bảng lệnh báo cáo TOÀN HỆ THỐNG (không theo bot) từng làm bot này trả ảnh báo cáo
     // của bot/Kho khác. Lệnh nay chỉ đọc theo bot (line_bots/{uid}/report_commands) — khoá hẳn.
     match /report_commands/{cmd} {
