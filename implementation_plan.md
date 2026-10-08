@@ -7550,3 +7550,11 @@ Chưa xem ảnh chụp từng màn — nên liếc các thẻ KPI ngành hàng B
 - Giới hạn cần biết: offline chỉ dùng được dữ liệu ĐÃ LƯU TRÊN MÁY (IndexedDB); đăng nhập Google, đồng bộ cloud, gửi LINE, So giá… cần mạng.
   Lần đầu mở app PHẢI có mạng để tải sẵn. Phần "cài vào Màn hình chính" trên iPhone cần kiểm thật.
 
+### GĐ4 — chuyển modal tự dựng sang <Modal> dùng chung (rawOverlay 27 → 25, đợt 1)
+Chuyển `SelectInteractedUserModal`, `SelectFilterUserModal` (Bot LINE): tiêu đề/nút làm mới/chân trang đi qua props của `<Modal>`,
+thân giữ nguyên bố cục (bù lề `-m-3 sm:-m-5`), bỏ `useModalBehavior` thủ công (Modal tự lo Escape, bẫy Tab, khoá cuộn, trả focus).
+Test: `tests/e2e/modal-da-chuyen-modal-chung.spec.ts` (harness `helpers/modalDaChuyenHarness.tsx`) — mỗi modal × laptop 1366 và iPhone 390:
+có tên, khoá cuộn, 12 lần Tab không lạc ra ngoài, Escape đóng + trả focus, nằm gọn trong màn hình; ảnh chụp lưu ở `test-results/modal-chuyen-*.png`.
+Thêm modal mới đã chuyển vào mảng `CASES` + harness. Còn: KeywordEdit, ScheduleEdit, LineBotOnboarding, CouponImport (2 lớp), CouponManagerTab (Bot LINE);
+Thuế ×3; BI ×2; Sticker ×2; các lớp phủ tải/tiến trình (ExportLoader, ProcessingLoader, FilterProcessingOverlay…) — loại lớp phủ không phải hộp thoại cần cách xử lý riêng.
+

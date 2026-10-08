@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { InteractedUser, LineAdmin, AdminRole } from '../types/lineBot.types';
@@ -81,11 +81,6 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
         });
     }, [interactedUsers, searchTerm, channelFilter, adminMap]);
 
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
-
     const handleCopy = (lineUserId: string) => {
         navigator.clipboard.writeText(lineUserId);
         setCopiedId(lineUserId);
@@ -134,50 +129,46 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
     };
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Chọn admin từ tương tác LINE" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-3xl rounded-overlay shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden">
-                
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-                            <AppIcon name="users" size="lg" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-base font-bold text-slate-800 dark:text-white">
-                                    Chọn Admin Từ Tương Tác LINE
-                                </h3>
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300">
-                                    {counts.all} người
-                                </span>
-                            </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Tự động phát hiện khi thành viên nhắn tin trong nhóm có BOT hoặc chat 1-1 riêng
-                            </p>
-                        </div>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="xl"
+            ariaLabel="Chọn admin từ tương tác LINE"
+            subTitle="Tự động phát hiện khi thành viên nhắn tin trong nhóm có BOT hoặc chat 1-1 riêng"
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="users" size="md" className="text-sky-600" />
+                    <span>Chọn Admin Từ Tương Tác LINE</span>
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700">{counts.all} người</span>
+                </span>
+            }
+            controls={
+                <Button variant="ghost" onClick={onRefresh} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl" title="Làm mới danh sách">
+                    <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
+                </Button>
+            }
+            footer={
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500">
+
+                    <div className="flex items-center gap-1.5">
+                        <AppIcon name="sparkles" size="sm" className="text-amber-500" />
+                        <span>
+                            Chưa thấy người cần thêm? Bảo họ nhắn chữ <strong>id</strong> vào nhóm hoặc chat riêng với BOT!
+                        </span>
                     </div>
 
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            onClick={onRefresh}
-                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl"
-                            title="Làm mới danh sách"
-                        >
-                            <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-rose-500 rounded-xl"
-                            title="Đóng"
-                        >
-                            <AppIcon name="close" size="md" />
-                        </Button>
-                    </div>
+                    <Button
+                        variant="ghost"
+                        onClick={onClose}
+                        className="py-1 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl"
+                    >
+                        Đóng
+                    </Button>
                 </div>
-
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ (thanh công cụ + danh sách); bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
                 {/* Toolbar: Search & Filter Tabs */}
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}
@@ -462,24 +453,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
                     )}
                 </div>
 
-                {/* Footer Tip */}
-                <div className="px-6 py-3 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                        <AppIcon name="sparkles" size="sm" className="text-amber-500" />
-                        <span>
-                            Chưa thấy người cần thêm? Bảo họ nhắn chữ <strong>id</strong> vào nhóm hoặc chat riêng với BOT!
-                        </span>
-                    </div>
-
-                    <Button
-                        variant="ghost"
-                        onClick={onClose}
-                        className="py-1 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl"
-                    >
-                        Đóng
-                    </Button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };

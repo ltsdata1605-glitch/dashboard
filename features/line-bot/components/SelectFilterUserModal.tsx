@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { InteractedUser } from '../types/lineBot.types';
@@ -87,11 +87,6 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
         });
     }, [interactedUsers, searchTerm, channelFilter, filterNamesSet]);
 
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
-
     const handleToggleSelectId = (id: string) => {
         setSelectedIds(prev => {
             const next = new Set(prev);
@@ -150,50 +145,42 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
     };
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Chọn người dùng Bot để lọc PMH" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-3xl rounded-overlay shadow-2xl border border-slate-200/80 dark:border-slate-800 flex flex-col max-h-[92vh] overflow-hidden">
-                
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                            <AppIcon name="users" size="lg" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-base font-bold text-slate-800 dark:text-white">
-                                    Chọn Người Dùng Bot Để Lọc PMH
-                                </h3>
-                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-                                    {counts.all} người tương tác
-                                </span>
-                            </div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">
-                                Danh sách thành viên trong các nhóm LINE hoặc đã kết bạn / nhắn tin riêng với Bot
-                            </p>
-                        </div>
-                    </div>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="xl"
+            ariaLabel="Chọn người dùng Bot để lọc PMH"
+            subTitle="Danh sách thành viên trong các nhóm LINE hoặc đã kết bạn / nhắn tin riêng với Bot"
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="users" size="md" className="text-emerald-600" />
+                    <span>Chọn Người Dùng Bot Để Lọc PMH</span>
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700">{counts.all} người tương tác</span>
+                </span>
+            }
+            controls={
+                <Button variant="ghost" onClick={onRefresh} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl" title="Làm mới danh sách">
+                    <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
+                </Button>
+            }
+            footer={
+                <div className="flex items-center justify-between text-xs">
 
-                    <div className="flex items-center gap-1">
-                        <Button
-                            variant="ghost"
-                            onClick={onRefresh}
-                            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-xl"
-                            title="Làm mới danh sách"
-                        >
-                            <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            onClick={onClose}
-                            className="p-2 text-slate-400 hover:text-rose-500 rounded-xl"
-                            title="Đóng"
-                        >
-                            <AppIcon name="close" size="md" />
-                        </Button>
-                    </div>
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">
+                        Đang cấu hình: <strong className="text-emerald-600 dark:text-emerald-400">{currentFilterNames.length}</strong> tên người nhận hợp lệ
+                    </span>
+                    <Button
+                        variant="secondary"
+                        onClick={onClose}
+                        className="px-4 py-2 font-bold rounded-xl text-xs"
+                    >
+                        Hoàn tất &amp; Đóng
+                    </Button>
                 </div>
-
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ (thanh công cụ + danh sách); bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
                 {/* Toolbar: Search & Filter Tabs */}
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}
@@ -484,21 +471,7 @@ export const SelectFilterUserModal: React.FC<SelectFilterUserModalProps> = ({
                     )}
                 </div>
 
-                {/* Footer */}
-                <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-medium">
-                        Đang cấu hình: <strong className="text-emerald-600 dark:text-emerald-400">{currentFilterNames.length}</strong> tên người nhận hợp lệ
-                    </span>
-                    <Button
-                        variant="secondary"
-                        onClick={onClose}
-                        className="px-4 py-2 font-bold rounded-xl text-xs"
-                    >
-                        Hoàn tất &amp; Đóng
-                    </Button>
-                </div>
-
             </div>
-        </div>
+        </Modal>
     );
 };

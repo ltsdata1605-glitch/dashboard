@@ -440,32 +440,6 @@
     "tinyText": 0,
     "offScaleRadius": 0
   },
-  "features/line-bot/components/SelectFilterUserModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
-  "features/line-bot/components/SelectInteractedUserModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
   "features/line-bot/components/SyntaxConfigTab.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
