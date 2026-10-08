@@ -60,12 +60,12 @@ describe('webhook LINE: kiểm chữ ký trước khi xử lý sự kiện', () 
     it('không có chữ ký → 401, không xử lý sự kiện nào', async () => {
         const r = await goi({});
         expect(r.status).toBe(401);
-        expect(state.ops).toEqual(['get line_bots/uid1']);
+        expect(state.ops).toEqual(['get line_bots/uid1', 'get line_bot_secrets/uid1']); // chỉ đọc cấu hình + bí mật bot, chưa đụng sự kiện
     });
     it('chữ ký ký bằng secret khác (kẻ giả mạo) → 401', async () => {
         const r = await goi({ 'x-line-signature': sign(raw, 'secret-doan-bua') });
         expect(r.status).toBe(401);
-        expect(state.ops).toEqual(['get line_bots/uid1']);
+        expect(state.ops).toEqual(['get line_bots/uid1', 'get line_bot_secrets/uid1']); // chỉ đọc cấu hình + bí mật bot, chưa đụng sự kiện
     });
     it('thân bị sửa sau khi ký → 401', async () => {
         const sua = raw.replace('C1', 'C2');
@@ -77,7 +77,7 @@ describe('webhook LINE: kiểm chữ ký trước khi xử lý sự kiện', () 
         const r = await goi({ 'x-line-signature': sign(raw) });
         expect(r.status).toBe(200);
         expect(r.body).toBe('Channel secret not configured');
-        expect(state.ops).toEqual(['get line_bots/uid1']);
+        expect(state.ops).toEqual(['get line_bots/uid1', 'get line_bot_secrets/uid1']); // chỉ đọc cấu hình + bí mật bot, chưa đụng sự kiện
     });
     it('chữ ký đúng → đi tiếp vào xử lý sự kiện', async () => {
         const r = await goi({ 'x-line-signature': sign(raw) });

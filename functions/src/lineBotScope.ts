@@ -29,7 +29,7 @@ export const lineBotFindWarehouseBot = onCall(async (request) => {
   const snap = await db.collection('line_bots').where('active', '==', true).limit(200).get();
   const found = snap.docs.find((d) => {
     const data = d.data();
-    if (data.isWarehouseShared === false || !data.channelAccessToken) return false;
+    if (data.isWarehouseShared === false || !(data.hasToken || data.channelAccessToken)) return false;
     return splitKhos(data.departmentId).some((k) => wanted.includes(k));
   });
   if (!found) return { bot: null };

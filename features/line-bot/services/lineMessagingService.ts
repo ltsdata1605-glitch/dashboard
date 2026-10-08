@@ -3,6 +3,9 @@
  * Giải quyết triệt để lỗi "Failed to fetch" do trình duyệt chặn CORS khi gọi trực tiếp api.line.me
  */
 
+import { getAuth } from 'firebase/auth';
+import { db } from '../../../services/firebase';
+
 export interface LineBotInfo {
     userId: string;
     basicId: string;
@@ -16,12 +19,47 @@ const FIREBASE_REGION = 'asia-southeast1';
 const FIREBASE_PROJECT_ID = 'dashboa-7e20b';
 const CLOUD_PROXY_URL = `https://${FIREBASE_REGION}-${FIREBASE_PROJECT_ID}.cloudfunctions.net/lineBotWebhook`;
 
+/** ID token Firebase của người đang đăng nhập — server bắt buộc khi dùng bot theo botId (audit S13). */
+async function currentIdToken(): Promise<string> {
+    try { return (await getAuth(db.app).currentUser?.getIdToken()) ?? ''; } catch { return ''; }
+}
+
 export const lineMessagingService = {
     /**
      * Sinh Webhook URL cá nhân hoá cho Quản lý
      */
     getPersonalWebhookUrl(userId: string): string {
         return `${CLOUD_PROXY_URL}?uid=${encodeURIComponent(userId)}`;
+    },
+
+    /** Kiểm tra token ĐÃ LƯU của bot (server tự lấy token, client không cần biết). */
+    async verifyBotById(botId: string): Promise<{ success: boolean; info?: LineBotInfo; error?: string }> {
+        try {
+            const idToken = await currentIdToken();
+            const res = await fetch(`${CLOUD_PROXY_URL}?action=verifyToken`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ botId })
+            });
+            return await res.json();
+        } catch {
+            return { success: false, error: 'Không thể kết nối đến máy chủ xác thực LINE.' };
+        }
+    },
+
+    /** Lưu Token/Secret mới lên server (line_bot_secrets). Chỉ chủ bot hoặc Admin; field bỏ trống = giữ nguyên. */
+    async saveBotSecrets(botId: string, secrets: { channelAccessToken?: string; channelSecret?: string }): Promise<{ success: boolean; hasToken?: boolean; hasSecret?: boolean; error?: string }> {
+        try {
+            const idToken = await currentIdToken();
+            const res = await fetch(`${CLOUD_PROXY_URL}?action=saveSecrets`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ botId, ...secrets })
+            });
+            return await res.json();
+        } catch {
+            return { success: false, error: 'Không thể kết nối máy chủ để lưu Token.' };
+        }
     },
 
     /**
@@ -81,9 +119,24 @@ export const lineMessagingService = {
     /**
      * Gửi tin nhắn kiểm tra trực tiếp tới LINE User ID của Quản lý
      */
-    async sendTestPush(token: string, toUserId: string, text: string): Promise<{ success: boolean; error?: string }> {
-        const cleanToken = (token || '').trim().replace(/^["']|["']$/g, '');
+    async sendTestPush(target: string | { botId: string }, toUserId: string, text: string): Promise<{ success: boolean; error?: string }> {
         const cleanTo = (toUserId || '').trim();
+        if (typeof target !== 'string') {
+            // Bot đã lưu token ở server: gửi theo botId (không có đường dự phòng vì client không có token).
+            if (!target.botId || !cleanTo) return { success: false, error: 'Thiếu Bot hoặc LINE User ID' };
+            try {
+                const idToken = await currentIdToken();
+                const res = await fetch(`${CLOUD_PROXY_URL}?action=sendTestPush`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                    body: JSON.stringify({ botId: target.botId, toUserId: cleanTo, text: text || '🔔 Tin nhắn kiểm tra kết nối từ Dashboard YCX thành công!' })
+                });
+                return await res.json();
+            } catch {
+                return { success: false, error: 'Lỗi mạng khi gửi tin nhắn test' };
+            }
+        }
+        const cleanToken = (target || '').trim().replace(/^["']|["']$/g, '');
         if (!cleanToken || !cleanTo) {
             return { success: false, error: 'Thiếu Token hoặc LINE User ID' };
         }

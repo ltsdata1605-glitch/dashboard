@@ -22,7 +22,7 @@ const botRef: any = {
 };
 vi.mock('../../functions/src/firebaseAdmin', () => ({
     db: {
-        collection: () => ({ where: () => ({ get: async () => ({ docs: [{ id: 'uid1', ref: botRef, data: () => ({ active: true, channelAccessToken: 'tok', botName: 'Bot 910' }) }] }) }) }),
+        collection: () => ({ doc: () => ({ get: async () => ({ exists: false, data: () => ({}) }) }), where: () => ({ get: async () => ({ docs: [{ id: 'uid1', ref: botRef, data: () => ({ active: true, channelAccessToken: 'tok', botName: 'Bot 910' }) }] }) }) }),
         runTransaction: async (fn: (tx: any) => Promise<boolean>) => fn({
             get: async (ref: any) => ({ data: () => ({ ...db_.schedules[ref.id] }) }),
             update: (ref: any, p: Doc) => { Object.assign(db_.schedules[ref.id], p); },

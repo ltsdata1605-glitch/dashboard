@@ -74,7 +74,7 @@ export const lineBotFirestoreService = {
                 const snapIn = await getDocs(qIn);
                 sharedDoc = snapIn.docs.find(d => {
                     const data = d.data();
-                    return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
+                    return data.isWarehouseShared !== false && Boolean(data.hasToken || data.channelAccessToken);
                 });
             }
 
@@ -91,7 +91,7 @@ export const lineBotFirestoreService = {
                 const snap = await getDocs(q);
                 sharedDoc = snap.docs.find(d => {
                     const data = d.data();
-                    return data.isWarehouseShared !== false && Boolean(data.channelAccessToken);
+                    return data.isWarehouseShared !== false && Boolean(data.hasToken || data.channelAccessToken);
                 });
             }
 

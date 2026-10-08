@@ -11,6 +11,7 @@
  * Auth: Bearer token = field `pmhRelayToken` trong `line_bots/{uid}`.
  */
 
+import { withSecrets, findBotUidByRelayToken } from './lineBotSecrets';
 import { onRequest } from 'firebase-functions/v2/https';
 import { db } from './firebaseAdmin';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -49,12 +50,7 @@ async function resolveToken(authHeader: string | undefined): Promise<string | nu
     const token = authHeader.slice(7).trim();
     if (!token || token.length < 8) return null;
 
-    const snap = await db.collection('line_bots')
-        .where('pmhRelayToken', '==', token)
-        .limit(1)
-        .get();
-    if (snap.empty) return null;
-    return snap.docs[0].id;
+    return findBotUidByRelayToken(token);
 }
 
 /**
@@ -141,7 +137,7 @@ export const pmhRelayComplete = onRequest({ region: REGION, cors: true }, async 
 
     // Gửi LINE message (Ưu tiên dạng Thẻ Flex Message chuẩn giao diện)
     const botDoc = await db.collection('line_bots').doc(uid).get();
-    const botData = botDoc.data();
+    const botData = await withSecrets(uid, botDoc.data());
     const token = botData?.channelAccessToken;
     const liffId = botData?.liffId || '2011679071-BclvutpD';
     if (!token || !data.groupId) {

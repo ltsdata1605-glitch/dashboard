@@ -136,8 +136,12 @@ export interface CouponRequest {
 
 export interface LineBotConfig {
     userId: string; // UID của Quản lý sở hữu
-    channelAccessToken: string;
-    channelSecret: string;
+    /** Chỉ còn ở bot CHƯA di trú (audit S13) — bí mật nay ở line_bot_secrets, client không đọc được. */
+    channelAccessToken?: string;
+    channelSecret?: string;
+    /** Cờ công khai do server ghi: bot đã có Token / Secret (không chứa giá trị). */
+    hasToken?: boolean;
+    hasSecret?: boolean;
     botName?: string;
     botBasicId?: string; // Ví dụ "@123xyz"
     pictureUrl?: string;
@@ -262,3 +266,7 @@ export interface InteractedUser {
     lastMessage?: string;
     lastInteractedAt: string;
 }
+
+/** Bot đã có Channel Access Token? (cờ mới `hasToken`, hoặc field cũ trước khi di trú). */
+export const botHasToken = (cfg?: { hasToken?: boolean; channelAccessToken?: string } | null): boolean =>
+    Boolean(cfg?.hasToken || cfg?.channelAccessToken);

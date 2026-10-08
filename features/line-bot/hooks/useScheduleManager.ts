@@ -9,7 +9,8 @@ import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { lineMessagingService } from '../services/lineMessagingService';
 import { BotSchedule, LineGroup } from '../types/lineBot.types';
 
-export function useScheduleManager(botToken?: string, overrideUserId?: string) {
+/** `hasBotToken`: bot đã có Token (lưu ở server); gửi tin theo botId = overrideUserId/uid (audit S13). */
+export function useScheduleManager(hasBotToken?: boolean, overrideUserId?: string) {
     const { user } = useAuth();
     const userId = overrideUserId || user?.uid || '';
 
@@ -124,7 +125,7 @@ export function useScheduleManager(botToken?: string, overrideUserId?: string) {
 
     // Kích hoạt gửi ngay (Trigger now / Test)
     const triggerNow = useCallback(async (schedule: BotSchedule) => {
-        if (!botToken) {
+        if (!hasBotToken) {
             toast.error('Chưa cấu hình Token Bot, không thể gửi tin nhắn');
             return;
         }
@@ -146,7 +147,7 @@ export function useScheduleManager(botToken?: string, overrideUserId?: string) {
             } else {
                 let successCount = 0;
                 for (const groupId of targets) {
-                    const res = await lineMessagingService.sendTestPush(botToken, groupId, content);
+                    const res = await lineMessagingService.sendTestPush({ botId: userId }, groupId, content);
                     if (res.success) successCount++;
                 }
                 toast.success(`Đã gửi thông báo tới ${successCount}/${targets.length} nhóm!`);
@@ -162,7 +163,7 @@ export function useScheduleManager(botToken?: string, overrideUserId?: string) {
         } finally {
             setIsTriggering(null);
         }
-    }, [botToken, userId, loadSchedules, groups]);
+    }, [hasBotToken, userId, loadSchedules, groups]);
 
     return {
         schedules,

@@ -10,6 +10,8 @@ interface LineBotStatusCardProps {
     botInfo: LineBotInfo | null;
     isVerifying: boolean;
     token: string;
+    /** Bot đã có Token lưu ở server (nút Kiểm tra dùng token đã lưu khi ô nhập để trống). */
+    hasSavedToken?: boolean;
     onOpenGuide: () => void;
     onVerifyToken: (token?: string) => Promise<boolean>;
 }
@@ -19,6 +21,7 @@ export const LineBotStatusCard: React.FC<LineBotStatusCardProps> = ({
     botInfo,
     isVerifying,
     token,
+    hasSavedToken,
     onOpenGuide,
     onVerifyToken
 }) => {
@@ -69,7 +72,7 @@ export const LineBotStatusCard: React.FC<LineBotStatusCardProps> = ({
                     <Button
                         variant="primary"
                         onClick={() => onVerifyToken(token)}
-                        disabled={isVerifying || !token.trim()}
+                        disabled={isVerifying || (!token.trim() && !hasSavedToken)}
                         className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition-colors disabled:opacity-50 flex-1 sm:flex-initial"
                     >
                         <AppIcon name="refresh" size="sm" className={isVerifying ? 'animate-spin' : ''} />

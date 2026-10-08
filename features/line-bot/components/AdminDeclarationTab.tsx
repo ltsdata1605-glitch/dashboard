@@ -10,7 +10,9 @@ import { SelectInteractedUserModal } from './SelectInteractedUserModal';
 interface AdminDeclarationTabProps {
     admins: LineAdmin[];
     isLoading: boolean;
-    botToken?: string;
+    /** Bot đã có Token (lưu ở server) và botId để gửi tin test theo bot. */
+    hasBotToken?: boolean;
+    botId?: string;
     onSaveAdmin: (admin: Partial<LineAdmin>) => Promise<string | null>;
     onDeleteAdmin: (id: string) => Promise<void>;
     onToggleActive: (admin: LineAdmin) => Promise<void>;
@@ -24,7 +26,8 @@ interface AdminDeclarationTabProps {
 export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
     admins,
     isLoading,
-    botToken,
+    hasBotToken,
+    botId,
     onSaveAdmin,
     onDeleteAdmin,
     onToggleActive,
@@ -72,7 +75,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
     };
 
     const handleTestPush = async (admin: LineAdmin) => {
-        if (!botToken) {
+        if (!hasBotToken || !botId) {
             toast.error('Chưa cấu hình Token Bot');
             return;
         }
@@ -80,7 +83,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
         setTestingId(admin.id);
         try {
             const res = await lineMessagingService.sendTestPush(
-                botToken,
+                { botId },
                 admin.lineUserId,
                 `👋 Xin chào ${admin.name}!\nBạn đã được khai báo quyền Admin trên Bot LINE thành công.`
             );

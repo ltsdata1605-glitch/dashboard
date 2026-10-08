@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
-import { WarehouseBotSummary, LineBotConfig } from '../types/lineBot.types';
+import { WarehouseBotSummary, LineBotConfig, botHasToken } from '../types/lineBot.types';
 
 export type BotScopeMode = 'warehouse' | 'personal';
 
@@ -48,7 +48,7 @@ export function useBotScope() {
             } else {
                 // Nếu chưa từng chọn:
                 // Nếu bản thân CHƯA tạo bot cá nhân nhưng KHO ĐÃ CÓ BOT -> Tự động gợi ý/kế thừa bot kho!
-                const hasPersonalToken = Boolean(personalData?.channelAccessToken);
+                const hasPersonalToken = botHasToken(personalData);
                 if (!hasPersonalToken && foundWarehouseBot) {
                     setScopeMode('warehouse');
                 } else {
@@ -79,7 +79,7 @@ export function useBotScope() {
     const isInheriting = scopeMode === 'warehouse' && Boolean(warehouseBot) && warehouseBot?.id !== userUid;
     const effectiveBotId = (scopeMode === 'warehouse' && warehouseBot?.id) ? warehouseBot.id : userUid;
     const hasWarehouseBot = Boolean(warehouseBot);
-    const hasPersonalBot = Boolean(personalBot?.channelAccessToken);
+    const hasPersonalBot = botHasToken(personalBot);
 
     return {
         scopeMode,

@@ -3,7 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
-import { LineBotConfig, LineGroup } from '../types/lineBot.types';
+import { LineBotConfig, LineGroup, botHasToken } from '../types/lineBot.types';
 import { LineBotInfo } from '../services/lineMessagingService';
 import { LineBotStatusCard } from './LineBotStatusCard';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -32,8 +32,9 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
     onOpenGuide
 }) => {
     const { user, departmentId } = useAuth();
-    const [token, setToken] = useState<string>(config?.channelAccessToken || '');
-    const [secret, setSecret] = useState<string>(config?.channelSecret || '');
+    // Token/Secret đã lưu nằm ở server — ô nhập để TRỐNG, chỉ gõ khi muốn thay (audit S13).
+    const [token, setToken] = useState<string>('');
+    const [secret, setSecret] = useState<string>('');
     const [liffId, setLiffId] = useState<string>(config?.liffId || '2011679071-BclvutpD');
     const [deptId, setDeptId] = useState<string>(config?.departmentId || departmentId || '');
     const [isWarehouseShared, setIsWarehouseShared] = useState<boolean>(config?.isWarehouseShared ?? true);
@@ -43,11 +44,11 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
     const [morningReport, setMorningReport] = useState<boolean>(config?.scheduledNotifications?.morningReport ?? true);
     const [eveningReport, setEveningReport] = useState<boolean>(config?.scheduledNotifications?.eveningReport ?? true);
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
+    const tokenSaved = botHasToken(config);
+    const secretSaved = Boolean(config?.hasSecret || config?.channelSecret);
 
     useEffect(() => {
         if (config) {
-            setToken(config.channelAccessToken || '');
-            setSecret(config.channelSecret || '');
             setLiffId(config.liffId || '2011679071-BclvutpD');
             setDeptId(config.departmentId || departmentId || '');
             setIsWarehouseShared(config.isWarehouseShared ?? true);
@@ -91,6 +92,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 botInfo={botInfo}
                 isVerifying={isVerifying}
                 token={token}
+                hasSavedToken={tokenSaved}
                 onOpenGuide={onOpenGuide}
                 onVerifyToken={onVerifyToken}
             />
@@ -230,7 +232,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         rows={3}
                         value={token}
                         onChange={e => setToken(e.target.value)}
-                        placeholder="Dán Channel access token (long-lived) từ LINE Developers..."
+                        placeholder={tokenSaved ? 'Đã lưu an toàn trên máy chủ — dán Token mới nếu muốn thay' : 'Dán Channel access token (long-lived) từ LINE Developers...'}
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                 </div>
@@ -276,11 +278,11 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         type="text"
                         value={secret}
                         onChange={e => setSecret(e.target.value)}
-                        placeholder="Dán Channel secret từ tab Basic settings..."
+                        placeholder={secretSaved ? 'Đã lưu an toàn trên máy chủ — dán Secret mới nếu muốn thay' : 'Dán Channel secret từ tab Basic settings...'}
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     {/* Từ 2026-10-02 webhook KIỂM CHỮ KÝ bằng secret này — thiếu hoặc sai thì bot bỏ qua mọi tin nhắn. */}
-                    {!secret.trim() ? (
+                    {!secret.trim() && !secretSaved ? (
                         <p data-testid="line-secret-warning" className="mt-1.5 text-[12px] font-semibold text-rose-700 leading-snug">
                             Bắt buộc: chưa có Channel secret thì bot KHÔNG nhận tin nhắn nào (máy chủ không kiểm được tin có thật từ LINE hay bị giả).
                         </p>

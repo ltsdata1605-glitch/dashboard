@@ -7,31 +7,20 @@
  * Đường đi của một ảnh:
  *  1. Nén JPEG ≤ ~700KB (Firestore giới hạn 1 document 1MB; LINE cho ảnh preview ≤ 1MB).
  *  2. Ghi vào `bot_media/{id}` — Cloud Function lineBotWebhook phục vụ lại ảnh qua URL https công khai (LINE cần URL).
- *  3. Đẩy tin vào nhóm: ƯU TIÊN userscript Tampermonkey ≥ 7.16 (gọi thẳng api.line.me bằng GM_xmlhttpRequest — trang
- *     web không gọi được vì CORS); không có userscript thì qua action `pushImage` của Cloud Function (cần deploy).
+ *  3. Đẩy tin vào nhóm qua action `pushImage` của Cloud Function theo `botId` + ID token. Token bot nằm ở server
+ *     (`line_bot_secrets`, audit S13) nên client không còn gọi thẳng api.line.me bằng userscript.
  */
 import { doc, setDoc } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { lineBotFirestoreService } from '../features/line-bot/services/lineBotFirestoreService';
+import { botHasToken } from '../features/line-bot/types/lineBot.types';
 import { sanitizeReportCommand, getReportCommand, reportKeyFromFilename } from './analysisExportDestinations';
 
 const WEBHOOK_URL = 'https://asia-southeast1-dashboa-7e20b.cloudfunctions.net/lineBotWebhook';
-const PUSH_REQ = 'ycx-line-push:send';
-const PUSH_RES = 'ycx-line-push:result';
-const PING = 'ycx-bonus-bridge:ping';
-const PONG = 'ycx-bonus-bridge:pong';
-/** Bản userscript đầu tiên có cầu gửi LINE */
-export const LINE_PUSH_MIN_USERSCRIPT = '7.16';
 
-export interface LineBotRef { botId: string; token: string; botName: string }
+/** Bot LINE dùng để gửi. Token KHÔNG ở client (audit S13) — gửi theo botId, server tự lấy token. */
+export interface LineBotRef { botId: string; botName: string }
 export interface LineGroupRef { groupId: string; groupName: string }
-
-const cmp = (a: string, b: string) => {
-    const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
-    const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
-    for (let i = 0; i < Math.max(pa.length, pb.length); i++) { const d = (pa[i] || 0) - (pb[i] || 0); if (d) return d; }
-    return 0;
-};
 
 let botCache: { key: string; at: number; bot: LineBotRef | null } | null = null;
 
@@ -49,7 +38,7 @@ export async function resolveLineBot(uid: string, departmentId?: string | null):
     if (botCache && botCache.key === key && Date.now() - botCache.at < 5 * 60_000) return botCache.bot;
     const dept = (departmentId || '').trim();
     const personal = await lineBotFirestoreService.getBotConfig(uid);
-    let botId = personal?.channelAccessToken ? uid : '';
+    let botId = botHasToken(personal) ? uid : '';
     let choice: string | null = null;
     try { choice = localStorage.getItem(`line_bot_scope_choice_${uid}`); } catch { /* Private Mode */ }
     if (dept && dept !== 'ALL' && !dept.startsWith('ALL ') && (choice === 'warehouse' || !botId)) {
@@ -59,7 +48,7 @@ export async function resolveLineBot(uid: string, departmentId?: string | null):
     let bot: LineBotRef | null = null;
     if (botId) {
         const cfg = botId === uid ? personal : await lineBotFirestoreService.getBotConfig(botId);
-        if (cfg?.channelAccessToken) bot = { botId, token: cfg.channelAccessToken, botName: cfg.botName || 'Bot LINE' };
+        if (botHasToken(cfg)) bot = { botId, botName: cfg?.botName || 'Bot LINE' };
     }
     botCache = { key, at: Date.now(), bot };
     return bot;
@@ -205,44 +194,14 @@ async function uploadLineHdImage(base64: string, contentType: string, name: stri
     return `${WEBHOOK_URL}?mediaId=${id}`;
 }
 
-function userscriptVersion(timeoutMs = 800): Promise<string | null> {
-    return new Promise((resolve) => {
-        const nonce = Math.random().toString(36).slice(2);
-        const on = (e: Event) => {
-            const d = (e as CustomEvent).detail as { nonce?: string; version?: string } | null;
-            if (d?.nonce === nonce) { window.removeEventListener(PONG, on); resolve(d.version || '0'); }
-        };
-        window.addEventListener(PONG, on);
-        window.dispatchEvent(new CustomEvent(PING, { detail: { source: 'ycx-bonus-bridge', type: 'ping', nonce } }));
-        setTimeout(() => { window.removeEventListener(PONG, on); resolve(null); }, timeoutMs);
-    });
-}
-
-type LineMsg = { type: 'text'; text: string } | { type: 'image'; originalContentUrl: string; previewImageUrl: string };
-
-function pushViaUserscript(token: string, to: string, messages: LineMsg[]): Promise<void> {
-    return new Promise((resolve, reject) => {
-        const requestId = `lp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const on = (e: Event) => {
-            const d = (e as CustomEvent).detail as { requestId?: string; ok?: boolean; error?: string } | null;
-            if (d?.requestId !== requestId) return;
-            window.removeEventListener(PUSH_RES, on);
-            clearTimeout(t);
-            if (d.ok) resolve(); else reject(new Error(d.error || 'LINE từ chối tin nhắn'));
-        };
-        const t = setTimeout(() => { window.removeEventListener(PUSH_RES, on); reject(new Error('LINE không phản hồi sau 40 giây')); }, 40_000);
-        window.addEventListener(PUSH_RES, on);
-        window.dispatchEvent(new CustomEvent(PUSH_REQ, { detail: { source: 'ycx-line-push', requestId, token, to, messages } }));
-    });
-}
-
-async function pushViaCloudFunction(token: string, to: string, imageUrl: string, text: string, previewUrl?: string): Promise<void> {
+async function pushViaCloudFunction(botId: string, to: string, imageUrl: string, text: string, previewUrl?: string): Promise<void> {
+    const idToken = await auth.currentUser?.getIdToken().catch(() => '') ?? '';
     const res = await fetch(`${WEBHOOK_URL}?action=pushImage`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, to, imageUrl, previewUrl, text }),
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ botId, to, imageUrl, previewUrl, text }),
     });
     const data = await res.json().catch(() => null) as { success?: boolean; error?: string } | null;
-    if (!data) throw new Error(`Cloud Function chưa có chức năng gửi ảnh — cài userscript ${LINE_PUSH_MIN_USERSCRIPT} (Tampermonkey) hoặc deploy functions`);
+    if (!data) throw new Error('Cloud Function chưa có chức năng gửi ảnh — cần deploy functions');
     if (!data.success) throw new Error(data.error || 'Gửi ảnh LINE thất bại');
 }
 
@@ -392,21 +351,11 @@ export async function sendReportImageToLineGroups(params: {
         });
     }
 
-    const ver = await userscriptVersion();
-    const useUserscript = Boolean(ver && cmp(ver, LINE_PUSH_MIN_USERSCRIPT) >= 0);
-    const messages: LineMsg[] = [];
-    if (params.caption) messages.push({ type: 'text', text: params.caption.slice(0, 1000) });
-    messages.push({ type: 'image', originalContentUrl: goc, previewImageUrl: url });
-
     let ok = 0;
     const errors: string[] = [];
     for (const g of params.groups) {
         try {
-            if (useUserscript) {
-                await pushViaUserscript(bot.token, g.groupId, messages);
-            } else {
-                await pushViaCloudFunction(bot.token, g.groupId, goc, params.caption, url);
-            }
+            await pushViaCloudFunction(bot.botId, g.groupId, goc, params.caption, url);
             ok++;
         } catch (err) {
             errors.push(`${g.groupName || g.groupId}: ${err instanceof Error ? err.message : String(err)}`);

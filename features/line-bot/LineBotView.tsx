@@ -20,6 +20,7 @@ import { KeywordLibraryTab } from './components/KeywordLibraryTab';
 import { AdminDeclarationTab } from './components/AdminDeclarationTab';
 import { GroupFeaturesTab } from './components/GroupFeaturesTab';
 import { LineBotOnboardingModal } from './components/LineBotOnboardingModal';
+import { botHasToken } from './types/lineBot.types';
 
 type LineBotTab = 'coupons' | 'filtered' | 'schedules' | 'keywords' | 'admins' | 'group-features' | 'syntax' | 'settings';
 
@@ -71,7 +72,7 @@ export default function LineBotView() {
     // Hooks - được truyền effectiveBotId (tự động chuyển sang Bot kho hoặc Bot riêng)
     const botConfigHook = useLineBotConfig(effectiveBotId);
     const couponHook = useCouponManager(effectiveBotId);
-    const scheduleHook = useScheduleManager(botConfigHook.config?.channelAccessToken, effectiveBotId);
+    const scheduleHook = useScheduleManager(botHasToken(botConfigHook.config), effectiveBotId);
     const keywordHook = useKeywordLibrary(effectiveBotId);
     const adminHook = useAdminDeclaration(effectiveBotId);
 
@@ -375,7 +376,8 @@ export default function LineBotView() {
                     <AdminDeclarationTab
                         admins={adminHook.admins}
                         isLoading={adminHook.isLoading}
-                        botToken={botConfigHook.config?.channelAccessToken}
+                        hasBotToken={botHasToken(botConfigHook.config)}
+                        botId={effectiveBotId}
                         onSaveAdmin={adminHook.saveAdmin}
                         onDeleteAdmin={adminHook.deleteAdmin}
                         onToggleActive={adminHook.toggleActive}

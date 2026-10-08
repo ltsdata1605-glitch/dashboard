@@ -2,6 +2,7 @@
  * Firebase Cloud Function - Tiếp nhận Webhook LINE Messaging API đa người dùng
  */
 
+import { withSecrets, botsWithSecrets, canCallerUseBot, SECRET_KEYS, BOT_SECRETS_COL } from './lineBotSecrets';
 import { onRequest } from 'firebase-functions/v2/https';
 import { verifyLineSignature } from './lineSignature';
 import { signLiffUris, verifyLiffTicket, LEGACY_LIFF_UNTIL } from './liffTicket';
@@ -1647,6 +1648,35 @@ async function canApproveOnBot(uid: string, senderUserId: string): Promise<boole
         a.lineUserId === senderUserId && (a.role === 'SUPER_ADMIN' || a.role === 'APPROVER'));
 }
 
+/**
+ * Lấy Channel Access Token cho các action "proxy" (verifyToken/sendTestPush/pushImage/sendBroadcast/getProfile).
+ * - Có `botId` (cách mới, audit S13): bắt buộc ID token Dashboard + quyền dùng bot đó (chủ bot, admin, hoặc manager
+ *   cùng Mã Kho — cùng luật firestore.rules canUseBot); token lấy từ `line_bot_secrets`, KHÔNG bao giờ về client.
+ * - Không có `botId`: token do chính người dùng gõ vào (kiểm tra token mới trước khi lưu) — giữ như cũ.
+ * Trả null khi đã tự phản hồi lỗi (caller chỉ việc `return`).
+ */
+async function resolveActionToken(req: any, res: any): Promise<string | null> {
+    const botId = String(req.body?.botId || req.query?.botId || '').trim();
+    if (!botId) return String(req.body?.token || req.query?.token || '').trim();
+    const idToken = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    const caller = idToken ? await adminAuth.verifyIdToken(idToken).catch(() => null) : null;
+    if (!caller) {
+        res.status(401).json({ success: false, error: 'Cần đăng nhập Dashboard để dùng Bot LINE.' });
+        return null;
+    }
+    const botSnap = await db.collection('line_bots').doc(botId).get();
+    if (!botSnap.exists || !canCallerUseBot({ uid: caller.uid, role: (caller as any).role, departmentId: (caller as any).departmentId }, botId, botSnap.data())) {
+        res.status(403).json({ success: false, error: 'Bạn không có quyền dùng Bot LINE này.' });
+        return null;
+    }
+    const token = String((await withSecrets(botId, botSnap.data())).channelAccessToken || '');
+    if (!token) {
+        res.status(200).json({ success: false, error: 'Bot này chưa có Channel Access Token.' });
+        return null;
+    }
+    return token;
+}
+
 export const lineBotWebhook = onRequest(
     { region: DEFAULT_REGION, cors: true },
     async (req, res) => {
@@ -1747,9 +1777,45 @@ export const lineBotWebhook = onRequest(
             }
         }
 
+        // 0.5. Action: LƯU bí mật Bot (Token/Secret/PMH relay) vào `line_bot_secrets` — client không còn ghi chúng
+        // vào `line_bots` (audit S13). Chỉ chủ bot hoặc admin. Field không gửi lên = giữ nguyên; chuỗi rỗng = xoá.
+        if (action === 'saveSecrets') {
+            try {
+                const idToken = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+                const caller = idToken ? await adminAuth.verifyIdToken(idToken).catch(() => null) : null;
+                if (!caller) { res.status(401).json({ success: false, error: 'Cần đăng nhập Dashboard.' }); return; }
+                const botId = String(req.body?.botId || caller.uid).trim();
+                if (botId !== caller.uid && (caller as any).role !== 'admin') {
+                    res.status(403).json({ success: false, error: 'Chỉ chủ bot hoặc Admin được đổi Token/Secret.' });
+                    return;
+                }
+                const patch: Record<string, string> = {};
+                for (const k of SECRET_KEYS) {
+                    const v = req.body?.[k];
+                    if (typeof v === 'string') patch[k] = v.trim().replace(/^["']|["']$/g, '');
+                }
+                if (Object.keys(patch).length === 0) { res.status(400).json({ success: false, error: 'Không có gì để lưu.' }); return; }
+                await db.collection(BOT_SECRETS_COL).doc(botId).set(patch, { merge: true });
+                const merged = await withSecrets(botId, {});
+                // Cờ công khai cho client (không chứa giá trị): hiện "Đã lưu ••••" mà không lộ bí mật.
+                await db.collection('line_bots').doc(botId).set({
+                    hasToken: Boolean(merged.channelAccessToken),
+                    hasSecret: Boolean(merged.channelSecret),
+                    updatedAt: new Date().toISOString(),
+                }, { merge: true });
+                res.status(200).json({ success: true, hasToken: Boolean(merged.channelAccessToken), hasSecret: Boolean(merged.channelSecret) });
+                return;
+            } catch (err: any) {
+                console.error('Lỗi saveSecrets:', err);
+                res.status(500).json({ success: false, error: err.message || 'Lỗi lưu bí mật Bot' });
+                return;
+            }
+        }
+
         // 1. Action: Xác thực token & lấy thông tin Bot (Proxy cho Frontend tránh lỗi CORS từ api.line.me)
         if (action === 'verifyToken') {
-            const token = String(req.body?.token || req.query.token || '').trim();
+            const token = await resolveActionToken(req, res);
+            if (token === null) return;
             if (!token) {
                 res.status(200).json({ success: false, error: 'Vui lòng nhập Channel Access Token' });
                 return;
@@ -1801,7 +1867,7 @@ export const lineBotWebhook = onRequest(
                 const tokenByUid = new Map<string, string>();
                 if (botParam || ticket) {
                     const botSnap = botParam ? await db.collection('line_bots').doc(botParam).get() : null;
-                    const botCfg = botSnap?.exists ? botSnap.data() : null;
+                    const botCfg = botSnap?.exists ? await withSecrets(botParam, botSnap.data()) : null;
                     if (!botCfg || !verifyLiffTicket(String(botCfg.channelSecret || ''), code, ticket)) {
                         res.status(403).json({ success: false, error: 'Thẻ coupon không hợp lệ.' });
                         return;
@@ -1815,7 +1881,7 @@ export const lineBotWebhook = onRequest(
                     uids = botsSnap.empty
                         ? (await db.collection('line_bots').limit(5).get()).docs.map(d => d.id)
                         : botsSnap.docs.map(d => d.id);
-                    botsSnap.docs.forEach(d => tokenByUid.set(d.id, String(d.data()?.channelAccessToken || '')));
+                    for (const { doc: d, config: c } of await botsWithSecrets(botsSnap.docs)) tokenByUid.set(d.id, String(c.channelAccessToken || ''));
                 } else {
                     res.status(403).json({ success: false, error: 'Thẻ coupon cũ đã hết hạn dùng nút copy. Vui lòng yêu cầu thẻ mới.' });
                     return;
@@ -1858,7 +1924,7 @@ export const lineBotWebhook = onRequest(
                         let botToken = tokenByUid.get(quoteTarget!.bUid) || '';
                         if (!botToken) {
                             const botSnap = await db.collection('line_bots').doc(quoteTarget!.bUid).get();
-                            botToken = String(botSnap.data()?.channelAccessToken || '');
+                            botToken = String((await withSecrets(quoteTarget!.bUid, botSnap.data())).channelAccessToken || '');
                         }
                         const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
                         // Tin xác nhận ghi tên gọn "Mã NV - Tên" (DMST-Nhân-107617SALE -> 107617 - Nhân); Firestore vẫn lưu usedBy đầy đủ.
@@ -1902,7 +1968,8 @@ export const lineBotWebhook = onRequest(
 
         // 2. Action: Gửi tin nhắn kiểm tra push (Proxy cho Frontend)
         if (action === 'sendTestPush') {
-            const token = String(req.body?.token || '').trim();
+            const token = await resolveActionToken(req, res);
+            if (token === null) return;
             const toUserId = String(req.body?.toUserId || '').trim();
             const text = String(req.body?.text || '').trim() || '🔔 Tin nhắn kiểm tra kết nối từ Dashboard YCX thành công!';
             if (!token || !toUserId) {
@@ -1941,7 +2008,8 @@ export const lineBotWebhook = onRequest(
         // (2026-10-01). Ảnh đã được tải lên bot_media trước (URL https của chính function này). Chỉ nhận ID nhóm/người
         // LINE và URL ảnh https — không phải proxy push tuỳ ý.
         if (action === 'pushImage') {
-            const token = String(req.body?.token || '').trim();
+            const token = await resolveActionToken(req, res);
+            if (token === null) return;
             const to = String(req.body?.to || '').trim();
             const imageUrl = String(req.body?.imageUrl || '').trim();
             // Bản xem trước ≤1MB riêng (2026-10-02) — ảnh gốc HD có thể tới 10MB, LINE không cho làm ảnh xem trước
@@ -1976,7 +2044,8 @@ export const lineBotWebhook = onRequest(
 
         // 3. Action: Broadcast tin nhắn (Proxy cho Frontend)
         if (action === 'sendBroadcast') {
-            const token = String(req.body?.token || '').trim();
+            const token = await resolveActionToken(req, res);
+            if (token === null) return;
             const text = String(req.body?.text || '').trim();
             if (!token || !text) {
                 res.status(200).json({ success: false, error: 'Thiếu Token hoặc nội dung tin nhắn' });
@@ -2011,7 +2080,8 @@ export const lineBotWebhook = onRequest(
 
         // 4. Action: Lấy thông tin profile người dùng (Proxy cho Frontend)
         if (action === 'getProfile') {
-            const token = String(req.body?.token || req.query.token || '').trim();
+            const token = await resolveActionToken(req, res);
+            if (token === null) return;
             const targetUserId = String(req.body?.userId || req.query.userId || '').trim();
             const targetGroupId = String(req.body?.groupId || req.query.groupId || '').trim();
             if (!token || !targetUserId) {
@@ -2074,7 +2144,7 @@ export const lineBotWebhook = onRequest(
             res.status(200).send('Manager LINE bot config not found');
             return;
         }
-        const config = configDoc.data() || {};
+        const config = await withSecrets(uid, configDoc.data());
 
         // KIỂM CHỮ KÝ LINE (2026-10-02) — chặn sự kiện giả. Đặt SAU khi biết bot nào (mỗi bot một Channel secret) và
         // TRƯỚC mọi xử lý sự kiện. Thiếu secret = TỪ CHỐI (fail-closed): bot dùng để kiểm soát nhân viên, thà ngừng

@@ -5,6 +5,7 @@
  * 3. 5 phút/lần: gửi các lịch "Gửi Notify" người dùng tạo (lineBotUserSchedules, 2026-10-02).
  */
 
+import { botsWithSecrets } from './lineBotSecrets';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { db } from './firebaseAdmin';
 import {
@@ -299,9 +300,8 @@ export const dailyMorningInventoryReport = onSchedule(
                 return;
             }
 
-            for (const botDoc of botsSnap.docs) {
+            for (const { doc: botDoc, config } of await botsWithSecrets(botsSnap.docs)) {
                 const uid = botDoc.id;
-                const config = botDoc.data();
                 const token = config.channelAccessToken;
 
                 // Kiểm tra xem admin có bật thông báo sáng không (mặc định bật)
@@ -388,9 +388,8 @@ export const dailyEveningUsageSummary = onSchedule(
                 return;
             }
 
-            for (const botDoc of botsSnap.docs) {
+            for (const { doc: botDoc, config } of await botsWithSecrets(botsSnap.docs)) {
                 const uid = botDoc.id;
-                const config = botDoc.data();
                 const token = config.channelAccessToken;
 
                 // Kiểm tra xem admin có bật thông báo tối không (mặc định bật)
@@ -502,9 +501,8 @@ export const lineBotUserSchedules = onSchedule(
         const now = vnNow();
         try {
             const botsSnap = await db.collection('line_bots').where('active', '==', true).get();
-            for (const botDoc of botsSnap.docs) {
+            for (const { doc: botDoc, config } of await botsWithSecrets(botsSnap.docs)) {
                 const uid = botDoc.id;
-                const config = botDoc.data() || {};
                 const token = String(config.channelAccessToken || '');
                 if (!token) continue;
 

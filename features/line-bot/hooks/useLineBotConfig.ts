@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { lineMessagingService, LineBotInfo } from '../services/lineMessagingService';
-import { LineBotConfig } from '../types/lineBot.types';
+import { LineBotConfig, botHasToken } from '../types/lineBot.types';
 
 export function useLineBotConfig(overrideUserId?: string) {
     const { user, departmentId } = useAuth();
@@ -34,8 +34,9 @@ export function useLineBotConfig(overrideUserId?: string) {
                     ...data,
                     webhookUrl: data.webhookUrl || personalWebhookUrl
                 });
-                if (data.channelAccessToken) {
-                    const check = await lineMessagingService.verifyBotToken(data.channelAccessToken);
+                if (botHasToken(data)) {
+                    // Token nằm ở server: kiểm theo botId, client không cần (và không thể) thấy token.
+                    const check = await lineMessagingService.verifyBotById(userId);
                     if (check.success && check.info) {
                         setBotInfo(check.info);
                     }
@@ -43,8 +44,6 @@ export function useLineBotConfig(overrideUserId?: string) {
             } else {
                 setConfig({
                     userId,
-                    channelAccessToken: '',
-                    channelSecret: '',
                     webhookUrl: personalWebhookUrl,
                     active: true,
                     autoApprove: true,
@@ -68,15 +67,16 @@ export function useLineBotConfig(overrideUserId?: string) {
     }, [loadConfig]);
 
     const verifyToken = useCallback(async (tokenToVerify?: string) => {
-        const token = tokenToVerify || config?.channelAccessToken || '';
-        if (!token) {
+        const typed = (tokenToVerify || '').trim();
+        if (!typed && !botHasToken(config)) {
             toast.error('Vui lòng nhập Channel Access Token');
             return false;
         }
 
         setIsVerifying(true);
         try {
-            const res = await lineMessagingService.verifyBotToken(token);
+            // Có token vừa gõ → kiểm token đó; không thì kiểm token đã lưu ở server.
+            const res = typed ? await lineMessagingService.verifyBotToken(typed) : await lineMessagingService.verifyBotById(userId);
             if (res.success && res.info) {
                 setBotInfo(res.info);
                 toast.success(`Kết nối thành công: Bot "${res.info.displayName}" (${res.info.basicId})`);
@@ -89,7 +89,7 @@ export function useLineBotConfig(overrideUserId?: string) {
         } finally {
             setIsVerifying(false);
         }
-    }, [config?.channelAccessToken]);
+    }, [config, userId]);
 
     const saveConfig = useCallback(async (updates: Partial<LineBotConfig>) => {
         if (!userId) {
@@ -100,9 +100,22 @@ export function useLineBotConfig(overrideUserId?: string) {
         setIsSaving(true);
         try {
             const cleanDept = (updates.departmentId || config?.departmentId || departmentId || '').trim();
+            // Bí mật đi đường riêng lên server (line_bot_secrets) — KHÔNG ghi vào line_bots (audit S13).
+            const { channelAccessToken: newToken, channelSecret: newSecret, ...publicUpdates } = updates;
+            const { channelAccessToken: _oldToken, channelSecret: _oldSecret, ...publicConfig } = (config || {}) as LineBotConfig;
+            let flags: Partial<LineBotConfig> = {};
+            const secretsToSave: { channelAccessToken?: string; channelSecret?: string } = {};
+            if (newToken && newToken.trim()) secretsToSave.channelAccessToken = newToken.trim();
+            if (newSecret && newSecret.trim()) secretsToSave.channelSecret = newSecret.trim();
+            if (Object.keys(secretsToSave).length > 0) {
+                const saved = await lineMessagingService.saveBotSecrets(userId, secretsToSave);
+                if (!saved.success) throw new Error(saved.error || 'Không lưu được Token/Secret');
+                flags = { hasToken: saved.hasToken, hasSecret: saved.hasSecret };
+            }
             const merged = {
-                ...(config || {}),
-                ...updates,
+                ...publicConfig,
+                ...publicUpdates,
+                ...flags,
                 userId,
                 departmentId: cleanDept,
                 ownerEmail: config?.ownerEmail || user?.email || '',
