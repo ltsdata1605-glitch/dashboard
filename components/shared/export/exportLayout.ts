@@ -58,9 +58,12 @@ export function fitTablesToContent(root: HTMLElement): number {
             // thanh tiến độ kiểu `w-full` co về 0 trong bảng min-content. Chỉ gỡ min-width từ class Tailwind.
             cell.style.setProperty('max-width', 'none', 'important');
             // Cột ghim chỉ có nghĩa khi cuộn — trong ảnh thì gỡ, tránh lệch nền/viền
-            // (đọc class/inline thay vì getComputedStyle — bảng 48 cột × 100 dòng thì getComputedStyle từng ô rất chậm)
             if (cell.classList.contains('sticky') || cell.style.position === 'sticky') {
                 cell.style.setProperty('position', 'static', 'important');
+                cell.style.setProperty('left', 'auto', 'important');
+                cell.style.setProperty('right', 'auto', 'important');
+                cell.style.setProperty('top', 'auto', 'important');
+                cell.style.setProperty('bottom', 'auto', 'important');
             }
             if (cell.closest('.export-wrap') || cell.classList.contains('export-wrap')) return;
 
@@ -81,13 +84,16 @@ export function fitTablesToContent(root: HTMLElement): number {
                         c.querySelector('img.rounded-full, img[class*="rounded-full"], [data-avatar]') !== null;
                     if (!isAvatarOrRounded) {
                         c.style.setProperty('overflow', 'visible', 'important');
+                        stripWidthClasses(c);
+                        c.style.setProperty('max-width', 'none', 'important');
                     }
                     c.style.setProperty('word-break', 'normal', 'important');
                 } else {
                     c.style.setProperty('word-break', 'keep-all', 'important');
                 }
                 // Khối w-full / max-w-* trong ô (vd tên NV) không được bó chữ
-                if (c.style.maxWidth && c.style.maxWidth !== 'none') c.style.setProperty('max-width', 'none', 'important');
+                stripWidthClasses(c);
+                c.style.setProperty('max-width', 'none', 'important');
             });
         });
 
@@ -131,8 +137,8 @@ export function fitTablesToContent(root: HTMLElement): number {
                 // fallback
             }
 
-            // Đo các con inline/flex bên trong (icon SVG, badge, sub-div)
-            cellNode.querySelectorAll<HTMLElement>('div, span, svg').forEach((child) => {
+            // Đo các con inline/flex bên trong (icon SVG, badge, sub-div, button, span)
+            cellNode.querySelectorAll<HTMLElement>('div, span, svg, button, p').forEach((child) => {
                 const r = child.getBoundingClientRect();
                 if (r && r.width > 0) {
                     contentW = Math.max(contentW, r.width);
@@ -143,12 +149,12 @@ export function fitTablesToContent(root: HTMLElement): number {
                 contentW = cellNode.scrollWidth || 0;
             }
 
-            // Đệm viền và chữ: giới hạn padding an toàn tối đa 14px để cột ôm sát gọn gàng
+            // Đệm viền và chữ: đảm bảo padding an toàn tối thiểu 12px để cột ôm sát gọn gàng nhưng không chạm viền
             const cs = window.getComputedStyle(cellNode);
             const padL = parseFloat(cs.paddingLeft || '0');
             const padR = parseFloat(cs.paddingRight || '0');
             const totalPad = padL + padR;
-            const safePad = totalPad > 0 ? Math.min(totalPad, 14) : 8;
+            const safePad = totalPad > 0 ? Math.max(totalPad, 12) : 8;
 
             return Math.ceil(contentW + safePad);
         };
@@ -226,10 +232,29 @@ export function fitTablesToContent(root: HTMLElement): number {
                 });
             });
 
-            // Cố định độ rộng vừa khít nội dung cho từng cột
+            // 1. Tạo hoặc cập nhật thẻ <colgroup> với các thẻ <col> định hình độ rộng tuyệt đối cho từng cột
+            // Chuẩn W3C: table-layout: fixed tuân thủ tuyệt đối thẻ <col> bất chấp hàng thead đầu tiên có colSpan > 1
+            let colgroup = table.querySelector('colgroup');
+            if (!colgroup) {
+                colgroup = document.createElement('colgroup');
+                table.insertBefore(colgroup, table.firstChild);
+            } else {
+                colgroup.innerHTML = '';
+            }
+
+            for (let c = 0; c < totalCols; c++) {
+                const colW = colMaxWidths[c] > 0 ? colMaxWidths[c] + 6 : 50;
+                const col = document.createElement('col');
+                col.style.setProperty('width', `${colW}px`, 'important');
+                col.style.setProperty('min-width', `${colW}px`, 'important');
+                col.style.setProperty('max-width', `${colW}px`, 'important');
+                colgroup.appendChild(col);
+            }
+
+            // 2. Cố định độ rộng vừa khít nội dung cho từng ô cột đơn lẻ (colSpan === 1)
             for (let c = 0; c < totalCols; c++) {
                 if (colMaxWidths[c] <= 0) continue;
-                const colW = colMaxWidths[c] + 4; // 4px đệm viền an toàn
+                const colW = colMaxWidths[c] + 6; // 6px đệm viền an toàn chống tràn chữ
 
                 theadRows.forEach((row, rIdx) => {
                     const cell = theadGrid[rIdx]?.[c];
@@ -276,8 +301,35 @@ export function fitTablesToContent(root: HTMLElement): number {
                 });
             }
 
-            // Đặt bề rộng bảng cố định theo đúng tổng độ rộng các cột đã fix
-            const sumColsWidth = colMaxWidths.reduce((sum, w) => sum + (w > 0 ? w + 4 : 0), 0);
+            // 3. Cố định độ rộng cho các ô nhóm cha có colSpan > 1 (như NHÂN VIÊN, DOANH THU, ∑ TỔNG, dòng phân ca...)
+            [theadRows, tbodyRows, tfootRows].forEach((rowList) => {
+                rowList.forEach((row) => {
+                    let curCol = 0;
+                    Array.from(row.children).forEach((cellNode) => {
+                        if (!(cellNode instanceof HTMLTableCellElement)) return;
+                        const cSpan = cellNode.colSpan || 1;
+                        if (cSpan > 1) {
+                            let spanW = 0;
+                            for (let i = 0; i < cSpan; i++) {
+                                const idx = curCol + i;
+                                if (idx < totalCols) {
+                                    spanW += (colMaxWidths[idx] > 0 ? colMaxWidths[idx] + 6 : 50);
+                                }
+                            }
+                            if (spanW > 0) {
+                                cellNode.style.setProperty('width', `${spanW}px`, 'important');
+                                cellNode.style.setProperty('min-width', `${spanW}px`, 'important');
+                                cellNode.style.setProperty('max-width', `${spanW}px`, 'important');
+                                cellNode.style.setProperty('box-sizing', 'border-box', 'important');
+                            }
+                        }
+                        curCol += cSpan;
+                    });
+                });
+            });
+
+            // 4. Đặt bề rộng bảng cố định theo đúng tổng độ rộng các cột đã fix
+            const sumColsWidth = colMaxWidths.reduce((sum, w) => sum + (w > 0 ? w + 6 : 50), 0);
             const tableWidth = sumColsWidth > 0 ? sumColsWidth : Math.ceil(table.getBoundingClientRect().width);
             if (tableWidth > 0) {
                 table.style.setProperty('table-layout', 'fixed', 'important');

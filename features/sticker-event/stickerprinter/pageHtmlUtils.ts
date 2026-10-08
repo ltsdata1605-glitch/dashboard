@@ -44,7 +44,20 @@ export const generateDrawPagesHtml = (opts: DrawPrintOptions): string => {
     const titleCqw = Math.min(drawTitleSize, 6.0);
 
     for (let pageIdx = 0; pageIdx < Math.ceil(drawTickets.length / 4); pageIdx++) {
-        const pageTickets = drawTickets.slice(pageIdx * 4, pageIdx * 4 + 4);
+        const pageTickets = Array.from({ length: 4 }, (_, index) => {
+            const totalIndex = pageIdx * 4 + index;
+            return drawTickets[totalIndex] || {
+                id: (totalIndex + 1).toString(),
+                title: firstTicket.title,
+                code: isAutoIncrement ? (totalIndex + 1).toString() : (firstTicket.code || '1'),
+                footer: firstTicket.footer,
+                contentTop: firstTicket.contentTop,
+                contentTopRight: firstTicket.contentTopRight,
+                contentBottom: firstTicket.contentBottom,
+                contentBottomRight: firstTicket.contentBottomRight,
+                contentBottomRightSub: firstTicket.contentBottomRightSub || '',
+            };
+        });
         const ticketBlocks = pageTickets.map((ticket, index) => {
             const totalIndex = pageIdx * 4 + index;
             const isFirst = totalIndex === 0;

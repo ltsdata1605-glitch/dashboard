@@ -235,7 +235,22 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         /* Chỉ render 1 trang đang xem (4 phiếu) thay vì toàn bộ 250 trang.
                            Giảm DOM từ 1000 DrawTicketBlock xuống còn 4 → loại bỏ đơ treo. */
                         const startIdx = activeDrawPage * 4;
-                        const currentPageTickets = drawTickets.slice(startIdx, startIdx + 4);
+                        const firstTicket = drawTickets[0];
+                        // Luôn render đủ 4 phiếu cho 1 trang A4 để không bị khoảng trống dữ liệu
+                        const currentPageTickets = Array.from({ length: 4 }, (_, index) => {
+                            const totalIndex = startIdx + index;
+                            return drawTickets[totalIndex] || {
+                                id: (totalIndex + 1).toString(),
+                                title: firstTicket?.title || '',
+                                code: drawAutoIncrement ? (totalIndex + 1).toString() : (firstTicket?.code || '1'),
+                                footer: firstTicket?.footer || '',
+                                contentTop: firstTicket?.contentTop || '',
+                                contentTopRight: firstTicket?.contentTopRight || '',
+                                contentBottom: firstTicket?.contentBottom || '',
+                                contentBottomRight: firstTicket?.contentBottomRight || '',
+                                contentBottomRightSub: firstTicket?.contentBottomRightSub || '',
+                            };
+                        });
                         return (
                             <div
                                 className="sticker-container draw-page active-preview-page"
