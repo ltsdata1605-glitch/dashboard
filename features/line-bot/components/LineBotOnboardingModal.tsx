@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
@@ -18,11 +18,6 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
 }) => {
     const [currentStep, setCurrentStep] = useState<number>(1);
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
-
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
 
     const handleCopyWebhook = () => {
         navigator.clipboard.writeText(webhookUrl);
@@ -134,55 +129,21 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
     const currentData = steps[currentStep - 1];
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Hướng dẫn tạo và cấu hình BOT LINE" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
-                    <div className="flex items-center gap-2.5">
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                            <AppIcon name="bot" size="lg" />
-                        </div>
-                        <div>
-                            <h2 className="text-base font-bold text-slate-800 dark:text-white">Hướng dẫn tự tạo & Cấu hình BOT LINE</h2>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Bước {currentStep} / {steps.length}: {currentData.title}</p>
-                        </div>
-                    </div>
-                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                        <AppIcon name="close" size="md" />
-                    </Button>
-                </div>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="lg"
+            ariaLabel="Hướng dẫn tạo và cấu hình BOT LINE"
+            subTitle={<>Bước {currentStep} / {steps.length}: {currentData.title}</>}
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="bot" size="md" className="text-emerald-600" />
+                    <span>Hướng dẫn tự tạo &amp; Cấu hình BOT LINE</span>
+                </span>
+            }
+            footer={
+                <div className="flex items-center justify-between">
 
-                {/* Progress Bar */}
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 flex">
-                    {steps.map(s => (
-                        <div
-                            key={s.step}
-                            className={`h-full flex-1 transition-all duration-300 ${
-                                s.step <= currentStep ? 'bg-emerald-500' : 'bg-transparent'
-                            }`}
-                        />
-                    ))}
-                </div>
-
-                {/* Body */}
-                <div className="p-6 overflow-y-auto flex-1 space-y-4">
-                    <div className="flex items-center gap-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
-                        <div className="p-2 bg-emerald-500 text-white rounded-lg">
-                            <AppIcon name={currentData.icon} size="lg" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-slate-800 dark:text-white text-sm">{currentData.title}</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{currentData.desc}</p>
-                        </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                        {currentData.content}
-                    </div>
-                </div>
-
-                {/* Footer Navigation */}
-                <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                     <Button
                         variant="ghost"
                         onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
@@ -225,7 +186,36 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
                         </Button>
                     )}
                 </div>
-            </div>
-        </div>
+            }
+        >
+                {/* Progress Bar */}
+                <div className="-mx-3 sm:-mx-5 -mt-3 sm:-mt-5 mb-4 bg-slate-100 h-1.5 flex">
+                    {steps.map(s => (
+                        <div
+                            key={s.step}
+                            className={`h-full flex-1 transition-all duration-300 ${
+                                s.step <= currentStep ? 'bg-emerald-500' : 'bg-transparent'
+                            }`}
+                        />
+                    ))}
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
+                        <div className="p-2 bg-emerald-500 text-white rounded-lg">
+                            <AppIcon name={currentData.icon} size="lg" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-slate-800 dark:text-white text-sm">{currentData.title}</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{currentData.desc}</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+                        {currentData.content}
+                    </div>
+                </div>
+
+        </Modal>
     );
 };

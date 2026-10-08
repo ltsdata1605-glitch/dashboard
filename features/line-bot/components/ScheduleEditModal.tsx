@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { BotSchedule, LineGroup, ScheduleRepeatType } from '../types/lineBot.types';
@@ -85,11 +85,6 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
         }
     }, [schedule, isOpen]);
 
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
-
     const handleRepeatTypeChange = (newType: ScheduleRepeatType) => {
         setRepeatType(newType);
         if (newType === 'DAILY') {
@@ -171,19 +166,19 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
     };
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Lịch hẹn gửi tin" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
-                <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
-                        <AppIcon name="clock" size="md" className="text-emerald-500" />
-                        <span>{schedule?.id ? 'Chỉnh Sửa Lịch Hẹn' : 'Tạo Lịch Hẹn Thông Báo'}</span>
-                    </h3>
-                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                        <AppIcon name="close" size="md" />
-                    </Button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4 flex-1">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="md"
+            ariaLabel="Lịch hẹn gửi tin"
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="clock" size="md" className="text-emerald-500" />
+                    <span>{schedule?.id ? 'Chỉnh Sửa Lịch Hẹn' : 'Tạo Lịch Hẹn Thông Báo'}</span>
+                </span>
+            }
+        >
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                             Tên lịch hẹn <span className="text-rose-500">*</span>
@@ -472,7 +467,6 @@ export const ScheduleEditModal: React.FC<ScheduleEditModalProps> = ({
                         </Button>
                     </div>
                 </form>
-            </div>
-        </div>
+        </Modal>
     );
 };

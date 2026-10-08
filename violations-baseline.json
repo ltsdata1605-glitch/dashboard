@@ -391,32 +391,6 @@
     "tinyText": 50,
     "offScaleRadius": 2
   },
-  "features/line-bot/components/KeywordEditModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
-  "features/line-bot/components/LineBotOnboardingModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
   "features/line-bot/components/LineBotSettingsTab.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -436,7 +410,7 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
     "iconEmoji": 2,
-    "rawOverlay": 1,
+    "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0
   },

@@ -7,6 +7,9 @@ import { expect, test } from '@playwright/test';
 const CASES = [
     { nut: '#mo-chon-tuong-tac', ten: /Chọn Admin Từ Tương Tác LINE/, anh: 'chon-tuong-tac' },
     { nut: '#mo-chon-loc', ten: /Chọn Người Dùng Bot Để Lọc PMH/, anh: 'chon-loc' },
+    { nut: '#mo-tu-khoa', ten: /Thêm Từ Khoá Tự Động/, anh: 'tu-khoa' },
+    { nut: '#mo-lich-hen', ten: /Tạo Lịch Hẹn Thông Báo/, anh: 'lich-hen' },
+    { nut: '#mo-huong-dan', ten: /Hướng dẫn tự tạo & Cấu hình BOT LINE/, anh: 'huong-dan' },
 ];
 
 for (const vp of [{ ten: 'laptop', width: 1366, height: 768 }, { ten: 'iphone', width: 390, height: 844 }]) {

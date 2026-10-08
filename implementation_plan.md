@@ -7558,3 +7558,9 @@ có tên, khoá cuộn, 12 lần Tab không lạc ra ngoài, Escape đóng + tr�
 Thêm modal mới đã chuyển vào mảng `CASES` + harness. Còn: KeywordEdit, ScheduleEdit, LineBotOnboarding, CouponImport (2 lớp), CouponManagerTab (Bot LINE);
 Thuế ×3; BI ×2; Sticker ×2; các lớp phủ tải/tiến trình (ExportLoader, ProcessingLoader, FilterProcessingOverlay…) — loại lớp phủ không phải hộp thoại cần cách xử lý riêng.
 
+### GĐ4 — modal tự dựng, đợt 2 (rawOverlay 25 → 22)
+Chuyển `KeywordEditModal`, `ScheduleEditModal`, `LineBotOnboardingModal` (Bot LINE). Hai modal dạng form giữ nguyên `<form>` + chân nút trong form
+(đã dùng `-mx-5 -mb-5` khớp với đệm thân của Modal); wizard hướng dẫn: tiêu đề + "Bước n/N" qua `title`/`subTitle`, thanh tiến trình đầu thân, nút điều hướng ở `footer`.
+`tests/e2e/modal-da-chuyen-modal-chung.spec.ts` nay 5 modal × laptop/iPhone = 10 ca xanh; đã xem ảnh chụp của từng modal.
+Còn 22: CouponImportModal (2 lớp, 800 dòng) + CouponManagerTab (Bot LINE); Thuế ×3; BI ×2; Sticker ×2; lớp phủ chờ/tiến trình & popup bộ lọc (loại khác hộp thoại).
+
