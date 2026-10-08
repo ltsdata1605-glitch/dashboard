@@ -1032,6 +1032,43 @@ MĐH Áp Dụng: 00910SO26090335446`;
             expect(parseUsedConfirmationMessage('e1 12345678').isUsedConfirm).toBe(false);
         });
     });
+
+    describe('bóc tách dữ liệu copy từ file Excel mẫu (TSV / Tab-separated)', () => {
+        it('nhận diện chính xác các cột từ bảng Excel và bỏ qua dòng tiêu đề', () => {
+            const excelPastedText = `MÃ PMH (*)\tTÊN SẢN PHẨM\tLOẠI PMH\tHẠN DÙNG (DD/MM/YYYY)\tCÚ PHÁP ĐĂNG KÝ\tGHI CHÚ
+CG5BBSGXJ9\tBếp gas đôi Sunhouse SHB3105MD\tEvent\t31/10/2026\tSHB3105MD\tMã giảm 200K Event
+4P1DXFTUM8\tBếp gas đôi Sunhouse SHB3105MD\tEvent\t31/10/2026\tSHB3105MD\tMã giảm 200K Event
+K89V2NXA10\tTủ lạnh Samsung RT29K5012S8\tGiờ Vàng Giá Sốc\t15/11/2026\tRT29\tGiảm 500K Giờ Vàng`;
+
+            const items = parsePastedCouponList(excelPastedText, 'Event');
+            expect(items.length).toBe(3);
+
+            expect(items[0]).toEqual({
+                code: 'CG5BBSGXJ9',
+                productName: 'Bếp gas đôi Sunhouse SHB3105MD',
+                type: 'Event',
+                syntax: 'SHB3105MD',
+                expiryDate: '2026-10-31'
+            });
+
+            expect(items[1].code).toBe('4P1DXFTUM8');
+            expect(items[2].code).toBe('K89V2NXA10');
+            expect(items[2].type).toBe('Giờ Vàng Giá Sốc');
+            expect(items[2].expiryDate).toBe('2026-11-15');
+            expect(items[2].syntax).toBe('RT29');
+        });
+
+        it('tự động loại bỏ mã trùng lặp khi dán từ bảng Excel', () => {
+            const duplicatesText = `CG5BBSGXJ9\tBếp gas Sunhouse\tEvent\t31/10/2026\tSHB3105MD
+CG5BBSGXJ9\tBếp gas Sunhouse\tEvent\t31/10/2026\tSHB3105MD
+4P1DXFTUM8\tBếp gas Sunhouse\tEvent\t31/10/2026\tSHB3105MD`;
+
+            const skipped: string[] = [];
+            const items = parsePastedCouponList(duplicatesText, 'Event', (code) => skipped.push(code));
+            expect(items.length).toBe(2);
+            expect(skipped).toEqual(['CG5BBSGXJ9']);
+        });
+    });
 });
 
 
