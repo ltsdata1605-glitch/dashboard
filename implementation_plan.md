@@ -7481,3 +7481,30 @@ Sửa D16 (`7aa32de`) chưa có test riêng. Tách khối "lấy bù KPI từ đ
 nguyên, hook chỉ gọi lại. Test: `tests/unit/audit-d16-summary-kpi-fallback.test.ts` (5 ca): siêu thị thiếu cột trong
 báo cáo nhiều siêu thị KHÔNG nhận số cả cụm; 'Tổng' và báo cáo 1 siêu thị vẫn được bù; số của chính siêu thị không bị ghi đè.
 Kiểm đột biến: bỏ điều kiện (luôn bù) → 2/5 ca đỏ; khôi phục → 5/5 xanh. `npm run check` xanh, unit 1135 qua.
+
+## Thiết kế — chuyển token/secret Bot LINE về server (audit S13/S14/B3) — CHỜ DUYỆT (2026-10-08)
+
+**Hiện trạng (đo trên code):** `channelAccessToken`, `channelSecret`, `pmhRelayToken` nằm ngay trong document
+`line_bots/{uid}`. Rules cho phép chủ bot, admin và manager CÙNG Mã Kho đọc cả document ⇒ manager đọc được token bot
+Kho. Client còn gửi token trong body tới `lineBotWebhook` (`?action=verifyToken|sendTestPush|pushImage|sendBroadcast|getProfile`).
+Nơi dùng ở client: `useLineBotConfig`, `LineBotSettingsTab`, `useBotScope`, `lineBotFirestoreService` (lọc bot dùng chung),
+`LineBotView`, `useScheduleManager`, `services/lineReportDelivery.ts`. Phía server: `lineBotWebhook.ts` (13 chỗ),
+`lineBotScheduler.ts`, `pmhRelay.ts`, `lineSignature.ts`, `lineBotScope.ts`.
+
+**Thiết kế:**
+1. Collection mới `line_bot_secrets/{uid}` giữ 3 giá trị bí mật. Rules: `allow read, write: if false` (chỉ Admin SDK).
+2. `line_bots/{uid}` chỉ giữ cờ công khai `hasToken`, `hasSecret` + `botName` (không còn giá trị bí mật).
+3. Server: hàm `getBotSecrets(uid)` dùng chung; webhook/scheduler/relay đọc từ đó (giai đoạn chuyển tiếp: nếu chưa có
+   thì đọc field cũ trong `line_bots`).
+4. Callable mới: `lineBotSaveSecrets` (chỉ chủ bot/admin; kiểm token với LINE rồi ghi secrets + cờ) và
+   `lineBotApi` (verify/push/broadcast/profile theo `botId`, kiểm quyền `canUseBot`: chủ, admin, hoặc manager cùng Kho).
+   Client không còn thấy hay gửi token.
+5. Client: ô nhập token thành "ghi mới" (hiện "Đã lưu ••••" khi `hasToken`), các nơi gọi LINE truyền `botId`.
+
+**Thứ tự triển khai (mỗi bước tương thích ngược, có test đỏ→xanh):**
+S1 helper + đọc có dự phòng · S2 hai callable · S3 client dùng botId · S4 script di trú (DRY-RUN trước, chỉ sao chép)
+· S5 siết rules + gỡ field cũ khỏi `line_bots` (sau khi di trú xác nhận đủ) · S6 xoay token các bot.
+
+**Cần chủ dự án quyết:** (1) đồng ý hướng này; (2) manager cùng Kho vẫn được GỬI qua bot Kho (qua callable) nhưng không
+xem được token — đúng ý? (3) lúc chạy S5 có khung giờ ít bán hàng không (S4 chỉ sao chép, S5 mới đổi dữ liệu thật).
+**Rollback:** S1–S4 chỉ thêm; S5 giữ bản sao field cũ trong `line_bot_secrets` nên khôi phục được.
