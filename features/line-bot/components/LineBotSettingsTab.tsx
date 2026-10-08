@@ -232,9 +232,20 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         rows={3}
                         value={token}
                         onChange={e => setToken(e.target.value)}
-                        placeholder={tokenSaved ? 'Đã lưu an toàn trên máy chủ — dán Token mới nếu muốn thay' : 'Dán Channel access token (long-lived) từ LINE Developers...'}
+                        placeholder={tokenSaved ? 'Để trống = giữ Token hiện tại. Dán Token mới vào đây để thay.' : 'Dán Channel access token (long-lived) từ LINE Developers...'}
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
+                    {tokenSaved && (
+                        <div data-testid="line-token-saved" className="mt-2 flex items-start gap-2 rounded-control border border-emerald-300 bg-emerald-50 px-3 py-2">
+                            <AppIcon name="success" size="md" className="mt-0.5 shrink-0 text-emerald-600" />
+                            <p className="text-[13px] font-bold leading-snug text-emerald-800">
+                                {token.trim()
+                                    ? 'Sẽ thay bằng giá trị mới khi bấm "Lưu cấu hình Bot".'
+                                    : 'Đã lưu an toàn trên máy chủ — không hiển thị lại để tránh lộ.'}
+                                <span className="block text-[12px] font-medium text-emerald-700">Chỉ dán Token mới khi muốn thay; để trống thì giữ nguyên.</span>
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 <div>
@@ -278,9 +289,20 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         type="text"
                         value={secret}
                         onChange={e => setSecret(e.target.value)}
-                        placeholder={secretSaved ? 'Đã lưu an toàn trên máy chủ — dán Secret mới nếu muốn thay' : 'Dán Channel secret từ tab Basic settings...'}
+                        placeholder={secretSaved ? 'Để trống = giữ Secret hiện tại. Dán Secret mới vào đây để thay.' : 'Dán Channel secret từ tab Basic settings...'}
                         className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
+                    {secretSaved && (
+                        <div data-testid="line-secret-saved" className="mt-2 flex items-start gap-2 rounded-control border border-emerald-300 bg-emerald-50 px-3 py-2">
+                            <AppIcon name="success" size="md" className="mt-0.5 shrink-0 text-emerald-600" />
+                            <p className="text-[13px] font-bold leading-snug text-emerald-800">
+                                {secret.trim()
+                                    ? 'Sẽ thay bằng giá trị mới khi bấm "Lưu cấu hình Bot".'
+                                    : 'Đã lưu an toàn trên máy chủ — không hiển thị lại để tránh lộ.'}
+                                <span className="block text-[12px] font-medium text-emerald-700">Chỉ dán Secret mới khi muốn thay; để trống thì giữ nguyên.</span>
+                            </p>
+                        </div>
+                    )}
                     {/* Từ 2026-10-02 webhook KIỂM CHỮ KÝ bằng secret này — thiếu hoặc sai thì bot bỏ qua mọi tin nhắn. */}
                     {!secret.trim() && !secretSaved ? (
                         <p data-testid="line-secret-warning" className="mt-1.5 text-[12px] font-semibold text-rose-700 leading-snug">
