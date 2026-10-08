@@ -977,6 +977,58 @@ export function parsePastedCouponList(
         // Bỏ qua dòng phân cách hoặc tiêu đề khối
         if (/^(?:[-━═=_*~]{3,}|\[.+\])$/.test(line)) continue;
 
+        // Xử lý dòng copy từ bảng Excel mẫu / TSV (Tab-separated values)
+        if (line.includes('\t')) {
+            const parts = line.split('\t').map(p => p.trim());
+            const firstCell = parts[0] || '';
+            const lowerFirst = firstCell.toLowerCase();
+
+            // Bỏ qua dòng tiêu đề bảng Excel
+            if (lowerFirst.startsWith('mã pmh') || lowerFirst.startsWith('ma pmh') || lowerFirst === 'code' || lowerFirst.includes('tiêu đề') || lowerFirst.startsWith('mã (*)') || lowerFirst.startsWith('stt')) {
+                continue;
+            }
+
+            let excelCode = '';
+            if (firstCell && /^[A-Za-z0-9_-]{3,40}$/.test(firstCell)) {
+                excelCode = firstCell;
+            }
+
+            if (excelCode && excelCode.length >= 3) {
+                const upperCode = excelCode.toUpperCase();
+                if (seenCodes.has(upperCode)) {
+                    if (onDuplicate) onDuplicate(upperCode);
+                    continue;
+                }
+                seenCodes.add(upperCode);
+
+                const excelProdName = parts[1] || '';
+                const excelType = parts[2] || defaultType;
+                let excelExpiry: string | undefined = undefined;
+
+                if (parts[3]) {
+                    const dm = parts[3].match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+                    if (dm) {
+                        excelExpiry = `${dm[3]}-${dm[2].padStart(2, '0')}-${dm[1].padStart(2, '0')}`;
+                    } else if (/^\d{4}-\d{2}-\d{2}$/.test(parts[3])) {
+                        excelExpiry = parts[3];
+                    }
+                }
+
+                const customSyntax = parts[4] || '';
+                const autoSyntax = customSyntax || extractProductSyntax(excelProdName);
+                const resolvedExpiry = defaultExpiryDate || excelExpiry;
+
+                items.push({
+                    code: upperCode,
+                    productName: excelProdName || '',
+                    type: excelType || defaultType,
+                    syntax: autoSyntax || excelProdName || '',
+                    expiryDate: resolvedExpiry || undefined
+                });
+                continue;
+            }
+        }
+
         let rawCode = '';
         let productName = '';
         let lineExpiry: string | undefined = undefined;

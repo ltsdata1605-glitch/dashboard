@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, ParsedImportItem } from '../types/lineBot.types';
 import { parsePastedCouponList, extractProductSyntax, extractLatestDateFromText, getVietnamTodayString } from '../services/couponParser';
+import { downloadCouponSampleTemplate, readCouponExcelFile } from '../services/couponTemplateService';
 
 interface CouponImportModalProps {
     isOpen: boolean;
@@ -47,6 +48,43 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     const [parsedItems, setParsedItems] = useState<ParsedImportItem[]>([]);
     const [duplicateCount, setDuplicateCount] = useState<number>(0);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [isExportingTemplate, setIsExportingTemplate] = useState<boolean>(false);
+    const [isReadingExcel, setIsReadingExcel] = useState<boolean>(false);
+
+    const handleExportTemplate = async () => {
+        try {
+            setIsExportingTemplate(true);
+            await downloadCouponSampleTemplate();
+            toast.success('Đã tải xuống file Excel mẫu nạp mã PMH!');
+        } catch (error) {
+            console.error('[CouponImportModal] Lỗi xuất file mẫu:', error);
+            toast.error('Không thể xuất file mẫu. Vui lòng thử lại!');
+        } finally {
+            setIsExportingTemplate(false);
+        }
+    };
+
+    const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        try {
+            setIsReadingExcel(true);
+            const tsvText = await readCouponExcelFile(file);
+            if (!tsvText.trim()) {
+                toast.error('File Excel không có dữ liệu mã PMH hợp lệ!');
+                return;
+            }
+            setPasteText(tsvText);
+            autoParseText(tsvText, effectiveType);
+            toast.success(`Đã nạp dữ liệu từ file Excel: ${file.name}`);
+        } catch (error) {
+            console.error('[CouponImportModal] Lỗi đọc file Excel:', error);
+            toast.error('Lỗi khi đọc file Excel. Vui lòng kiểm tra lại định dạng file!');
+        } finally {
+            setIsReadingExcel(false);
+            e.target.value = '';
+        }
+    };
 
     // State cho xoá đợt nạp
     const [deletingBatchId, setDeletingBatchId] = useState<string | null>(null);
@@ -300,14 +338,48 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div ref={hopChinhRef} role="dialog" aria-modal="true" aria-label="Nạp mã giảm giá" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
                 {/* Modal Header */}
-                <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2">
-                        <AppIcon name="upload" size="md" className="text-emerald-500" />
-                        <span>Nạp Mã PMH & Quản Lý Lần Nạp</span>
+                <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                    <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2 min-w-0">
+                        <AppIcon name="upload" size="md" className="text-emerald-500 shrink-0" />
+                        <span className="truncate">Nạp Mã PMH & Quản Lý Lần Nạp</span>
                     </h3>
-                    <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                        <AppIcon name="close" size="md" />
-                    </Button>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                        {/* Nút 1: Xuất File Mẫu */}
+                        <button
+                            type="button"
+                            onClick={handleExportTemplate}
+                            disabled={isExportingTemplate}
+                            className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] disabled:opacity-50"
+                            title="Tải file Excel mẫu (.xlsx) chuẩn để soạn danh sách mã PMH"
+                        >
+                            <AppIcon name="download" size="xs" className="text-emerald-600 dark:text-emerald-400" />
+                            <span>{isExportingTemplate ? 'Đang xuất...' : 'Xuất File Mẫu'}</span>
+                        </button>
+
+                        {/* Nút 2: Nhập từ File Excel */}
+                        <label
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border border-emerald-300 dark:border-emerald-700/60 text-emerald-700 dark:text-emerald-300 bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98] ${
+                                isReadingExcel ? 'opacity-50 pointer-events-none' : ''
+                            }`}
+                            title="Chọn file Excel (.xlsx, .xls, .csv) để nạp trực tiếp danh sách mã"
+                        >
+                            <AppIcon name="upload" size="xs" className="text-emerald-600 dark:text-emerald-400" />
+                            <span>{isReadingExcel ? 'Đang nạp file...' : 'Nhập từ File Excel'}</span>
+                            <input
+                                type="file"
+                                accept=".xlsx, .xls, .csv"
+                                className="hidden"
+                                onChange={handleExcelUpload}
+                                disabled={isReadingExcel}
+                            />
+                        </label>
+
+                        {/* Nút Đóng */}
+                        <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
+                            <AppIcon name="close" size="md" />
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="p-5 overflow-y-auto space-y-4 flex-1">
@@ -347,7 +419,7 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                                     Loại PMH Mặc Định
                                 </label>
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                <div className="grid grid-cols-3 gap-2">
                                     {DEFAULT_TYPES.map(t => (
                                         <button
                                             key={t}
