@@ -5,7 +5,7 @@ export default function AboutView() {
     return (
         <div className="p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-32 animate-in fade-in duration-500 max-w-7xl mx-auto">
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-sky-600 via-sky-700 to-sky-800 p-5 sm:p-8 text-white shadow-xl">
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-card bg-gradient-to-br from-sky-600 via-sky-700 to-sky-800 p-5 sm:p-8 text-white shadow-xl">
                 <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-10 pointer-events-none">
                     <AppIcon name="cpu" size="hero" />
                 </div>

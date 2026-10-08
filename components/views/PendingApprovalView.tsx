@@ -61,7 +61,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 border border-slate-100 dark:border-slate-800"
+                className="w-full max-w-md bg-white dark:bg-slate-900 rounded-overlay shadow-xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 border border-slate-100 dark:border-slate-800"
             >
                 {/* Header Decoration */}
                 <div className="h-32 bg-gradient-to-br from-sky-500 to-sky-700 relative overflow-hidden">

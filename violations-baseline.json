@@ -151,19 +151,6 @@
     "tinyText": 0,
     "offScaleRadius": 0
   },
-  "components/shared/ui/FeatureLandingLayout.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 3
-  },
   "components/shared/ui/KpiCard.tsx": {
     "nonSemanticColor": 10,
     "indigoAlias": 15,
@@ -212,19 +199,6 @@
     "tinyText": 0,
     "offScaleRadius": 0
   },
-  "components/views/AboutView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 1
-  },
   "components/views/DashboardView.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -247,19 +221,6 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 1,
     "iconEmoji": 0
-  },
-  "components/views/PendingApprovalView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 1
   },
   "components/views/settings/SettingsAccountTab.tsx": {
     "nonSemanticColor": 0,
@@ -490,7 +451,7 @@
     "iconEmoji": 0,
     "rawOverlay": 1,
     "tinyText": 0,
-    "offScaleRadius": 1
+    "offScaleRadius": 0
   },
   "features/line-bot/components/SelectInteractedUserModal.tsx": {
     "nonSemanticColor": 0,
@@ -503,7 +464,7 @@
     "iconEmoji": 0,
     "rawOverlay": 1,
     "tinyText": 0,
-    "offScaleRadius": 1
+    "offScaleRadius": 0
   },
   "features/line-bot/components/SyntaxConfigTab.tsx": {
     "nonSemanticColor": 0,
@@ -514,19 +475,6 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 0,
     "iconEmoji": 1
-  },
-  "features/line-bot/LineBotView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 1
   },
   "features/phan-ca/components/DailyStatsTable.tsx": {
     "nonSemanticColor": 0,

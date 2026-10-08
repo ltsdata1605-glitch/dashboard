@@ -80,7 +80,7 @@ export default function LineBotView() {
     if (!isManagerOrAdmin) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[65vh] p-6 text-center animate-in fade-in">
-                <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-3xl mb-4 border border-rose-200 dark:border-rose-900/60 shadow-sm">
+                <div className="p-4 bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 rounded-card mb-4 border border-rose-200 dark:border-rose-900/60 shadow-sm">
                     <AppIcon name="securityAlert" size="hero" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">
