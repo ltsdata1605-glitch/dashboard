@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 
@@ -8,8 +9,15 @@ interface PdfPreviewModalProps {
     fileName: string;
 }
 
+/**
+ * Audit 2026-10-07 (IOS-01): khung xem trước trên iPhone có thể trắng hoặc chỉ hiện TRANG ĐẦU của PDF (giới
+ * hạn trình xem PDF nhúng của Safari) — nên luôn có lối khác: "Mở" (trình xem PDF toàn màn của iOS, cuộn đủ
+ * trang, có nút in/chia sẻ) và "Chia sẻ" (gửi Zalo/AirDrop/Lưu vào Tệp qua bảng chia sẻ hệ thống).
+ */
 const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileName }) => {
-    
+    const [isSharing, setIsSharing] = useState(false);
+    const canShareFiles = typeof navigator !== 'undefined' && typeof navigator.canShare === 'function';
+
     const handleDownload = () => {
         const link = document.createElement('a');
         link.href = url;
@@ -17,6 +25,30 @@ const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileNam
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const handleOpen = () => {
+        // Không gắn `noopener`: Safari trả null cho window.open có noopener nên không biết tab có mở hay bị chặn.
+        const w = window.open(url, '_blank');
+        if (!w) handleDownload();
+    };
+
+    const handleShare = async () => {
+        setIsSharing(true);
+        try {
+            const blob = await (await fetch(url)).blob();
+            const file = new File([blob], fileName, { type: 'application/pdf' });
+            if (!navigator.canShare?.({ files: [file] })) {
+                handleDownload();
+                return;
+            }
+            await navigator.share({ files: [file], title: fileName });
+        } catch (e) {
+            // Người dùng đóng bảng chia sẻ → AbortError, không phải lỗi.
+            if ((e as Error)?.name !== 'AbortError') toast.error('Không chia sẻ được. Hãy dùng nút Tải xuống.');
+        } finally {
+            setIsSharing(false);
+        }
     };
 
     return (
@@ -27,19 +59,19 @@ const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileNam
             titleColorClass="text-slate-900"
             maxWidth="xl"
             controls={
-                <Button
-                    variant="ghost"
-                    onClick={handleDownload}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-9 px-4 py-2"
-                >
-                    Tải xuống
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button variant="secondary" icon="externalLink" onClick={handleOpen}>Mở</Button>
+                    {canShareFiles && (
+                        <Button variant="secondary" icon="share" onClick={handleShare} disabled={isSharing}>Chia sẻ</Button>
+                    )}
+                    <Button variant="primary" icon="download" onClick={handleDownload}>Tải xuống</Button>
+                </div>
             }
         >
-            <div className="h-[calc(90vh-140px)]">
+            <div className="h-[calc(90dvh-140px)]">
                 <iframe
                     src={url}
-                    className="w-full h-full border border-slate-300 rounded-lg"
+                    className="w-full h-full border border-slate-300 rounded-control"
                     title="PDF Preview"
                 ></iframe>
             </div>

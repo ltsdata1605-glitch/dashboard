@@ -139,7 +139,7 @@
     "iconEmoji": 0,
     "rawOverlay": 1,
     "tinyText": 0,
-    "offScaleRadius": 1
+    "offScaleRadius": 0
   },
   "components/modals/AdminAnnouncementModal.tsx": {
     "nonSemanticColor": 0,

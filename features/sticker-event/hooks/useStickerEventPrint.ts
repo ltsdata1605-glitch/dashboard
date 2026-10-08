@@ -16,6 +16,12 @@ export function useStickerEventPrint({
 }: UseStickerEventPrintProps) {
   const [isPrinting, setIsPrinting] = useState<boolean>(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  // Audit 2026-10-07 (IOS-01): PDF giờ là Blob URL — thu hồi bản cũ khi thay bản mới / đóng xem trước / rời màn,
+  // nếu không mỗi lượt in giữ nguyên cả file PDF (vài chục MB với lô lớn) trong bộ nhớ tới khi tải lại trang.
+  useEffect(() => {
+    if (!pdfPreviewUrl?.startsWith('blob:')) return;
+    return () => URL.revokeObjectURL(pdfPreviewUrl);
+  }, [pdfPreviewUrl]);
   
   const [isPrintSettingsOpen, setIsPrintSettingsOpen] = useState(false);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);

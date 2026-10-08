@@ -21,6 +21,8 @@ interface ScannerProps {
 
 const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  /** true khi máy quét đã đóng — chặn mọi lượt bật camera bất đồng bộ hoàn tất muộn (IOS-02). */
+  const disposedRef = useRef(false);
   const readerId = "html5-qrcode-reader";
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string | null>(null);
@@ -209,6 +211,16 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       useBarCodeDetectorIfSupported: true
     });
     scannerRef.current = html5Qrcode;
+    // Audit 2026-10-07 (IOS-02): getCameras/start là bất đồng bộ (iOS còn chờ người dùng bấm Cho phép). Đóng
+    // máy quét lúc đó, dọn dẹp cũ thấy `isScanning` còn false nên không stop gì — rồi start hoàn tất SAU khi
+    // modal đã đóng: camera (đèn xanh) chạy tiếp tới khi tải lại trang. Mọi bước sau `await` phải hỏi `disposed`.
+    let disposed = false;
+    disposedRef.current = false;
+    const stopIfDisposed = () => {
+      if (!disposed) return false;
+      html5Qrcode.stop().then(() => html5Qrcode.clear()).catch(() => { /* đã dừng */ });
+      return true;
+    };
     
     const startWithFallback = (devices: CameraDevice[]) => {
       // Method 1: Try to start with the environment-facing camera constraint. This is the most reliable way.
@@ -218,12 +230,14 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         qrCodeSuccessCallback,
         () => {} // qrCodeErrorCallback
       ).then(() => {
+        if (stopIfDisposed()) return;
         const stream = html5Qrcode.getRunningTrackCapabilities();
         if (stream) setActiveCameraId(stream.deviceId ?? null);
         setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
         setError(null);
         detectTorch();
       }).catch((err: unknown) => {
+        if (disposed) return;
         console.warn("Could not start scanner with ideal facingMode constraint, falling back to manual selection.", err);
         // Method 2 (Fallback): If the constraint fails, find a camera with "back" in its label or use the first available camera.
         const rearCamera = devices.find(device => device.label.toLowerCase().includes('back'));
@@ -235,11 +249,13 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           qrCodeSuccessCallback,
           () => {} // qrCodeErrorCallback
         ).then(() => {
+          if (stopIfDisposed()) return;
           setActiveCameraId(fallbackCameraId);
           setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
           setError(null);
           detectTorch();
         }).catch((startErr: Error) => {
+          if (disposed) return;
           let userFriendlyError = 'Không thể khởi động máy ảnh.';
           if (startErr.name === 'NotAllowedError') {
             userFriendlyError = 'Vui lòng cấp quyền truy cập máy ảnh cho trang web.';
@@ -252,6 +268,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     };
 
     Html5Qrcode.getCameras().then((devices: CameraDevice[]) => {
+      if (disposed) return;
       if (devices && devices.length) {
         setCameras(devices);
         startWithFallback(devices);
@@ -259,6 +276,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         setError('Không tìm thấy máy ảnh nào.');
       }
     }).catch(() => {
+        if (disposed) return;
         // Check if the app is running in an iframe
         if (window.self !== window.top) {
             setError('Trang web mẹ (Google Sites) đã chặn quyền truy cập máy ảnh. Đây là một tính năng bảo mật.');
@@ -269,10 +287,11 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     });
 
     return () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop().catch((error: unknown) => {
-          // console.warn("Lỗi khi dừng máy quét lúc dọn dẹp (có thể bỏ qua):", error);
-        });
+      disposed = true;
+      disposedRef.current = true;
+      // Dừng ĐÚNG instance của lượt này (không qua ref — ref có thể đã trỏ instance của lượt sau).
+      if (html5Qrcode.isScanning) {
+        html5Qrcode.stop().then(() => html5Qrcode.clear()).catch(() => { /* đã dừng */ });
       }
     };
   }, [config, qrCodeSuccessCallback, detectTorch]);
@@ -354,14 +373,18 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       const nextCamera = cameras[nextIndex];
 
       setStatus(`Đang chuyển sang camera: ${nextCamera.label}...`);
-      scannerRef.current!.stop().then(() => {
-        scannerRef.current!.start(
+      const scanner = scannerRef.current!;
+      scanner.stop().then(() => {
+        if (disposedRef.current) return;
+        return scanner.start(
           nextCamera.id,
           config,
           qrCodeSuccessCallback,
           () => {}
         )
         .then(() => {
+          // Đóng máy quét đúng lúc đang chuyển camera → start vừa xong phải tắt ngay (IOS-02).
+          if (disposedRef.current) { scanner.stop().catch(() => { /* đã dừng */ }); return; }
           setActiveCameraId(nextCamera.id);
           setStatus('Hướng máy ảnh vào mã vạch hoặc mã QR.');
           setIsTorchOn(false); // camera mới luôn bắt đầu với đèn tắt

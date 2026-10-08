@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <!-- Audit 2026-10-07 (IOS-05): bỏ `user-scalable=no` — nó chặn phóng to bằng 2 ngón trên Android (bảng số
+         nhiều cột cần phóng to để đọc). GIỮ `maximum-scale=1.0`: trên iOS nó chỉ chặn việc Safari TỰ phóng to khi
+         chạm vào ô nhập chữ 14px (giật cả trang), còn người dùng vẫn phóng to 2 ngón được (iOS 10+). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -46,7 +49,10 @@
     -->
     <!-- connect-src thêm https://www.google.com (2026-09-28): GA4 bật Google Signals gửi thêm lượt
       đo tới www.google.com/g/collect — thiếu host này Console báo "Refused to connect" ở MỌI lần mở
-      app (đo trên dữ liệu thật). Chỉ cho gửi request (connect-src), không cho chạy script. -->
+      app (đo trên dữ liệu thật). Chỉ cho gửi request (connect-src), không cho chạy script.
+      blob: ở frame-src + connect-src (audit 2026-10-07, IOS-01): PDF in tem trên điện thoại là Blob URL do
+      chính trang tạo — xem trước trong iframe và đọc lại để Chia sẻ. Trước đó là data: URI bị frame-src
+      chặn → khung xem trước trắng. blob: chỉ trỏ tới dữ liệu trang tự sinh, không mở ra nguồn ngoài. -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' https://www.googletagmanager.com https://apis.google.com;
@@ -54,8 +60,8 @@
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https:;
-      connect-src 'self' https://qr.sepay.vn https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
-      frame-src 'self' https://*.run.app https://auth.dashboard.pro.vn https://dashboa-7e20b.firebaseapp.com https://accounts.google.com;
+      connect-src 'self' blob: https://qr.sepay.vn https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
+      frame-src 'self' blob: https://*.run.app https://auth.dashboard.pro.vn https://dashboa-7e20b.firebaseapp.com https://accounts.google.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';

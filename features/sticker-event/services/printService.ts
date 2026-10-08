@@ -1259,6 +1259,18 @@ const getPrintStyles = (settings: PrintSettings): string => {
     `;
 }
 
+/** Ảnh (QR, logo) chờ tối đa bấy nhiêu ms rồi chụp luôn — tem thiếu ảnh còn hơn treo cả lượt in. */
+const IMAGE_WAIT_TIMEOUT_MS = 8000;
+/** Stylesheet phông Google chờ tối đa bấy nhiêu ms (mất mạng vẫn in được bằng phông dự phòng). */
+const FONT_CSS_TIMEOUT_MS = 5000;
+
+/**
+ * Audit 2026-10-07 (IOS-01): trước đây trả `datauristring` → iframe xem trước bị CSP `frame-src` chặn (không cho
+ * `data:`) nên điện thoại thấy khung trắng; chuỗi base64 còn to hơn PDF ~33% và nằm nguyên trong state React.
+ * Blob URL nhẹ hơn, CSP cho `blob:`; người nhận PHẢI `URL.revokeObjectURL` khi thay/đóng (useStickerEventPrint).
+ */
+const pdfToObjectUrl = (blob: Blob): string => URL.createObjectURL(blob.type ? blob : new Blob([blob], { type: 'application/pdf' }));
+
 export const printPriceTags = async (products: Product[], employeeName: string, settings: PrintSettings): Promise<string | void> => {
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
@@ -1306,14 +1318,71 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
     const { jsPDF } = await import('jspdf');
     const { default: html2canvas } = await import('html2canvas');
     
-    const renderContainer = document.createElement('div');
-    renderContainer.style.position = 'fixed';
-    renderContainer.style.top = '0';
-    renderContainer.style.left = '0';
-    renderContainer.style.opacity = '0';
-    renderContainer.style.pointerEvents = 'none';
-    renderContainer.style.zIndex = '-1';
-    document.body.appendChild(renderContainer);
+    // Audit 2026-10-07 (GĐ5): dựng tem trong IFRAME CÁCH LY chứ không phải <div> ngay trong trang. Trong trang
+    // chính, tem thừa hưởng màu `oklch(...)` của Tailwind v4 (chữ/viền kế thừa từ body) mà html2canvas 1.x không
+    // đọc được → ném "unsupported color function oklch" → IN TEM TRÊN ĐIỆN THOẠI HỎNG HOÀN TOÀN (đo bằng
+    // e2e sticker-pdf-dien-thoai). Iframe chỉ có đúng style in + phông như nhánh in máy tính bên dưới, nên
+    // ảnh chụp cũng khớp bản in máy tính hơn.
+    const renderFrame = document.createElement('iframe');
+    renderFrame.setAttribute('data-sticker-render', '');
+    renderFrame.setAttribute('aria-hidden', 'true');
+    renderFrame.tabIndex = -1;
+    Object.assign(renderFrame.style, {
+      position: 'fixed', top: '0', left: '0', width: '1200px', height: '2000px',
+      border: '0', opacity: '0', pointerEvents: 'none', zIndex: '-1',
+    });
+    document.body.appendChild(renderFrame);
+    const frameDoc = renderFrame.contentDocument!;
+    frameDoc.open();
+    frameDoc.write(`<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8">
+      <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+      <style>body { margin: 0; background-color: #fff; color: #000; } .print-page { background-color: #fff; }</style>
+      </head><body></body></html>`);
+    frameDoc.close();
+    const renderContainer = frameDoc.body;
+    const makeFrameCanvas = (el: HTMLElement, scale: number) => {
+      const r = el.getBoundingClientRect();
+      const c = frameDoc.createElement('canvas');
+      c.width = Math.floor(r.width * scale);
+      c.height = Math.floor(r.height * scale);
+      c.style.width = `${r.width}px`;
+      c.style.height = `${r.height}px`;
+      return c;
+    };
+    // html2canvas vẽ từ một BẢN SAO tài liệu (iframe riêng của nó) — bản sao phải tự tải lại stylesheet phông.
+    // Không chờ thì nó vẽ bằng phông dự phòng mà xếp chữ theo số đo khác → tên sản phẩm mất khoảng trắng
+    // ("Sảnphẩm1001", đo trên e2e). html2canvas 1.4 chờ Promise trả về từ onclone trước khi vẽ.
+    const waitForCloneFonts = async (cloneDoc: Document) => {
+      const links = Array.from(cloneDoc.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).filter(l => !l.sheet);
+      await Promise.all(links.map(l => new Promise<void>((resolve) => {
+        l.addEventListener('load', () => resolve(), { once: true });
+        l.addEventListener('error', () => resolve(), { once: true });
+        setTimeout(resolve, FONT_CSS_TIMEOUT_MS);
+      })));
+      // `fonts.ready` không đủ: trong bản sao, phông chưa được "dùng" lúc này nên chưa bắt đầu tải và ready
+      // trả về ngay. Gọi load() trực tiếp từng phông (vài file woff2 nhỏ, đã có trong cache sau lần đầu).
+      const fix = cloneDoc.createElement('style');
+      // html2canvas đặt chữ thấp hơn trình duyệt vài px → khung `overflow:hidden` (tên SP, khuyến mãi) cắt mất chân
+      // chữ (dấu "ả", "ẩm"). Chỉ trong BẢN SAO để chụp: nới đệm dưới rồi bù bằng lề âm — bố cục tem không đổi.
+      fix.textContent = '.product-name, .promotion-info { padding-bottom: 0.2em; margin-bottom: -0.2em; }';
+      cloneDoc.head.appendChild(fix);
+      const faces = Array.from(cloneDoc.fonts as unknown as Iterable<FontFace>);
+      await Promise.race([
+        Promise.all(faces.map(f => f.load().catch(() => undefined))),
+        new Promise(r => setTimeout(r, FONT_CSS_TIMEOUT_MS)),
+      ]);
+    };
+    // Chờ stylesheet phông (Oswald/Roboto Condensed) tải xong: nếu chụp trước, `fonts.ready` trả về ngay (chưa có
+    // phông nào đang tải) và html2canvas vẽ bằng phông dự phòng với số đo của phông khác → mất khoảng trắng giữa
+    // các từ trong tên sản phẩm (đo được trên e2e). Mất mạng thì sau FONT_CSS_TIMEOUT_MS vẫn in bằng phông dự phòng.
+    const fontLink = frameDoc.querySelector('link[rel="stylesheet"]') as HTMLLinkElement | null;
+    if (fontLink && !fontLink.sheet) {
+      await new Promise<void>((resolve) => {
+        fontLink.addEventListener('load', () => resolve(), { once: true });
+        fontLink.addEventListener('error', () => resolve(), { once: true });
+        setTimeout(resolve, FONT_CSS_TIMEOUT_MS);
+      });
+    }
 
     const waitForImages = (container: HTMLElement): Promise<void[]> => {
       const images = Array.from(container.getElementsByTagName('img'));
@@ -1327,12 +1396,17 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
               console.warn(`Could not load image: ${img.src}`);
               resolve();
             };
+            // Audit 2026-10-07 (IOS-08): ảnh không bao giờ load/lỗi (mạng treo) từng làm cả lượt in treo vô hạn.
+            setTimeout(resolve, IMAGE_WAIT_TIMEOUT_MS);
           }
         });
       });
       return Promise.all(promises);
     };
 
+    // Audit 2026-10-07 (IOS-08): container ẩn trước đây chỉ được gỡ ở đường thành công — lỗi html2canvas/jsPDF
+    // để lại nó (kèm toàn bộ tem) trong DOM tới khi tải lại trang.
+    try {
     if (settings.tagsPerPage === 80) {
         const billPageWidth = 80;
         
@@ -1348,7 +1422,8 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
             const pageElement = renderContainer.querySelector('.print-page') as HTMLElement;
             
             try {
-                await document.fonts.ready;
+                void pageElement.offsetHeight; // ép bố trí để trình duyệt BẮT ĐẦU tải phông của trang này
+                await frameDoc.fonts.ready;
                 await waitForImages(pageElement);
             } catch(e) { console.error("Error loading assets for canvas", e); }
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -1364,7 +1439,13 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                onclone: waitForCloneFonts,
+                // Canvas PHẢI thuộc tài liệu của iframe dựng: canvas vẽ chữ bằng phông của tài liệu sở hữu nó. Canvas
+                // của trang chính không có Oswald/phông tự tải → chữ vẽ bằng Arial theo vị trí xếp bằng Oswald →
+                // chữ chồng lên nhau, mất khoảng trắng ("Sảnphẩm1001", đo trên e2e).
+                // html2canvas KHÔNG tự đặt cỡ cho canvas được đưa vào → phải đặt đúng khung × scale.
+                canvas: makeFrameCanvas(pageElement, 2),
             });
 
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -1373,8 +1454,7 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
             renderContainer.innerHTML = '';
         }
         
-        document.body.removeChild(renderContainer);
-        return pdf.output('datauristring');
+        return pdfToObjectUrl(pdf.output('blob'));
 
     } else {
         const pdf = new jsPDF({
@@ -1396,7 +1476,8 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
             const pageElement = renderContainer.querySelector('.print-page') as HTMLElement;
 
             try {
-                await document.fonts.ready;
+                void pageElement.offsetHeight; // ép bố trí để trình duyệt BẮT ĐẦU tải phông của trang này
+                await frameDoc.fonts.ready;
                 await waitForImages(pageElement);
             } catch(e) { console.error("Error loading assets for canvas", e); }
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -1405,7 +1486,13 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
                 scale: 2,
                 useCORS: true,
                 logging: false,
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                onclone: waitForCloneFonts,
+                // Canvas PHẢI thuộc tài liệu của iframe dựng: canvas vẽ chữ bằng phông của tài liệu sở hữu nó. Canvas
+                // của trang chính không có Oswald/phông tự tải → chữ vẽ bằng Arial theo vị trí xếp bằng Oswald →
+                // chữ chồng lên nhau, mất khoảng trắng ("Sảnphẩm1001", đo trên e2e).
+                // html2canvas KHÔNG tự đặt cỡ cho canvas được đưa vào → phải đặt đúng khung × scale.
+                canvas: makeFrameCanvas(pageElement, 2),
             });
 
             const imgData = canvas.toDataURL('image/jpeg', 0.95);
@@ -1418,8 +1505,10 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
             renderContainer.innerHTML = '';
         }
 
-        document.body.removeChild(renderContainer);
-        return pdf.output('datauristring');
+        return pdfToObjectUrl(pdf.output('blob'));
+    }
+    } finally {
+        renderFrame.remove();
     }
 
   } else {

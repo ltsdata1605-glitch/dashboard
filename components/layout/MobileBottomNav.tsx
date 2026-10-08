@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useTransition } from 'react';
+import React, { useState, useCallback, useTransition, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -40,6 +40,14 @@ const MobileBottomNav: React.FC = React.memo(() => {
         setIsMoreOpen(false);
     }, [setActiveTab]);
 
+    // Esc đóng menu như modal dùng chung (bàn phím ngoài trên iPad / laptop màn hẹp).
+    useEffect(() => {
+        if (!isMoreOpen) return;
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsMoreOpen(false); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [isMoreOpen]);
+
     const isMoreActive = moreTabs.some(t => activeTab === t.id) || activeTab.startsWith('tools-');
 
     return (
@@ -60,15 +68,21 @@ const MobileBottomNav: React.FC = React.memo(() => {
                             animate={{ y: 0 }}
                             exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                            className="fixed bottom-0 left-0 right-0 z-[200] bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl pb-[env(safe-area-inset-bottom,8px)]"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-label="Thêm"
+                            // Audit 2026-10-07 (IOS-04): khung không có trần chiều cao — iPhone xoay ngang (cao ~390px)
+                            // đẩy đầu khung + nút đóng ra ngoài màn, không cuộn được tới các mục dưới. Giờ trần theo
+                            // `dvh` (co theo thanh địa chỉ Safari), đầu khung cố định, phần mục bên dưới tự cuộn.
+                            className="fixed bottom-0 left-0 right-0 z-[200] flex flex-col max-h-[calc(100dvh-env(safe-area-inset-top,0px)-12px)] bg-white dark:bg-slate-900 rounded-t-overlay shadow-2xl pb-[env(safe-area-inset-bottom,8px)]"
                         >
                             {/* Handle bar */}
-                            <div className="flex justify-center pt-3 pb-2">
+                            <div className="flex shrink-0 justify-center pt-3 pb-2">
                                 <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                             </div>
 
                             {/* Header */}
-                            <div className="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex shrink-0 items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800">
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">Thêm</h3>
                                 <Button
                                     variant="unstyled" size="none"
@@ -79,6 +93,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 </Button>
                             </div>
 
+                            <div data-testid="mobile-more-scroll" className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
                             {/* Tools section */}
                             <div className="px-4 py-3">
                                 <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Công cụ<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
@@ -122,6 +137,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                         );
                                     })}
                                 </div>
+                            </div>
                             </div>
                         </motion.div>
                     </>
