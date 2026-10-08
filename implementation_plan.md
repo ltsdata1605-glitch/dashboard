@@ -7473,3 +7473,11 @@ dữ liệu tệp vừa ghi nếu registry chưa lưu). Test: `tests/e2e/registr
 | Thuế | cloud hỏng vẫn kèm toast "Đã lưu … & Firebase Cloud"; không gửi lại; xoá/đổi tháng hỏng thì lần mở sau bản CLOUD đè lại máy | **hàng chờ** `taxCloudOutbox_v1:<uid>` (localStorage): ghi lại createdAt thao tác hỏng, `getAllRecords` gửi lại trước khi hợp nhất, hợp nhất tôn trọng thao tác chờ; toast theo kết quả thật | unit `audit-d11-tax-hang-cho` (3 bài, đỏ trên code cũ) |
 
 Ghi chú: `tax-paste-hrm` › "tiêu đề thẻ mở được trang HRM" đỏ cả trên code cũ trong container (cần mở trang ngoài) — không thuộc CI.
+
+## Audit D16 — test riêng cho ca siêu thị thiếu cột (2026-10-08)
+
+Sửa D16 (`7aa32de`) chưa có test riêng. Tách khối "lấy bù KPI từ đầu bảng" khỏi `getKpiData` thành hàm thuần
+`features/bi-dashboard/services/summaryKpiFallback.ts` (`headerKpisBelongToActive`, `fillKpisFromHeader`) — logic giữ
+nguyên, hook chỉ gọi lại. Test: `tests/unit/audit-d16-summary-kpi-fallback.test.ts` (5 ca): siêu thị thiếu cột trong
+báo cáo nhiều siêu thị KHÔNG nhận số cả cụm; 'Tổng' và báo cáo 1 siêu thị vẫn được bù; số của chính siêu thị không bị ghi đè.
+Kiểm đột biến: bỏ điều kiện (luôn bù) → 2/5 ca đỏ; khôi phục → 5/5 xanh. `npm run check` xanh, unit 1135 qua.

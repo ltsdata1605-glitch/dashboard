@@ -21,6 +21,7 @@ import { fetchAllowedSummaryLuyKeText, fetchAllowedCompetitionLuyKeData } from '
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { parseBaseTargetQuyDoi } from '../services/employeeParser';
 import { getMonthProgress, extractDateFromData } from '../services/metricService';
+import { fillKpisFromHeader } from '../services/summaryKpiFallback';
 
 /** Kết quả phân tích rỗng — dùng khi nguồn bị xoá (hằng ngoài hook để tham chiếu ổn định). */
 const EMPTY_SUMMARY_PARSED: { kpis: Record<string, string>, table: { headers: string[], rows: string[][] } } = { kpis: {}, table: { headers: [], rows: [] } };
@@ -659,29 +660,8 @@ export const useDashboardLogic = (isActive?: boolean) => {
             }
         }
 
-        // Audit D16: KPI đầu bảng (sourceData.kpis) là của TỔNG CỤM khi báo cáo có nhiều siêu thị — chỉ
-        // được lấy bù cho siêu thị đang xem khi đang xem 'Tổng' hoặc báo cáo chỉ có đúng 1 siêu thị.
-        // Trước đây siêu thị thiếu cột (vd DT Dự Kiến) hiện số của cả cụm như số của mình.
-        const supermarketRowCount = sourceData.table.rows.filter(r => r[0] && !r[0].trim().startsWith('Tổng')).length;
-        const headerKpisBelongToActive = activeSupermarket === 'Tổng' || supermarketRowCount <= 1;
-        if (headerKpisBelongToActive) {
-            if (!kpis.dtDuKienQD && sourceData.kpis.dtDuKienQD) kpis.dtDuKienQD = sourceData.kpis.dtDuKienQD;
-            if (!kpis.dtDuKien && sourceData.kpis.dtDuKien) kpis.dtDuKien = sourceData.kpis.dtDuKien;
-            if (!kpis.targetQD && sourceData.kpis.targetQD) kpis.targetQD = sourceData.kpis.targetQD;
-            if (!kpis.htTargetQD && sourceData.kpis.htTargetQD) kpis.htTargetQD = sourceData.kpis.htTargetQD;
-            if (!kpis.tlpv && sourceData.kpis.tlpv) kpis.tlpv = sourceData.kpis.tlpv;
-            if (!kpis.lkhach && sourceData.kpis.lkhach) kpis.lkhach = sourceData.kpis.lkhach;
-            if (!kpis.lbill && sourceData.kpis.lbill) kpis.lbill = sourceData.kpis.lbill;
-            if ((!kpis.lbillBH || kpis.lbillBH === 'N/A') && (sourceData.kpis.lbillBH || sourceData.kpis.lbill)) {
-                kpis.lbillBH = sourceData.kpis.lbillBH || sourceData.kpis.lbill;
-            }
-            if (!kpis.lbillBH) kpis.lbillBH = 'N/A';
-            if (!kpis.lbillTH) kpis.lbillTH = sourceData.kpis.lbillTH || 'N/A';
-            if (!kpis.luotKhachChange && sourceData.kpis.luotKhachChange) kpis.luotKhachChange = sourceData.kpis.luotKhachChange;
-            if (!kpis.tlpvChange && sourceData.kpis.tlpvChange) kpis.tlpvChange = sourceData.kpis.tlpvChange;
-        }
-        if (!kpis.lbillBH) kpis.lbillBH = 'N/A';
-        if (!kpis.lbillTH) kpis.lbillTH = 'N/A';
+        // Audit D16: KPI đầu bảng là của TỔNG CỤM — logic ở summaryKpiFallback.ts (có test riêng).
+        fillKpisFromHeader(kpis, sourceData.kpis, sourceData.table.rows, activeSupermarket);
 
         // Tự động đồng bộ số liệu Realtime mới nhất từ báo cáo Siêu thị Ngành hàng (nếu người dùng đã dán)
         if (isRealtime && activeSupermarket !== 'Tổng' && industryRealtimeParsed) {
