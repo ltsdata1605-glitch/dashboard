@@ -93,8 +93,7 @@ describe('Nợ kỹ thuật indigo — đếm RIÊNG, và cũng phải bắt bi�
 });
 
 describe('GĐ4 — chuẩn thiết kế (B): luật chặn lệch chuẩn mới', () => {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const r = require('../../scripts/lint-ratchet.cjs');
+    const r = require_('../../scripts/lint-ratchet.cjs');
     it('rawOverlay: đếm fixed inset-0 ngoài components/shared/ui, bỏ qua bộ dùng chung', () => {
         expect(r.countRawOverlay('<div className="fixed inset-0 z-50">', 'features/x/A.tsx')).toBe(1);
         expect(r.countRawOverlay('<div className="fixed inset-0 z-50">', 'components/shared/ui/Modal.tsx')).toBe(0);
