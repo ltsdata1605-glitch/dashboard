@@ -7446,3 +7446,19 @@ Cloud Functions đã có từ trước (A37).
 **Chờ chủ dự án:** (1) deploy functions + rules từ Mac; (2) sau đó mới commit bộ tài liệu audit vào repo (repo công
 khai); (3) có xoá database In Sticker cũ `ai-studio-16672ec9-…` + bỏ map trong `firebase.json` không — việc phá huỷ,
 cần xác nhận dữ liệu cũ không còn dùng.
+
+## Audit D11/DATA08 — lưu "mục lục" tệp bán hàng hỏng thì phải báo, không được mất dữ liệu (2026-10-08)
+
+`saveSalesFilesRegistry` dùng `saveSetting` (lỗi ghi vĩnh viễn chỉ log rồi resolve). Đo trên IndexedDB thật của
+Chromium, giả lập `QuotaExceededError` đúng lúc ghi registry:
+
+| Luồng | Code cũ | Code mới |
+|---|---|---|
+| Đồng bộ bản cloud (`saveSyncCloudData`) | Không lỗi; **2 dòng dữ liệu cũ bị xoá (còn 0)**; bản mới thành rác | Báo lỗi; dữ liệu cũ còn 2 dòng; rác bản mới được dọn |
+| Nạp tệp Lũy kế trên giao diện | Không báo gì, lặng lẽ quay về màn nạp file; dữ liệu tệp nằm lại không mục lục | Dải lỗi đỏ "Không lưu được danh sách tệp vào máy (bộ nhớ trình duyệt đã đầy)…"; không còn khoá `file_*` mồ côi |
+
+Sửa: `services/dbService/salesData.ts` (`saveSalesFilesRegistry` → `saveSettingOrThrow` + thông báo dễ hiểu; dọn bản
+mới khi registry hỏng; lọc hạn lưu giữ lỗi thì chỉ cảnh báo, không chặn mở app), `hooks/useFileUploadLogic.ts` (dọn
+dữ liệu tệp vừa ghi nếu registry chưa lưu). Test: `tests/e2e/registry-luu-hong-khong-mat-du-lieu.spec.ts` (2 bài,
+đều đỏ trên code cũ).
+**Phần D11 còn lại** (outbox cho In Sticker/Khai thác/Thuế báo "đã lưu" trước khi cloud xác nhận) — chưa làm.

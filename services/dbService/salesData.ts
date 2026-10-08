@@ -1,5 +1,5 @@
 import type { DataRow, StoredSalesData, UploadedFileRegistryItem } from '../../types';
-import { getDb, getSetting, saveSetting, APP_STORE, resetDbConnection } from './core';
+import { getDb, getSetting, saveSetting, APP_STORE, resetDbConnection, saveSettingOrThrow } from './core';
 import { biHubDbName } from '../../utils/localDbScope';
 import { storedSalesJsonWrap } from '../salesJsonChunks';
 import type { SalesJsonWriteRequest } from '../salesJsonWriter.worker';
@@ -95,7 +95,7 @@ export async function saveSyncCloudData(
         // 1. Ghi dữ liệu bản mới (khoá riêng — bản cũ vẫn nguyên)
         await saveSalesFileData(syncId, data);
 
-        // 2. Chuyển registry sang bản mới — từ đây app đọc bản mới
+        // 2. Chuyển registry sang bản mới — từ đây app đọc bản mới. Ghi hỏng → bỏ bản mới vừa ghi, bản cũ nguyên.
         const item: UploadedFileRegistryItem = {
             id: syncId,
             filename,
@@ -104,7 +104,12 @@ export async function saveSyncCloudData(
             fileLastModified,    // Use the cloud fileLastModified
             isActive: true
         };
-        await saveSalesFilesRegistry([item]);
+        try {
+            await saveSalesFilesRegistry([item]);
+        } catch (err) {
+            await deleteSalesFileData(syncId).catch(() => { /* rác vô hại, không trỏ tới */ });
+            throw err;
+        }
 
         // 3. Dọn bản cũ (file lịch sử + realtime tạm)
         dropTempRealtimeCache();
@@ -316,8 +321,17 @@ export async function getSalesFilesRegistry(): Promise<UploadedFileRegistryItem[
     return registry || [];
 }
 
+// Audit D11/DATA08 (2026-10-08): trước dùng saveSetting() — lỗi ghi vĩnh viễn (hết dung lượng, bị từ chối)
+// chỉ log rồi resolve. Hậu quả: nạp file báo THÀNH CÔNG nhưng mở lại không thấy tệp; tệ hơn, ở
+// saveSyncCloudData bước "dọn bản cũ" vẫn chạy trong khi registry còn trỏ bản cũ → MẤT DỮ LIỆU. Registry là
+// mục lục của toàn bộ dữ liệu bán hàng trên máy nên ghi hỏng phải là LỖI cho caller biết.
 export async function saveSalesFilesRegistry(registry: UploadedFileRegistryItem[]): Promise<void> {
-    await saveSetting('salesFilesRegistry', registry);
+    try {
+        await saveSettingOrThrow('salesFilesRegistry', registry);
+    } catch (err) {
+        const why = (err as Error)?.name === 'QuotaExceededError' ? 'bộ nhớ trình duyệt đã đầy' : ((err as Error)?.message || 'lỗi không rõ');
+        throw new Error(`Không lưu được danh sách tệp vào máy (${why}) — dữ liệu mới CHƯA được lưu, dữ liệu cũ vẫn giữ nguyên.`);
+    }
 }
 
 // Reset toàn bộ file "lũy kế" (registry) về isActive=false — CHỈ gọi đúng 1 lần lúc khởi
@@ -819,7 +833,8 @@ async function pruneStaleActiveFiles(registry: UploadedFileRegistryItem[]): Prom
         return f;
     });
     if (changed) {
-        await saveSalesFilesRegistry(pruned);
+        // Chỉ là đánh dấu "hết hạn lưu giữ" — ghi hỏng thì lần mở sau làm lại, không chặn việc mở app.
+        await saveSalesFilesRegistry(pruned).catch(err => console.warn('[IDB] Không lưu được registry sau khi lọc hạn lưu giữ', err));
     }
     return pruned;
 }

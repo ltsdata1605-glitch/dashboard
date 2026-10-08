@@ -173,6 +173,10 @@ export const useFileUploadLogic = ({
         setIsProcessing(true);
         startTimer();
         
+        // Audit D11/DATA08: tệp lịch sử vừa ghi dữ liệu nhưng registry chưa lưu được thì phải dọn — không thì
+        // nằm lại trong IndexedDB mà không mục lục nào trỏ tới (chiếm dung lượng — đúng thứ vừa làm lưu hỏng).
+        const newFileIds: string[] = [];
+        let registrySaved = false;
         try {
             const registry = await dbService.getSalesFilesRegistry();
             const updatedRegistry = [...registry];
@@ -488,6 +492,7 @@ export const useFileUploadLogic = ({
                     // Save this file's data to IDB
                     const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                     await dbService.saveSalesFileData(fileId, parsedData, jsonGocKhop && rawChunks ? rawChunks : undefined);
+                    newFileIds.push(fileId);
                     
                     // Add metadata to registry
                     updatedRegistry.push({
@@ -519,8 +524,9 @@ export const useFileUploadLogic = ({
             }
             
             if (isHistorical) {
-                // Save registry
+                // Save registry — ném lỗi nếu không lưu được (trước đây nuốt lỗi rồi vẫn báo thành công)
                 await dbService.saveSalesFilesRegistry(updatedRegistry);
+                registrySaved = true;
             } else {
                 // Determine combined filename for realtime
                 let realtimeFilename = '';
@@ -599,6 +605,9 @@ export const useFileUploadLogic = ({
         } catch (error) {
             const errorMsg = error instanceof Error ? error.message : "Lỗi khi xử lý danh sách file";
             console.error(errorMsg, error);
+            if (!registrySaved && newFileIds.length > 0) {
+                await Promise.all(newFileIds.map(id => dbService.deleteSalesFileData(id).catch(() => undefined)));
+            }
             setStatus({ message: errorMsg, type: 'error', progress: 0 });
             // Re-load existing merged data if any, otherwise return to upload
             const merged = await dbService.getMergedSalesData();
