@@ -32,15 +32,35 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
         }
     }
 
+    const uniqueSafeNames = Array.from(new Set(activeSupermarkets.map(sm => shortenSupermarketName(sm))));
     const employeeSupermarketMap: Record<string, string> = {};
     const seen = new Set<string>();
     const employees: Employee[] = [];
 
-    // 1. Quét từ danh sách Phân tích nếu có
+    // Tập hợp danh sách nhân viên ẩn từ các siêu thị active
+    const hiddenEmployeesSet = new Set<string>();
+    for (const safeName of uniqueSafeNames) {
+        try {
+            const hidden = await db.get<string[]>(`hidden-employees-${safeName}`) || [];
+            hidden.forEach(h => {
+                if (h) {
+                    hiddenEmployeesSet.add(h);
+                    hiddenEmployeesSet.add(standardizeEmployeeName(h));
+                }
+            });
+        } catch {
+            // ignore
+        }
+    }
+
+    // 1. QUY TẮC CỐT LÕI: Luôn luôn và duy nhất lấy danh sách nhân viên từ chức năng Phân tích (departmentMap / analysis-employees-list)
     try {
         const analysisPayload = await getAnalysisEmployees();
         if (analysisPayload?.employees && analysisPayload.employees.length > 0) {
             for (const emp of analysisPayload.employees) {
+                if (hiddenEmployeesSet.has(emp.originalName) || hiddenEmployeesSet.has(standardizeEmployeeName(emp.originalName))) {
+                    continue;
+                }
                 const dept = (emp.department || '').trim();
                 if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept)) continue;
                 const canonical = standardizeEmployeeName(emp.originalName);
@@ -54,8 +74,12 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
                     });
                     if (emp.supermarket) {
                         employeeSupermarketMap[emp.originalName] = emp.supermarket;
+                        employeeSupermarketMap[canonical] = emp.supermarket;
+                        if (emp.id) employeeSupermarketMap[emp.id] = emp.supermarket;
                     } else if (activeSupermarkets.length > 0) {
                         employeeSupermarketMap[emp.originalName] = activeSupermarkets[0];
+                        employeeSupermarketMap[canonical] = activeSupermarkets[0];
+                        if (emp.id) employeeSupermarketMap[emp.id] = activeSupermarkets[0];
                     }
                 }
             }
@@ -64,8 +88,8 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
         console.warn('[GlobalBonusService] Lỗi đọc nhân viên từ Phân tích:', e);
     }
 
-    // 2. Quét từ config-${safeName}-danhsach của các siêu thị active
-    const uniqueSafeNames = Array.from(new Set(activeSupermarkets.map(sm => shortenSupermarketName(sm))));
+    // 2. Quét config-${safeName}-danhsach của các siêu thị active CHỈ ĐỂ ánh xạ siêu thị (employeeSupermarketMap)
+    // TUYỆT ĐỐI KHÔNG thêm nhân viên mới ngoài danh sách Phân tích vào mảng employees!
     for (const safeName of uniqueSafeNames) {
         try {
             const rawDS = await db.get<string>(`config-${safeName}-danhsach`) || '';
@@ -89,15 +113,6 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
             for (const emp of parsed) {
                 const canonical = standardizeEmployeeName(emp.originalName);
                 const empId = extractEmployeeId(emp.originalName);
-                const dedupKey = empId || canonical;
-                if (!seen.has(dedupKey)) {
-                    seen.add(dedupKey);
-                    employees.push({
-                        name: emp.name || formatEmployeeName(emp.originalName),
-                        originalName: emp.originalName,
-                        department: (emp as any).department || '',
-                    });
-                }
                 employeeSupermarketMap[emp.originalName] = originalSm;
                 employeeSupermarketMap[canonical] = originalSm;
                 if (empId) employeeSupermarketMap[empId] = originalSm;
@@ -111,50 +126,8 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
         }
     }
 
-    // 3. Dự phòng: Nếu vẫn chưa có nhân viên nào, quét tất cả key config-*-danhsach có sẵn trong DB
-    if (employees.length === 0) {
-        try {
-            const all = await db.getAll();
-            const dsEntries = all.filter(entry => entry.key.startsWith('config-') && entry.key.endsWith('-danhsach'));
-            for (const entry of dsEntries) {
-                const safeName = entry.key.replace(/^config-/, '').replace(/-danhsach$/, '');
-                const rawDS = (entry.value as string) || '';
-                const hidden = await db.get<string[]>(`hidden-employees-${safeName}`) || [];
-                let parsed = parseAllEmployees(rawDS, hidden);
-                if (parsed.length === 0 && rawDS) {
-                    const lines = rawDS.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-                    const fallbackList: { name: string; originalName: string; department: string }[] = [];
-                    for (const line of lines) {
-                        const parts = line.split('\t').map(p => p.trim());
-                        const namePart = parts.find(p => p.includes(' - ') && !p.startsWith('BP ') && !p.includes('http'));
-                        if (namePart) {
-                            const canonical = standardizeEmployeeName(namePart);
-                            fallbackList.push({ name: formatEmployeeName(canonical), originalName: canonical, department: '' });
-                        }
-                    }
-                    if (fallbackList.length > 0) parsed = fallbackList;
-                }
-                for (const emp of parsed) {
-                    const canonical = standardizeEmployeeName(emp.originalName);
-                    const empId = extractEmployeeId(emp.originalName);
-                    const dedupKey = empId || canonical;
-                    if (!seen.has(dedupKey)) {
-                        seen.add(dedupKey);
-                        employees.push({
-                            name: emp.name || formatEmployeeName(emp.originalName),
-                            originalName: emp.originalName,
-                            department: (emp as any).department || '',
-                        });
-                    }
-                    if (!employeeSupermarketMap[emp.originalName]) {
-                        employeeSupermarketMap[emp.originalName] = safeName;
-                    }
-                }
-            }
-        } catch (e) {
-            console.warn('[GlobalBonusService] Lỗi quét dự phòng config-*-danhsach:', e);
-        }
-    }
+    // Sắp xếp danh sách nhân viên theo bảng chữ cái
+    employees.sort((a, b) => a.name.localeCompare(b.name));
 
     return { employees, supermarkets: activeSupermarkets, employeeSupermarketMap };
 }

@@ -17,13 +17,27 @@ vi.mock('../utils/db', () => {
     };
 });
 
+vi.mock('./analysisEmployeeSyncService', () => ({
+    getAnalysisEmployees: vi.fn(),
+    isSystemOrIgnoredEmployee: vi.fn(() => false),
+}));
+
 describe('globalBonusService', () => {
     beforeEach(() => {
         (db as any)._store.clear();
         vi.clearAllMocks();
     });
 
-    it('retrieves employees from config-*-danhsach when no analysis payload exists', async () => {
+    it('retrieves ONLY employees from analysis payload, mapping supermarket without including non-analysis employees', async () => {
+        const { getAnalysisEmployees } = await import('./analysisEmployeeSyncService');
+        vi.mocked(getAnalysisEmployees).mockResolvedValueOnce({
+            totalCount: 1,
+            updatedAt: Date.now(),
+            employees: [
+                { id: '111395', name: 'Nguyễn Văn A', originalName: '111395 - Nguyễn Văn A', department: 'Tư Vấn' }
+            ]
+        });
+
         const rawDS = `
 1	111395 - Nguyễn Văn A	100,000,000
 2	222456 - Trần Thị B	150,000,000
@@ -32,9 +46,26 @@ describe('globalBonusService', () => {
         await db.set('config-Hùng Vương-danhsach', rawDS);
 
         const res = await getGlobalBonusEmployees();
-        expect(res.employees.length).toBe(2);
-        expect(res.employees[0].originalName).toContain('111395');
+        // CHỈ lấy nhân viên trong danh sách Phân Tích (1 người, không lấy Trần Thị B từ Report BI)
+        expect(res.employees.length).toBe(1);
+        expect(res.employees[0].originalName).toBe('111395 - Nguyễn Văn A');
+        // Ánh xạ siêu thị vẫn thành công
         expect(res.employeeSupermarketMap['111395 - Nguyễn Văn A']).toBe('Hùng Vương');
+        expect(res.employeeSupermarketMap['222456 - Trần Thị B']).toBe('Hùng Vương');
+    });
+
+    it('returns empty employee list when no analysis payload exists', async () => {
+        const { getAnalysisEmployees } = await import('./analysisEmployeeSyncService');
+        vi.mocked(getAnalysisEmployees).mockResolvedValueOnce(null);
+
+        const rawDS = `
+1	111395 - Nguyễn Văn A	100,000,000
+`;
+        await db.set('nhanvien-active-supermarkets', ['Hùng Vương']);
+        await db.set('config-Hùng Vương-danhsach', rawDS);
+
+        const res = await getGlobalBonusEmployees();
+        expect(res.employees.length).toBe(0);
     });
 
     it('saves bonus batch entries directly to correct supermarket storage keys', async () => {
