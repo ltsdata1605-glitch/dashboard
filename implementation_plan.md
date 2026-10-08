@@ -7407,3 +7407,20 @@ này trong code tạo tài khoản). Superadmin dùng tài khoản `@example.com
 - **Ratchet mới**: `rawOverlay` 27, `tinyText` 82, `offScaleRadius` 11 (chỉ được giảm; thử file dò → chặn 0→1).
 - Kiểm chứng: `npm run check` xanh (1115 unit), e2e `chuan-thiet-ke-b` (đo computed style), `css-pham-vi-va-vung-cham`.
 - **Còn lại** (dọn dần khi chạm file): 27 modal tự dựng, 44 chữ <11px ngoài xem trước LINE, 11 bo góc ngoài thang.
+
+## Audit 2026-10-07 — Giai đoạn 5: Safari iOS & laptop
+
+| Mục | Sửa | Đo trước → sau | Kiểm chứng |
+|---|---|---|---|
+| **In tem trên điện thoại HỎNG HOÀN TOÀN** (phát hiện khi viết test) | `printService.ts`: dựng tem trong **iframe cách ly** thay vì `<div>` trong trang | Trước: html2canvas ném `unsupported color function "oklch"` (màu Tailwind v4 kế thừa từ body) → mọi lượt in trên điện thoại báo "Không thể tạo tệp". Sau: tạo PDF đúng | e2e `sticker-pdf-dien-thoai` (đỏ trên code cũ) |
+| Chữ tem chồng nhau | canvas tạo TRONG iframe dựng (+ đặt cỡ = khung × scale); `onclone` chờ phông của bản sao; nới đệm chân chữ chỉ trong bản sao | "Sảnphẩm1001" (vẽ Arial theo vị trí xếp bằng Oswald, cắt chân chữ) → "Sản phẩm 1001" đúng Oswald như bản trình duyệt tự vẽ | so ảnh PDF (pdftoppm) với ảnh chụp trình duyệt |
+| IOS-01 PDF xem trước trắng | `data:` URI → **Blob URL**; CSP `frame-src`/`connect-src` thêm `blob:`; thu hồi URL khi thay/đóng; modal có **Mở** / **Chia sẻ** (bảng chia sẻ iOS) / **Tải xuống** | 0 vi phạm CSP, file `%PDF-` `application/pdf` | e2e `sticker-pdf-dien-thoai` (3 bài, gồm bill 80mm = 3 trang) |
+| IOS-08 dựng PDF lỗi giữa chừng | `try/finally` gỡ khung dựng; ảnh chờ tối đa 8s; phông chờ tối đa 5s | Lỗi canvas → khung ẩn còn lại 0 | e2e (giả lập canvas hỏng) |
+| IOS-02 camera chạy sau khi đóng | `Scanner.tsx`: cờ `disposed` sau mỗi `await`, start hoàn tất muộn thì tự stop; đổi camera cũng kiểm | getUserMedia chậm 1,5s, đóng giữa chừng: **2 → 0** luồng camera còn chạy | e2e `sticker-camera-tat-khi-dong` (đỏ trên code cũ) |
+| IOS-04 menu "Khác" xoay ngang | trần `100dvh`, đầu khung cố định, danh sách cuộn, `role=dialog`, Esc đóng | 844×390: khung cao 515px, đỉnh −124px (mất nút đóng) → cao 378px, đỉnh 12px | e2e `menu-khac-xoay-ngang` (đỏ trên code cũ) |
+| IOS-05 khoá phóng to | bỏ `user-scalable=no`, GIỮ `maximum-scale=1` (iOS: chỉ chặn tự phóng khi chạm ô nhập, vẫn phóng 2 ngón được) | — | — |
+| WebKit CI | thêm 2 bước `sticker-pdf-dien-thoai`, `menu-khac-xoay-ngang` vào job `e2e-webkit` | — | CI |
+
+**Chưa làm:** service worker offline (IOS-07 — chỉ làm nếu chủ dự án cần mở app khi mất mạng).
+**Cần iPhone thật** (Playwright không giả được): quyền camera + đèn xanh tắt khi đóng máy quét; nút Mở/Chia sẻ PDF;
+in tem ra máy in; Google đăng nhập; mở từ Màn hình chính; chuyển nền rồi quay lại; phóng to 2 ngón.

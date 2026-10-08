@@ -308,6 +308,14 @@ jobs:
       - name: 'WebKit: So giá điện thoại'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/so-gia-dien-thoai-va-huy.spec.ts --project=webkit --output=test-results/wk-so-gia
+      # Audit GĐ5 (2026-10-08): 2 lỗi chỉ lộ trên điện thoại — in tem PDF (html2canvas + CSP blob:) và menu
+      # "Khác" khi xoay ngang. Chạy cả trên engine của Safari.
+      - name: 'WebKit: in tem PDF trên điện thoại'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/sticker-pdf-dien-thoai.spec.ts --project=webkit --output=test-results/wk-pdf
+      - name: 'WebKit: menu Khác xoay ngang'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/menu-khac-xoay-ngang.spec.ts --project=webkit --output=test-results/wk-menu-khac
       - name: Lưu báo cáo khi đỏ
         if: failure()
         uses: actions/upload-artifact@v4
