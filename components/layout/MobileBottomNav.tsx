@@ -6,6 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 import { AppIcon, type IconName } from '../shared/ui/icon';
 import { NAV_TAB_ICONS } from './navIcons';
+import { MotionOverlay } from '../shared/ui/Overlay';
 
 const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
@@ -56,12 +57,13 @@ const MobileBottomNav: React.FC = React.memo(() => {
             <AnimatePresence>
                 {isMoreOpen && (
                     <>
-                        <motion.div
+                        <MotionOverlay
+                            kind="scrim"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => setIsMoreOpen(false)}
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[199]"
+                            className="bg-black/40 backdrop-blur-sm z-[199]"
                         />
                         <motion.div
                             initial={{ y: '100%' }}

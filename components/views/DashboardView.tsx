@@ -60,6 +60,7 @@ import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } f
 import { DebugPanel } from '../common/DebugPanel';
 import type { DebugInfo } from '../common/DebugPanel';
 import { canShareFiles } from '../../services/uiService';
+import { Overlay } from '../shared/ui/Overlay';
 
 const defaultVisibilityState: VisibilityState = {
     trendChart: true,
@@ -718,7 +719,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             <Footer lastUpdated={processedData.lastUpdated} onToggleDebug={() => setIsDebugPanelVisible(p => !p)} onOpenChangelog={() => setActiveModal('changelog')} />
 
                             {/* Right Slide Menu Filters */}
-                            <div data-modal-overlay={isFilterSidebarOpen ? '' : undefined} className={`fixed inset-0 z-[150] transition-opacity duration-300 ${isFilterSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                            <Overlay kind="fullscreen" data-modal-overlay={isFilterSidebarOpen ? '' : undefined} className={`z-[150] transition-opacity duration-300 ${isFilterSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                                 <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsFilterSidebarOpen(false)}></div>
                                 <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500 ease-in-out transform ${isFilterSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                                     <div className="h-full flex flex-col" data-debug-id="FilterSection" data-debug-info={JSON.stringify(debugInitialData.FilterSection)}>
@@ -732,7 +733,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </Overlay>
                         </>
                     )}
                     {activeModal === 'performance' && processedData && modalData && (

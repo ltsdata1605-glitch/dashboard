@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Button } from '../ui/Button';
 import { AppIcon } from '../ui/icon/AppIcon';
+import { Overlay } from '../ui/Overlay';
 import {
     type ExportJobState, getExportState, subscribeExportState, registerExportHostMount,
     requestCancelExport, closeExportPanel,
@@ -32,14 +33,15 @@ function Panel({ s }: { s: ExportJobState }) {
     const mauThanh = xong ? (failed.length ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-sky-500';
 
     return (
-        <div
+        <Overlay
+            kind="fullscreen"
             role="dialog"
             aria-modal="true"
             aria-label={s.title}
             data-testid="export-progress"
             // id cũ của lớp phủ DOM (gốc / Phân Ca / Sticker) — giữ để test & CSS cũ còn bám được
             id="export-overlay"
-            className="fixed inset-0 z-[999990] flex items-center justify-center bg-slate-900/40 p-4"
+            className="z-[999990] flex items-center justify-center bg-slate-900/40 p-4"
         >
             <div className="w-full max-w-sm rounded-md bg-white shadow-xl border border-slate-200">
                 <div className="flex items-center gap-3 px-4 pt-4">
@@ -92,7 +94,7 @@ function Panel({ s }: { s: ExportJobState }) {
                 </div>
             </div>
             <style>{'@keyframes ycxExportIndet{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}'}</style>
-        </div>
+        </Overlay>
     );
 }
 

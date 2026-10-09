@@ -17,6 +17,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
 import { registerAutoExport } from '../../services/analysisExportDestinations';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import { FULLSCREEN_LAYER_CLASS } from '../shared/ui/Overlay';
 /** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
  *  phải mảng hoặc có phần tử rỗng → migrateColumns() ném lỗi và bảng treo mãi ở "Đang tải cấu hình
  *  cột…" (chủ dự án báo 2026-10-07). Chỉ giữ phần tử là object có `id` dạng chuỗi. */
@@ -625,7 +626,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
     return (
         <>
-            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none border-y lg:border shadow-sm lg:hover:shadow-md'}`} ref={summaryRef}>
+            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? `${FULLSCREEN_LAYER_CLASS} z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl` : 'rounded-none border-y lg:border shadow-sm lg:hover:shadow-md'}`} ref={summaryRef}>
                 {(isProcessing || isExporting) && (
                     <div className="hide-on-export">
                         <LoadingOverlay />

@@ -11,6 +11,8 @@ export { AppIcon, ICON_REGISTRY, ICON_SIZES, ICON_STROKE_WIDTH, ICON_TEXT_GAP_CL
 export type { AppIconProps, IconName, IconSize } from './icon';
 
 // Existing components
+export { Overlay, MotionOverlay } from './Overlay';
+export type { OverlayProps, OverlayKind } from './Overlay';
 export { Select } from './Select';
 export type { SelectProps } from './Select';
 export { Input } from './Input';

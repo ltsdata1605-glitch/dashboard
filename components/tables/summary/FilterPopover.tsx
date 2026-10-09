@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 're
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import ReactDOM from 'react-dom';
 import { Button } from '../../shared/ui/Button';
+import { Overlay } from '../../shared/ui/Overlay';
 
 interface FilterPopoverProps {
     label: string;
@@ -109,9 +110,9 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
             {isOpen && ReactDOM.createPortal(
                 <>
                     {/* Mobile: full-width bottom overlay */}
-                    <div className="sm:hidden fixed inset-0 bg-black/30 z-[9998]" onClick={(e) => { e.stopPropagation(); onClose(); }} />
+                    <Overlay kind="scrim" className="sm:hidden bg-black/30 z-[9998]" onClick={(e) => { e.stopPropagation(); onClose(); }} />
                     {/* Desktop: invisible overlay to catch clicks */}
-                    <div className="hidden sm:block fixed inset-0 z-[9997]" onClick={(e) => { e.stopPropagation(); onClose(); }} />
+                    <Overlay kind="scrim" className="hidden sm:block z-[9997]" onClick={(e) => { e.stopPropagation(); onClose(); }} />
                     
                     {/* Mobile: bottom sheet */}
                     <div 

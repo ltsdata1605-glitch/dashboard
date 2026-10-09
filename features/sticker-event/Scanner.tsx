@@ -3,6 +3,7 @@ import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { Button } from '../../components/shared/ui/Button';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Overlay } from '../../components/shared/ui/Overlay';
 
 /** `torch` là thuộc tính NGOÀI chuẩn (Chrome Android hỗ trợ, iOS Safari thì không) nên không có
  *  trong kiểu MediaTrackCapabilities của TypeScript — khai riêng ở đây thay vì dùng `any`. */
@@ -399,8 +400,9 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   };
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[60] bg-slate-900/40 flex flex-col items-center justify-center p-3 backdrop-blur-md overflow-y-auto"
+    <Overlay
+      kind="fullscreen"
+      className="z-[60] bg-slate-900/40 flex flex-col items-center justify-center p-3 backdrop-blur-md overflow-y-auto"
       style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0px))' }}
     >
       <style dangerouslySetInnerHTML={{ __html: `
@@ -555,7 +557,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
             <AppIcon name="close" size="md" />
           </Button>
        </div>
-    </div>,
+    </Overlay>,
     document.body
   );
 };

@@ -21,6 +21,7 @@ import { Select } from '../shared/ui/Select';
 import ExportDestinationButton from '../analysis/ExportDestinationButton';
 import { registerAutoExport } from '../../services/analysisExportDestinations';
 import { Button } from '../shared/ui/Button';
+import { Overlay } from '../shared/ui/Overlay';
 
 const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payload?: { payload: RechartsTrendData }[]; metricName: string }) => {
     if (!active || !payload?.length) return null;
@@ -503,7 +504,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               </Button>
               {trendState._filterOpen && (
                   <>
-                      <div className="fixed inset-0 z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false }))} />
+                      <Overlay kind="scrim" className="z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false }))} />
                       <div className="absolute right-0 top-full mt-1 z-[99] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[100px]">
                           {([
                               { value: 'shift', label: 'Ca' },

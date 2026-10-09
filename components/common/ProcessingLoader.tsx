@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import { Overlay } from '../shared/ui/Overlay';
 import type { Status } from '../../types';
 
 interface ProcessingLoaderProps {
@@ -46,7 +47,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
     const displayMessage = cleanStatusMessage(status.message);
 
     return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 sm:p-6 animate-fade-in select-none">
+        <Overlay kind="busy" className="z-[1000] flex items-center justify-center p-4 sm:p-6 animate-fade-in select-none">
             {/* Light/Dark translucent backdrop with deep blur */}
             <div className="absolute inset-0 bg-slate-900/30 dark:bg-slate-950/70 backdrop-blur-xl transition-all duration-500"></div>
 
@@ -144,7 +145,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                     </div>
                 </div>
             </div>
-        </div>
+        </Overlay>
     );
 };
 

@@ -36,6 +36,7 @@ import { useStickerEventDb } from './hooks/useStickerEventDb';
 import { useStickerEventFile } from './hooks/useStickerEventFile';
 import { useStickerEventPrint } from './hooks/useStickerEventPrint';
 import { useStickerEventState } from './hooks/useStickerEventState';
+import { Overlay } from '../../components/shared/ui/Overlay';
 
 export default function App(): React.JSX.Element {
   // 1. Authentication Hook
@@ -883,10 +884,10 @@ export default function App(): React.JSX.Element {
         )}
 
         {isPrinting && (
-          <div data-modal-overlay="" className="fixed inset-0 z-50 bg-slate-900/30 flex flex-col items-center justify-center backdrop-blur-md">
+          <Overlay kind="busy" data-modal-overlay="" className="z-50 bg-slate-900/30 flex flex-col items-center justify-center backdrop-blur-md">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-sky-400"></div>
             <p className="text-white mt-4 text-lg font-medium">Đang tạo tệp PDF...</p>
-          </div>
+          </Overlay>
         )}
 
         <SaveListModal

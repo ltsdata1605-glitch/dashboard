@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import { Overlay } from '../shared/ui/Overlay';
 
 /**
  * A sleek, minimal overlay that appears over the dashboard content
@@ -27,8 +28,9 @@ const FilterProcessingOverlay: React.FC<{ isVisible: boolean }> = ({ isVisible }
     if (!show) return null;
 
     return (
-        <div
-            className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity duration-200 ${
+        <Overlay
+            kind="busy"
+            className={`z-[9999] flex items-center justify-center transition-opacity duration-200 ${
                 fadeIn ? 'opacity-100' : 'opacity-0'
             }`}
             style={{ pointerEvents: 'auto' }}
@@ -77,7 +79,7 @@ const FilterProcessingOverlay: React.FC<{ isVisible: boolean }> = ({ isVisible }
                     50% { opacity: 1; transform: scale(1.2); }
                 }
             `}</style>
-        </div>
+        </Overlay>
     );
 };
 

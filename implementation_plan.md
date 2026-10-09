@@ -7578,3 +7578,12 @@ Chuyển `AddIndustryKpiModal` và `AvatarPickerModal`. Avatar: modal nằm tron
 **Không phải hộp thoại — để bước "lớp phủ chờ"**: `features/sticker-event/Scanner.tsx` (khung camera toàn màn hình) và màn chờ "Đang tạo tệp PDF" trong `StickerEventApp.tsx`.
 Còn 17: nạp mã giảm giá (2 lớp) + CouponManagerTab (Bot LINE); lớp phủ chờ/tiến trình (ExportLoader, ProcessingLoader, FilterProcessingOverlay, ExportProgressHost, Scanner, màn chờ PDF, DashboardView, SummaryTable, WarehouseSummary, TrendChart, MobileBottomNav, SettingsAccountTab, FilterPopover ×2).
 
+### GĐ4 — lớp phủ không phải hộp thoại: `<Overlay>` dùng chung (rawOverlay 17 → 3)
+`components/shared/ui/Overlay.tsx` (+ `MotionOverlay`, hằng `FULLSCREEN_LAYER_CLASS`): 3 loại — `busy` (màn chờ: `role=status`, `aria-busy`),
+`scrim` (lớp nền bắt click-ra-ngoài: `aria-hidden`), `fullscreen` (khung phủ kín có nội dung riêng). Giao diện từng chỗ giữ nguyên (màu/z-index truyền qua className).
+Đã chuyển: ExportLoader, ProcessingLoader, FilterProcessingOverlay, ExportProgressHost, màn chờ PDF In Sticker (busy/fullscreen); Scanner camera, ngăn lọc DashboardView (fullscreen);
+TrendChart, FilterPopover ×2, MobileBottomNav (scrim); SummaryTable/WarehouseSummary dùng `FULLSCREEN_LAYER_CLASS` vì lúc phủ lúc không. `SettingsAccountTab`: hộp xác nhận xoá tự dựng → `ConfirmDialog` (danger) dùng chung.
+Kiểm: `Overlay.test.ts` 4 ca; e2e xuất ảnh/Sticker/menu Khác/chuẩn thiết kế 44 ca xanh; audit iPhone 13 màn xanh; `npm run check` xanh.
+Chưa có test riêng: ngăn lọc DashboardView và hộp xoá dữ liệu ở Cài đặt (cần tài khoản đăng nhập) — nên liếc tay.
+**Còn 3** (đều là Bot LINE): `CouponImportModal` (2 lớp) và `CouponManagerTab`.
+

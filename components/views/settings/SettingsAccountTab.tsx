@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../shared/ui/Modal';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useActiveTab } from '../../../contexts/LayoutContext';
@@ -34,8 +33,6 @@ export const SettingsAccountTab: React.FC = () => {
     const [isResetting, setIsResetting] = useState(false);
     const [isConfirmDoiKhoOpen, setIsConfirmDoiKhoOpen] = useState(false);
     // Hộp xác nhận "xoá toàn bộ dữ liệu" (tự dựng — audit A34): hành vi modal chuẩn; không đóng khi đang xoá.
-    const hopResetRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isResetModalOpen, () => { if (!isResetting) setIsResetModalOpen(false); }, hopResetRef);
 
     // "Xoá tất cả dữ liệu" xoá kèm báo cáo Luỹ kế & Thi đua DÙNG CHUNG của Kho — CHỈ khi là quản lý,
     // CHỈ đúng Kho của họ. Admin / Super Admin KHÔNG BAO GIỜ xoá: Kho gắn thêm của Super Admin (vd 910)
@@ -367,21 +364,19 @@ export const SettingsAccountTab: React.FC = () => {
                 </>}
             />
 
-            {/* Modal xác nhận xoá toàn bộ dữ liệu như người dùng mới */}
-            {isResetModalOpen && (
-                <div data-modal-overlay="" className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-                    <div ref={hopResetRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá toàn bộ dữ liệu" tabIndex={-1} className="outline-none bg-white dark:bg-slate-850 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 space-y-4">
-                        <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                            <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 shrink-0">
-                                <AppIcon name="delete" size="xl" />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-slate-800 dark:text-white">Xoá Tất Cả Dữ Liệu</h3>
-                                <p className="text-xs text-rose-500 font-medium">Khởi tạo trạng thái người dùng mới hoàn toàn</p>
-                            </div>
-                        </div>
-
-                        <div className="text-xs text-slate-600 dark:text-slate-300 space-y-2 leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800">
+            {/* Xác nhận xoá toàn bộ dữ liệu như người dùng mới — ConfirmDialog dùng chung (danger) */}
+            <ConfirmDialog
+                isOpen={isResetModalOpen}
+                onClose={() => { if (!isResetting) setIsResetModalOpen(false); }}
+                onConfirm={handleConfirmResetData}
+                isLoading={isResetting}
+                variant="danger"
+                zIndex="z-[9999]"
+                title="Xoá Tất Cả Dữ Liệu"
+                confirmText="Xác nhận xoá sạch"
+                cancelText="Hủy bỏ"
+                message={
+                    <div className="text-xs text-slate-600 space-y-2 leading-relaxed text-left">
                             <p>
                                 Hành động này sẽ <strong>xoá sạch toàn bộ dữ liệu cục bộ</strong> đã lưu trên thiết bị (Doanh thu, Phân ca, Báo cáo khai thác, Lịch sử tính thuế, Cấu hình siêu thị, Dữ liệu tạm...).
                             </p>
@@ -396,41 +391,9 @@ export const SettingsAccountTab: React.FC = () => {
                             <p className="text-slate-500 dark:text-slate-400">
                                 Ứng dụng sẽ trở về trạng thái ban đầu như một <strong>người dùng mới hoàn toàn</strong>. Tài khoản đăng nhập của bạn vẫn được giữ nguyên.
                             </p>
-                        </div>
-
-                        <div className="flex items-center justify-end gap-2.5 pt-2">
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                disabled={isResetting}
-                                onClick={() => setIsResetModalOpen(false)}
-                                className="px-4 py-2 text-xs font-semibold cursor-pointer"
-                            >
-                                Hủy bỏ
-                            </Button>
-                            <Button
-                                variant="unstyled"
-                                size="none"
-                                disabled={isResetting}
-                                onClick={handleConfirmResetData}
-                                className="px-4 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-all shadow-sm flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
-                            >
-                                {isResetting ? (
-                                    <>
-                                        <AppIcon name="refresh" size="sm" spin />
-                                        <span>Đang xoá...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <AppIcon name="delete" size="sm" />
-                                        <span>Xác nhận xoá sạch</span>
-                                    </>
-                                )}
-                            </Button>
-                        </div>
                     </div>
-                </div>
-            )}
+                }
+            />
         </div>
     );
 };
