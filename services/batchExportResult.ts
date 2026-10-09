@@ -1,10 +1,10 @@
 /**
- * Kết quả xuất ảnh HÀNG LOẠT của Phân tích (xuất theo NV, xuất theo Kho) — hàm thuần, test bằng Node.
+ * Kết quả xuất ảnh HÀNG LOẠT của Phân tích (xuất theo NV, theo ngành…) — hàm thuần, test bằng Node.
  *
  * Vì sao có file này (audit A03/A04, 2026-09-29): hai luồng batch trong hooks/useExportLogic.ts bỏ
  * qua kết quả từng ảnh — ảnh chụp lỗi (exportElementAsImage trả null) không được báo, người dùng
- * tưởng đã đủ ảnh. Batch theo Kho còn chụp tiếp sau khi hết giờ chờ dữ liệu → ảnh mang tên Kho B
- * nhưng số liệu Kho A mà không có dấu hiệu gì.
+ * tưởng đã đủ ảnh. (Luồng "xuất hàng loạt theo Kho" cùng các hàm chờ dữ liệu Kho đã gỡ 2026-10-09 — nút
+ * của nó bị bỏ khỏi giao diện từ 9649dc7e.)
  */
 
 export interface BatchItemOutcome {
@@ -12,33 +12,6 @@ export interface BatchItemOutcome {
     label: string;
     ok: boolean;
     error?: string;
-}
-
-/** Hai lựa chọn Kho có giống nhau không (bỏ qua thứ tự). `[]` = tất cả Kho. */
-export function sameKhoSelection(a: readonly string[] | null | undefined, b: readonly string[]): boolean {
-    if (!a) return false;
-    if (a.length !== b.length) return false;
-    const setA = new Set(a);
-    return b.every(k => setA.has(k));
-}
-
-/**
- * Chờ tới khi `check()` đúng, tối đa `timeoutMs`. Trả về false khi hết giờ — người gọi PHẢI coi đó
- * là lỗi của mục đang xuất, không được chụp tiếp bằng dữ liệu cũ.
- */
-export async function waitUntil(
-    check: () => boolean,
-    opts: { timeoutMs: number; intervalMs?: number; sleep?: (ms: number) => Promise<void>; now?: () => number },
-): Promise<boolean> {
-    const sleep = opts.sleep ?? ((ms: number) => new Promise<void>(r => setTimeout(r, ms)));
-    const now = opts.now ?? (() => Date.now());
-    const interval = opts.intervalMs ?? 100;
-    const start = now();
-    while (!check()) {
-        if (now() - start >= opts.timeoutMs) return false;
-        await sleep(interval);
-    }
-    return true;
 }
 
 const MAX_LISTED = 5;

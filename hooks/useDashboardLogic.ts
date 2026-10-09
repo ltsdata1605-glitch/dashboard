@@ -56,7 +56,6 @@ export const useDashboardLogic = () => {
         kpiTargets, updateKpiTargets: updateKpiTargetsRaw,
         isInternalProcessing,
         isFilterProcessing,
-        processedFilterState,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync: handleAcceptCloudSyncRaw,
@@ -107,18 +106,13 @@ export const useDashboardLogic = () => {
 
     // 6. Export Logic
     const {
-        isExporting, handleExport, handleBatchExport, handleBatchKhoExport,
+        isExporting, handleExport, handleBatchExport,
         pendingExport, handlePendingDownload, handlePendingShare, handlePendingClose,
         handleExportUncollectedSheet
     } = useExportLogic({
         productConfig,
         processedData,
-        uniqueFilterOptions,
-        filterState,
-        handleFilterChange,
         setStatus,
-        isFilterProcessing,
-        processedFilterState
     });
 
     // Removed repopulating filter state effects here because they caused 
@@ -284,7 +278,6 @@ export const useDashboardLogic = () => {
         pendingConflict, setPendingConflict,
         openPerformanceModal, openUnshippedModal, handleExport,
         handleBatchExport,
-        handleBatchKhoExport,
         handleExportUncollectedSheet,
         pendingExport,
         handlePendingDownload,
@@ -330,7 +323,7 @@ export const useDashboardLogic = () => {
         activeModal, modalData,
         stableHandleClearDepartments, stableHandleClearData, stableHandleClearAllData, stableHandleShiftFileProcessing, stableHandleFileProcessing,
         pendingNaming, pendingConflict,
-        openPerformanceModal, openUnshippedModal, handleExport, handleBatchExport, handleBatchKhoExport, handleExportUncollectedSheet,
+        openPerformanceModal, openUnshippedModal, handleExport, handleBatchExport, handleExportUncollectedSheet,
         pendingExport, handlePendingDownload, handlePendingShare, handlePendingClose,
         isLuyKe, handleLuyKeChange,
         processingTime,

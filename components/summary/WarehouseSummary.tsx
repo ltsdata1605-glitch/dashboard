@@ -71,15 +71,11 @@ const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnCo
     }));
 };
 
-interface WarehouseSummaryProps {
-    onBatchExport?: () => Promise<void>;
-}
-
 // PERF FIX: nhận dữ liệu qua props tường minh (Pick từ DashboardContextType — đảm bảo type luôn
 // khớp đúng nguồn, không tự gõ lại type dễ lệch) thay vì tự useDashboardContext() bên trong —
 // cùng pattern đã dùng đúng ở TrendChart/IndustryGrid (Outer gọi context 1 lần → Inner chỉ nhận
 // props → React.memo có tác dụng thật, không re-render khi phần KHÔNG liên quan của context đổi).
-type WarehouseSummaryInnerProps = WarehouseSummaryProps & Pick<DashboardContextType,
+type WarehouseSummaryInnerProps = Pick<DashboardContextType,
     | 'processedData' | 'productConfig' | 'originalData' | 'warehouseFilteredData'
     | 'handleExport' | 'isExporting' | 'isProcessing' | 'uniqueFilterOptions'
     | 'warehouseTargets' | 'updateWarehouseTarget' | 'warehouseDTThucTargets'
@@ -88,7 +84,6 @@ type WarehouseSummaryInnerProps = WarehouseSummaryProps & Pick<DashboardContextT
 >;
 
 const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo(({
-    onBatchExport,
     processedData, productConfig, originalData, warehouseFilteredData,
     handleExport, isExporting, isProcessing, uniqueFilterOptions,
     warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets,
@@ -1493,7 +1488,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 });
 WarehouseSummaryInner.displayName = 'WarehouseSummaryInner';
 
-const WarehouseSummary: React.FC<WarehouseSummaryProps> = React.memo(({ onBatchExport }) => {
+const WarehouseSummary: React.FC = React.memo(() => {
     const {
         processedData, productConfig, originalData, warehouseFilteredData,
         handleExport, isExporting, isProcessing, uniqueFilterOptions,
@@ -1504,7 +1499,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = React.memo(({ onBatchE
 
     return (
         <WarehouseSummaryInner
-            onBatchExport={onBatchExport}
             processedData={processedData}
             productConfig={productConfig}
             originalData={originalData}

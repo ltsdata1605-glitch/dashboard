@@ -89,7 +89,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         configUrl, setConfigUrl, uniqueFilterOptions,
         activeModal, setActiveModal, modalData,
         handleClearDepartments, handleClearData, handleClearAllData, handleShiftFileProcessing, handleFileProcessing,
-        openUnshippedModal, handleExport, handleBatchKhoExport, handleExportUncollectedSheet,
+        openUnshippedModal, handleExport, handleExportUncollectedSheet,
         filterState,
         processingTime,
         handleFilterChange,
@@ -567,7 +567,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
                                         {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
                                             <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
-                                                <WarehouseSummary onBatchExport={handleBatchKhoExport} />
+                                                <WarehouseSummary />
                                             </div>
                                         )}
 

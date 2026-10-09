@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
+import type { Employee, ProcessedData, ProductConfig, PendingExport } from '../types';
 import { offerBatchShare, type BatchShareFile } from '../components/shared/ui/BatchShareToast';
 import { isMobileLikeDevice } from '../utils/dataUtils';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles } from '../services/uiService';
@@ -16,7 +16,7 @@ import {
     getReportCommand, sanitizeReportCommand, type ExportDestination,
     LINE_EXPORT_TEMPORARILY_DISABLED
 } from '../services/analysisExportDestinations';
-import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../services/batchExportResult';
+import { describeBatchOutcome } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
 
 // Khớp phần destructure của exportElementAsImage (services/uiService.ts) — hàm đó vẫn nhận any,
@@ -47,16 +47,7 @@ export const LINE_EXPORT_SCALE_DESKTOP = 3;
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
     processedData: ProcessedData | null;
-    uniqueFilterOptions: { kho: string[] };
-    filterState: FilterState;
-    handleFilterChange: (newFilters: Partial<FilterState>) => void;
     setStatus: (status: { message: string; type: 'info' | 'success' | 'error'; progress: number }) => void;
-    /** Cờ Worker đang tính lại processedData sau khi đổi filter — dùng để handleBatchKhoExport
-     *  đợi ĐÚNG lúc dữ liệu Kho mới đã sẵn sàng thay vì chỉ dựa vào timeout cố định. */
-    isFilterProcessing?: boolean;
-    /** Bộ lọc mà processedData đang hiển thị được tính cho (useDataManagement) — batch theo Kho chỉ
-     *  chụp khi nó ĐÚNG là filterState hiện tại (cùng object) và đúng Kho yêu cầu. */
-    processedFilterState?: FilterState | null;
 }
 
 /** Báo kết quả batch theo số ảnh xuất được THẬT (audit A03/A04). */
@@ -92,38 +83,14 @@ const taoBoGomAnh = () => {
     };
 };
 
-const nextFrame = () => new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-
 export const useExportLogic = ({
     productConfig,
     processedData,
-    uniqueFilterOptions,
-    filterState,
-    handleFilterChange,
     setStatus,
-    isFilterProcessing,
-    processedFilterState
 }: ExportLogicProps) => {
     const { user, departmentId } = useAuth();
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
-
-    // Ref gương của isFilterProcessing — handleBatchKhoExport là 1 useCallback chạy vòng lặp
-    // async dài, closure của nó chỉ thấy giá trị prop LÚC TẠO callback, không tự cập nhật theo
-    // state mới trong lúc đang chạy. Ref cho phép đọc giá trị TƯƠI ngay trong vòng lặp.
-    const isFilterProcessingRef = useRef(isFilterProcessing);
-    useEffect(() => {
-        isFilterProcessingRef.current = isFilterProcessing;
-    }, [isFilterProcessing]);
-
-    // Cùng lý do như trên: vòng lặp batch Kho phải đọc giá trị ĐÃ COMMIT mới nhất. Cập nhật trong
-    // useEffect (chạy sau commit) nên khi 2 ref khớp nhau thì DOM đã mang dữ liệu mới.
-    const filterStateRef = useRef(filterState);
-    const processedFilterStateRef = useRef(processedFilterState);
-    useEffect(() => {
-        filterStateRef.current = filterState;
-        processedFilterStateRef.current = processedFilterState;
-    }, [filterState, processedFilterState]);
 
     const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: ExportImageOptions = {}): Promise<Blob | null> => {
         // Trả về ảnh đã dựng (null = lỗi) để luồng hàng loạt biết mục nào hỏng
@@ -315,100 +282,6 @@ export const useExportLogic = ({
         gomAnh.giao();
     }, [productConfig, processedData]);
 
-    const handleBatchKhoExport = useCallback(async () => {
-        if (uniqueFilterOptions.kho.length <= 1) {
-            setStatus({ message: 'Chỉ có một kho, không thể xuất hàng loạt.', type: 'error', progress: 0 });
-            return;
-        }
-
-        setIsExporting(true);
-        const originalKho = filterState.kho;
-
-        // Audit A03 (2026-09-29): trước đây chờ cờ isFilterProcessing về false, HẾT 8s VẪN CHỤP, và
-        // 150ms đầu chỉ là đoán cờ đã kịp bật. Nay chờ tới khi processedData được tính cho ĐÚNG
-        // filterState hiện tại (cùng object — useDataManagement gửi kèm object này theo từng lượt
-        // PROCESS) và đúng Kho yêu cầu. Hết giờ → Kho đó báo lỗi, KHÔNG chụp dữ liệu cũ.
-        const waitForKhoData = async (kho: string[], maxWaitMs = 20000): Promise<boolean> => {
-            const ready = await waitUntil(() => {
-                const current = filterStateRef.current;
-                return !isFilterProcessingRef.current
-                    && processedFilterStateRef.current === current
-                    && sameKhoSelection(current.kho, kho);
-            }, { timeoutMs: maxWaitMs, intervalMs: 100 });
-            if (!ready) return false;
-            // Đệm cho DOM vẽ lại (biểu đồ, phần tính trì hoãn) trước khi chụp — giữ như trước.
-            await nextFrame();
-            await nextFrame();
-            await new Promise(resolve => setTimeout(resolve, 300));
-            return true;
-        };
-
-        const outcomes: BatchItemOutcome[] = [];
-        const gomAnh = taoBoGomAnh();
-        let fatalError: unknown;
-        const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
-        const total = khosToExport.length + 1; // +1 for warehouse summary
-        const job = startExportJob({ title: 'Xuất báo cáo theo kho', total });
-        try {
-
-            if (!document.getElementById('business-overview') || !document.getElementById('warehouse-summary-view')) {
-                throw new Error('Không tìm thấy thành phần cần xuất (#business-overview or #warehouse-summary-view).');
-            }
-
-            // Export warehouse summary once (all khos, no highlight)
-            job.item(0, 'Đang xuất: Tổng hợp kho');
-            handleFilterChange({ kho: [] }); // Reset to show all
-            if (!(await waitForKhoData([]))) {
-                ghiKetQua(job, outcomes, { label: 'Tổng hợp kho', ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
-            } else {
-                // Tìm lại phần tử mỗi lượt — React có thể đã dựng lại nút DOM sau khi đổi bộ lọc.
-                const warehouseElement = document.getElementById('warehouse-summary-view');
-                const blob = warehouseElement ? await exportElementAsImage(warehouseElement, `Báo Cáo Kho Tổng Hợp.png`, {
-                    elementsToHide: ['.hide-on-export'],
-                    fitAllColumns: true,
-                    fitWidthToTable: true,
-                    mode: gomAnh.mode,
-                }) : null;
-                gomAnh.them(blob, 'Báo Cáo Kho Tổng Hợp.png');
-                ghiKetQua(job, outcomes, { label: 'Tổng hợp kho', ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
-            }
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            // Then export business overview per kho
-            for (let i = 0; i < khosToExport.length; i++) {
-                if (job.cancelled) break;
-                const kho = khosToExport[i];
-                job.item(i + 1, `Đang xuất: ${kho}`);
-                handleFilterChange({ kho: [kho] });
-                if (!(await waitForKhoData([kho]))) {
-                    ghiKetQua(job, outcomes, { label: kho, ok: false, error: 'Dữ liệu chưa sẵn sàng (quá thời gian chờ)' });
-                    continue;
-                }
-
-                const overviewElement = document.getElementById('business-overview');
-                const blob = overviewElement ? await exportElementAsImage(overviewElement, `Tổng Quan Kinh Doanh - ${kho}.png`, {
-                    elementsToHide: ['.hide-on-export'],
-                    captureAsDisplayed: true,
-                    mode: gomAnh.mode,
-                }) : null;
-                gomAnh.them(blob, `Tổng Quan Kinh Doanh - ${kho}.png`);
-                ghiKetQua(job, outcomes, { label: kho, ok: !!blob, error: blob ? undefined : 'Không tạo được ảnh' });
-
-                await new Promise(resolve => setTimeout(resolve, 800));
-            }
-        } catch (error) {
-            console.error("Lỗi khi xuất hàng loạt theo kho:", error);
-            fatalError = error;
-            setStatus({ message: 'Đã xảy ra lỗi trong quá trình xuất hàng loạt.', type: 'error', progress: 0 });
-        } finally {
-            handleFilterChange({ kho: originalKho });
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
-            setIsExporting(false);
-        }
-        reportBatchOutcome(job, outcomes, fatalError);
-        gomAnh.giao();
-    }, [uniqueFilterOptions, filterState, handleFilterChange, setStatus]);
-
     const handleExportUncollectedSheet = useCallback(async () => {
         if (!processedData?.uncollectedOrders || processedData.uncollectedOrders.length === 0) {
             setStatus({ message: 'Không có đơn hàng chưa thu | chưa hủy nào để xuất.', type: 'error', progress: 0 });
@@ -553,7 +426,6 @@ Link: ${url}`;
         isExporting,
         handleExport,
         handleBatchExport,
-        handleBatchKhoExport,
         handleExportUncollectedSheet,
         pendingExport,
         handlePendingDownload,

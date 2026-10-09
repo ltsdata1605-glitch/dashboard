@@ -13,8 +13,8 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * (2026-10-09) Đã GỠ bài "xuất hàng loạt theo Kho khi Worker chậm hơn 8s" (audit A03): chủ dự án bỏ nút "Xuất hàng
  * loạt" ở Báo cáo Kho từ commit 9649dc7e (2026-10-02, "chỉ chụp đúng màn đang hiển thị, không xuất hàng loạt") —
  * không còn đường nào trên giao diện tới `handleBatchKhoExport`. Bài đó từ đó bấm nhầm nút "Xuất hàng loạt báo cáo
- * chi tiết" của mục Nhân viên (getByTitle khớp chuỗi con) nên luôn đỏ. Logic chờ đúng dữ liệu Kho vẫn được kiểm ở
- * tests/unit/batch-export-result.test.ts (sameKhoSelection, waitUntil). Bật lại nút thì khôi phục bài từ git.
+ * chi tiết" của mục Nhân viên (getByTitle khớp chuỗi con) nên luôn đỏ. Cùng ngày đã dọn luôn `handleBatchKhoExport`
+ * và phần chờ dữ liệu Kho đi kèm. Muốn bật lại tính năng thì khôi phục cả code lẫn bài test này từ git (trước 2026-10-09).
  *
  * Cấu hình ngành hàng tải từ Google Sheets bị proxy của container chặn → trả file cấu hình tối
  * thiểu do test tự tạo (1 ngành ICT/Smartphone, 1 hình thức xuất tính doanh thu).
