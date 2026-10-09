@@ -28,6 +28,7 @@ interface CouponManagerTabProps {
     };
     onImportCoupons: (items: ParsedImportItem[]) => Promise<{ added: number; skipped: number }>;
     onRevokeCoupon: (id: string, reason?: string) => Promise<void>;
+    onRestoreRevokedCoupons?: () => Promise<number>;
     onDeleteCoupon: (id: string) => Promise<void>;
     onDeleteCouponsBatch?: (couponIds: string[]) => Promise<number>;
     onDeleteAllCoupons: () => Promise<number>;
@@ -50,6 +51,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     stockSummary,
     onImportCoupons,
     onRevokeCoupon,
+    onRestoreRevokedCoupons,
     onDeleteCoupon,
     onDeleteCouponsBatch,
     onDeleteAllCoupons,
@@ -264,15 +266,15 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     const renderActions = (c: Coupon, compact = false) => (
         <>
         <div className="flex items-center justify-end gap-0.5 sm:gap-1">
-            {c.status === 'SENT' && (
+            {(c.status === 'SENT' || c.status === 'REVOKED') && (
                 <Button
                     variant="ghost"
                     size="none"
-                    onClick={() => onRevokeCoupon(c.id)}
+                    onClick={() => onRevokeCoupon(c.id, c.status === 'REVOKED' ? 'Khôi phục về Chưa dùng' : 'Quản lý thu hồi về kho')}
                     className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
-                    title="Thu hồi về kho"
+                    title={c.status === 'REVOKED' ? 'Khôi phục về Chưa dùng (Khả dụng)' : 'Thu hồi về kho'}
                 >
-                    <AppIcon name="reset" size="sm" />
+                    <AppIcon name={c.status === 'REVOKED' ? 'check' : 'reset'} size="sm" />
                 </Button>
             )}
             <Button
@@ -395,11 +397,34 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             {/* Low stock warning banner */}
             {isLowStock && (
                 <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5 shadow-2xs">
-                    <AppIcon name="warning" size="md" className="text-amber-600" />
+                    <AppIcon name="warning" size="md" className="text-amber-600 shrink-0" />
                     <div className="text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
                         <span className="font-bold">Cảnh báo tồn kho thấp: </span>
                         Hiện tại chỉ còn <strong className="underline font-bold">{stockSummary.unused}</strong> mã chưa sử dụng. Hãy nạp thêm mã để đảm bảo phát liên tục.
                     </div>
+                </div>
+            )}
+
+            {/* Revoked coupons restore banner */}
+            {stockSummary.revoked > 0 && (
+                <div className="p-2.5 bg-sky-50 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-2xs">
+                    <div className="flex items-center gap-2">
+                        <AppIcon name="info" size="md" className="text-sky-600 shrink-0" />
+                        <div className="text-[11px] sm:text-xs text-sky-800 dark:text-sky-300">
+                            Có <strong className="font-bold">{stockSummary.revoked}</strong> mã đang ở trạng thái &ldquo;Đã thu hồi&rdquo;. Bấm nút bên cạnh để đưa tất cả về trạng thái &ldquo;Chưa dùng&rdquo; (khả dụng) cho nhân viên tiếp tục nhận mã.
+                        </div>
+                    </div>
+                    {onRestoreRevokedCoupons && (
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={onRestoreRevokedCoupons}
+                            className="shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg shadow-2xs cursor-pointer flex items-center justify-center gap-1 self-end sm:self-auto"
+                        >
+                            <AppIcon name="reset" size="xs" />
+                            Khôi phục về Chưa dùng
+                        </Button>
+                    )}
                 </div>
             )}
 

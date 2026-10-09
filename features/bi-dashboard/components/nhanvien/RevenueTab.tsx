@@ -594,6 +594,13 @@ const RevenueView: React.FC<{
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-slate-900 font-black">
+                                    {displayList.length === 0 && (
+                                        <tr>
+                                            <td colSpan={isRealtimeMode ? 10 : (isShowRemaining ? 14 : 12)} className="py-12 text-center text-slate-400 dark:text-slate-500 font-medium text-xs sm:text-sm">
+                                                Chưa có dữ liệu doanh thu nhân viên
+                                            </td>
+                                        </tr>
+                                    )}
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department' || row.type === 'total') {
                                             const isGrandTotal = row.type === 'total';

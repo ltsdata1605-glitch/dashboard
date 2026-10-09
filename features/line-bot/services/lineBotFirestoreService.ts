@@ -385,19 +385,55 @@ export const lineBotFirestoreService = {
     },
 
     /**
-     * Thu hồi mã coupon về kho trạng thái UNUSED
+     * Thu hồi mã coupon về kho trạng thái UNUSED (khả dụng để cấp tiếp)
      */
     async revokeCoupon(userId: string, couponId: string, reason = 'Quản lý thu hồi về kho'): Promise<void> {
         if (!userId || !couponId) return;
         const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', couponId);
         const now = new Date().toISOString();
         await updateDoc(docRef, {
-            status: 'REVOKED',
+            status: 'UNUSED',
+            orderId: '',
+            recipient: '',
+            recipientId: '',
             revokedAt: now,
             revokeReason: reason,
             updatedAt: now
         });
-        await this.logAudit(userId, 'REVOKE_COUPON', `Thu hồi mã coupon ID ${couponId}: ${reason}`, 'Quản lý');
+        await this.logAudit(userId, 'REVOKE_COUPON', `Thu hồi/khôi phục mã coupon ID ${couponId} về kho khả dụng: ${reason}`, 'Quản lý');
+    },
+
+    /**
+     * Khôi phục tất cả mã đang có trạng thái REVOKED về UNUSED (khả dụng)
+     */
+    async restoreRevokedCoupons(userId: string): Promise<number> {
+        if (!userId) return 0;
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'coupons');
+            const q = query(colRef, where('status', '==', 'REVOKED'));
+            const snap = await getDocs(q);
+            if (snap.empty) return 0;
+
+            const now = new Date().toISOString();
+            const batch = writeBatch(db);
+            snap.docs.forEach(d => {
+                batch.update(d.ref, {
+                    status: 'UNUSED',
+                    orderId: '',
+                    recipient: '',
+                    recipientId: '',
+                    revokedAt: now,
+                    revokeReason: 'Khôi phục về trạng thái Chưa dùng (Khả dụng)',
+                    updatedAt: now
+                });
+            });
+            await batch.commit();
+            await this.logAudit(userId, 'RESTORE_COUPONS', `Khôi phục ${snap.size} mã đã thu hồi về kho khả dụng`, 'Quản lý');
+            return snap.size;
+        } catch (err) {
+            console.error('Lỗi khi khôi phục mã REVOKED:', err);
+            return 0;
+        }
     },
 
     /**

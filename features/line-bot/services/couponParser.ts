@@ -1213,17 +1213,127 @@ export function formatSyntaxListMessage(
     return text.trim();
 }
 
-export type CouponCategory = 'EVENT' | 'GVGS' | 'ALL';
+export interface CategoryMeta {
+    id: string;
+    name: string;
+    title: string;
+    prefix: string;
+    headerColor: string;
+}
+
+/**
+ * Chuẩn hoá và nhận diện metadata nhóm PMH dựa trên type
+ */
+export function getCategoryMeta(type?: string): CategoryMeta {
+    if (!type) {
+        return {
+            id: 'EVENT',
+            name: 'Event',
+            title: 'PMH EVENT',
+            prefix: 'e',
+            headerColor: '#059669'
+        };
+    }
+    const t = type.toLowerCase().trim();
+
+    if (t.includes('giờ vàng') || t.includes('gio vang') || t.includes('gvgs') || t === 'gv' || t.startsWith('gv')) {
+        return {
+            id: 'GVGS',
+            name: 'Giờ Vàng',
+            title: 'PMH GIỜ VÀNG GIÁ SỐC',
+            prefix: 'gv',
+            headerColor: '#D97706'
+        };
+    }
+    if (t.includes('honor')) {
+        return {
+            id: 'HONOR',
+            name: 'Honor',
+            title: 'PMH HONOR',
+            prefix: 'h',
+            headerColor: '#2563EB'
+        };
+    }
+    if (t.includes('vivo')) {
+        return {
+            id: 'VIVO',
+            name: 'Vivo',
+            title: 'PMH VIVO',
+            prefix: 'v',
+            headerColor: '#0EA5E9'
+        };
+    }
+    if (t.includes('samsung')) {
+        return {
+            id: 'SAMSUNG',
+            name: 'Samsung',
+            title: 'PMH SAMSUNG',
+            prefix: 'ss',
+            headerColor: '#4F46E5'
+        };
+    }
+    if (t.includes('apple') || t.includes('iphone') || t.includes('ipad')) {
+        return {
+            id: 'APPLE',
+            name: 'Apple',
+            title: 'PMH APPLE',
+            prefix: 'ap',
+            headerColor: '#64748B'
+        };
+    }
+    if (t.includes('oppo')) {
+        return {
+            id: 'OPPO',
+            name: 'Oppo',
+            title: 'PMH OPPO',
+            prefix: 'op',
+            headerColor: '#10B981'
+        };
+    }
+    if (t.includes('xiaomi') || t.includes('redmi')) {
+        return {
+            id: 'XIAOMI',
+            name: 'Xiaomi',
+            title: 'PMH XIAOMI',
+            prefix: 'mi',
+            headerColor: '#EA580C'
+        };
+    }
+    if (t.includes('event')) {
+        return {
+            id: 'EVENT',
+            name: 'Event',
+            title: 'PMH EVENT',
+            prefix: 'e',
+            headerColor: '#059669'
+        };
+    }
+
+    // Dynamic custom type
+    const cleanId = type.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+    const words = type.trim().split(/\s+/).filter(Boolean);
+    let pfx = words.length > 1 ? words.map(w => w[0]).join('').toLowerCase().slice(0, 3) : type.trim().slice(0, 2).toLowerCase();
+    if (!pfx || ['e', 'gv', 'h', 'v', 'ss', 'ap', 'op', 'mi'].includes(pfx)) {
+        pfx = `${pfx}x`;
+    }
+
+    return {
+        id: cleanId,
+        name: type.trim(),
+        title: `PMH ${type.trim().toUpperCase()}`,
+        prefix: pfx,
+        headerColor: '#8B5CF6'
+    };
+}
+
+export type CouponCategory = 'EVENT' | 'GVGS' | 'HONOR' | 'VIVO' | 'SAMSUNG' | 'APPLE' | 'OPPO' | 'XIAOMI' | 'ALL' | string;
 
 /**
  * Kiểm tra mã thuộc nhóm PMH Event
  * (Bao gồm Event, Event Cuối Tuần, Event Lớn để tương thích ngược)
  */
 export function isEventCategory(type?: string): boolean {
-    if (!type) return true;
-    const t = type.toLowerCase().trim();
-    if (isGvgsCategory(t)) return false;
-    return true;
+    return getCategoryMeta(type).id === 'EVENT';
 }
 
 /**
@@ -1231,23 +1341,16 @@ export function isEventCategory(type?: string): boolean {
  * (Bao gồm Giờ Vàng Giá Sốc, Giờ Vàng, GVGS, GV)
  */
 export function isGvgsCategory(type?: string): boolean {
-    if (!type) return false;
-    const t = type.toLowerCase().trim();
-    return t.includes('giờ vàng') || t.includes('gio vang') || t.includes('gvgs') || t === 'gv' || t.startsWith('gv');
+    return getCategoryMeta(type).id === 'GVGS';
 }
 
 /**
- * Lọc danh sách coupon theo nhóm Event hoặc Giờ Vàng Giá Sốc
+ * Lọc danh sách coupon theo nhóm Event, Giờ Vàng, Honor, Vivo hoặc nhóm bất kỳ
  */
 export function filterCouponsByCategory(coupons: CouponSummaryItem[], category?: CouponCategory): CouponSummaryItem[] {
     if (!category || category === 'ALL') return coupons;
-    if (category === 'EVENT') {
-        return coupons.filter(c => isEventCategory(c.type));
-    }
-    if (category === 'GVGS') {
-        return coupons.filter(c => isGvgsCategory(c.type));
-    }
-    return coupons;
+    const catId = getCategoryMeta(category).id;
+    return coupons.filter(c => getCategoryMeta(c.type).id === catId);
 }
 
 export interface CategoryExpiryStatus {
@@ -1260,16 +1363,16 @@ export interface CategoryExpiryStatus {
 }
 
 /**
- * Kiểm tra trạng thái hết hạn của toàn bộ nhóm coupon (EVENT hoặc GVGS)
+ * Kiểm tra trạng thái hết hạn của toàn bộ nhóm coupon (EVENT, GVGS, HONOR, VIVO...)
  * - isExpired: true nếu không còn mã UNUSED nào hợp lệ và ngày hết hạn mới nhất < todayVN
  */
 export function checkCategoryExpiryStatus(
     coupons: Array<{ productName?: string; syntax?: string; type?: string; status?: string; expiryDate?: string }>,
-    category: 'EVENT' | 'GVGS',
+    category: string,
     todayVN: string
 ): CategoryExpiryStatus {
-    const isCat = category === 'EVENT' ? isEventCategory : isGvgsCategory;
-    const catCoupons = (coupons || []).filter(c => isCat(c.type));
+    const catId = getCategoryMeta(category).id;
+    const catCoupons = (coupons || []).filter(c => getCategoryMeta(c.type).id === catId);
 
     if (catCoupons.length === 0) {
         return {
@@ -1374,7 +1477,7 @@ export interface CouponClaimSelection {
     isSelection: boolean;
     isClaim: boolean;
     isBareNumber?: boolean;
-    category?: 'EVENT' | 'GVGS';
+    category?: CouponCategory;
     productIndex?: number;
     orderId?: string;
 }
@@ -1383,7 +1486,10 @@ export interface CouponClaimSelection {
  * Nhận diện cú pháp xin nhận mã PMH:
  * - "e1", "e 2", "e2 12345678" -> Cấp mã Event số 2
  * - "gv1", "gv 2", "gv1 12345678" -> Cấp mã Giờ Vàng số 1
- * - "2", "2 12345678" -> Số trần (hệ thống nhắc gõ e2 hoặc gv2)
+ * - "h1", "h 2", "h1 12345678" -> Cấp mã Honor số 1
+ * - "v1", "v 2", "v1 12345678" -> Cấp mã Vivo số 1
+ * - "ss1", "ap1", "op1", "mi1" -> Các dòng thương hiệu khác
+ * - "2", "2 12345678" -> Số trần (hệ thống nhắc chọn đúng tiền tố)
  */
 export function parseCouponClaimCommand(text: string): CouponClaimSelection {
     if (!text || typeof text !== 'string') return { isSelection: false, isClaim: false };
@@ -1419,7 +1525,97 @@ export function parseCouponClaimCommand(text: string): CouponClaimSelection {
         }
     }
 
-    // 3. Số trần (ví dụ: "2", "2 12345678", "#2", "sp 2", ".2")
+    // 3. Khớp lệnh nhận mã Honor: "h1", "h 2", "honor 1", "h1 01602SO26090873565"
+    const honorMatch = clean.match(/^(?:h|honor)\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
+    if (honorMatch) {
+        const index = parseInt(honorMatch[1], 10);
+        if (!isNaN(index) && index >= 1 && index <= 99) {
+            return {
+                isSelection: true,
+                isClaim: true,
+                category: 'HONOR',
+                productIndex: index,
+                orderId: honorMatch[2] ? honorMatch[2].trim() : undefined
+            };
+        }
+    }
+
+    // 4. Khớp lệnh nhận mã Vivo: "v1", "v 2", "vivo 1", "v1 01602SO26090873565"
+    const vivoMatch = clean.match(/^(?:v|vivo)\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
+    if (vivoMatch) {
+        const index = parseInt(vivoMatch[1], 10);
+        if (!isNaN(index) && index >= 1 && index <= 99) {
+            return {
+                isSelection: true,
+                isClaim: true,
+                category: 'VIVO',
+                productIndex: index,
+                orderId: vivoMatch[2] ? vivoMatch[2].trim() : undefined
+            };
+        }
+    }
+
+    // 5. Khớp lệnh nhận mã Samsung: "ss1", "ss 2", "samsung 1"
+    const ssMatch = clean.match(/^(?:ss|samsung)\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
+    if (ssMatch) {
+        const index = parseInt(ssMatch[1], 10);
+        if (!isNaN(index) && index >= 1 && index <= 99) {
+            return {
+                isSelection: true,
+                isClaim: true,
+                category: 'SAMSUNG',
+                productIndex: index,
+                orderId: ssMatch[2] ? ssMatch[2].trim() : undefined
+            };
+        }
+    }
+
+    // 6. Khớp lệnh nhận mã Apple: "ap1", "ap 2", "apple 1", "iphone 1"
+    const apMatch = clean.match(/^(?:ap|apple|iphone)\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
+    if (apMatch) {
+        const index = parseInt(apMatch[1], 10);
+        if (!isNaN(index) && index >= 1 && index <= 99) {
+            return {
+                isSelection: true,
+                isClaim: true,
+                category: 'APPLE',
+                productIndex: index,
+                orderId: apMatch[2] ? apMatch[2].trim() : undefined
+            };
+        }
+    }
+
+    // 7. Khớp lệnh nhận mã Oppo: "op1", "op 2", "oppo 1"
+    const opMatch = clean.match(/^(?:op|oppo)\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
+    if (opMatch) {
+        const index = parseInt(opMatch[1], 10);
+        if (!isNaN(index) && index >= 1 && index <= 99) {
+            return {
+                isSelection: true,
+                isClaim: true,
+                category: 'OPPO',
+                productIndex: index,
+                orderId: opMatch[2] ? opMatch[2].trim() : undefined
+            };
+        }
+    }
+
+    // 8. Khớp lệnh nhận mã Xiaomi: "mi1", "mi 2", "xiaomi 1", "redmi 1"
+    const miMatch = clean.match(/^(?:mi|xiaomi|redmi)\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
+    if (miMatch) {
+        const index = parseInt(miMatch[1], 10);
+        if (!isNaN(index) && index >= 1 && index <= 99) {
+            return {
+                isSelection: true,
+                isClaim: true,
+                category: 'XIAOMI',
+                productIndex: index,
+                orderId: miMatch[2] ? miMatch[2].trim() : undefined
+            };
+        }
+    }
+
+    // 9. Số trần (ví dụ: "2", "2 12345678", "#2", "sp 2", ".2")
     const bareMatch = clean.match(/^(?:stt|sp|số|#|\.)?\s*(\d{1,3})(?:[\s:.-]+([A-Za-z0-9_-]{4,30}))?$/i);
     if (bareMatch) {
         const index = parseInt(bareMatch[1], 10);
@@ -1466,14 +1662,9 @@ export function formatInventoryReportMessage(
     totalAll: number;
     products: ProductInventoryItem[];
 } {
-    const isEvent = category === 'EVENT';
-    const isGvgs = category === 'GVGS';
-
-    const categoryTitle = isEvent
-        ? 'PMH EVENT'
-        : isGvgs
-            ? 'PMH GIỜ VÀNG GIÁ SỐC'
-            : 'THEO SẢN PHẨM';
+    const isSpecific = Boolean(category && category !== 'ALL');
+    const meta = isSpecific ? getCategoryMeta(category) : undefined;
+    const categoryTitle = meta ? meta.title : 'THEO SẢN PHẨM';
 
     if (!coupons || coupons.length === 0) {
         return {
@@ -1508,17 +1699,14 @@ export function formatInventoryReportMessage(
 
     let text = `📊 BÁO CÁO TỒN KHO ${categoryTitle}\n━━━━━━━━━━━━━━━━━\n`;
 
-    if (isEvent) {
-        text += `📈 Tổng tồn kho Event: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Cú pháp nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2, e3...)\n';
-    } else if (isGvgs) {
-        text += `📈 Tổng tồn kho Giờ Vàng: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
-        text += '💡 Cú pháp nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2, gv3...)\n';
+    if (meta) {
+        text += `📈 Tổng tồn kho ${meta.name}: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
+        text += `💡 Cú pháp nhận mã ${meta.name}: Gõ "${meta.prefix} + STT" (ví dụ: ${meta.prefix}1, ${meta.prefix}2, ${meta.prefix}3...)\n`;
     } else {
         text += `📈 Tổng tồn kho: ${totalUnused} mã khả dụng / ${totalAll} tổng mã\n`;
         text += '💡 Nhận mã Event: Gõ "e + STT" (ví dụ: e1, e2...)\n';
         text += '⚡ Nhận mã Giờ Vàng: Gõ "gv + STT" (ví dụ: gv1, gv2...)\n';
-        text += '👉 Xem riêng từng loại: Gõ "tk event" hoặc "tk gvgs"\n';
+        text += '👉 Xem riêng từng loại: Gõ "tk [tên loại]" (ví dụ: tk honor, tk vivo, tk event, tk gvgs)\n';
     }
     text += '━━━━━━━━━━━━━━━━━\n';
 
@@ -1527,8 +1715,8 @@ export function formatInventoryReportMessage(
     }
 
     for (const item of products) {
-        const cmdPrefix = isGvgs ? 'gv' : 'e';
-        const cmdCode = `${cmdPrefix}${item.index}`;
+        const itemPrefix = meta ? meta.prefix : (item.category ? getCategoryMeta(item.category).prefix : 'e');
+        const cmdCode = `${itemPrefix}${item.index}`;
         if (item.unused === 0) {
             text += `🔴 [${cmdCode}] ❌ ${item.productName}: HẾT MÃ (0/${item.total} mã)\n`;
         } else if (item.unused < 3) {
@@ -1559,11 +1747,10 @@ export function createInventoryReportFlexMessage(params: {
     altText?: string;
 }) {
     const { category, totalAll, totalUnused, products } = params;
-    const isEvent = category === 'EVENT';
-    const isGvgs = category === 'GVGS';
-    const categoryTitle = isGvgs ? 'PMH GIỜ VÀNG' : 'PMH EVENT';
-    const headerColor = isGvgs ? '#D97706' : '#059669';
-    const cmdPrefix = isGvgs ? 'gv' : 'e';
+    const meta = getCategoryMeta(category);
+    const categoryTitle = meta.title.replace('GIỜ VÀNG GIÁ SỐC', 'GIỜ VÀNG');
+    const headerColor = meta.headerColor;
+    const cmdPrefix = meta.prefix;
     const pct = totalAll > 0 ? Math.round((totalUnused / totalAll) * 100) : 0;
     const defaultAlt = `📊 Báo cáo tồn kho ${categoryTitle}: ${totalUnused}/${totalAll} mã khả dụng (${pct}%)`;
     const altText = (params.altText && params.altText.length <= 400) ? params.altText : defaultAlt;

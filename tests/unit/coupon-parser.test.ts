@@ -435,6 +435,38 @@ Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội 
             expect(gvgsList[0].index).toBe(1);
             expect(gvgsList[0].productName).toBe('Bình đun Rapido');
         });
+
+        it('nhận diện chính xác cú pháp h + STT để lấy PMH Honor và v + STT để lấy PMH Vivo', async () => {
+            const { parseCouponClaimCommand, getCategoryMeta, formatInventoryReportMessage } = await import('../../features/line-bot/services/couponParser');
+
+            // Cú pháp Honor
+            expect(parseCouponClaimCommand('h1')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 1, orderId: undefined });
+            expect(parseCouponClaimCommand('h 2')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('honor 3')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 3, orderId: undefined });
+            expect(parseCouponClaimCommand('h1 01602SO26090873565')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 1, orderId: '01602SO26090873565' });
+
+            // Cú pháp Vivo
+            expect(parseCouponClaimCommand('v1')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 1, orderId: undefined });
+            expect(parseCouponClaimCommand('v 2')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('vivo 3')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 3, orderId: undefined });
+            expect(parseCouponClaimCommand('v2 12345678')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 2, orderId: '12345678' });
+
+            // Metadata
+            expect(getCategoryMeta('Honor').id).toBe('HONOR');
+            expect(getCategoryMeta('Honor').prefix).toBe('h');
+            expect(getCategoryMeta('Vivo').id).toBe('VIVO');
+            expect(getCategoryMeta('Vivo').prefix).toBe('v');
+
+            // Format inventory report cho Honor
+            const honorCoupons = [
+                { productName: 'Honor X8b', type: 'Honor', status: 'UNUSED' },
+                { productName: 'Honor X8b', type: 'Honor', status: 'UNUSED' }
+            ];
+            const rep = formatInventoryReportMessage(honorCoupons, 'HONOR');
+            expect(rep.replyText).toContain('PMH HONOR');
+            expect(rep.replyText).toContain('h1');
+            expect(rep.replyText).toContain('Cú pháp nhận mã Honor: Gõ "h + STT"');
+        });
     });
 
     describe('extractProductSyntax & auto-prefill syntax', () => {

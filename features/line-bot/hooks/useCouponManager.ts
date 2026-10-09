@@ -172,8 +172,21 @@ export function useCouponManager(overrideUserId?: string) {
     const revokeCoupon = useCallback(async (couponId: string, reason?: string) => {
         if (!userId) return;
         await lineBotFirestoreService.revokeCoupon(userId, couponId, reason);
-        toast.success('Đã thu hồi mã về kho!');
+        toast.success('Đã thu hồi mã về kho (trạng thái Chưa dùng)!');
         await loadCoupons();
+    }, [userId, loadCoupons]);
+
+    // Khôi phục toàn bộ mã REVOKED về UNUSED
+    const restoreRevokedCoupons = useCallback(async () => {
+        if (!userId) return 0;
+        const count = await lineBotFirestoreService.restoreRevokedCoupons(userId);
+        if (count > 0) {
+            toast.success(`Đã khôi phục thành công ${count} mã về trạng thái Chưa dùng!`);
+        } else {
+            toast.info('Không có mã nào cần khôi phục.');
+        }
+        await loadCoupons();
+        return count;
     }, [userId, loadCoupons]);
 
     // Xóa mã
@@ -262,6 +275,7 @@ export function useCouponManager(overrideUserId?: string) {
         loadCoupons,
         importCoupons,
         revokeCoupon,
+        restoreRevokedCoupons,
         deleteCoupon,
         deleteCouponsBatch,
         deleteAllCoupons,
