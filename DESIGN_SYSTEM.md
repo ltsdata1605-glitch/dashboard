@@ -157,6 +157,12 @@ không có bảng màu riêng cho modal.
 🔴 **Nghiêm cấm `window.alert` / `window.confirm` / `window.prompt`.** Dùng `<ConfirmDialog />`,
 nút xác nhận tác vụ rủi ro truyền biến màu `danger`.
 
+### 4.4b Lớp phủ không phải hộp thoại (`<Overlay />`, 2026-10-09)
+CẤM tự viết `fixed inset-0` ngoài `components/shared/ui` (`lint-ratchet` `rawOverlay` = 0). Hộp thoại → `<Modal />`/`<ConfirmDialog />`. Phần còn lại dùng
+`<Overlay kind="…">`: `busy` (màn chờ chặn thao tác — tự có `role=status` + `aria-busy`), `scrim` (lớp nền bắt click-ra-ngoài popover/menu — `aria-hidden`),
+`fullscreen` (khung phủ kín có nội dung riêng). Phần tử lúc phủ lúc không (nút "Toàn màn hình" của bảng) dùng hằng `FULLSCREEN_LAYER_CLASS`. Thêm hoạt ảnh: `MotionOverlay`.
+Modal nằm trong phần tử có `onClick` (vd dòng bảng) phải chặn nổi bọt click — Modal render qua portal nhưng sự kiện React vẫn nổi lên cha (xem `AvatarPickerModal`).
+
 ### 4.5 Trạng thái tải
 Dùng `<Skeleton />`, không hiển thị chữ "Loading...".
 

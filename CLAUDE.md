@@ -134,6 +134,14 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 **Quy tắc bắt buộc:**
 - 🔴 Mọi thay đổi `role`, `status`, `departmentId`, `expiresAt`, `requestedRole` của user (kể cả tự sửa hay admin duyệt người khác) **bắt buộc đi qua Cloud Function** (`resolveSession`/`requestAccess`/`adminUpdateUser`). **Cấm** `updateDoc`/`setDoc` trực tiếp các field này từ client — `firestore.rules` đã chặn cứng, code client vi phạm sẽ nhận `permission-denied`.
 - ⚠️ Khi thêm **collection/subcollection Firestore mới**, **bắt buộc cập nhật `firestore.rules`** — cả 5 khu vực (kể cả `features/sticker-event` sau khi di trú) dùng database `(default)`. *(Sửa 2026-10-08: bản cũ bảo sticker-event sửa `firestore.stickerevent.rules` — sai từ khi di trú, rules thêm vào đó không có tác dụng gì với dữ liệu In Sticker đang chạy.)* *(Sửa 2026-09-17: bản cũ ghi "3 khu vực dùng chung project Firebase `dashboa-7e20b`" — thực tế **cả 4 khu vực** dùng chung project đó, sticker-event chỉ khác database. Nói "3 khu vực" dễ khiến người đọc tưởng sticker-event ở project khác nên không liên quan.)* Quên bước này gây lỗi "Missing or insufficient permissions" im lặng (đã xảy ra thật với `users/{uid}/salesData` và `_system/stats` — audit ban đầu bỏ sót vì dùng grep quá hẹp, chỉ bắt `collection(db, 'x')` 1 tham số, không bắt được `collection(db, 'users', uid, 'salesData')` nhiều tham số).
+- 🔴 **Bí mật Bot LINE KHÔNG nằm ở client (audit S13, 2026-10-08):** `channelAccessToken`/`channelSecret`/`pmhRelayToken` ở collection
+  `line_bot_secrets/{uid}` — `firestore.rules` khoá hẳn với MỌI client (kể cả admin/chủ bot); `line_bots/{uid}` chỉ có cờ `hasToken`/`hasSecret`
+  và rules CHẶN client ghi 3 field bí mật vào đó (tab giao diện cũ lưu lại sẽ nhận permission-denied thay vì làm lộ lại). Server đọc bằng
+  `functions/src/lineBotSecrets.ts → withSecrets()`. Client lưu Token/Secret qua `lineBotWebhook?action=saveSecrets` (chỉ chủ bot/admin) và gửi tin/kiểm tra
+  qua `?action=sendTestPush|pushImage|sendBroadcast|getProfile|verifyToken` với `botId` + ID token (quyền = chủ bot, admin, hoặc manager CÙNG Mã Kho;
+  token không bao giờ về client). Đừng thêm code client đọc/ghi 3 field này; muốn gửi LINE từ client thì thêm action theo `botId`.
+- 🔵 **Offline (2026-10-08):** build sinh `dist/sw.js` (plugin `ycx-offline-sw` ở `vite.config.ts`, mẫu `scripts/sw-template.js`): tải sẵn app shell, điều hướng ưu tiên mạng
+  (không kẹt bản cũ), `/assets/*` ưu tiên bản lưu. Offline chỉ dùng được dữ liệu đã lưu trên máy; đăng nhập/đồng bộ/gửi LINE cần mạng. Test: `tests/e2e/offline-app-shell.spec.ts`.
 - 🔵 **Phân quyền theo siêu thị ở Report BI** (bổ sung 2026-08-31): dữ liệu Thi đua/Summary Luỹ kế dùng chung theo siêu thị lưu ở `biData/{maKho}/…` — dùng LẠI đúng field `departmentId`/hàm `myKhos()` đã có (1 Kho = 1 Siêu thị trong thực tế công ty, xác nhận với user), KHÔNG có custom claim `allowedSupermarkets` riêng. Chỉ manager/admin được ghi (`isManager()`), mọi user cùng Kho đọc được. Xem `implementation_plan.md` mục "Đợt 4" để biết đầy đủ thiết kế + bảng map "tên siêu thị trong báo cáo" → "Mã Kho".
 - `functions/` là project TypeScript độc lập (tsconfig/package.json riêng), bị loại trừ khỏi `tsconfig.json` và `eslint.config.js` ở gốc — không chạy qua `npm run check`, phải tự `cd functions && npm run typecheck && npm run build` để kiểm tra riêng.
 - Deploy: `npm run deploy:rules` / `npm run deploy:functions`. *(Sửa 2026-09-18: bản cũ ghi "không phải việc agent tự chạy" — xem mục 0.0, chủ dự án đã cấp quyền.)*
@@ -218,8 +226,8 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Đổ bóng** *(chuẩn B, 2026-10-07)*: thẻ tĩnh `shadow-sm`, rê chuột `shadow-md`; dropdown/popup `shadow-lg`;
   modal `shadow-xl`. Khối dữ liệu vuông và ô bảng không đổ bóng.
   `lint-ratchet` chặn lệch chuẩn mới (GĐ4, 2026-10-07): `rawOverlay` (tự dựng `fixed inset-0` ngoài
-  `components/shared/ui`) = **0** (2026-10-09: hộp thoại dùng `<Modal>`/`<ConfirmDialog>`, màn chờ/lớp nền/khung toàn màn hình dùng `<Overlay kind="busy|scrim|fullscreen">` — cấm viết lại `fixed inset-0`), `tinyText` (`text-[≤10px]`) = 82 (38 là xem trước tin nhắn LINE có chủ đích),
-  `offScaleRadius` (`rounded-3xl`/`rounded-[…]` không qua token) = 11 — chỉ được giảm.
+  `components/shared/ui`) = **0** (2026-10-09: hộp thoại dùng `<Modal>`/`<ConfirmDialog>`, màn chờ/lớp nền/khung toàn màn hình dùng `<Overlay kind="busy|scrim|fullscreen">` — cấm viết lại `fixed inset-0`), `tinyText` (`text-[≤10px]`) = 50 (2026-10-09; toàn bộ là ô xem trước tin nhắn LINE `IPhoneChatPreview` — cỡ nhỏ có chủ đích để giống LINE thật),
+  `offScaleRadius` (`rounded-3xl`/`rounded-[…]` không qua token) = 4 (2026-10-09; khung điện thoại mô phỏng của `IPhoneChatPreview`) — chỉ được giảm.
 - **Mật độ bảng** *(mới 2026-09-10)*: dòng dữ liệu cao **26px** (đệm `3px 8px`), đầu bảng **28px** và
   bắt buộc dính trên (`sticky`), dải nhóm **24px**. Bảng nhiều cột phải **ghim cột đầu** (`sticky left`,
   viền phải 2px).

@@ -7594,3 +7594,12 @@ Test cũ `modal-tu-dung-hanh-vi` đổi tên tìm modal nạp mã (nay lấy the
 Chưa test riêng: `CouponManagerTab` hộp xoá toàn bộ (cần dữ liệu thật) — nên bấm thử. CLAUDE.md §2 ghi `rawOverlay` = 0.
 GĐ4 còn lại (giữ có chủ đích): `tinyText` 50 (xem trước LINE), `offScaleRadius` 4 (khung iPhone mô phỏng).
 
+## Rà soát cuối ngày 2026-10-09 — chạy TOÀN BỘ e2e (324 ca) sau cả loạt thay đổi 08–09/10
+Kết quả: **272 xanh, 50 skip, 2 đỏ — cả 2 đều đỏ từ TRƯỚC các thay đổi này** (đã kiểm: chạy trên mã nguồn lúc bắt đầu phiên `24718ad` trong worktree riêng):
+1. `tax-paste-hrm › tiêu đề thẻ mở được trang HRM` — cần mở trang ngoài, không chạy được trong container (đã ghi từ GĐ D11).
+2. `phan-tich-xuat-hang-loat-theo-kho` — test bấm nút "Xuất hàng loạt" rồi dò ảnh theo Kho, nhưng **nút xuất hàng loạt theo Kho không còn hiển thị trong giao diện**:
+   `WarehouseSummary` nhận prop `onBatchExport` (= `handleBatchKhoExport` của `useExportLogic`) nhưng KHÔNG có chỗ nào dùng; `getByTitle('Xuất hàng loạt').first()` nay trúng nút của
+   danh sách nhân viên. Thêm vào đó test dò bản clone gắn vào DOM (cách cũ trước đợt hợp nhất xuất ảnh 2026-10-01). **Cần chủ dự án quyết:** khôi phục nút (tính năng còn
+   handler + logic) hay bỏ handler + test. Chưa tự quyết vì có thể nút bị gỡ có chủ đích.
+Tài liệu: CLAUDE.md (số liệu ratchet mới, mục bí mật Bot LINE và offline), DESIGN_SYSTEM.md 4.4b `<Overlay>`, đánh dấu GĐ0–GĐ6 trong bộ audit.
+

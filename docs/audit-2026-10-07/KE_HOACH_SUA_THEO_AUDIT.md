@@ -107,7 +107,8 @@ Ngày: 07/10/2026 · Đối chiếu trên commit `dda2e9c` (HEAD hiện tại), 
 
 Mỗi giai đoạn: viết test tái hiện lỗi trước (đỏ) → sửa → test xanh → `npm run check` + test functions/rules → commit → push → (khi bạn duyệt) deploy → báo cáo theo mẫu: lỗi gì, file nào, test gì, rủi ro, cách rollback.
 
-### ☐ GĐ0 — VÁ KHẨN (trong ngày, ~nửa ngày) · chặn B1, B2, S01, S02, S10
+### ☑ GĐ0 — VÁ KHẨN (trong ngày, ~nửa ngày) · chặn B1, B2, S01, S02, S10
+> **Tiến độ:** đã làm & deploy 2026-10-07 (chi tiết: `implementation_plan.md` mục "Audit bảo mật — Giai đoạn 0")
 
 | # | Việc | Ảnh hưởng người dùng |
 |---|---|---|
@@ -121,7 +122,8 @@ Mỗi giai đoạn: viết test tái hiện lỗi trước (đỏ) → sửa →
 
 **Cần bạn quyết (chặn GĐ0 phần 2):** nhân viên In Sticker đăng nhập bằng gì? (a) Admin kho đặt **mã PIN** cho từng nhân viên (đề xuất), (b) nhân viên tự đặt mật khẩu, (c) đăng nhập Google. Hiện tại "biết tên = vào được".
 
-### ☐ GĐ1 — PHÂN QUYỀN & PHIÊN (2–3 ngày) · S03–S09, S11–S14, B3–B6 (task T03–T06)
+### ☑ GĐ1 — PHÂN QUYỀN & PHIÊN (2–3 ngày) · S03–S09, S11–S14, B3–B6 (task T03–T06)
+> **Tiến độ:** đã làm & deploy; S13/S14 hoàn tất 2026-10-08 (bí mật Bot LINE về `line_bot_secrets`)
 
 1. Gộp claims root + Sticker vào **một hàm server** → hết ghi đè nhau (S05).
 2. Pending/expired/rejected không có claim Kho; tách "Kho yêu cầu" khỏi "Kho được duyệt" (S03, B3). Expired hạ role (S04).
@@ -131,7 +133,8 @@ Mỗi giai đoạn: viết test tái hiện lỗi trước (đỏ) → sửa →
 6. Test: **Rules Emulator** (2 user × 2 Kho × 2 bot), test handler webhook.
 7. Lưu ý vận hành: sau khi chuyển secret, nên **xoay Channel Access Token** của các bot (vì đã từng lộ cho mọi manager).
 
-### ☐ GĐ2 — DỮ LIỆU ĐÚNG, KHÔNG MẤT (4–6 ngày) · D01–D18 (T07–T14)
+### ☑ GĐ2 — DỮ LIỆU ĐÚNG, KHÔNG MẤT (4–6 ngày) · D01–D18 (T07–T14)
+> **Tiến độ:** đã làm (D01–D18) & deploy
 
 Thứ tự theo mức hại đến số liệu:
 1. **D02** đồng bộ Kho nhân đôi doanh thu + **D01** nhân viên mở lại thấy trống (T07). Kèm script dry-run đếm dữ liệu đã bị trùng trên production — chỉ báo cáo, không tự xoá.
@@ -142,11 +145,13 @@ Thứ tự theo mức hại đến số liệu:
 6. **D09/D10/D18** LINE cấp 1 coupon cho 2 người, báo cáo lệch giờ VN, relay (T12–T13).
 7. **D15–D17** parser `45,5%`, ngày 31/02, BI giữ KPI cũ, worker treo (T14).
 
-### ☐ GĐ3 — HIỆU SUẤT CÓ SỐ ĐO (2–3 ngày) · T15, T16
+### ☑ GĐ3 — HIỆU SUẤT CÓ SỐ ĐO (2–3 ngày) · T15, T16
+> **Tiến độ:** đã làm, có số đo trước/sau
 
 Đo trước/sau (thời gian đăng nhập → thấy dashboard, lọc p95, RAM, số lượt đọc Firestore) với 10k/50k/200k dòng; giới hạn số request song song; Phân ca tải song song + ghi theo key thay đổi; giới hạn số tem + huỷ được; So giá chạy được từ `dashboard.pro.vn` tới máy local (allowlist + mã ghép đôi).
 
-### ☐ GĐ4 — HỆ THỐNG THIẾT KẾ THỐNG NHẤT (5–8 ngày, chia theo khu) · T17–T19
+### ☑ GĐ4 — HỆ THỐNG THIẾT KẾ THỐNG NHẤT (5–8 ngày, chia theo khu) · T17–T19
+> **Tiến độ:** đã làm — chuẩn (B) bo mềm; `rawOverlay` 27→0, `tinyText` 82→50, `offScaleRadius` 11→4 (phần còn lại có chủ đích)
 
 1. **Chốt chuẩn với bạn** (1 trang so sánh có ảnh): bo góc nút 4 hay 6px; KpiCard phẳng hay giữ bo 16px; mật độ bảng; z-index modal.
 2. Sửa CSS Phân ca rò rỉ global + biến không tới modal.
@@ -154,12 +159,14 @@ Thứ tự theo mức hại đến số liệu:
 4. Vùng chạm 44px theo `pointer: coarse` thay vì `< 640px`.
 5. (Tuỳ chọn) gỡ 8.367 class `dark:` vô hiệu để nhẹ CSS.
 
-### ☐ GĐ5 — SAFARI iOS & LAPTOP (2–3 ngày) · T20–T21
+### ☑ GĐ5 — SAFARI iOS & LAPTOP (2–3 ngày) · T20–T21
+> **Tiến độ:** đã làm; chờ chủ dự án kiểm iPhone thật; offline (service worker) đã làm 2026-10-08
 
 PDF dùng Blob URL + CSP `frame-src blob:` + nút "Mở/Chia sẻ" dự phòng cho iOS; camera tắt chắc chắn khi đóng; popup "Thêm" cuộn được khi xoay ngang/bàn phím; xem lại khoá zoom; Playwright WebKit ma trận 1366×768, 1440×900, 390×844, 844×390, 768×1024. **Cần bạn** kiểm 1 vòng trên iPhone thật theo checklist tôi soạn (Google login, camera, in PDF, Home Screen, chuyển nền).
 Service worker offline: chỉ làm nếu bạn cần mở app khi mất mạng.
 
-### ☐ GĐ6 — TÀI LIỆU & PHÁT HÀNH (½ ngày) · T22
+### ☑ GĐ6 — TÀI LIỆU & PHÁT HÀNH (½ ngày) · T22
+> **Tiến độ:** đã làm; bộ tài liệu audit đã vào repo
 
 Sửa CLAUDE.md (database Sticker, chuẩn thiết kế đã chốt), dọn `firebase.json` khỏi rules của database cũ (sau khi xác nhận database cũ không còn ai dùng), thêm `functions` typecheck + Rules Emulator vào CI; commit bộ audit vào repo **sau khi** các lỗ đã vá.
 
