@@ -18,3 +18,16 @@ export PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 npm install --no-audit --no-fund
 npm install --prefix functions --no-audit --no-fund
+
+# Plugin Playwright (MCP) mặc định tìm Chrome ở /opt/google/chrome/chrome — container chỉ có Chromium
+# của Playwright, và chạy bằng root nên phải thêm --no-sandbox. Dựng script bọc trỏ sang Chromium đó.
+CHROMIUM_BIN="$(ls -d /opt/pw-browsers/chromium-*/chrome-linux/chrome 2>/dev/null | sort -V | tail -1 || true)"
+if [ -n "$CHROMIUM_BIN" ] && [ ! -x /opt/google/chrome/chrome ]; then
+  mkdir -p /opt/google/chrome
+  printf '#!/bin/sh\nexec %s --no-sandbox "$@"\n' "$CHROMIUM_BIN" > /opt/google/chrome/chrome
+  chmod +x /opt/google/chrome/chrome
+fi
+
+# Plugin Firebase (MCP) chạy `npx -y firebase-tools@latest mcp` và bị cắt sau 30s nếu lần đầu phải tải
+# gói. Tải trước vào cache npx để lần khởi động MCP chỉ mất vài giây.
+npx -y firebase-tools@latest --version > /dev/null 2>&1 || true
