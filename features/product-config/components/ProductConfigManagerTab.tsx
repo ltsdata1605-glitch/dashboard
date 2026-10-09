@@ -12,7 +12,6 @@ import {
     exportProductConfigToExcel,
     computeConfigSummary,
 } from '../services/firebaseProductConfigService';
-import { ConfigSummaryCards } from './ConfigSummaryCards';
 import { ConfigTable } from './ConfigTable';
 import type { CategoryTableItem, ProductConfigSummary } from '../types';
 import * as dbService from '../../../services/dbService';
@@ -137,78 +136,114 @@ export const ProductConfigManagerTab: React.FC = () => {
         );
     }
 
+    const formattedDate = updatedAt
+        ? new Date(updatedAt).toLocaleString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+          })
+        : null;
+
     return (
         <div className="space-y-4">
-            {/* Action Bar */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3.5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                    <h2 className="text-sm sm:text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                        <AppIcon name="settings" size="md" className="text-sky-500" />
-                        <span>Cấu Hình Ngành Hàng & Hệ Số Quy Đổi</span>
-                        {isDirty && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 font-bold uppercase tracking-wider">
-                                Có thay đổi chưa lưu
-                            </span>
+            {/* Header + Actions */}
+            <div className="bg-white border border-slate-200 rounded-card p-3.5 shadow-sm space-y-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
+                            <AppIcon name="settings" size="md" className="text-sky-500" />
+                            <span>Cấu Hình Ngành Hàng & Hệ Số Quy Đổi</span>
+                            {isDirty && (
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-bold uppercase tracking-wider">
+                                    Có thay đổi chưa lưu
+                                </span>
+                            )}
+                        </h2>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            Quản lý toàn bộ nhóm cha, nhóm con, mã ngành hàng và hệ số quy đổi áp dụng trực tiếp cho toàn hệ thống.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".xlsx, .xls"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
+
+                        {isCanManage && (
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="h-8.5 gap-1.5 text-xs font-semibold border-sky-200 text-sky-700 hover:bg-sky-50"
+                            >
+                                <AppIcon name="upload" size="sm" />
+                                <span>Tải file Excel (.xlsx)</span>
+                            </Button>
                         )}
-                    </h2>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                        Quản lý toàn bộ nhóm cha, nhóm con, mã ngành hàng và hệ số quy đổi áp dụng trực tiếp cho toàn hệ thống.
-                    </p>
-                </div>
 
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".xlsx, .xls"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
-
-                    {isCanManage && (
                         <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="h-8.5 gap-1.5 text-xs font-semibold border-sky-200 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/40"
+                            disabled={!config}
+                            onClick={handleExportExcel}
+                            className="h-8.5 gap-1.5 text-xs font-semibold"
                         >
-                            <AppIcon name="upload" size="sm" />
-                            <span>Tải file Excel (.xlsx)</span>
+                            <AppIcon name="download" size="sm" />
+                            <span>Xuất Excel</span>
                         </Button>
-                    )}
 
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={!config}
-                        onClick={handleExportExcel}
-                        className="h-8.5 gap-1.5 text-xs font-semibold"
-                    >
-                        <AppIcon name="download" size="sm" />
-                        <span>Xuất Excel</span>
-                    </Button>
-
-                    {isCanManage && (
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            disabled={!config || isSaving}
-                            onClick={handleSaveToCloud}
-                            className={`h-8.5 gap-1.5 text-xs font-bold shadow-xs ${
-                                isDirty
-                                    ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse'
-                                    : 'bg-sky-600 hover:bg-sky-700 text-white'
-                            }`}
-                        >
-                            <AppIcon name={isSaving ? 'loading' : 'cloud'} size="sm" spin={isSaving} />
-                            <span>{isSaving ? 'Đang lưu...' : 'Lưu lên Cloud Firebase'}</span>
-                        </Button>
-                    )}
+                        {isCanManage && (
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                disabled={!config || isSaving}
+                                onClick={handleSaveToCloud}
+                                className={`h-8.5 gap-1.5 text-xs font-bold shadow-xs ${
+                                    isDirty
+                                        ? 'bg-amber-600 hover:bg-amber-700 text-white animate-pulse'
+                                        : 'bg-sky-600 hover:bg-sky-700 text-white'
+                                }`}
+                            >
+                                <AppIcon name={isSaving ? 'loading' : 'cloud'} size="sm" spin={isSaving} />
+                                <span>{isSaving ? 'Đang lưu...' : 'Lưu lên Cloud Firebase'}</span>
+                            </Button>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* Thống kê chỉ số */}
-            <ConfigSummaryCards summary={summary} updatedAt={updatedAt} updatedBy={updatedBy} />
+                {/* Thống kê inline + metadata */}
+                {summary && (
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-slate-500 bg-slate-50 px-3.5 py-2 rounded-control border border-slate-200/80">
+                        <span><strong className="text-slate-700 tabular-nums">{summary.parentGroupCount}</strong> nhóm cha</span>
+                        <span className="text-slate-300">|</span>
+                        <span><strong className="text-slate-700 tabular-nums">{summary.subgroupCount}</strong> nhóm con</span>
+                        <span className="text-slate-300">|</span>
+                        <span><strong className="text-slate-700 tabular-nums">{summary.categoryCodeCount}</strong> mã ngành hàng</span>
+                        <span className="text-slate-300">|</span>
+                        <span><strong className="text-slate-700 tabular-nums">{summary.multiplierCount}</strong> hệ số quy đổi</span>
+                        <span className="ml-auto flex items-center gap-3">
+                            {formattedDate && (
+                                <span className="flex items-center gap-1">
+                                    <AppIcon name="clock" size="xs" className="text-slate-400" />
+                                    {formattedDate}
+                                </span>
+                            )}
+                            {updatedBy && (
+                                <span className="flex items-center gap-1">
+                                    <AppIcon name="user" size="xs" className="text-slate-400" />
+                                    {updatedBy}
+                                </span>
+                            )}
+                        </span>
+                    </div>
+                )}
+            </div>
 
             {/* Bảng tra cứu */}
             <ConfigTable items={tableItems} />
