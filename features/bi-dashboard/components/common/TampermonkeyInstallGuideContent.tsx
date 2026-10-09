@@ -256,15 +256,15 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                 Cài đặt Script Tự Động của Dashboard YCX
                             </h3>
                         </div>
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={() => window.open(getScriptUrl(), '_blank')}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0"
+                        <a
+                            href={getScriptUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs transition-all active:scale-95 shrink-0 no-underline"
                         >
                             <AppIcon name="download" size="sm" />
                             <span>Cài đặt Script ngay</span>
-                        </Button>
+                        </a>
                     </div>
 
                     <div className="text-xs text-slate-600 dark:text-slate-300 pl-8 space-y-1">
