@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, ParsedImportItem } from '../types/lineBot.types';
@@ -206,15 +207,6 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         return batches;
     }, [coupons]);
 
-    // Modal tự dựng (audit A34): hành vi chuẩn cho hộp chính và hộp xác nhận xoá lồng bên trong —
-    // ngăn xếp modal đảm bảo Escape đóng hộp xác nhận trước. Không đóng khi đang ghi/xoá dở.
-    const hopChinhRef = useRef<HTMLDivElement>(null);
-    const hopXoaRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, () => { if (!isSubmitting) onClose(); }, hopChinhRef);
-    useModalBehavior(isOpen && !!batchToDelete, () => { if (!deletingBatchId) setBatchToDelete(null); }, hopXoaRef);
-
-    if (!isOpen) return null;
-
     const effectiveType = selectedType === 'CUSTOM' ? (customType.trim() || 'Event') : selectedType;
 
     // Tự động bóc tách mã khi dán hoặc sửa nội dung
@@ -335,16 +327,20 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     };
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div ref={hopChinhRef} role="dialog" aria-modal="true" aria-label="Nạp mã giảm giá" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
-                {/* Modal Header */}
-                <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
-                    <h3 className="font-bold text-slate-800 dark:text-white text-base flex items-center gap-2 min-w-0">
-                        <AppIcon name="upload" size="md" className="text-emerald-500 shrink-0" />
-                        <span className="truncate">Nạp Mã PMH & Quản Lý Lần Nạp</span>
-                    </h3>
-
-                    <div className="flex items-center gap-2 shrink-0">
+        <>
+        <Modal
+            isOpen={isOpen}
+            onClose={() => { if (!isSubmitting) onClose(); }}
+            maxWidth="xl"
+            ariaLabel="Nạp mã giảm giá"
+            title={
+                <span className="flex items-center gap-2 min-w-0">
+                    <AppIcon name="upload" size="md" className="text-emerald-500 shrink-0" />
+                    <span className="truncate">Nạp Mã PMH &amp; Quản Lý Lần Nạp</span>
+                </span>
+            }
+            controls={
+                <>
                         {/* Nút 1: Xuất File Mẫu */}
                         <button
                             type="button"
@@ -374,15 +370,79 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                 disabled={isReadingExcel}
                             />
                         </label>
+                </>
+            }
+            footer={
+                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                    {mode === 'paste' ? (
+                        <>
+                            {/* Widget Chọn Ngày Hết Hạn */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-emerald-500/50 transition-colors">
+                                    <AppIcon name="calendar" size="md" className="text-emerald-600" />
+                                    <label htmlFor="import-expiry-date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none whitespace-nowrap">
+                                        Hạn dùng:
+                                    </label>
+                                    <input
+                                        id="import-expiry-date"
+                                        type="date"
+                                        value={expiryDate}
+                                        onChange={e => handleExpiryDateChange(e.target.value)}
+                                        className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+                                        title="Mã sẽ tự động xoá khỏi kho khi bước sang 00:00 ngày hôm sau"
+                                    />
+                                    {expiryDate && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleExpiryDateChange('')}
+                                            className="p-0.5 text-slate-400 hover:text-rose-500 transition-colors rounded"
+                                            title="Xoá hạn dùng (không thời hạn)"
+                                        >
+                                            <AppIcon name="close" size="sm" />
+                                        </button>
+                                    )}
+                                </div>
+                                {expiryDate ? (
+                                    <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
+                                        Tự xoá khi sang ngày mới
+                                    </span>
+                                ) : (
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
+                                        (Để trống nếu không giới hạn)
+                                    </span>
+                                )}
+                            </div>
 
-                        {/* Nút Đóng */}
-                        <Button variant="ghost" onClick={onClose} className="min-w-11 sm:min-w-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg">
-                            <AppIcon name="close" size="md" />
-                        </Button>
-                    </div>
+                            <div className="flex items-center justify-end gap-2 shrink-0">
+                                <Button variant="ghost" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
+                                    Huỷ
+                                </Button>
+                                <Button
+                                    variant="primary"
+                                    onClick={handleConfirmImport}
+                                    disabled={isSubmitting || parsedItems.length === 0}
+                                    className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all"
+                                >
+                                    {isSubmitting ? 'Đang nạp...' : `Xác nhận nạp (${parsedItems.length})`}
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                                Đang hiển thị <strong className="text-slate-800 dark:text-white">{importBatches.length}</strong> đợt nạp trong kho
+                            </div>
+                            <div className="flex items-center justify-end gap-2">
+                                <Button variant="secondary" onClick={onClose} className="px-5 py-2 text-xs font-bold rounded-lg">
+                                    Đóng
+                                </Button>
+                            </div>
+                        </>
+                    )}
                 </div>
-
-                <div className="p-5 overflow-y-auto space-y-4 flex-1">
+            }
+        >
+                <div className="space-y-4">
                     {/* Tab Navigation: Dán mã vs Lịch sử các lần nạp */}
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                         <button
@@ -675,126 +735,30 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                     )}
                 </div>
 
-                {/* Modal Footer */}
-                <div className="px-5 py-3.5 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 bg-slate-50/50 dark:bg-slate-800/50">
-                    {mode === 'paste' ? (
-                        <>
-                            {/* Widget Chọn Ngày Hết Hạn */}
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs hover:border-emerald-500/50 transition-colors">
-                                    <AppIcon name="calendar" size="md" className="text-emerald-600" />
-                                    <label htmlFor="import-expiry-date" className="text-xs font-semibold text-slate-700 dark:text-slate-300 select-none whitespace-nowrap">
-                                        Hạn dùng:
-                                    </label>
-                                    <input
-                                        id="import-expiry-date"
-                                        type="date"
-                                        value={expiryDate}
-                                        onChange={e => handleExpiryDateChange(e.target.value)}
-                                        className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer"
-                                        title="Mã sẽ tự động xoá khỏi kho khi bước sang 00:00 ngày hôm sau"
-                                    />
-                                    {expiryDate && (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleExpiryDateChange('')}
-                                            className="p-0.5 text-slate-400 hover:text-rose-500 transition-colors rounded"
-                                            title="Xoá hạn dùng (không thời hạn)"
-                                        >
-                                            <AppIcon name="close" size="sm" />
-                                        </button>
-                                    )}
-                                </div>
-                                {expiryDate ? (
-                                    <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/50">
-                                        Tự xoá khi sang ngày mới
-                                    </span>
-                                ) : (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                                        (Để trống nếu không giới hạn)
-                                    </span>
-                                )}
-                            </div>
+        </Modal>
 
-                            <div className="flex items-center justify-end gap-2 shrink-0">
-                                <Button variant="ghost" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
-                                    Huỷ
-                                </Button>
-                                <Button
-                                    variant="primary"
-                                    onClick={handleConfirmImport}
-                                    disabled={isSubmitting || parsedItems.length === 0}
-                                    className="px-4 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-all"
-                                >
-                                    {isSubmitting ? 'Đang nạp...' : `Xác nhận nạp (${parsedItems.length})`}
-                                </Button>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="text-xs text-slate-500 dark:text-slate-400">
-                                Đang hiển thị <strong className="text-slate-800 dark:text-white">{importBatches.length}</strong> đợt nạp trong kho
-                            </div>
-                            <div className="flex items-center justify-end gap-2">
-                                <Button variant="secondary" onClick={onClose} className="px-5 py-2 text-xs font-bold rounded-lg">
-                                    Đóng
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </div>
-            </div>
-
-            {/* Modal xác nhận xoá đợt nạp */}
-            {batchToDelete && (
-                <div data-modal-overlay="" className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-xs animate-in fade-in duration-150">
-                    <div ref={hopXoaRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá đợt nạp mã" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl p-5 shadow-2xl border border-rose-200 dark:border-rose-900/50 space-y-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-rose-100 dark:bg-rose-950/60 text-rose-600 rounded-xl">
-                                <AppIcon name="warning" size="xl" />
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                                    Xác nhận xoá đợt nạp?
-                                </h4>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    Hành động này không thể hoàn tác
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="p-3 bg-rose-50/60 dark:bg-rose-950/20 rounded-xl border border-rose-100 dark:border-rose-900/30 text-xs space-y-1.5 text-slate-700 dark:text-slate-300">
+        {/* Xác nhận xoá đợt nạp — ConfirmDialog dùng chung; Escape/đóng không hoạt động khi đang xoá dở */}
+        <ConfirmDialog
+            isOpen={!!batchToDelete}
+            onClose={() => { if (!deletingBatchId) setBatchToDelete(null); }}
+            onConfirm={() => { if (batchToDelete) handleDeleteBatch(batchToDelete); }}
+            isLoading={!!batchToDelete && deletingBatchId === batchToDelete.id}
+            variant="danger"
+            zIndex="z-[60]"
+            title="Xác nhận xoá đợt nạp?"
+            confirmText="Đồng ý xoá đợt này"
+            cancelText="Hủy bỏ"
+            message={batchToDelete ? (
+                <div className="space-y-2 text-left">
+                    <p className="text-xs text-slate-500">Hành động này không thể hoàn tác</p>
+                    <div className="p-3 bg-rose-50/60 rounded-xl border border-rose-100 text-xs space-y-1.5 text-slate-700">
                             <div>• Đợt nạp: <strong>{new Date(batchToDelete.importedAt).toLocaleString('vi-VN')}</strong></div>
                             <div>• Số lượng mã: <strong className="text-rose-600 font-bold">{batchToDelete.total} mã</strong> ({batchToDelete.unused} khả dụng, {batchToDelete.sent} đã phát)</div>
                             <div>• Sản phẩm: <strong>{batchToDelete.productSummary}</strong></div>
-                        </div>
-
-                        <div className="flex items-center justify-end gap-2 pt-1">
-                            <Button
-                                variant="ghost"
-                                onClick={() => setBatchToDelete(null)}
-                                disabled={deletingBatchId === batchToDelete.id}
-                                className="px-4 py-2 text-xs font-semibold text-slate-600"
-                            >
-                                Hủy bỏ
-                            </Button>
-                            <Button
-                                variant="danger"
-                                onClick={() => handleDeleteBatch(batchToDelete)}
-                                disabled={deletingBatchId === batchToDelete.id}
-                                className="px-4 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center gap-1.5 shadow-sm"
-                            >
-                                {deletingBatchId === batchToDelete.id ? (
-                                    <AppIcon name="refresh" size="sm" spin />
-                                ) : (
-                                    <AppIcon name="delete" size="sm" />
-                                )}
-                                <span>{deletingBatchId === batchToDelete.id ? 'Đang xoá...' : 'Đồng ý xoá đợt này'}</span>
-                            </Button>
-                        </div>
                     </div>
                 </div>
-            )}
-        </div>
+            ) : null}
+        />
+        </>
     );
 };

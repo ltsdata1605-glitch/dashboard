@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
@@ -66,8 +66,6 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
     // Hộp xác nhận xoá toàn bộ (tự dựng — audit A34): hành vi modal chuẩn; không đóng khi đang xoá.
-    const hopXoaTatCaRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isConfirmDeleteAllOpen, () => { if (!isDeletingAll) setIsConfirmDeleteAllOpen(false); }, hopXoaTatCaRef);
 
     const handleCopyCode = (couponId: string, code: string) => {
         navigator.clipboard.writeText(code);
@@ -735,50 +733,25 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 )}
             </div>
 
-            {/* Modal xác nhận xoá toàn bộ kho mã */}
-            {isConfirmDeleteAllOpen && (
-                <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
-                    <div ref={hopXoaTatCaRef} role="alertdialog" aria-modal="true" aria-label="Xác nhận xoá toàn bộ kho mã" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 animate-in zoom-in-95 duration-150">
-                        <div className="flex items-center gap-3.5 text-rose-600 dark:text-rose-400">
-                            <div className="p-3 bg-rose-100 dark:bg-rose-950/60 rounded-2xl shrink-0">
-                                <AppIcon name="warning" size="xl" />
-                            </div>
-                            <div>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                                    Xác Nhận Xoá Tất Cả Mã
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                    Kho hiện có: <strong className="text-rose-600 dark:text-rose-400 font-bold">{coupons.length} mã coupon</strong>
-                                </p>
-                            </div>
-                        </div>
-
-                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-rose-50/50 dark:bg-rose-950/20 p-3.5 rounded-xl border border-rose-100 dark:border-rose-900/40">
+            {/* Xác nhận xoá toàn bộ kho mã — ConfirmDialog dùng chung; không đóng được khi đang xoá dở */}
+            <ConfirmDialog
+                isOpen={isConfirmDeleteAllOpen}
+                onClose={() => { if (!isDeletingAll) setIsConfirmDeleteAllOpen(false); }}
+                onConfirm={handleConfirmDeleteAll}
+                isLoading={isDeletingAll}
+                variant="danger"
+                title="Xác Nhận Xoá Tất Cả Mã"
+                confirmText="Đồng ý xoá tất cả"
+                cancelText="Huỷ bỏ"
+                message={
+                    <div className="space-y-2 text-left text-xs">
+                        <p className="text-slate-500">Kho hiện có: <strong className="text-rose-600 font-bold">{coupons.length} mã coupon</strong></p>
+                        <p className="text-slate-600 leading-relaxed bg-rose-50/50 p-3 rounded-xl border border-rose-100">
                             Hành động này sẽ <strong>xoá vĩnh viễn toàn bộ {coupons.length} mã coupon</strong> trong kho của bạn khỏi cơ sở dữ liệu. Sau khi xoá sẽ không thể khôi phục lại. Bạn có chắc chắn muốn thực hiện?
                         </p>
-
-                        <div className="flex items-center justify-end gap-2 pt-2">
-                            <Button
-                                variant="ghost"
-                                onClick={() => setIsConfirmDeleteAllOpen(false)}
-                                disabled={isDeletingAll}
-                                className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-300 rounded-xl"
-                            >
-                                Huỷ bỏ
-                            </Button>
-                            <Button
-                                variant="danger"
-                                onClick={handleConfirmDeleteAll}
-                                disabled={isDeletingAll}
-                                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-sm disabled:opacity-50"
-                            >
-                                {isDeletingAll ? <AppIcon name="refresh" size="sm" spin /> : <AppIcon name="delete" size="sm" />}
-                                <span>{isDeletingAll ? 'Đang xoá...' : 'Đồng ý xoá tất cả'}</span>
-                            </Button>
-                        </div>
                     </div>
-                </div>
-            )}
+                }
+            />
 
             {isImportModalOpen && (
                 <CouponImportModal

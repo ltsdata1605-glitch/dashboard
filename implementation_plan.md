@@ -7587,3 +7587,10 @@ Kiểm: `Overlay.test.ts` 4 ca; e2e xuất ảnh/Sticker/menu Khác/chuẩn thi�
 Chưa có test riêng: ngăn lọc DashboardView và hộp xoá dữ liệu ở Cài đặt (cần tài khoản đăng nhập) — nên liếc tay.
 **Còn 3** (đều là Bot LINE): `CouponImportModal` (2 lớp) và `CouponManagerTab`.
 
+### GĐ4 — HOÀN TẤT `rawOverlay` = 0 (2026-10-09): nhóm nạp mã của Bot LINE
+`CouponImportModal` → `<Modal>` (tiêu đề + nút Xuất mẫu/Nhập Excel qua `controls`, chân trang qua `footer`; không đóng khi đang nạp dở) + hộp xác nhận xoá đợt nạp lồng bên trong → `ConfirmDialog`
+(`zIndex z-[60]`, không đóng khi đang xoá). `CouponManagerTab`: hộp xoá toàn bộ kho mã → `ConfirmDialog`. Escape đóng hộp xác nhận TRƯỚC rồi mới đến modal chính (ngăn xếp modal) — có test.
+Test cũ `modal-tu-dung-hanh-vi` đổi tên tìm modal nạp mã (nay lấy theo tiêu đề). `modal-da-chuyen-modal-chung.spec.ts`: 11 modal × 2 kích cỡ + 2 ca đặc biệt = 24 ca xanh; đã xem ảnh chụp.
+Chưa test riêng: `CouponManagerTab` hộp xoá toàn bộ (cần dữ liệu thật) — nên bấm thử. CLAUDE.md §2 ghi `rawOverlay` = 0.
+GĐ4 còn lại (giữ có chủ đích): `tinyText` 50 (xem trước LINE), `offScaleRadius` 4 (khung iPhone mô phỏng).
+

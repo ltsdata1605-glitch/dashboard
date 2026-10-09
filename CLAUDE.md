@@ -218,7 +218,7 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Đổ bóng** *(chuẩn B, 2026-10-07)*: thẻ tĩnh `shadow-sm`, rê chuột `shadow-md`; dropdown/popup `shadow-lg`;
   modal `shadow-xl`. Khối dữ liệu vuông và ô bảng không đổ bóng.
   `lint-ratchet` chặn lệch chuẩn mới (GĐ4, 2026-10-07): `rawOverlay` (tự dựng `fixed inset-0` ngoài
-  `components/shared/ui`) = 27, `tinyText` (`text-[≤10px]`) = 82 (38 là xem trước tin nhắn LINE có chủ đích),
+  `components/shared/ui`) = **0** (2026-10-09: hộp thoại dùng `<Modal>`/`<ConfirmDialog>`, màn chờ/lớp nền/khung toàn màn hình dùng `<Overlay kind="busy|scrim|fullscreen">` — cấm viết lại `fixed inset-0`), `tinyText` (`text-[≤10px]`) = 82 (38 là xem trước tin nhắn LINE có chủ đích),
   `offScaleRadius` (`rounded-3xl`/`rounded-[…]` không qua token) = 11 — chỉ được giảm.
 - **Mật độ bảng** *(mới 2026-09-10)*: dòng dữ liệu cao **26px** (đệm `3px 8px`), đầu bảng **28px** và
   bắt buộc dính trên (`sticky`), dải nhóm **24px**. Bảng nhiều cột phải **ghim cột đầu** (`sticky left`,

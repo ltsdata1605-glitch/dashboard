@@ -11,6 +11,7 @@ import { ApiKeyConfigModal } from '../../../features/tax-calculator/components/A
 import { TaxHistoryModal } from '../../../features/tax-calculator/components/TaxHistoryModal';
 import { AddIndustryKpiModal } from '../../../features/bi-dashboard/components/dashboard/industryKpi/AddIndustryKpiModal';
 import { AvatarPickerModal } from '../../../features/bi-dashboard/components/nhanvien/shared/AvatarPickerModal';
+import { CouponImportModal } from '../../../features/line-bot/components/CouponImportModal';
 import { SelectFilterUserModal } from '../../../features/line-bot/components/SelectFilterUserModal';
 
 const users = Array.from({ length: 14 }, (_, i) => ({
@@ -26,6 +27,11 @@ const taxRecords = Array.from({ length: 9 }, (_, i) => ({
 }));
 
 const nganh = Array.from({ length: 12 }, (_, i) => ({ id: `n${i}`, rawName: `NGANH ${i}`, displayName: `Ngành hàng ${i + 1}`, type: 'industry' as const }));
+
+const maGiamGia = ['A', 'B'].flatMap((lo, bi) => Array.from({ length: 6 }, (_, i) => ({
+    id: `c${bi}${i}`, code: `MA${lo}${i}`.padEnd(10, '0'), type: 'PMH 100K', productName: 'Tủ lạnh Panasonic', status: 'UNUSED' as const,
+    createdAt: new Date(Date.now() - bi * 86_400_000).toISOString(), updatedAt: new Date().toISOString(), importBatchId: `lo-${lo}`,
+})));
 
 function Harness() {
     const [mo, setMo] = useState('');
@@ -59,6 +65,9 @@ function Harness() {
                 <AvatarPickerModal isOpen={mo === 'avatar'} onClose={() => setMo('')} employeeName="Nguyễn Văn Test" currentAvatarSrc={null}
                     onSelectAvatar={() => {}} onResetDefault={() => {}} onUploadFile={async () => {}} />
             </div>
+            <Button id="mo-nap-ma2" onClick={() => setMo('napma')}>Mở nạp mã</Button>
+            <CouponImportModal isOpen={mo === 'napma'} onClose={() => setMo('')} onImport={async () => ({ added: 0, skipped: 0 })}
+                coupons={maGiamGia as never} existingTypes={['PMH 100K']} onDeleteBatch={async (ids) => ids.length} />
             <SelectInteractedUserModal isOpen={mo === 'tuongtac'} onClose={() => setMo('')} interactedUsers={users} isLoading={false}
                 onRefresh={() => {}} existingAdmins={[]} onSelectUser={async () => ({})} />
         </div>

@@ -31,7 +31,7 @@ test('lớp phủ tự dựng trong component lớn (CouponImportModal): tên + 
     await page.goto('/');
     await page.evaluate(async () => (await import('/tests/e2e/helpers/couponHarness.tsx' as string)).mountHarness());
     await page.locator('#mo-nap-ma').click();
-    const hop = page.getByRole('dialog', { name: 'Nạp mã giảm giá' });
+    const hop = page.getByRole('dialog', { name: /Nạp Mã PMH/ });
     await expect(hop).toBeVisible();
     expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
     await page.keyboard.press('Escape');

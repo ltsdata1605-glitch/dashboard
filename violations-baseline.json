@@ -209,32 +209,6 @@
     "iconRawSvg": 0,
     "iconEmoji": 1
   },
-  "features/line-bot/components/CouponImportModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 2,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
-  "features/line-bot/components/CouponManagerTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
   "features/line-bot/components/IPhoneChatPreview.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,

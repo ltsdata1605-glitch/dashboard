@@ -14,6 +14,7 @@ const CASES = [
     { nut: '#mo-lich-su-thue', ten: /Lịch Sử Tính Thuế/, anh: 'lich-su-thue' },
     { nut: '#mo-kpi-nganh', ten: /Quản lý & Thêm Thẻ KPI Ngành Hàng/, anh: 'kpi-nganh' },
     { nut: '#mo-avatar', ten: /Ảnh Đại Diện Nhân Viên/, anh: 'avatar' },
+    { nut: '#mo-nap-ma2', ten: /Nạp Mã PMH & Quản Lý Lần Nạp/, anh: 'nap-ma' },
     { nut: '#mo-huong-dan', ten: /Hướng dẫn tự tạo & Cấu hình BOT LINE/, anh: 'huong-dan' },
 ];
 
@@ -58,4 +59,24 @@ test('modal trong dòng bảng có onClick (ảnh đại diện): click trong kh
     await page.mouse.click(5, 5);                                 // click ra nền → đóng modal
     await expect(hop).toHaveCount(0);
     expect(await page.locator('#hang-bang').getAttribute('data-clicks')).toBe('0');
+});
+
+test('nạp mã: hộp xác nhận xoá đợt nạp lồng trong modal chính — Escape đóng hộp xác nhận trước, rồi mới đến modal chính', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(async () => (await import('/tests/e2e/helpers/modalDaChuyenHarness.tsx' as string)).mountHarness());
+    await page.locator('#mo-nap-ma2').click();
+    const chinh = page.getByRole('dialog', { name: /Nạp Mã PMH & Quản Lý Lần Nạp/ });
+    await expect(chinh).toBeVisible();
+    await chinh.getByText(/Lịch Sử Các Lần Nạp/).click();
+    await chinh.getByRole('button', { name: /Xoá đợt này/ }).first().click();
+    const xacNhan = page.getByRole('dialog', { name: /Xác nhận xoá đợt nạp/ });
+    await expect(xacNhan).toBeVisible();
+    await page.screenshot({ path: 'test-results/modal-chuyen-nap-ma-xac-nhan.png' });
+    await page.keyboard.press('Escape');
+    await expect(xacNhan).toHaveCount(0);
+    await expect(chinh).toBeVisible();                       // modal chính còn mở
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+    await page.keyboard.press('Escape');
+    await expect(chinh).toHaveCount(0);
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
 });
