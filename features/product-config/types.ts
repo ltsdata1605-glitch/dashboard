@@ -8,6 +8,7 @@ export interface ProductConfigSummary {
     vasMultiplierCount: number;
     revenueHtxCount: number;
     nonRevenueHtxCount: number;
+    productCodeCount?: number;
 }
 
 export interface GlobalProductConfigDoc {
@@ -26,3 +27,13 @@ export interface CategoryTableItem {
     multiplier: number;
     vasMultiplier?: number;
 }
+
+export interface ProductCodeTableItem {
+    maSanPham: string;
+    tenSanPham: string;
+    heSo: number;
+    loai?: string;
+    nhom?: string;
+    sheetSource?: string;
+}
+

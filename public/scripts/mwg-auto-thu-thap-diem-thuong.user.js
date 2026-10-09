@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.20
+// @version      7.21
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,11 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.21 — ĐỒNG BỘ THỨ TỰ BƯỚC & KHẮC PHỤC DỮ LIỆU THI ĐUA REALTIME (2026-10-09):
+ * - Khắc phục tình trạng "Báo cáo Thi đua" bị bỏ qua / trơ số 2 xám: Đồng bộ thứ tự chạy của UI Automation Fallback khớp 100% với danh sách hiển thị và Direct API (Bước 1: Hợp nhất → Bước 2: Thi đua → Bước 3: Ngành hàng → Bước 4: Nhân viên).
+ * - Sửa lỗi nghiêm trọng mất dữ liệu ở Bước Thi đua: Chuyển sang chọn tab "Thi đua" trực tiếp trên trang hiện tại (/dashboard/revenue-consolidated) thay vì chuyển hướng sang /dashboard/thi-dua gây reload toàn trang và xóa sạch bộ nhớ tạm.
+ * - Nâng cấp findButtonByText & selectTabOrSection: Hỗ trợ tìm kiếm thông minh với emoji (🏆 Thi đua), ký tự đặc biệt và fuzzy matching chính xác.
+ *
  * BẢN 7.20 — TRIỆT TIÊU 100% ĐỘ TRỄ 1 PHÚT (chủ dự án 2026-10-09):
  * - Loại bỏ các bước bấm toggle giao diện (Lũy kế, DT quy đổi, Trả góp) và các lượt chờ loading 15-40s khi khởi chạy Direct API.
  * - Kích hoạt ngay Direct Internal API Engine 0ms ngay khi mở trang, tải dữ liệu song song 5 báo cáo chỉ trong 1-2 giây.
@@ -2234,7 +2239,7 @@
       if (!acpIsVisible(el)) continue;
       const txt = (el.textContent || '').trim().toLowerCase();
       for (const m of normMatches) {
-        if (txt === m || (txt.startsWith(m) && txt.length < m.length + 15)) {
+        if (txt === m || (txt.startsWith(m) && txt.length < m.length + 15) || (txt.includes(m) && txt.length < m.length + 15)) {
           return el.closest('button, a, [role="button"]') || el;
         }
       }
@@ -2524,12 +2529,25 @@
   }
 
   async function selectTabOrSection(tabName) {
-    const btn = findButtonByText([tabName]);
+    const btn = findButtonByText([tabName, `🏆 ${tabName}`, `🏆${tabName}`]);
     if (btn) {
       console.log(`[BI-Sync] Chọn tab/mục: ${tabName}`);
       acpTriggerClick(btn);
       await acpWaitForLoadingComplete(40000, 600, 500);
       return true;
+    }
+    const norm = String(tabName).toLowerCase().trim();
+    const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], [role="tab"], span, div.cursor-pointer'));
+    for (const el of candidates) {
+      if (!acpIsVisible(el)) continue;
+      const txt = (el.textContent || '').trim().toLowerCase();
+      if (txt === norm || (txt.includes(norm) && txt.length < norm.length + 20)) {
+        const target = el.closest('button, a, [role="button"], [role="tab"]') || el;
+        console.log(`[BI-Sync] Chọn tab/mục (fuzzy): ${tabName} -> "${txt}"`);
+        acpTriggerClick(target);
+        await acpWaitForLoadingComplete(40000, 600, 500);
+        return true;
+      }
     }
     return false;
   }
@@ -3777,47 +3795,55 @@
         results.summary = await collectCurrentBiData();
         console.log('[BI-Sync] Đã xong Bước 1: Doanh thu hợp nhất', results.summary?.length);
 
-        // --- BƯỚC 2: Ngành hàng BI (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Ngành hàng BI") ---
-        await reportProgress(2, totalSteps, 'Ngành hàng BI', 'Bước 2/4: Đang chọn tab "Ngành hàng BI"...');
+        // --- BƯỚC 2: Báo cáo Thi đua (CHỌN TAB "Thi đua" NGAY TẠI REVENUE-CONSOLIDATED) ---
+        await reportProgress(2, totalSteps, 'Thi đua', 'Bước 2/4: Đang chọn tab "Thi đua"...');
+        let okTabThidua = await selectTabOrSection('Thi đua');
+        if (!okTabThidua) {
+          const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], [role="tab"], span, div.cursor-pointer'));
+          const btn = candidates.find(el => acpIsVisible(el) && (el.textContent || '').toLowerCase().includes('thi đua'));
+          if (btn) {
+            acpTriggerClick(btn.closest('button, a, [role="button"], [role="tab"]') || btn);
+            await acpWaitForLoadingComplete(35000, 600, 500);
+            okTabThidua = true;
+          }
+        }
+        await acpWaitForLoadingComplete(30000, 500, 400);
+
+        await reportProgress(2, totalSteps, 'Thi đua', 'Bước 2/4: Đang kiểm tra bộ lọc Siêu thị...');
+        await ensureSelectAllChecked();
+        await acpWaitForLoadingComplete(20000, 400, 300);
+
+        // Đảm bảo nút Realtime đang chọn nếu trên bảng thi đua có toggle Realtime
+        await ensureRealtimeTabActive();
+        await sleep(150);
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
+        await reportProgress(2, totalSteps, 'Thi đua', 'Bước 2/4: Đang sao chép dữ liệu Thi đua Realtime...');
+        results.competition = await collectCurrentBiData();
+        console.log('[BI-Sync] Đã xong Bước 2: Thi đua Realtime', results.competition?.length);
+
+        // --- BƯỚC 3: Ngành hàng BI (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Ngành hàng BI") ---
+        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Bước 3/4: Đang chọn tab "Ngành hàng BI"...');
         await selectTabOrSection('Ngành hàng BI');
         await acpWaitForLoadingComplete(35000, 600, 500);
 
-        await reportProgress(2, totalSteps, 'Ngành hàng BI', 'Bước 2/4: Đang mở rộng các cấp ngành hàng...');
+        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Bước 3/4: Đang mở rộng các cấp ngành hàng...');
         await expandAllCandidates(null, (msg) => {
-          reportProgress(2, totalSteps, 'Ngành hàng BI', msg);
+          reportProgress(3, totalSteps, 'Ngành hàng BI', msg);
         });
         await acpWaitForLoadingComplete(20000, 400, 300);
 
         results.industry = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 2: Ngành hàng BI', results.industry?.length);
+        console.log('[BI-Sync] Đã xong Bước 3: Ngành hàng BI', results.industry?.length);
 
-        // --- BƯỚC 3: Doanh thu nhân viên (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Nhân viên") ---
-        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Bước 3/4: Đang chọn tab "Nhân viên"...');
+        // --- BƯỚC 4: Doanh thu nhân viên (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Nhân viên") ---
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang chọn tab "Nhân viên"...');
         await selectTabOrSection('Nhân viên');
         await acpWaitForLoadingComplete(35000, 600, 500);
 
-        await reportProgress(3, totalSteps, 'Doanh thu nhân viên', 'Bước 3/4: Đang sao chép doanh thu nhân viên...');
+        await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang sao chép doanh thu nhân viên...');
         results.employee = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 3: Doanh thu nhân viên', results.employee?.length);
-
-        // --- BƯỚC 4: Thi đua (ĐIỀU HƯỚNG SANG TRANG /dashboard/thi-dua & BẤM REALTIME) ---
-        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang chuyển sang trang Thi đua...');
-        await navigateToBiSection('Thi đua', '/dashboard/thi-dua');
-        await acpWaitForLoadingComplete(35000, 600, 500);
-
-        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang chọn tất cả siêu thị...');
-        await ensureSelectAllChecked();
-        await acpWaitForLoadingComplete(30000, 500, 400);
-
-        // BƯỚC QUYẾT ĐỊNH: Bấm nút "Realtime" trên trang Thi đua
-        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang chọn chế độ "Realtime" cho Thi đua...');
-        await ensureRealtimeTabActive();
-        await sleep(250);
-        await acpWaitForLoadingComplete(30000, 500, 400);
-
-        await reportProgress(4, totalSteps, 'Thi đua', 'Bước 4/4: Đang sao chép dữ liệu Thi đua Realtime...');
-        results.competition = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 4: Thi đua Realtime', results.competition?.length);
+        console.log('[BI-Sync] Đã xong Bước 4: Doanh thu nhân viên', results.employee?.length);
 
         await reportDone(results);
 

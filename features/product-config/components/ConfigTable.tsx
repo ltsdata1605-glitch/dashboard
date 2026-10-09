@@ -212,18 +212,16 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                             className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none font-mono font-bold"
                         />
                     </div>
-                    {hasIndustry && (
-                        <div className="flex-1 min-w-[140px]">
-                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Ngành hàng</label>
-                            <input
-                                type="text"
-                                placeholder="VD: 16 - Phụ kiện tiện ích"
-                                value={newItem.industry}
-                                onChange={e => setNewItem(prev => ({ ...prev, industry: e.target.value }))}
-                                className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none"
-                            />
-                        </div>
-                    )}
+                    <div className="flex-1 min-w-[140px]">
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Ngành hàng</label>
+                        <input
+                            type="text"
+                            placeholder="VD: 164 - VAS hoặc CE"
+                            value={newItem.industry}
+                            onChange={e => setNewItem(prev => ({ ...prev, industry: e.target.value }))}
+                            className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none"
+                        />
+                    </div>
                     <div className="flex-1 min-w-[120px]">
                         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm cha</label>
                         <input
@@ -278,8 +276,8 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <thead className="sticky top-0 z-10 bg-slate-100 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                         <tr>
                             <th className="py-2.5 px-3 w-14 text-center">STT</th>
-                            {hasIndustry && <th className="py-2.5 px-3 min-w-[200px]">Ngành Hàng</th>}
-                            <th className="py-2.5 px-3 min-w-[130px]">Mã Nhóm Hàng</th>
+                            <th className="py-2.5 px-3 min-w-[180px]">Ngành Hàng</th>
+                            <th className="py-2.5 px-3 min-w-[200px]">Nhóm Hàng</th>
                             <th className="py-2.5 px-3 min-w-[130px]">Nhóm Cha</th>
                             <th className="py-2.5 px-3 min-w-[160px]">Nhóm Con</th>
                             <th className="py-2.5 px-3 w-32 text-right">Hệ Số Quy Đổi</th>
@@ -289,7 +287,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <tbody className="divide-y divide-slate-100 font-medium">
                         {paginated.length === 0 ? (
                             <tr>
-                                <td colSpan={(hasIndustry ? 1 : 0) + (isEditable ? 6 : 5)} className="py-10 text-center text-slate-400 font-medium">
+                                <td colSpan={isEditable ? 7 : 6} className="py-10 text-center text-slate-400 font-medium">
                                     Không tìm thấy ngành hàng nào khớp với tìm kiếm
                                 </td>
                             </tr>
@@ -304,11 +302,9 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                                         <td className="py-2 px-3 text-center text-slate-400 tabular-nums font-mono text-[11px]">
                                             {rowNum}
                                         </td>
-                                        {hasIndustry && (
-                                            <td className="py-2 px-3 text-slate-500 text-[11px]">
-                                                {renderCell(item, 'industry')}
-                                            </td>
-                                        )}
+                                        <td className="py-2 px-3 text-slate-700 text-[11px] font-medium">
+                                            {renderCell(item, 'industry')}
+                                        </td>
                                         <td className="py-2 px-3 font-mono font-bold text-sky-700">
                                             {item.code}
                                         </td>

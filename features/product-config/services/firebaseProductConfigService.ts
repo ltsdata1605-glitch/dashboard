@@ -20,6 +20,7 @@ export const computeConfigSummary = (config: ProductConfig): ProductConfigSummar
     const vasMultiplierCount = Object.keys(config.vasMultiplierMap || {}).length;
     const revenueHtxCount = config.revenueEligibleHTX instanceof Set ? config.revenueEligibleHTX.size : 0;
     const nonRevenueHtxCount = config.nonRevenueEligibleHTX instanceof Set ? config.nonRevenueEligibleHTX.size : 0;
+    const productCodeCount = config.productCodeItems?.length || 0;
 
     return {
         parentGroupCount: parentGroups.length,
@@ -29,6 +30,7 @@ export const computeConfigSummary = (config: ProductConfig): ProductConfigSummar
         vasMultiplierCount,
         revenueHtxCount,
         nonRevenueHtxCount,
+        productCodeCount,
     };
 };
 
@@ -106,21 +108,62 @@ export async function exportProductConfigToExcel(config: ProductConfig): Promise
     const XLSX = await import('xlsx');
     const workbook = XLSX.utils.book_new();
 
-    // Sheet 1: Ngành hàng & Hệ số quy đổi
-    const categoryRows: Array<[string, string, string, number | string]> = [
-        ['Mã Nhóm Hàng', 'Nhóm Cha', 'Nhóm Con', 'Hệ Số Quy Đổi']
+    // Sheet 1: Ngành hàng (5 cột chuẩn khớp 100% với Google Sheets)
+    const categoryRows: Array<[string, string, string, string, number | string]> = [
+        ['NganhHang', 'NhomHang', 'NhomCha', 'NhomCon', 'HeSoQuyDoi']
     ];
 
-    Object.entries(config.childToParentMap || {}).forEach(([code, parent]) => {
-        const sub = config.childToSubgroupMap?.[code] || '';
-        const mult = config.quantityMultiplierMap?.[code] ?? 1;
-        categoryRows.push([code, parent, sub, mult]);
-    });
+    if (config.originalCategoryItems && config.originalCategoryItems.length > 0) {
+        config.originalCategoryItems.forEach(item => {
+            categoryRows.push([
+                item.industry || '',
+                item.nhomHang,
+                item.nhomCha,
+                item.nhomCon,
+                item.heSoQuyDoi ?? 1
+            ]);
+        });
+    } else {
+        const processed = new Set<string>();
+        Object.entries(config.childToParentMap || {}).forEach(([code, parent]) => {
+            if (/^\d+$/.test(code) && Object.keys(config.childToParentMap).some(k => k !== code && k.startsWith(`${code} -`))) {
+                return; // Bỏ alias số ngắn
+            }
+            if (code === code.toLowerCase() && Object.keys(config.childToParentMap).some(k => k !== code && k.toLowerCase() === code)) {
+                return; // Bỏ bản duplicate lowercase
+            }
+            if (processed.has(code)) return;
+            processed.add(code);
+
+            const industry = config.childToIndustryMap?.[code] || '';
+            const sub = config.childToSubgroupMap?.[code] || '';
+            const mult = config.quantityMultiplierMap?.[code] ?? 1;
+            categoryRows.push([industry, code, parent, sub, mult]);
+        });
+    }
 
     const categorySheet = XLSX.utils.aoa_to_sheet(categoryRows);
     XLSX.utils.book_append_sheet(workbook, categorySheet, 'Ngành hàng');
 
-    // Sheet 2: Hình thức xuất
+    // Sheet 2: Cấu hình theo mã sản phẩm (Khớp 100% Hình 1)
+    if (config.productCodeItems && config.productCodeItems.length > 0) {
+        const productRows: Array<[string | number, string, number | string, string, string]> = [
+            ['MÃ SẢN PHẨM', 'TÊN SẢN PHẨM', 'HỆ SỐ', 'LOẠI', 'NHÓM']
+        ];
+        config.productCodeItems.forEach(item => {
+            productRows.push([
+                item.maSanPham,
+                item.tenSanPham,
+                item.heSo,
+                item.loai || '',
+                item.nhom || ''
+            ]);
+        });
+        const productSheet = XLSX.utils.aoa_to_sheet(productRows);
+        XLSX.utils.book_append_sheet(workbook, productSheet, 'Bảo Hiểm ĐMX');
+    }
+
+    // Sheet 3: Hình thức xuất
     const htxRows: Array<[string, string]> = [['Tên Hình Thức Xuất', 'Loại']];
     (config.revenueEligibleHTX || new Set()).forEach(h => htxRows.push([h, 'Doanh thu']));
     (config.nonRevenueEligibleHTX || new Set()).forEach(h => htxRows.push([h, 'Không tính DT']));
@@ -129,3 +172,4 @@ export async function exportProductConfigToExcel(config: ProductConfig): Promise
 
     XLSX.writeFile(workbook, `Cau_Hinh_Dashboard_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
+

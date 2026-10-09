@@ -13,13 +13,15 @@ import {
     computeConfigSummary,
 } from '../services/firebaseProductConfigService';
 import { ConfigTable } from './ConfigTable';
-import type { CategoryTableItem, ProductConfigSummary } from '../types';
+import { ProductCodeConfigTable } from './ProductCodeConfigTable';
+import type { CategoryTableItem, ProductCodeTableItem, ProductConfigSummary } from '../types';
 import * as dbService from '../../../services/dbService';
 
 export const ProductConfigManagerTab: React.FC = () => {
     const { user, userRole } = useAuth();
     const [config, setConfig] = useState<ProductConfig | null>(null);
     const [summary, setSummary] = useState<ProductConfigSummary | null>(null);
+    const [configType, setConfigType] = useState<'category' | 'productCode'>('category');
     const [updatedAt, setUpdatedAt] = useState<string | undefined>(undefined);
     const [updatedBy, setUpdatedBy] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(true);
@@ -32,7 +34,7 @@ export const ProductConfigManagerTab: React.FC = () => {
     const loadConfig = async () => {
         setIsLoading(true);
         try {
-            // 1. Thử đọc từ Firestore toàn cục
+            // 1. Đọc từ Firestore toàn cục
             const cloudDoc = await getGlobalProductConfig();
             if (cloudDoc) {
                 setConfig(cloudDoc.config);
@@ -46,12 +48,13 @@ export const ProductConfigManagerTab: React.FC = () => {
 
             // 2. Dự phòng: đọc từ IndexedDB cache của máy hiện tại
             const localConfigEntry = await dbService.getProductConfig();
-            if (localConfigEntry?.config) {
+            if (localConfigEntry?.config && Object.keys(localConfigEntry.config.groups || {}).length > 0) {
                 setConfig(localConfigEntry.config);
                 setSummary(computeConfigSummary(localConfigEntry.config));
                 setUpdatedAt(new Date().toISOString());
                 setUpdatedBy('Bộ nhớ cục bộ');
-                setIsDirty(true); // Gợi ý người dùng lưu lên Cloud nếu chỉ có ở máy cục bộ
+                setIsDirty(true);
+                return;
             }
         } catch (err) {
             console.error('[ProductConfigManagerTab] Lỗi nạp cấu hình:', err);
@@ -66,18 +69,56 @@ export const ProductConfigManagerTab: React.FC = () => {
     }, []);
 
     const tableItems = useMemo<CategoryTableItem[]>(() => {
-        if (!config || !config.childToParentMap) return [];
-        const industryMap = config.childToIndustryMap;
-        const codes = industryMap && Object.keys(industryMap).length > 0
-            ? Object.keys(industryMap)
-            : Object.keys(config.childToParentMap);
-        return codes.map(code => ({
+        if (!config) return [];
+
+        // Ưu tiên 1: Dùng danh sách chuẩn nguyên gốc từ file (đúng thứ tự, đủ 5 cột)
+        if (config.originalCategoryItems && config.originalCategoryItems.length > 0) {
+            return config.originalCategoryItems.map(item => ({
+                code: item.nhomHang,
+                industry: item.industry,
+                parentGroup: item.nhomCha,
+                subgroup: item.nhomCon,
+                multiplier: item.heSoQuyDoi ?? config.quantityMultiplierMap?.[item.nhomHang] ?? 1,
+                vasMultiplier: config.vasMultiplierMap?.[item.nhomHang],
+            }));
+        }
+
+        // Ưu tiên 2: Fallback cho cấu hình cũ chỉ có map
+        if (!config.childToParentMap) return [];
+        const industryMap = config.childToIndustryMap || {};
+        const allKeys = Object.keys(config.childToParentMap);
+
+        // Lọc bỏ các key phụ sinh ra từ regex (như "10", "12") nếu đã có key đầy đủ "10 - ..."
+        const uniqueCodes = allKeys.filter(code => {
+            if (/^\d+$/.test(code)) {
+                const hasDetailedCode = allKeys.some(k => k !== code && k.startsWith(`${code} -`));
+                if (hasDetailedCode) return false;
+            }
+            if (code === code.toLowerCase() && allKeys.some(k => k !== code && k.toLowerCase() === code)) {
+                return false;
+            }
+            return true;
+        });
+
+        return uniqueCodes.map(code => ({
             code,
-            industry: industryMap?.[code],
+            industry: industryMap[code],
             parentGroup: config.childToParentMap[code] || '',
             subgroup: config.childToSubgroupMap?.[code] || '',
             multiplier: config.quantityMultiplierMap?.[code] ?? 1,
             vasMultiplier: config.vasMultiplierMap?.[code],
+        }));
+    }, [config]);
+
+    const productCodeTableItems = useMemo<ProductCodeTableItem[]>(() => {
+        if (!config || !config.productCodeItems) return [];
+        return config.productCodeItems.map(item => ({
+            maSanPham: item.maSanPham,
+            tenSanPham: item.tenSanPham,
+            heSo: item.heSo,
+            loai: item.loai,
+            nhom: item.nhom,
+            sheetSource: item.sheetSource,
         }));
     }, [config]);
 
@@ -197,6 +238,68 @@ export const ProductConfigManagerTab: React.FC = () => {
         toast.success(`Đã xoá mã ${code}`);
     }, [mutateConfig]);
 
+    const handleAddProductCodeItem = useCallback((item: ProductCodeTableItem) => {
+        mutateConfig(cfg => {
+            const list = cfg.productCodeItems ? [...cfg.productCodeItems] : [];
+            list.unshift({
+                maSanPham: item.maSanPham,
+                tenSanPham: item.tenSanPham,
+                heSo: item.heSo,
+                loai: item.loai,
+                nhom: item.nhom,
+                sheetSource: item.sheetSource || 'Thủ công',
+            });
+            cfg.productCodeItems = list;
+            cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.maSanPham]: item.heSo };
+            if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+            cfg.vasMultiplierMap[item.maSanPham] = item.heSo;
+            if (item.tenSanPham) {
+                if (!cfg.vasNameMultiplierMap) cfg.vasNameMultiplierMap = {};
+                cfg.vasNameMultiplierMap[item.tenSanPham] = item.heSo;
+            }
+        });
+        toast.success(`Đã thêm mã sản phẩm ${item.maSanPham}`);
+    }, [mutateConfig]);
+
+    const handleUpdateProductCodeItem = useCallback((maSanPham: string, updates: Partial<ProductCodeTableItem>) => {
+        mutateConfig(cfg => {
+            if (!cfg.productCodeItems) return;
+            cfg.productCodeItems = cfg.productCodeItems.map(item => {
+                if (item.maSanPham === maSanPham) {
+                    const next = { ...item, ...updates };
+                    if (updates.heSo !== undefined) {
+                        cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [maSanPham]: updates.heSo };
+                        if (!cfg.vasMultiplierMap) cfg.vasMultiplierMap = {};
+                        cfg.vasMultiplierMap[maSanPham] = updates.heSo;
+                    }
+                    if (updates.tenSanPham !== undefined && cfg.vasNameMultiplierMap && updates.heSo !== undefined) {
+                        cfg.vasNameMultiplierMap[updates.tenSanPham] = updates.heSo;
+                    }
+                    return next;
+                }
+                return item;
+            });
+        });
+        toast.success(`Đã cập nhật mã sản phẩm ${maSanPham}`);
+    }, [mutateConfig]);
+
+    const handleDeleteProductCodeItem = useCallback((maSanPham: string) => {
+        mutateConfig(cfg => {
+            if (cfg.productCodeItems) {
+                cfg.productCodeItems = cfg.productCodeItems.filter(item => item.maSanPham !== maSanPham);
+            }
+            if (cfg.quantityMultiplierMap) {
+                const { [maSanPham]: _, ...rest } = cfg.quantityMultiplierMap;
+                cfg.quantityMultiplierMap = rest;
+            }
+            if (cfg.vasMultiplierMap) {
+                const { [maSanPham]: _, ...rest } = cfg.vasMultiplierMap;
+                cfg.vasMultiplierMap = rest;
+            }
+        });
+        toast.success(`Đã xoá mã sản phẩm ${maSanPham}`);
+    }, [mutateConfig]);
+
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-card border border-slate-200 shadow-sm">
@@ -296,6 +399,8 @@ export const ProductConfigManagerTab: React.FC = () => {
                         <span className="text-slate-300">|</span>
                         <span><strong className="text-slate-700 tabular-nums">{summary.categoryCodeCount}</strong> mã ngành hàng</span>
                         <span className="text-slate-300">|</span>
+                        <span><strong className="text-slate-700 tabular-nums">{summary.productCodeCount ?? productCodeTableItems.length}</strong> mã sản phẩm</span>
+                        <span className="text-slate-300">|</span>
                         <span><strong className="text-slate-700 tabular-nums">{summary.multiplierCount}</strong> hệ số quy đổi</span>
                         <span className="ml-auto flex items-center gap-3">
                             {formattedDate && (
@@ -315,14 +420,69 @@ export const ProductConfigManagerTab: React.FC = () => {
                 )}
             </div>
 
-            {/* Bảng tra cứu */}
-            <ConfigTable
-                items={tableItems}
-                isEditable={isCanManage}
-                onAddItem={handleAddItem}
-                onUpdateItem={handleUpdateItem}
-                onDeleteItem={handleDeleteItem}
-            />
+            {/* Thanh chuyển đổi 2 loại cấu hình */}
+            <div className="flex items-center gap-2 border-b border-slate-200/80 pb-2">
+                <button
+                    onClick={() => setConfigType('category')}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        configType === 'category'
+                            ? 'bg-sky-600 text-white shadow-xs'
+                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    }`}
+                >
+                    <AppIcon name="table" size="xs" />
+                    <span>1. Cấu hình Ngành hàng</span>
+                    <span
+                        className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                            configType === 'category'
+                                ? 'bg-sky-700/80 text-white'
+                                : 'bg-slate-100 text-slate-700'
+                        }`}
+                    >
+                        {tableItems.length}
+                    </span>
+                </button>
+
+                <button
+                    onClick={() => setConfigType('productCode')}
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                        configType === 'productCode'
+                            ? 'bg-sky-600 text-white shadow-xs'
+                            : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                    }`}
+                >
+                    <AppIcon name="template" size="xs" />
+                    <span>2. Cấu hình theo Mã sản phẩm</span>
+                    <span
+                        className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono font-bold ${
+                            configType === 'productCode'
+                                ? 'bg-sky-700/80 text-white'
+                                : 'bg-slate-100 text-slate-700'
+                        }`}
+                    >
+                        {productCodeTableItems.length}
+                    </span>
+                </button>
+            </div>
+
+            {/* Bảng tra cứu tương ứng */}
+            {configType === 'category' ? (
+                <ConfigTable
+                    items={tableItems}
+                    isEditable={isCanManage}
+                    onAddItem={handleAddItem}
+                    onUpdateItem={handleUpdateItem}
+                    onDeleteItem={handleDeleteItem}
+                />
+            ) : (
+                <ProductCodeConfigTable
+                    items={productCodeTableItems}
+                    isEditable={isCanManage}
+                    onAddItem={handleAddProductCodeItem}
+                    onUpdateItem={handleUpdateProductCodeItem}
+                    onDeleteItem={handleDeleteProductCodeItem}
+                />
+            )}
         </div>
     );
 };

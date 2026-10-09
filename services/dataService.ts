@@ -76,10 +76,7 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
     let subgroupIndex = headers.indexOf('NhomCon');
     let productCodeIndex = headers.indexOf('NhomHang');
     let industryIndex = headers.indexOf('NganhHang');
-    const multiplierIndex = headers.findIndex((h: string) => {
-        const lower = cleanAndNormalize(h).toLowerCase();
-        return lower.includes('hệ số') || lower.includes('he so') || lower.includes('multiplier') || lower.includes('hsqd');
-    });
+    let multiplierIndex = headers.indexOf('HeSoQuyDoi');
 
     if (groupIndex === -1) {
         groupIndex = headersNormalized.findIndex((h: string) => h.includes('nhomcha') || h.includes('cha') || h.includes('parent'));
@@ -93,12 +90,19 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
     if (industryIndex === -1) {
         industryIndex = headersNormalized.findIndex((h: string) => h.includes('nganhhang') || h.includes('ngành hàng') || h.includes('industry'));
     }
+    if (multiplierIndex === -1) {
+        multiplierIndex = headersNormalized.findIndex((h: string) => 
+            h.includes('heso') || h.includes('quydoi') || h.includes('hsqd') || h.includes('multiplier') || h.includes('hệsố')
+        );
+    }
     
     if (groupIndex === -1 || subgroupIndex === -1 || productCodeIndex === -1) {
         console.error('Headers found:', headers);
         throw new Error(`Sheet cấu hình '${mainSheetName}' thiếu các cột bắt buộc: NhomCha, NhomCon, NhomHang`);
     }
     
+    const originalCategoryItems: Array<{ industry?: string; nhomHang: string; nhomCha: string; nhomCon: string; heSoQuyDoi: number }> = [];
+
     const dataRows = parsedRows.slice(1);
     dataRows.forEach((row: any[]) => {
         if (row.length > Math.max(groupIndex, subgroupIndex, productCodeIndex)) {
@@ -107,8 +111,9 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
             const productCode = String(row[productCodeIndex] || '').trim();
 
             if (parentGroup && childGroup && productCode) {
+                let industry = '';
                 if (industryIndex !== -1) {
-                    const industry = String(row[industryIndex] || '').trim();
+                    industry = String(row[industryIndex] || '').trim();
                     if (industry) config.childToIndustryMap![productCode] = industry;
                 }
 
@@ -131,17 +136,25 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                 const trimmedLower = productCode.toLowerCase();
                 config.childToParentMap[trimmedLower] = parentGroup;
                 config.childToSubgroupMap[trimmedLower] = childGroup;
+                if (industry) {
+                    config.childToIndustryMap![trimmedLower] = industry;
+                }
 
                 const idMatch = productCode.match(/^(\d+)/);
                 if (idMatch) {
                     const codeId = idMatch[1];
                     config.childToParentMap[codeId] = parentGroup;
                     config.childToSubgroupMap[codeId] = childGroup;
+                    if (industry) {
+                        config.childToIndustryMap![codeId] = industry;
+                    }
                 }
 
-                if (multiplierIndex !== -1 && row[multiplierIndex] !== undefined) {
-                    const multVal = parseFloat(String(row[multiplierIndex]).replace(',', '.'));
-                    if (!isNaN(multVal) && multVal > 0) {
+                let multVal = 1;
+                if (multiplierIndex !== -1 && row[multiplierIndex] !== undefined && row[multiplierIndex] !== '') {
+                    const parsedMult = parseFloat(String(row[multiplierIndex]).replace(',', '.'));
+                    if (!isNaN(parsedMult) && parsedMult > 0) {
+                        multVal = parsedMult;
                         config.quantityMultiplierMap[productCode] = multVal;
                         config.quantityMultiplierMap[trimmedLower] = multVal;
                         if (idMatch) {
@@ -149,9 +162,19 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                         }
                     }
                 }
+
+                originalCategoryItems.push({
+                    industry: industry || undefined,
+                    nhomHang: productCode,
+                    nhomCha: parentGroup,
+                    nhomCon: childGroup,
+                    heSoQuyDoi: multVal,
+                });
             }
         }
     });
+
+    config.originalCategoryItems = originalCategoryItems;
 
     // 2. Parse multiplier sheets (e.g. VIEON, Bảo hiểm ĐMX, Hệ số QĐ, Vas)
     const multiplierSheetNames = workbook.SheetNames.filter((name: string) => {
@@ -166,15 +189,19 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                lowerName.includes('vas');
     });
 
+    const productCodeItems: import('../types').ProductCodeConfigItem[] = [];
+
     multiplierSheetNames.forEach((sheetName: string) => {
         try {
             const sheet = workbook.Sheets[sheetName];
             const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
             if (rows.length >= 2) {
                 const sheetHeaders = rows[0].map((h: any) => String(h || '').trim().toLowerCase().normalize('NFC'));
-                const codeIdx = sheetHeaders.findIndex((h: string) => h.includes('mã sản phẩm') || h === 'mã' || h.includes('mã sp') || h.includes('code'));
+                const codeIdx = sheetHeaders.findIndex((h: string) => h.includes('mã sản phẩm') || h === 'mã' || h.includes('mã sp') || h.includes('code') || h.includes('khai'));
                 const nameIdx = sheetHeaders.findIndex((h: string) => h.includes('tên sản phẩm') || h === 'tên' || h.includes('name'));
                 const multiplierIdx = sheetHeaders.findIndex((h: string) => h.includes('hệ số') || h.includes('sl quy đổi') || h.includes('hệ số quy đổi') || h.includes('multiplier'));
+                const loaiIdx = sheetHeaders.findIndex((h: string) => h.includes('loại') || h.includes('thi đua') || h.includes('type'));
+                const nhomIdx = sheetHeaders.findIndex((h: string) => h.includes('nhóm') || h.includes('group'));
                 
                 if (codeIdx !== -1 && multiplierIdx !== -1) {
                     if (!config.vasNameMultiplierMap) {
@@ -185,23 +212,32 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                         const row = rows[i];
                         if (row.length > Math.max(codeIdx, multiplierIdx)) {
                             const code = String(row[codeIdx] || '').trim();
+                            if (!code) continue;
                             const nameVal = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+                            const loaiVal = loaiIdx !== -1 ? String(row[loaiIdx] || '').trim() : '';
+                            const nhomVal = nhomIdx !== -1 ? String(row[nhomIdx] || '').trim() : '';
                             
                             const rawVal = String(row[multiplierIdx] || '').replace(',', '.');
                             const multiplier = parseFloat(rawVal);
                             
                             if (!isNaN(multiplier)) {
-                                if (code) {
-                                    if (sheetName.toLowerCase().includes('vas')) {
-                                        if (!config.vasMultiplierMap) config.vasMultiplierMap = {};
-                                        config.vasMultiplierMap[code] = multiplier;
-                                    } else {
-                                        config.quantityMultiplierMap[code] = multiplier;
-                                    }
+                                if (sheetName.toLowerCase().includes('vas')) {
+                                    if (!config.vasMultiplierMap) config.vasMultiplierMap = {};
+                                    config.vasMultiplierMap[code] = multiplier;
+                                } else {
+                                    config.quantityMultiplierMap[code] = multiplier;
                                 }
                                 if (nameVal) {
                                     config.vasNameMultiplierMap[nameVal] = multiplier;
                                 }
+                                productCodeItems.push({
+                                    maSanPham: code,
+                                    tenSanPham: nameVal,
+                                    heSo: multiplier,
+                                    loai: loaiVal || undefined,
+                                    nhom: nhomVal || undefined,
+                                    sheetSource: sheetName,
+                                });
                                 count++;
                             }
                         }
@@ -213,6 +249,8 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
             console.warn(`[Config] Lỗi khi xử lý sheet '${sheetName}':`, sheetError);
         }
     });
+
+    config.productCodeItems = productCodeItems;
 
     // 3. Parse "Hình thức xuất" sheet
     const htxSheetName = workbook.SheetNames.find((name: string) => {

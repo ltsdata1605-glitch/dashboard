@@ -75,4 +75,125 @@ describe('firebaseProductConfigService & serialization', () => {
         };
         expect(isProductConfigComplete(incompleteConfig)).toBe(false);
     });
+
+    it('parseProductConfigFromWorkbook accurately parses NganhHang, NhomHang, and HeSoQuyDoi', async () => {
+        const { parseProductConfigFromWorkbook } = await import('../../../services/dataService');
+        
+        const mockRows = [
+            ['NganhHang', 'NhomHang', 'NhomCha', 'NhomCon', 'HeSoQuyDoi'],
+            ['IT', '10 - Chuột máy tính', 'Phụ kiện', 'Chuột', '4.18'],
+            ['IT', '12 - Bàn phím', 'Phụ kiện', 'Bàn phím', 6],
+            ['Điện máy', '13 - Tivi Sony', 'Tivi', 'Tivi Sony', '1.92'],
+            ['Dịch vụ', '4479 - Bảo hiểm', 'Dịch vụ', 'Bảo hiểm', '1,85'],
+        ];
+
+        const mockWorkbook = {
+            SheetNames: ['Ngành hàng'],
+            Sheets: {
+                'Ngành hàng': {},
+            },
+        };
+
+        const mockXlsx = {
+            utils: {
+                sheet_to_json: () => mockRows,
+            },
+        };
+
+        const config = parseProductConfigFromWorkbook(mockWorkbook, mockXlsx);
+
+        // Verify multipliers
+        expect(config.quantityMultiplierMap['10 - Chuột máy tính']).toBe(4.18);
+        expect(config.quantityMultiplierMap['10']).toBe(4.18);
+        expect(config.quantityMultiplierMap['12 - Bàn phím']).toBe(6);
+        expect(config.quantityMultiplierMap['12']).toBe(6);
+        expect(config.quantityMultiplierMap['13 - Tivi Sony']).toBe(1.92);
+        expect(config.quantityMultiplierMap['4479 - Bảo hiểm']).toBe(1.85); // parsed Vietnamese comma decimal
+
+        // Verify industries
+        expect(config.childToIndustryMap?.['10 - Chuột máy tính']).toBe('IT');
+        expect(config.childToIndustryMap?.['10']).toBe('IT');
+        expect(config.childToIndustryMap?.['13 - Tivi Sony']).toBe('Điện máy');
+
+        // Verify originalCategoryItems preservation
+        expect(config.originalCategoryItems).toBeDefined();
+        expect(config.originalCategoryItems?.length).toBe(4);
+        expect(config.originalCategoryItems?.[0]).toEqual({
+            industry: 'IT',
+            nhomHang: '10 - Chuột máy tính',
+            nhomCha: 'Phụ kiện',
+            nhomCon: 'Chuột',
+            heSoQuyDoi: 4.18,
+        });
+        expect(config.originalCategoryItems?.[3]).toEqual({
+            industry: 'Dịch vụ',
+            nhomHang: '4479 - Bảo hiểm',
+            nhomCha: 'Dịch vụ',
+            nhomCon: 'Bảo hiểm',
+            heSoQuyDoi: 1.85,
+        });
+    });
+
+    it('parseProductConfigFromWorkbook parses product code sheets (Bảo Hiểm ĐMX) with full attributes', async () => {
+        const { parseProductConfigFromWorkbook } = await import('../../../services/dataService');
+
+        const mockCategoryRows = [
+            ['NganhHang', 'NhomHang', 'NhomCha', 'NhomCon', 'HeSoQuyDoi'],
+            ['IT', '10 - Chuột', 'Phụ kiện', 'Chuột', 1],
+        ];
+
+        const mockProductCodeRows = [
+            ['MÃ SẢN PHẨM', 'TÊN SẢN PHẨM', 'HỆ SỐ', 'LOẠI', 'NHÓM'],
+            ['1997139000289', 'BHMR 1 năm Apple Watch', 3, 'Apple Watch', 'ICT'],
+            ['1997160000128', 'BHRV 12 tháng Apple Watch', '2', 'Apple Watch', 'ICT'],
+        ];
+
+        const mockWorkbook = {
+            SheetNames: ['Ngành hàng', 'Bảo Hiểm ĐMX'],
+            Sheets: {
+                'Ngành hàng': {},
+                'Bảo Hiểm ĐMX': {},
+            },
+        };
+
+        const mockXlsx = {
+            utils: {
+                sheet_to_json: (sheet: any) => {
+                    if (sheet === mockWorkbook.Sheets['Ngành hàng']) return mockCategoryRows;
+                    return mockProductCodeRows;
+                },
+            },
+        };
+
+        const config = parseProductConfigFromWorkbook(mockWorkbook, mockXlsx);
+
+        expect(config.productCodeItems).toBeDefined();
+        expect(config.productCodeItems?.length).toBe(2);
+        expect(config.productCodeItems?.[0]).toEqual({
+            maSanPham: '1997139000289',
+            tenSanPham: 'BHMR 1 năm Apple Watch',
+            heSo: 3,
+            loai: 'Apple Watch',
+            nhom: 'ICT',
+            sheetSource: 'Bảo Hiểm ĐMX',
+        });
+        expect(config.productCodeItems?.[1]).toEqual({
+            maSanPham: '1997160000128',
+            tenSanPham: 'BHRV 12 tháng Apple Watch',
+            heSo: 2,
+            loai: 'Apple Watch',
+            nhom: 'ICT',
+            sheetSource: 'Bảo Hiểm ĐMX',
+        });
+
+        // Verify multipliers mapped to quantityMultiplierMap
+        expect(config.quantityMultiplierMap['1997139000289']).toBe(3);
+        expect(config.quantityMultiplierMap['1997160000128']).toBe(2);
+
+        // Verify summary
+        const summary = computeConfigSummary(config);
+        expect(summary.productCodeCount).toBe(2);
+    });
 });
+
+

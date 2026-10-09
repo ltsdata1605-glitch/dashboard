@@ -28,6 +28,17 @@ export interface ProductConfig {
     htxClassification?: { [htx: string]: 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' };
     childToIndustryMap?: { [code: string]: string };
     industryBiMap?: { [nhomHang: string]: { parent: string; child: string } };
+    originalCategoryItems?: Array<{ industry?: string; nhomHang: string; nhomCha: string; nhomCon: string; heSoQuyDoi: number }>;
+    productCodeItems?: ProductCodeConfigItem[];
+}
+
+export interface ProductCodeConfigItem {
+    maSanPham: string;
+    tenSanPham: string;
+    heSo: number;
+    loai?: string;
+    nhom?: string;
+    sheetSource?: string;
 }
 
 export interface StoredSalesData {
