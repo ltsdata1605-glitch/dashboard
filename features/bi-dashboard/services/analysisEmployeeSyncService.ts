@@ -230,6 +230,17 @@ export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload |
             const rawEmployees = convertDepartmentMapToEmployees(deptMap);
             const cleanList = normalizeAnalysisEmployees(rawEmployees);
             if (cleanList.length > 0) {
+                // CHỈ ghi cache khi danh sách thật sự đổi. Ghi vô điều kiện tạo VÒNG LẶP VÔ HẠN:
+                // saveSetting('bi_…') phát 'indexeddb-change' (key analysis-employees-list) →
+                // useNhanVienData gọi lại hàm này → ghi tiếp… Hàng trăm giao dịch dồn ứ làm
+                // getSetting('departmentMap') hết 10s ("[IDB] getSetting timeout", ~170 lần/phiên,
+                // gặp thật 2026-10-09) và mỗi vòng còn kích useCloudSync đẩy lên cloud.
+                const cached = docAnalysisEmployeesPayload(await getSetting<unknown>(ANALYSIS_EMPLOYEES_KEY));
+                // So qua CÙNG adapter ở cả 2 phía để thứ tự trường giống nhau.
+                const fresh = docAnalysisEmployeesPayload({ employees: cleanList });
+                if (cached && fresh && JSON.stringify(cached.employees) === JSON.stringify(fresh.employees)) {
+                    return cached;
+                }
                 const payload: AnalysisEmployeesPayload = {
                     schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
                     source: 'phan-tich',
