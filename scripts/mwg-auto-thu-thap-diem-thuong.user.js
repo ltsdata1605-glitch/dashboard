@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.18
+// @version      7.17
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,14 +32,6 @@
 // ==/UserScript==
 
 /*
- * BẢN 7.18 — KHẮC PHỤC DỮ LIỆU LUỸ KẾ KHÔNG CẬP NHẬT (chủ dự án 2026-10-09):
- * - Loại bỏ [role="progressbar"] khỏi ACP_SPINNER_SELECTOR: Khắc phục lỗi thanh tiến trình "Quỹ thời gian: 8/31 ngày (26%)"
- *   trên MWG bị nhận diện nhầm thành loading spinner vô tận, khiến script bị treo 90+ giây tại bước "Khởi tạo Luỹ kế / Đang chọn Lũy kế...".
- * - Loại trừ #acp-bi-sync-overlay khỏi bộ quét text "Đang tải", tránh script tự bắt nhầm chính thông báo trạng thái của mình.
- * - Sửa lỗi đảo logic nút "Trả góp": Phát hiện chính xác dấu ✓, chữ xanh, viền xanh của nút đang bật, không click tắt nhầm.
- * - Tối ưu Direct API: Bổ sung hook tự động bắt Bearer Auth Token trực tiếp từ unsafeWindow fetch & XHR, giảm thời gian khởi tạo.
- * - Sửa UI Fallback Luỹ Kế: Luôn chọn "DT quy đổi" & "Trả góp" thay vì "DT thực".
- *
  * BẢN 7.17 — LUỸ KẾ: Ô THI ĐUA NHÂN VIÊN THẬT SỰ ĐƯỢC CẬP NHẬT (chủ dự án 2026-10-02):
  * - Trang MWG khoan xuống nhân viên bằng mã NỘI BỘ của dòng siêu thị (910 → VIEWIDS "9567"), không bằng mã kho. Bản
  *   7.10–7.16 gửi mã kho → API rỗng → ô THI ĐUA không bao giờ đổi. Nay tự dò mã đó (acpFetchCompetitionStaff), nhớ theo kho.
@@ -1575,7 +1567,8 @@
     'svg.lucide-loader',
     'svg.lucide-loader-2',
     'svg.lucide-spinner',
-    '[aria-busy="true"]:not([role="progressbar"])',
+    '[role="progressbar"]',
+    '[aria-busy="true"]',
     '.el-loading-mask:not([style*="display: none"])',
   ].join(', ');
 
@@ -1603,12 +1596,9 @@
   // Kiểm tra toàn diện xem có bất kỳ loading indicator nào đang active không
   // Bao gồm nút "Đang tải...", spinner xoay tròn animate-spin, skeleton, loadpanel
   function acpIsAnyLoadingActive() {
-    // 1. Kiểm tra text "Đang tải" ở button / badge / thẻ con (loại trừ overlay của chính mình)
+    // 1. Kiểm tra text "Đang tải" ở button / badge / thẻ con
     const candidates = document.querySelectorAll('button, a, [role="button"], span, div');
     for (const el of candidates) {
-      if (el.closest && (el.closest('#acp-status-box') || el.closest('#acp-float-btn') || el.closest('#__copy_wait_toast__') || el.closest('#acp-bi-sync-overlay'))) {
-        continue;
-      }
       if (el.children.length <= 4 && acpIsSpinnerVisible(el)) {
         const txt = (el.textContent || '').trim();
         if (txt.includes('Đang tải') || txt === 'Loading...' || txt === 'Loading') {
@@ -1617,10 +1607,10 @@
       }
     }
 
-    // 2. Kiểm tra các selector spinner phổ biến (loại trừ overlay và các progress bar tĩnh như quỹ thời gian)
+    // 2. Kiểm tra các selector spinner phổ biến
     const spinners = document.querySelectorAll(ACP_SPINNER_SELECTOR);
     for (const s of spinners) {
-      if (s.closest && (s.closest('#acp-status-box') || s.closest('#acp-float-btn') || s.closest('#__copy_wait_toast__') || s.closest('#acp-bi-sync-overlay') || s.closest('.timeline') || s.closest('[class*="progress"]'))) {
+      if (s.closest && (s.closest('#acp-status-box') || s.closest('#acp-float-btn') || s.closest('#__copy_wait_toast__') || s.closest('#acp-bi-sync-overlay'))) {
         continue;
       }
       if (acpIsSpinnerVisible(s)) {
@@ -2479,12 +2469,8 @@
 
     if (btn) {
       const cls = btn.getAttribute('class') || '';
-      const txt = (btn.textContent || '').trim();
       const style = window.getComputedStyle(btn);
-
-      const hasCheckmark = txt.includes('✓') || !!btn.querySelector('svg, [class*="check"]');
       const isBlue =
-        hasCheckmark ||
         cls.includes('bg-blue-600') ||
         cls.includes('bg-blue-500') ||
         cls.includes('text-blue-600') ||
@@ -2494,17 +2480,22 @@
         btn.getAttribute('data-state') === 'on' ||
         btn.getAttribute('data-state') === 'checked' ||
         style.backgroundColor.includes('37, 99, 235') ||
-        style.color.includes('37, 99, 235') ||
-        style.borderColor.includes('37, 99, 235');
+        style.color.includes('37, 99, 235');
 
-      if (!isBlue) {
+      const isInactive =
+        cls.includes('bg-white') ||
+        cls.includes('text-gray') ||
+        cls.includes('border-slate-200') ||
+        cls.includes('border-gray-200');
+
+      if (!isBlue || isInactive) {
         console.log('[BI-Sync] Kích hoạt bật nút "Trả góp"...');
         acpTriggerClick(btn);
         try { btn.click(); } catch (_) {}
-        await sleep(200);
-        await acpWaitForLoadingComplete(6000, 150, 150);
+        await sleep(250);
+        await acpWaitForLoadingComplete(15000, 200, 200);
       } else {
-        console.log('[BI-Sync] Nút "Trả góp" đã active sẵn (có dấu ✓ hoặc viền/chữ xanh).');
+        console.log('[BI-Sync] Nút "Trả góp" đã active sẵn.');
       }
       return true;
     }
@@ -2767,7 +2758,7 @@
   let capturedAuthToken = null;
   let capturedStoreIds = null;
 
-  // Lắng nghe Token được phát từ Page Context hoặc Inline Injector & chặn request qua fetch/XHR
+  // Lắng nghe Token được phát từ Page Context hoặc Inline Injector
   if (typeof window !== 'undefined' && Array.isArray(BI_HOSTNAMES) && BI_HOSTNAMES.includes(location.hostname)) {
     try {
       window.addEventListener('message', (ev) => {
@@ -2782,52 +2773,6 @@
           }
         } catch (_) {}
       });
-    } catch (_) {}
-
-    // Hook fetch & XMLHttpRequest trên unsafeWindow để tự động bắt Authorization Bearer token ngay khi trang gọi bất kỳ API nào
-    try {
-      const uWin = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-      if (uWin && uWin.fetch) {
-        const origFetch = uWin.fetch;
-        uWin.fetch = function(...args) {
-          try {
-            const req = args[0];
-            const opts = args[1] || {};
-            const headers = (req && req.headers) || opts.headers;
-            let auth = '';
-            if (headers) {
-              if (typeof headers.get === 'function') {
-                auth = headers.get('authorization') || headers.get('Authorization') || '';
-              } else if (typeof headers === 'object') {
-                auth = headers.authorization || headers.Authorization || '';
-              }
-            }
-            if (auth && auth.includes('Bearer ')) {
-              const m = auth.match(/Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
-              if (m && !capturedAuthToken) {
-                capturedAuthToken = m[1];
-                try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
-              }
-            }
-          } catch (_) {}
-          return origFetch.apply(this, args);
-        };
-      }
-      if (uWin && uWin.XMLHttpRequest && uWin.XMLHttpRequest.prototype) {
-        const origSetHeader = uWin.XMLHttpRequest.prototype.setRequestHeader;
-        uWin.XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
-          try {
-            if (header && header.toLowerCase() === 'authorization' && value && value.includes('Bearer ')) {
-              const m = value.match(/Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
-              if (m && !capturedAuthToken) {
-                capturedAuthToken = m[1];
-                try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
-              }
-            }
-          } catch (_) {}
-          return origSetHeader.apply(this, arguments);
-        };
-      }
     } catch (_) {}
   }
 
@@ -2864,14 +2809,6 @@
           }
         }
       }
-
-      // Kiểm tra cookies
-      try {
-        if (typeof document !== 'undefined' && document.cookie) {
-          const m = document.cookie.match(/(?:token|access_token|auth_token|jwt)=([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
-          if (m) return m[1];
-        }
-      } catch (_) {}
     } catch (_) {}
     return null;
   }
@@ -3439,10 +3376,10 @@
     const results = {};
 
     try {
-      // Đợi trang nạp ban đầu tắt hẳn loading (nhanh gọn, không bị kẹt vì progressbar tĩnh)
-      await acpWaitForLoadingComplete(6000, 300, 200);
+      // Đợi trang nạp ban đầu tắt hẳn loading
+      await acpWaitForLoadingComplete(30000, 800, 500);
 
-      // ====== BẢN 7.7+: DIRECT API CHO CẢ REALTIME LẪN LUỸ KẾ (5 báo cáo) ======
+      // ====== BẢN 7.7: DIRECT API CHO CẢ REALTIME LẪN LUỸ KẾ (4 báo cáo) ======
       // Khác nhau DUY NHẤT: nút chọn trên trang (Realtime / Lũy kế), dải ngày (hôm nay / 01 đầu tháng → hôm nay)
       // và TIMETYPE Thi đua (1 = Realtime, 2 = Luỹ kế). API lỗi / không có token → chạy đường UI riêng của từng chế độ.
       const isLuyKe = mode === 'luyke';
@@ -3454,14 +3391,14 @@
         await reportProgress(1, totalSteps, `Khởi tạo ${modeLabel}`, `Ưu tiên đầu tiên: Đang chọn "${isLuyKe ? 'Lũy kế' : 'Realtime'}"...`);
         if (isLuyKe) await ensureToggleActive('Lũy kế');
         else await ensureRealtimeTabActive();
-        await sleep(150);
+        await sleep(250);
 
         // TIẾP THEO: Đảm bảo tự động chọn "DT quy đổi" & bật nút "Trả góp"
         await ensureToggleActive('DT quy đổi');
-        await sleep(150);
+        await sleep(200);
         await ensureTraGopActive();
-        await sleep(150);
-        await acpWaitForLoadingComplete(4000, 150, 150);
+        await sleep(200);
+        await acpWaitForLoadingComplete(15000, 250, 200);
 
         // ====== THỬ CHẠY BẰNG DIRECT INTERNAL API ENGINE (SIÊU TỐC 1-2S) ======
         await reportProgress(1, totalSteps, 'Khởi tạo API', 'Đang xác thực phiên làm việc Direct API...');
@@ -3817,15 +3754,13 @@
         // --- BƯỚC 1: Doanh thu hợp nhất Luỹ kế ---
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị và Luỹ kế...');
         await ensureSelectAllChecked();
-        await acpWaitForLoadingComplete(15000, 300, 200);
+        await acpWaitForLoadingComplete(35000, 500, 400);
 
         await ensureToggleActive('Lũy kế');
-        await acpWaitForLoadingComplete(15000, 300, 200);
+        await acpWaitForLoadingComplete(30000, 500, 400);
 
-        await ensureToggleActive('DT quy đổi');
-        await sleep(150);
-        await ensureTraGopActive();
-        await acpWaitForLoadingComplete(15000, 300, 200);
+        await ensureToggleActive('DT thực');
+        await acpWaitForLoadingComplete(25000, 400, 300);
 
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang mở rộng các cấp dữ liệu...');
         await expandAllCandidates(null, (msg) => {
