@@ -481,45 +481,6 @@
     "tinyText": 0,
     "offScaleRadius": 0
   },
-  "features/tax-calculator/components/ApiKeyConfigModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
-  "features/tax-calculator/components/TaxBracketModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
-  "features/tax-calculator/components/TaxHistoryModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 1,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
   "utils/dataUtils.ts": {
     "nonSemanticColor": 0,
     "indigoAlias": 2,

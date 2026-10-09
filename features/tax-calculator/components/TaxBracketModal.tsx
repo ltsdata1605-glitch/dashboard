@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import {
     TAX_BRACKETS_2026,
@@ -23,42 +23,35 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
     activeBracketsWithProxy = [],
     activeBracketsWithoutProxy = [],
 }) => {
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
-
     const brackets = TAX_BRACKETS_2026;
     const personalDeduction = PERSONAL_DEDUCTION_2026;
     const dependentDeduction = DEPENDENT_DEDUCTION_2026;
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Biểu thuế thu nhập cá nhân" tabIndex={-1} className="outline-none relative w-full max-w-xl bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
-                            <AppIcon name="layers" size="md" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-1.5">
-                                <h3 className="font-bold text-sm text-slate-800 dark:text-white">
-                                    Biểu Thuế Thu Nhập Cá Nhân
-                                </h3>
-                                <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400">
-                                    <AppIcon name="sparkles" size="xs" /> 5 Bậc
-                                </span>
-                            </div>
-                            <p className="text-[11px] text-slate-400">
-                                Luật Thuế TNCN số 109/2025/QH15 (Áp dụng từ kỳ tính thuế 2026)
-                            </p>
-                        </div>
-                    </div>
-                    <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <AppIcon name="close" size="md" />
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="lg"
+            ariaLabel="Biểu thuế thu nhập cá nhân"
+            subTitle={"Luật Thuế TNCN số 109/2025/QH15 (Áp dụng từ kỳ tính thuế 2026)"}
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="layers" size="md" className="text-sky-600" />
+                    <span>Biểu Thuế Thu Nhập Cá Nhân</span>
+                    <span className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 rounded bg-amber-100 text-amber-700"><AppIcon name="sparkles" size="xs" /> 5 Bậc</span>
+                </span>
+            }
+            footer={
+                <div className="flex justify-end">
+
+                    <Button variant="secondary" size="sm" onClick={onClose}>
+                        Đóng
                     </Button>
                 </div>
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
 
                 {/* Deductions banner */}
                 <div className="px-4 py-2.5 bg-sky-50/50 dark:bg-sky-950/20 border-b border-slate-100 dark:border-slate-800 text-xs flex flex-wrap gap-4 text-slate-700 dark:text-slate-300">
@@ -126,14 +119,7 @@ export const TaxBracketModal: React.FC<TaxBracketModalProps> = ({
                         <p><strong className="text-slate-700 dark:text-slate-200">Ghi chú:</strong> Thu nhập tính thuế = Tổng thu nhập chịu thuế - (Giảm trừ bản thân 15.5tr + Giảm trừ người phụ thuộc 6.2tr/người + Bảo hiểm bắt buộc 10.5% + Đoàn phí công đoàn).</p>
                     </div>
                 </div>
-
-                {/* Footer */}
-                <div className="flex justify-end px-4 py-2.5 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-700">
-                    <Button variant="secondary" size="sm" onClick={onClose}>
-                        Đóng
-                    </Button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };

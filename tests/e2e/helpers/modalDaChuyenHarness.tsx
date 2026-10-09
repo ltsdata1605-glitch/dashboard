@@ -6,12 +6,21 @@ import { SelectInteractedUserModal } from '../../../features/line-bot/components
 import { KeywordEditModal } from '../../../features/line-bot/components/KeywordEditModal';
 import { ScheduleEditModal } from '../../../features/line-bot/components/ScheduleEditModal';
 import { LineBotOnboardingModal } from '../../../features/line-bot/components/LineBotOnboardingModal';
+import { TaxBracketModal } from '../../../features/tax-calculator/components/TaxBracketModal';
+import { ApiKeyConfigModal } from '../../../features/tax-calculator/components/ApiKeyConfigModal';
+import { TaxHistoryModal } from '../../../features/tax-calculator/components/TaxHistoryModal';
 import { SelectFilterUserModal } from '../../../features/line-bot/components/SelectFilterUserModal';
 
 const users = Array.from({ length: 14 }, (_, i) => ({
     id: `U${i}`.padEnd(33, 'a'), lineUserId: `U${i}`.padEnd(33, 'a'), displayName: `Nhân viên ${i + 1} - Nguyễn Văn Test`,
     lastInteractionType: (i % 2 ? 'GROUP' : 'DIRECT') as 'GROUP' | 'DIRECT', lastGroupName: 'Nhóm Siêu Thị 910',
     lastMessage: 'id', lastInteractedAt: new Date(Date.now() - i * 3600_000).toISOString(),
+}));
+
+const taxRecords = Array.from({ length: 9 }, (_, i) => ({
+    id: i + 1, name: `Nguyễn Văn ${String.fromCharCode(65 + i)}`, monthYear: i < 5 ? '09/2026' : '08/2026', totalIncome: 18_000_000 + i * 1_500_000,
+    dependents: i % 3, proxyAmount: 4_000_000 + i * 100_000, taxOnProxyAmount: 120_000 + i * 5_000, netRefundToFriend: 3_800_000 + i * 90_000,
+    createdAt: new Date(Date.now() - i * 86_400_000).toISOString(), syncedToCloud: true,
 }));
 
 function Harness() {
@@ -29,6 +38,13 @@ function Harness() {
                 groups={[{ groupId: 'C' + 'a'.repeat(32), groupName: 'Nhóm Siêu Thị 910', active: true } as never]} onSave={async () => 'ok'} />
             <Button id="mo-huong-dan" onClick={() => setMo('huongdan')}>Mở hướng dẫn</Button>
             <LineBotOnboardingModal isOpen={mo === 'huongdan'} onClose={() => setMo('')} webhookUrl="https://example.com/lineBotWebhook?uid=abc" />
+            <Button id="mo-bieu-thue2" onClick={() => setMo('bieuthue')}>Mở biểu thuế</Button>
+            <TaxBracketModal isOpen={mo === 'bieuthue'} onClose={() => setMo('')} />
+            <Button id="mo-api-key" onClick={() => setMo('apikey')}>Mở API key</Button>
+            <ApiKeyConfigModal isOpen={mo === 'apikey'} onClose={() => setMo('')} onSaveKey={() => {}} />
+            <Button id="mo-lich-su-thue" onClick={() => setMo('lichsuthue')}>Mở lịch sử thuế</Button>
+            <TaxHistoryModal isOpen={mo === 'lichsuthue'} onClose={() => setMo('')} records={taxRecords} onLoadRecord={() => {}}
+                onDeleteRecord={() => {}} onClearAll={() => {}} />
             <SelectInteractedUserModal isOpen={mo === 'tuongtac'} onClose={() => setMo('')} interactedUsers={users} isLoading={false}
                 onRefresh={() => {}} existingAdmins={[]} onSelectUser={async () => ({})} />
         </div>

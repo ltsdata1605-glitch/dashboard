@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { SavedTaxRecord } from '../types/tax.types';
@@ -103,33 +103,55 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
         }
     };
 
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
-
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Lịch sử tính thuế và hoàn thuế" tabIndex={-1} className="outline-none relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col max-h-[90vh]">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="lg"
+            ariaLabel="Lịch sử tính thuế và hoàn thuế"
+            subTitle={"Lưu trữ trên thiết bị (IndexedDB) & tự động đồng bộ Firebase Cloud"}
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="history" size="md" className="text-sky-600" />
+                    <span>Lịch Sử Tính Thuế &amp; Hoàn Thuế ({records.length})</span>
+                </span>
+            }
+            footer={
+                <div className="flex items-center justify-between">
+
+                    {records.length > 0 ? (
+                        <button
+                            type="button"
+                            onClick={onClearAll}
+                            className="text-xs text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                        >
+                            <AppIcon name="delete" size="sm" />
+                            <span>Xóa toàn bộ</span>
+                        </button>
+                    ) : (
+                        <div />
+                    )}
+
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400">
-                            <AppIcon name="history" size="md" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-sm text-slate-800 dark:text-white">
-                                Lịch Sử Tính Thuế & Hoàn Thuế ({records.length})
-                            </h3>
-                            <p className="text-[11px] text-slate-400">
-                                Lưu trữ trên thiết bị (IndexedDB) & tự động đồng bộ Firebase Cloud
-                            </p>
-                        </div>
+                        {records.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
+                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                            >
+                                <AppIcon name="spreadsheet" size="md" />
+                                <span>Xuất Excel</span>
+                            </button>
+                        )}
+                        <Button variant="secondary" size="sm" onClick={onClose}>
+                            Đóng
+                        </Button>
                     </div>
-                    <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <AppIcon name="close" size="md" />
-                    </Button>
                 </div>
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
 
                 {/* Month filter tabs */}
                 {monthGroups.length > 1 && (
@@ -345,39 +367,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
                         ))
                     )}
                 </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-700">
-                    {records.length > 0 ? (
-                        <button
-                            type="button"
-                            onClick={onClearAll}
-                            className="text-xs text-rose-500 hover:text-rose-700 hover:underline flex items-center gap-1 cursor-pointer font-medium"
-                        >
-                            <AppIcon name="delete" size="sm" />
-                            <span>Xóa toàn bộ</span>
-                        </button>
-                    ) : (
-                        <div />
-                    )}
-
-                    <div className="flex items-center gap-2">
-                        {records.length > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => handleExportExcel(activeRecords, activeMonthLabel)}
-                                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
-                            >
-                                <AppIcon name="spreadsheet" size="md" />
-                                <span>Xuất Excel</span>
-                            </button>
-                        )}
-                        <Button variant="secondary" size="sm" onClick={onClose}>
-                            Đóng
-                        </Button>
-                    </div>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };

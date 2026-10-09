@@ -9,6 +9,9 @@ const CASES = [
     { nut: '#mo-chon-loc', ten: /Chọn Người Dùng Bot Để Lọc PMH/, anh: 'chon-loc' },
     { nut: '#mo-tu-khoa', ten: /Thêm Từ Khoá Tự Động/, anh: 'tu-khoa' },
     { nut: '#mo-lich-hen', ten: /Tạo Lịch Hẹn Thông Báo/, anh: 'lich-hen' },
+    { nut: '#mo-bieu-thue2', ten: /Biểu Thuế Thu Nhập Cá Nhân/, anh: 'bieu-thue' },
+    { nut: '#mo-api-key', ten: /Cài Đặt Gemini API Key/, anh: 'api-key' },
+    { nut: '#mo-lich-su-thue', ten: /Lịch Sử Tính Thuế/, anh: 'lich-su-thue' },
     { nut: '#mo-huong-dan', ten: /Hướng dẫn tự tạo & Cấu hình BOT LINE/, anh: 'huong-dan' },
 ];
 

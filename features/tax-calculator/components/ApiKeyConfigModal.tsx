@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../components/shared/ui/Modal';
+import { Modal } from '../../../components/shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 
@@ -19,11 +19,6 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
 }) => {
     const [apiKey, setApiKey] = useState(() => localStorage.getItem(API_KEY_STORAGE_KEY) || '');
     const [isChecking, setIsChecking] = useState(false);
-
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
 
     const handleSave = () => {
         const trimmed = apiKey.trim();
@@ -66,25 +61,44 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
     };
 
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Cài đặt Gemini API Key" tabIndex={-1} className="outline-none relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="md"
+            ariaLabel="Cài đặt Gemini API Key"
+            subTitle={"Dùng để trích xuất ảnh phiếu lương trực tiếp"}
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="apiKey" size="md" className="text-amber-600" />
+                    <span>Cài Đặt Gemini API Key (AI)</span>
+                </span>
+            }
+            footer={
+                <div className="flex items-center justify-between gap-2">
+
+                    <button
+                        type="button"
+                        onClick={handleTestKey}
+                        disabled={isChecking}
+                        className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                    >
+                        {isChecking ? 'Đang kiểm tra...' : 'Kiểm tra key'}
+                    </button>
+
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
-                            <AppIcon name="apiKey" size="md" />
-                        </div>
-                        <div>
-                            <h3 className="font-bold text-sm text-slate-800 dark:text-white">
-                                Cài Đặt Gemini API Key (AI)
-                            </h3>
-                            <p className="text-[11px] text-slate-400">Dùng để trích xuất ảnh phiếu lương trực tiếp</p>
-                        </div>
+                        <Button variant="secondary" size="sm" onClick={onClose}>
+                            Đóng
+                        </Button>
+                        <Button variant="primary" size="sm" onClick={handleSave} className="flex items-center gap-1">
+                            <AppIcon name="check" size="sm" />
+                            <span>Lưu cài đặt</span>
+                        </Button>
                     </div>
-                    <Button variant="ghost" size="none" onClick={onClose} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                        <AppIcon name="close" size="md" />
-                    </Button>
                 </div>
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
 
                 {/* Body */}
                 <div className="p-4 space-y-3.5 text-xs">
@@ -126,29 +140,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
                         <p>3. Sao chép đoạn mã bắt đầu bằng <code className="bg-sky-100 dark:bg-sky-900 px-1 py-0.2 rounded font-mono">AIza...</code> dán vào ô trên.</p>
                     </div>
                 </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-700 gap-2">
-                    <button
-                        type="button"
-                        onClick={handleTestKey}
-                        disabled={isChecking}
-                        className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
-                    >
-                        {isChecking ? 'Đang kiểm tra...' : 'Kiểm tra key'}
-                    </button>
-
-                    <div className="flex items-center gap-2">
-                        <Button variant="secondary" size="sm" onClick={onClose}>
-                            Đóng
-                        </Button>
-                        <Button variant="primary" size="sm" onClick={handleSave} className="flex items-center gap-1">
-                            <AppIcon name="check" size="sm" />
-                            <span>Lưu cài đặt</span>
-                        </Button>
-                    </div>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };

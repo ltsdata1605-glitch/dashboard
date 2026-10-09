@@ -7564,3 +7564,10 @@ Chuyển `KeywordEditModal`, `ScheduleEditModal`, `LineBotOnboardingModal` (Bot 
 `tests/e2e/modal-da-chuyen-modal-chung.spec.ts` nay 5 modal × laptop/iPhone = 10 ca xanh; đã xem ảnh chụp của từng modal.
 Còn 22: CouponImportModal (2 lớp, 800 dòng) + CouponManagerTab (Bot LINE); Thuế ×3; BI ×2; Sticker ×2; lớp phủ chờ/tiến trình & popup bộ lọc (loại khác hộp thoại).
 
+### GĐ4 — modal tự dựng, đợt 3: Thuế (rawOverlay 22 → 19)
+Chuyển `TaxBracketModal`, `ApiKeyConfigModal`, `TaxHistoryModal` bằng một hàm biến đổi chung (tiêu đề/phụ đề → `title`/`subTitle`, chân trang → `footer`,
+phần giữa giữ nguyên trong khung bù lề). `modal-da-chuyen-modal-chung.spec.ts` nay 8 modal × laptop/iPhone = 16 ca + `modal-tu-dung-hanh-vi` 2 ca, đều xanh; đã xem ảnh chụp.
+Khác biệt nhỏ: thanh lọc tháng và dải "Thủ quỹ hoàn thuế" của Lịch sử Thuế nay cuộn cùng danh sách (trước dính trên đầu).
+e2e Thuế: 15 xanh, 1 đỏ có sẵn từ trước (`tax-paste-hrm` — cần mở trang ngoài, không thuộc modal).
+Còn 19: CouponImportModal (2 lớp) + CouponManagerTab; BI ×2; Sticker ×2; lớp phủ chờ/tiến trình & popup bộ lọc.
+
