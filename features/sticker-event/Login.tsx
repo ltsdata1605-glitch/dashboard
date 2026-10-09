@@ -156,8 +156,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         const fnCode = getErrorCode(fnErr) || (fnErr as AuthErrorLike).code || '';
         const fnMsg = getErrorMessage(fnErr) || (fnErr as AuthErrorLike).message || '';
 
-        // If Cloud Function returns business error
-        if (fnCode.includes('not-found') || fnMsg.includes('chưa có tài khoản') || fnMsg.includes('chưa tồn tại')) {
+        // If Cloud Function returns business error.
+        // Xét THÔNG ĐIỆP chứ không xét mã `not-found`: SDK đổi HTTP 404 (hàm đang deploy lại /
+        // chưa deploy) thành đúng mã `functions/not-found` với thông điệp "NOT FOUND" — xét mã thì
+        // nhân viên có tài khoản thật bị báo "chưa có tài khoản" (gặp thật 2026-10-09, user 195025).
+        if (fnMsg.includes('chưa có tài khoản') || fnMsg.includes('chưa tồn tại')) {
           setError('Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
           setLoading(false);
           return;
@@ -180,6 +183,9 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         if (serverCannotSignToken) {
           console.warn('stickerStaffAuth: máy chủ thiếu quyền ký custom token (IAM) — dùng đường dự phòng. ' + fnMsg);
         }
+        // Tới đây là máy chủ KHÔNG trả lời nghiệp vụ (404/mạng/internal) — nếu dự phòng cũng hỏng thì
+        // báo đúng là lỗi máy chủ, không được đổ cho người dùng "chưa có tài khoản".
+        const serverUnreachableMsg = `Máy chủ đăng nhập tạm thời không phản hồi (${fnCode || 'lỗi mạng'}). Vui lòng thử lại sau ít phút.`;
 
         // 2. If Cloud Function returns internal / not-deployed error, fallback to client-side Auth
         console.warn("Cloud Function stickerStaffAuth unavailable, using client-side fallback:", fnErr);
@@ -207,7 +213,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               if (!loggedIn) {
                 setError(serverCannotSignToken
                   ? fnMsg
-                  : 'Tên đăng nhập chưa có tài khoản. Vui lòng chọn "Đăng ký" bên dưới.');
+                  : serverUnreachableMsg);
                 setLoading(false);
                 return;
               }
@@ -264,7 +270,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           } else if (serverCannotSignToken) {
             setError(fnMsg);
           } else {
-            setError('Xác thực thất bại. Vui lòng kiểm tra lại tên đăng nhập hoặc chọn "Đăng ký".');
+            setError(serverUnreachableMsg);
           }
           setLoading(false);
           return;

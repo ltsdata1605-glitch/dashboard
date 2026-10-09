@@ -187,17 +187,17 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         } else if (meta.id === 'EVENT') {
             badgeColor = 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700';
         } else if (meta.id === 'GVGS') {
-            badgeColor = 'bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-300 dark:border-teal-700';
+            badgeColor = 'bg-emerald-200 text-emerald-800 border border-emerald-400';
         } else if (meta.id === 'HONOR') {
-            badgeColor = 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700';
+            badgeColor = 'bg-sky-200 text-sky-800 border border-sky-400';
         } else if (meta.id === 'SAMSUNG') {
-            badgeColor = 'bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700';
+            badgeColor = 'bg-rose-100 text-rose-700 border border-rose-300';
         } else if (meta.id === 'APPLE') {
             badgeColor = 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600';
         } else if (meta.id === 'OPPO') {
-            badgeColor = 'bg-green-100 dark:bg-green-950/60 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700';
+            badgeColor = 'bg-amber-200 text-amber-800 border border-amber-400';
         } else if (meta.id === 'XIAOMI') {
-            badgeColor = 'bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700';
+            badgeColor = 'bg-amber-100 text-amber-700 border border-amber-300';
         }
 
         const displayType = (c.type && c.type !== 'Event' && c.type !== 'PMH') ? c.type : meta.name;
