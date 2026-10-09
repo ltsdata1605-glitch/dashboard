@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import toast from 'react-hot-toast';
@@ -127,11 +127,66 @@ export const ProductConfigManagerTab: React.FC = () => {
         }
     };
 
+    const mutateConfig = useCallback((fn: (cfg: ProductConfig) => void) => {
+        setConfig(prev => {
+            if (!prev) return prev;
+            const next = { ...prev };
+            fn(next);
+            setSummary(computeConfigSummary(next));
+            setUpdatedAt(new Date().toISOString());
+            setUpdatedBy(user?.displayName || user?.email || 'Quản lý');
+            setIsDirty(true);
+            return next;
+        });
+    }, [user]);
+
+    const handleAddItem = useCallback((item: CategoryTableItem) => {
+        mutateConfig(cfg => {
+            cfg.childToParentMap = { ...cfg.childToParentMap, [item.code]: item.parentGroup };
+            cfg.childToSubgroupMap = { ...cfg.childToSubgroupMap, [item.code]: item.subgroup };
+            cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.code]: item.multiplier };
+            const g = cfg.groups[item.parentGroup];
+            if (g instanceof Set) g.add(item.code);
+            else cfg.groups = { ...cfg.groups, [item.parentGroup]: new Set([item.code]) };
+            if (!cfg.subgroups[item.parentGroup]) cfg.subgroups = { ...cfg.subgroups, [item.parentGroup]: {} };
+            const sub = cfg.subgroups[item.parentGroup];
+            if (!sub[item.subgroup]) sub[item.subgroup] = [];
+            if (!sub[item.subgroup].includes(item.code)) sub[item.subgroup] = [...sub[item.subgroup], item.code];
+        });
+        toast.success(`Đã thêm mã ${item.code}`);
+    }, [mutateConfig]);
+
+    const handleUpdateItem = useCallback((code: string, updates: Partial<CategoryTableItem>) => {
+        mutateConfig(cfg => {
+            if (updates.parentGroup !== undefined) {
+                cfg.childToParentMap = { ...cfg.childToParentMap, [code]: updates.parentGroup };
+            }
+            if (updates.subgroup !== undefined) {
+                cfg.childToSubgroupMap = { ...cfg.childToSubgroupMap, [code]: updates.subgroup };
+            }
+            if (updates.multiplier !== undefined) {
+                cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [code]: updates.multiplier };
+            }
+        });
+    }, [mutateConfig]);
+
+    const handleDeleteItem = useCallback((code: string) => {
+        mutateConfig(cfg => {
+            const { [code]: _p, ...restParent } = cfg.childToParentMap || {};
+            cfg.childToParentMap = restParent;
+            const { [code]: _s, ...restSub } = cfg.childToSubgroupMap || {};
+            cfg.childToSubgroupMap = restSub;
+            const { [code]: _m, ...restMult } = cfg.quantityMultiplierMap || {};
+            cfg.quantityMultiplierMap = restMult;
+        });
+        toast.success(`Đã xoá mã ${code}`);
+    }, [mutateConfig]);
+
     if (isLoading) {
         return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/60 shadow-xs">
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-card border border-slate-200 shadow-sm">
                 <AppIcon name="loading" size="hero" spin className="text-sky-500 mb-3" />
-                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Đang tải cấu hình ngành hàng từ Cloud...</p>
+                <p className="text-xs font-semibold text-slate-500">Đang tải cấu hình ngành hàng từ Cloud...</p>
             </div>
         );
     }
@@ -246,7 +301,13 @@ export const ProductConfigManagerTab: React.FC = () => {
             </div>
 
             {/* Bảng tra cứu */}
-            <ConfigTable items={tableItems} />
+            <ConfigTable
+                items={tableItems}
+                isEditable={isCanManage}
+                onAddItem={handleAddItem}
+                onUpdateItem={handleUpdateItem}
+                onDeleteItem={handleDeleteItem}
+            />
         </div>
     );
 };
