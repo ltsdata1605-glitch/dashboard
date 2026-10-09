@@ -133,6 +133,10 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                     const multVal = parseFloat(String(row[multiplierIndex]).replace(',', '.'));
                     if (!isNaN(multVal) && multVal > 0) {
                         config.quantityMultiplierMap[productCode] = multVal;
+                        config.quantityMultiplierMap[trimmedLower] = multVal;
+                        if (idMatch) {
+                            config.quantityMultiplierMap[idMatch[1]] = multVal;
+                        }
                     }
                 }
             }
