@@ -12,6 +12,8 @@ const CASES = [
     { nut: '#mo-bieu-thue2', ten: /Biểu Thuế Thu Nhập Cá Nhân/, anh: 'bieu-thue' },
     { nut: '#mo-api-key', ten: /Cài Đặt Gemini API Key/, anh: 'api-key' },
     { nut: '#mo-lich-su-thue', ten: /Lịch Sử Tính Thuế/, anh: 'lich-su-thue' },
+    { nut: '#mo-kpi-nganh', ten: /Quản lý & Thêm Thẻ KPI Ngành Hàng/, anh: 'kpi-nganh' },
+    { nut: '#mo-avatar', ten: /Ảnh Đại Diện Nhân Viên/, anh: 'avatar' },
     { nut: '#mo-huong-dan', ten: /Hướng dẫn tự tạo & Cấu hình BOT LINE/, anh: 'huong-dan' },
 ];
 
@@ -44,3 +46,16 @@ for (const vp of [{ ten: 'laptop', width: 1366, height: 768 }, { ten: 'iphone', 
         });
     }
 }
+
+test('modal trong dòng bảng có onClick (ảnh đại diện): click trong khung / ra nền KHÔNG kích hoạt dòng bảng cha', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(async () => (await import('/tests/e2e/helpers/modalDaChuyenHarness.tsx' as string)).mountHarness());
+    await page.locator('#mo-avatar').click();
+    const hop = page.getByRole('dialog', { name: /Ảnh Đại Diện Nhân Viên/ });
+    await expect(hop).toBeVisible();
+    await hop.getByText('Nguyễn Văn Test').first().click();      // click trong khung
+    expect(await page.locator('#hang-bang').getAttribute('data-clicks')).toBe('0');
+    await page.mouse.click(5, 5);                                 // click ra nền → đóng modal
+    await expect(hop).toHaveCount(0);
+    expect(await page.locator('#hang-bang').getAttribute('data-clicks')).toBe('0');
+});

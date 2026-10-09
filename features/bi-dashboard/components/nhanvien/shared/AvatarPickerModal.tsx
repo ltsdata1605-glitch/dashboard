@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo } from 'react';
 import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
 import { CARTOON_AVATARS, getCartoonAvatar, CartoonAvatar } from '../../../utils/cartoonAvatars';
 import { Button } from '../../../../../components/shared/ui/Button';
+import { Modal } from '../../../../../components/shared/ui/Modal';
 
 interface AvatarPickerModalProps {
     isOpen: boolean;
@@ -33,8 +34,6 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
         if (categoryFilter === 'all') return CARTOON_AVATARS;
         return CARTOON_AVATARS.filter(a => a.category === categoryFilter);
     }, [categoryFilter]);
-
-    if (!isOpen) return null;
 
     const handleSelectCartoon = async (avatar: CartoonAvatar) => {
         setIsProcessing(true);
@@ -69,42 +68,49 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
     };
 
     return (
-        <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in"
-            onClick={(e) => { e.stopPropagation(); onClose(); }}
-        >
-            <div 
-                className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-in"
-                onClick={(e) => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-sky-500 shadow-sm shrink-0 bg-white">
-                            <img 
-                                src={currentAvatarSrc || defaultAvatar.dataUrl} 
-                                alt={employeeName} 
-                                className="w-full h-full object-cover" 
-                            />
-                        </div>
-                        <div className="min-w-0">
-                            <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm sm:text-base truncate">
-                                Ảnh Đại Diện Nhân Viên
-                            </h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-                                {employeeName}
-                            </p>
-                        </div>
-                    </div>
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full h-8 w-8"
+        // Modal render qua portal nhưng sự kiện click vẫn nổi lên cha trong cây React (dòng bảng nhân viên có onClick) — chặn như bản cũ.
+        <div className="contents" onClick={(e) => e.stopPropagation()}>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="lg"
+            zIndex="z-[100]"
+            ariaLabel="Ảnh đại diện nhân viên"
+            subTitle={employeeName}
+            title={
+                <span className="flex items-center gap-2 min-w-0">
+                    <span className="w-8 h-8 rounded-full overflow-hidden border-2 border-sky-500 shadow-sm shrink-0 bg-white">
+                        <img src={currentAvatarSrc || defaultAvatar.dataUrl} alt={employeeName} className="w-full h-full object-cover" />
+                    </span>
+                    <span className="truncate">Ảnh Đại Diện Nhân Viên</span>
+                </span>
+            }
+            footer={
+                <div className="flex items-center justify-between">
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleReset}
+                        disabled={isProcessing || !currentAvatarSrc}
+                        className="text-xs text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 gap-1.5"
                     >
-                        <AppIcon name="close" size="md" />
+                        <AppIcon name="reset" size="sm" />
+                        <span>Khôi phục avatar mặc định</span>
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={onClose}
+                        className="text-xs px-4"
+                    >
+                        Đóng
                     </Button>
                 </div>
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
 
                 {/* Sub-bar / Tabs & Filters */}
                 <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/30 dark:bg-slate-800/20">
@@ -243,29 +249,8 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
                         </div>
                     )}
                 </div>
-
-                {/* Footer */}
-                <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40 flex items-center justify-between">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleReset}
-                        disabled={isProcessing || !currentAvatarSrc}
-                        className="text-xs text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 gap-1.5"
-                    >
-                        <AppIcon name="reset" size="sm" />
-                        <span>Khôi phục avatar mặc định</span>
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={onClose}
-                        className="text-xs px-4"
-                    >
-                        Đóng
-                    </Button>
-                </div>
             </div>
+        </Modal>
         </div>
     );
 };

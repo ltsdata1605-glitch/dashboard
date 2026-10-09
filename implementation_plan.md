@@ -7571,3 +7571,10 @@ Khác biệt nhỏ: thanh lọc tháng và dải "Thủ quỹ hoàn thuế" củ
 e2e Thuế: 15 xanh, 1 đỏ có sẵn từ trước (`tax-paste-hrm` — cần mở trang ngoài, không thuộc modal).
 Còn 19: CouponImportModal (2 lớp) + CouponManagerTab; BI ×2; Sticker ×2; lớp phủ chờ/tiến trình & popup bộ lọc.
 
+### GĐ4 — modal tự dựng, đợt 4: Report BI (rawOverlay 19 → 17)
+Chuyển `AddIndustryKpiModal` và `AvatarPickerModal`. Avatar: modal nằm trong dòng bảng nhân viên (cha có `onClick`) nên bọc `div.contents` chặn nổi bọt click
+(Modal chạy qua portal nhưng sự kiện React vẫn nổi lên cha); test riêng kiểm click trong khung / ra nền không kích hoạt dòng cha. `zIndex="z-[100]"` giữ như bản cũ.
+`modal-da-chuyen-modal-chung.spec.ts`: 10 modal × 2 kích cỡ + 1 ca nổi bọt = 21 ca xanh; đã xem ảnh chụp. e2e BI: `bi-import-employees-button` chập chờn khi chạy chung, xanh khi chạy riêng (có/không có thay đổi này).
+**Không phải hộp thoại — để bước "lớp phủ chờ"**: `features/sticker-event/Scanner.tsx` (khung camera toàn màn hình) và màn chờ "Đang tạo tệp PDF" trong `StickerEventApp.tsx`.
+Còn 17: nạp mã giảm giá (2 lớp) + CouponManagerTab (Bot LINE); lớp phủ chờ/tiến trình (ExportLoader, ProcessingLoader, FilterProcessingOverlay, ExportProgressHost, Scanner, màn chờ PDF, DashboardView, SummaryTable, WarehouseSummary, TrendChart, MobileBottomNav, SettingsAccountTab, FilterPopover ×2).
+

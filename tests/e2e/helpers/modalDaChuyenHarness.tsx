@@ -9,6 +9,8 @@ import { LineBotOnboardingModal } from '../../../features/line-bot/components/Li
 import { TaxBracketModal } from '../../../features/tax-calculator/components/TaxBracketModal';
 import { ApiKeyConfigModal } from '../../../features/tax-calculator/components/ApiKeyConfigModal';
 import { TaxHistoryModal } from '../../../features/tax-calculator/components/TaxHistoryModal';
+import { AddIndustryKpiModal } from '../../../features/bi-dashboard/components/dashboard/industryKpi/AddIndustryKpiModal';
+import { AvatarPickerModal } from '../../../features/bi-dashboard/components/nhanvien/shared/AvatarPickerModal';
 import { SelectFilterUserModal } from '../../../features/line-bot/components/SelectFilterUserModal';
 
 const users = Array.from({ length: 14 }, (_, i) => ({
@@ -23,8 +25,11 @@ const taxRecords = Array.from({ length: 9 }, (_, i) => ({
     createdAt: new Date(Date.now() - i * 86_400_000).toISOString(), syncedToCloud: true,
 }));
 
+const nganh = Array.from({ length: 12 }, (_, i) => ({ id: `n${i}`, rawName: `NGANH ${i}`, displayName: `Ngành hàng ${i + 1}`, type: 'industry' as const }));
+
 function Harness() {
     const [mo, setMo] = useState('');
+    const [hangClicks, setHangClicks] = useState(0);
     return (
         <div>
             <Button id="mo-chon-tuong-tac" onClick={() => setMo('tuongtac')}>Mở</Button>
@@ -45,6 +50,15 @@ function Harness() {
             <Button id="mo-lich-su-thue" onClick={() => setMo('lichsuthue')}>Mở lịch sử thuế</Button>
             <TaxHistoryModal isOpen={mo === 'lichsuthue'} onClose={() => setMo('')} records={taxRecords} onLoadRecord={() => {}}
                 onDeleteRecord={() => {}} onClearAll={() => {}} />
+            <Button id="mo-kpi-nganh" onClick={() => setMo('kpinganh')}>Mở KPI ngành</Button>
+            <AddIndustryKpiModal isOpen={mo === 'kpinganh'} onClose={() => setMo('')} onAddCard={() => {}} onRemoveCard={() => {}}
+                currentCards={[{ id: 'n1', title: 'Ngành hàng 2', type: 'industry' }]} availableIndustries={nganh} availableSubIndustries={[]} onResetDefault={() => {}} />
+            {/* Dòng bảng có onClick: modal ảnh đại diện nằm TRONG nó (như AvatarDisplay trong bảng nhân viên) */}
+            <div id="hang-bang" data-clicks={hangClicks} onClick={() => setHangClicks(c => c + 1)}>
+                <Button id="mo-avatar" onClick={(e) => { e.stopPropagation(); setMo('avatar'); }}>Mở avatar</Button>
+                <AvatarPickerModal isOpen={mo === 'avatar'} onClose={() => setMo('')} employeeName="Nguyễn Văn Test" currentAvatarSrc={null}
+                    onSelectAvatar={() => {}} onResetDefault={() => {}} onUploadFile={async () => {}} />
+            </div>
             <SelectInteractedUserModal isOpen={mo === 'tuongtac'} onClose={() => setMo('')} interactedUsers={users} isLoading={false}
                 onRefresh={() => {}} existingAdmins={[]} onSelectUser={async () => ({})} />
         </div>

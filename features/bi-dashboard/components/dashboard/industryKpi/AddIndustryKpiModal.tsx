@@ -1,6 +1,6 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
-import { useModalBehavior } from '../../../../../components/shared/ui/Modal';
+import { Modal } from '../../../../../components/shared/ui/Modal';
 import { IndustryItemOption, IndustryKpiCardConfig } from '../../../services/industryKpiCalc';
 import { Button } from '../../../../../components/shared/ui/Button';
 
@@ -50,32 +50,36 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
         );
     }, [activeTab, availableIndustries, availableSubIndustries, searchTerm]);
 
-    // Modal tự dựng: gắn hành vi chuẩn (Escape, bẫy Tab, khoá cuộn theo ngăn xếp, trả focus) — audit A34.
-    const dialogRef = useRef<HTMLDivElement>(null);
-    useModalBehavior(isOpen, onClose, dialogRef);
-    if (!isOpen) return null;
-
     return (
-        <div data-modal-overlay="" className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-            <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Quản lý và thêm thẻ KPI ngành hàng" tabIndex={-1} className="outline-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full max-w-lg shadow-xl overflow-hidden flex flex-col max-h-[85vh]">
-                {/* Header */}
-                <div className="px-4 py-3 bg-sky-600 dark:bg-sky-700 text-white flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <AppIcon name="add" size="lg" />
-                        <h3 className="text-sm sm:text-base font-black uppercase tracking-wider">
-                            Quản lý & Thêm Thẻ KPI Ngành Hàng
-                        </h3>
-                    </div>
-                    <Button
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            maxWidth="lg"
+            ariaLabel="Quản lý và thêm thẻ KPI ngành hàng"
+            title={
+                <span className="flex items-center gap-2">
+                    <AppIcon name="add" size="md" className="text-sky-600" />
+                    <span>Quản lý &amp; Thêm Thẻ KPI Ngành Hàng</span>
+                </span>
+            }
+            footer={
+                <div className="flex items-center justify-between text-xs">
+
+                    <span className="text-slate-500 dark:text-slate-400 font-medium">
+                        Đang hiển thị: <strong className="text-slate-800 dark:text-slate-100 font-bold">{currentCards.length}</strong> thẻ KPI
+                    </span>
+                    <button
                         type="button"
-                        variant="unstyled"
-                        size="none"
                         onClick={onClose}
-                        className="p-1 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                        className="px-4 py-1.5 font-bold text-xs bg-sky-600 hover:bg-sky-700 text-white rounded-none transition-colors cursor-pointer"
                     >
-                        <AppIcon name="close" size="md" />
-                    </Button>
+                        Hoàn tất
+                    </button>
                 </div>
+            }
+        >
+            {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
+            <div className="-m-3 sm:-m-5">
 
                 {/* Search & Tabs */}
                 <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col gap-2.5">
@@ -199,21 +203,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
                         })
                     )}
                 </div>
-
-                {/* Footer */}
-                <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-medium">
-                        Đang hiển thị: <strong className="text-slate-800 dark:text-slate-100 font-bold">{currentCards.length}</strong> thẻ KPI
-                    </span>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="px-4 py-1.5 font-bold text-xs bg-sky-600 hover:bg-sky-700 text-white rounded-none transition-colors cursor-pointer"
-                    >
-                        Hoàn tất
-                    </button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };
