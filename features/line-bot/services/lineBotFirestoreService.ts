@@ -32,7 +32,7 @@ import {
     FilteredCouponRecord,
     GroupFeatureConfig
 } from '../types/lineBot.types';
-import { getVietnamTodayString } from './couponParser';
+import { getVietnamTodayString, getCouponCategoryMeta } from './couponParser';
 
 const ROOT_COLLECTION = 'line_bots';
 
@@ -167,7 +167,37 @@ export const lineBotFirestoreService = {
             const colRef = collection(db, ROOT_COLLECTION, userId, 'coupons');
             const q = query(colRef, orderBy('createdAt', 'desc'));
             const snap = await getDocs(q);
-            return snap.docs.map(d => ({ id: d.id, ...d.data() } as Coupon));
+            const needsSyncDocs: Array<{ id: string; newType: string }> = [];
+
+            const coupons = snap.docs.map(d => {
+                const data = d.data();
+                const meta = getCouponCategoryMeta(data);
+                const rawType = (data.type || '').trim().toLowerCase();
+                let actualType = (data.type || '').trim() || meta.name;
+                if ((!rawType || rawType === 'event' || rawType === 'pmh' || rawType === 'khác') && meta.id !== 'EVENT') {
+                    actualType = meta.name;
+                    needsSyncDocs.push({ id: d.id, newType: actualType });
+                }
+                return { id: d.id, ...data, type: actualType } as Coupon;
+            });
+
+            // Tự động đồng bộ ngầm lên Firestore để chuẩn hoá dữ liệu vĩnh viễn
+            if (needsSyncDocs.length > 0) {
+                setTimeout(async () => {
+                    try {
+                        const batch = writeBatch(db);
+                        for (const item of needsSyncDocs.slice(0, 450)) {
+                            const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', item.id);
+                            batch.update(docRef, { type: item.newType, updatedAt: new Date().toISOString() });
+                        }
+                        await batch.commit();
+                    } catch (syncErr) {
+                        console.warn('[lineBotFirestoreService] Lỗi auto-sync chuẩn hoá loại coupon:', syncErr);
+                    }
+                }, 0);
+            }
+
+            return coupons;
         } catch (error) {
             console.error('[lineBotFirestoreService] Lỗi getCoupons:', error);
             return [];
@@ -198,9 +228,21 @@ export const lineBotFirestoreService = {
                 continue;
             }
             existingCodeSet.add(cleanCode);
+
+            const meta = getCouponCategoryMeta({
+                type: item.type,
+                productName: item.productName,
+                syntax: item.syntax
+            });
+            const rawType = (item.type || '').trim().toLowerCase();
+            let resolvedType = item.type.trim() || meta.name;
+            if ((!rawType || rawType === 'event' || rawType === 'pmh' || rawType === 'khác') && meta.id !== 'EVENT') {
+                resolvedType = meta.name;
+            }
+
             toAdd.push({
                 code: cleanCode,
-                type: item.type.trim() || 'PMH',
+                type: resolvedType,
                 productName: item.productName?.trim() || '',
                 syntax: item.syntax?.trim() || '',
                 expiryDate: item.expiryDate?.trim() || ''
@@ -385,19 +427,55 @@ export const lineBotFirestoreService = {
     },
 
     /**
-     * Thu hồi mã coupon về kho trạng thái UNUSED
+     * Thu hồi mã coupon về kho trạng thái UNUSED (khả dụng để cấp tiếp)
      */
     async revokeCoupon(userId: string, couponId: string, reason = 'Quản lý thu hồi về kho'): Promise<void> {
         if (!userId || !couponId) return;
         const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', couponId);
         const now = new Date().toISOString();
         await updateDoc(docRef, {
-            status: 'REVOKED',
+            status: 'UNUSED',
+            orderId: '',
+            recipient: '',
+            recipientId: '',
             revokedAt: now,
             revokeReason: reason,
             updatedAt: now
         });
-        await this.logAudit(userId, 'REVOKE_COUPON', `Thu hồi mã coupon ID ${couponId}: ${reason}`, 'Quản lý');
+        await this.logAudit(userId, 'REVOKE_COUPON', `Thu hồi/khôi phục mã coupon ID ${couponId} về kho khả dụng: ${reason}`, 'Quản lý');
+    },
+
+    /**
+     * Khôi phục tất cả mã đang có trạng thái REVOKED về UNUSED (khả dụng)
+     */
+    async restoreRevokedCoupons(userId: string): Promise<number> {
+        if (!userId) return 0;
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'coupons');
+            const q = query(colRef, where('status', '==', 'REVOKED'));
+            const snap = await getDocs(q);
+            if (snap.empty) return 0;
+
+            const now = new Date().toISOString();
+            const batch = writeBatch(db);
+            snap.docs.forEach(d => {
+                batch.update(d.ref, {
+                    status: 'UNUSED',
+                    orderId: '',
+                    recipient: '',
+                    recipientId: '',
+                    revokedAt: now,
+                    revokeReason: 'Khôi phục về trạng thái Chưa dùng (Khả dụng)',
+                    updatedAt: now
+                });
+            });
+            await batch.commit();
+            await this.logAudit(userId, 'RESTORE_COUPONS', `Khôi phục ${snap.size} mã đã thu hồi về kho khả dụng`, 'Quản lý');
+            return snap.size;
+        } catch (err) {
+            console.error('Lỗi khi khôi phục mã REVOKED:', err);
+            return 0;
+        }
     },
 
     /**
@@ -424,6 +502,56 @@ export const lineBotFirestoreService = {
         if (!userId || !couponId) return;
         const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', couponId);
         await deleteDoc(docRef);
+    },
+
+    /**
+     * Cập nhật loại PMH của một mã coupon (VD: đổi Event thành VIVO)
+     */
+    async updateCouponType(userId: string, couponId: string, newType: string): Promise<void> {
+        if (!userId || !couponId || !newType) return;
+        const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', couponId);
+        await updateDoc(docRef, {
+            type: newType.trim(),
+            updatedAt: new Date().toISOString()
+        });
+    },
+
+    /**
+     * Tự động quét và chuẩn hoá toàn bộ các mã thương hiệu bị gán nhầm là Event trong kho
+     */
+    async reclassifyBrandCoupons(userId: string): Promise<number> {
+        if (!userId) return 0;
+        try {
+            const colRef = collection(db, ROOT_COLLECTION, userId, 'coupons');
+            const snap = await getDocs(colRef);
+            if (snap.empty) return 0;
+
+            const batch = writeBatch(db);
+            let count = 0;
+            const now = new Date().toISOString();
+
+            for (const d of snap.docs) {
+                const data = d.data();
+                const meta = getCouponCategoryMeta(data);
+                const rawType = (data.type || '').trim().toLowerCase();
+                if ((!rawType || rawType === 'event' || rawType === 'pmh' || rawType === 'khác') && meta.id !== 'EVENT') {
+                    batch.update(d.ref, {
+                        type: meta.name,
+                        updatedAt: now
+                    });
+                    count++;
+                }
+            }
+
+            if (count > 0) {
+                await batch.commit();
+                await this.logAudit(userId, 'RECLASSIFY_COUPONS', `Tự động phân loại tách biệt ${count} mã PMH theo thương hiệu chuẩn`, 'Hệ thống');
+            }
+            return count;
+        } catch (err) {
+            console.error('[lineBotFirestoreService] Lỗi reclassifyBrandCoupons:', err);
+            return 0;
+        }
     },
 
     /**

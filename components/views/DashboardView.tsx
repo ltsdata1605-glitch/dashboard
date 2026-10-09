@@ -23,11 +23,11 @@ import KpiCards from '../kpis/KpiCards';
 // (KE_HOACH_TONG_THE.md mục 3.2/Đợt 3) để KpiCards vẽ xong trước, không phải đợi
 // parse xong toàn bộ vendor-charts + các bảng lớn cùng lúc khi mở tab Phân Tích.
 // KpiCards giữ static import vì là nội dung "above the fold" đầu tiên, không dùng recharts.
+import WarehouseSummary from '../summary/WarehouseSummary';
 const TrendChart = React.lazy(() => import('../charts/TrendChart'));
 const IndustryGrid = React.lazy(() => import('../charts/IndustryGrid'));
 const EmployeeAnalysis = React.lazy(() => import('../employees/EmployeeAnalysis'));
 const SummaryTable = React.lazy(() => import('../tables/SummaryTable'));
-const WarehouseSummary = React.lazy(() => import('../summary/WarehouseSummary'));
 const PivotTable = React.lazy(() => import('../pivot/PivotTable'));
 
 // Modal/overlay hiếm khi mở — lazy để không kéo vào chunk chính của DashboardView
@@ -568,9 +568,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
                                         {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
                                             <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
-                                                <React.Suspense fallback={<TableSkeleton rows={3} />}>
-                                                    <WarehouseSummary />
-                                                </React.Suspense>
+                                                <WarehouseSummary />
                                             </div>
                                         )}
 

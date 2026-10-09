@@ -19,6 +19,7 @@ import {
 } from '../../services/pendingApprovalsStore';
 import { getManagedUsers, hasFreshManagedUsers } from '../../services/managedUsersCache';
 import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
+import { ProductConfigManagerTab } from '../../features/product-config';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
 interface TimestampLike {
@@ -113,7 +114,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
     const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
     const [editNames, setEditNames] = useState<Record<string, string>>({});
-    const [listMode, setListMode] = useState<'pending' | 'active' | 'expired'>('pending');
+    const [listMode, setListMode] = useState<'pending' | 'active' | 'expired' | 'config'>('pending');
     const [searchQuery, setSearchQuery] = useState('');
     const [editRoles, setEditRoles] = useState<Record<string, string>>({});
     const [sortBy, setSortBy] = useState<'name' | 'role' | 'dept' | 'date' | 'logins'>('date');
@@ -190,6 +191,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     }, [isDemoMode]);
 
     const fetchRequests = async (forceRefresh = false) => {
+        if (listMode === 'config') {
+            setIsLoading(false);
+            return;
+        }
         if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
             setIsLoading(false);
             return;
@@ -737,37 +742,44 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             <AppIcon name="users" size="md" />
                             Hoạt động
                         </Button>
-                        <Button variant="ghost" onClick={() => setListMode('expired')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'expired' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'}`}>
+                        <Button variant="ghost" onClick={() => setListMode('expired')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'expired' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'}`}>
                             <AppIcon name="schedule" size="md" />
                             Hết hạn
                         </Button>
+                        <Button variant="ghost" onClick={() => setListMode('config')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'config' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
+                            <AppIcon name="settings" size="md" />
+                            Cấu hình ngành hàng
+                        </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                            <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-9 text-xs rounded-none border-0 bg-transparent pr-8 shadow-none focus-visible:ring-0">
-                                <option value="date">Ngày ĐK</option>
-                                <option value="name">Tên</option>
-                                <option value="role">Vai trò</option>
-                                <option value="dept">Mã Kho</option>
-                                <option value="logins">Truy cập</option>
-                            </Select>
-                            <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
-                                <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="md" />
-                            </Button>
+                    {listMode !== 'config' && (
+                        <div className="flex items-center gap-2">
+                            <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
+                                <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-9 text-xs rounded-none border-0 bg-transparent pr-8 shadow-none focus-visible:ring-0">
+                                    <option value="date">Ngày ĐK</option>
+                                    <option value="name">Tên</option>
+                                    <option value="role">Vai trò</option>
+                                    <option value="dept">Mã Kho</option>
+                                    <option value="logins">Truy cập</option>
+                                </Select>
+                                <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                    <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="md" />
+                                </Button>
+                            </div>
+                            <div className="relative w-full sm:w-56">
+                                <Input 
+                                    leftIcon="search"
+                                    placeholder="Tìm kiếm Email, Mã Kho..." 
+                                    value={searchQuery} 
+                                    onChange={e => setSearchQuery(e.target.value)} 
+                                    className="h-9 text-xs rounded-md"
+                                />
+                            </div>
                         </div>
-                        <div className="relative w-full sm:w-56">
-                            <Input 
-                                leftIcon="search"
-                                placeholder="Tìm kiếm Email, Mã Kho..." 
-                                value={searchQuery} 
-                                onChange={e => setSearchQuery(e.target.value)} 
-                                className="h-9 text-xs rounded-md"
-                            />
-                        </div>
-                    </div>
+                    )}
                 </div>
-                {/* User List */}
-                <div>
+                {listMode === 'config' ? (
+                    <ProductConfigManagerTab />
+                ) : (
                     <AnimatePresence>
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
@@ -1035,7 +1047,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             </div>
                         )}
                     </AnimatePresence>
-                </div>
+                )}
             </div>
 
             {/* Modal Gia Hạn Quyền Truy Cập */}

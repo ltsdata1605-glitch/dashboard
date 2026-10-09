@@ -25,7 +25,8 @@ export const configStore = {
     setCache: (key: string, value: unknown) => {
         state = {
             ...state,
-            cache: { ...state.cache, [key]: value }
+            cache: { ...state.cache, [key]: value },
+            loaded: { ...state.loaded, [key]: true }
         };
         emitChange();
     },

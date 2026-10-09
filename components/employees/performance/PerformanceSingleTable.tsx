@@ -251,7 +251,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 colSpan={2} 
                                 rowSpan={2} 
                                 onClick={() => onSort('name')}
-                                className="px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 select-none cursor-pointer h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors group/nhanvien"
+                                className={`px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${isExporting ? '' : 'sticky left-0 z-40'} bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 select-none cursor-pointer h-px hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors group/nhanvien`}
                             >
                                 <div className="flex items-center justify-center gap-1">
                                     NHÂN VIÊN
@@ -379,18 +379,18 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 className={`group border-b border-slate-200 dark:border-slate-700 transition-colors duration-100 hover:bg-slate-100 dark:hover:bg-slate-800 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'}`}
                                             >
                                                 {/* Rank */}
-                                                <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10 outline outline-1 outline-transparent">
+                                                <td className={`px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 ${isExporting ? '' : 'sticky left-0 z-10'} bg-inherit outline outline-1 outline-transparent`}>
                                                     <RankBadge rank={idx} />
                                                 </td>
 
                                                 {/* Name */}
-                                                <td className="px-1.5 sm:px-3 py-1 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
+                                                <td className={`px-1.5 sm:px-3 py-1 border-r border-slate-200 dark:border-slate-700 ${isExporting ? '' : 'sticky left-8 z-10'} bg-inherit outline outline-1 outline-transparent`}>
                                                     <Button
                                                         variant="unstyled" size="none"
                                                         onClick={() => onEmployeeClick(emp.name)}
                                                         className="flex items-center gap-1 sm:gap-2 min-w-0 group/name"
                                                     >
-                                                        <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400 transition-colors truncate max-w-[100px] sm:max-w-[140px]">
+                                                        <span className={`text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400 transition-colors ${isExporting ? 'whitespace-nowrap max-w-none' : 'truncate max-w-[100px] sm:max-w-[140px]'}`}>
                                                             {abbreviateName(emp.name)}
                                                         </span>
                                                     </Button>
@@ -474,7 +474,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* ── Footer ── */}
                     <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
                         <tr>
-                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[11px] sm:text-[12px] uppercase tracking-widest text-sky-700 dark:text-sky-300 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                            <td colSpan={2} className={`px-2 sm:px-4 py-1 sm:py-1.5 text-center ${isExporting ? '' : 'sticky left-0 z-10'} bg-inherit font-extrabold text-[11px] sm:text-[12px] uppercase tracking-widest text-sky-700 dark:text-sky-300 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap`}>
                                 ∑ Tổng
                             </td>
                             {headers.map(h => (

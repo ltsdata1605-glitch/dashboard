@@ -1,10 +1,10 @@
 /**
- * Kết quả xuất ảnh HÀNG LOẠT của Phân tích (xuất theo NV) — hàm thuần, test bằng Node.
+ * Kết quả xuất ảnh HÀNG LOẠT của Phân tích (xuất theo NV, theo ngành…) — hàm thuần, test bằng Node.
  *
  * Vì sao có file này (audit A03/A04, 2026-09-29): hai luồng batch trong hooks/useExportLogic.ts bỏ
  * qua kết quả từng ảnh — ảnh chụp lỗi (exportElementAsImage trả null) không được báo, người dùng
- * tưởng đã đủ ảnh. Batch theo Kho còn chụp tiếp sau khi hết giờ chờ dữ liệu → ảnh mang tên Kho B
- * nhưng số liệu Kho A mà không có dấu hiệu gì.
+ * tưởng đã đủ ảnh. (Luồng "xuất hàng loạt theo Kho" cùng các hàm chờ dữ liệu Kho đã gỡ 2026-10-09 — nút
+ * của nó bị bỏ khỏi giao diện từ 9649dc7e.)
  */
 
 export interface BatchItemOutcome {

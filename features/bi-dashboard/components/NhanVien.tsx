@@ -272,10 +272,16 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
     const [employeeCompetitionTargets, setEmployeeCompetitionTargets] = useState<Map<string, Map<string, number>>>(new Map());
 
+    // Đầu vào của lần tính gần nhất — đổi qua lại tab mà dữ liệu không đổi thì KHÔNG tính lại: mỗi lần tính ra 1 Map
+    // mới làm mọi thẻ Thi đua vẽ lại toàn bộ (đo 2026-10-09: ~1,2 giây mỗi lần quay lại tab Thi đua).
+    const targetsInputsRef = useRef<{ activeSupermarkets: string[]; allEmployees: Employee[]; dataVersion: number } | null>(null);
     useEffect(() => {
         if (activeTab !== 'competition' && activeTab !== 'revenue') return;
+        const last = targetsInputsRef.current;
+        if (last && last.activeSupermarkets === activeSupermarkets && last.allEmployees === allEmployees && last.dataVersion === dataVersion) return;
         const fetchTargets = async () => {
             if (activeSupermarkets.length === 0) return;
+            targetsInputsRef.current = { activeSupermarkets, allEmployees, dataVersion };
             const [competitionLuyKeData, competitionRealtimeData] = await Promise.all([
                 db.get('competition-luy-ke'),
                 db.get('competition-realtime')

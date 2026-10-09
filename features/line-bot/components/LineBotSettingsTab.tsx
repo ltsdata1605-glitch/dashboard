@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import toast from 'react-hot-toast';
@@ -44,6 +44,10 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
     const [morningReport, setMorningReport] = useState<boolean>(config?.scheduledNotifications?.morningReport ?? true);
     const [eveningReport, setEveningReport] = useState<boolean>(config?.scheduledNotifications?.eveningReport ?? true);
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
+    const [tokenFocused, setTokenFocused] = useState<boolean>(false);
+    const [secretFocused, setSecretFocused] = useState<boolean>(false);
+    const tokenInputRef = useRef<HTMLTextAreaElement>(null);
+    const secretInputRef = useRef<HTMLInputElement>(null);
     const tokenSaved = botHasToken(config);
     const secretSaved = Boolean(config?.hasSecret || config?.channelSecret);
 
@@ -228,22 +232,51 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             <AppIcon name="externalLink" size="xs" />
                         </a>
                     </div>
-                    <textarea
-                        rows={3}
-                        value={token}
-                        onChange={e => setToken(e.target.value)}
-                        placeholder={tokenSaved ? 'Để trống = giữ Token hiện tại. Dán Token mới vào đây để thay.' : 'Dán Channel access token (long-lived) từ LINE Developers...'}
-                        className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    {tokenSaved && (
-                        <div data-testid="line-token-saved" className="mt-2 flex items-start gap-2 rounded-control border border-emerald-300 bg-emerald-50 px-3 py-2">
-                            <AppIcon name="success" size="md" className="mt-0.5 shrink-0 text-emerald-600" />
-                            <p className="text-[13px] font-bold leading-snug text-emerald-800">
-                                {token.trim()
-                                    ? 'Sẽ thay bằng giá trị mới khi bấm "Lưu cấu hình Bot".'
-                                    : 'Đã lưu an toàn trên máy chủ — không hiển thị lại để tránh lộ.'}
-                                <span className="block text-[12px] font-medium text-emerald-700">Chỉ dán Token mới khi muốn thay; để trống thì giữ nguyên.</span>
-                            </p>
+                    <div className="relative">
+                        <textarea
+                            ref={tokenInputRef}
+                            rows={3}
+                            value={token}
+                            onFocus={() => setTokenFocused(true)}
+                            onBlur={() => setTokenFocused(false)}
+                            onChange={e => setToken(e.target.value)}
+                            placeholder={tokenFocused ? (tokenSaved ? 'Dán Channel access token mới vào đây để thay (để trống thì giữ nguyên)...' : 'Dán Channel access token (long-lived) từ LINE Developers...') : ''}
+                            className={`w-full p-3 rounded-xl text-xs font-mono transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                                tokenSaved && !token.trim() && !tokenFocused
+                                    ? 'bg-emerald-50 border border-emerald-300 dark:bg-slate-900 dark:border-emerald-700/80 text-slate-800 dark:text-slate-200'
+                                    : 'bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+                            }`}
+                        />
+                        {tokenSaved && !token.trim() && !tokenFocused && (
+                            <div
+                                data-testid="line-token-saved"
+                                onClick={() => tokenInputRef.current?.focus()}
+                                className="absolute inset-0 rounded-xl p-3 bg-emerald-50 dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 flex items-start gap-2.5 cursor-text select-none shadow-xs"
+                            >
+                                <AppIcon name="success" size="md" className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <div className="leading-snug">
+                                    <p className="text-[13px] font-bold text-emerald-800 dark:text-emerald-200">
+                                        Đã lưu an toàn trên máy chủ — không hiển thị lại để tránh lộ.
+                                    </p>
+                                    <p className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 mt-0.5">
+                                        Nhấp vào đây và dán Token mới nếu muốn thay; để trống thì giữ nguyên.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    {tokenSaved && token.trim() && (
+                        <div className="mt-1.5 flex items-center justify-between text-[11px] text-emerald-700 dark:text-emerald-300 px-1">
+                            <span className="font-semibold">Sẽ thay bằng Token mới khi bấm &quot;Lưu cấu hình Bot&quot;.</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                type="button"
+                                onClick={() => setToken('')}
+                                className="!h-auto !py-0.5 !px-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 underline font-medium text-[11px]"
+                            >
+                                Huỷ thay đổi (giữ Token cũ)
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -285,22 +318,51 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                             </a>
                         </div>
                     </div>
-                    <input
-                        type="text"
-                        value={secret}
-                        onChange={e => setSecret(e.target.value)}
-                        placeholder={secretSaved ? 'Để trống = giữ Secret hiện tại. Dán Secret mới vào đây để thay.' : 'Dán Channel secret từ tab Basic settings...'}
-                        className="w-full p-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    />
-                    {secretSaved && (
-                        <div data-testid="line-secret-saved" className="mt-2 flex items-start gap-2 rounded-control border border-emerald-300 bg-emerald-50 px-3 py-2">
-                            <AppIcon name="success" size="md" className="mt-0.5 shrink-0 text-emerald-600" />
-                            <p className="text-[13px] font-bold leading-snug text-emerald-800">
-                                {secret.trim()
-                                    ? 'Sẽ thay bằng giá trị mới khi bấm "Lưu cấu hình Bot".'
-                                    : 'Đã lưu an toàn trên máy chủ — không hiển thị lại để tránh lộ.'}
-                                <span className="block text-[12px] font-medium text-emerald-700">Chỉ dán Secret mới khi muốn thay; để trống thì giữ nguyên.</span>
-                            </p>
+                    <div className="relative">
+                        <input
+                            ref={secretInputRef}
+                            type="text"
+                            value={secret}
+                            onFocus={() => setSecretFocused(true)}
+                            onBlur={() => setSecretFocused(false)}
+                            onChange={e => setSecret(e.target.value)}
+                            placeholder={secretFocused ? (secretSaved ? 'Dán Channel secret mới vào đây để thay (để trống thì giữ nguyên)...' : 'Dán Channel secret từ tab Basic settings...') : ''}
+                            className={`w-full p-3 rounded-xl text-xs font-mono transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                                secretSaved && !secret.trim() && !secretFocused
+                                    ? 'bg-emerald-50 border border-emerald-300 dark:bg-slate-900 dark:border-emerald-700/80 text-slate-800 dark:text-slate-200'
+                                    : 'bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+                            }`}
+                        />
+                        {secretSaved && !secret.trim() && !secretFocused && (
+                            <div
+                                data-testid="line-secret-saved"
+                                onClick={() => secretInputRef.current?.focus()}
+                                className="absolute inset-0 rounded-xl px-3 py-2 bg-emerald-50 dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 flex items-center gap-2 cursor-text select-none shadow-xs"
+                            >
+                                <AppIcon name="success" size="md" className="shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                <div className="leading-snug truncate">
+                                    <span className="text-[12px] font-bold text-emerald-800 dark:text-emerald-200">
+                                        Đã lưu an toàn trên máy chủ (không hiển thị lại).
+                                    </span>
+                                    <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 ml-1.5 hidden sm:inline">
+                                        Nhấp vào và dán Secret mới để thay; để trống thì giữ nguyên.
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    {secretSaved && secret.trim() && (
+                        <div className="mt-1.5 flex items-center justify-between text-[11px] text-emerald-700 dark:text-emerald-300 px-1">
+                            <span className="font-semibold">Sẽ thay bằng Secret mới khi bấm &quot;Lưu cấu hình Bot&quot;.</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                type="button"
+                                onClick={() => setSecret('')}
+                                className="!h-auto !py-0.5 !px-1.5 text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 underline font-medium text-[11px]"
+                            >
+                                Huỷ thay đổi (giữ Secret cũ)
+                            </Button>
                         </div>
                     )}
                     {/* Từ 2026-10-02 webhook KIỂM CHỮ KÝ bằng secret này — thiếu hoặc sai thì bot bỏ qua mọi tin nhắn. */}

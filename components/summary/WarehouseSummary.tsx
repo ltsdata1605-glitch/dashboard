@@ -125,8 +125,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     const toggleFullScreen = () => setIsFullScreen(!isFullScreen);
     const rowsPerPage = 50;
     
-    const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
-    const [columnsLoaded, setColumnsLoaded] = useState(false);
+    const [columns, setColumns] = useState<WarehouseColumnConfig[]>(DEFAULT_WAREHOUSE_COLUMNS);
+    const [columnsLoaded, setColumnsLoaded] = useState(true);
 
     // Chế độ xem: ngang (mặc định) hoặc dọc (transpose)
     const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('horizontal');

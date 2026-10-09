@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, PendingExport } from '../types';
 import { offerBatchShare, type BatchShareFile } from '../components/shared/ui/BatchShareToast';
@@ -82,7 +82,6 @@ const taoBoGomAnh = () => {
         },
     };
 };
-
 
 export const useExportLogic = ({
     productConfig,

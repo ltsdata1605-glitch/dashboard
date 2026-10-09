@@ -31,6 +31,10 @@ describe('departmentMap -> danh sách nhân viên Report BI', () => {
     it('bỏ nhân viên chưa gán bộ phận / bộ phận bị loại trừ', () => {
         const list = normalizeAnalysisEmployees(departmentMapToEmployeeList({
             '111': 'Chưa xác định;;Nguyễn Văn A',
+            '112': 'chua xac dinh;;Nguyễn Văn A Không Dấu',
+            '113': 'Chưa có bộ phận;;Nguyễn Văn A2',
+            '114': 'chua co bo phan;;Nguyễn Văn A3',
+            '115': 'Chưa phân ca;;Nguyễn Văn A4',
             '222': ';;Trần Thị B',
             '333': 'BP Quản Lý Siêu Thị - ĐMX;;Lê Văn C',
             '444': 'BP ALL IN ONE - ĐMX;;Võ Thị D',

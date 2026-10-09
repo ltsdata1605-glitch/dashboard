@@ -328,6 +328,8 @@ export default function LineBotView() {
                             stockSummary={couponHook.stockSummary}
                             onImportCoupons={couponHook.importCoupons}
                             onRevokeCoupon={couponHook.revokeCoupon}
+                            onRestoreRevokedCoupons={couponHook.restoreRevokedCoupons}
+                            onReclassifyCoupons={couponHook.reclassifyCoupons}
                             onDeleteCoupon={couponHook.deleteCoupon}
                             onDeleteCouponsBatch={couponHook.deleteCouponsBatch}
                             onDeleteAllCoupons={couponHook.deleteAllCoupons}

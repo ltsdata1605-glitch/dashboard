@@ -1,7 +1,7 @@
 import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
 import type { ExportMode, ExportImageOptions } from './captureEngine';
 import { fixOklchColors, downloadBlob, shareBlob, EXPORT_MIN_WIDTH } from './captureEngine';
-import { fitTablesToContent, appendExportFooter, fixCircularAvatars } from './exportLayout';
+import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible } from './exportLayout';
 
 /**
  * BỘ QUY TẮC TRÌNH BÀY "REPORT BI" của bộ xuất ảnh chung (kế hoạch "Hợp nhất xuất ảnh", 2026-10-01).
@@ -41,6 +41,7 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
     const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
+    forceContentVisible(clone);
 
     elementsToHide.forEach((s: string) => {
         clone.querySelectorAll<HTMLElement>(s).forEach((e) => {

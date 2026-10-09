@@ -1,11 +1,11 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
-import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
 import { Button } from '../../../../../components/shared/ui/Button';
 import { standardizeEmployeeName, extractEmployeeId } from '../../../utils/nhanVienHelpers';
 import { getCartoonAvatar } from '../../../utils/cartoonAvatars';
 import { AvatarPickerModal } from './AvatarPickerModal';
 import * as db from '../../../utils/db';
+import { useAvatarSrc, primeAvatar } from '../../../utils/avatarIndex';
 
 interface AvatarDisplayProps {
     employeeName: string;
@@ -17,69 +17,14 @@ interface AvatarDisplayProps {
 const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, onClick }) => {
     const canonicalName = standardizeEmployeeName(employeeName);
     const dbKey = `avatar-${canonicalName}`;
-    const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
-    const [fallbackSrc, setFallbackSrc] = useState<string | null>(null);
+    // Tra trong kho ảnh dùng chung (utils/avatarIndex.ts) — KHÔNG tự đọc IndexedDB từng dòng: bảng Thi đua vẽ
+    // hàng nghìn ảnh cùng lúc, mỗi cái tự đọc/quét kho làm tab đứng nhiều giây (đo 2026-10-09).
+    const storedSrc = useAvatarSrc(canonicalName, employeeName);
     const [isPickerOpen, setIsPickerOpen] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const defaultCartoon = useMemo(() => getCartoonAvatar(employeeName), [employeeName]);
 
-    useEffect(() => {
-        if (!avatarSrc && employeeName) {
-            let isMounted = true;
-            (async () => {
-                const keys: string[] = [`avatar-${employeeName}`, `avatar-${canonicalName}`];
-                const empId = extractEmployeeId(employeeName);
-                if (empId) {
-                    keys.push(`avatar-${empId}`);
-                }
-                if (employeeName.includes(' - ')) {
-                    const parts = employeeName.split(' - ').map(p => p.trim());
-                    if (parts.length >= 2) {
-                        keys.push(`avatar-${parts[1]} - ${parts[0]}`);
-                        keys.push(`avatar-${parts[0]}`);
-                        keys.push(`avatar-${parts[1]}`);
-                    }
-                }
-                for (const k of keys) {
-                    try {
-                        const val = await db.get<string>(k as any);
-                        if (val && isMounted) {
-                            setFallbackSrc(val);
-                            return;
-                        }
-                    } catch (e) {
-                        // ignore
-                    }
-                }
-
-                // Nếu vẫn chưa thấy và có empId hợp lệ, quét IndexedDB
-                if (empId && empId.length >= 3) {
-                    try {
-                        const allItems = await db.getAll();
-                        for (const item of allItems) {
-                            if (item.key.startsWith('avatar-')) {
-                                const keyContent = item.key.slice('avatar-'.length);
-                                if (extractEmployeeId(keyContent) === empId || keyContent.includes(empId)) {
-                                    const val = item.value as string;
-                                    if (val && isMounted) {
-                                        setFallbackSrc(val);
-                                        await db.set(dbKey as any, val);
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        // ignore
-                    }
-                }
-            })();
-            return () => { isMounted = false; };
-        }
-    }, [avatarSrc, employeeName, canonicalName, dbKey]);
-
-    const activeSrc = avatarSrc || fallbackSrc;
+    const activeSrc = storedSrc;
     const effectiveSrc = activeSrc || defaultCartoon.dataUrl;
 
     const syncAvatarToDb = async (src: string | null) => {
@@ -87,6 +32,7 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
         const empId = extractEmployeeId(employeeName);
         if (empId) keysToUpdate.push(`avatar-${empId}`);
 
+        keysToUpdate.forEach(k => primeAvatar(k, src)); // mọi bảng đổi ảnh ngay, không chờ ghi xong
         for (const k of keysToUpdate) {
             try {
                 if (src) {
@@ -101,14 +47,10 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
     };
 
     const handleSelectCartoonAvatar = async (dataUrl: string) => {
-        await setAvatarSrc(dataUrl);
-        setFallbackSrc(dataUrl);
         await syncAvatarToDb(dataUrl);
     };
 
     const handleResetDefaultAvatar = async () => {
-        await setAvatarSrc(null);
-        setFallbackSrc(null);
         await syncAvatarToDb(null);
     };
 
@@ -143,8 +85,6 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                     ctx?.drawImage(img, 0, 0, width, height);
                     const compressedBase64 = canvas.toDataURL('image/webp', 0.85);
 
-                    await setAvatarSrc(compressedBase64);
-                    setFallbackSrc(compressedBase64);
                     await syncAvatarToDb(compressedBase64);
                     resolve();
                 };
@@ -206,7 +146,8 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                 </Button>
             </div>
 
-            <AvatarPickerModal
+            {/* Chỉ dựng hộp chọn ảnh khi mở — trước đây mỗi dòng bảng đều dựng sẵn 1 cái (hàng nghìn ở tab Thi đua). */}
+            {isPickerOpen && <AvatarPickerModal
                 isOpen={isPickerOpen}
                 onClose={() => setIsPickerOpen(false)}
                 employeeName={employeeName}
@@ -214,7 +155,7 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                 onSelectAvatar={handleSelectCartoonAvatar}
                 onResetDefault={handleResetDefaultAvatar}
                 onUploadFile={handleUploadFile}
-            />
+            />}
         </>
     );
 };

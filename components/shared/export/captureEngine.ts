@@ -1,7 +1,7 @@
 import { isMobileLikeDevice, capPixelRatioForArea } from '../../../utils/dataUtils';
 import { deliverImage } from '../ui/imageDelivery';
 import { getActiveExportJob, startExportJob, type ExportJob } from './exportProgress';
-import { fitTablesToContent, appendExportFooter, fixCircularAvatars } from './exportLayout';
+import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible } from './exportLayout';
 import './ExportProgressHost';
 
 /**
@@ -137,6 +137,7 @@ async function exportRawCore(element: HTMLElement, filename: string, options: Ex
     const isMobileDevice = isMobileLikeDevice();
     const { elementsToHide = ['.hide-on-export'], mode = 'download', footer = true } = options;
     const clone = element.cloneNode(true) as HTMLElement;
+    forceContentVisible(clone);
     elementsToHide.forEach((sel) => clone.querySelectorAll(sel).forEach((e) => e.remove()));
     options.onCloneReady?.(clone);
 
@@ -198,6 +199,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     const doFit = options.fitColumns ?? (!captureAsDisplayed && !forcedWidth);
 
     const clone = element.cloneNode(true) as HTMLElement;
+    forceContentVisible(clone);
 
     elementsToHide.forEach((s: string) => {
         clone.querySelectorAll<HTMLElement>(s).forEach((e) => {

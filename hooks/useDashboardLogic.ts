@@ -56,7 +56,6 @@ export const useDashboardLogic = () => {
         kpiTargets, updateKpiTargets: updateKpiTargetsRaw,
         isInternalProcessing,
         isFilterProcessing,
-        processedFilterState,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync: handleAcceptCloudSyncRaw,

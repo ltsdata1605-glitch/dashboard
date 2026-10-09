@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { describeBatchOutcome } from '../../services/batchExportResult';
 
-/** Audit A03/A04 (2026-09-29) — kết quả batch xuất ảnh của Phân tích. */
+/** Audit A04 (2026-09-29) — kết quả batch xuất ảnh của Phân tích. */
 describe('describeBatchOutcome', () => {
     it('đủ ảnh → thành công', () => {
         expect(describeBatchOutcome([{ label: 'A', ok: true }, { label: 'B', ok: true }]))

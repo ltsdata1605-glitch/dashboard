@@ -81,11 +81,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [crossSellingConfig, setCrossSellingConfig] = useState<CrossSellingConfig | null>(null);
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
-    /** Bộ lọc mà `processedData` ĐANG HIỂN THỊ được tính cho — commit cùng lượt với processedData.
-     *  Xuất ảnh hàng loạt theo Kho dùng nó để chỉ chụp khi dữ liệu trên màn hình đúng là của Kho vừa
-     *  chọn (audit A03, 2026-09-29: trước đây chỉ dựa cờ isFilterProcessing + thời gian chờ, hết giờ
-     *  vẫn chụp → có thể ra ảnh mang tên Kho B nhưng số liệu Kho A). */
-    const [processedFilterState, setProcessedFilterState] = useState<FilterState | null>(null);
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
     const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean } } | null>(null);
 
@@ -182,52 +177,55 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
+                let isGlobalCloudConfig = cachedUrl === 'cloud://global_product_config';
 
-                // PERF FIX: Chỉ kiểm tra điều kiện cơ bản (config tồn tại, có groups, URL khớp).
-                // Các kiểm tra chi tiết (7161, 7139, industryBiMap, compound keys) được xử lý
-                // bởi Background Sheet Check (setTimeout 5s) ở phía dưới — tránh blocking
-                // luồng khởi tạo bằng network fetch nặng mỗi lần mở app.
-                const isConfigMissing = !config || !config.groups || Object.keys(config.groups).length === 0;
-                const isConfigOutOfDate = isConfigMissing || cachedUrl !== configUrl;
+                // PERF FIX: Render ngay lập tức từ IndexedDB nếu có (0ms instant display)
+                if (config && isProductConfigComplete(config)) {
+                    setProductConfig(config);
+                }
 
-                if (isConfigOutOfDate) {
-                    let loadedFromFirestore = false;
-                    // Cache IndexedDB trống hoàn toàn (hay gặp trên mobile — Safari/iOS tự dọn
-                    // IndexedDB để tiết kiệm dung lượng; cũng gặp trên dev server nếu port đổi
-                    // giữa các lần restart — port khác = origin khác = IndexedDB khác) → thử đọc
-                    // bản Firestore nhẹ (1 doc JSON) trước khi tải cả workbook Excel từ Google
-                    // Sheet. Giá trị lưu trên Firestore theo ĐÚNG format IndexedDB
-                    // (dbService/settings.ts:saveProductConfig): { config, url, fetchedAt } — có
-                    // mang theo url nên vẫn đối chiếu được với configUrl hiện tại trước khi tin
-                    // dùng, không phải đoán mò.
-                    if (isConfigMissing && user && !isDemoMode) {
-                        try {
-                            setStatus({ message: 'Tải cấu hình từ máy chủ...', type: 'info', progress: 12 });
+                let loadedFromFirestore = false;
+                // ƯU TIÊN SỐ 1: Luôn kiểm tra & nạp cấu hình toàn hệ thống từ Firestore (shared_configs/global_product_config)
+                if (user && !isDemoMode) {
+                    try {
+                        const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
+                        const globalEntry = await getGlobalProductConfig();
+                        if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
+                            config = globalEntry.config;
+                            isGlobalCloudConfig = true;
+                            await dbService.saveProductConfig(config, 'cloud://global_product_config');
+                            setProductConfig(config);
+                            loadedFromFirestore = true;
+                        } else {
+                            // Dự phòng: cấu hình riêng của user trên Firestore
                             const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
                             const cloudConfigEntry = await fetchProductConfigFromCloud(user);
                             const cloudConfig = cloudConfigEntry?.config;
-                            // isProductConfigComplete: bản Cloud lưu trước 2026-09-28 mất 2 tập hình thức xuất (Set
-                            // → `{}`), tính ra số SAI — gặp bản đó thì tải thẳng từ Sheet.
-                            if (cloudConfig && isProductConfigComplete(cloudConfig) && cloudConfigEntry?.url === configUrl) {
+                            if (cloudConfig && isProductConfigComplete(cloudConfig)) {
                                 config = cloudConfig;
-                                dbService.saveProductConfig(config, configUrl).catch(console.error);
+                                isGlobalCloudConfig = true;
+                                await dbService.saveProductConfig(config, 'cloud://global_product_config');
+                                setProductConfig(config);
                                 loadedFromFirestore = true;
                             }
-                        } catch (e) {
-                            console.warn("Không đọc được cấu hình từ Firestore, sẽ tải trực tiếp từ Sheet.", e);
                         }
-                    }
-                    if (!loadedFromFirestore) {
-                        try {
-                            setStatus({ message: 'Tải cấu hình lõi từ Sheet...', type: 'info', progress: 15 });
-                            config = await loadConfigFromSheet(configUrl, () => {});
-                            dbService.saveProductConfig(config, configUrl).catch(console.error);
-                        } catch (e) {
-                             console.error("Không tải được cấu hình mạng, sử dụng dữ liệu cũ rỗng.");
-                        }
+                    } catch (e) {
+                        console.warn("Không đọc được cấu hình từ Firestore:", e);
                     }
                 }
-                if (config) setProductConfig(config);
+
+                // Chỉ tải từ Google Sheet khi CHƯA có cấu hình Cloud và bộ nhớ cục bộ thiếu
+                const isConfigMissing = !config || !config.groups || Object.keys(config.groups).length === 0;
+                if (!loadedFromFirestore && !isGlobalCloudConfig && (isConfigMissing || cachedUrl !== configUrl)) {
+                    try {
+                        setStatus({ message: 'Tải cấu hình từ Sheet...', type: 'info', progress: 15 });
+                        config = await loadConfigFromSheet(configUrl, () => {});
+                        await dbService.saveProductConfig(config, configUrl);
+                        setProductConfig(config);
+                    } catch (e) {
+                        console.error("Không tải được cấu hình từ Sheet, sử dụng dữ liệu cũ rỗng.");
+                    }
+                }
 
                 if (savedDeptMapReq) setDepartmentMap(savedDeptMapReq);
                 if (savedTargetsReq) setWarehouseTargets(savedTargetsReq);
@@ -484,8 +482,10 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     });
                 }
 
-                // 3. Background Sheet Check (Auto-update config once gracefully)
-                if (config) {
+                // 3. Background Config Check:
+                // Nếu đang dùng Cloud Config toàn hệ thống của Firebase, KHÔNG bao giờ tải lại Google Sheet
+                // để tránh tình trạng ghi đè cấu hình tuỳ chỉnh và gây đơ lag trình duyệt.
+                if (config && !isGlobalCloudConfig && cachedUrl !== 'cloud://global_product_config') {
                     setTimeout(async () => {
                         try {
                             // FAST CHECK: Use HEAD request to get the published timestamp from the redirect URL
@@ -675,6 +675,22 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             unsub();
         };
     }, [user, isDemoMode, applyCloudSalesData]);
+
+    // Lắng nghe sự kiện cập nhật cấu hình tức thì từ Phân Quyền & Duyệt Yêu Cầu (áp dụng trực tiếp không cần reload trang)
+    useEffect(() => {
+        const handleGlobalConfigChanged = (e: Event) => {
+            const customEvent = e as CustomEvent<ProductConfig>;
+            if (customEvent.detail && isProductConfigComplete(customEvent.detail)) {
+                setProductConfig(customEvent.detail);
+                dbService.saveProductConfig(customEvent.detail, 'cloud://global_product_config').catch(console.error);
+                toast.success('Đã áp dụng cấu hình mới nhất từ Cloud vào báo cáo!', { id: 'cloud-config-applied' });
+            }
+        };
+        window.addEventListener('ycx-product-config-changed', handleGlobalConfigChanged);
+        return () => {
+            window.removeEventListener('ycx-product-config-changed', handleGlobalConfigChanged);
+        };
+    }, [setProductConfig]);
 
     const refreshRegistry = useCallback(async () => {
         try {
@@ -998,7 +1014,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             setBaseFilteredData(pending.baseFilteredData);
                             setWarehouseFilteredData(pending.warehouseFilteredData);
                         }
-                        setProcessedFilterState(pending ? pending.filterState : null);
                         setEmployeeAnalysisData(result.employeeData);
                         if (result.employeeData?.fullSellerArray && result.employeeData.fullSellerArray.length > 0) {
                             const currentWarehouse = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
@@ -1175,8 +1190,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         filteredValidSalesData: DataRow[];
         unshippedOrders: DataRow[];
         uncollectedOrders: DataRow[];
-        /** Bộ lọc gửi kèm lượt PROCESS này — xem processedFilterState. */
-        filterState: FilterState;
         /** Thế hệ dữ liệu + số thứ tự lượt gửi — kết quả lệch với hiện tại là kết quả cũ (audit D17). */
         generation: number;
         requestId: number;
@@ -1205,7 +1218,19 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             if (appState === 'processing' && !configRetryRef.current) {
                 configRetryRef.current = (async () => {
                     try {
-                        const config = await loadConfigFromSheet(configUrl, () => {});
+                        let config: ProductConfig | null = null;
+                        try {
+                            const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
+                            const globalEntry = await getGlobalProductConfig();
+                            if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
+                                config = globalEntry.config;
+                            }
+                        } catch (cloudErr) {
+                            console.warn('[useDataManagement] Lỗi đọc global config khi retry:', cloudErr);
+                        }
+                        if (!config) {
+                            config = await loadConfigFromSheet(configUrl, () => {});
+                        }
                         dbService.saveProductConfig(config, configUrl).catch(console.error);
                         setProductConfig(config);
                     } catch (e) {
@@ -1239,7 +1264,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 filteredValidSalesData: computedFilteredValidSalesData,
                 unshippedOrders: computedUnshippedOrders,
                 uncollectedOrders: computedUncollectedOrders,
-                filterState,
                 generation: dataGenerationRef.current,
                 requestId: ++processRequestIdRef.current,
             });
@@ -1388,7 +1412,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         availableMonths: availableWeeksMonths.availableMonths,
         isInternalProcessing: isHardProcessing, // only true during file upload / initial load
         isFilterProcessing,
-        processedFilterState,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync,

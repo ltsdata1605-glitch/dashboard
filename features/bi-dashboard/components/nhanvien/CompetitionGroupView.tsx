@@ -30,7 +30,8 @@ interface CompetitionGroupCardProps {
 
 // Exclude store-level summary rows (e.g. "ĐMX - I.One") from employee lists
 
-export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
+// memo: tab Thi đua › Nhóm vẽ hàng chục thẻ × cả danh sách NV — đổi 1 lựa chọn ở cha không được vẽ lại mọi thẻ.
+export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.memo(({
     header,
     sortedEmployees,
     employeeDataMap,
@@ -253,7 +254,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     return (
         <div 
             ref={cardRef} 
-            className="competition-group-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
+            className="competition-group-card cv-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
         >
             {/* Title bar — solid blue background with generous padding and subtle separator */}
             <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-4 sm:py-4.5 border-b border-sky-500/40 dark:border-sky-600/60">
@@ -353,4 +354,4 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             </div>
         </div>
     );
-};
+});

@@ -71,7 +71,29 @@ export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayl
     };
 }
 
-const EXCLUDED_DEPT_KEYWORDS = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca'];
+const EXCLUDED_DEPT_KEYWORDS = [
+    'quản lý', 'quan ly',
+    'trưởng ca', 'truong ca',
+    'kế toán', 'ke toan',
+    'tiếp đón khách hàng', 'tiep don khach hang',
+    'chưa xác định', 'chua xac dinh',
+    'không xác định', 'khong xac dinh',
+    'chưa phân ca', 'chua phan ca',
+    'không phân ca', 'khong phan ca',
+    'chưa có bộ phận', 'chua co bo phan',
+    'chưa phân bộ phận', 'chua phan bo phan',
+    'chưa gán', 'chua gan',
+    'chưa cài đặt', 'chua cai dat',
+];
+
+function stripVietnameseDiacritics(str: string): string {
+    return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[đĐ]/g, m => (m === 'đ' ? 'd' : 'D'))
+        .toLowerCase()
+        .trim();
+}
 
 /**
  * Kiểm tra xem một nhân viên có phải tài khoản hệ thống hoặc tài khoản phụ cần loại bỏ không
@@ -91,9 +113,12 @@ export function isSystemOrIgnoredEmployee(name: string | undefined, dept?: strin
             return true;
         }
     }
-    if (dept) {
-        const lowerDept = dept.toLowerCase().trim();
-        if (!lowerDept || EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw))) {
+    if (dept !== undefined) {
+        const cleanDept = dept.trim();
+        if (!cleanDept) return true;
+        const lowerDept = cleanDept.toLowerCase();
+        const strippedDept = stripVietnameseDiacritics(cleanDept);
+        if (EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw) || strippedDept.includes(kw))) {
             return true;
         }
     }
@@ -230,6 +255,17 @@ export async function getAnalysisEmployees(): Promise<AnalysisEmployeesPayload |
             const rawEmployees = convertDepartmentMapToEmployees(deptMap);
             const cleanList = normalizeAnalysisEmployees(rawEmployees);
             if (cleanList.length > 0) {
+                // CHỈ ghi cache khi danh sách thật sự đổi. Ghi vô điều kiện tạo VÒNG LẶP VÔ HẠN:
+                // saveSetting('bi_…') phát 'indexeddb-change' (key analysis-employees-list) →
+                // useNhanVienData gọi lại hàm này → ghi tiếp… Hàng trăm giao dịch dồn ứ làm
+                // getSetting('departmentMap') hết 10s ("[IDB] getSetting timeout", ~170 lần/phiên,
+                // gặp thật 2026-10-09) và mỗi vòng còn kích useCloudSync đẩy lên cloud.
+                const cached = docAnalysisEmployeesPayload(await getSetting<unknown>(ANALYSIS_EMPLOYEES_KEY));
+                // So qua CÙNG adapter ở cả 2 phía để thứ tự trường giống nhau.
+                const fresh = docAnalysisEmployeesPayload({ employees: cleanList });
+                if (cached && fresh && JSON.stringify(cached.employees) === JSON.stringify(fresh.employees)) {
+                    return cached;
+                }
                 const payload: AnalysisEmployeesPayload = {
                     schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
                     source: 'phan-tich',

@@ -93,7 +93,8 @@ async function chayJobLuyKe(page: import('@playwright/test').Page, url: string):
 test('Luỹ kế THÁNG ĐÃ QUA (09/2026): 01 → 30/09, MONTHKEY 202609, TIMETYPE 2; Thi đua đúng khuôn Luỹ kế', async ({ page }) => {
     const { calls, done } = await chayJobLuyKe(page, `${BI_URL}&ycx_month=202609`);
 
-    expect(await page.evaluate(() => (window as unknown as { __clicks: string[] }).__clicks)).toContain('lk');
+    // Bản 7.20: có token thì gọi Direct API ngay, KHÔNG bấm nút "Lũy kế" trên trang nữa (chỉ bấm khi rơi về đường UI).
+    expect(await page.evaluate(() => (window as unknown as { __clicks: string[] }).__clicks)).not.toContain('rt');
     await expect(page.locator('#acp-bi-sync-overlay')).toContainText('Tự động Cập nhật Luỹ Kế · tháng 09/2026');
 
     const theoNgay = calls.filter(c => 'FROMDATE' in c.body);
@@ -107,14 +108,13 @@ test('Luỹ kế THÁNG ĐÃ QUA (09/2026): 01 → 30/09, MONTHKEY 202609, TIMET
     expect(thiDua[0].body.TIMETYPE).toBe(2);
     expect(thiDua[0].body.MONTHKEY).toBe(202609);
 
-    // Thi đua theo NHÂN VIÊN (7.17): duyệt từng siêu thị, tự dò mã nội bộ của dòng siêu thị rồi gọi VIEWLEVEL STORE
-    // bằng mã đó — như trang MWG (910 → "9567"). Không còn gọi VIEWIDS = mã kho trước.
+    // Thi đua theo NHÂN VIÊN: bản 7.19 thử tải gộp cả cụm (VIEWIDS null) rồi mới dò từng kho — thử mã kho và null
+    // trước (rẻ, 1 lượt), không ra nhân viên thì dò mã nội bộ của dòng siêu thị như trang MWG (910 → "9567").
     const thiDuaNv = calls.filter(c => c.endpoint === 'reports/competition-bymsg-get' && String(c.body.STOREIDS).indexOf(',') < 0);
     const storeOk = thiDuaNv.filter(c => c.body.VIEWLEVEL === 'STORE').map(c => `${c.body.STOREIDS}:${c.body.VIEWIDS}`);
     expect(storeOk).toContain('1678:9567');
     expect(storeOk).toContain('8231:7001');
-    expect(storeOk).not.toContain('1678:1678');
-    expect(thiDuaNv.filter(c => c.body.STOREIDS === '1678')).toHaveLength(2); // COMPANY lọc kho → STORE 9567
+    expect(thiDuaNv.filter(c => c.body.STOREIDS === '1678' && c.body.VIEWLEVEL === 'COMPANY')).toHaveLength(1); // COMPANY lọc kho → STORE 9567
     expect(await page.evaluate(() => (window as unknown as { __gm: Map<string, unknown> }).__gm.get('BI_COMP_STORE_VIEWID_8231'))).toBe('7001');
     for (const c of thiDuaNv) {
         expect(c.body.TIMETYPE).toBe(2);

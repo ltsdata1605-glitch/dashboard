@@ -172,8 +172,21 @@ export function useCouponManager(overrideUserId?: string) {
     const revokeCoupon = useCallback(async (couponId: string, reason?: string) => {
         if (!userId) return;
         await lineBotFirestoreService.revokeCoupon(userId, couponId, reason);
-        toast.success('Đã thu hồi mã về kho!');
+        toast.success('Đã thu hồi mã về kho (trạng thái Chưa dùng)!');
         await loadCoupons();
+    }, [userId, loadCoupons]);
+
+    // Khôi phục toàn bộ mã REVOKED về UNUSED
+    const restoreRevokedCoupons = useCallback(async () => {
+        if (!userId) return 0;
+        const count = await lineBotFirestoreService.restoreRevokedCoupons(userId);
+        if (count > 0) {
+            toast.success(`Đã khôi phục thành công ${count} mã về trạng thái Chưa dùng!`);
+        } else {
+            toast('Không có mã nào cần khôi phục.', { icon: 'ℹ️' });
+        }
+        await loadCoupons();
+        return count;
     }, [userId, loadCoupons]);
 
     // Xóa mã
@@ -247,6 +260,26 @@ export function useCouponManager(overrideUserId?: string) {
         toast.success(`Đã xuất ${data.length} mã coupon ra file Excel!`);
     }, [coupons, filteredCoupons]);
 
+    // Tự động phân loại tách biệt các thương hiệu (VIVO, HONOR, SAMSUNG...)
+    const reclassifyCoupons = useCallback(async () => {
+        if (!userId) return 0;
+        const count = await lineBotFirestoreService.reclassifyBrandCoupons(userId);
+        if (count > 0) {
+            toast.success(`Đã tự động phân loại tách biệt thành công ${count} mã PMH theo thương hiệu!`);
+        } else {
+            toast('Toàn bộ mã đã được phân loại chuẩn xác.', { icon: 'ℹ️' });
+        }
+        await loadCoupons();
+        return count;
+    }, [userId, loadCoupons]);
+
+    const updateCouponType = useCallback(async (couponId: string, newType: string) => {
+        if (!userId) return;
+        await lineBotFirestoreService.updateCouponType(userId, couponId, newType);
+        toast.success(`Đã cập nhật loại PMH thành "${newType}"`);
+        await loadCoupons();
+    }, [userId, loadCoupons]);
+
     return {
         coupons,
         filteredCoupons,
@@ -262,10 +295,13 @@ export function useCouponManager(overrideUserId?: string) {
         loadCoupons,
         importCoupons,
         revokeCoupon,
+        restoreRevokedCoupons,
         deleteCoupon,
         deleteCouponsBatch,
         deleteAllCoupons,
         exportToExcel,
-        recordCouponCopied
+        recordCouponCopied,
+        reclassifyCoupons,
+        updateCouponType
     };
 }

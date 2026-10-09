@@ -287,8 +287,11 @@ export function useStickerPrinterData() {
         setDrawTickets(prev => {
             const firstTicketData = prev[0] || { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '', contentBottomRightSub: '' };
             const newTickets: TicketDrawData[] = [];
-            for (let i = 0; i < drawTotalTickets; i++) {
-                const ticketCode = drawAutoIncrement ? (drawStartNumber + i).toString() : (prev[i]?.code || '');
+            // Mỗi trang A4 gồm 4 phiếu — luôn sinh đủ số lượng lấp đầy các trang in (tối thiểu 4 phiếu = 1 trang A4)
+            const totalTicketsToGenerate = Math.max(4, Math.ceil(drawTotalTickets / 4) * 4);
+
+            for (let i = 0; i < totalTicketsToGenerate; i++) {
+                const ticketCode = drawAutoIncrement ? (drawStartNumber + i).toString() : (prev[i]?.code || firstTicketData.code || '1');
                 if (i === 0) {
                     newTickets.push({
                         ...firstTicketData,
@@ -298,12 +301,13 @@ export function useStickerPrinterData() {
                 } else {
                     newTickets.push({
                         id: (i + 1).toString(),
-                        title: '', 
-                        footer: '',
-                        contentTop: '',
-                        contentTopRight: '',
-                        contentBottom: '',
-                        contentBottomRight: '',
+                        title: firstTicketData.title, 
+                        footer: firstTicketData.footer,
+                        contentTop: firstTicketData.contentTop,
+                        contentTopRight: firstTicketData.contentTopRight,
+                        contentBottom: firstTicketData.contentBottom,
+                        contentBottomRight: firstTicketData.contentBottomRight,
+                        contentBottomRightSub: firstTicketData.contentBottomRightSub,
                         code: ticketCode
                     });
                 }

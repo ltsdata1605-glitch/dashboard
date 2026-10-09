@@ -60,7 +60,8 @@ test('Report BI › Doanh thu trên iPhone: viền mờ còn cột + cột tên 
     await expect(scroller).toHaveCount(1, { timeout: 5000 });
     await page.screenshot({ path: 'test-results/bang-truoc-cuon.png' });
 
-    const nameCell = table.locator('tbody tr td:first-child').filter({ hasText: '101 - V.A' }).first();
+    // Tên lấy từ danh sách Phân Tích ("Nguyễn Văn A", từ 66dc315) — không còn kiểu rút gọn "101 - V.A".
+    const nameCell = table.locator('tbody tr td:first-child').filter({ hasText: 'Nguyễn Văn A' }).first();
     const x0 = (await nameCell.boundingBox())!.x;
 
     // Cuộn hết sang phải
@@ -70,7 +71,7 @@ test('Report BI › Doanh thu trên iPhone: viền mờ còn cột + cột tên 
     // tên đứng yên (lệch ≤ 4px: vạch trạng thái 3–4px ở mép trái dòng trôi đi khi cuộn)
     expect(Math.abs(x1 - x0)).toBeLessThanOrEqual(4);
     // cột số bên cạnh đã trôi đi
-    const so = table.locator('tbody tr').filter({ hasText: '101 - V.A' }).first().locator('td').nth(1);
+    const so = table.locator('tbody tr').filter({ hasText: 'Nguyễn Văn A' }).first().locator('td').nth(1);
     expect((await so.boundingBox())!.x).toBeLessThan(x0);
     await page.screenshot({ path: 'test-results/bang-sau-cuon.png' });
 

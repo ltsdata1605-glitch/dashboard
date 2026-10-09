@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
 import { CouponImportModal } from './CouponImportModal';
-import { formatDisplayDate, getVietnamTodayString } from '../services/couponParser';
+import { formatDisplayDate, getVietnamTodayString, getCouponCategoryMeta } from '../services/couponParser';
 
 interface CouponManagerTabProps {
     coupons: Coupon[];
@@ -28,6 +28,8 @@ interface CouponManagerTabProps {
     };
     onImportCoupons: (items: ParsedImportItem[]) => Promise<{ added: number; skipped: number }>;
     onRevokeCoupon: (id: string, reason?: string) => Promise<void>;
+    onRestoreRevokedCoupons?: () => Promise<number>;
+    onReclassifyCoupons?: () => Promise<number>;
     onDeleteCoupon: (id: string) => Promise<void>;
     onDeleteCouponsBatch?: (couponIds: string[]) => Promise<number>;
     onDeleteAllCoupons: () => Promise<number>;
@@ -50,6 +52,8 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     stockSummary,
     onImportCoupons,
     onRevokeCoupon,
+    onRestoreRevokedCoupons,
+    onReclassifyCoupons,
     onDeleteCoupon,
     onDeleteCouponsBatch,
     onDeleteAllCoupons,
@@ -173,13 +177,38 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         )}
         </>
     );
-    const renderType = (c: Coupon) => (
-        <>
-        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300">
-            {c.type}
-        </span>
-        </>
-    );
+    const renderType = (c: Coupon) => {
+        const meta = getCouponCategoryMeta(c);
+        let badgeColor = 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300';
+        if (meta.id === 'VIVO') {
+            badgeColor = 'bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-300 dark:border-sky-700';
+        } else if (meta.id === 'EVENT') {
+            badgeColor = 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700';
+        } else if (meta.id === 'GVGS') {
+            badgeColor = 'bg-emerald-200 text-emerald-800 border border-emerald-400';
+        } else if (meta.id === 'HONOR') {
+            badgeColor = 'bg-sky-200 text-sky-800 border border-sky-400';
+        } else if (meta.id === 'SAMSUNG') {
+            badgeColor = 'bg-rose-100 text-rose-700 border border-rose-300';
+        } else if (meta.id === 'APPLE') {
+            badgeColor = 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-600';
+        } else if (meta.id === 'OPPO') {
+            badgeColor = 'bg-amber-200 text-amber-800 border border-amber-400';
+        } else if (meta.id === 'XIAOMI') {
+            badgeColor = 'bg-amber-100 text-amber-700 border border-amber-300';
+        }
+
+        const displayType = (c.type && c.type !== 'Event' && c.type !== 'PMH') ? c.type : meta.name;
+
+        return (
+            <span
+                className={`px-2 py-0.5 rounded text-[11px] font-bold ${badgeColor}`}
+                title={`Nhóm: ${meta.title} (Cú pháp xin: ${meta.prefix}1, ${meta.prefix}2...)`}
+            >
+                {displayType}
+            </span>
+        );
+    };
     const renderExpiry = (c: Coupon) => (
         <>
         {c.expiryDate ? (
@@ -262,15 +291,15 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     const renderActions = (c: Coupon, compact = false) => (
         <>
         <div className="flex items-center justify-end gap-0.5 sm:gap-1">
-            {c.status === 'SENT' && (
+            {(c.status === 'SENT' || c.status === 'REVOKED') && (
                 <Button
                     variant="ghost"
                     size="none"
-                    onClick={() => onRevokeCoupon(c.id)}
+                    onClick={() => onRevokeCoupon(c.id, c.status === 'REVOKED' ? 'Khôi phục về Chưa dùng' : 'Quản lý thu hồi về kho')}
                     className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
-                    title="Thu hồi về kho"
+                    title={c.status === 'REVOKED' ? 'Khôi phục về Chưa dùng (Khả dụng)' : 'Thu hồi về kho'}
                 >
-                    <AppIcon name="reset" size="sm" />
+                    <AppIcon name={c.status === 'REVOKED' ? 'check' : 'reset'} size="sm" />
                 </Button>
             )}
             <Button
@@ -393,11 +422,34 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             {/* Low stock warning banner */}
             {isLowStock && (
                 <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 rounded-xl flex items-center gap-2.5 shadow-2xs">
-                    <AppIcon name="warning" size="md" className="text-amber-600" />
+                    <AppIcon name="warning" size="md" className="text-amber-600 shrink-0" />
                     <div className="text-[11px] sm:text-xs text-amber-800 dark:text-amber-300">
                         <span className="font-bold">Cảnh báo tồn kho thấp: </span>
                         Hiện tại chỉ còn <strong className="underline font-bold">{stockSummary.unused}</strong> mã chưa sử dụng. Hãy nạp thêm mã để đảm bảo phát liên tục.
                     </div>
+                </div>
+            )}
+
+            {/* Revoked coupons restore banner */}
+            {stockSummary.revoked > 0 && (
+                <div className="p-2.5 bg-sky-50 dark:bg-sky-950/30 border border-sky-200/80 dark:border-sky-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-2xs">
+                    <div className="flex items-center gap-2">
+                        <AppIcon name="info" size="md" className="text-sky-600 shrink-0" />
+                        <div className="text-[11px] sm:text-xs text-sky-800 dark:text-sky-300">
+                            Có <strong className="font-bold">{stockSummary.revoked}</strong> mã đang ở trạng thái &ldquo;Đã thu hồi&rdquo;. Bấm nút bên cạnh để đưa tất cả về trạng thái &ldquo;Chưa dùng&rdquo; (khả dụng) cho nhân viên tiếp tục nhận mã.
+                        </div>
+                    </div>
+                    {onRestoreRevokedCoupons && (
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={onRestoreRevokedCoupons}
+                            className="shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-semibold text-xs px-3 py-1.5 rounded-lg shadow-2xs cursor-pointer flex items-center justify-center gap-1 self-end sm:self-auto"
+                        >
+                            <AppIcon name="reset" size="xs" />
+                            Khôi phục về Chưa dùng
+                        </Button>
+                    )}
                 </div>
             )}
 
@@ -524,6 +576,17 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     >
                         <AppIcon name="delete" size="sm" className={isDeletingAll ? 'animate-spin' : ''} />
                     </Button>
+
+                    {onReclassifyCoupons && (
+                        <Button
+                            variant="ghost"
+                            onClick={onReclassifyCoupons}
+                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800/60 rounded-lg transition-colors shrink-0 cursor-pointer active:scale-95"
+                            title="Tự động phân loại tách biệt thương hiệu chuẩn (VIVO, HONOR, SAMSUNG, EVENT...)"
+                        >
+                            <AppIcon name="reset" size="sm" />
+                        </Button>
+                    )}
 
                     <Button
                         variant="ghost"

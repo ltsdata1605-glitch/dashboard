@@ -435,6 +435,38 @@ Ngày 20/09/2026 : Mã Coupon 3 - dùng cho Máy lọc nước RO nóng nguội 
             expect(gvgsList[0].index).toBe(1);
             expect(gvgsList[0].productName).toBe('Bình đun Rapido');
         });
+
+        it('nhận diện chính xác cú pháp h + STT để lấy PMH Honor và v + STT để lấy PMH Vivo', async () => {
+            const { parseCouponClaimCommand, getCategoryMeta, formatInventoryReportMessage } = await import('../../features/line-bot/services/couponParser');
+
+            // Cú pháp Honor
+            expect(parseCouponClaimCommand('h1')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 1, orderId: undefined });
+            expect(parseCouponClaimCommand('h 2')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('honor 3')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 3, orderId: undefined });
+            expect(parseCouponClaimCommand('h1 01602SO26090873565')).toEqual({ isSelection: true, isClaim: true, category: 'HONOR', productIndex: 1, orderId: '01602SO26090873565' });
+
+            // Cú pháp Vivo
+            expect(parseCouponClaimCommand('v1')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 1, orderId: undefined });
+            expect(parseCouponClaimCommand('v 2')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 2, orderId: undefined });
+            expect(parseCouponClaimCommand('vivo 3')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 3, orderId: undefined });
+            expect(parseCouponClaimCommand('v2 12345678')).toEqual({ isSelection: true, isClaim: true, category: 'VIVO', productIndex: 2, orderId: '12345678' });
+
+            // Metadata
+            expect(getCategoryMeta('Honor').id).toBe('HONOR');
+            expect(getCategoryMeta('Honor').prefix).toBe('h');
+            expect(getCategoryMeta('Vivo').id).toBe('VIVO');
+            expect(getCategoryMeta('Vivo').prefix).toBe('v');
+
+            // Format inventory report cho Honor
+            const honorCoupons = [
+                { productName: 'Honor X8b', type: 'Honor', status: 'UNUSED' },
+                { productName: 'Honor X8b', type: 'Honor', status: 'UNUSED' }
+            ];
+            const rep = formatInventoryReportMessage(honorCoupons, 'HONOR');
+            expect(rep.replyText).toContain('PMH HONOR');
+            expect(rep.replyText).toContain('h1');
+            expect(rep.replyText).toContain('Cú pháp nhận mã Honor: Gõ "h + STT"');
+        });
     });
 
     describe('extractProductSyntax & auto-prefill syntax', () => {
@@ -1067,6 +1099,60 @@ CG5BBSGXJ9\tBếp gas Sunhouse\tEvent\t31/10/2026\tSHB3105MD
             const items = parsePastedCouponList(duplicatesText, 'Event', (code) => skipped.push(code));
             expect(items.length).toBe(2);
             expect(skipped).toEqual(['CG5BBSGXJ9']);
+        });
+
+        it('tự động nhận diện và tách biệt PMH VIVO khỏi PMH Event khi tên sản phẩm chứa Vivo', async () => {
+            const { getCouponCategoryMeta, filterCouponsByCategory, getProductInventoryList } = await import('../../features/line-bot/services/couponParser');
+
+            const coupons = [
+                {
+                    code: 'VIVO300K01',
+                    productName: 'PMH trị giá 300,000đ: áp dụng mua điện thoại vivo trên 8 triệu',
+                    type: 'Event', // Bị gán nhầm là Event khi import
+                    status: 'UNUSED'
+                },
+                {
+                    code: 'VIVO500K01',
+                    productName: 'PMH trị giá 500,000đ áp dụng mua điện thoại vivo trên 12 triệu',
+                    type: 'Event', // Bị gán nhầm là Event khi import
+                    status: 'UNUSED'
+                },
+                {
+                    code: 'BEPGAS0001',
+                    productName: 'Bếp gas đôi Sakura SA-D302DS',
+                    type: 'Event',
+                    status: 'UNUSED'
+                }
+            ];
+
+            // 1. Kiểm tra getCouponCategoryMeta
+            expect(getCouponCategoryMeta(coupons[0]).id).toBe('VIVO');
+            expect(getCouponCategoryMeta(coupons[0]).prefix).toBe('v');
+            expect(getCouponCategoryMeta(coupons[1]).id).toBe('VIVO');
+            expect(getCouponCategoryMeta(coupons[2]).id).toBe('EVENT');
+            expect(getCouponCategoryMeta(coupons[2]).prefix).toBe('e');
+
+            // 2. Kiểm tra filterCouponsByCategory
+            const vivoCoupons = filterCouponsByCategory(coupons, 'VIVO');
+            expect(vivoCoupons.length).toBe(2);
+            expect(vivoCoupons.every(c => c.productName?.toLowerCase().includes('vivo'))).toBe(true);
+
+            const eventCoupons = filterCouponsByCategory(coupons, 'EVENT');
+            expect(eventCoupons.length).toBe(1);
+            expect(eventCoupons[0].productName).toBe('Bếp gas đôi Sakura SA-D302DS');
+
+            // 3. Kiểm tra getProductInventoryList cho VIVO (cú pháp v1, v2)
+            const vivoInventory = getProductInventoryList(coupons, 'VIVO');
+            expect(vivoInventory.length).toBe(2);
+            expect(vivoInventory[0].productName).toContain('vivo');
+            expect(vivoInventory[1].productName).toContain('vivo');
+
+            // 4. Kiểm tra getProductInventoryList cho EVENT (cú pháp e1)
+            const eventInventory = getProductInventoryList(coupons, 'EVENT');
+            expect(eventInventory.length).toBe(1);
+            expect(eventInventory[0].productName).toBe('Bếp gas đôi Sakura SA-D302DS');
+            // Đảm bảo không bị chồng chéo mã Vivo vào Event!
+            expect(eventInventory.some(i => i.productName.toLowerCase().includes('vivo'))).toBe(false);
         });
     });
 });
