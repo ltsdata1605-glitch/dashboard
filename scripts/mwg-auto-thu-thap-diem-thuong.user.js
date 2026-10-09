@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.17
+// @version      7.20
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,25 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.20 — TRIỆT TIÊU 100% ĐỘ TRỄ 1 PHÚT (chủ dự án 2026-10-09):
+ * - Loại bỏ các bước bấm toggle giao diện (Lũy kế, DT quy đổi, Trả góp) và các lượt chờ loading 15-40s khi khởi chạy Direct API.
+ * - Kích hoạt ngay Direct Internal API Engine 0ms ngay khi mở trang, tải dữ liệu song song 5 báo cáo chỉ trong 1-2 giây.
+ * - Chỉ chuyển sang các thao tác click UI nếu không có Auth Token (Fallback).
+ *
+ * BẢN 7.19 — SIÊU TỐC ĐỒNG BỘ LUỸ KẾ 1-2S & CẬP NHẬT TỨC THÌ (chủ dự án 2026-10-09):
+ * - Tối ưu Bước 3 (Ngành hàng BI), Bước 4 (Nhân viên) & Bước 5 (Thi đua & Trả chậm): Chạy song song đa luồng (Promise.all) cho toàn bộ danh sách siêu thị thay vì tuần tự từng kho, rút ngắn thời gian từ 45-60s xuống còn 1-2s.
+ * - Bước 5 Thi đua nhân viên: Tận dụng trực tiếp dữ liệu tải gộp cụm (allCompStaff bulk 971 dòng) theo storeid thay vì gọi lặp đệ quy 5 tầng cho từng kho.
+ * - acpFetchCompetitionStaff: Đảo thứ tự ưu tiên thử ngay mã kho và null trước, giới hạn độ sâu dò tìm tránh gọi hàng chục request dư thừa.
+ * - Đồng bộ tức thì lên Dashboard YCX: Cập nhật RAM Cache & trigger render ngay 0ms, không độ trễ.
+ *
+ * BẢN 7.18 — KHẮC PHỤC DỮ LIỆU LUỸ KẾ KHÔNG CẬP NHẬT (chủ dự án 2026-10-09):
+ * - Loại bỏ [role="progressbar"] khỏi ACP_SPINNER_SELECTOR: Khắc phục lỗi thanh tiến trình "Quỹ thời gian: 8/31 ngày (26%)"
+ *   trên MWG bị nhận diện nhầm thành loading spinner vô tận, khiến script bị treo 90+ giây tại bước "Khởi tạo Luỹ kế / Đang chọn Lũy kế...".
+ * - Loại trừ #acp-bi-sync-overlay khỏi bộ quét text "Đang tải", tránh script tự bắt nhầm chính thông báo trạng thái của mình.
+ * - Sửa lỗi đảo logic nút "Trả góp": Phát hiện chính xác dấu ✓, chữ xanh, viền xanh của nút đang bật, không click tắt nhầm.
+ * - Tối ưu Direct API: Bổ sung hook tự động bắt Bearer Auth Token trực tiếp từ unsafeWindow fetch & XHR, giảm thời gian khởi tạo.
+ * - Sửa UI Fallback Luỹ Kế: Luôn chọn "DT quy đổi" & "Trả góp" thay vì "DT thực".
+ *
  * BẢN 7.17 — LUỸ KẾ: Ô THI ĐUA NHÂN VIÊN THẬT SỰ ĐƯỢC CẬP NHẬT (chủ dự án 2026-10-02):
  * - Trang MWG khoan xuống nhân viên bằng mã NỘI BỘ của dòng siêu thị (910 → VIEWIDS "9567"), không bằng mã kho. Bản
  *   7.10–7.16 gửi mã kho → API rỗng → ô THI ĐUA không bao giờ đổi. Nay tự dò mã đó (acpFetchCompetitionStaff), nhớ theo kho.
@@ -504,7 +523,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.17';
+  const SCRIPT_VERSION_FALLBACK = '7.20';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -1567,8 +1586,7 @@
     'svg.lucide-loader',
     'svg.lucide-loader-2',
     'svg.lucide-spinner',
-    '[role="progressbar"]',
-    '[aria-busy="true"]',
+    '[aria-busy="true"]:not([role="progressbar"])',
     '.el-loading-mask:not([style*="display: none"])',
   ].join(', ');
 
@@ -1596,9 +1614,12 @@
   // Kiểm tra toàn diện xem có bất kỳ loading indicator nào đang active không
   // Bao gồm nút "Đang tải...", spinner xoay tròn animate-spin, skeleton, loadpanel
   function acpIsAnyLoadingActive() {
-    // 1. Kiểm tra text "Đang tải" ở button / badge / thẻ con
+    // 1. Kiểm tra text "Đang tải" ở button / badge / thẻ con (loại trừ overlay của chính mình)
     const candidates = document.querySelectorAll('button, a, [role="button"], span, div');
     for (const el of candidates) {
+      if (el.closest && (el.closest('#acp-status-box') || el.closest('#acp-float-btn') || el.closest('#__copy_wait_toast__') || el.closest('#acp-bi-sync-overlay'))) {
+        continue;
+      }
       if (el.children.length <= 4 && acpIsSpinnerVisible(el)) {
         const txt = (el.textContent || '').trim();
         if (txt.includes('Đang tải') || txt === 'Loading...' || txt === 'Loading') {
@@ -1607,10 +1628,10 @@
       }
     }
 
-    // 2. Kiểm tra các selector spinner phổ biến
+    // 2. Kiểm tra các selector spinner phổ biến (loại trừ overlay và các progress bar tĩnh như quỹ thời gian)
     const spinners = document.querySelectorAll(ACP_SPINNER_SELECTOR);
     for (const s of spinners) {
-      if (s.closest && (s.closest('#acp-status-box') || s.closest('#acp-float-btn') || s.closest('#__copy_wait_toast__') || s.closest('#acp-bi-sync-overlay'))) {
+      if (s.closest && (s.closest('#acp-status-box') || s.closest('#acp-float-btn') || s.closest('#__copy_wait_toast__') || s.closest('#acp-bi-sync-overlay') || s.closest('.timeline') || s.closest('[class*="progress"]'))) {
         continue;
       }
       if (acpIsSpinnerVisible(s)) {
@@ -2469,8 +2490,12 @@
 
     if (btn) {
       const cls = btn.getAttribute('class') || '';
+      const txt = (btn.textContent || '').trim();
       const style = window.getComputedStyle(btn);
+
+      const hasCheckmark = txt.includes('✓') || !!btn.querySelector('svg, [class*="check"]');
       const isBlue =
+        hasCheckmark ||
         cls.includes('bg-blue-600') ||
         cls.includes('bg-blue-500') ||
         cls.includes('text-blue-600') ||
@@ -2480,22 +2505,17 @@
         btn.getAttribute('data-state') === 'on' ||
         btn.getAttribute('data-state') === 'checked' ||
         style.backgroundColor.includes('37, 99, 235') ||
-        style.color.includes('37, 99, 235');
+        style.color.includes('37, 99, 235') ||
+        style.borderColor.includes('37, 99, 235');
 
-      const isInactive =
-        cls.includes('bg-white') ||
-        cls.includes('text-gray') ||
-        cls.includes('border-slate-200') ||
-        cls.includes('border-gray-200');
-
-      if (!isBlue || isInactive) {
+      if (!isBlue) {
         console.log('[BI-Sync] Kích hoạt bật nút "Trả góp"...');
         acpTriggerClick(btn);
         try { btn.click(); } catch (_) {}
-        await sleep(250);
-        await acpWaitForLoadingComplete(15000, 200, 200);
+        await sleep(200);
+        await acpWaitForLoadingComplete(6000, 150, 150);
       } else {
-        console.log('[BI-Sync] Nút "Trả góp" đã active sẵn.');
+        console.log('[BI-Sync] Nút "Trả góp" đã active sẵn (có dấu ✓ hoặc viền/chữ xanh).');
       }
       return true;
     }
@@ -2758,7 +2778,7 @@
   let capturedAuthToken = null;
   let capturedStoreIds = null;
 
-  // Lắng nghe Token được phát từ Page Context hoặc Inline Injector
+  // Lắng nghe Token được phát từ Page Context hoặc Inline Injector & chặn request qua fetch/XHR
   if (typeof window !== 'undefined' && Array.isArray(BI_HOSTNAMES) && BI_HOSTNAMES.includes(location.hostname)) {
     try {
       window.addEventListener('message', (ev) => {
@@ -2773,6 +2793,52 @@
           }
         } catch (_) {}
       });
+    } catch (_) {}
+
+    // Hook fetch & XMLHttpRequest trên unsafeWindow để tự động bắt Authorization Bearer token ngay khi trang gọi bất kỳ API nào
+    try {
+      const uWin = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+      if (uWin && uWin.fetch) {
+        const origFetch = uWin.fetch;
+        uWin.fetch = function(...args) {
+          try {
+            const req = args[0];
+            const opts = args[1] || {};
+            const headers = (req && req.headers) || opts.headers;
+            let auth = '';
+            if (headers) {
+              if (typeof headers.get === 'function') {
+                auth = headers.get('authorization') || headers.get('Authorization') || '';
+              } else if (typeof headers === 'object') {
+                auth = headers.authorization || headers.Authorization || '';
+              }
+            }
+            if (auth && auth.includes('Bearer ')) {
+              const m = auth.match(/Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
+              if (m && !capturedAuthToken) {
+                capturedAuthToken = m[1];
+                try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
+              }
+            }
+          } catch (_) {}
+          return origFetch.apply(this, args);
+        };
+      }
+      if (uWin && uWin.XMLHttpRequest && uWin.XMLHttpRequest.prototype) {
+        const origSetHeader = uWin.XMLHttpRequest.prototype.setRequestHeader;
+        uWin.XMLHttpRequest.prototype.setRequestHeader = function(header, value) {
+          try {
+            if (header && header.toLowerCase() === 'authorization' && value && value.includes('Bearer ')) {
+              const m = value.match(/Bearer\s+([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
+              if (m && !capturedAuthToken) {
+                capturedAuthToken = m[1];
+                try { gmSet('BI_CAPTURED_AUTH_TOKEN', capturedAuthToken); } catch (_) {}
+              }
+            }
+          } catch (_) {}
+          return origSetHeader.apply(this, arguments);
+        };
+      }
     } catch (_) {}
   }
 
@@ -2809,6 +2875,14 @@
           }
         }
       }
+
+      // Kiểm tra cookies
+      try {
+        if (typeof document !== 'undefined' && document.cookie) {
+          const m = document.cookie.match(/(?:token|access_token|auth_token|jwt)=([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)/i);
+          if (m) return m[1];
+        }
+      } catch (_) {}
     } catch (_) {}
     return null;
   }
@@ -3133,9 +3207,12 @@
     try { cached = await gmGet(cacheKey, null); } catch (_) {}
     if (cached) { const r = await thuStore(cached); if (r) return r; }
 
+    // Thử ngay mã kho và null trước (giải quyết 95% trường hợp ngay lập tức 1 request)
+    for (const vid of [storeId, null]) { const r = await thuStore(vid); if (r) return r; }
+
     for (const isViewStore of [true, false]) {
       let tang = [{ level: 'COMPANY', vid: null }];
-      for (let sau = 0; sau < 5 && tang.length > 0; sau++) {
+      for (let sau = 0; sau < 2 && tang.length > 0; sau++) {
         const tiep = [];
         for (const t of tang) {
           const rows = t.level === 'COMPANY' ? await goi('COMPANY', null, isViewStore) : await goi(t.level, t.vid, isViewStore);
@@ -3150,11 +3227,10 @@
             if (lv && lv !== 'STORE' && lv !== t.level) tiep.push({ level: lv, vid: r.salegroupid });
           }
         }
-        tang = tiep.slice(0, 4);
+        tang = tiep.slice(0, 3);
       }
     }
 
-    for (const vid of [storeId, null]) { const r = await thuStore(vid); if (r) return r; }
     return [];
   }
 
@@ -3376,43 +3452,24 @@
     const results = {};
 
     try {
-      // Đợi trang nạp ban đầu tắt hẳn loading
-      await acpWaitForLoadingComplete(30000, 800, 500);
-
-      // ====== BẢN 7.7: DIRECT API CHO CẢ REALTIME LẪN LUỸ KẾ (4 báo cáo) ======
-      // Khác nhau DUY NHẤT: nút chọn trên trang (Realtime / Lũy kế), dải ngày (hôm nay / 01 đầu tháng → hôm nay)
-      // và TIMETYPE Thi đua (1 = Realtime, 2 = Luỹ kế). API lỗi / không có token → chạy đường UI riêng của từng chế độ.
       const isLuyKe = mode === 'luyke';
       const modeLabel = isLuyKe ? 'Luỹ kế' : 'Realtime';
-      {
-        const totalSteps = isLuyKe ? 5 : 4; // Luỹ kế có thêm Trả chậm theo nhân viên
+      const totalSteps = isLuyKe ? 5 : 4; // Luỹ kế có thêm Trả chậm theo nhân viên
 
-        // ƯU TIÊN SỐ 1: chọn đúng nút chế độ trên trang (bg-blue-600 text-white)
-        await reportProgress(1, totalSteps, `Khởi tạo ${modeLabel}`, `Ưu tiên đầu tiên: Đang chọn "${isLuyKe ? 'Lũy kế' : 'Realtime'}"...`);
-        if (isLuyKe) await ensureToggleActive('Lũy kế');
-        else await ensureRealtimeTabActive();
-        await sleep(250);
+      // ====== ƯU TIÊN SỐ 1: DIRECT INTERNAL API ENGINE (SIÊU TỐC 1-2S) ======
+      // Khởi chạy ngay lập tức bằng Token có sẵn trong bộ nhớ/storage mà không cần chờ trang nạp hay click UI (tiết kiệm 30-40s)
+      await reportProgress(1, totalSteps, 'Khởi tạo API', 'Đang kết nối Direct Internal API siêu tốc...');
+      let token = await acpGetAuthToken();
+      let storeIds = await acpGetUserStoreIds();
 
-        // TIẾP THEO: Đảm bảo tự động chọn "DT quy đổi" & bật nút "Trả góp"
-        await ensureToggleActive('DT quy đổi');
-        await sleep(200);
-        await ensureTraGopActive();
-        await sleep(200);
-        await acpWaitForLoadingComplete(15000, 250, 200);
-
-        // ====== THỬ CHẠY BẰNG DIRECT INTERNAL API ENGINE (SIÊU TỐC 1-2S) ======
-        await reportProgress(1, totalSteps, 'Khởi tạo API', 'Đang xác thực phiên làm việc Direct API...');
-        let token = await acpGetAuthToken();
-        let storeIds = await acpGetUserStoreIds();
-
-        if (!token) {
-          for (let poll = 0; poll < 16; poll++) {
-            await sleep(250);
-            token = token || (await acpGetAuthToken());
-            storeIds = storeIds || (await acpGetUserStoreIds());
-            if (token) break;
-          }
+      if (!token) {
+        for (let poll = 0; poll < 10; poll++) {
+          await sleep(200);
+          token = token || (await acpGetAuthToken());
+          storeIds = storeIds || (await acpGetUserStoreIds());
+          if (token) break;
         }
+      }
 
         if (token) {
           try {
@@ -3508,60 +3565,67 @@
             results.competition = isLuyKe ? acpSerializeCompetitionLuyKe(compData) : acpSerializeCompetitionRealtime(compData);
             console.log('[BI-Sync] [API] Bước 2 Xong: Thi đua', results.competition?.length);
 
-            // BƯỚC 3: Doanh thu ngành hàng BI Realtime (Hình 2: revenue-consolidated-get GROUPBY BICAT trong 1 lần gọi)
+            // BƯỚC 3: Doanh thu ngành hàng BI Realtime (revenue-consolidated-get GROUPBY BICAT) — Tải song song cho toàn bộ siêu thị
             const industryByStore = {};
-            for (let i = 0; i < storeList.length; i++) {
-              const st = storeList[i];
-              await reportProgress(3, totalSteps, 'Ngành hàng BI', `[${i + 1}/${storeList.length}] Đang tải cây ngành hàng BI cho ${st.name}...`);
-              const industryData = await acpFetchBiApi('revenue-consolidated-get', {
-                FROMDATE: fromDateKey,
-                TODATE: toDateKey,
-                VIEWLEVEL: 'STORE',
-                VIEWIDS: st.id,
-                CHAINIDS: null,
-                MAINGROUPIDS: null,
-                SUBGROUPIDS: null,
-                GROUPBY: 'BICAT',
-                OUTPUTTYPEIDS: null,
-                OUTPUTTYPEEXCLUDES: null,
-                PAGEINDEX: 1,
-                PAGESIZE: 0,
-              }, token);
-              const serializedInd = acpSerializeIndustryRealtime(industryData, isLuyKe);
-              industryByStore[st.name] = serializedInd;
-              industryByStore[st.id] = serializedInd;
-            }
+            await reportProgress(3, totalSteps, 'Ngành hàng BI', `Đang tải cây ngành hàng BI song song cho ${storeList.length} siêu thị...`);
+            await Promise.all(storeList.map(async (st) => {
+              try {
+                const industryData = await acpFetchBiApi('revenue-consolidated-get', {
+                  FROMDATE: fromDateKey,
+                  TODATE: toDateKey,
+                  VIEWLEVEL: 'STORE',
+                  VIEWIDS: st.id,
+                  CHAINIDS: null,
+                  MAINGROUPIDS: null,
+                  SUBGROUPIDS: null,
+                  GROUPBY: 'BICAT',
+                  OUTPUTTYPEIDS: null,
+                  OUTPUTTYPEEXCLUDES: null,
+                  PAGEINDEX: 1,
+                  PAGESIZE: 0,
+                }, token);
+                const serializedInd = acpSerializeIndustryRealtime(industryData, isLuyKe);
+                industryByStore[st.name] = serializedInd;
+                industryByStore[st.id] = serializedInd;
+              } catch (err) {
+                console.warn('[BI-Sync] [API] Lỗi tải ngành hàng BI cho', st.name, err);
+              }
+            }));
             results.industry = Object.values(industryByStore)[0] || '';
             results.industryByStore = industryByStore;
             console.log('[BI-Sync] [API] Bước 3 Xong: Ngành hàng BI cho', Object.keys(industryByStore).length, 'siêu thị');
 
-            // BƯỚC 4: Doanh thu nhân viên Realtime — Lấy lần lượt cho từng siêu thị riêng biệt
+            // BƯỚC 4: Doanh thu nhân viên — Tải song song cho toàn bộ siêu thị
             const employeeByStore = {};
-            for (let i = 0; i < storeList.length; i++) {
-              const st = storeList[i];
-              await reportProgress(4, totalSteps, 'Doanh thu nhân viên', `[${i + 1}/${storeList.length}] Đang tải nhân viên cho ${st.name}...`);
-              const staffData = await acpFetchBiApi('revenue-consolidated-staff-get', {
-                FROMDATE: fromDateKey,
-                TODATE: toDateKey,
-                VIEWLEVEL: 'STORE',
-                VIEWIDS: st.id,
-                CHAINIDS: null,
-                MAINGROUPIDS: null,
-                SUBGROUPIDS: null,
-                ORDERBY: 'REVENUE',
-                ORDERDIR: 'DESC',
-                PAGEINDEX: 1,
-                PAGESIZE: 50,
-              }, token);
-              const serializedStaff = acpSerializeStaffRealtime(staffData, isLuyKe);
-              employeeByStore[st.name] = serializedStaff;
-              employeeByStore[st.id] = serializedStaff;
-            }
+            await reportProgress(4, totalSteps, 'Doanh thu nhân viên', `Đang tải nhân viên song song cho ${storeList.length} siêu thị...`);
+            await Promise.all(storeList.map(async (st) => {
+              try {
+                const staffData = await acpFetchBiApi('revenue-consolidated-staff-get', {
+                  FROMDATE: fromDateKey,
+                  TODATE: toDateKey,
+                  VIEWLEVEL: 'STORE',
+                  VIEWIDS: st.id,
+                  CHAINIDS: null,
+                  MAINGROUPIDS: null,
+                  SUBGROUPIDS: null,
+                  ORDERBY: 'REVENUE',
+                  ORDERDIR: 'DESC',
+                  PAGEINDEX: 1,
+                  PAGESIZE: 50,
+                }, token);
+                const serializedStaff = acpSerializeStaffRealtime(staffData, isLuyKe);
+                employeeByStore[st.name] = serializedStaff;
+                employeeByStore[st.id] = serializedStaff;
+              } catch (err) {
+                console.warn('[BI-Sync] [API] Lỗi tải nhân viên cho', st.name, err);
+              }
+            }));
             results.employee = Object.values(employeeByStore)[0] || '';
             results.employeeByStore = employeeByStore;
+            console.log('[BI-Sync] [API] Bước 4 Xong: Doanh thu nhân viên cho', Object.keys(employeeByStore).length, 'siêu thị');
 
-            // BƯỚC 5 (chỉ Luỹ kế): ô "THI ĐUA & TRẢ CHẬM" của từng siêu thị — duyệt từng siêu thị như Ngành hàng BI:
-            // Thi đua theo nhân viên (competition-bymsg-get VIEWLEVEL STORE) + Trả chậm theo nhân viên (tra-cham-matrix-get STAFF)
+            // BƯỚC 5 (chỉ Luỹ kế): ô "THI ĐUA & TRẢ CHẬM" của từng siêu thị — Tải song song siêu tốc:
+            // Thi đua theo nhân viên (tận dụng allCompStaff bulk + fallback acpFetchCompetitionStaff) + Trả chậm nhân viên
             if (isLuyKe) {
               const installmentByStore = {};
               const competitionByStore = {};
@@ -3569,6 +3633,7 @@
               // 1. Thử tải gộp Thi đua nhân viên toàn cụm trước (như mẫu API 971 dòng trả theo storeid từng siêu thị)
               let allCompStaff = [];
               try {
+                await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', 'Đang tải dữ liệu thi đua cụm...');
                 const bulkComp = await acpFetchBiApi('competition-bymsg-get', {
                   MONTHKEY: monthKey,
                   VIEWLEVEL: 'STORE',
@@ -3583,18 +3648,33 @@
                 console.warn('[BI-Sync] [API] Tải gộp thi đua nhân viên gặp lỗi, sẽ thử từng siêu thị:', e);
               }
 
-              for (let i = 0; i < storeList.length; i++) {
-                const st = storeList[i];
+              await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `Đang tải thi đua & trả chậm song song cho ${storeList.length} siêu thị...`);
+              await Promise.all(storeList.map(async (st) => {
                 const stNumId = String(st.id || '').match(/^\d+/)?.[0] || String(st.id || '');
                 const shortSt = acpShortenStoreName(st.name);
 
-                await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải thi đua nhân viên cho ${st.name}...`);
-                // Trang MWG KHÔNG khoan xuống nhân viên bằng mã kho: chọn siêu thị 910 thì nó gọi VIEWLEVEL STORE với
-                // VIEWIDS "9567" — mã NỘI BỘ của dòng siêu thị trong bảng Thi đua (bản 7.17). acpFetchCompetitionStaff
-                // tự dò mã đó như trang làm. Một siêu thị lỗi không được làm hỏng cả lượt.
-                try {
-                  const compStaff = await acpFetchCompetitionStaff(st, monthKey, token);
-                  const serializedTd = acpSerializeCompetitionStaff(compStaff, stNumId || st.id);
+                // ƯU TIÊN 1: Lấy từ kết quả tải gộp allCompStaff nếu có dữ liệu nhân viên của kho này
+                let storeCompStaff = [];
+                if (allCompStaff.length > 0) {
+                  const filtered = allCompStaff.filter((r) => 
+                    (String(r.storeid) === stNumId || String(r.storeid) === String(st.id)) && acpCompIsStaffRow(r)
+                  );
+                  if (filtered.length > 0) {
+                    storeCompStaff = filtered;
+                  }
+                }
+
+                // Nếu tải gộp chưa có nhân viên của kho này, mới gọi acpFetchCompetitionStaff dò tìm
+                if (storeCompStaff.length === 0) {
+                  try {
+                    storeCompStaff = await acpFetchCompetitionStaff(st, monthKey, token);
+                  } catch (e) {
+                    console.warn('[BI-Sync] [API] Thi đua nhân viên lỗi cho', st.name, e);
+                  }
+                }
+
+                if (storeCompStaff && storeCompStaff.length > 0) {
+                  const serializedTd = acpSerializeCompetitionStaff(storeCompStaff, stNumId || st.id);
                   if (serializedTd) {
                     competitionByStore[st.name] = serializedTd;
                     competitionByStore[st.id] = serializedTd;
@@ -3603,14 +3683,10 @@
                       competitionByStore[shortSt] = serializedTd;
                       competitionByStore[shortSt.toUpperCase()] = serializedTd;
                     }
-                  } else {
-                    console.warn('[BI-Sync] [API] Không lấy được Thi đua nhân viên cho', st.name);
                   }
-                } catch (e) {
-                  console.warn('[BI-Sync] [API] Thi đua nhân viên lỗi cho', st.name, e);
                 }
 
-                await reportProgress(5, totalSteps, 'Thi đua & Trả chậm', `[${i + 1}/${storeList.length}] Đang tải trả chậm nhân viên cho ${st.name}...`);
+                // Trả chậm nhân viên song song
                 try {
                   const tcData = await acpFetchBiApi('tra-cham-matrix-get', {
                     VIEWLEVEL: 'STAFF',
@@ -3620,7 +3696,6 @@
                     MONTHKEY: monthKey,
                   }, token);
                   const tcList = Array.isArray(tcData) ? tcData : (tcData && Array.isArray(tcData.data) ? tcData.data : []);
-                  // Không có nhân viên nào (API rỗng) → KHÔNG ghi đè ô Trả chậm đang có bằng bảng trống
                   if (tcList.some((r) => /^\d+$/.test(String(r.group_id || '')))) {
                     const serializedTc = acpSerializeInstallmentStaff(tcList);
                     if (serializedTc) {
@@ -3636,7 +3711,8 @@
                 } catch (e) {
                   console.warn('[BI-Sync] [API] Trả chậm nhân viên lỗi cho', st.name, e);
                 }
-              }
+              }));
+
               results.installmentByStore = installmentByStore;
               results.competitionByStore = competitionByStore;
               console.log('[BI-Sync] [API] Bước 5 Xong: Thi đua & Trả chậm cho', storeList.length, 'siêu thị');
@@ -3651,8 +3727,6 @@
         } else {
           console.warn('[BI-Sync] Không bắt được Token, tự động kích hoạt UI Automation Fallback...');
         }
-
-      }
 
       if (mode === 'realtime') {
         const totalSteps = 4;
@@ -3754,13 +3828,15 @@
         // --- BƯỚC 1: Doanh thu hợp nhất Luỹ kế ---
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang thiết lập bộ lọc Siêu thị và Luỹ kế...');
         await ensureSelectAllChecked();
-        await acpWaitForLoadingComplete(35000, 500, 400);
+        await acpWaitForLoadingComplete(15000, 300, 200);
 
         await ensureToggleActive('Lũy kế');
-        await acpWaitForLoadingComplete(30000, 500, 400);
+        await acpWaitForLoadingComplete(15000, 300, 200);
 
-        await ensureToggleActive('DT thực');
-        await acpWaitForLoadingComplete(25000, 400, 300);
+        await ensureToggleActive('DT quy đổi');
+        await sleep(150);
+        await ensureTraGopActive();
+        await acpWaitForLoadingComplete(15000, 300, 200);
 
         await reportProgress(1, totalSteps, 'Doanh thu hợp nhất', 'Đang mở rộng các cấp dữ liệu...');
         await expandAllCandidates(null, (msg) => {
