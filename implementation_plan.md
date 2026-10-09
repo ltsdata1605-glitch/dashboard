@@ -7603,3 +7603,11 @@ Kết quả: **272 xanh, 50 skip, 2 đỏ — cả 2 đều đỏ từ TRƯỚC 
    handler + logic) hay bỏ handler + test. Chưa tự quyết vì có thể nút bị gỡ có chủ đích.
 Tài liệu: CLAUDE.md (số liệu ratchet mới, mục bí mật Bot LINE và offline), DESIGN_SYSTEM.md 4.4b `<Overlay>`, đánh dấu GĐ0–GĐ6 trong bộ audit.
 
+### Gỡ chức năng "xuất ảnh báo cáo theo từng Kho" (chủ dự án chốt "bỏ hẳn", 2026-10-09)
+Nút gọi đã không còn trong giao diện (prop `onBatchExport` của `WarehouseSummary` được truyền mà không ai dùng) nên chức năng là code chết + test đỏ. Đã gỡ:
+`handleBatchKhoExport` + các ref phục vụ riêng nó (`hooks/useExportLogic.ts`; hook nay chỉ còn nhận `productConfig`, `processedData`, `setStatus`), chỗ truyền ở
+`hooks/useDashboardLogic.ts`, `components/views/DashboardView.tsx`, `components/summary/WarehouseSummary.tsx` (bỏ prop), kiểu trong `contexts/DashboardContext.tsx`,
+hàm không còn ai dùng `sameKhoSelection`/`waitUntil` (`services/batchExportResult.ts`) + test của chúng, và spec `phan-tich-xuat-hang-loat-theo-kho`.
+Giữ nguyên: xuất hàng loạt theo NHÂN VIÊN (`handleBatchExport`) và các xuất ảnh khác. Kiểm: `npm run check` xanh (unit 1147), e2e Phân tích/xuất ảnh 28 xanh.
+Còn đúng 1 e2e đỏ có sẵn: `tax-paste-hrm` (cần trang ngoài, không chạy được trong container).
+

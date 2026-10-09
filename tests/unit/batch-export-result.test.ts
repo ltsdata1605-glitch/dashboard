@@ -1,34 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { describeBatchOutcome, sameKhoSelection, waitUntil } from '../../services/batchExportResult';
+import { describeBatchOutcome } from '../../services/batchExportResult';
 
 /** Audit A03/A04 (2026-09-29) — kết quả batch xuất ảnh của Phân tích. */
-describe('sameKhoSelection', () => {
-    it('so sánh không phụ thuộc thứ tự; [] chỉ khớp []', () => {
-        expect(sameKhoSelection(['A', 'B'], ['B', 'A'])).toBe(true);
-        expect(sameKhoSelection([], [])).toBe(true);
-        expect(sameKhoSelection(['A'], [])).toBe(false);
-        expect(sameKhoSelection(['A'], ['B'])).toBe(false);
-        expect(sameKhoSelection(null, [])).toBe(false);
-        expect(sameKhoSelection(undefined, ['A'])).toBe(false);
-    });
-});
-
-describe('waitUntil', () => {
-    it('trả false khi hết giờ — người gọi không được chụp tiếp bằng dữ liệu cũ', async () => {
-        let t = 0;
-        const ok = await waitUntil(() => false, { timeoutMs: 1000, intervalMs: 100, now: () => t, sleep: async ms => { t += ms; } });
-        expect(ok).toBe(false);
-        expect(t).toBeGreaterThanOrEqual(1000);
-    });
-
-    it('trả true ngay khi điều kiện đúng (Worker chậm hơn 8s vẫn chờ được nếu timeout đủ)', async () => {
-        let t = 0;
-        const ok = await waitUntil(() => t >= 9000, { timeoutMs: 20000, intervalMs: 100, now: () => t, sleep: async ms => { t += ms; } });
-        expect(ok).toBe(true);
-        expect(t).toBe(9000);
-    });
-});
-
 describe('describeBatchOutcome', () => {
     it('đủ ảnh → thành công', () => {
         expect(describeBatchOutcome([{ label: 'A', ok: true }, { label: 'B', ok: true }]))
