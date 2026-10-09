@@ -254,56 +254,6 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
         }
     }
 
-    // 4. Parse "Ngành hàng BI" sheet
-    const biSheetName = workbook.SheetNames.find((name: string) => {
-        const ln = cleanAndNormalize(name).toLowerCase();
-        return ln.includes('ngành hàng bi') || ln.includes('nganh hang bi');
-    });
-    if (biSheetName) {
-        try {
-            const sheet = workbook.Sheets[biSheetName];
-            const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
-            if (rows.length >= 2) {
-                const sheetHeaders = rows[0].map((h: any) => String(h || '').trim());
-                const nganhHangIdx = sheetHeaders.findIndex((h: string) => cleanAndNormalize(h) === 'ngành hàng' || h.toLowerCase() === 'nganhhang' || h.toLowerCase() === 'ngành hàng');
-                const nhomHangIdx = sheetHeaders.findIndex((h: string) => cleanAndNormalize(h) === 'nhóm hàng' || h.toLowerCase() === 'nhomhang' || h.toLowerCase() === 'nhóm hàng');
-                const nhomChaIdx = sheetHeaders.findIndex((h: string) => cleanAndNormalize(h) === 'nhomcha' || h.toLowerCase() === 'nhomcha');
-                const nhomConIdx = sheetHeaders.findIndex((h: string) => cleanAndNormalize(h) === 'nhomcon' || h.toLowerCase() === 'nhomcon');
-                
-                if (nhomHangIdx !== -1 && nhomChaIdx !== -1 && nhomConIdx !== -1) {
-                    config.industryBiMap = {};
-                    let count = 0;
-                    for (let i = 1; i < rows.length; i++) {
-                        const row = rows[i];
-                        if (row.length > Math.max(nhomHangIdx, nhomChaIdx, nhomConIdx)) {
-                            const nganhHang = nganhHangIdx !== -1 ? String(row[nganhHangIdx] || '').trim() : '';
-                            const nhomHang = String(row[nhomHangIdx] || '').trim();
-                            const nhomCha = String(row[nhomChaIdx] || '').trim();
-                            const nhomCon = String(row[nhomConIdx] || '').trim();
-                            if (nhomHang && nhomCha && nhomCon) {
-                                config.industryBiMap[nhomHang.toLowerCase()] = {
-                                    parent: nhomCha,
-                                    child: nhomCon
-                                };
-                                if (nganhHang) {
-                                    const compoundKey = `${nganhHang.toLowerCase()}|||${nhomHang.toLowerCase()}`;
-                                    config.industryBiMap[compoundKey] = {
-                                        parent: nhomCha,
-                                        child: nhomCon
-                                    };
-                                }
-                                count++;
-                            }
-                        }
-                    }
-                    console.warn(`[Config] Đã tải ${count} phân cấp Ngành hàng BI từ sheet '${biSheetName}'.`);
-                }
-            }
-        } catch (sheetError) {
-            console.warn(`[Config] Lỗi khi xử lý sheet '${biSheetName}':`, sheetError);
-        }
-    }
-
     return config;
 }
 
