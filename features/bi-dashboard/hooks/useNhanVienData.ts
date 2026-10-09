@@ -4,7 +4,7 @@ import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
 import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, BonusComparePart, BonusCompareStore } from '../types/nhanVienTypes';
-import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
+import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId, isSameEmployee } from '../utils/nhanVienHelpers';
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem, isSystemOrIgnoredEmployee } from '../services/analysisEmployeeSyncService';

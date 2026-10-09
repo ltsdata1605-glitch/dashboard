@@ -1018,10 +1018,21 @@ export function parsePastedCouponList(
                 const autoSyntax = customSyntax || extractProductSyntax(excelProdName);
                 const resolvedExpiry = defaultExpiryDate || excelExpiry;
 
+                let excelResolvedType = excelType || defaultType;
+                if (!excelType || excelType === 'Event' || excelType === 'PMH') {
+                    const lowerProd = (excelProdName || '').toLowerCase();
+                    if (lowerProd.includes('vivo')) excelResolvedType = 'VIVO';
+                    else if (lowerProd.includes('honor')) excelResolvedType = 'HONOR';
+                    else if (lowerProd.includes('samsung') || lowerProd.includes('galaxy')) excelResolvedType = 'SAMSUNG';
+                    else if (lowerProd.includes('apple') || lowerProd.includes('iphone') || lowerProd.includes('ipad')) excelResolvedType = 'APPLE';
+                    else if (lowerProd.includes('oppo') || lowerProd.includes('reno')) excelResolvedType = 'OPPO';
+                    else if (lowerProd.includes('xiaomi') || lowerProd.includes('redmi')) excelResolvedType = 'XIAOMI';
+                }
+
                 items.push({
                     code: upperCode,
                     productName: excelProdName || '',
-                    type: excelType || defaultType,
+                    type: excelResolvedType,
                     syntax: autoSyntax || excelProdName || '',
                     expiryDate: resolvedExpiry || undefined
                 });
@@ -1097,10 +1108,20 @@ export function parsePastedCouponList(
 
             const autoSyntax = extractProductSyntax(productName);
             const resolvedExpiry = defaultExpiryDate || lineExpiry;
+            let itemType = defaultType;
+            if (defaultType === 'Event' || defaultType === 'PMH') {
+                const lowerProd = (productName || '').toLowerCase();
+                if (lowerProd.includes('vivo')) itemType = 'VIVO';
+                else if (lowerProd.includes('honor')) itemType = 'HONOR';
+                else if (lowerProd.includes('samsung') || lowerProd.includes('galaxy')) itemType = 'SAMSUNG';
+                else if (lowerProd.includes('apple') || lowerProd.includes('iphone') || lowerProd.includes('ipad')) itemType = 'APPLE';
+                else if (lowerProd.includes('oppo') || lowerProd.includes('reno')) itemType = 'OPPO';
+                else if (lowerProd.includes('xiaomi') || lowerProd.includes('redmi')) itemType = 'XIAOMI';
+            }
             items.push({
                 code: upperCode,
                 productName: productName || '',
-                type: defaultType,
+                type: itemType,
                 syntax: autoSyntax || productName || '',
                 expiryDate: resolvedExpiry || undefined
             });
@@ -1328,20 +1349,65 @@ export function getCategoryMeta(type?: string): CategoryMeta {
 
 export type CouponCategory = 'EVENT' | 'GVGS' | 'HONOR' | 'VIVO' | 'SAMSUNG' | 'APPLE' | 'OPPO' | 'XIAOMI' | 'ALL' | string;
 
+export function getCouponCategoryMeta(
+    coupon?: { type?: string; productName?: string; syntax?: string } | string
+): CategoryMeta {
+    if (!coupon) {
+        return getCategoryMeta();
+    }
+    if (typeof coupon === 'string') {
+        return getCategoryMeta(coupon);
+    }
+    const { type, productName, syntax } = coupon;
+    const rawType = (type || '').trim().toLowerCase();
+
+    // 1. Nếu type là thương hiệu / loại cụ thể và KHÔNG PHẢI generic ("event", "pmh", "khác", "")
+    if (rawType && rawType !== 'event' && rawType !== 'pmh' && rawType !== 'khac' && rawType !== 'khác') {
+        return getCategoryMeta(type);
+    }
+
+    // 2. Nhận diện thông minh theo tên sản phẩm hoặc cú pháp nếu type là generic (Event / PMH / để trống)
+    const fullText = [productName, syntax, type].filter(Boolean).join(' ').toLowerCase();
+
+    if (fullText.includes('giờ vàng') || fullText.includes('gio vang') || fullText.includes('gvgs') || fullText.startsWith('gv')) {
+        return getCategoryMeta('GVGS');
+    }
+    if (fullText.includes('vivo')) {
+        return getCategoryMeta('VIVO');
+    }
+    if (fullText.includes('honor')) {
+        return getCategoryMeta('HONOR');
+    }
+    if (fullText.includes('samsung') || fullText.includes('galaxy')) {
+        return getCategoryMeta('SAMSUNG');
+    }
+    if (fullText.includes('apple') || fullText.includes('iphone') || fullText.includes('ipad')) {
+        return getCategoryMeta('APPLE');
+    }
+    if (fullText.includes('oppo') || fullText.includes('reno')) {
+        return getCategoryMeta('OPPO');
+    }
+    if (fullText.includes('xiaomi') || fullText.includes('redmi')) {
+        return getCategoryMeta('XIAOMI');
+    }
+
+    return getCategoryMeta(type);
+}
+
 /**
  * Kiểm tra mã thuộc nhóm PMH Event
  * (Bao gồm Event, Event Cuối Tuần, Event Lớn để tương thích ngược)
  */
-export function isEventCategory(type?: string): boolean {
-    return getCategoryMeta(type).id === 'EVENT';
+export function isEventCategory(coupon?: { type?: string; productName?: string; syntax?: string } | string): boolean {
+    return getCouponCategoryMeta(coupon).id === 'EVENT';
 }
 
 /**
  * Kiểm tra mã thuộc nhóm PMH Giờ Vàng Giá Sốc
  * (Bao gồm Giờ Vàng Giá Sốc, Giờ Vàng, GVGS, GV)
  */
-export function isGvgsCategory(type?: string): boolean {
-    return getCategoryMeta(type).id === 'GVGS';
+export function isGvgsCategory(coupon?: { type?: string; productName?: string; syntax?: string } | string): boolean {
+    return getCouponCategoryMeta(coupon).id === 'GVGS';
 }
 
 /**
@@ -1350,7 +1416,7 @@ export function isGvgsCategory(type?: string): boolean {
 export function filterCouponsByCategory(coupons: CouponSummaryItem[], category?: CouponCategory): CouponSummaryItem[] {
     if (!category || category === 'ALL') return coupons;
     const catId = getCategoryMeta(category).id;
-    return coupons.filter(c => getCategoryMeta(c.type).id === catId);
+    return coupons.filter(c => getCouponCategoryMeta(c).id === catId);
 }
 
 export interface CategoryExpiryStatus {
@@ -1372,7 +1438,7 @@ export function checkCategoryExpiryStatus(
     todayVN: string
 ): CategoryExpiryStatus {
     const catId = getCategoryMeta(category).id;
-    const catCoupons = (coupons || []).filter(c => getCategoryMeta(c.type).id === catId);
+    const catCoupons = (coupons || []).filter(c => getCouponCategoryMeta(c).id === catId);
 
     if (catCoupons.length === 0) {
         return {

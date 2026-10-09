@@ -31,7 +31,7 @@ interface ImportBatch {
     couponIds: string[];
 }
 
-const DEFAULT_TYPES = ['Event', 'Giờ Vàng Giá Sốc', 'CUSTOM'];
+const DEFAULT_TYPES = ['Event', 'VIVO', 'Giờ Vàng Giá Sốc', 'HONOR', 'SAMSUNG', 'CUSTOM'];
 
 export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     isOpen,

@@ -1100,6 +1100,60 @@ CG5BBSGXJ9\tBếp gas Sunhouse\tEvent\t31/10/2026\tSHB3105MD
             expect(items.length).toBe(2);
             expect(skipped).toEqual(['CG5BBSGXJ9']);
         });
+
+        it('tự động nhận diện và tách biệt PMH VIVO khỏi PMH Event khi tên sản phẩm chứa Vivo', async () => {
+            const { getCouponCategoryMeta, filterCouponsByCategory, getProductInventoryList } = await import('../../features/line-bot/services/couponParser');
+
+            const coupons = [
+                {
+                    code: 'VIVO300K01',
+                    productName: 'PMH trị giá 300,000đ: áp dụng mua điện thoại vivo trên 8 triệu',
+                    type: 'Event', // Bị gán nhầm là Event khi import
+                    status: 'UNUSED'
+                },
+                {
+                    code: 'VIVO500K01',
+                    productName: 'PMH trị giá 500,000đ áp dụng mua điện thoại vivo trên 12 triệu',
+                    type: 'Event', // Bị gán nhầm là Event khi import
+                    status: 'UNUSED'
+                },
+                {
+                    code: 'BEPGAS0001',
+                    productName: 'Bếp gas đôi Sakura SA-D302DS',
+                    type: 'Event',
+                    status: 'UNUSED'
+                }
+            ];
+
+            // 1. Kiểm tra getCouponCategoryMeta
+            expect(getCouponCategoryMeta(coupons[0]).id).toBe('VIVO');
+            expect(getCouponCategoryMeta(coupons[0]).prefix).toBe('v');
+            expect(getCouponCategoryMeta(coupons[1]).id).toBe('VIVO');
+            expect(getCouponCategoryMeta(coupons[2]).id).toBe('EVENT');
+            expect(getCouponCategoryMeta(coupons[2]).prefix).toBe('e');
+
+            // 2. Kiểm tra filterCouponsByCategory
+            const vivoCoupons = filterCouponsByCategory(coupons, 'VIVO');
+            expect(vivoCoupons.length).toBe(2);
+            expect(vivoCoupons.every(c => c.productName?.toLowerCase().includes('vivo'))).toBe(true);
+
+            const eventCoupons = filterCouponsByCategory(coupons, 'EVENT');
+            expect(eventCoupons.length).toBe(1);
+            expect(eventCoupons[0].productName).toBe('Bếp gas đôi Sakura SA-D302DS');
+
+            // 3. Kiểm tra getProductInventoryList cho VIVO (cú pháp v1, v2)
+            const vivoInventory = getProductInventoryList(coupons, 'VIVO');
+            expect(vivoInventory.length).toBe(2);
+            expect(vivoInventory[0].productName).toContain('vivo');
+            expect(vivoInventory[1].productName).toContain('vivo');
+
+            // 4. Kiểm tra getProductInventoryList cho EVENT (cú pháp e1)
+            const eventInventory = getProductInventoryList(coupons, 'EVENT');
+            expect(eventInventory.length).toBe(1);
+            expect(eventInventory[0].productName).toBe('Bếp gas đôi Sakura SA-D302DS');
+            // Đảm bảo không bị chồng chéo mã Vivo vào Event!
+            expect(eventInventory.some(i => i.productName.toLowerCase().includes('vivo'))).toBe(false);
+        });
     });
 });
 

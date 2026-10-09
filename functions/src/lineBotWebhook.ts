@@ -599,12 +599,55 @@ function getCategoryMeta(type?: string): CategoryMeta {
 
 type CouponCategory = 'EVENT' | 'GVGS' | 'HONOR' | 'VIVO' | 'SAMSUNG' | 'APPLE' | 'OPPO' | 'XIAOMI' | 'ALL' | string;
 
-function isEventCategory(type?: string): boolean {
-    return getCategoryMeta(type).id === 'EVENT';
+function getCouponCategoryMeta(coupon?: { type?: string; productName?: string; syntax?: string } | string): CategoryMeta {
+    if (!coupon) {
+        return getCategoryMeta();
+    }
+    if (typeof coupon === 'string') {
+        return getCategoryMeta(coupon);
+    }
+    const { type, productName, syntax } = coupon;
+    const rawType = (type || '').trim().toLowerCase();
+
+    // 1. Nếu type là thương hiệu / loại cụ thể và KHÔNG PHẢI generic ("event", "pmh", "khác", "")
+    if (rawType && rawType !== 'event' && rawType !== 'pmh' && rawType !== 'khac' && rawType !== 'khác') {
+        return getCategoryMeta(type);
+    }
+
+    // 2. Nhận diện thông minh theo tên sản phẩm hoặc cú pháp nếu type là generic (Event / PMH / để trống)
+    const fullText = [productName, syntax, type].filter(Boolean).join(' ').toLowerCase();
+
+    if (fullText.includes('giờ vàng') || fullText.includes('gio vang') || fullText.includes('gvgs') || fullText.startsWith('gv')) {
+        return getCategoryMeta('GVGS');
+    }
+    if (fullText.includes('vivo')) {
+        return getCategoryMeta('VIVO');
+    }
+    if (fullText.includes('honor')) {
+        return getCategoryMeta('HONOR');
+    }
+    if (fullText.includes('samsung') || fullText.includes('galaxy')) {
+        return getCategoryMeta('SAMSUNG');
+    }
+    if (fullText.includes('apple') || fullText.includes('iphone') || fullText.includes('ipad')) {
+        return getCategoryMeta('APPLE');
+    }
+    if (fullText.includes('oppo') || fullText.includes('reno')) {
+        return getCategoryMeta('OPPO');
+    }
+    if (fullText.includes('xiaomi') || fullText.includes('redmi')) {
+        return getCategoryMeta('XIAOMI');
+    }
+
+    return getCategoryMeta(type);
 }
 
-function isGvgsCategory(type?: string): boolean {
-    return getCategoryMeta(type).id === 'GVGS';
+function isEventCategory(coupon?: { type?: string; productName?: string; syntax?: string } | string): boolean {
+    return getCouponCategoryMeta(coupon).id === 'EVENT';
+}
+
+function isGvgsCategory(coupon?: { type?: string; productName?: string; syntax?: string } | string): boolean {
+    return getCouponCategoryMeta(coupon).id === 'GVGS';
 }
 
 function filterCouponsByCategory(
@@ -613,7 +656,7 @@ function filterCouponsByCategory(
 ) {
     if (!category || category === 'ALL') return coupons;
     const targetId = getCategoryMeta(category).id;
-    return coupons.filter(c => getCategoryMeta(c.type).id === targetId);
+    return coupons.filter(c => getCouponCategoryMeta(c).id === targetId);
 }
 
 /**
@@ -632,7 +675,7 @@ async function getCategoryExpiryInfo(
 }> {
     const todayVN = getVietnamTodayString();
     const targetId = getCategoryMeta(category).id;
-    const catCoupons = (coupons || []).filter(c => getCategoryMeta(c.type).id === targetId);
+    const catCoupons = (coupons || []).filter(c => getCouponCategoryMeta(c).id === targetId);
 
     let totalAll = catCoupons.length;
     let validUnused = 0;
@@ -681,7 +724,7 @@ async function getCategoryExpiryInfo(
             let countInExp = 0;
             for (const d of expSnap.docs) {
                 const data = d.data();
-                if (getCategoryMeta(data.type).id === targetId) {
+                if (getCouponCategoryMeta(data).id === targetId) {
                     countInExp++;
                     if (data.expiryDate && (!expCatLatestDate || data.expiryDate > expCatLatestDate)) {
                         expCatLatestDate = data.expiryDate;
@@ -2863,7 +2906,7 @@ export const lineBotWebhook = onRequest(
                         else if (['op', 'oppo'].includes(subQuery)) targetCategory = 'OPPO';
                         else if (['mi', 'xiaomi'].includes(subQuery)) targetCategory = 'XIAOMI';
                         else {
-                            const matchedMeta = coupons.map(c => getCategoryMeta(c.type)).find(m =>
+                            const matchedMeta = coupons.map(c => getCouponCategoryMeta(c)).find(m =>
                                 m.name.toLowerCase().includes(subQuery) ||
                                 m.id.toLowerCase() === subQuery ||
                                 m.prefix.toLowerCase() === subQuery
@@ -2914,7 +2957,7 @@ export const lineBotWebhook = onRequest(
                     const priorityOrder = ['EVENT', 'GVGS', 'HONOR', 'VIVO', 'SAMSUNG', 'APPLE', 'OPPO', 'XIAOMI'];
 
                     for (const c of coupons) {
-                        const meta = getCategoryMeta(c.type);
+                        const meta = getCouponCategoryMeta(c);
                         const isUnused = c.status === 'UNUSED' || !c.status;
                         if (!categoryMap.has(meta.id)) {
                             categoryMap.set(meta.id, { meta, count: 0, unused: 0 });
@@ -3091,7 +3134,7 @@ export const lineBotWebhook = onRequest(
                         for (const d of snap.docs) {
                             const c = d.data();
                             if (c.status === 'UNUSED' || !c.status) {
-                                const matchesCat = getCategoryMeta(c.type).id === claimCmd.category;
+                                const matchesCat = getCouponCategoryMeta(c).id === claimCmd.category;
                                 if (matchesCat) {
                                     const pName = (c.productName || c.type || '').toLowerCase().trim();
                                     if (pName === cleanTargetName || pName.includes(cleanTargetName) || cleanTargetName.includes(pName)) {
@@ -3762,7 +3805,7 @@ export const lineBotWebhook = onRequest(
                         const flexMsg = createCouponFlexMessage({
                             displayName,
                             productName: displayTitle,
-                            categoryLabel: String(cData.type || parsed.couponType || 'PMH').toUpperCase().includes('EVENT') ? 'Event' : 'Giờ Vàng',
+                            categoryLabel: getCouponCategoryMeta(cData).name,
                             code: cData.code,
                             orderId: parsed.orderId,
                             warehouse: parsed.warehouse,

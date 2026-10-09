@@ -31,7 +31,8 @@ export interface AppIconProps {
  * `shrink-0` có sẵn trong `.ycx-icon` → icon không bị bóp méo khi nằm trong flex chật.
  */
 export const AppIcon: React.FC<AppIconProps> = ({ name, size = 'md', px, spin = false, label, className }) => {
-  const Component = ICON_REGISTRY[name];
+  const Component = ICON_REGISTRY[name] || ICON_REGISTRY.alert;
+  if (!Component) return null;
   const tokens = ICON_SIZES[size];
   const mobile = px ?? tokens.mobile;
   const laptop = px ?? tokens.laptop;
