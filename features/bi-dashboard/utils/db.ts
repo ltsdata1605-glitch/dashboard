@@ -274,6 +274,27 @@ export const getAll = async (): Promise<{ key: string; value: unknown }[]> => {
   });
 };
 
+// Đọc mọi khoá bắt đầu bằng `prefix` trong 1 lượt (IDBKeyRange — không kéo các khoá khác, vốn có những chuỗi
+// báo cáo rất lớn, lên bộ nhớ như getAll()). Trả về key GỐC (đã bỏ tiền tố bi_).
+export const getAllByPrefix = async (prefix: string): Promise<{ key: string; value: unknown }[]> => {
+  const db = await getDb();
+  const lower = prefixKey(prefix);
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([SETTINGS_STORE], 'readonly');
+    const store = transaction.objectStore(SETTINGS_STORE);
+    const range = IDBKeyRange.bound(lower, `${lower}\uffff`);
+    const request = store.getAll(range);
+    const keysRequest = store.getAllKeys(range);
+    transaction.oncomplete = () => {
+      const keys = keysRequest.result;
+      const values = request.result;
+      resolve(keys.map((k, i) => ({ key: String(k).slice(BI_PREFIX.length), value: values[i] })));
+    };
+    transaction.onerror = () => reject(transaction.error);
+    transaction.onabort = () => reject(transaction.error || new Error('Transaction aborted'));
+  });
+};
+
 export const clearStore = async (): Promise<void> => {
   const db = await getDb();
   // CHỈ xoá các key có prefix bi_, KHÔNG xoá dữ liệu của hệ thống chính

@@ -51,6 +51,12 @@ export function installTableScrollCue(): () => void {
         : null;
     const observeSize = (el: Element, sc: HTMLElement) => { sizeTargets.set(el, sc); ro?.observe(el); };
 
+    // Bảng đã xét → khung cuộn của nó (null = không cuộn ngang). Trước đây MỖI lần DOM đổi lại quét lại mọi bảng, mỗi
+    // bảng gọi getComputedStyle lên tới 6 cấp cha — ép trình duyệt tính lại style. Report BI › Thi đua có hàng chục
+    // bảng × 70 dòng: đo 2026-10-09 mất ~1,5 giây MỖI lần đổi tab. Nay chỉ xét bảng MỚI; đổi cỡ màn hình thì xét lại
+    // hết (lớp overflow có thể đổi theo breakpoint). Đổi cỡ khung/bảng đã có ResizeObserver lo, cuộn có sự kiện scroll.
+    let scrollerOf = new WeakMap<HTMLElement, HTMLElement | null>();
+
     const scan = () => {
         // Bỏ khung đã rời khỏi trang (đổi tab, đóng modal)
         tracked.forEach((el) => {
@@ -63,8 +69,10 @@ export function installTableScrollCue(): () => void {
             if (!el.isConnected) { ro?.unobserve(el); sizeTargets.delete(el); }
         });
         document.querySelectorAll<HTMLElement>('table').forEach((table) => {
+            if (scrollerOf.has(table)) return;
             if (table.closest('.clone-no-scrollbar')) return; // bản sao đang chụp ảnh
             const sc = findScroller(table);
+            scrollerOf.set(table, sc);
             if (!sc) return;
             if (!tracked.has(sc)) {
                 tracked.add(sc);
@@ -84,14 +92,15 @@ export function installTableScrollCue(): () => void {
     };
     const mo = new MutationObserver(schedule);
     mo.observe(document.body, { childList: true, subtree: true });
-    window.addEventListener('resize', schedule);
+    const onResize = () => { scrollerOf = new WeakMap(); schedule(); };
+    window.addEventListener('resize', onResize);
     scan();
 
     const cleanup = () => {
         mo.disconnect();
         ro?.disconnect();
         sizeTargets.clear();
-        window.removeEventListener('resize', schedule);
+        window.removeEventListener('resize', onResize);
         if (timer) clearTimeout(timer);
         tracked.forEach((el) => { el.removeEventListener('scroll', onScroll); el.removeAttribute(ATTR); });
         tracked.clear();

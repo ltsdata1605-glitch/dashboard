@@ -26,6 +26,7 @@ import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
 import TimeProgressBar from './shared/TimeProgressBar';
 import { useCompetitionData } from '../../hooks/useCompetitionData';
+import { useProgressiveCount } from '../../hooks/useProgressiveCount';
 
 interface CompetitionTabProps {
     groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: { name: string; originalName: string; department: string; values: (number | null)[] }[] }>;
@@ -182,6 +183,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Đã mở tab này ít nhất 1 lần → GIỮ bảng đã dựng khi chuyển sang tab khác (cha tự ẩn bằng `hidden`). Trước đây
+    // ẩn tab là trả về <div hidden/> và mọi memo trả rỗng → React gỡ hết ~2.500 dòng, quay lại phải dựng lại từ đầu
+    // (đo 2026-10-09, bản production: ~2,5 giây mỗi lần quay lại với 70 NV × 35 chương trình).
+    const [hasBeenActive, setHasBeenActive] = useState(isActive !== false);
+    useEffect(() => { if (isActive !== false) setHasBeenActive(true); }, [isActive]);
+    const keepAlive = isActive !== false || hasBeenActive;
+
     const {
         hasAnyData,
         relevantCompetitions,
@@ -201,8 +209,15 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         allEmployees,
         highlightedEmployees,
         isolatedHighlightEmployee,
-        isActive
+        isActive: keepAlive
     });
+
+    // Thẻ Nhóm vẽ dần (xem useProgressiveCount) — chỉ chạy khi tab đang mở và đang ở mục Nhóm.
+    const { count: visibleGroupCards, ensureAll: ensureAllGroupCards } = useProgressiveCount(
+        sortedSelectedHeaders.length,
+        isActive !== false && activeCompetitionTab === 'nhom',
+        groupedData,
+    );
 
     const handleSaveVersionAction = () => {
         // Trim trước khi lưu — trước đây "Máy lạnh" và "Máy lạnh " (thừa khoảng trắng cuối)
@@ -234,6 +249,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const { showExportOptions } = useExportOptionsContext();
 
     const exportGroupViewToPNG = async (filename: string, refToExport = groupViewRef, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (refToExport === groupViewRef) await ensureAllGroupCards(); // ảnh phải đủ mọi thẻ, kể cả thẻ chưa kịp vẽ
         if (!refToExport.current) return null;
         const original = refToExport.current;
         // Count how many group cards exist to decide layout
@@ -327,6 +343,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     };
 
     const handleGroupBatchExport = async () => {
+        await ensureAllGroupCards();
         if (!groupViewRef.current) return;
         setIsBatchExporting(true);
         const cards = groupViewRef.current.querySelectorAll('.competition-group-card');
@@ -565,7 +582,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         });
     };
 
-    if (isActive === false) {
+    if (!keepAlive) {
         return <div className="hidden" />;
     }
 
@@ -836,7 +853,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         </h3>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-                                        {sortedSelectedHeaders.map((header) => (
+                                        {sortedSelectedHeaders.slice(0, visibleGroupCards).map((header) => (
                                             <CompetitionGroupCard key={header.title} header={header as CompetitionHeader} sortedEmployees={filteredEmployees as Employee[]} employeeDataMap={employeeDataMap} employeeCompetitionTargets={employeeCompetitionTargets} highlightColorMap={effectiveHighlightColorMap} viewMode={viewMode} supermarketName={supermarket || ''} />
                                         ))}
                                     </div>
@@ -984,4 +1001,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 </div>
         </div>
     );
+}, (prev, next) => {
+    // Đang ẩn (và vẫn ẩn) → không vẽ lại; lúc mở lại sẽ vẽ 1 lần với props mới nhất.
+    if (prev.isActive === false && next.isActive === false) return true;
+    return (Object.keys(next) as (keyof CompetitionTabProps)[]).every(k => Object.is(prev[k], next[k]))
+        && Object.keys(prev).length === Object.keys(next).length;
 });

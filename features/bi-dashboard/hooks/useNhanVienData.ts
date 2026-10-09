@@ -11,6 +11,23 @@ import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY,
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { auth } from '../../../services/firebase';
 
+/** Dựng lại dòng 'total' từ các dòng nhân viên (cùng công thức nhóm bộ phận ở InstallmentTab). */
+export function recomputeInstallmentTotal(rows: InstallmentRow[]): InstallmentRow[] {
+    const idx = rows.findIndex(r => r.type === 'total');
+    if (idx === -1) return rows;
+    const employees = rows.filter(r => r.type === 'employee');
+    const totalDtSieuThi = employees.reduce((s, e) => s + (e.totalDtSieuThi || 0), 0);
+    const sample = rows.find(r => r.providers.length > 0)?.providers || [];
+    const providers = sample.map((sp, i) => {
+        const dt = employees.reduce((s, e) => s + (e.providers[i]?.dt || 0), 0);
+        return { ...sp, dt, percent: totalDtSieuThi > 0 ? (dt / totalDtSieuThi) * 100 : 0 };
+    });
+    const totalPercent = totalDtSieuThi > 0 ? (providers.reduce((s, p) => s + p.dt, 0) / totalDtSieuThi) * 100 : 0;
+    const next = rows.slice();
+    next[idx] = { ...rows[idx], providers, totalDtSieuThi, totalPercent };
+    return next;
+}
+
 export function useNhanVienData(isActive?: boolean) {
     const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
     const [summaryRealtime] = useIndexedDBState<string>('summary-realtime', '');
@@ -496,12 +513,15 @@ export function useNhanVienData(isActive?: boolean) {
         let isMounted = true;
         runWorkerTask('PARSE_INSTALLMENT', { text: aggregatedData.traGop, employeeDepartmentMap }).then(rows => {
             if (isMounted && rows) {
-                setInstallmentRows(rows.filter((r: InstallmentRow) => {
+                const kept = (rows as InstallmentRow[]).filter((r: InstallmentRow) => {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
                     return true;
-                }));
+                });
+                // Dòng TỔNG CỘNG của báo cáo gốc còn cộng cả người đã bị lọc (ngoài Phân Tích / bị ẩn) — đo 2026-10-09:
+                // bảng chỉ hiện NV 101 (200/1.000) mà dòng tổng ra 650/2.000. Tính lại tổng từ đúng các dòng còn lại.
+                setInstallmentRows(kept.length === rows.length ? kept : recomputeInstallmentTotal(kept));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse trả góp:', err));
         return () => { isMounted = false; };

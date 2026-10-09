@@ -7538,3 +7538,32 @@ xuất ảnh, v.v.); 2 huy hiệu số tròn ở `ExportDestinationButton` nới
 cố định, tăng chữ sẽ tràn). `npm run check` xanh (baseline tự hạ); e2e Khai thác/Check thưởng/xuất ảnh/chuẩn thiết kế 28 qua, 1 skip.
 Chưa xem ảnh chụp từng màn — nên liếc các thẻ KPI ngành hàng BI trên laptop để chắc chữ không tràn.
 
+
+## Report BI › Nhân viên — đổi tab chậm + kiểm nguồn danh sách nhân viên (2026-10-09)
+
+**Đo** (bản build production, dữ liệu giả 70 NV × 35 chương trình thi đua, `tests/e2e` đo trong trang bằng longtask):
+
+| Thao tác | Trước | Sau |
+|---|---|---|
+| Mở tab Thi đua lần đầu | đứng 11,5 s rồi mới hiện | hiện sau ~0,1 s, vẽ xong toàn bộ ~2,6 s (vẽ dần) |
+| Quay lại tab Thi đua | 2,5 s | ~0,15 s |
+| Rời Thi đua sang tab khác | 1,5 s | ~0,1 s |
+
+**Nguyên nhân & sửa**
+1. `AvatarDisplay` (1 cái/dòng, ~2.500 cái ở Thi đua › Nhóm) tự đọc IndexedDB 7 khoá biến thể và NV chưa có ảnh còn
+   `db.getAll()` quét TOÀN BỘ kho (kéo cả chuỗi báo cáo lớn) — mỗi dòng. → `utils/avatarIndex.ts`: đọc mọi khoá
+   `avatar-*` đúng 1 lần (`db.getAllByPrefix`, IDBKeyRange), tra trong bộ nhớ, tự cập nhật theo `indexeddb-change`.
+   Hộp chọn ảnh chỉ dựng khi mở.
+2. Rời tab Thi đua → `CompetitionTab` trả `<div hidden/>`, memo trả rỗng → gỡ hết 2.500 dòng, quay lại dựng lại.
+   → Giữ cây đã dựng sau lần mở đầu; đang ẩn thì bỏ qua vẽ lại; `React.memo` cho `CompetitionGroupCard`.
+3. Thẻ Nhóm vẽ 1 lượt → `hooks/useProgressiveCount.ts` vẽ 4 thẻ đầu rồi thêm dần; xuất ảnh gọi `ensureAll()` trước.
+4. `NhanVien.tsx` tính lại `employeeCompetitionTargets` (Map mới) MỖI lần đổi tab → chỉ tính khi đầu vào đổi.
+5. `components/shared/ui/tableScrollCue.ts` quét lại mọi bảng + `getComputedStyle` 6 cấp cha mỗi lần DOM đổi
+   (~1,5 s mỗi lần đổi tab) → nhớ khung cuộn của từng bảng (WeakMap), chỉ xét bảng mới; đổi cỡ màn hình thì xét lại.
+6. Thẻ Thi đua mang `cv-auto` (`content-visibility: auto`, `biDensity.css`) — thẻ ngoài màn hình không bị dàn trang;
+   bộ xuất ảnh dùng chung gỡ lớp này trên bản sao (`exportLayout.ts → forceContentVisible`) để ảnh không trống.
+
+**Nguồn danh sách nhân viên (đã kiểm từng tab)** — Doanh thu, Thưởng: đúng danh sách Phân Tích (cả người chưa có số
+liệu). Trả chậm, Thi đua: dòng từ báo cáo BI, LỌC theo Phân Tích. Lỗi tìm thấy: dòng TỔNG CỘNG Trả chậm vẫn cộng
+người đã bị lọc → `recomputeInstallmentTotal()` trong `useNhanVienData.ts`. Test:
+`tests/e2e/bi-nhan-vien-moi-tab-tu-phan-tich.spec.ts` (đỏ khi bỏ phần sửa tổng).

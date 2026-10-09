@@ -53,3 +53,13 @@
     .bi-report-module[data-density="compact"] .overflow-x-auto, .bi-report-module[data-density="compact"] .overflow-auto { scrollbar-width: thin; }
     .bi-report-module[data-density="compact"] .overflow-x-auto::-webkit-scrollbar, .bi-report-module[data-density="compact"] .overflow-auto::-webkit-scrollbar { height: 4px; width: 4px; }
 }
+
+/*
+ * Khối dài ngoài màn hình: trình duyệt KHÔNG dàn trang/vẽ cho tới khi cuộn tới (đo 2026-10-09: tab Thi đua › Nhóm
+ * 35 thẻ × 70 NV — mở lại tab mất ~1,6 giây CHỈ để dàn trang 2.500 dòng). `auto 1800px` = chiều cao tạm trước lần
+ * vẽ đầu, sau đó trình duyệt nhớ chiều cao thật. Bản sao chụp ảnh tự gỡ (components/shared/export → forceContentVisible).
+ */
+.bi-report-module .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 1800px;
+}

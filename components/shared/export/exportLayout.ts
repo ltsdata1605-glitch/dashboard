@@ -431,3 +431,16 @@ export function fixCircularAvatars(root: HTMLElement): void {
     });
 }
 
+
+/**
+ * Bản sao để chụp ảnh nằm NGOÀI màn hình — phần tử nào mang `content-visibility: auto` (dùng để trình duyệt khỏi
+ * dàn trang những khối dài ngoài màn hình, vd thẻ Thi đua Report BI) sẽ bị bỏ qua khi vẽ → ảnh trống. Ép hiện hết.
+ */
+export function forceContentVisible(clone: HTMLElement) {
+    const els = [clone, ...Array.from(clone.querySelectorAll<HTMLElement>('.cv-auto'))];
+    els.forEach((el) => {
+        if (!el.classList.contains('cv-auto')) return;
+        el.style.setProperty('content-visibility', 'visible', 'important');
+        el.style.setProperty('contain-intrinsic-size', 'none', 'important');
+    });
+}
