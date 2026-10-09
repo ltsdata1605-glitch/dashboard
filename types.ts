@@ -26,6 +26,7 @@ export interface ProductConfig {
     revenueEligibleHTX?: Set<string>;
     nonRevenueEligibleHTX?: Set<string>;
     htxClassification?: { [htx: string]: 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' };
+    childToIndustryMap?: { [code: string]: string };
     industryBiMap?: { [nhomHang: string]: { parent: string; child: string } };
 }
 

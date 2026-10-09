@@ -67,9 +67,14 @@ export const ProductConfigManagerTab: React.FC = () => {
 
     const tableItems = useMemo<CategoryTableItem[]>(() => {
         if (!config || !config.childToParentMap) return [];
-        return Object.entries(config.childToParentMap).map(([code, parentGroup]) => ({
+        const industryMap = config.childToIndustryMap;
+        const codes = industryMap && Object.keys(industryMap).length > 0
+            ? Object.keys(industryMap)
+            : Object.keys(config.childToParentMap);
+        return codes.map(code => ({
             code,
-            parentGroup,
+            industry: industryMap?.[code],
+            parentGroup: config.childToParentMap[code] || '',
             subgroup: config.childToSubgroupMap?.[code] || '',
             multiplier: config.quantityMultiplierMap?.[code] ?? 1,
             vasMultiplier: config.vasMultiplierMap?.[code],
@@ -145,6 +150,9 @@ export const ProductConfigManagerTab: React.FC = () => {
             cfg.childToParentMap = { ...cfg.childToParentMap, [item.code]: item.parentGroup };
             cfg.childToSubgroupMap = { ...cfg.childToSubgroupMap, [item.code]: item.subgroup };
             cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [item.code]: item.multiplier };
+            if (item.industry) {
+                cfg.childToIndustryMap = { ...cfg.childToIndustryMap, [item.code]: item.industry };
+            }
             const g = cfg.groups[item.parentGroup];
             if (g instanceof Set) g.add(item.code);
             else cfg.groups = { ...cfg.groups, [item.parentGroup]: new Set([item.code]) };
@@ -167,6 +175,9 @@ export const ProductConfigManagerTab: React.FC = () => {
             if (updates.multiplier !== undefined) {
                 cfg.quantityMultiplierMap = { ...cfg.quantityMultiplierMap, [code]: updates.multiplier };
             }
+            if (updates.industry !== undefined) {
+                cfg.childToIndustryMap = { ...cfg.childToIndustryMap, [code]: updates.industry };
+            }
         });
     }, [mutateConfig]);
 
@@ -178,6 +189,10 @@ export const ProductConfigManagerTab: React.FC = () => {
             cfg.childToSubgroupMap = restSub;
             const { [code]: _m, ...restMult } = cfg.quantityMultiplierMap || {};
             cfg.quantityMultiplierMap = restMult;
+            if (cfg.childToIndustryMap) {
+                const { [code]: _i, ...restInd } = cfg.childToIndustryMap;
+                cfg.childToIndustryMap = restInd;
+            }
         });
         toast.success(`Đã xoá mã ${code}`);
     }, [mutateConfig]);

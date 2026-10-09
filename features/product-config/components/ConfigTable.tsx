@@ -16,7 +16,7 @@ interface ConfigTableProps {
 
 interface EditingState {
     code: string;
-    field: 'parentGroup' | 'subgroup' | 'multiplier';
+    field: 'industry' | 'parentGroup' | 'subgroup' | 'multiplier';
     value: string;
 }
 
@@ -60,7 +60,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
     const [page, setPage] = useState(1);
     const [editing, setEditing] = useState<EditingState | null>(null);
     const [showAddForm, setShowAddForm] = useState(false);
-    const [newItem, setNewItem] = useState({ code: '', parentGroup: '', subgroup: '', multiplier: '1' });
+    const [newItem, setNewItem] = useState({ code: '', industry: '', parentGroup: '', subgroup: '', multiplier: '1' });
     const pageSize = 50;
 
     const parentGroups = useMemo(() => {
@@ -77,6 +77,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
             if (!query) return true;
             return (
                 it.code.toLowerCase().includes(query) ||
+                (it.industry || '').toLowerCase().includes(query) ||
                 it.parentGroup.toLowerCase().includes(query) ||
                 it.subgroup.toLowerCase().includes(query)
             );
@@ -96,7 +97,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
             if (!isNaN(num) && num > 0) onUpdateItem(code, { multiplier: num });
         } else {
             const trimmed = rawValue.trim();
-            if (trimmed) onUpdateItem(code, { [field]: trimmed });
+            if (trimmed) onUpdateItem(code, { [field]: trimmed } as Partial<CategoryTableItem>);
         }
         setEditing(null);
     }, [onUpdateItem]);
@@ -104,17 +105,20 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
     const handleAddSubmit = useCallback(() => {
         if (!onAddItem) return;
         const code = newItem.code.trim();
+        const industry = newItem.industry.trim();
         const parentGroup = newItem.parentGroup.trim();
         const subgroup = newItem.subgroup.trim();
         const multiplier = parseFloat(newItem.multiplier);
         if (!code || !parentGroup || !subgroup || isNaN(multiplier) || multiplier <= 0) return;
         if (items.some(it => it.code === code)) return;
-        onAddItem({ code, parentGroup, subgroup, multiplier });
-        setNewItem({ code: '', parentGroup: '', subgroup: '', multiplier: '1' });
+        onAddItem({ code, industry: industry || undefined, parentGroup, subgroup, multiplier });
+        setNewItem({ code: '', industry: '', parentGroup: '', subgroup: '', multiplier: '1' });
         setShowAddForm(false);
     }, [onAddItem, newItem, items]);
 
-    const renderCell = (item: CategoryTableItem, field: 'parentGroup' | 'subgroup' | 'multiplier') => {
+    const hasIndustry = items.some(it => it.industry);
+
+    const renderCell = (item: CategoryTableItem, field: 'industry' | 'parentGroup' | 'subgroup' | 'multiplier') => {
         const isEditing = editing?.code === item.code && editing?.field === field;
 
         if (isEditing) {
@@ -133,6 +137,10 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
             ? (item.multiplier !== undefined ? item.multiplier.toLocaleString('vi-VN') : '1')
             : (item[field] || '—');
 
+        const editValue = field === 'multiplier'
+            ? String(item.multiplier ?? 1)
+            : (item[field] || '');
+
         if (!isEditable) return <>{displayValue}</>;
 
         return (
@@ -141,7 +149,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                 onClick={() => setEditing({
                     code: item.code,
                     field,
-                    value: field === 'multiplier' ? String(item.multiplier ?? 1) : (item[field] || ''),
+                    value: editValue,
                 })}
                 title="Bấm để sửa"
             >
@@ -204,6 +212,18 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                             className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none font-mono font-bold"
                         />
                     </div>
+                    {hasIndustry && (
+                        <div className="flex-1 min-w-[140px]">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Ngành hàng</label>
+                            <input
+                                type="text"
+                                placeholder="VD: 16 - Phụ kiện tiện ích"
+                                value={newItem.industry}
+                                onChange={e => setNewItem(prev => ({ ...prev, industry: e.target.value }))}
+                                className="w-full h-8 px-2 text-xs border border-slate-300 rounded-control focus:border-sky-400 focus:ring-1 focus:ring-sky-400 outline-none"
+                            />
+                        </div>
+                    )}
                     <div className="flex-1 min-w-[120px]">
                         <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">Nhóm cha</label>
                         <input
@@ -258,9 +278,10 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <thead className="sticky top-0 z-10 bg-slate-100 text-[11px] font-bold text-slate-600 uppercase tracking-wider border-b border-slate-200">
                         <tr>
                             <th className="py-2.5 px-3 w-14 text-center">STT</th>
+                            {hasIndustry && <th className="py-2.5 px-3 min-w-[200px]">Ngành Hàng</th>}
                             <th className="py-2.5 px-3 min-w-[130px]">Mã Nhóm Hàng</th>
-                            <th className="py-2.5 px-3 min-w-[160px]">Nhóm Cha</th>
-                            <th className="py-2.5 px-3 min-w-[180px]">Nhóm Con</th>
+                            <th className="py-2.5 px-3 min-w-[130px]">Nhóm Cha</th>
+                            <th className="py-2.5 px-3 min-w-[160px]">Nhóm Con</th>
                             <th className="py-2.5 px-3 w-32 text-right">Hệ Số Quy Đổi</th>
                             {isEditable && <th className="py-2.5 px-3 w-12"></th>}
                         </tr>
@@ -268,7 +289,7 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                     <tbody className="divide-y divide-slate-100 font-medium">
                         {paginated.length === 0 ? (
                             <tr>
-                                <td colSpan={isEditable ? 6 : 5} className="py-10 text-center text-slate-400 font-medium">
+                                <td colSpan={(hasIndustry ? 1 : 0) + (isEditable ? 6 : 5)} className="py-10 text-center text-slate-400 font-medium">
                                     Không tìm thấy ngành hàng nào khớp với tìm kiếm
                                 </td>
                             </tr>
@@ -283,6 +304,11 @@ export const ConfigTable: React.FC<ConfigTableProps> = ({
                                         <td className="py-2 px-3 text-center text-slate-400 tabular-nums font-mono text-[11px]">
                                             {rowNum}
                                         </td>
+                                        {hasIndustry && (
+                                            <td className="py-2 px-3 text-slate-500 text-[11px]">
+                                                {renderCell(item, 'industry')}
+                                            </td>
+                                        )}
                                         <td className="py-2 px-3 font-mono font-bold text-sky-700">
                                             {item.code}
                                         </td>

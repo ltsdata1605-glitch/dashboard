@@ -52,6 +52,7 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
         quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP },
         vasMultiplierMap: {},
         vasNameMultiplierMap: {},
+        childToIndustryMap: {},
         revenueEligibleHTX: new Set<string>(),
         nonRevenueEligibleHTX: new Set<string>(),
         htxClassification: {}
@@ -74,6 +75,7 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
     let groupIndex = headers.indexOf('NhomCha');
     let subgroupIndex = headers.indexOf('NhomCon');
     let productCodeIndex = headers.indexOf('NhomHang');
+    let industryIndex = headers.indexOf('NganhHang');
     const multiplierIndex = headers.findIndex((h: string) => {
         const lower = cleanAndNormalize(h).toLowerCase();
         return lower.includes('hệ số') || lower.includes('he so') || lower.includes('multiplier') || lower.includes('hsqd');
@@ -87,6 +89,9 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
     }
     if (productCodeIndex === -1) {
         productCodeIndex = headersNormalized.findIndex((h: string) => h.includes('nhomhang') || h.includes('manhomhang') || h.includes('ma') || h.includes('code'));
+    }
+    if (industryIndex === -1) {
+        industryIndex = headersNormalized.findIndex((h: string) => h.includes('nganhhang') || h.includes('ngành hàng') || h.includes('industry'));
     }
     
     if (groupIndex === -1 || subgroupIndex === -1 || productCodeIndex === -1) {
@@ -102,6 +107,11 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
             const productCode = String(row[productCodeIndex] || '').trim();
 
             if (parentGroup && childGroup && productCode) {
+                if (industryIndex !== -1) {
+                    const industry = String(row[industryIndex] || '').trim();
+                    if (industry) config.childToIndustryMap![productCode] = industry;
+                }
+
                 if (!config.groups[parentGroup]) {
                     config.groups[parentGroup] = new Set();
                 }

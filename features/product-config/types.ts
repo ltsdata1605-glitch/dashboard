@@ -20,6 +20,7 @@ export interface GlobalProductConfigDoc {
 
 export interface CategoryTableItem {
     code: string;
+    industry?: string;
     parentGroup: string;
     subgroup: string;
     multiplier: number;
