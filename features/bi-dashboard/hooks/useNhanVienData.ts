@@ -44,9 +44,12 @@ export function useNhanVienData(isActive?: boolean) {
             supermarketMap
         });
     }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets, supermarketMap]);
-    const activeSupermarkets = useMemo(() => Array.isArray(activeSupermarketsRaw) 
-        ? activeSupermarketsRaw.filter(sm => supermarkets.includes(sm)) 
-        : [], [activeSupermarketsRaw, supermarkets]);
+    const activeSupermarkets = useMemo(() => {
+        if (!Array.isArray(activeSupermarketsRaw)) return [];
+        if (supermarkets.length === 0) return activeSupermarketsRaw;
+        const filtered = activeSupermarketsRaw.filter(sm => supermarkets.includes(sm));
+        return filtered.length > 0 ? filtered : (supermarkets.length > 0 ? [supermarkets[0]] : activeSupermarketsRaw);
+    }, [activeSupermarketsRaw, supermarkets]);
 
     const [aggregatedData, setAggregatedData] = useState({
         danhSach: '',
@@ -82,6 +85,10 @@ export function useNhanVienData(isActive?: boolean) {
         let isMounted = true;
         const fetchAllData = async () => {
             if (activeSupermarkets.length === 0) {
+                if (supermarkets.length === 0 && Array.isArray(activeSupermarketsRaw) && activeSupermarketsRaw.length > 0) {
+                    // Đang chờ danh sách siêu thị khởi tạo từ summaryLuyKe, không wipe trắng dữ liệu đã có
+                    return;
+                }
                 setAggregatedData({
                     danhSach: '',
                     employeeRealtime: '',
@@ -98,8 +105,12 @@ export function useNhanVienData(isActive?: boolean) {
             const uniqueSafeNames = Array.from(new Set(activeSupermarkets.map(sm => shortenSupermarketName(sm))));
 
             const getWithFallback = async (prefix: string, safeName: string, suffix: string) => {
+                const primaryKey = `${prefix}${safeName}${suffix}`;
+                const primaryVal = await db.get(primaryKey as any);
+                if (primaryVal !== undefined && primaryVal !== null && primaryVal !== '') {
+                    return primaryVal;
+                }
                 const candidates = [
-                    `${prefix}${safeName}${suffix}`,
                     `${prefix}${safeName.toUpperCase()}${suffix}`,
                     `${prefix}${safeName.toLowerCase()}${suffix}`
                 ];
@@ -109,7 +120,7 @@ export function useNhanVienData(isActive?: boolean) {
                         candidates.push(`${prefix}${sm.toUpperCase()}${suffix}`);
                     }
                 });
-                const uniqueCandidates = Array.from(new Set(candidates));
+                const uniqueCandidates = Array.from(new Set(candidates)).filter(k => k !== primaryKey);
                 for (const key of uniqueCandidates) {
                     const val = await db.get(key as any);
                     if (val !== undefined && val !== null && val !== '') {
@@ -288,20 +299,18 @@ export function useNhanVienData(isActive?: boolean) {
         // các key targethero khác (quydoi/tragop/total) chỉ dùng ở useDashboardLogic.
         const handleDbChange = (event: CustomEvent) => {
             const key = event.detail.key;
+            if (key === 'departmentMap' || key === ANALYSIS_EMPLOYEES_KEY || key === `bi_${ANALYSIS_EMPLOYEES_KEY}`) {
+                loadAnalysisEmployees();
+                return;
+            }
             const isRelevant = key.startsWith('config-')
                 || key.startsWith('manual-dept-mapping')
                 || key.startsWith('bonus-data-')
                 || key.startsWith('bonus-current-period-label-')
                 || key.startsWith('hidden-employees-')
                 || key.startsWith('targethero-')
-                || key === 'summary-luy-ke'
-                || key === 'departmentMap'
-                || key === ANALYSIS_EMPLOYEES_KEY
-                || key === `bi_${ANALYSIS_EMPLOYEES_KEY}`;
+                || key === 'summary-luy-ke';
             if (isRelevant) {
-                if (key === 'departmentMap' || key === ANALYSIS_EMPLOYEES_KEY || key === `bi_${ANALYSIS_EMPLOYEES_KEY}`) {
-                    loadAnalysisEmployees();
-                }
                 setDataVersion(v => v + 1);
             }
         };
@@ -314,7 +323,6 @@ export function useNhanVienData(isActive?: boolean) {
         const handleAnalysisUpdate = (e: CustomEvent) => {
             if (e.detail) {
                 setAnalysisEmployeesPayload(e.detail);
-                setDataVersion(v => v + 1);
             }
         };
         window.addEventListener('analysis-employees-updated', handleAnalysisUpdate as EventListener);
@@ -375,7 +383,8 @@ export function useNhanVienData(isActive?: boolean) {
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     const dept = (r.department || '').trim();
                     if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
-                    return isEmployeeInAnalysis(r.originalName);
+                    if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
+                    return true;
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu:', err));
@@ -396,7 +405,8 @@ export function useNhanVienData(isActive?: boolean) {
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     const dept = (r.department || '').trim();
                     if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
-                    return isEmployeeInAnalysis(r.originalName);
+                    if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
+                    return true;
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu realtime:', err));
@@ -489,7 +499,8 @@ export function useNhanVienData(isActive?: boolean) {
                 setInstallmentRows(rows.filter((r: InstallmentRow) => {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
-                    return isEmployeeInAnalysis(r.originalName);
+                    if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
+                    return true;
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse trả góp:', err));

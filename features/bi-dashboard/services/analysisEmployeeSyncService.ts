@@ -71,7 +71,29 @@ export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayl
     };
 }
 
-const EXCLUDED_DEPT_KEYWORDS = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca'];
+const EXCLUDED_DEPT_KEYWORDS = [
+    'quản lý', 'quan ly',
+    'trưởng ca', 'truong ca',
+    'kế toán', 'ke toan',
+    'tiếp đón khách hàng', 'tiep don khach hang',
+    'chưa xác định', 'chua xac dinh',
+    'không xác định', 'khong xac dinh',
+    'chưa phân ca', 'chua phan ca',
+    'không phân ca', 'khong phan ca',
+    'chưa có bộ phận', 'chua co bo phan',
+    'chưa phân bộ phận', 'chua phan bo phan',
+    'chưa gán', 'chua gan',
+    'chưa cài đặt', 'chua cai dat',
+];
+
+function stripVietnameseDiacritics(str: string): string {
+    return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[đĐ]/g, m => (m === 'đ' ? 'd' : 'D'))
+        .toLowerCase()
+        .trim();
+}
 
 /**
  * Kiểm tra xem một nhân viên có phải tài khoản hệ thống hoặc tài khoản phụ cần loại bỏ không
@@ -91,9 +113,12 @@ export function isSystemOrIgnoredEmployee(name: string | undefined, dept?: strin
             return true;
         }
     }
-    if (dept) {
-        const lowerDept = dept.toLowerCase().trim();
-        if (!lowerDept || EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw))) {
+    if (dept !== undefined) {
+        const cleanDept = dept.trim();
+        if (!cleanDept) return true;
+        const lowerDept = cleanDept.toLowerCase();
+        const strippedDept = stripVietnameseDiacritics(cleanDept);
+        if (EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw) || strippedDept.includes(kw))) {
             return true;
         }
     }

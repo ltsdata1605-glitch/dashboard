@@ -133,32 +133,42 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                     </p>
 
                     {/* Hộp BẬT DEVELOPER MODE — Bắt buộc trên Chrome mới */}
-                    <div className="ml-8 p-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs space-y-2">
-                        <div className="flex items-center gap-1.5 font-bold text-amber-800 dark:text-amber-300">
-                            <AppIcon name="warning" size="md" className="text-amber-600" />
-                            <span className="uppercase text-[11px] tracking-wide">Bắt buộc: Bật "Chế độ dành cho nhà phát triển"</span>
+                    <div className="ml-8 p-3 rounded-xl bg-rose-50/50 dark:bg-rose-950/30 border-2 border-rose-500/80 dark:border-rose-500/70 text-xs space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 font-bold text-rose-700 dark:text-rose-300">
+                                <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse shrink-0" />
+                                <span className="uppercase text-[11px] tracking-wide font-black">Khung đỏ 1: Bật "Developer mode" (Góc trên cùng bên phải)</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                                <span className="relative inline-flex h-4 w-7.5 items-center rounded-full bg-blue-600 p-0.5 shadow-xs">
+                                    <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white translate-x-3.5 shadow-xs" />
+                                </span>
+                                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded">
+                                    BẬT
+                                </span>
+                            </div>
                         </div>
                         <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                            Google Chrome phiên bản mới yêu cầu bật chế độ này thì Tampermonkey mới được phép hoạt động:
+                            Google Chrome phiên bản mới yêu cầu bắt buộc bật chế độ này thì Tampermonkey mới được phép hoạt động:
                         </p>
                         <div className="space-y-1.5 pl-1 text-slate-700 dark:text-slate-300">
                             <div className="flex flex-wrap items-center gap-2">
                                 <span>• Mở 1 tab mới và dán địa chỉ:</span>
-                                <code className="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200 rounded font-mono font-bold text-[11px]">
+                                <code className="px-2 py-0.5 bg-rose-100 dark:bg-rose-900/40 text-rose-900 dark:text-rose-200 rounded font-mono font-bold text-[11px]">
                                     chrome://extensions
                                 </code>
                                 <Button
                                     variant="unstyled"
                                     size="none"
                                     onClick={handleCopyExtensionsLink}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-200 hover:bg-amber-300 dark:bg-amber-800 dark:hover:bg-amber-700 text-amber-900 dark:text-amber-100 rounded text-[11px] font-bold transition-colors"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-rose-200 hover:bg-rose-300 dark:bg-rose-900 dark:hover:bg-rose-800 text-rose-900 dark:text-rose-100 rounded text-[11px] font-bold transition-colors"
                                 >
                                     {copiedLink ? <AppIcon name="check" size="xs" className="text-emerald-600" /> : <AppIcon name="copy" size="xs" />}
                                     <span>{copiedLink ? 'Đã sao chép' : 'Sao chép link'}</span>
                                 </Button>
                             </div>
                             <p>
-                                • Nhìn lên <b className="text-slate-800 dark:text-slate-100">góc trên cùng bên phải màn hình</b>, gạt công tắc <b className="text-emerald-700 dark:text-emerald-400">"Chế độ dành cho nhà phát triển" (Developer mode)</b> sang trạng thái <b className="text-emerald-600 font-bold">BẬT (Xanh)</b>.
+                                • Nhìn lên <b className="text-slate-800 dark:text-slate-100">góc trên cùng bên phải màn hình</b>, gạt công tắc <b className="text-blue-700 dark:text-blue-400">"Chế độ dành cho nhà phát triển" (Developer mode)</b> sang trạng thái <b className="text-blue-600 font-bold">BẬT (Xanh)</b>.
                             </p>
                         </div>
                     </div>
@@ -175,8 +185,8 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                                 <h3 className="font-bold text-slate-800 dark:text-slate-100 text-sm">
                                     Thiết lập quyền cho Tampermonkey
                                 </h3>
-                                <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
-                                    (Bắt buộc trên Chrome mới để kích hoạt script)
+                                <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">
+                                    (BẮT BUỘC PHẢI BẬT HẾT CÁC MỤC ĐƯỢC ĐÓNG KHUNG ĐỎ BÊN DƯỚI)
                                 </span>
                             </div>
                         </div>
@@ -191,7 +201,7 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                         </Button>
                     </div>
 
-                    <div className="space-y-2.5 pl-8 text-xs">
+                    <div className="space-y-3 pl-8 text-xs">
                         <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-wrap items-center gap-2">
                             <span className="text-slate-600 dark:text-slate-300">
                                 • Mở một <b>tab mới</b> và dán địa chỉ cài đặt:
@@ -201,46 +211,132 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
                             </code>
                         </div>
 
-                        <p className="text-slate-600 dark:text-slate-300">
-                            • Trong trang cài đặt tiện ích vừa mở ra, thực hiện <b>2 thiết lập sau</b>:
-                        </p>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                            {/* Mục 1: Allow User Scripts */}
-                            <div className="p-2.5 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-1">
-                                <div className="flex items-center justify-between gap-1">
-                                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
-                                        Allow User Scripts
-                                    </span>
-                                    <span className="px-1.5 py-0.5 text-[11px] font-bold bg-emerald-600 text-white rounded uppercase">
-                                        Gạt BẬT (Xanh)
+                        {/* HỘP KHUNG ĐỎ BẮT BUỘC BẬT HẾT CÁC CÔNG TẮC */}
+                        <div className="p-3.5 rounded-xl bg-rose-50/40 dark:bg-rose-950/20 border-2 border-rose-500 dark:border-rose-500/80 space-y-3 shadow-xs">
+                            <div className="flex items-center justify-between gap-2 border-b border-rose-200 dark:border-rose-900/60 pb-2">
+                                <div className="flex items-center gap-1.5">
+                                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-600 animate-pulse shrink-0" />
+                                    <span className="font-black text-rose-800 dark:text-rose-300 text-xs uppercase tracking-wide">
+                                        Khung đỏ 2: Bắt buộc gạt BẬT HẾT 5 công tắc sau
                                     </span>
                                 </div>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                                    Bắt buộc bật công tắc này để trình duyệt cho phép script tự động lấy số liệu MWG.
-                                </p>
+                                <span className="px-2 py-0.5 text-[10px] font-black bg-rose-600 text-white rounded-full uppercase tracking-wider">
+                                    5 / 5 MỤC ON
+                                </span>
                             </div>
 
-                            {/* Mục 2: Site access */}
-                            <div className="p-2.5 rounded-lg bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200 dark:border-sky-800/40 space-y-1">
-                                <div className="flex items-center justify-between gap-1">
-                                    <span className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
-                                        Site access
-                                    </span>
-                                    <span className="px-1.5 py-0.5 text-[11px] font-bold bg-sky-600 text-white rounded">
-                                        "On all sites"
-                                    </span>
+                            <div className="space-y-2">
+                                {/* 1. Allow User Scripts */}
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                    <div className="space-y-0.5 pr-2">
+                                        <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-100">
+                                            <span>1. Allow User Scripts</span>
+                                            <span className="text-[10px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 px-1.5 py-0.2 rounded border border-rose-200 dark:border-rose-900/60">Bắt buộc số 1</span>
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                            Cho phép extension chạy script tự động lấy số liệu MWG.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="relative inline-flex h-4 w-7.5 items-center rounded-full bg-blue-600 p-0.5 shadow-xs">
+                                            <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white translate-x-3.5 shadow-xs" />
+                                        </span>
+                                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded">
+                                            BẬT
+                                        </span>
+                                    </div>
                                 </div>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                                    Tại mục "Allow this extension to read...", chọn <b>On all sites</b> (Trên tất cả các trang).
-                                </p>
-                            </div>
-                        </div>
 
-                        {/* Gợi ý thêm: Pin to toolbar */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 pt-0.5">
-                            <span className="inline-flex items-center gap-1 text-amber-500 font-bold shrink-0"><AppIcon name="idea" size="xs" className="text-sky-600" />Gợi ý:</span>
-                            <span>Gạt BẬT thêm <b className="text-slate-700 dark:text-slate-200">"Pin to toolbar"</b> để ghim biểu tượng Tampermonkey lên thanh công cụ trình duyệt cho dễ theo dõi.</span>
+                                {/* 2. Pin to toolbar */}
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                    <div className="space-y-0.5 pr-2">
+                                        <div className="font-bold text-slate-800 dark:text-slate-100">
+                                            2. Pin to toolbar
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                            Ghim biểu tượng Tampermonkey lên thanh công cụ để dễ quan sát trạng thái.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="relative inline-flex h-4 w-7.5 items-center rounded-full bg-blue-600 p-0.5 shadow-xs">
+                                            <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white translate-x-3.5 shadow-xs" />
+                                        </span>
+                                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded">
+                                            BẬT
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* 3. Allow in Incognito */}
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                    <div className="space-y-0.5 pr-2">
+                                        <div className="font-bold text-slate-800 dark:text-slate-100">
+                                            3. Allow in Incognito
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                            Cho phép tiện ích hoạt động kể cả khi mở trình duyệt ở chế độ ẩn danh.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="relative inline-flex h-4 w-7.5 items-center rounded-full bg-blue-600 p-0.5 shadow-xs">
+                                            <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white translate-x-3.5 shadow-xs" />
+                                        </span>
+                                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded">
+                                            BẬT
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* 4. Allow access to file URLs */}
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                    <div className="space-y-0.5 pr-2">
+                                        <div className="font-bold text-slate-800 dark:text-slate-100">
+                                            4. Allow access to file URLs
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                            Cho phép tiện ích truy cập các URL tệp cục bộ khi cần đồng bộ dữ liệu.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="relative inline-flex h-4 w-7.5 items-center rounded-full bg-blue-600 p-0.5 shadow-xs">
+                                            <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white translate-x-3.5 shadow-xs" />
+                                        </span>
+                                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded">
+                                            BẬT
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* 5. Collect errors */}
+                                <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800/80 border border-rose-200 dark:border-rose-900/40 flex items-center justify-between gap-2">
+                                    <div className="space-y-0.5 pr-2">
+                                        <div className="font-bold text-slate-800 dark:text-slate-100">
+                                            5. Collect errors
+                                        </div>
+                                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                                            Tự động ghi nhận log lỗi để hỗ trợ khắc phục nhanh nếu có trục trặc.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <span className="relative inline-flex h-4 w-7.5 items-center rounded-full bg-blue-600 p-0.5 shadow-xs">
+                                            <span className="inline-block h-3.5 w-3.5 transform rounded-full bg-white translate-x-3.5 shadow-xs" />
+                                        </span>
+                                        <span className="px-1.5 py-0.5 text-[10px] font-bold bg-blue-600 text-white rounded">
+                                            BẬT
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mục Site access */}
+                            <div className="pt-2 border-t border-rose-200/80 dark:border-rose-900/40 flex flex-wrap items-center justify-between gap-2">
+                                <span className="text-[11px] text-slate-700 dark:text-slate-300">
+                                    • Quyền truy cập trang web (<b>Allow this extension to read and change all your data...</b>):
+                                </span>
+                                <span className="px-2 py-0.5 text-[11px] font-bold bg-sky-600 text-white rounded">
+                                    Chọn "On all sites"
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
