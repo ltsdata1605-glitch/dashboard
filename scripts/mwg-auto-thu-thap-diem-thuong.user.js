@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.21
+// @version      7.24
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,25 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.24 — KHẮC PHỤC TRIỆT ĐỂ LỖI NGÀNH HÀNG REALTIME LẤY NHẰM LUỸ KẾ & LỌC BỎ CÁC DẤU [+] ẨN (2026-10-10):
+ * - Sửa lỗi Ngành hàng Realtime lấy nhầm Luỹ kế:
+ *   + Khi chạy Bước 3 (Ngành hàng BI), bắt buộc kích hoạt ensureRealtimeTabActive(), bật "DT quy đổi", bật "Trả góp" và chọn siêu thị trước khi copy.
+ *   + Hỗ trợ nhận diện tab/nút "Trong ngày", "Số liệu trong ngày", "Realtime" và tự động gắn tham số ?timetype=1 khi điều hướng sang /dashboard/bi-category.
+ *   + Bổ sung TIMETYPE: 1 vào API revenue-consolidated-get GROUPBY BICAT trong Direct API Engine để đảm bảo 100% dữ liệu lấy theo ngày.
+ * - Khắc phục lỗi mở dấu [+] ẩn (vọt lên 365 nút đến tận mã SKU):
+ *   + Nâng cấp toàn diện acpIsVisible: Dùng checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) và kiểm tra computedStyle (display !== 'none', visibility !== 'hidden'/'collapse', opacity > 0.05, loại bỏ 'hidden'/'invisible'/'ant-table-row-expand-icon-spaced').
+ *   + Kiểm tra cả hàng cha <tr>: Nếu hàng cha đang ẩn hoặc có visibility: hidden, lập tức loại trừ không click.
+ *   + Giới hạn maxRounds = 2 trong expandAllCandidates: Chỉ mở 2 cấp danh mục chính (Ngành hàng -> Nhóm hàng), tuyệt đối không mở sâu xuống từng mã sản phẩm SKU con đang ẩn.
+ *
+ * BẢN 7.23 — ĐẶT TÊN TỰ ĐỘNG CHO YCX LUỸ KẾ & HỖ TRỢ CHỌN THÁNG (2026-10-10):
+ * - Hỗ trợ tham số tháng ycx_month cho báo cáo 77 (Từ 01 đến ngày cuối tháng được chọn).
+ * - Luỹ kế tự động: Tên tệp được tạo và lưu tự động vào kho dữ liệu Phân tích (không hiện popup hỏi tên).
+ * - Format tên: "YCX Từ ngày 1 - Ngày hiện tại -1 + hh:mm" khi chọn luỹ kế, hoặc "YCX Tháng [tháng]" khi chọn tháng.
+ *
+ * BẢN 7.22 — TỰ ĐỘNG PHÁT HIỆN CẬP NHẬT & TỰ ĐỘNG ĐỔ DỮ LIỆU KHÔNG CẦN F5 (2026-10-10):
+ * - Tự động ghi SCRIPT_VERSION vào localStorage và phát hiện ngầm qua probe iframe.
+ * - Khi cập nhật xong trong Tampermonkey, Dashboard tự động đóng bảng cảnh báo và kích hoạt đổ dữ liệu tự động mà không cần người dùng phải F5 hay bấm lại nút.
+ *
  * BẢN 7.21 — ĐỒNG BỘ THỨ TỰ BƯỚC & KHẮC PHỤC DỮ LIỆU THI ĐUA REALTIME (2026-10-09):
  * - Khắc phục tình trạng "Báo cáo Thi đua" bị bỏ qua / trơ số 2 xám: Đồng bộ thứ tự chạy của UI Automation Fallback khớp 100% với danh sách hiển thị và Direct API (Bước 1: Hợp nhất → Bước 2: Thi đua → Bước 3: Ngành hàng → Bước 4: Nhân viên).
  * - Sửa lỗi nghiêm trọng mất dữ liệu ở Bước Thi đua: Chuyển sang chọn tab "Thi đua" trực tiếp trên trang hiện tại (/dashboard/revenue-consolidated) thay vì chuyển hướng sang /dashboard/thi-dua gây reload toàn trang và xóa sạch bộ nhớ tạm.
@@ -528,7 +547,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.20';
+  const SCRIPT_VERSION_FALLBACK = '7.23';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -1334,6 +1353,10 @@
   // ====== TRANG DASHBOARD: cầu nối CustomEvent (tầng A) <-> GM storage (tầng B) ======
   function initDashboardPage() {
     initYcxDashboardBridge();
+    try {
+      localStorage.setItem('ycx_userscript_installed_version', SCRIPT_VERSION);
+      localStorage.setItem('ycx_userscript_last_ping', String(Date.now()));
+    } catch (e) {}
     let lastMetaSnapshot = null;
     let lastResultSnapshot = null;
 
@@ -1595,11 +1618,40 @@
     '.el-loading-mask:not([style*="display: none"])',
   ].join(', ');
 
-  let acpRunning = false;
-
   function acpIsVisible(el) {
     if (!el) return false;
-    if (el.offsetParent !== null) return true;
+    // 1. Kiểm tra checkVisibility chuẩn modern browser (Chrome 105+)
+    if (typeof el.checkVisibility === 'function') {
+      try {
+        if (!el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+      } catch (_) {}
+    }
+    // 2. Kiểm tra computedStyle của phần tử
+    try {
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse') return false;
+      if (parseFloat(style.opacity || '1') <= 0.05) return false;
+    } catch (_) {}
+
+    if (el.getAttribute('aria-hidden') === 'true' || el.hasAttribute('hidden')) return false;
+    if (el.classList && (el.classList.contains('hidden') || el.classList.contains('invisible') || el.classList.contains('ant-table-row-expand-icon-spaced'))) return false;
+
+    // 3. Kiểm tra hàng cha (tr / role="row") chứa nó: nếu hàng ẩn thì không click
+    const row = el.closest('tr, [role="row"], .dx-row, .ant-table-row');
+    if (row) {
+      if (row.hasAttribute('hidden') || (row.classList && (row.classList.contains('hidden') || row.classList.contains('invisible')))) return false;
+      try {
+        const rowStyle = window.getComputedStyle(row);
+        if (rowStyle.display === 'none' || rowStyle.visibility === 'hidden' || rowStyle.visibility === 'collapse') return false;
+        if (parseFloat(rowStyle.opacity || '1') <= 0.05) return false;
+      } catch (_) {}
+    }
+
+    // 4. Kiểm tra offsetParent và kích thước thực tế
+    try {
+      const style = window.getComputedStyle(el);
+      if (el.offsetParent === null && style.position !== 'fixed') return false;
+    } catch (_) {}
     const rect = el.getBoundingClientRect();
     return rect.width > 0 && rect.height > 0;
   }
@@ -1706,7 +1758,9 @@
       .filter(acpIsVisible)
       .filter((el) => !(el.classList && el.classList.contains('fa-minus')))
       .filter((el) => !(el.classList && el.classList.contains('ant-table-row-expand-icon-expanded')))
+      .filter((el) => !(el.classList && el.classList.contains('ant-table-row-expand-icon-spaced')))
       .filter((el) => el.getAttribute('aria-expanded') !== 'true')
+      .filter((el) => el.getAttribute('aria-hidden') !== 'true')
       .filter((el) => el.dataset.acpDone !== '1')
       .filter((el) => !acpIsAlreadyOpened(el));
   }
@@ -2291,12 +2345,12 @@
   async function ensureRealtimeTabActive() {
     console.log('[BI-Sync] Ưu tiên đầu tiên: Chuyển sang chế độ "Realtime"...');
     const findRealtimeBtn = () => {
-      const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], span, div'));
+      const candidates = Array.from(document.querySelectorAll('button, a, [role="button"], span, div, label'));
       for (const el of candidates) {
         if (!acpIsVisible(el)) continue;
-        const txt = (el.textContent || '').trim();
-        if (txt.toLowerCase() === 'realtime') {
-          return el.closest('button, a, [role="button"]') || el;
+        const txt = (el.textContent || '').trim().toLowerCase();
+        if (txt === 'realtime' || txt === 'trong ngày' || txt === 'số liệu trong ngày' || txt === 'hôm nay' || txt === 'real-time') {
+          return el.closest('button, a, [role="button"], label') || el;
         }
       }
       return null;
@@ -2325,7 +2379,7 @@
     }
 
     // Nếu "Lũy kế" đang active hoặc "Realtime" chưa active thì click chọn "Realtime"
-    const luyKeBtn = findButtonByText(['Lũy kế', 'luy ke']);
+    const luyKeBtn = findButtonByText(['Lũy kế', 'luy ke', 'luỹ kế', 'lũy kế tháng', 'luy ke thang']);
     let luyKeIsActive = false;
     if (luyKeBtn) {
       const lkStyle = window.getComputedStyle(luyKeBtn);
@@ -2605,18 +2659,20 @@
     return true;
   }
 
-  async function expandAllCandidates(statusBox, reportStatus) {
+  async function expandAllCandidates(statusBox, reportStatus, maxRounds = 2) {
     let guard = 0;
     let totalOpened = 0;
 
-    while (guard < 12) {
+    // Giới hạn maxRounds (mặc định = 2): Chỉ mở tối đa 2 cấp danh mục (Ngành hàng -> Nhóm hàng),
+    // tuyệt đối không mở sâu tràn lan xuống từng mã sản phẩm SKU con đang ẩn làm tràn bảng 365 dòng
+    while (guard < maxRounds) {
       guard++;
       const candidates = acpGetPlusCandidates();
       if (candidates.length === 0) break;
 
       for (let i = 0; i < candidates.length; i++) {
         const el = candidates[i];
-        if (acpIsAlreadyOpened(el)) continue;
+        if (acpIsAlreadyOpened(el) || !acpIsVisible(el)) continue;
         acpTriggerClick(el);
         el.dataset.acpDone = '1';
         totalOpened++;
@@ -3597,6 +3653,7 @@
                   MAINGROUPIDS: null,
                   SUBGROUPIDS: null,
                   GROUPBY: 'BICAT',
+                  TIMETYPE: isLuyKe ? 2 : 1, // 1 = Realtime; 2 = Luỹ kế
                   OUTPUTTYPEIDS: null,
                   OUTPUTTYPEEXCLUDES: null,
                   PAGEINDEX: 1,
@@ -3822,19 +3879,36 @@
         results.competition = await collectCurrentBiData();
         console.log('[BI-Sync] Đã xong Bước 2: Thi đua Realtime', results.competition?.length);
 
-        // --- BƯỚC 3: Ngành hàng BI (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Ngành hàng BI") ---
+        // --- BƯỚC 3: Ngành hàng BI ---
         await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Bước 3/4: Đang chọn tab "Ngành hàng BI"...');
-        await selectTabOrSection('Ngành hàng BI');
+        let okTabNganhHang = await selectTabOrSection('Ngành hàng');
+        if (!okTabNganhHang) {
+          okTabNganhHang = await selectTabOrSection('Ngành hàng BI');
+        }
+        if (!okTabNganhHang && !location.pathname.includes('bi-category')) {
+          await navigateToBiSection('Doanh Thu Ngành Hàng BI', '/dashboard/bi-category?timetype=1');
+        }
         await acpWaitForLoadingComplete(35000, 600, 500);
 
-        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Bước 3/4: Đang mở rộng các cấp ngành hàng...');
+        // BẮT BUỘC: Đảm bảo chuyển sang chế độ Realtime (Số liệu trong ngày), DT quy đổi, Trả góp & chọn tất cả siêu thị!
+        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Bước 3/4: Đang kích hoạt Realtime & bộ lọc ngành hàng...');
+        await ensureRealtimeTabActive();
+        await sleep(200);
+        await ensureToggleActive('DT quy đổi');
+        await sleep(200);
+        await ensureTraGopActive();
+        await sleep(200);
+        await ensureSelectAllChecked();
+        await acpWaitForLoadingComplete(15000, 250, 200);
+
+        await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Bước 3/4: Đang mở rộng các cấp ngành hàng (chỉ mở cấp hiển thị)...');
         await expandAllCandidates(null, (msg) => {
           reportProgress(3, totalSteps, 'Ngành hàng BI', msg);
-        });
+        }, 2);
         await acpWaitForLoadingComplete(20000, 400, 300);
 
         results.industry = await collectCurrentBiData();
-        console.log('[BI-Sync] Đã xong Bước 3: Ngành hàng BI', results.industry?.length);
+        console.log('[BI-Sync] Đã xong Bước 3: Ngành hàng BI Realtime', results.industry?.length);
 
         // --- BƯỚC 4: Doanh thu nhân viên (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Nhân viên") ---
         await reportProgress(4, totalSteps, 'Doanh thu nhân viên', 'Bước 4/4: Đang chọn tab "Nhân viên"...');
@@ -4242,10 +4316,18 @@
     return mode === 'luyke' && d.getDate() !== 1 ? 'luyke' : 'realtime';
   }
 
-  /** Luỹ kế: Từ 01 đầu tháng → Đến HÔM QUA, dạng dd/MM/yyyy (đúng định dạng ô ngày của trang khi chọn tay). */
-  function ycxLuyKeRange(now) {
-    const d = now || new Date();
+  /** Luỹ kế: Từ 01 đầu tháng → Đến HÔM QUA (hoặc chọn tháng: 01 đến ngày cuối tháng), dạng dd/MM/yyyy (đúng định dạng ô ngày của trang khi chọn tay). */
+  function ycxLuyKeRange(now, month) {
+    const pad2 = (n) => String(n).padStart(2, '0');
     const fmt = (x) => `${pad2(x.getDate())}/${pad2(x.getMonth() + 1)}/${x.getFullYear()}`;
+    if (month) {
+      const [y, m] = month.includes('-') ? month.split('-').map(Number) : [Number(month.slice(0, 4)), Number(month.slice(4))];
+      const lastDay = new Date(y, m, 0).getDate();
+      const from = new Date(y, m - 1, 1);
+      const to = new Date(y, m - 1, lastDay);
+      return { from: fmt(from), to: fmt(to), fromDate: from, toDate: to };
+    }
+    const d = now || new Date();
     const from = new Date(d.getFullYear(), d.getMonth(), 1);
     const to = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 1);
     return { from: fmt(from), to: fmt(to), fromDate: from, toDate: to };
@@ -4263,7 +4345,7 @@
     ycxApply(scope, () => { cond.OBJECTVALUE = text; });
   }
 
-  async function ycxApplyConditions(scope, mode) {
+  async function ycxApplyConditions(scope, mode, month) {
     const conds = scope.ListCondition;
     const find = (p) => conds.find((c) => c.PARAMNAME === p);
 
@@ -4302,9 +4384,9 @@
         return ids;
       });
     }
-    // Ngày: Realtime để mặc định (trang tự đặt hôm nay khi tải); Luỹ kế: 01 đầu tháng → hôm qua
+    // Ngày: Realtime để mặc định (trang tự đặt hôm nay khi tải); Luỹ kế: 01 đầu tháng → hôm qua hoặc trọn tháng được chọn
     if (mode === 'luyke') {
-      const r = ycxLuyKeRange();
+      const r = ycxLuyKeRange(null, month);
       const tu = find('V_FROMDATE');
       const den = find('V_TODATE');
       if (!tu || !den) throw ycxErr('conditions', 'Báo cáo không có ô "Từ ngày" / "Đến ngày" — MWG đã đổi mẫu báo cáo 77?');
@@ -4407,9 +4489,9 @@
       await report('open', 'Đã mở báo cáo 77, chờ form điều kiện…');
       const scope = await ycxWaitScope(60000);
       const mode = ycxResolveMode(job.mode);
-      const ngay = mode === 'luyke' ? (() => { const r = ycxLuyKeRange(); return `${r.from} → ${r.to}`; })() : 'ngày hôm nay';
-      await report('conditions', `${mode === 'luyke' ? 'Luỹ kế' : 'Realtime'} — chọn điều kiện: ${ngay} · Kho tạo · Tất cả ngành hàng · Tất cả kho…`);
-      await ycxApplyConditions(scope, mode);
+      const ngay = mode === 'luyke' ? (() => { const r = ycxLuyKeRange(null, job.month); return `${r.from} → ${r.to}`; })() : 'ngày hôm nay';
+      await report('conditions', `${mode === 'luyke' ? (job.month ? `Tháng ${job.month}` : 'Luỹ kế') : 'Realtime'} — chọn điều kiện: ${ngay} · Kho tạo · Tất cả ngành hàng · Tất cả kho…`);
+      await ycxApplyConditions(scope, mode, job.month);
 
       const userInput = document.querySelector('input[name="__UserName"]');
       let userName = '';
@@ -4432,7 +4514,7 @@
       const url = new URL(row.LINKDOWNLOAD, location.href).href;
       await ycxWaitStable(url, (m) => report('waiting', m));
       const fileName = ycxFileName(url, mode);
-      await gmSet(GM_KEY_YCX_DONE, { source: YCX_SOURCE, type: 'done', jobId, mode, url, fileName, reportName: row.DYNAMICREPORTNAME || '', at: Date.now() });
+      await gmSet(GM_KEY_YCX_DONE, { source: YCX_SOURCE, type: 'done', jobId, mode, month: job.month || null, url, fileName, reportName: row.DYNAMICREPORTNAME || '', at: Date.now() });
       await gmSet(GM_KEY_YCX_JOB, { ...job, status: 'done' });
       ycxBanner('Xong — đã gửi file về Dashboard, tab này sẽ tự đóng.', 'ok');
       setTimeout(() => { try { window.close(); } catch (_) { /* không đóng được thì thôi */ } }, 2500);
@@ -4451,10 +4533,11 @@
     const params = new URLSearchParams(location.search);
     const urlJob = params.get('ycx_job');
     const urlMode = params.get('ycx_ycx');
+    const urlMonth = params.get('ycx_month');
     const laTrang77 = location.pathname.replace(/\/+$/, '').toLowerCase() === YCX_REPORT_PATH;
     let job = await gmGet(GM_KEY_YCX_JOB, null);
     if (urlJob && urlMode) {
-      if (!job || job.jobId !== urlJob) job = { jobId: urlJob, mode: urlMode, status: 'pending', createdAt: Date.now() };
+      if (!job || job.jobId !== urlJob) job = { jobId: urlJob, mode: urlMode, month: urlMonth || null, status: 'pending', createdAt: Date.now() };
       if (job.status === 'done' || job.status === 'error') return; // tải lại tab cũ — không chạy lại
     } else {
       // Không có tham số (vd bị chuyển qua trang đăng nhập rồi về trang chủ): nhận lượt đang chờ còn mới
@@ -4465,7 +4548,8 @@
         ycxBanner('Hãy đăng nhập — xong sẽ tự quay lại báo cáo 77.');
         return;
       }
-      location.href = `https://${YCX_HOSTNAME}${YCX_REPORT_PATH}?ycx_ycx=${encodeURIComponent(job.mode || 'realtime')}&ycx_job=${encodeURIComponent(job.jobId)}`;
+      const mParam = (job.month || urlMonth) ? `&ycx_month=${encodeURIComponent(job.month || urlMonth)}` : '';
+      location.href = `https://${YCX_HOSTNAME}${YCX_REPORT_PATH}?ycx_ycx=${encodeURIComponent(job.mode || 'realtime')}&ycx_job=${encodeURIComponent(job.jobId)}${mParam}`;
       return;
     }
     if (!urlJob && job.status === 'running') return;
@@ -4483,7 +4567,7 @@
       const d = e.detail;
       if (!d || d.source !== YCX_SOURCE || typeof d.jobId !== 'string') return;
       jobCuaTab.add(d.jobId);
-      gmSet(GM_KEY_YCX_JOB, { jobId: d.jobId, mode: d.mode || 'realtime', status: 'pending', createdAt: Date.now() })
+      gmSet(GM_KEY_YCX_JOB, { jobId: d.jobId, mode: d.mode || 'realtime', month: d.month || null, status: 'pending', createdAt: Date.now() })
         .catch((err) => console.warn('[YCX auto] Lỗi ghi job GM:', err));
     });
 
