@@ -753,6 +753,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             onClose={() => setIsFilterSidebarOpen(false)}
                                             onLoadShiftFile={handleShiftFileClick}
                                             hasDepartmentData={!!departmentMap}
+                                            onClearDepartments={handleClearDepartments}
+                                            isClearingDepartments={isClearingDepartments}
                                         />
                                     </div>
                                 </div>

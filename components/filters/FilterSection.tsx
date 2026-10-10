@@ -75,6 +75,8 @@ interface FilterSectionProps {
     onClose: () => void;
     onLoadShiftFile?: () => void;
     hasDepartmentData?: boolean;
+    onClearDepartments?: () => void;
+    isClearingDepartments?: boolean;
 }
 
 const FilterSection: React.FC<FilterSectionProps> = ({ 
@@ -83,10 +85,21 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     onVisibilityChange, 
     onClose,
     onLoadShiftFile,
-    hasDepartmentData
+    hasDepartmentData,
+    onClearDepartments,
+    isClearingDepartments
 }) => {
     const { userRole } = useAuth();
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+    const [deptClearSuccess, setDeptClearSuccess] = useState(false);
+
+    const handleDeptClear = () => {
+        if (onClearDepartments) {
+            onClearDepartments();
+            setDeptClearSuccess(true);
+            setTimeout(() => setDeptClearSuccess(false), 3000);
+        }
+    };
     const {
         filterState: globalFilters,
         handleFilterChange: applyGlobalFilters,
@@ -206,7 +219,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
                 <div className="p-2 sm:p-3 space-y-3 sm:space-y-4">
-                    {/* Quản lý Nhân sự & Phân ca */}
+
+                    {/* Quản lý ca kíp / Phân ca Nhân viên */}
                     {(userRole === 'admin' || userRole === 'manager') && (
                         <div className="space-y-2.5 pb-3 px-1 border-b border-slate-100 dark:border-slate-800/80">
                             <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5">
@@ -235,10 +249,31 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     </div>
                                     <div className="flex flex-col leading-tight">
                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
-                                        <span className="text-[11px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                        <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                             {hasDepartmentData ? 'Xem chi tiết ca kíp' : 'Chưa có dữ liệu ca'}
                                         </span>
                                     </div>
+                                </Button>
+
+                                {/* Nút Xoá dữ liệu phân ca (bổ sung theo yêu cầu) */}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    disabled={!hasDepartmentData || isClearingDepartments}
+                                    onClick={handleDeptClear}
+                                    className={`w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl transition-colors ${
+                                        hasDepartmentData
+                                            ? 'hover:border-rose-400 dark:hover:border-rose-500 hover:shadow-sm text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 cursor-pointer'
+                                            : 'opacity-40 cursor-not-allowed text-slate-400'
+                                    }`}
+                                    title={hasDepartmentData ? "Xóa dữ liệu phân ca" : "Chưa có dữ liệu phân ca để xóa"}
+                                    aria-label="Xóa dữ liệu phân ca"
+                                >
+                                    <AppIcon 
+                                        name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loading' : 'delete')} 
+                                        size="md" 
+                                        spin={isClearingDepartments} 
+                                        className={deptClearSuccess ? 'text-emerald-500' : ''} 
+                                    />
                                 </Button>
 
                                 {/* Nhập file (icon) */}
@@ -247,6 +282,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     onClick={onLoadShiftFile}
                                     className="w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
                                     title="Nhập file Excel Phân ca"
+                                    aria-label="Nhập file Excel Phân ca"
                                 >
                                     <AppIcon name="cloudUpload" size="md" />
                                 </Button>
@@ -258,6 +294,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     rel="noopener noreferrer"
                                     className="w-9 sm:w-10 shrink-0 flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm text-slate-500 hover:text-sky-700 dark:text-slate-400 dark:hover:text-sky-400 transition-colors"
                                     title="Lấy danh sách phân ca từ ERP TGDĐ"
+                                    aria-label="Lấy danh sách phân ca từ ERP TGDĐ"
                                 >
                                     <AppIcon name="link" size="md" />
                                 </a>
