@@ -105,7 +105,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
 
             {stickerMode === 'sticker' && (
                 <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
-                    <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400 whitespace-nowrap">
+                    <span className="text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400 whitespace-nowrap">
                         {stickerType === 'draw' ? `${getDrawActiveFieldLabel()}:` : `${getActiveFieldLabel()}:`}
                     </span>
                     <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-xs h-[22px] lg:h-[24px]">
@@ -119,7 +119,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                         >
                             -
                         </Button>
-                        <span className="px-0.5 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 min-w-5 lg:min-w-6 text-center">
+                        <span className="px-0.5 text-[11px] font-bold text-slate-700 dark:text-slate-300 min-w-5 lg:min-w-6 text-center">
                             {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
                         </span>
                         <Button

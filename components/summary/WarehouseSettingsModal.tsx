@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import type { WarehouseColumnConfig, WarehouseCategoryType, WarehouseMetricType } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import SearchableSelect from '../common/SearchableSelect';

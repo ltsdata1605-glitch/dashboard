@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../components/shared/ui/toast';
 
 import { StickerPage, SavedStickerList, PrintHistoryEntry } from './stickerprinter/types';
 import { StickerPrintPreview } from './stickerprinter/StickerPrintPreview';

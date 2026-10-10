@@ -1,6 +1,6 @@
 import { isAbortError, isNotAllowedError, isMobileLikeDevice } from '../../../utils/dataUtils';
 import { offerShareRetry } from './ShareRetryToast';
-import toast from 'react-hot-toast';
+import { toast } from './toast';
 
 /**
  * GIAO ẢNH ĐÃ DỰNG cho người dùng — dùng chung cho mọi khu vực (audit A05–A08, 2026-09-30).

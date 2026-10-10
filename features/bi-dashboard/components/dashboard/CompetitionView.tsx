@@ -1,7 +1,7 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
 import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import ReactDOM from 'react-dom';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../components/shared/ui/toast';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { configStore } from '../../store/configStore';

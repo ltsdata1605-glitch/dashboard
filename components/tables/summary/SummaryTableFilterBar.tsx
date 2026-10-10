@@ -73,7 +73,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                                 title="Mở rộng 1 cấp độ"
                             >
                                 <AppIcon name="expandAll" size="sm" />
-                                {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 bg-sky-500 text-white text-[9px] font-bold rounded-full">{expandLevel}</span>}
+                                {expandLevel > 0 && <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-4 h-4 px-0.5 bg-sky-500 text-white text-[11px] leading-none font-bold rounded-full">{expandLevel}</span>}
                             </Button>
                             <div className="hidden lg:block w-px h-3.5 bg-slate-200 dark:bg-slate-700 mx-0.5"></div>
                             <Button

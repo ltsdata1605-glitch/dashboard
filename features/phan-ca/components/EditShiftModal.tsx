@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ScheduleInfo, StaffStats, SchedulingRules, StaffMember, DailyRequirements, Solution, EditShiftModalInfo, BusySchedule, SolutionAction } from '../types';
 import { calculateTotalHours, findAutomaticReplacement } from '../utils/scheduleUtils';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { EmptyState } from '../../../components/shared/ui/EmptyState';

@@ -239,16 +239,18 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                         <span className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
                             <AppIcon name="add" size="xs" /> Thêm mới Mã Sản Phẩm
                         </span>
-                        <button
+                        <Button
+                            variant="unstyled" size="none"
                             onClick={() => setIsAdding(false)}
-                            className="text-slate-400 hover:text-slate-600 text-xs"
+                            aria-label="Đóng"
+                            className="text-slate-400 hover:text-slate-600 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center"
                         >
-                            ✕
-                        </button>
+                            <AppIcon name="close" size="sm" />
+                        </Button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
                         <div>
-                            <label className="text-[10px] font-semibold text-slate-500">Mã sản phẩm *</label>
+                            <label className="text-[11px] font-semibold text-slate-500">Mã sản phẩm *</label>
                             <Input
                                 placeholder="VD: 1997139000289"
                                 value={newMaSP}
@@ -257,7 +259,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             />
                         </div>
                         <div className="sm:col-span-2">
-                            <label className="text-[10px] font-semibold text-slate-500">Tên sản phẩm *</label>
+                            <label className="text-[11px] font-semibold text-slate-500">Tên sản phẩm *</label>
                             <Input
                                 placeholder="VD: BHMR 1 năm Apple Watch"
                                 value={newTenSP}
@@ -266,7 +268,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] font-semibold text-slate-500">Loại</label>
+                            <label className="text-[11px] font-semibold text-slate-500">Loại</label>
                             <Input
                                 placeholder="VD: Apple Watch"
                                 value={newLoai}
@@ -275,7 +277,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                             />
                         </div>
                         <div>
-                            <label className="text-[10px] font-semibold text-slate-500">Nhóm</label>
+                            <label className="text-[11px] font-semibold text-slate-500">Nhóm</label>
                             <Input
                                 placeholder="VD: ICT"
                                 value={newNhom}
@@ -286,7 +288,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                     </div>
                     <div className="flex items-center justify-between pt-1">
                         <div className="flex items-center gap-2">
-                            <label className="text-[10px] font-semibold text-slate-500">Hệ số quy đổi:</label>
+                            <label className="text-[11px] font-semibold text-slate-500">Hệ số quy đổi:</label>
                             <input
                                 type="number"
                                 step="0.01"
@@ -481,7 +483,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                                             onDeleteItem?.(item.maSanPham);
                                                         }
                                                     }}
-                                                    className="p-1 text-slate-400 hover:text-red-500 rounded hover:bg-red-50 transition-colors"
+                                                    className="p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-rose-50 transition-colors"
                                                     title="Xoá mã sản phẩm"
                                                 >
                                                     <AppIcon name="close" size="xs" />

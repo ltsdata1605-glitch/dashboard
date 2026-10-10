@@ -164,7 +164,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
                         <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${theme.dotColor} shadow-2xs`} />
                         <span
-                            className="industry-kpi-title text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-700 truncate leading-tight"
+                            className="industry-kpi-title text-[11px] font-bold uppercase tracking-wider text-slate-700 truncate leading-tight"
                             title={metric.displayTitle}
                         >
                             {metric.displayTitle}
@@ -197,7 +197,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className="industry-kpi-num text-[16px] sm:text-[20px] font-black tracking-tight tabular-nums text-slate-800 leading-none">
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-400 leading-none">
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
@@ -206,7 +206,7 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className="industry-kpi-num text-[17px] sm:text-[22px] font-black tracking-tight tabular-nums text-slate-800 leading-none">
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[9.5px] sm:text-[11px] font-extrabold uppercase tracking-wider text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[11px] font-extrabold uppercase tracking-wider text-slate-400 leading-none">
                                 SL
                             </span>
                         </div>
@@ -214,11 +214,11 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                 </div>
 
                 {/* Footer Sub-Metric - 1 dòng ngang gọn gàng */}
-                <div className="flex items-center justify-between gap-0.5 sm:gap-1 pt-1 sm:pt-1.5 mt-auto border-t border-slate-100 text-[10px] sm:text-[11px] leading-none">
-                    <span className="text-slate-400 font-medium truncate text-[9px] sm:text-[11px]">
+                <div className="flex items-center justify-between gap-0.5 sm:gap-1 pt-1 sm:pt-1.5 mt-auto border-t border-slate-100 text-[11px] leading-none">
+                    <span className="text-slate-400 font-medium truncate text-[11px]">
                         {isRevenueFocus ? 'Số lượng' : (isRealtime ? 'DTQĐ' : 'QĐ')}
                     </span>
-                    <span className={`inline-flex items-center px-1 sm:px-1.5 py-0.5 rounded font-bold tabular-nums shrink-0 text-[9px] sm:text-[11px] ${theme.subBadgeBg} ${theme.subBadgeText}`}>
+                    <span className={`inline-flex items-center px-1 sm:px-1.5 py-0.5 rounded font-bold tabular-nums shrink-0 text-[11px] ${theme.subBadgeBg} ${theme.subBadgeText}`}>
                         {isRevenueFocus
                             ? `${roundUp(metric.sl).toLocaleString('vi-VN')} SL`
                             : `${roundUp(metric.dtQd).toLocaleString('vi-VN')} Tr`}

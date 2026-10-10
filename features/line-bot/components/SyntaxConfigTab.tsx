@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { LineBotConfig, InteractedUser } from '../types/lineBot.types';
 import { SelectFilterUserModal } from './SelectFilterUserModal';

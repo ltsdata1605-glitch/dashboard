@@ -4,7 +4,7 @@ import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { startExportJob } from '../../../../components/shared/export';
 import { createPortal } from 'react-dom';
 import Card from '../Card';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../components/shared/ui/toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig, RevenueRow, InstallmentRow, BonusMetrics } from '../../types/nhanVienTypes';
@@ -739,7 +739,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     <AppIcon name="users" size="sm" />
                                     <span className="hidden sm:inline">Highlight</span>
                                     {highlightedEmployees.size > 0 && (
-                                        <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[10px] sm:text-[11px] font-black rounded">
+                                        <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">
                                             {highlightedEmployees.size}
                                         </span>
                                     )}

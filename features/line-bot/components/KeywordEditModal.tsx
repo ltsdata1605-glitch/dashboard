@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { KeywordReply, KeywordMatchType } from '../types/lineBot.types';
 import { uploadBotImage, deleteBotImage } from '../services/botMediaService';
@@ -65,9 +65,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
 
         const toUpload = fileArray.slice(0, remainingSlots);
         if (fileArray.length > remainingSlots) {
-            toast(`Chỉ tải lên được ${remainingSlots} ảnh do giới hạn tối đa ${MAX_IMAGES} ảnh`, {
-                icon: 'ℹ️'
-            });
+            toast.warning(`Chỉ tải lên được ${remainingSlots} ảnh do giới hạn tối đa ${MAX_IMAGES} ảnh`);
         }
 
         setIsUploading(true);

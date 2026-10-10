@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';

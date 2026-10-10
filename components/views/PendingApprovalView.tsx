@@ -3,7 +3,7 @@ import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { motion } from 'motion/react';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
 
 interface PendingApprovalViewProps {

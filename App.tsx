@@ -31,7 +31,7 @@ import { SyncProvider } from './contexts/SyncContext';
 import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
 import CouponConverterView from './components/views/CouponConverterView';
-import { Toaster } from 'react-hot-toast';
+import { AppToaster } from './components/shared/ui/toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 import GlobalAutoSyncDock from './components/layout/GlobalAutoSyncDock';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
@@ -257,11 +257,10 @@ function AppContent() {
         <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
             {!isFullscreenMobileTool && <MobileBottomNav />}
-            <InstallAppHint hidden={isFullscreenMobileTool} />
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
-                <div className="mobile-chrome lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
+                <div data-app-chrome="topbar" className="mobile-chrome lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
                     {(() => {
                         const brandIconAndTitle = (
                             <>
@@ -302,11 +301,14 @@ function AppContent() {
                 </div>
 
                 <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">
+                    {/* Nhắc cài app (chỉ Safari iPhone): dải mảnh NẰM TRONG trang ở đầu nội dung — không nổi đè lên nội dung. */}
+                    <InstallAppHint hidden={isFullscreenMobileTool} />
+
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
 
                     {/* Global Page Header */}
-                    <div className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div data-app-chrome="header" className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
                             <div className="hidden lg:flex items-center gap-4 shrink-0">
                                 <div className="h-10 w-1.5 bg-sky-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
@@ -358,7 +360,8 @@ export default function App() {
                 <LayoutProvider>
                     <ErrorBoundary name="App_Root">
                         <AppContent />
-                        <Toaster position="bottom-right" containerStyle={{ zIndex: 999999 }} />
+                        {/* Toast dùng chung: viên nang trên giữa màn hình, không đè thanh tab (components/shared/ui/toast). */}
+                        <AppToaster />
                         {/* Màn cảm ứng: nhấn giữ nút có `title` để đọc chú thích (audit A14) */}
                         <TouchTitleHint />
                     </ErrorBoundary>

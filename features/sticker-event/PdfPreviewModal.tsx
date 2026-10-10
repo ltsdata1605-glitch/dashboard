@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../components/shared/ui/toast';
 import { Button } from '../../components/shared/ui/Button';
 import { Modal } from '../../components/shared/ui/Modal';
 

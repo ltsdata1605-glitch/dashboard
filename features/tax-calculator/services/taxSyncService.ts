@@ -1,5 +1,5 @@
 import { doc, getDoc, setDoc, serverTimestamp, runTransaction } from 'firebase/firestore';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { db, auth } from '../../../services/firebase';
 import { SavedTaxRecord } from '../types/tax.types';
 import { taxIndexedDbService } from './taxIndexedDbService';

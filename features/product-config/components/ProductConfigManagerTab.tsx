@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import confetti from 'canvas-confetti';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { ProductConfig } from '../../../types';
@@ -439,7 +439,7 @@ export const ProductConfigManagerTab: React.FC = () => {
                         <AppIcon name="table" size="xs" className={configType === 'category' ? 'text-sky-600' : 'text-slate-400'} />
                         <span>Khai báo ngành hàng</span>
                         <span
-                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold transition-colors ${
+                            className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-colors ${
                                 configType === 'category'
                                     ? 'bg-sky-100 text-sky-700'
                                     : 'bg-slate-200/80 text-slate-600'
@@ -461,7 +461,7 @@ export const ProductConfigManagerTab: React.FC = () => {
                         <AppIcon name="template" size="xs" className={configType === 'productCode' ? 'text-sky-600' : 'text-slate-400'} />
                         <span>Cấu hình theo Mã sản phẩm</span>
                         <span
-                            className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold transition-colors ${
+                            className={`px-1.5 py-0.5 rounded-full text-[11px] font-mono font-bold transition-colors ${
                                 configType === 'productCode'
                                     ? 'bg-sky-100 text-sky-700'
                                     : 'bg-slate-200/80 text-slate-600'

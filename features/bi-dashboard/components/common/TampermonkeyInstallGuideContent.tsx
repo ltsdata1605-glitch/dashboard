@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../../components/shared/ui/Button';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../components/shared/ui/toast';
 import confetti from 'canvas-confetti';
 import { detectUserscript } from '../../utils/bonusBridge';
 

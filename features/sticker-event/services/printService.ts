@@ -1,6 +1,6 @@
 import { Product } from '../types';
 import { parseCurrency } from './fileParser';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import QRCode from 'qrcode';
 import { fixOklchColors } from './uiService';
 import { calculateDiscountPercent, normalizeTagQuantity } from '../utils/format';
@@ -1313,7 +1313,7 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
 
   if (isMobile) {
     if (allTags.length > 30) {
-      toast('Đang xử lý ' + allTags.length + ' tem trên điện thoại. Vui lòng đợi trong giây lát...', { icon: 'ℹ️', duration: 3000 });
+      toast.info('Đang xử lý ' + allTags.length + ' tem trên điện thoại. Vui lòng đợi trong giây lát...', { duration: 3000 });
     }
     const { jsPDF } = await import('jspdf');
     const { default: html2canvas } = await import('html2canvas');

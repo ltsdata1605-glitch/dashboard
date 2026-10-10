@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import SummaryTableView from './dashboard/SummaryTableView';
 import CompetitionView from './dashboard/CompetitionView';

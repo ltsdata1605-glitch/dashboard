@@ -86,11 +86,11 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                     <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40 rounded-md shrink-0 whitespace-nowrap">
                         <AppIcon name="clock" size="sm" className="text-sky-600" />
-                        <span className="text-[10px] sm:text-[11px] font-bold text-sky-900 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
+                        <span className="text-[11px] font-bold text-sky-900 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
                             <span className="hidden sm:inline">Quỹ </span>thời gian
                         </span>
                     </div>
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap shrink-0">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap shrink-0">
                         {progressData.isRealtime ? (
                             progressData.label
                         ) : progressData.customLabel ? (
@@ -107,7 +107,7 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
                     <span className="text-[11px] sm:text-[12px] font-black text-sky-700 dark:text-sky-400 tabular-nums">
                         {Math.round(progressData.percentage)}
                     </span>
-                    <span className="text-[10px] sm:text-[11px] font-bold text-sky-600 dark:text-sky-500">%</span>
+                    <span className="text-[11px] font-bold text-sky-600 dark:text-sky-500">%</span>
                 </div>
             </div>
             <ProgressBar value={progressData.percentage} variant="brand" size="xs" />

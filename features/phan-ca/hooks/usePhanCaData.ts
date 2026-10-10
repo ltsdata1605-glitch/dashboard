@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import * as idb from '../db/idb';
 import { useAuth } from '../../../contexts/AuthContext';
 import { syncScheduleToCloud, fetchScheduleFromCloud } from '../services/firestoreSync';

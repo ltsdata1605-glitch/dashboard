@@ -6,7 +6,7 @@ import { AppIcon } from '../shared/ui/icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
 import { usePendingApprovals } from '../../hooks/usePendingApprovalCount';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import AdminAnnouncementModal from '../modals/AdminAnnouncementModal';
 import { Button } from '../shared/ui/Button';
 
@@ -80,19 +80,16 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                     if (!notif.read && !knownNotifIdsRef.current.has(notif.id)) {
                         knownNotifIdsRef.current.add(notif.id);
                         
-                        toast(
-                            <div className="flex flex-col gap-0.5 text-left">
-                                <span className="font-bold text-xs text-slate-800 dark:text-slate-100">{notif.title}</span>
-                                <span className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2">{notif.message}</span>
-                            </div>,
-                            {
-                                duration: 6000,
-                                icon: notif.type === 'success' ? <AppIcon name="success" size="md" className="text-emerald-600" />
-                                    : notif.type === 'warning' ? <AppIcon name="warning" size="md" className="text-amber-600" />
-                                    : notif.type === 'error' ? <AppIcon name="error" size="md" className="text-rose-600" />
-                                    : <AppIcon name="notification" size="md" className="text-sky-600" />
-                            }
-                        );
+                        // Toast chung tự lo icon + màu theo loại; thông báo thường dùng icon chuông.
+                        const show = notif.type === 'success' ? toast.success
+                            : notif.type === 'warning' ? toast.warning
+                            : notif.type === 'error' ? toast.error
+                            : toast.info;
+                        show(notif.title, {
+                            description: notif.message,
+                            duration: 6000,
+                            ...(notif.type === 'success' || notif.type === 'warning' || notif.type === 'error' ? {} : { icon: 'notification' as const }),
+                        });
                     }
                 });
             } else {

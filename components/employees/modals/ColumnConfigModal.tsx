@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../shared/ui/toast';
 import { Modal } from '../../shared/ui/Modal';
 import type { ColumnConfig } from '../../../types';
 import { DataColumnForm } from './column-config/DataColumnForm';

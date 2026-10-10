@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { exportElementAsImage } from '../../../services/uiService';
 import { deliverImage } from '../../../components/shared/ui/imageDelivery';
 import { TaxCalculationResult } from '../types/tax.types';

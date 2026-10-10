@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { FilteredCouponRecord } from '../types/lineBot.types';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';

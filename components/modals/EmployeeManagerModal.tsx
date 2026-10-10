@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getSetting } from '../../services/dbService';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';

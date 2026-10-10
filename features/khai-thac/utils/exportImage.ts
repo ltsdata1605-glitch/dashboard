@@ -1,4 +1,4 @@
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { exportElementAsImage } from '../../../components/shared/export';
 
 /**

@@ -9,7 +9,7 @@ import { startExportJob, type ExportJob } from '../components/shared/export';
 import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
-import toast from 'react-hot-toast';
+import { toast } from '../components/shared/ui/toast';
 import { useAuth } from '../contexts/AuthContext';
 import { describeBatchOutcome } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';

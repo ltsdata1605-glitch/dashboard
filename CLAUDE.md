@@ -209,6 +209,15 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Màu ramp (Xoay vòng)**: Khi phân biệt trên 5 hạng mục dữ liệu, dùng pattern "6 họ semantic x 2 tầng sắc độ" (5 màu chuẩn + `indigo`, mỗi họ 2 sắc độ đậm/nhạt), không tự chế màu ngoài palette.
 - **UI Components**: Mọi phần tử tương tác (button, input, modal, confirm dialog, badge, select, dropdown) **bắt buộc** dùng components ở `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự dựng modal `fixed inset-0` mới.
 - **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`.
+- **Toast — MỘT hệ duy nhất (2026-10-10, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ1):** mọi thông báo nhanh gọi
+  `import { toast } from '…/components/shared/ui/toast'` — `toast.success/error/info/warning/loading/promise`, toast có nút
+  `toast.action({ title, description, actions })`, tuỳ chọn `description`, `icon: '<tên AppIcon>'`, `onDismiss`, `id`. ESLint CHẶN
+  import `react-hot-toast` ở mọi nơi khác; không tự vẽ khung toast/thẻ nổi `fixed bottom-*` (đè thanh tab iPhone). `AppToaster` (gắn
+  một lần ở `App.tsx`) vẽ viên nang vật liệu mờ ở TRÊN GIỮA màn hình (iPhone dưới tai thỏ, laptop cách mép trên 12px), tối đa 3
+  cái, vuốt để tắt. Không dùng emoji làm icon toast (emoji cũ tự quy đổi). Test: `tests/e2e/toast-thong-nhat.spec.ts`.
+- **Khung app không được chồng/tràn (2026-10-10):** `tests/e2e/apple-tuong-thich.spec.ts` quét mọi tab ở 6 khung màn hình (iPhone
+  SE/16/16 Pro Max, iPad, laptop, màn lớn): trang không tràn ngang, nút trên thanh trên/thanh tab không đè nhau, vùng chạm ≥ 44px.
+  Lỗi đã biết nằm trong `DA_BIET` của spec — chỉ được GỠ dần (như lint-ratchet), không thêm.
 - **Icon** *(chuẩn hoá 2026-10-02)*: mọi icon gọi qua `<AppIcon name="<chức năng>" size="<token>" />` hoặc
   `<Button icon="…">` (`components/shared/ui/icon/` — thuộc `components/shared/ui/*` nên cả 5 khu vực dùng hợp lệ).
   CẤM import `lucide-react` ngoài `iconRegistry.ts`, cấm `size={số}` trên icon, cấm vẽ `<svg>` icon trong JSX

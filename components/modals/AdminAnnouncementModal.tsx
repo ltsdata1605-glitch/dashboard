@@ -5,7 +5,7 @@ import { db } from '../../services/firebase';
 import { listenSystemAnnouncement, isAnnouncementExpired } from '../../services/systemAnnouncementService';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../shared/ui/Modal';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
 
 interface AdminAnnouncementModalProps {

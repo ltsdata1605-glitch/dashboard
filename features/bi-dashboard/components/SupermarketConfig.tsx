@@ -3,7 +3,7 @@ import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react'
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import confetti from 'canvas-confetti';
 import TargetHero from './TargetHero';
 import * as db from '../utils/db';
@@ -1199,14 +1199,11 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
             if (supermarketName) {
                 const detectedStore = detectSupermarketNameFromReport(val);
                 if (detectedStore && !isSupermarketMatch(detectedStore, supermarketName, supermarketMap)) {
-                    toast((t) => (
-                        <div className="flex flex-col gap-1">
-                            <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400"><AppIcon name="warning" size="sm" className="text-amber-600" />Chú ý tên siêu thị!</span>
-                            <span className="text-xs">
-                                Dữ liệu vừa dán có vẻ của siêu thị <b>{shortenSupermarketName(detectedStore)}</b>, trong khi bạn đang chọn tab <b>{shortenSupermarketName(supermarketName)}</b>.
-                            </span>
-                        </div>
-                    ), { duration: 7000, id: `warn-sm-mismatch-${key}` });
+                    toast.warning('Chú ý tên siêu thị!', {
+                        description: <>Dữ liệu vừa dán có vẻ của siêu thị <b>{shortenSupermarketName(detectedStore)}</b>, trong khi bạn đang chọn tab <b>{shortenSupermarketName(supermarketName)}</b>.</>,
+                        duration: 7000,
+                        id: `warn-sm-mismatch-${key}`,
+                    });
                 }
             }
 

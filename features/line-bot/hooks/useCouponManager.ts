@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, createElement } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import * as XLSX from 'xlsx';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -183,7 +183,7 @@ export function useCouponManager(overrideUserId?: string) {
         if (count > 0) {
             toast.success(`Đã khôi phục thành công ${count} mã về trạng thái Chưa dùng!`);
         } else {
-            toast('Không có mã nào cần khôi phục.', { icon: 'ℹ️' });
+            toast.info('Không có mã nào cần khôi phục.');
         }
         await loadCoupons();
         return count;
@@ -290,7 +290,7 @@ export function useCouponManager(overrideUserId?: string) {
         if (count > 0) {
             toast.success(`Đã tự động phân loại tách biệt thành công ${count} mã PMH theo thương hiệu!`);
         } else {
-            toast('Toàn bộ mã đã được phân loại chuẩn xác.', { icon: 'ℹ️' });
+            toast.info('Toàn bộ mã đã được phân loại chuẩn xác.');
         }
         await loadCoupons();
         return count;

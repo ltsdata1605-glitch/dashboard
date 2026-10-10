@@ -110,7 +110,7 @@ Ký hiệu **v1:22** = video 1, giây 22. Mức: 🔴 hỏng hoặc khó chịu 
 | Nút phụ | trắng viền xám | **tinted**: nền xám nhạt `slate-100`, chữ đậm, không viền (vẫn rõ là nút — đúng tinh thần DESIGN_SYSTEM 4.1) |
 | Nút nguy hiểm | đỏ đặc, có khi ở đầu trang | đỏ tinted (nền `rose-50`, chữ `rose-600`), đặt cuối nhóm; nút xác nhận cuối trong ConfirmDialog mới đỏ đặc |
 | Danh sách cài đặt (Tuỳ chỉnh, menu Khác, Phân quyền, Bot LINE) | lưới ô màu | **inset grouped list** như app Cài đặt: nhóm trắng bo 12px, hàng 44px, kẻ mảnh thụt lề, mũi tên › |
-| Toast | góc dưới-phải, 6 kiểu | **một kiểu "viên nang"** như Dynamic Island: iPhone **trên giữa**, laptop **trên phải** |
+| Toast | góc dưới-phải, 6 kiểu | **một kiểu "viên nang"** như Dynamic Island, **trên giữa** ở mọi thiết bị |
 | Thông báo hệ thống | dải chữ chạy | **Banner tĩnh** 1–2 dòng, chạm để đọc đủ, đóng được |
 | Đang tính lại khi đổi lọc | lớp mờ chặn cả màn | **thanh tiến trình mảnh** dưới thanh trên, không chặn thao tác, chỉ hiện nếu > 300 ms |
 | Tải file thành công | pháo giấy | toast thành công — không pháo giấy |
@@ -172,8 +172,10 @@ chỉ được giảm.
 - **Hình**: viên nang bo tròn cao 44px khi một dòng; thẻ bo 16px khi có mô tả/nút. Vật liệu mờ + `shadow-xl` + viền tóc. Icon 20px
   theo loại (success `emerald-600`, error `rose-600`, warning `amber-600`, info `sky-600`, loading xoay `sky-600`). Tiêu đề 15px/600
   `ink-1`, mô tả 13px `ink-2` (tối đa 3 dòng). Nút trong toast: chữ màu nhấn 15px/600; nút chính có nền tinted.
-- **Vị trí**: màn < 1024px **trên giữa**, cách safe-area-top 8px, rộng tối đa min(92vw, 420px); laptop **trên phải**, dưới thanh tiêu đề.
-  **Không bao giờ ở đáy** — không đè thanh tab, không đè vùng thanh Home.
+- **Vị trí**: **trên giữa ở mọi thiết bị** — iPhone cách safe-area-top 8px (ngay dưới Dynamic Island), laptop cách mép trên 12px
+  (vùng giữa thanh tiêu đề vốn trống); rộng tối đa 440px. **Không bao giờ ở đáy** — không đè thanh tab, không đè vùng thanh Home.
+  *(Chốt lúc thi công GĐ1: bản kế hoạch đầu ghi "laptop trên phải" — bỏ vì dock Auto Sync nổi bên phải và nút đóng của modal lớn
+  nằm ở góc đó; một vị trí cho mọi thiết bị cũng dễ nhớ hơn.)*
 - **Hành vi**: tối đa 3 toast cùng lúc, mới nhất trên cùng, cũ hơn thu nhỏ xếp lớp phía sau (như Trung tâm thông báo iOS); vuốt lên (iPhone) /
   vuốt phải (laptop) để tắt; chạm-giữ hoặc rê chuột thì dừng đếm giờ. Thời gian: success 2,5 s · info 3 s · warning 5 s · error 6 s ·
   action không tự tắt (có "Bỏ qua") · loading tới khi xong.
@@ -320,7 +322,7 @@ Công cụ đo: `tests/e2e/perf-apple.spec.ts` (GĐ0) — chạy lại sau mỗi
      `features/bi-dashboard/components/DataUpdater.tsx`, `features/sticker-event/services/printService.ts`…) → `toast.info` / `toast.warning`.
   6. `eslint.config.js`: `no-restricted-imports` chặn `react-hot-toast` ngoài thư mục toast.
 - **Xong khi**: `npm run check` xanh; e2e `toast-thong-nhat.spec.ts`: ở 440×956 toast nằm **trên giữa**, không giao thanh tab, không
-  giao safe-area; ở 1440×900 nằm **trên phải** dưới thanh tiêu đề; 3 toast xếp lớp đúng; vuốt lên tắt được; toast có nút bấm được;
+  giao safe-area; ở 1440×900 nằm **trên giữa** sát mép trên; 3 toast xếp lớp đúng; vuốt lên tắt được; toast có nút bấm được;
   5 loại đúng icon và màu. Không còn file nào import thẳng `react-hot-toast` ngoài thư mục toast.
 - **Rủi ro**: vừa — nhiều nơi dùng `id` để thay toast loading bằng success (`toast.loading` → `toast.success({ id })`) hoặc
   `toast.dismiss(id)` → API bọc giữ **nguyên chữ ký và ngữ nghĩa**, có test đơn vị so hành vi. Lùi: đổi lại 1 dòng trong `App.tsx`.
@@ -464,7 +466,7 @@ cập nhật `CLAUDE.md` / `RULES.md` / `DESIGN_SYSTEM.md`.
 ## 8. Mặc định đã chọn (chủ dự án đổi được bất cứ lúc nào — mỗi mục nằm ở một chỗ)
 
 1. Tiêu đề viết thường như câu thay cho IN HOA (đổi ở `SectionHeader` + token).
-2. Toast **trên giữa** (iPhone) / **trên phải** (laptop).
+2. Toast **trên giữa** ở mọi thiết bị (iPhone dưới Dynamic Island, laptop sát mép trên).
 3. Bỏ pháo giấy khi tải file thành công.
 4. Nút phụ kiểu tinted xám, không viền.
 5. Công tắc bật màu xanh lá (chuẩn iOS) thay vì mỗi cái một màu.

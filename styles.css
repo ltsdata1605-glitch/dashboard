@@ -102,6 +102,20 @@
     }
   }
 
+  /* VẬT LIỆU MỜ kiểu iOS (KE_HOACH_GIAO_DIEN_APPLE.md mục 2.4) — CHỈ cho lớp nổi nhỏ, cố định: toast, thanh trên, thanh tab.
+     Cố ý KHÔNG dùng lớp `backdrop-blur-*` của Tailwind: khối "MOBILE ENERGY SAVING" bên dưới tắt các lớp đó trên điện thoại
+     cho đỡ pin — vùng nhỏ cố định thì chi phí GPU không đáng kể, và đây chính là chất liệu tạo cảm giác "Apple". */
+  .ycx-material {
+    background-color: rgb(255 255 255 / 0.84);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    backdrop-filter: saturate(180%) blur(20px);
+  }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .ycx-material {
+      background-color: rgb(255 255 255 / 0.97);
+    }
+  }
+
   .glass-card {
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300;
   }

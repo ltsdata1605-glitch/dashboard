@@ -39,7 +39,9 @@ describe('departmentMap -> danh sách nhân viên Report BI', () => {
             '333': 'BP Quản Lý Siêu Thị - ĐMX;;Lê Văn C',
             '444': 'BP ALL IN ONE - ĐMX;;Võ Thị D',
         }));
-        expect(list.map(e => e.id)).toEqual(['444']);
+        // Từ commit f0a5558 (chủ dự án, 2026-10-10): bộ phận Quản lý / Trưởng ca / Kế toán / Tiếp đón KHÔNG còn bị loại —
+        // quản lý cũng có số liệu ở Report BI. Chỉ còn loại người chưa có / chưa xác định bộ phận.
+        expect(list.map(e => e.id)).toEqual(['333', '444']);
     });
 
     it('không trùng khi cùng mã nhân viên', () => {

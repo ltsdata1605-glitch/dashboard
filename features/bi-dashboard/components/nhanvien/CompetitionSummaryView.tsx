@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeH
 import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { startExportJob } from '../../../../components/shared/export';
 import Card from '../Card';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../components/shared/ui/toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';

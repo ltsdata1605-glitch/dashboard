@@ -5,7 +5,7 @@ import BiSupermarketMapAdmin from './BiSupermarketMapAdmin';
 import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import confetti from 'canvas-confetti';
 import { TileLinkModal } from './TileLinkModal';
 import {
@@ -468,7 +468,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         }
         const exists = supermarkets.find(s => s.toLowerCase() === trimmed.toLowerCase());
         if (exists) {
-            toast('Siêu thị đã có trong danh sách.', { icon: 'ℹ️' });
+            toast.info('Siêu thị đã có trong danh sách.');
             setActiveSupermarket(exists);
             setIsAddingSupermarket(false);
             setNewSupermarketName('');
@@ -557,7 +557,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             clearPendingAutoSync();
             if (!workerOpened) {
                 // Trình duyệt chặn mở tab (không có cú bấm) — nút "Mở lại tab MWG" trong modal để bấm 1 lần
-                toast('Bấm "Mở lại tab MWG" để tiếp tục — trình duyệt chặn tự mở tab.', { icon: 'ℹ️', duration: 6000 });
+                toast.info('Bấm "Mở lại tab MWG" để tiếp tục — trình duyệt chặn tự mở tab.', { duration: 6000 });
             }
         } catch (err: any) {
             const msg = err?.message || '';
@@ -734,7 +734,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
     const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
     const handleClearAllData = async () => {
-        toast('Đang xoá toàn bộ dữ liệu...', { icon: 'ℹ️' });
+        toast.info('Đang xoá toàn bộ dữ liệu...');
         
         // 1. Reset ngay lập tức toàn bộ state React của DataUpdater để giao diện sạch 100%
         setSummaryRealtime('');

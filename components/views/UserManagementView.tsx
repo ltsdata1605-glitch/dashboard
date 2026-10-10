@@ -9,7 +9,7 @@ import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { adminUpdateUser, listManagedUsers, AdminRole, AdminStatus, ManagedUserDoc } from '../../services/adminUserService';
 import {

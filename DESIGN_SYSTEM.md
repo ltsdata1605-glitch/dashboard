@@ -163,6 +163,14 @@ CẤM tự viết `fixed inset-0` ngoài `components/shared/ui` (`lint-ratchet` 
 `fullscreen` (khung phủ kín có nội dung riêng). Phần tử lúc phủ lúc không (nút "Toàn màn hình" của bảng) dùng hằng `FULLSCREEN_LAYER_CLASS`. Thêm hoạt ảnh: `MotionOverlay`.
 Modal nằm trong phần tử có `onClick` (vd dòng bảng) phải chặn nổi bọt click — Modal render qua portal nhưng sự kiện React vẫn nổi lên cha (xem `AvatarPickerModal`).
 
+### 4.4c Toast — một hệ duy nhất (2026-10-10)
+Gọi `toast` từ `components/shared/ui/toast` (ESLint cấm import `react-hot-toast` ở nơi khác). Loại: `success` (emerald, 2,5s) ·
+`info` (sky, 3s) · `warning` (amber, 5s) · `error` (rose, 6s, `role=alert`, có nút ×) · `loading` (xoay, tới khi xong) ·
+`action` (có nút, không tự tắt). Giao diện: viên nang **vật liệu mờ** (`.ycx-material`) bo tròn khi một dòng, thẻ bo `rounded-overlay`
+khi có mô tả/nút; icon AppIcon `lg` theo màu loại; tiêu đề 15px (laptop 14px) đậm, mô tả 13px `slate-600`. Vị trí **trên giữa** mọi
+thiết bị (iPhone dưới Dynamic Island), tối đa 3 cái, mới nhất trên cùng; vuốt lên/ngang để tắt, rê/chạm giữ để dừng giờ. Không
+emoji làm icon, không tự dựng khung thông báo nổi (`fixed bottom-*`) — dùng `toast.action`.
+
 ### 4.5 Trạng thái tải
 Dùng `<Skeleton />`, không hiển thị chữ "Loading...".
 

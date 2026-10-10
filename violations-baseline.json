@@ -63,19 +63,6 @@
     "iconRawSvg": 0,
     "iconEmoji": 3
   },
-  "components/layout/GlobalAutoSyncDock.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 1,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0
-  },
   "components/modals/AdminAnnouncementModal.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,

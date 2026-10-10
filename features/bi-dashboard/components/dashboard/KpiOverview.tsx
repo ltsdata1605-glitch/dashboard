@@ -20,7 +20,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { parseBaseTargetQuyDoi } from '../../services/employeeParser';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../components/shared/ui/toast';
 
 interface KpiOverviewProps {
     isRealtime: boolean;

@@ -249,7 +249,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     </div>
                                     <div className="flex flex-col leading-tight">
                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý</span>
-                                        <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                                        <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                                             {hasDepartmentData ? 'Xem chi tiết ca kíp' : 'Chưa có dữ liệu ca'}
                                         </span>
                                     </div>

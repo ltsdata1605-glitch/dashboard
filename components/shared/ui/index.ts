@@ -10,6 +10,10 @@ export { cn, onActivateKey } from './utils';
 export { AppIcon, ICON_REGISTRY, ICON_SIZES, ICON_STROKE_WIDTH, ICON_TEXT_GAP_CLASS, LineIcon } from './icon';
 export type { AppIconProps, IconName, IconSize } from './icon';
 
+// Toast dùng chung (KE_HOACH_GIAO_DIEN_APPLE.md GĐ1) — nơi DUY NHẤT gọi react-hot-toast
+export { toast, AppToaster, TOAST_DURATION } from './toast';
+export type { ToastKind, ToastAction, ToastOptions, ActionToastOptions } from './toast';
+
 // Existing components
 export { Overlay, MotionOverlay } from './Overlay';
 export type { OverlayProps, OverlayKind } from './Overlay';

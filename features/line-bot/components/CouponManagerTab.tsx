@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
 import { CouponImportModal } from './CouponImportModal';

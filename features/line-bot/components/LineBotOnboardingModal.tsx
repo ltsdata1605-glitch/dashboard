@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Modal } from '../../../components/shared/ui/Modal';
 
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface LineBotOnboardingModalProps {

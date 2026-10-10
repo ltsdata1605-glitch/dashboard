@@ -24,7 +24,8 @@ describe('Cầu nối Phân tích → Report BI', () => {
     it('dữ liệu hỏng → null; phần tử thiếu tên bị bỏ; mã số → chuỗi; totalCount tính lại', () => {
         expect(docAnalysisEmployeesPayload(null)).toBeNull();
         expect(docAnalysisEmployeesPayload({ employees: 'không phải mảng' })).toBeNull();
-        const p = docAnalysisEmployeesPayload({ totalCount: 99, employees: [{ id: 195025, name: 'A' }, { id: '1' }, null] })!;
+        // Từ commit f0a5558 (2026-10-10) bộ đọc cũng bỏ người KHÔNG có bộ phận → mẫu thử phải có bộ phận.
+        const p = docAnalysisEmployeesPayload({ totalCount: 99, employees: [{ id: 195025, name: 'A', department: 'Tư Vấn' }, { id: '1' }, null] })!;
         expect(p.employees).toHaveLength(1);
         expect(p.employees[0].id).toBe('195025');
         expect(p.totalCount).toBe(1);
@@ -35,10 +36,14 @@ describe('Cầu nối Phân tích → Report BI', () => {
             { name: '195025 - Nguyễn Thị Mỹ Linh', department: 'Tư Vấn' },
             { name: '195025 - Nguyễn Thị Mỹ Linh', department: 'Tư Vấn' }, // trùng
             { name: 'MWG Online', department: 'Tư Vấn' },                   // tài khoản hệ thống
-            { name: '195031 - Trần Văn B', department: 'Quản lý' },          // bộ phận loại trừ
+            { name: '195031 - Trần Văn B', department: 'Quản lý' },          // quản lý: GIỮ từ f0a5558 (2026-10-10)
+            { name: '195050 - Đỗ Văn D', department: 'Chưa xác định' },     // bộ phận loại trừ
             { name: '195040 - Lê Thị C', department: '' },                   // không bộ phận
         ], 'ĐML Hùng Vương');
-        expect(out.map(e => [e.id, e.department, e.supermarket])).toEqual([['195025', 'Tư Vấn', 'ĐML Hùng Vương']]);
+        expect(out.map(e => [e.id, e.department, e.supermarket])).toEqual([
+            ['195025', 'Tư Vấn', 'ĐML Hùng Vương'],
+            ['195031', 'Quản lý', 'ĐML Hùng Vương'],
+        ]);
     });
 });
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../components/shared/ui/toast';
 import { auth } from '../../services/firebase';
 import { TaxCalculationInput, SavedTaxRecord } from './types/tax.types';
 import {

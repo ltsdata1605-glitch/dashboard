@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { useAuth } from '../../../contexts/AuthContext';
 import { lineBotFirestoreService } from '../services/lineBotFirestoreService';
 import { KeywordReply } from '../types/lineBot.types';

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import { toast } from '../shared/ui/toast';
 import { startExportJob } from '../shared/export';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
 import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
@@ -80,12 +81,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
   const [savedCalendars, setSavedCalendars] = useState<SavedCalendar[]>([]);
   const [activeCalendarTab, setActiveCalendarTab] = useState<string>('1-thuc');
-  const [toastMsg, setToastMsg] = useState<string | null>(null);
-
-  const showToast = (msg: string) => {
-      setToastMsg(msg);
-      setTimeout(() => setToastMsg(null), 2500);
-  };
+  // Thông báo nhỏ của Lịch (lưu/xoá lịch tuỳ chỉnh) — dùng toast chung (trước tự vẽ khung xanh lá cố định ở đáy).
+  const showToast = (msg: string) => { toast.success(msg); };
 
   useEffect(() => {
       getCustomCalendars().then(cals => {
@@ -586,13 +583,6 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
         <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[220px] lg:h-[320px]'}`}>
            {displayMode === 'calendar' ? (
                 <div className="flex flex-col gap-4">
-                    {toastMsg && (
-                        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold shadow-lg animate-fade-in flex items-center gap-2 pointer-events-none">
-                            <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
-                            {toastMsg}
-                        </div>
-                    )}
-
                     {savedCalendars.length > 0 && (
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar hide-on-export">
                             <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">

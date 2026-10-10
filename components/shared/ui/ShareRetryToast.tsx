@@ -1,6 +1,4 @@
-import React from 'react';
-import toast from 'react-hot-toast';
-import { Button } from './Button';
+import { toast } from './toast';
 
 /**
  * Safari iOS chỉ cho gọi `navigator.share()` trong khoảng 1 giây sau thao tác chạm. Xuất ảnh bảng
@@ -9,31 +7,27 @@ import { Button } from './Button';
  * (Lưu hình ảnh / LINE / Zalo…).
  *
  * Dùng chung cho mọi khu vực (components/shared/ui), gọi từ các hàm `shareBlob` của từng khu vực.
+ * Từ 2026-10-10 là toast có nút của hệ toast chung (trước tự vẽ khung riêng) — `toast.action` gọi `onClick` NGAY trong
+ * lượt chạm rồi mới tắt toast, nên `navigator.share` vẫn được Safari cho phép.
  */
 export function offerShareRetry(shareData: ShareData, onFail: () => void): void {
-    const id = 'share-retry';
-    toast(
-        (t) => (
-            <div className="flex items-center gap-3" data-testid="share-retry-toast">
-                <span className="text-[13px] font-medium text-slate-800 dark:text-slate-100 leading-snug">
-                    Ảnh đã sẵn sàng.
-                </span>
-                <Button
-                    size="sm"
-                    className="min-h-11 sm:min-h-0 shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-sm"
-                    onClick={async () => {
-                        toast.dismiss(t.id);
-                        try {
-                            await navigator.share(shareData);
-                        } catch (e) {
-                            if ((e as { name?: string })?.name !== 'AbortError') onFail();
-                        }
-                    }}
-                >
-                    Chia sẻ / Lưu ảnh
-                </Button>
-            </div>
-        ),
-        { id, duration: 25_000 },
-    );
+    toast.action({
+        id: 'share-retry',
+        testId: 'share-retry-toast',
+        kind: 'success',
+        icon: 'exportImage',
+        title: 'Ảnh đã sẵn sàng.',
+        duration: 25_000,
+        actions: [{
+            label: 'Chia sẻ / Lưu ảnh',
+            primary: true,
+            onClick: async () => {
+                try {
+                    await navigator.share(shareData);
+                } catch (e) {
+                    if ((e as { name?: string })?.name !== 'AbortError') onFail();
+                }
+            },
+        }],
+    });
 }

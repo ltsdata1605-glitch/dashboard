@@ -3,7 +3,7 @@ import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import { Input } from '../shared/ui/Input';
 import { AppIcon } from '../shared/ui/icon';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import {
     SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, getSchedule, loadSchedules, nextScheduleLabel, normalizeTime,
     onScheduleLog, onSchedulesChanged, readScheduleLog, setSchedule, type ScheduleEntry, type ScheduleKey, type ScheduleLogEntry,

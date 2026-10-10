@@ -4,7 +4,7 @@ import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import toast from 'react-hot-toast';
+import { toast } from '../../shared/ui/toast';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import UserManagementView from '../UserManagementView';

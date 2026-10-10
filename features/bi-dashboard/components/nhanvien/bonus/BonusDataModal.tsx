@@ -6,7 +6,7 @@ import { Button } from '../../../../../components/shared/ui/Button';
 import { Modal } from '../../../../../components/shared/ui/Modal';
 import { appendBonusHistory } from '../../../utils/bonusHistory';
 import { focusHrmWindow } from './hrmWindow';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../../components/shared/ui/toast';
 
 export const BonusDataModal: React.FC<{
     employee: Employee;

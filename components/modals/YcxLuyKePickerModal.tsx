@@ -77,13 +77,13 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                             <div className="flex-1 min-w-0">
                                 <div className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
                                     <span>Lũy kế tháng hiện tại</span>
-                                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">01 → Hôm qua</span>
+                                    <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">01 → Hôm qua</span>
                                 </div>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                     Lấy số liệu từ ngày 01 đến ngày hôm qua
                                 </p>
-                                <div className="mt-1.5 px-2 py-1 rounded bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 truncate">
-                                    🏷️ Tên tự động: <span className="font-bold">{luyKeTitle}</span>
+                                <div className="mt-1.5 px-2 py-1 rounded bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 truncate flex items-center gap-1">
+                                    <AppIcon name="tag" size="xs" className="shrink-0" /><span className="truncate">Tên tự động: <span className="font-bold">{luyKeTitle}</span></span>
                                 </div>
                             </div>
                         </div>
@@ -108,7 +108,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                             <div className="flex-1 min-w-0">
                                 <div className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
                                     <span>Chọn tháng</span>
-                                    <span className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold uppercase">Trọn tháng</span>
+                                    <span className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase">Trọn tháng</span>
                                 </div>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                                     Lấy số liệu trọn vẹn của một tháng bất kỳ
@@ -124,8 +124,8 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
                                         />
                                     </div>
                                 )}
-                                <div className="mt-1.5 px-2 py-1 rounded bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 truncate">
-                                    🏷️ Tên tự động: <span className="font-bold">{monthTitle}</span>
+                                <div className="mt-1.5 px-2 py-1 rounded bg-white dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 truncate flex items-center gap-1">
+                                    <AppIcon name="tag" size="xs" className="shrink-0" /><span className="truncate">Tên tự động: <span className="font-bold">{monthTitle}</span></span>
                                 </div>
                             </div>
                         </div>

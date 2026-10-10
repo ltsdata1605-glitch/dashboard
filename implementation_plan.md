@@ -7667,3 +7667,49 @@ chữ ≥ 11px · cách ly khu vực.
 - Toast: 451 lời gọi / 79 file (195 error, 184 success, 33 `toast()`, 16 dismiss, 8 loading, 7 remove, 4 custom), 1 Toaster
   `bottom-right`, 5 kiểu tự vẽ, ~12 chỗ icon emoji.
 - Chữ: 551 `uppercase`, 351 `font-black`, ~30 cỡ chữ.
+
+## GĐ0 — Lưới an toàn & mốc đo (2026-10-10) — XONG
+
+- `tests/e2e/apple-tuong-thich.spec.ts`: quét 11 tab × 6 khung (375/393/440/820 cảm ứng + 1366/1920 laptop) với dữ liệu mẫu
+  (Dùng thử + file bán hàng tự tạo). Đo: trang tràn ngang, nút trên `[data-app-chrome]` (thanh trên / thanh tab / thanh tiêu đề
+  laptop — thuộc tính mới gắn ở `App.tsx`, `MobileBottomNav.tsx`) đè nhau / lọt khỏi màn / vùng chạm < 44px / chữ < 11px, phần tử
+  `fixed` đè thanh tab. Khảo sát lần đầu: 142 vi phạm, laptop 0. Ghi thành 7 mẫu `DA_BIET` (lỗi #1, #12 + Phân quyền + In Sticker) —
+  vi phạm mới thì đỏ, mẫu không còn khớp cũng đỏ (buộc gỡ). Xác nhận bằng ảnh: ở 440px chuông đè nút Cài đặt (đúng video v2:056),
+  375px trang tràn 56px, "Đăng Xuất" đè chuông.
+- `tests/e2e/perf-apple.spec.ts` (PERF=1 + E2E_BASE_URL bản build): số đo "trước" ở `KE_HOACH_GIAO_DIEN_APPLE.md` mục 4.2.
+- `tests/e2e/anh-truoc-sau-apple.spec.ts` (ANH=1, tài khoản test thật, chỉ đọc): chụp mọi tab iPhone 16 Pro Max + laptop vào
+  `.anh-apple/<nhãn>/` (gitignore — có dữ liệu thật; không để trong test-results vì Playwright xoá thư mục đó mỗi lượt chạy).
+  Bộ "trước": `.anh-apple/truoc/` (18 ảnh).
+
+## GĐ1 — Toast thống nhất (2026-10-10) — XONG
+
+**Mới** `components/shared/ui/toast/`: `toast.ts` (API tương thích react-hot-toast + `info`, `warning`, `action`, `description`,
+`icon` theo tên, `onDismiss`, `testId`; thời gian mặc định theo loại; emoji cũ tự quy đổi; chỉ import DEFAULT của thư viện để test
+đơn vị mock được), `AppToaster.tsx` (headless `useToaster`: trên giữa, tối đa 3, xếp theo chiều cao đo được, vào/ra có hiệu ứng,
+vuốt tắt — vị trí kéo giữ trong ref vì vuốt nhanh thì lượt nhả tay tới trước khi React vẽ lại), `toast.test.ts` (11 ca). Lớp
+`.ycx-material` (styles.css) — vật liệu mờ không bị khối "tắt blur trên mobile" chặn.
+
+**Đổi** `App.tsx` `<Toaster position="bottom-right">` → `<AppToaster />`. Script `scripts/codemod/toast-import.cjs` đổi import ở **78
+file**. ESLint `no-restricted-imports` chặn `react-hot-toast` ngoài thư mục toast. Gộp 5 kiểu tự vẽ: toast cục bộ ở
+`TrendChart.tsx`; `AutoBonusToasts.tsx` (thẻ đếm ngược + thẻ viền vàng → `toast.success` / `toast.action` + `onDismiss`);
+`ShareRetryToast.tsx`, `BatchShareToast.tsx` (→ `toast.action`, giữ `data-testid` và nhãn nút mà test đang dùng; gọi
+`navigator.share` NGAY trong lượt chạm); thẻ nổi "Dữ liệu đám mây mới" ở đáy `DashboardView.tsx` (đè thanh tab) → `toast.action`
+chỉ hiện khi đang ở tab Phân tích. 11 chỗ icon emoji (ℹ️ ☁️ ⏰) → `toast.info/warning` + icon tên. `NotificationDropdown`,
+`SupermarketConfig` hết dựng JSX trong toast → `description`.
+
+**Kèm (lỗi #10)** `InstallAppHint`: thẻ nổi ~140px đè nội dung trên thanh tab (chặn cả nút "Xuất hàng loạt" — test
+xuat-hang-loat-dien-thoai… quá thời gian 4 phút) → dải mảnh NẰM TRONG trang ở đầu nội dung kiểu Smart App Banner + sheet "Xem cách".
+
+**Lỗi có sẵn trên main được sửa để `npm run check` xanh** (không thuộc phạm vi, nhưng check đỏ thì không được deploy):
+- `features/line-bot/components/CouponBatchEditModal.tsx` (commit 2dcaa16): gọi hook sau `return null` → 12 lỗi ESLint
+  rules-of-hooks, React báo "Rendered more hooks…" khi mở đợt nạp. Tách vỏ + thân (`key` theo đợt).
+- 3 test đơn vị cũ sau commit f0a5558 của chủ dự án (Quản lý/Trưởng ca/Kế toán/Tiếp đón không còn bị loại khỏi danh sách NV
+  Report BI; bộ đọc bỏ người không có bộ phận) → cập nhật test theo hành vi mới, ghi chú commit.
+- `public/scripts/mwg-auto-thu-thap-diem-thuong.user.js`: `SCRIPT_VERSION_FALLBACK` 7.23 → 7.24 cho trùng `@version`.
+- Ratchet đỏ do chữ 9–10px / màu ngoài bảng / emoji mới thêm hôm nay ở 14 file → chữ 11px, `red-*`→`rose-*`, `indigo`→`sky`,
+  emoji 🏷️/✕ → AppIcon. Baseline tự hạ.
+
+**Test**: `npm run check` xanh (1191 unit). E2E xanh: toast-thong-nhat (4), apple-tuong-thich (2), ios-xuat-anh-chia-se (3),
+xuat-anh-giao-anh-chung (8), xuat-hang-loat-dien-thoai-chia-se-mot-lan (2), bi-auto-sync-xong-dong-modal (2),
+bi-auto-luy-ke-dashboard (2), cloud-sync-notice-line, smoke, mo-lai-app-dung-cho-cu (5). `chuan-thiet-ke-b.spec.ts` đỏ TỪ TRƯỚC
+(bộ chọn `[data-ui="shared"]` không còn khớp nút nào trên màn Phân tích) — xử lý ở GĐ3 khi làm lại Button.

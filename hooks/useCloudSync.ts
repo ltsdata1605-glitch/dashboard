@@ -5,7 +5,7 @@ import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQu
 import { getSettingsMatching, getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import toast from 'react-hot-toast';
+import { toast } from '../components/shared/ui/toast';
 import { getErrorMessage, getErrorCode } from '../utils/dataUtils';
 // Các lớp chặn của đường "lấy khoá nặng từ Cloud về" đã tách ra module thuần để test được.
 // ĐỌC comment đầu services/heavySyncPolicy.ts trước khi sửa: đây là chỗ đã sinh 3 bug user báo.

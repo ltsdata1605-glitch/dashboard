@@ -6,7 +6,7 @@ import type { DataRow, Status, AppState, ProductConfig, ProcessedData, FilterSta
 import type { User } from 'firebase/auth';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
-import toast from 'react-hot-toast';
+import { toast } from '../components/shared/ui/toast';
 import { initialFilterState } from './useFilterState';
 import { normalizeSalesData, parseExcelDate, getRowValue, toLocalISOString, workerTimeoutMs } from '../utils/dataUtils';
 import { COL } from '../constants';

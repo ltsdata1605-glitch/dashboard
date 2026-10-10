@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import type { IconName } from '../../components/shared/ui/icon/iconRegistry';
-import toast from 'react-hot-toast';
+import { toast } from '../../components/shared/ui/toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/shared/ui/Button';
 import { useBotScope } from './hooks/useBotScope';

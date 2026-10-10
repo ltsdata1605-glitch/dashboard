@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 
 interface IPhoneChatPreviewProps {
     previewTab: 'filter' | 'tk' | 'issue' | 'hd';

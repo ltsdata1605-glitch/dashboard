@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Coupon, CouponStatus } from '../types/lineBot.types';
 import { getVietnamTodayString } from '../services/couponParser';
 
@@ -37,14 +37,21 @@ interface CouponBatchEditModalProps {
 
 const COMMON_TYPES = ['Event', 'Giờ Vàng Giá Sốc', 'VIVO', 'HONOR', 'SAMSUNG', 'APPLE', 'OPPO', 'XIAOMI'];
 
-export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = ({
+// Hook phải được gọi CÙNG THỨ TỰ ở mọi lần vẽ: bản cũ `return null` khi chưa có `batch` rồi mới gọi useState/useMemo → React
+// báo lỗi "Rendered more hooks than during the previous render" khi mở đợt nạp (ESLint rules-of-hooks đỏ, 2026-10-10).
+// Tách vỏ ngoài (kiểm `batch`) và phần thân (toàn bộ hook); `key` theo đợt để mở đợt khác thì trạng thái sửa làm mới từ đầu.
+export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = (props) => {
+    if (!props.batch) return null;
+    return <CouponBatchEditModalBody key={props.batch.id} {...props} batch={props.batch} />;
+};
+
+const CouponBatchEditModalBody: React.FC<CouponBatchEditModalProps & { batch: ImportBatchData }> = ({
     isOpen,
     batch,
     onClose,
     onSaveBatch,
     onSaveDetailed
 }) => {
-    if (!batch) return null;
 
     // Danh sách sản phẩm riêng biệt trong đợt
     const distinctProducts = useMemo(() => {
@@ -373,7 +380,7 @@ export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = ({
                                             className="p-2 bg-slate-50 dark:bg-slate-900/60 rounded-lg border border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-xs gap-2"
                                         >
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <span className="text-[10px] text-slate-400 font-mono">#{idx + 1}</span>
+                                                <span className="text-[11px] text-slate-400 font-mono">#{idx + 1}</span>
                                                 <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{c.code}</span>
                                                 <span className="text-[11px] text-slate-500 truncate max-w-xs">{c.productName}</span>
                                             </div>
@@ -385,7 +392,7 @@ export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = ({
                                                         ...prev,
                                                         [c.id]: currentStatus === 'UNUSED' ? 'SENT' : 'UNUSED'
                                                     }))}
-                                                    className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                                                    className={`px-2 py-0.5 rounded text-[11px] font-bold transition-all ${
                                                         currentStatus === 'UNUSED'
                                                             ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400'
                                                             : (currentStatus === 'SENT' ? 'bg-sky-100 text-sky-700' : 'bg-rose-100 text-rose-700')

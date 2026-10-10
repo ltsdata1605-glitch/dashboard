@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { LineAdmin, AdminRole, InteractedUser } from '../types/lineBot.types';
 import { lineMessagingService } from '../services/lineMessagingService';

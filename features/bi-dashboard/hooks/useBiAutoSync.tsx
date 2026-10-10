@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import confetti from 'canvas-confetti';
 import {
     BiSyncMode,
@@ -54,7 +54,7 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
             workerWindowRef.current = workerWindow;
             clearPendingAutoSync();
             if (!workerOpened) {
-                toast('Bấm "Mở lại tab MWG" để tiếp tục — trình duyệt chặn tự mở tab.', { icon: 'ℹ️', duration: 6000 });
+                toast.info('Bấm "Mở lại tab MWG" để tiếp tục — trình duyệt chặn tự mở tab.', { duration: 6000 });
             }
         } catch (err: any) {
             const msg = err?.message || '';

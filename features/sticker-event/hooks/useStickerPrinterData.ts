@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { saveSetting, getSetting } from '../services/dbService';
 import { saveListToFirestore, fetchSavedListsFromFirestore, deleteSavedListFromFirestore, fetchSavedListItems } from '../services/firebaseService';
 import { auth } from '../firebase';

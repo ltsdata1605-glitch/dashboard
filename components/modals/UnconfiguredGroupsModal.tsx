@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
 
 interface UnconfiguredGroupsModalProps {

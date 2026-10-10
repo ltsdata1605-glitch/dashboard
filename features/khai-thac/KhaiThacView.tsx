@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../components/shared/ui/toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Tabs } from '../../components/shared/ui/Tabs';
 import { Button } from '../../components/shared/ui/Button';
@@ -262,7 +262,7 @@ export default function KhaiThacView({ isActive }: { isActive?: boolean }) {
     const overdueCount = leads.filter(l => isOverdue(l)).length;
     useEffect(() => {
         if (isActive === false || !loaded || overdueCount === 0) return;
-        toast(`${overdueCount} khách quá 2 giờ chưa cập nhật trạng thái`, { id: 'khai-thac-overdue', icon: '⏰' });
+        toast.warning(`${overdueCount} khách quá 2 giờ chưa cập nhật trạng thái`, { id: 'khai-thac-overdue', icon: 'clock' });
         // Chỉ nhắc khi tab được mở, không nhắc lại khi số đổi.
     }, [isActive, loaded]);
 

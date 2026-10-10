@@ -4,7 +4,7 @@ import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { TILE_LABELS } from '../services/tileLinkService';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 
 export interface TileLinkModalProps {
     isOpen: boolean;

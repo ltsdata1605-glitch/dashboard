@@ -54,3 +54,6 @@ price-scraper-server/node_modules/
 
 # Ảnh chụp/snapshot của plugin Playwright (MCP)
 /.playwright-mcp/
+
+# Ảnh trước/sau có dữ liệu thật (tests/e2e/anh-truoc-sau-apple.spec.ts) — không commit
+/.anh-apple/

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
 import { Input } from '../../../components/shared/ui/Input';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';

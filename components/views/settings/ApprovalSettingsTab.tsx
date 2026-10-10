@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { Button } from '../../shared/ui/Button';
-import toast from 'react-hot-toast';
+import { toast } from '../../shared/ui/toast';
 import {
     getApprovalSettings,
     updateApprovalSettings,
@@ -192,7 +192,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
     return (
         <div className="space-y-6">
             {/* Banner giới thiệu */}
-            <div className="bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
+            <div className="bg-gradient-to-r from-sky-600 via-sky-700 to-sky-800 rounded-xl p-5 text-white shadow-md relative overflow-hidden">
                 <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -236,10 +236,10 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">
                                     Tự Động Duyệt Cấp Quản Lý (Manager)
                                 </h3>
-                                <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
+                                <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase rounded bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">
                                     Super Admin
                                 </span>
-                                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                                <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${
                                     settings.autoApproveManagers
                                         ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
                                         : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
@@ -301,10 +301,10 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">
                                     Tự Động Duyệt Nhân Viên Vào Kho (Employee)
                                 </h3>
-                                <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
+                                <span className="px-2 py-0.5 text-[11px] font-extrabold uppercase rounded bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">
                                     Quản Lý Siêu Thị
                                 </span>
-                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                                <span className="px-2 py-0.5 text-[11px] font-bold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                                     MẶC ĐỊNH: BẬT
                                 </span>
                             </div>

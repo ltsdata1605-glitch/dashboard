@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
 import { AppIcon } from '../shared/ui/icon';
 import { Modal } from '../shared/ui/Modal';
@@ -452,7 +452,7 @@ export default function GlobalAutoSyncDock() {
                                 <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     BI Realtime
                                 </span>
-                                <span className="text-[10px] font-semibold text-amber-100/90 leading-none mt-0.5 truncate">
+                                <span className="text-[11px] font-semibold text-amber-100/90 leading-none mt-0.5 truncate">
                                     {nhanHen('bi-realtime') || 'Hôm nay'}
                                 </span>
                             </div>
@@ -479,7 +479,7 @@ export default function GlobalAutoSyncDock() {
                                 <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     BI Luỹ kế
                                 </span>
-                                <span className="text-[10px] font-semibold text-emerald-100/90 leading-none mt-0.5 truncate">
+                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-0.5 truncate">
                                     {nhanHen('bi-luyke') || 'Tháng đến nay'}
                                 </span>
                             </div>
@@ -508,7 +508,7 @@ export default function GlobalAutoSyncDock() {
                                 <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     Đổ Thưởng
                                 </span>
-                                <span className="text-[10px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
+                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
                                     {bonusStatus.isBusy ? (bonusStatus.label || 'Đang xử lý...') : (nhanHen('bonus') || 'Nhân viên')}
                                 </span>
                             </div>
@@ -537,7 +537,7 @@ export default function GlobalAutoSyncDock() {
                                 <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     YCX Realtime
                                 </span>
-                                <span className="text-[10px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
+                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
                                     {ycxDangChay && ycxMode === 'realtime' ? 'Đang chạy…' : (nhanHen('ycx-realtime') || 'Đổ & cập nhật')}
                                 </span>
                             </div>
@@ -567,7 +567,7 @@ export default function GlobalAutoSyncDock() {
                                 <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     YCX Luỹ kế
                                 </span>
-                                <span className="text-[10px] font-semibold text-emerald-100/90 leading-none mt-0.5 truncate">
+                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-0.5 truncate">
                                     {ycxDangChay && ycxMode === 'luyke' ? 'Đang chạy…' : (nhanHen('ycx-luyke') || '01 → hôm qua')}
                                 </span>
                             </div>

@@ -9,7 +9,7 @@ import { isLightSyncKey } from '../utils/localDbScope';
 import { computeBaseAndPeriodData, deriveWarehouseFilteredData, isXuatMatch } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL } from '../constants';
-import toast from 'react-hot-toast';
+import { toast } from '../components/shared/ui/toast';
 import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigProxies, getErrorMessage, EMPTY_UNIQUE_FILTER_OPTIONS, computeRbacFilteredData, isValidSalesRow, isUncollectedOrder, getRowValue, parseNumber } from '../utils/dataUtils';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -745,7 +745,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     // Kích hoạt đồng bộ đám mây (dùng chung cho cả visibilitychange khi người dùng mở lại điện thoại lẫn nút bấm thủ công)
     const triggerCloudSync = useCallback(async (notifyIfUpToDate = false) => {
         if (!user || isDemoMode) {
-            if (notifyIfUpToDate) toast('Vui lòng đăng nhập để đồng bộ dữ liệu.', { icon: 'ℹ️' });
+            if (notifyIfUpToDate) toast.info('Vui lòng đăng nhập để đồng bộ dữ liệu.');
             return;
         }
         if (isCloudSyncingRef.current) return;
@@ -754,7 +754,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
         try {
             if (notifyIfUpToDate) {
-                toast('Đang kiểm tra dữ liệu đám mây...', { id: 'cloud-check-toast', icon: '☁️', duration: 2000 });
+                toast.info('Đang kiểm tra dữ liệu đám mây...', { id: 'cloud-check-toast', icon: 'cloud', duration: 2000 });
             }
             const { getCloudDataMeta, downloadProcessedData } = await import('../services/cloudDataService');
             const cloudMeta = await getCloudDataMeta(user);

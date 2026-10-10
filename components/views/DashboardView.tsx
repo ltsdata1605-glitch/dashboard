@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../shared/ui/toast';
 import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
@@ -340,6 +340,31 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         return () => clearInterval(interval);
     }, [appState]);
 
+    // "Dữ liệu đám mây mới" — toast có nút của hệ toast chung (trước là thẻ nổi tự vẽ ở ĐÁY màn hình, đè lên thanh tab
+    // iPhone). Chỉ hiện khi đang ở tab Phân tích (như thẻ cũ); rời tab thì ẩn, quay lại vẫn còn nếu chưa xử lý.
+    const cloudSyncActionsRef = useRef({ accept: handleAcceptCloudSync, skip: () => setPendingCloudSync(null) });
+    cloudSyncActionsRef.current = { accept: handleAcceptCloudSync, skip: () => setPendingCloudSync(null) };
+    useEffect(() => {
+        const TOAST_ID = 'pending-cloud-sync';
+        if (!pendingCloudSync || isActive === false) {
+            toast.dismiss(TOAST_ID);
+            return;
+        }
+        const { totalRows, filename, savedAt } = pendingCloudSync.meta;
+        const thoiDiem = savedAt ? new Date(savedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+        toast.action({
+            id: TOAST_ID,
+            icon: 'cloudDownload',
+            title: 'Dữ liệu đám mây mới',
+            description: `${totalRows.toLocaleString('vi-VN')} dòng · ${filename}${thoiDiem ? ` · ${thoiDiem}` : ''}`,
+            onDismiss: () => cloudSyncActionsRef.current.skip(),
+            actions: [
+                { label: 'Nạp dữ liệu', primary: true, onClick: () => cloudSyncActionsRef.current.accept() },
+                { label: 'Bỏ qua', onClick: () => cloudSyncActionsRef.current.skip() },
+            ],
+        });
+    }, [pendingCloudSync, isActive]);
+
     if (isActive === false) {
         return <div className="hidden" />;
     }
@@ -350,57 +375,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     return (
         <div className="w-full">
-            {pendingCloudSync && (
-                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[360px] sm:max-w-sm z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-sky-50/50 dark:border-sky-500/20 rounded-2xl p-4 flex flex-col gap-2.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
-                    <div className="flex items-start justify-between gap-3 w-full min-w-0">
-                        <div className="flex items-start gap-2.5 flex-1 min-w-0">
-                            <div className="p-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 rounded-lg shrink-0 mt-0.5">
-                                <AppIcon name="cloudDownload" size="md" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-1.5 w-full min-w-0">
-                                    <h4 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
-                                        Dữ liệu đám mây mới
-                                    </h4>
-                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300 shrink-0">
-                                        <AppIcon name="chartBar" size="xs" />{pendingCloudSync.meta.totalRows.toLocaleString('vi-VN')} dòng
-                                    </span>
-                                </div>
-                                <p className="text-[11px] text-slate-500 mt-1 leading-normal">
-                                    File: <strong className="text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[130px] sm:max-w-[170px] inline-block align-bottom" title={pendingCloudSync.meta.filename}>{pendingCloudSync.meta.filename}</strong>
-                                </p>
-                                {pendingCloudSync.meta.savedAt && (
-                                    <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                                        <AppIcon name="clock" size="xs" />
-                                        {new Date(pendingCloudSync.meta.savedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <Button variant="unstyled" size="none" onClick={() => setPendingCloudSync(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 shrink-0">
-                            <AppIcon name="close" size="md" />
-                        </Button>
-                    </div>
-                    <div className="flex gap-2 mt-0.5">
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={() => setPendingCloudSync(null)}
-                            className="flex-1 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-xl text-[11px] transition-colors"
-                        >
-                            Bỏ qua
-                        </Button>
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={() => handleAcceptCloudSync()}
-                            className="flex-[2] py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
-                        >
-                            <AppIcon name="refresh" size="sm" />
-                            Nạp dữ liệu đám mây
-                        </Button>
-                    </div>
-                </div>
-            )}
-
             <div className="w-full mx-auto p-0 sm:p-2 lg:p-3 xl:px-8 xl:py-1">
                 <DashboardContext.Provider value={logic}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingUploadFiles(Array.from(e.target.files))} />

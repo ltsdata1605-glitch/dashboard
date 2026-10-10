@@ -81,6 +81,12 @@ export default tseslint.config(
         message: 'Dùng <Button> từ components/shared/ui thay vì <button> thô (RULES.md §2.5).',
       }],
 
+      // Toast dùng chung (KE_HOACH_GIAO_DIEN_APPLE.md GĐ1, 2026-10-10): một API + một giao diện cho cả 5 khu vực. Gọi thẳng
+      // react-hot-toast là quay lại tình trạng cũ (toast góc dưới đè thanh tab iPhone, mỗi nơi một kiểu).
+      'no-restricted-imports': ['error', {
+        paths: [{ name: 'react-hot-toast', message: 'Dùng toast dùng chung: import { toast } from \'…/components/shared/ui/toast\' (KE_HOACH_GIAO_DIEN_APPLE.md GĐ1).' }],
+      }],
+
       // Shared Core Contract §2.5.1 — nghiêm cấm window.alert/confirm/prompt, dùng ConfirmDialog.
       'no-restricted-globals': ['error',
         { name: 'alert', message: 'Dùng <ConfirmDialog> từ components/shared/ui thay vì window.alert (RULES.md §2.5).' },
@@ -90,6 +96,12 @@ export default tseslint.config(
     },
   },
   ...featureBoundaryRules,
+
+  // Thư mục toast dùng chung là nơi DUY NHẤT được import react-hot-toast.
+  {
+    files: ['components/shared/ui/toast/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': 'off' },
+  },
 
   // ── Ngoại lệ cách ly thứ 4 (bổ sung 2026-09-09, Đợt 6) — PHẠM VI ĐÚNG 1 FILE ──
   // `analysisEmployeeSyncService.ts` là CẦU NỐI có chủ đích giữa 2 khu vực: nó đẩy danh sách

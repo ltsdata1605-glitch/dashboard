@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../components/shared/ui/toast';
 import { SavedTaxRecord } from '../types/tax.types';
 import { formatVnd } from '../services/taxCalculatorService';
 import { groupRecordsByMonth } from '../services/taxHistoryGrouping';

@@ -1,6 +1,4 @@
-import React from 'react';
-import toast from 'react-hot-toast';
-import { Button } from './Button';
+import { toast } from './toast';
 
 /**
  * CHIA SẺ MỘT LẦN cho cả lô ảnh xuất hàng loạt trên điện thoại (2026-09-30).
@@ -12,6 +10,7 @@ import { Button } from './Button';
  * là một tệp PNG riêng (quyết định của chủ dự án).
  *
  * Trình duyệt không chia sẻ được nhiều tệp → `onFallback` (tải từng ảnh như máy tính).
+ * Từ 2026-10-10 dùng toast có nút của hệ toast chung (`toast.action`) thay khung tự vẽ.
  */
 export interface BatchShareFile { blob: Blob; filename: string }
 
@@ -27,30 +26,27 @@ export function canShareBatch(files: BatchShareFile[]): boolean {
 export function offerBatchShare(files: BatchShareFile[], onFallback: () => void): void {
     if (!canShareBatch(files)) { onFallback(); return; }
     const shareData: ShareData = { files: files.map(toFile), title: `${files.length} ảnh` };
-    toast(
-        (t) => (
-            <div className="flex items-center gap-3" data-testid="batch-share-toast">
-                <span className="text-[13px] text-slate-700 leading-snug">{files.length} ảnh đã sẵn sàng.</span>
-                <Button
-                    size="sm"
-                    className="min-h-11 sm:min-h-0 shrink-0"
-                    onClick={async () => {
-                        toast.dismiss(t.id);
-                        try {
-                            await navigator.share(shareData);
-                        } catch (e) {
-                            if ((e as { name?: string })?.name !== 'AbortError') onFallback();
-                        }
-                    }}
-                >
-                    Chia sẻ / Lưu {files.length} ảnh
-                </Button>
-                <Button size="sm" variant="ghost" className="min-h-11 sm:min-h-0 shrink-0" aria-label="Bỏ qua" onClick={() => toast.dismiss(t.id)}>
-                    Bỏ qua
-                </Button>
-            </div>
-        ),
+    toast.action({
+        id: 'batch-share',
+        testId: 'batch-share-toast',
+        kind: 'success',
+        icon: 'exportBatch',
+        title: `${files.length} ảnh đã sẵn sàng.`,
         // Không tự tắt: người dùng có thể đang đọc thông báo kết quả; mất nút là mất cả lô ảnh.
-        { id: 'batch-share', duration: Infinity },
-    );
+        duration: Infinity,
+        actions: [
+            {
+                label: `Chia sẻ / Lưu ${files.length} ảnh`,
+                primary: true,
+                onClick: async () => {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (e) {
+                        if ((e as { name?: string })?.name !== 'AbortError') onFallback();
+                    }
+                },
+            },
+            { label: 'Bỏ qua', onClick: () => undefined },
+        ],
+    });
 }

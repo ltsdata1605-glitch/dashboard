@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo } from 'react';
 import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
-import toast from 'react-hot-toast';
+import { toast } from '../../../../components/shared/ui/toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, extractEmployeeId, standardizeEmployeeName } from '../../utils/nhanVienHelpers';
