@@ -380,7 +380,7 @@ export const ProductConfigManagerTab: React.FC = () => {
                             )}
                             {!isCanManage && (
                                 <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-semibold flex items-center gap-1">
-                                    <AppIcon name="eye" size="xs" />
+                                    <AppIcon name="show" size="xs" />
                                     Chế độ xem (Chỉ Super Admin mới có quyền sửa & lưu)
                                 </span>
                             )}

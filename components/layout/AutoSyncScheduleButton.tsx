@@ -3,6 +3,7 @@ import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import { Input } from '../shared/ui/Input';
 import { AppIcon } from '../shared/ui/icon';
+import toast from 'react-hot-toast';
 import {
     SCHEDULE_LABELS, SCHEDULE_WINDOW_MIN, getSchedule, loadSchedules, nextScheduleLabel, normalizeTime,
     onScheduleLog, onSchedulesChanged, readScheduleLog, setSchedule, type ScheduleEntry, type ScheduleKey, type ScheduleLogEntry,
@@ -117,12 +118,33 @@ export function AutoSyncScheduleButton({ scheduleKey, tone = 'light', compact = 
                         <p className="mb-1.5 text-[12px] font-bold uppercase tracking-wider text-slate-500">Lượt gần đây</p>
                         <ScheduleLog scheduleKey={scheduleKey} />
                     </div>
-                    <p className="text-[12px] text-slate-500">
-                        Chạy trong trình duyệt: máy phải bật, Chrome đang mở tab dashboard.pro.vn, đã đăng nhập MWG và có
-                        Tampermonkey. Lỡ giờ quá {SCHEDULE_WINDOW_MIN} phút (máy ngủ / tab bị ngủ) thì bỏ qua khung đó và ghi
-                        "Bỏ lỡ" ở trên. Để tab không bị ngủ: Chrome → Cài đặt → <b>Hiệu suất</b> → "Luôn giữ các trang web này
-                        hoạt động" → thêm <b>dashboard.pro.vn</b>; Mac → tắt ngủ máy khi cắm sạc. Nên đặt các nút lệch nhau ít nhất 5 phút.
-                    </p>
+                    <div className="space-y-1.5 text-[12px] text-slate-500 dark:text-slate-400">
+                        <p>
+                            Chạy trong trình duyệt: máy phải bật, Chrome đang mở tab dashboard.pro.vn, đã đăng nhập MWG và có
+                            Tampermonkey. Lỡ giờ quá {SCHEDULE_WINDOW_MIN} phút (máy ngủ / tab bị ngủ) thì bỏ qua khung đó và ghi
+                            "Bỏ lỡ" ở trên.
+                        </p>
+                        <p className="text-rose-600 dark:text-rose-400 font-bold">
+                            Để tab không bị ngủ: Chrome → Cài đặt → <u>Hiệu suất</u> → &quot;Luôn giữ các trang web này hoạt động&quot; → thêm <u>dashboard.pro.vn</u>;
+                            {' '}Truy cập nhanh:{' '}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    navigator.clipboard?.writeText('chrome://settings/performance');
+                                    toast.success('Đã sao chép: chrome://settings/performance (Dán vào thanh địa chỉ Chrome để mở)');
+                                    try { window.open('chrome://settings/performance', '_blank'); } catch {}
+                                }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 hover:text-rose-900 cursor-pointer font-bold underline transition-colors"
+                                title="Bấm để sao chép hoặc mở cài đặt Chrome"
+                            >
+                                <span>chrome://settings/performance</span>
+                                <AppIcon name="copy" size="xs" />
+                            </button>
+                        </p>
+                        <p>
+                            Mac → tắt ngủ máy khi cắm sạc. Nên đặt các nút lệch nhau ít nhất 5 phút.
+                        </p>
+                    </div>
                 </div>
             </Modal>
         </>

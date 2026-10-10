@@ -253,19 +253,19 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={expandAll}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors"
+                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-all hover:scale-105 active:scale-95"
                         title="Mở rộng tất cả"
                     >
-                        <AppIcon name="expandAll" size="md" />
+                        <AppIcon name="expandAll" size="sm" />
                     </Button>
                     <Button
                         variant="unstyled" size="none"
                         onClick={collapseAll}
-                        className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center transition-colors ${hasAnyExpanded ? 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
+                        className={`h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${hasAnyExpanded ? 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
-                        <AppIcon name="collapseAll" size="md" />
+                        <AppIcon name="collapseAll" size="sm" />
                     </Button>
                 </div>
              )}
@@ -278,16 +278,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsFilterOpen(prev => !prev)}
-                    className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center transition-colors relative ${
+                    className={`h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative ${
                         (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0)
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                     }`}
                     title="Bộ lọc ngành hàng & nhóm hàng"
                 >
-                    <AppIcon name="filter" size="md" />
+                    <AppIcon name="filter" size="sm" />
                     {(hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0) && (
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-sky-500 rounded-full ring-2 ring-white dark:ring-slate-800" />
                     )}
                 </Button>
                 {isFilterOpen && (
@@ -419,14 +419,14 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center transition-colors ${
+                    className={`h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
                         isColumnSelectorOpen
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
                 >
-                    <AppIcon name="settings" size="md" />
+                    <AppIcon name="settings" size="sm" />
                 </Button>
                 {isColumnSelectorOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">

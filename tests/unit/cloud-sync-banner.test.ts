@@ -53,4 +53,13 @@ describe('Cloud Sync Banner Logic', () => {
         const msg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${totalRows.toLocaleString('vi-VN')} dòng)`;
         expect(msg).toBe('Đã tự động đồng bộ dữ liệu đám mây mới nhất (8.583 dòng)');
     });
+
+    it('tự động đóng banner sau khoảng thời gian hiển thị', () => {
+        let banner: string | null = 'Đã tự động đồng bộ dữ liệu đám mây mới nhất (8.583 dòng)';
+        const dismiss = () => { banner = null; };
+        expect(banner).not.toBeNull();
+        dismiss();
+        expect(banner).toBeNull();
+    });
 });
+

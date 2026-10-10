@@ -20,6 +20,7 @@ import {
 import { getManagedUsers, hasFreshManagedUsers } from '../../services/managedUsersCache';
 import { getErrorMessage, getErrorCode, formatCleanDisplayName } from '../../utils/dataUtils';
 import { ProductConfigManagerTab } from '../../features/product-config';
+import { ApprovalSettingsTab } from './settings/ApprovalSettingsTab';
 
 // Chỉ dùng .toMillis()/.toDate() — khớp cả Firestore Timestamp thật lẫn mock data (toMillis-only) trong isDemoMode
 interface TimestampLike {
@@ -114,7 +115,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
     const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
     const [editNames, setEditNames] = useState<Record<string, string>>({});
-    const [listMode, setListMode] = useState<'pending' | 'active' | 'expired' | 'config'>('pending');
+    const [listMode, setListMode] = useState<'pending' | 'active' | 'expired' | 'config' | 'approval_settings'>('pending');
+    const [lastPermissionTab, setLastPermissionTab] = useState<'pending' | 'active' | 'expired'>('pending');
+    const isPermissionsMode = listMode !== 'config' && listMode !== 'approval_settings';
     const [searchQuery, setSearchQuery] = useState('');
     const [editRoles, setEditRoles] = useState<Record<string, string>>({});
     const [sortBy, setSortBy] = useState<'name' | 'role' | 'dept' | 'date' | 'logins'>('date');
@@ -191,7 +194,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     }, [isDemoMode]);
 
     const fetchRequests = async (forceRefresh = false) => {
-        if (listMode === 'config') {
+        if (listMode === 'config' || listMode === 'approval_settings') {
             setIsLoading(false);
             return;
         }
@@ -718,67 +721,136 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     return (
         <div className={isEmbedded ? 'w-full' : 'flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/50 min-h-dvh p-4 sm:p-6'}>
             <div className={isEmbedded ? 'w-full space-y-4' : 'max-w-5xl mx-auto space-y-4'}>
-                {/* Header */}
-                <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center rounded-md"><AppIcon name="users" size="lg" /></div>
-                        <div>
-                            <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Phân Quyền & Duyệt Yêu Cầu</h1>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
+                {/* Khu vực điều hướng & Lọc nhỏ gọn */}
+                <h1 className="sr-only">Phân quyền</h1>
+                <div className="bg-white dark:bg-slate-800 p-2 sm:p-2.5 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-lg space-y-2">
+                    {/* Hàng 1: Tabs chính & nút Làm Mới */}
+                    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
+                        <div className="inline-flex items-center p-1 bg-slate-100 dark:bg-slate-900/60 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-x-auto">
+                            <button
+                                type="button"
+                                onClick={() => setListMode(lastPermissionTab)}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                                    isPermissionsMode
+                                        ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 shadow-2xs font-bold'
+                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                }`}
+                            >
+                                <AppIcon name="users" size="sm" className={isPermissionsMode ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <span>Phân quyền</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setListMode('config')}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                                    listMode === 'config'
+                                        ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 shadow-2xs font-bold'
+                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                }`}
+                            >
+                                <AppIcon name="settings" size="sm" className={listMode === 'config' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <span>Khai báo ngành hàng</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setListMode('approval_settings')}
+                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                                    listMode === 'approval_settings'
+                                        ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-400 shadow-2xs font-bold'
+                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                }`}
+                            >
+                                <AppIcon name="security" size="sm" className={listMode === 'approval_settings' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <span>Cài đặt duyệt</span>
+                            </button>
+                        </div>
+
+                        <div className="flex items-center justify-end">
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                onClick={() => fetchRequests(true)}
+                                disabled={isLoading}
+                                className="min-h-11 sm:min-h-0 h-8 px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-2xs shrink-0"
+                            >
+                                <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
+                                <span>Làm Mới</span>
+                            </Button>
                         </div>
                     </div>
-                    <Button variant="unstyled" size="none" onClick={() => fetchRequests(true)} disabled={isLoading} className="min-h-11 sm:min-h-0 h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
-                        <AppIcon name="refresh" size="md" className={isLoading ? 'animate-spin' : ''} /> Làm Mới
-                    </Button>
-                </div>
-                {/* Tabs & Search & Sort */}
-                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-                    <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                        <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
-                            <AppIcon name="clock" size="md" />
-                            Chờ duyệt
-                        </Button>
-                        <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'active' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
-                            <AppIcon name="users" size="md" />
-                            Hoạt động
-                        </Button>
-                        <Button variant="ghost" onClick={() => setListMode('expired')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'expired' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'}`}>
-                            <AppIcon name="schedule" size="md" />
-                            Hết hạn
-                        </Button>
-                        <Button variant="ghost" onClick={() => setListMode('config')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'config' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
-                            <AppIcon name="settings" size="md" />
-                            Khai báo ngành hàng
-                        </Button>
-                    </div>
-                    {listMode !== 'config' && (
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                                <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-9 text-xs rounded-none border-0 bg-transparent pr-8 shadow-none focus-visible:ring-0">
-                                    <option value="date">Ngày ĐK</option>
-                                    <option value="name">Tên</option>
-                                    <option value="role">Vai trò</option>
-                                    <option value="dept">Mã Kho</option>
-                                    <option value="logins">Truy cập</option>
-                                </Select>
-                                <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-9 px-2 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
-                                    <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="md" />
-                                </Button>
+
+                    {/* Hàng 2: Bộ lọc con + Sắp xếp & Tìm kiếm (chỉ hiện khi ở tab Phân quyền) */}
+                    {isPermissionsMode && (
+                        <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex flex-col sm:flex-row gap-2.5 items-start sm:items-center justify-between">
+                            <div className="inline-flex items-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs">
+                                <button
+                                    type="button"
+                                    onClick={() => { setListMode('pending'); setLastPermissionTab('pending'); }}
+                                    className={`h-7 px-2.5 sm:px-3 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${
+                                        listMode === 'pending'
+                                            ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'
+                                    }`}
+                                >
+                                    <AppIcon name="clock" size="xs" />
+                                    <span>Chờ duyệt</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setListMode('active'); setLastPermissionTab('active'); }}
+                                    className={`h-7 px-2.5 sm:px-3 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${
+                                        listMode === 'active'
+                                            ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'
+                                    }`}
+                                >
+                                    <AppIcon name="users" size="xs" />
+                                    <span>Hoạt động</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setListMode('expired'); setLastPermissionTab('expired'); }}
+                                    className={`h-7 px-2.5 sm:px-3 text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                                        listMode === 'expired'
+                                            ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400 font-bold'
+                                            : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'
+                                    }`}
+                                >
+                                    <AppIcon name="schedule" size="xs" />
+                                    <span>Hết hạn</span>
+                                </button>
                             </div>
-                            <div className="relative w-full sm:w-56">
-                                <Input 
-                                    leftIcon="search"
-                                    placeholder="Tìm kiếm Email, Mã Kho..." 
-                                    value={searchQuery} 
-                                    onChange={e => setSearchQuery(e.target.value)} 
-                                    className="h-9 text-xs rounded-md"
-                                />
+
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs">
+                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-7 text-xs rounded-none border-0 bg-transparent pr-7 shadow-none focus-visible:ring-0 py-0">
+                                        <option value="date">Ngày ĐK</option>
+                                        <option value="name">Tên</option>
+                                        <option value="role">Vai trò</option>
+                                        <option value="dept">Mã Kho</option>
+                                        <option value="logins">Truy cập</option>
+                                    </Select>
+                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 px-1.5 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                        <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="sm" />
+                                    </Button>
+                                </div>
+                                <div className="relative w-full sm:w-52">
+                                    <Input 
+                                        leftIcon="search"
+                                        placeholder="Tìm kiếm Email, Mã Kho..." 
+                                        value={searchQuery} 
+                                        onChange={e => setSearchQuery(e.target.value)} 
+                                        className="h-7 text-xs rounded-md py-0"
+                                    />
+                                </div>
                             </div>
                         </div>
                     )}
                 </div>
                 {listMode === 'config' ? (
                     <ProductConfigManagerTab />
+                ) : listMode === 'approval_settings' ? (
+                    <ApprovalSettingsTab />
                 ) : (
                     <AnimatePresence>
                         {isLoading ? (

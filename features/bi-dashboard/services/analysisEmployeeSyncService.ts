@@ -36,46 +36,7 @@ export interface AnalysisEmployeesPayload {
     employees: AnalysisEmployeeItem[];
 }
 
-/**
- * Adapter ĐỌC ở biên (IndexedDB / Firestore → Report BI). Trả null nếu dữ liệu hỏng/không đúng hình
- * dạng (thay vì để màn BI vỡ khi gặp `employees` không phải mảng…). Bản cũ → nâng lên v1.
- */
-export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayload | null {
-    if (!raw || typeof raw !== 'object') return null;
-    const r = raw as Record<string, unknown>;
-    if (!Array.isArray(r.employees)) return null;
-    const version = typeof r.schemaVersion === 'number' ? r.schemaVersion : 0;
-    if (version > ANALYSIS_EMPLOYEES_SCHEMA) {
-        console.warn(`[AnalysisEmployeeSync] Dữ liệu schema v${version} mới hơn bản app (v${ANALYSIS_EMPLOYEES_SCHEMA}) — đọc các trường đã biết.`);
-    }
-    const employees: AnalysisEmployeeItem[] = [];
-    for (const e of r.employees as unknown[]) {
-        if (!e || typeof e !== 'object') continue;
-        const x = e as Record<string, unknown>;
-        if (typeof x.name !== 'string' || !x.name) continue;
-        employees.push({
-            id: typeof x.id === 'string' ? x.id : String(x.id ?? ''),
-            name: x.name,
-            originalName: typeof x.originalName === 'string' ? x.originalName : x.name,
-            department: typeof x.department === 'string' ? x.department : '',
-            supermarket: typeof x.supermarket === 'string' ? x.supermarket : undefined,
-        });
-    }
-    return {
-        schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
-        source: 'phan-tich',
-        updatedAt: typeof r.updatedAt === 'number' ? r.updatedAt : 0,
-        supermarket: typeof r.supermarket === 'string' ? r.supermarket : undefined,
-        totalCount: employees.length,
-        employees,
-    };
-}
-
 const EXCLUDED_DEPT_KEYWORDS = [
-    'quản lý', 'quan ly',
-    'trưởng ca', 'truong ca',
-    'kế toán', 'ke toan',
-    'tiếp đón khách hàng', 'tiep don khach hang',
     'chưa xác định', 'chua xac dinh',
     'không xác định', 'khong xac dinh',
     'chưa phân ca', 'chua phan ca',
@@ -96,7 +57,7 @@ function stripVietnameseDiacritics(str: string): string {
 }
 
 /**
- * Kiểm tra xem một nhân viên có phải tài khoản hệ thống hoặc tài khoản phụ cần loại bỏ không
+ * Kiểm tra xem một nhân viên có phải tài khoản hệ thống hoặc thuộc bộ phận chưa xác định / không hợp lệ cần loại bỏ không
  */
 export function isSystemOrIgnoredEmployee(name: string | undefined, dept?: string): boolean {
     if (name) {
@@ -113,16 +74,58 @@ export function isSystemOrIgnoredEmployee(name: string | undefined, dept?: strin
             return true;
         }
     }
-    if (dept !== undefined) {
-        const cleanDept = dept.trim();
-        if (!cleanDept) return true;
-        const lowerDept = cleanDept.toLowerCase();
-        const strippedDept = stripVietnameseDiacritics(cleanDept);
-        if (EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw) || strippedDept.includes(kw))) {
-            return true;
-        }
+    // Nếu không có bộ phận hoặc bộ phận rỗng -> Bắt buộc loại bỏ
+    if (!dept || typeof dept !== 'string') return true;
+    const cleanDept = dept.trim();
+    if (!cleanDept) return true;
+    const lowerDept = cleanDept.toLowerCase();
+    const strippedDept = stripVietnameseDiacritics(cleanDept);
+    if (EXCLUDED_DEPT_KEYWORDS.some(kw => lowerDept.includes(kw) || strippedDept.includes(kw))) {
+        return true;
     }
     return false;
+}
+
+/**
+ * Adapter ĐỌC ở biên (IndexedDB / Firestore → Report BI). Trả null nếu dữ liệu hỏng/không đúng hình
+ * dạng (thay vì để màn BI vỡ khi gặp `employees` không phải mảng…). Bản cũ → nâng lên v1.
+ * Chỉ giữ lại các nhân viên CÓ BỘ PHẬN ĐƯỢC KHAI BÁO (bộ phận chưa xác định sẽ bị loại bỏ).
+ */
+export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const r = raw as Record<string, unknown>;
+    if (!Array.isArray(r.employees)) return null;
+    const version = typeof r.schemaVersion === 'number' ? r.schemaVersion : 0;
+    if (version > ANALYSIS_EMPLOYEES_SCHEMA) {
+        console.warn(`[AnalysisEmployeeSync] Dữ liệu schema v${version} mới hơn bản app (v${ANALYSIS_EMPLOYEES_SCHEMA}) — đọc các trường đã biết.`);
+    }
+    const employees: AnalysisEmployeeItem[] = [];
+    for (const e of r.employees as unknown[]) {
+        if (!e || typeof e !== 'object') continue;
+        const x = e as Record<string, unknown>;
+        if (typeof x.name !== 'string' || !x.name) continue;
+        const origName = typeof x.originalName === 'string' ? x.originalName : x.name;
+        const dept = typeof x.department === 'string' ? x.department.trim() : '';
+
+        // Chỉ lấy nhân viên được khai báo bộ phận, nếu bộ phận chưa xác định sẽ không được tính
+        if (!dept || isSystemOrIgnoredEmployee(origName, dept)) continue;
+
+        employees.push({
+            id: typeof x.id === 'string' ? x.id : String(x.id ?? ''),
+            name: x.name,
+            originalName: origName,
+            department: dept,
+            supermarket: typeof x.supermarket === 'string' ? x.supermarket : undefined,
+        });
+    }
+    return {
+        schemaVersion: ANALYSIS_EMPLOYEES_SCHEMA,
+        source: 'phan-tich',
+        updatedAt: typeof r.updatedAt === 'number' ? r.updatedAt : 0,
+        supermarket: typeof r.supermarket === 'string' ? r.supermarket : undefined,
+        totalCount: employees.length,
+        employees,
+    };
 }
 
 /**

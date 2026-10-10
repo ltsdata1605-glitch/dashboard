@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
 import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import type { IconSize } from '../shared/ui/icon/iconTokens';
 import { createPortal } from 'react-dom';
 import { Button } from '../shared/ui/Button';
 
@@ -15,6 +16,8 @@ interface MultiSelectDropdownProps {
     variant?: 'default' | 'compact';
     iconOnly?: boolean;
     iconName?: string;
+    iconSize?: IconSize;
+    mobileIconSize?: IconSize;
 }
 
 const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({ 
@@ -26,7 +29,9 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     className = "",
     variant = 'default',
     iconOnly = false,
-    iconName = 'filter'
+    iconName = 'filter',
+    iconSize = 'md',
+    mobileIconSize
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -134,7 +139,14 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     }`}
                     title={label}
                 >
-                    <AppIcon name={resolveIconName(iconName) ?? 'help'} size="md" />
+                    {mobileIconSize && mobileIconSize !== iconSize ? (
+                        <>
+                            <AppIcon name={resolveIconName(iconName) ?? 'help'} size={mobileIconSize} className="lg:hidden" />
+                            <AppIcon name={resolveIconName(iconName) ?? 'help'} size={iconSize} className="hidden lg:block" />
+                        </>
+                    ) : (
+                        <AppIcon name={resolveIconName(iconName) ?? 'help'} size={iconSize} />
+                    )}
                     {isFiltered && (
                         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-sky-600 text-white text-[11px] flex items-center justify-center font-bold">
                             {selected.length}

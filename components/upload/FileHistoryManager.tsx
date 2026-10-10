@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { UploadedFileRegistryItem } from '../../types';
 import { Button } from '../shared/ui/Button';
@@ -7,6 +7,7 @@ interface FileHistoryManagerProps {
     registry: UploadedFileRegistryItem[];
     onToggleActive: (id: string) => Promise<void> | void;
     onDelete: (id: string) => Promise<void> | void;
+    onRename?: (id: string, newFilename: string) => Promise<void> | void;
     onViewReport?: () => void;
     compact?: boolean;
 }
@@ -15,9 +16,29 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
     registry,
     onToggleActive,
     onDelete,
+    onRename,
     onViewReport,
     compact = false
 }) => {
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editingName, setEditingName] = useState<string>('');
+
+    const handleStartRename = (file: UploadedFileRegistryItem) => {
+        setEditingId(file.id);
+        setEditingName(file.filename);
+    };
+
+    const handleSaveRename = async (id: string) => {
+        const trimmed = editingName.trim();
+        if (trimmed && onRename) {
+            await onRename(id, trimmed);
+        }
+        setEditingId(null);
+    };
+
+    const handleCancelRename = () => {
+        setEditingId(null);
+    };
     const activeCount = registry.filter(f => f.isActive).length;
     const totalRows = registry.reduce((sum, f) => sum + (f.isActive ? f.rowCount : 0), 0);
 
@@ -88,22 +109,64 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
 
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span 
-                                            className={`text-[13px] font-semibold truncate max-w-[280px] sm:max-w-md ${
-                                                file.isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'
-                                            } ${file.isMissingLocalData ? 'text-rose-500/70 dark:text-rose-400/60 line-through' : ''}`} 
-                                            title={file.filename + (file.isMissingLocalData ? ' (Thiếu dữ liệu gốc trên thiết bị này)' : '')}
-                                        >
-                                            {file.filename}
-                                        </span>
-                                        <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50/50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/30 shrink-0">
-                                            {file.rowCount.toLocaleString('vi-VN')} dòng
-                                        </span>
-                                        {file.isMissingLocalData && (
-                                            <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
-                                                <AppIcon name="warning" size="xs" className="text-rose-500 animate-pulse" />
-                                                Thiếu dữ liệu - Hãy nạp lại
-                                            </span>
+                                        {editingId === file.id ? (
+                                            <div className="flex items-center gap-1.5 flex-1 min-w-[200px] max-w-full my-0.5">
+                                                <input
+                                                    type="text"
+                                                    autoFocus
+                                                    value={editingName}
+                                                    onChange={(e) => setEditingName(e.target.value)}
+                                                    onFocus={(e) => e.target.select()}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleSaveRename(file.id);
+                                                        } else if (e.key === 'Escape') {
+                                                            e.preventDefault();
+                                                            handleCancelRename();
+                                                        }
+                                                    }}
+                                                    className="w-full text-xs font-semibold px-2 py-1 bg-white dark:bg-slate-800 border border-sky-500 rounded-md text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                                />
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
+                                                    onClick={() => handleSaveRename(file.id)}
+                                                    className="p-1 text-emerald-600 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 rounded border border-emerald-200 dark:border-emerald-800 transition-colors shrink-0"
+                                                    title="Lưu tên"
+                                                >
+                                                    <AppIcon name="check" size="sm" />
+                                                </Button>
+                                                <Button
+                                                    variant="unstyled"
+                                                    size="none"
+                                                    onClick={handleCancelRename}
+                                                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded transition-colors shrink-0"
+                                                    title="Huỷ"
+                                                >
+                                                    <AppIcon name="close" size="sm" />
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <span 
+                                                    className={`text-[13px] font-semibold truncate max-w-[280px] sm:max-w-md ${
+                                                        file.isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'
+                                                    } ${file.isMissingLocalData ? 'text-rose-500/70 dark:text-rose-400/60 line-through' : ''}`} 
+                                                    title={file.filename + (file.isMissingLocalData ? ' (Thiếu dữ liệu gốc trên thiết bị này)' : '')}
+                                                >
+                                                    {file.filename}
+                                                </span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-50/50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-400 border border-sky-100/30 dark:border-sky-900/30 shrink-0">
+                                                    {file.rowCount.toLocaleString('vi-VN')} dòng
+                                                </span>
+                                                {file.isMissingLocalData && (
+                                                    <span className="px-1.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
+                                                        <AppIcon name="warning" size="xs" className="text-rose-500 animate-pulse" />
+                                                        Thiếu dữ liệu - Hãy nạp lại
+                                                    </span>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 mt-1">
@@ -115,15 +178,28 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                 </div>
                             </div>
 
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => onDelete(file.id)}
-                                id={`btn-delete-file-${file.id}`}
-                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all ml-4 shrink-0"
-                                title="Xóa tệp này"
-                            >
-                                <AppIcon name="delete" size="md" />
-                            </Button>
+                            <div className="flex items-center gap-1 ml-4 shrink-0">
+                                {onRename && editingId !== file.id && (
+                                    <Button
+                                        variant="unstyled" size="none"
+                                        onClick={() => handleStartRename(file)}
+                                        id={`btn-rename-file-${file.id}`}
+                                        className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/20 rounded-lg transition-all"
+                                        title="Đổi tên tệp"
+                                    >
+                                        <AppIcon name="edit" size="md" />
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="unstyled" size="none"
+                                    onClick={() => onDelete(file.id)}
+                                    id={`btn-delete-file-${file.id}`}
+                                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all"
+                                    title="Xóa tệp này"
+                                >
+                                    <AppIcon name="delete" size="md" />
+                                </Button>
+                            </div>
                         </div>
                     ))}
                 </div>

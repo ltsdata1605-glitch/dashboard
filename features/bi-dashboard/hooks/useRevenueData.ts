@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { RevenueRow, BonusMetrics } from '../types/nhanVienTypes';
-import { standardizeEmployeeName, isSameEmployee } from '../utils/nhanVienHelpers';
+import { standardizeEmployeeName, formatEmployeeName, extractEmployeeId, isSameEmployee } from '../utils/nhanVienHelpers';
 import { getBonusForEmployee } from '../utils/bonusParser';
 import { getMonthProgress } from '../services/metricService';
 
@@ -106,6 +106,46 @@ export const useRevenueData = ({
         // Map tra cứu O(1) thay vì .find() O(n) lồng trong .map() ở calculateWithComparison bên dưới
         const prevMonthRowsMap = new Map(prevMonthRows.map(pr => [pr.originalName, pr]));
 
+        const getInstallmentForEmployee = (origName?: string, name?: string): number => {
+            if (!origName && !name) return 0;
+            // 1. Đối chiếu trực tiếp key
+            if (origName && employeeInstallmentMap.has(origName)) return employeeInstallmentMap.get(origName)!;
+            if (name && employeeInstallmentMap.has(name)) return employeeInstallmentMap.get(name)!;
+
+            // 2. Đối chiếu theo Mã số nhân viên (Employee ID duy nhất trong MWG)
+            const id = extractEmployeeId(origName || '') || extractEmployeeId(name || '');
+            if (id && employeeInstallmentMap.has(id)) return employeeInstallmentMap.get(id)!;
+
+            // 3. Đối chiếu theo tên chuẩn hóa, rút gọn hoặc đảo thứ tự
+            if (origName) {
+                const canonical = standardizeEmployeeName(origName);
+                if (employeeInstallmentMap.has(canonical)) return employeeInstallmentMap.get(canonical)!;
+                const formatted = formatEmployeeName(origName);
+                if (employeeInstallmentMap.has(formatted)) return employeeInstallmentMap.get(formatted)!;
+                if (origName.includes(' - ')) {
+                    const parts = origName.split(' - ').map(p => p.trim());
+                    if (parts.length >= 2) {
+                        const swapped = `${parts[1]} - ${parts[0]}`;
+                        if (employeeInstallmentMap.has(swapped)) return employeeInstallmentMap.get(swapped)!;
+                    }
+                }
+            }
+            if (name) {
+                const canonical = standardizeEmployeeName(name);
+                if (employeeInstallmentMap.has(canonical)) return employeeInstallmentMap.get(canonical)!;
+                const formatted = formatEmployeeName(name);
+                if (employeeInstallmentMap.has(formatted)) return employeeInstallmentMap.get(formatted)!;
+            }
+
+            // 4. Fallback duyệt qua toàn bộ map và so khớp bằng isSameEmployee
+            for (const [k, v] of employeeInstallmentMap.entries()) {
+                if (isSameEmployee(k, origName) || isSameEmployee(k, name)) {
+                    return v;
+                }
+            }
+            return 0;
+        };
+
         const calculateWithComparison = (emp: RevenueRow): RevenueRow => {
             const weight = (departmentWeights[emp.department!] || 0) / 100;
             const empCount = deptEmployeeCounts[emp.department!] || 1;
@@ -116,7 +156,7 @@ export const useRevenueData = ({
                 empTarget = empTarget / totalDays;
             }
 
-            const currentInstallment = employeeInstallmentMap.get(emp.originalName || '') || 0;
+            const currentInstallment = getInstallmentForEmployee(emp.originalName, emp.name);
             const currentCompletion = empTarget > 0 ? (emp.dtqd / empTarget) * 100 : 0;
 
             const prevData = prevMonthRows.length > 0 ? (prevMonthRowsMap.get(emp.originalName) ?? null) : null;

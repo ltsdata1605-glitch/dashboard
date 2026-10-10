@@ -92,7 +92,7 @@ export const ICON_REGISTRY = {
   settings: Settings,
   more: EllipsisVertical,
   menu: Menu,
-  externalLink: ExternalLink,
+  externalLink: Link,
   link: Link,
   login: LogIn,
   logout: LogOut,

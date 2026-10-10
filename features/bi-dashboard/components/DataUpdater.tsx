@@ -31,6 +31,7 @@ import {
     onBiDone,
     onBiError,
 } from '../services/biAutoSyncService';
+import { startUserscriptUpdateWatcher } from '../services/userscriptProbeService';
 import { BiAutoSyncModal } from './BiAutoSyncModal';
 import { LuyKeMonthPickerModal } from './LuyKeMonthPickerModal';
 import { extractSupermarketList, extractAllSupermarketList, shortenSupermarketName } from '../utils/dashboardHelpers';
@@ -587,20 +588,23 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         void handleStartRef.current(p.mode, { tuChayTiep: true, month: p.month });
     }, []);
 
-    // Đang báo "cần cập nhật": người dùng quay lại tab (sau khi bấm Update trong Tampermonkey) → tự tải lại trang,
-    // vì Tampermonkey chỉ nạp bản mới khi trang tải lại. Tối đa PENDING_MAX_RELOADS lần cho một lượt.
+    // Đang báo "cần cập nhật": kiểm tra ngầm liên tục qua probe iframe,
+    // khi người dùng bấm Cập nhật trong Tampermonkey thì tự động chạy tiếp ngay mà không cần F5.
     useEffect(() => {
         if (!autoSyncModalOpen || autoSyncStatus !== 'outdated') return;
-        const onVisible = () => {
-            if (document.visibilityState !== 'visible') return;
-            const p = readPendingAutoSync();
-            if (!p || p.reloads >= PENDING_MAX_RELOADS) return;
-            savePendingAutoSync({ ...p, reloads: p.reloads + 1 });
-            window.location.reload();
+        const targetVer = autoSyncLatestVersion || '7.22';
+
+        const stopWatcher = startUserscriptUpdateWatcher(targetVer, (installedVer) => {
+            clearPendingAutoSync();
+            setAutoSyncStatus('running');
+            toast.success(`Đã nhận diện Userscript v${installedVer}! Tự động đổ dữ liệu...`, { duration: 4000 });
+            void handleStartRef.current(autoSyncMode, { month: autoSyncMonth, tuChayTiep: true });
+        });
+
+        return () => {
+            stopWatcher();
         };
-        document.addEventListener('visibilitychange', onVisible);
-        return () => document.removeEventListener('visibilitychange', onVisible);
-    }, [autoSyncModalOpen, autoSyncStatus]);
+    }, [autoSyncModalOpen, autoSyncStatus, autoSyncLatestVersion, autoSyncMode, autoSyncMonth]);
 
     useEffect(() => {
         const unsubProgress = onBiProgress((prog) => {

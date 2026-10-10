@@ -20,9 +20,10 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
+            maxWidth="sm"
+            zIndex="z-[1100]"
             hideHeader
             ariaLabel="Chọn loại tệp doanh số"
-            maxWidth="sm"
         >
             <div className="-m-5 p-4">
                 <div className="flex flex-col items-center text-center mb-4">

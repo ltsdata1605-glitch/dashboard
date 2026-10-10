@@ -168,20 +168,9 @@ const FilterBar: React.FC<FilterBarProps> = ({
                             variant="unstyled" size="none"
                             onClick={onNewFile}
                             title="Tải YCX lên"
-                            className="flex items-center justify-center w-8 h-8 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-8 h-8 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0"
                         >
-                            <AppIcon name="upload" size="lg" />
-                        </Button>
-                    )}
-                    {onOpenHistory && canManageFiles && (
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={onOpenHistory}
-                            id="btn-mobile-history"
-                            title="Quản lý tệp đã lưu"
-                            className="flex items-center justify-center w-8 h-8 text-rose-700 dark:text-rose-400 rounded-lg transition-all active:scale-95 shrink-0"
-                        >
-                            <AppIcon name="database" size="lg" />
+                            <AppIcon name="upload" size="md" />
                         </Button>
                     )}
                     <a
@@ -189,27 +178,38 @@ const FilterBar: React.FC<FilterBarProps> = ({
                         target="_blank"
                         rel="noopener noreferrer"
                         title="Tải dữ liệu báo cáo (BCNB)"
-                        className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95 shrink-0"
+                        className="flex items-center justify-center w-8 h-8 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0"
                     >
-                        <AppIcon name="link" size="lg" />
+                        <AppIcon name="link" size="md" />
                     </a>
+                    {onOpenHistory && canManageFiles && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={onOpenHistory}
+                            id="btn-mobile-history"
+                            title="Quản lý tệp đã lưu"
+                            className="flex items-center justify-center w-8 h-8 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-800 dark:hover:text-rose-300 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0"
+                        >
+                            <AppIcon name="database" size="md" />
+                        </Button>
+                    )}
                     {hasSalesData && onClearSalesData && (
                         <Button
                             variant="unstyled" size="none"
                             onClick={onClearSalesData}
                             title={salesClearTitle || "Xóa dữ liệu YCX"}
-                            className="flex items-center justify-center w-8 h-8 text-rose-500 hover:text-rose-600 rounded-lg transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-8 h-8 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0"
                         >
-                            <AppIcon name="delete" size="lg" />
+                            <AppIcon name="delete" size="md" />
                         </Button>
                     )}
                     <Button
                         variant="unstyled" size="none"
                         onClick={onToggleAdvanced}
                         title="Bộ lọc nâng cao"
-                        className="flex items-center justify-center w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg transition-all active:scale-95 shrink-0"
+                        className="flex items-center justify-center w-8 h-8 text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-800 dark:hover:text-sky-300 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0"
                     >
-                        <AppIcon name="settings" size="lg" />
+                        <AppIcon name="settings" size="md" />
                     </Button>
                 </div>,
                 document.getElementById('mobile-topbar-actions')!

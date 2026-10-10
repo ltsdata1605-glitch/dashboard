@@ -14,7 +14,6 @@ import { normalizeSalesData, wrapProductConfigWithProxies, unwrapProductConfigPr
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import type { SalesDataMeta } from '../services/cloudDataService';
-import { saveAnalysisEmployees } from '../features/bi-dashboard/services/analysisEmployeeSyncService';
 
 /** Số dòng mỗi khúc khi gửi originalData sang analytics worker (xem effect SET_DATA). */
 const SET_DATA_CHUNK_ROWS = 20_000;
@@ -47,6 +46,11 @@ function taoPhanLoai(cauHinhGoc: ProductConfig | null, unwrapped: ProductConfig 
         return f;
     };
 }
+
+/** Đã tắt thông báo đồng bộ đám mây theo yêu cầu người dùng (cả laptop và mobile) */
+export const notifyCloudSyncToast = (_totalRows?: number | string) => {
+    // Không hiển thị toast đồng bộ dữ liệu đám mây
+};
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -84,16 +88,18 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
     const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean } } | null>(null);
 
-    const [cloudSyncBanner, setCloudSyncBanner] = useState<string | null>(() => {
-        try {
-            return localStorage.getItem('ycx-cloud-sync-banner') || sessionStorage.getItem('ycx-cloud-sync-banner');
-        } catch {
-            return null;
-        }
-    });
+    const [cloudSyncBanner, setCloudSyncBanner] = useState<string | null>(null);
 
     const handleDismissCloudSyncBanner = useCallback(() => {
         setCloudSyncBanner(null);
+        try {
+            localStorage.removeItem('ycx-cloud-sync-banner');
+            sessionStorage.removeItem('ycx-cloud-sync-banner');
+        } catch {}
+    }, []);
+
+    // Dọn dẹp khoá lưu cũ nếu có trong bộ nhớ để không chiếm dòng layout
+    useEffect(() => {
         try {
             localStorage.removeItem('ycx-cloud-sync-banner');
             sessionStorage.removeItem('ycx-cloud-sync-banner');
@@ -141,13 +147,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 });
             }).catch(console.error);
 
-            // Cập nhật thông báo đồng bộ 1 dòng nhỏ gọn dưới thông báo đỏ thay vì toast góc dưới
-            const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`;
-            setCloudSyncBanner(syncMsg);
-            try {
-                localStorage.setItem('ycx-cloud-sync-banner', syncMsg);
-                sessionStorage.setItem('ycx-cloud-sync-banner', syncMsg);
-            } catch {}
+            handleDismissCloudSyncBanner();
         } catch (e: unknown) {
             console.error('Lỗi khi tự động nạp dữ liệu từ đám mây:', e);
             toast.error(`Lỗi tự động nạp dữ liệu đám mây: ${getErrorMessage(e)}`);
@@ -169,6 +169,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 // Nhận lại registry đã đọc để truyền thẳng cho getMergedSalesData() bên dưới,
                 // tránh đọc trùng cùng 1 key IndexedDB 2 lần (PERF FIX).
                 const freshRegistry = await dbService.resetHistoricalFilesToInactive();
+                setFileRegistry(freshRegistry);
 
                 // 1. Parallel Local IDB Fetch (Fast Offline First)
                 const [
@@ -192,6 +193,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     dbService.getMergedSalesData(freshRegistry),
                     dbService.getSetting<Record<string, number>>('warehouseDTThucTargets')
                 ]);
+                setHasRealtimeData(!!savedSalesReq?.isRealtime);
 
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
@@ -293,11 +295,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     setFileInfo({ filename: savedSalesReq.filename, savedAt: savedSalesReq.savedAt.toLocaleString('vi-VN') });
 
                     const activeCloudFile = freshRegistry.find(f => f.isActive && f.id.startsWith('cloud_sync_'));
-                    if (activeCloudFile || savedSalesReq.filename.toLowerCase().includes('cloud')) {
-                        const rowCount = activeCloudFile ? activeCloudFile.rowCount : savedSalesReq.data.length;
-                        const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${rowCount.toLocaleString('vi-VN')} dòng)`;
-                        setCloudSyncBanner(syncMsg);
-                    }
 
                     const parseDataAndSet = () => {
                         const srcData = normalizeSalesData(savedSalesReq.data);
@@ -475,15 +472,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             const localSavedAt = currentLocal ? currentLocal.savedAt : (savedSalesReq ? savedSalesReq.savedAt.getTime() : 0);
                             const localFileTs = currentLocal ? currentLocal.fileLastModified : (savedSalesReq ? savedSalesReq.fileLastModified : 0);
 
-                            // Skip if same file but show status banner
+                            // Skip if same file
                             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
                                 console.warn('[CloudData] Cloud data is same file as local. Skipping.');
-                                const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`;
-                                setCloudSyncBanner(syncMsg);
-                                try { 
-                                    localStorage.setItem('ycx-cloud-sync-banner', syncMsg);
-                                    sessionStorage.setItem('ycx-cloud-sync-banner', syncMsg); 
-                                } catch {}
                                 return;
                             }
 
@@ -671,14 +662,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             const localSavedAt = currentLocal ? currentLocal.savedAt : 0;
             const localFileTs = currentLocal ? currentLocal.fileLastModified : 0;
 
-            // Bỏ qua nếu trùng file nhưng cập nhật trạng thái hiển thị
+            // Bỏ qua nếu trùng file
             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
-                const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`;
-                setCloudSyncBanner(syncMsg);
-                try { 
-                    localStorage.setItem('ycx-cloud-sync-banner', syncMsg);
-                    sessionStorage.setItem('ycx-cloud-sync-banner', syncMsg); 
-                } catch {}
                 return;
             }
 
@@ -834,6 +819,39 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             setIsHardProcessing(false);
         }
     }, [user, isDemoMode, setAppState, setStatus, appState]);
+
+    const handleRenameFile = useCallback(async (id: string, newFilename: string) => {
+        try {
+            const trimmed = newFilename.trim();
+            if (!trimmed) return;
+            const registry = await dbService.getSalesFilesRegistry();
+            const updated = registry.map(f => f.id === id ? { ...f, filename: trimmed } : f);
+            await dbService.saveSalesFilesRegistry(updated);
+            
+            const validatedReg = await Promise.all(updated.map(async (file) => {
+                const dataExists = await dbService.checkSalesFileDataExists(file.id);
+                return {
+                    ...file,
+                    isMissingLocalData: !dataExists
+                };
+            }));
+
+            setFileRegistry(validatedReg);
+            toast.success('Đã đổi tên tệp thành công!');
+
+            const merged = await dbService.getMergedSalesData();
+            if (merged) {
+                setFileInfo({ filename: merged.filename, savedAt: merged.savedAt.toLocaleString('vi-VN') });
+                if (user && !isDemoMode) {
+                    const { uploadProcessedData } = await import('../services/cloudDataService');
+                    uploadProcessedData(user, normalizeSalesData(merged.data), merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
+                }
+            }
+        } catch (error) {
+            console.error('[Registry] Error renaming file:', error);
+            toast.error('Có lỗi xảy ra khi đổi tên tệp!');
+        }
+    }, [user, isDemoMode]);
 
     const handleClearRealtimeData = useCallback(async () => {
         try {
@@ -1056,12 +1074,6 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             setWarehouseFilteredData(pending.warehouseFilteredData);
                         }
                         setEmployeeAnalysisData(result.employeeData);
-                        if (result.employeeData?.fullSellerArray && result.employeeData.fullSellerArray.length > 0) {
-                            const currentWarehouse = filterState.kho && filterState.kho.length === 1 ? filterState.kho[0] : undefined;
-                            saveAnalysisEmployees(result.employeeData.fullSellerArray, currentWarehouse).catch(err => {
-                                console.warn('[useDataManagement] Lỗi tự động lưu danh sách nhân viên phân tích:', err);
-                            });
-                        }
                         setIsFilterProcessing(false);
                         break;
                     }
@@ -1481,6 +1493,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         refreshRegistry,
         handleToggleFileActive,
         handleDeleteFile,
+        handleRenameFile,
         hasRealtimeData,
         handleClearRealtimeData,
         handleClearAllData,

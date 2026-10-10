@@ -1,6 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { AppIcon } from '../../../../../components/shared/ui/icon/AppIcon';
-import { Button } from '../../../../../components/shared/ui/Button';
 import { standardizeEmployeeName, extractEmployeeId } from '../../../utils/nhanVienHelpers';
 import { getCartoonAvatar } from '../../../utils/cartoonAvatars';
 import { AvatarPickerModal } from './AvatarPickerModal';
@@ -122,28 +120,16 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, isHidden, o
                                 setIsPickerOpen(true);
                             }
                         }}
-                        title={activeSrc ? employeeName : `${employeeName} (Avatar hoạt hình: ${defaultCartoon.name})`}
+                        title={activeSrc ? `${employeeName} (Bấm để đổi avatar)` : `${employeeName} (Avatar hoạt hình: ${defaultCartoon.name} — Bấm để đổi)`}
                         style={{
                             borderRadius: '50%',
                             clipPath: 'circle(50% at 50% 50%)',
                             WebkitClipPath: 'circle(50% at 50% 50%)',
                             objectFit: 'cover'
                         }}
-                        className="w-full h-full rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-sky-400 transition-all shadow-2xs" 
+                        className="w-full h-full rounded-full object-cover cursor-pointer hover:ring-2 hover:ring-sky-400 hover:scale-110 active:scale-95 transition-all shadow-2xs" 
                     />
                 </div>
-                
-                <Button
-                    variant="unstyled" size="none"
-                    onClick={(e) => { 
-                        e.stopPropagation(); 
-                        setIsPickerOpen(true);
-                    }}
-                    title="Đổi avatar hoạt hình hoặc tải ảnh lên"
-                    className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-slate-800 p-0.5 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-opacity after:absolute after:-inset-3 after:content-[''] lg:after:hidden no-print border border-slate-200 dark:border-slate-700 shadow-xs"
-                >
-                    <AppIcon name="upload" size="xs" className="text-sky-600" />
-                </Button>
             </div>
 
             {/* Chỉ dựng hộp chọn ảnh khi mở — trước đây mỗi dòng bảng đều dựng sẵn 1 cái (hàng nghìn ở tab Thi đua). */}

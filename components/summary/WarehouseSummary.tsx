@@ -635,7 +635,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
-                            <AppIcon name="layers" size="md" />
+                            <AppIcon name="layers" size="sm" className="lg:hidden" />
+                            <AppIcon name="layers" size="md" className="hidden lg:block" />
                         </Button>
 
                         {/* Toggle Ngang/Dọc */}
@@ -645,7 +646,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
-                            <AppIcon name={resolveIconName(viewMode === 'horizontal' ? 'layout-list' : 'table-2') ?? 'help'} size="md" />
+                            <AppIcon name={resolveIconName(viewMode === 'horizontal' ? 'layout-list' : 'table-2') ?? 'help'} size="sm" className="lg:hidden" />
+                            <AppIcon name={resolveIconName(viewMode === 'horizontal' ? 'layout-list' : 'table-2') ?? 'help'} size="md" className="hidden lg:block" />
                         </Button>
 
                         {/* Nút lọc Siêu thị & Tổng dạng Icon Phễu dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
@@ -657,6 +659,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                 label="Lọc Siêu thị & Tổng"
                                 iconOnly={true}
                                 iconName="filter"
+                                mobileIconSize="sm"
+                                iconSize="md"
                                 className="z-30 shrink-0"
                             />
                         )}

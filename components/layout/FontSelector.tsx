@@ -30,7 +30,12 @@ const FONTS: FontOption[] = [
     { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } }
 ];
 
-const FontSelector: React.FC = () => {
+interface FontSelectorProps {
+    containerClassName?: string;
+    buttonClassName?: string;
+}
+
+const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonClassName }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentFont, setCurrentFont] = useState<string>('UTM Avo');
     const buttonRef = useRef<HTMLButtonElement>(null);
@@ -142,12 +147,12 @@ const FontSelector: React.FC = () => {
     const currentFontLabel = FONTS.find(f => f.value === currentFont)?.label || 'Font Chữ';
 
     return (
-        <div className="relative flex items-center bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30">
+        <div className={containerClassName || "relative flex items-center bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30"}>
             <Button
                 variant="unstyled" size="none"
                 ref={buttonRef}
                 onClick={toggleOpen}
-                className={`p-2.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
+                className={buttonClassName || `p-2.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
                 title={`Font hiện tại: ${currentFontLabel}`}
             >
                 <AppIcon name="font" size="md" />

@@ -5,6 +5,7 @@ import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { Button } from '../shared/ui/Button';
 import type { UploadedFileRegistryItem } from '../../types';
 import type { KhoSalesFileMeta } from '../../services/khoDataService';
+import { cleanYcxFileName } from '../../services/ycxAutoSyncService';
 
 interface KhoFileManagerProps {
     maKho: string;
@@ -14,9 +15,10 @@ interface KhoFileManagerProps {
 // để tái dùng NGUYÊN component FileHistoryManager (đồng nhất giao diện với danh sách file
 // cục bộ, không phải dựng lại từ đầu) — xem implementation_plan.md mục 37 (Bước 5).
 function toRegistryItem(f: KhoSalesFileMeta): UploadedFileRegistryItem {
+    const cleanName = cleanYcxFileName(f.filename);
     return {
         id: f.fileId,
-        filename: `${f.filename} — ${f.uploadedByName}${f.isRealtime ? ' (Realtime)' : ''}`,
+        filename: `${cleanName} — ${f.uploadedByName}${f.isRealtime ? ' (Realtime)' : ''}`,
         rowCount: f.totalRows,
         savedAt: f.uploadedAt,
         fileLastModified: f.fileLastModified,

@@ -256,10 +256,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
             ref={cardRef} 
             className="competition-group-card cv-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
         >
-            {/* Title bar — solid blue background with generous padding and subtle separator */}
-            <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-4 sm:py-4.5 border-b border-sky-500/40 dark:border-sky-600/60">
+            {/* Title bar — solid blue background with compact padding */}
+            <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-1.5 sm:py-2 border-b border-sky-500/40 dark:border-sky-600/60">
                 <div className="flex justify-center items-center relative">
-                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center whitespace-normal px-8 py-0.5 leading-snug tracking-wider drop-shadow-xs" title={header.originalTitle}>
+                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center whitespace-normal px-8 leading-snug tracking-wider drop-shadow-xs" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -267,7 +267,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                             type="button"
                             variant="unstyled" size="none"
                             onClick={handleExportPNG}
-                            className="export-button-component p-1.5 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                            className="export-button-component p-1 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <AppIcon name="exportImage" size="md" />
@@ -280,19 +280,19 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                 <table className="table-pin-first w-full border-collapse">
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider bg-sky-600 dark:bg-sky-700 text-white">
-                            <th className="text-left px-3 py-3 sm:py-3.5 border-b border-r border-sky-500/40 text-white min-w-[170px]">
+                            <th className="text-left px-3 py-1.5 sm:py-2 border-b border-r border-sky-500/40 text-white min-w-[170px]">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-start w-full group text-white hover:text-sky-100 py-0.5">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-3 sm:py-3.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-3 sm:py-3.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-3 sm:py-3.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">%HT{getSortIcon('completion')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-3 sm:py-3.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>

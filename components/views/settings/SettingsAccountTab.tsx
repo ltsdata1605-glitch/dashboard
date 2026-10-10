@@ -10,6 +10,7 @@ import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import UserManagementView from '../UserManagementView';
 import { ProductConfigManagerTab } from '../../../features/product-config';
 import { formatCleanDisplayName, parseKhoList } from '../../../utils/dataUtils';
+import { getApprovalSettings } from '../../../services/approvalSettingsService';
 
 export const SettingsAccountTab: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
@@ -33,6 +34,15 @@ export const SettingsAccountTab: React.FC = () => {
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [isConfirmDoiKhoOpen, setIsConfirmDoiKhoOpen] = useState(false);
+    const [autoApproveManagersEnabled, setAutoApproveManagersEnabled] = useState(false);
+    const [autoApproveEmployeesEnabled, setAutoApproveEmployeesEnabled] = useState(true);
+
+    useEffect(() => {
+        getApprovalSettings(departmentId).then(cfg => {
+            setAutoApproveManagersEnabled(Boolean(cfg.autoApproveManagers));
+            setAutoApproveEmployeesEnabled(cfg.effectiveAutoApproveForDept !== false);
+        }).catch(err => console.warn('Lỗi đọc cấu hình duyệt:', err));
+    }, [departmentId]);
     // Hộp xác nhận "xoá toàn bộ dữ liệu" (tự dựng — audit A34): hành vi modal chuẩn; không đóng khi đang xoá.
 
     // "Xoá tất cả dữ liệu" xoá kèm báo cáo Luỹ kế & Thi đua DÙNG CHUNG của Kho — CHỈ khi là quản lý,
@@ -108,16 +118,24 @@ export const SettingsAccountTab: React.FC = () => {
             } else if (userRole === 'manager') {
                 // Trước đây ghi thẳng departmentId bằng updateDoc: field bảo vệ nên Firestore Rules
                 // từ chối, nhưng giao diện vẫn báo "thành công". Đi đúng luồng hợp lệ như nhân viên.
-                await requestAccess('manager', parseKhoList(stagedDept).join(','), employeeName || '');
+                const res = await requestAccess('manager', parseKhoList(stagedDept).join(','), employeeName || '');
                 setIsConfirmDoiKhoOpen(false);
-                toast.success("Đã gửi yêu cầu đổi Mã Kho — chờ Admin duyệt.");
+                if (res && res.autoApproved) {
+                    toast.success("Hệ thống đã tự động duyệt! Mã Kho mới đã có hiệu lực ngay lập tức.");
+                } else {
+                    toast.success("Đã gửi yêu cầu đổi Mã Kho — chờ Admin duyệt.");
+                }
             } else {
-                await requestAccess(
+                const res = await requestAccess(
                     'employee',
                     stagedDept,
                     stagedEmployee
                 );
-                toast.success("Đã ghi nhận thay đổi. Yêu cầu xét duyệt lại kích hoạt...");
+                if (res && res.autoApproved) {
+                    toast.success("Hệ thống đã tự động duyệt! Thông tin hồ sơ mới đã có hiệu lực.");
+                } else {
+                    toast.success("Đã ghi nhận thay đổi. Yêu cầu xét duyệt lại kích hoạt...");
+                }
             }
 
             setIsEditingProfile(false);
@@ -298,18 +316,22 @@ export const SettingsAccountTab: React.FC = () => {
                                 </div>
                             )}
                             <div className={`md:col-span-2 text-xs font-bold px-4 py-2 flex items-center gap-2 rounded-md ${
-                                userRole === 'admin'
+                                userRole === 'admin' || (userRole === 'manager' && autoApproveManagersEnabled) || (userRole === 'employee' && autoApproveEmployeesEnabled)
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
                                     : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
                             }`}>
-                                <AppIcon name={resolveIconName(userRole === 'admin' ? 'check-circle' : 'alert-triangle') ?? 'help'} size="md" />
+                                <AppIcon name={resolveIconName((userRole === 'admin' || (userRole === 'manager' && autoApproveManagersEnabled)) ? 'check-circle' : 'alert-triangle') ?? 'help'} size="md" />
                                 {isSuperAdmin
                                     ? 'Áp dụng ngay: đọc/ghi được dữ liệu dùng chung (Phân tích, Report BI) của các Kho này — vẫn giữ toàn quyền Super Admin'
                                     : userRole === 'admin'
                                     ? 'Áp dụng ngay lập tức không cần duyệt'
                                     : userRole === 'manager'
-                                    ? 'Gửi yêu cầu đổi Kho — tạm khoá quyền Quản lý cho đến khi Admin duyệt'
-                                    : 'Gửi yêu cầu, tạm khóa quyền cho đến duyệt'}
+                                    ? autoApproveManagersEnabled
+                                        ? 'Hệ thống đang BẬT tự động duyệt: Quản lý đổi mã kho sẽ được kích hoạt ngay lập tức mà không cần Admin duyệt'
+                                        : 'Gửi yêu cầu đổi Kho — tạm khoá quyền Quản lý cho đến khi Admin duyệt'
+                                    : autoApproveEmployeesEnabled
+                                    ? 'Hệ thống đang BẬT tự động duyệt: Nhân viên cập nhật kho được duyệt ngay'
+                                    : 'Gửi yêu cầu, tạm khóa quyền cho đến khi Quản lý duyệt'}
                             </div>
                         </div>
                     )}
@@ -369,12 +391,21 @@ export const SettingsAccountTab: React.FC = () => {
                 onClose={() => setIsConfirmDoiKhoOpen(false)}
                 onConfirm={luuHoSo}
                 isLoading={isSaving}
-                variant="warning"
-                title="Gửi yêu cầu đổi Mã Kho?"
-                confirmText="Gửi yêu cầu"
+                variant={autoApproveManagersEnabled ? 'info' : 'warning'}
+                title={autoApproveManagersEnabled ? 'Xác nhận đổi Mã Kho' : 'Gửi yêu cầu đổi Mã Kho?'}
+                confirmText={autoApproveManagersEnabled ? 'Cập nhật ngay' : 'Gửi yêu cầu'}
                 message={<>
-                    Đổi sang Kho <strong>{parseKhoList(stagedDept).join(', ')}</strong> cần <strong>Admin duyệt lại</strong>.
-                    Trong lúc chờ, tài khoản <strong>tạm khoá quyền Quản lý</strong> (không xem được dữ liệu).
+                    {autoApproveManagersEnabled ? (
+                        <>
+                            Đổi sang Kho <strong>{parseKhoList(stagedDept).join(', ')}</strong>.
+                            Hệ thống đang <strong>BẬT tự động duyệt</strong> nên quyền Quản lý kho mới sẽ có hiệu lực ngay!
+                        </>
+                    ) : (
+                        <>
+                            Đổi sang Kho <strong>{parseKhoList(stagedDept).join(', ')}</strong> cần <strong>Admin duyệt lại</strong>.
+                            Trong lúc chờ, tài khoản <strong>tạm khoá quyền Quản lý</strong> (không xem được dữ liệu).
+                        </>
+                    )}
                 </>}
             />
 

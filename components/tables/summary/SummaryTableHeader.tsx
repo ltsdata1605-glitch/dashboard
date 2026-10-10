@@ -42,7 +42,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                 <div className="flex flex-row justify-between items-center gap-1.5 lg:gap-2">
                     <div className="flex items-center gap-1.5 lg:gap-3 min-w-0">
                         <div className="min-w-0">
-                            <h2 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
+                            <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight">
                                 {isComparisonMode ? 'SO SÁNH MỐC THỜI GIAN' : displayTitle}
                             </h2>
                             {isComparisonMode && (

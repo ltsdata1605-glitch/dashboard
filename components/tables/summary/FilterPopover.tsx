@@ -91,18 +91,18 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
     }, [triggerRect, alignment]);
 
     return (
-        <div className="relative inline-flex items-center ml-1">
+        <div className="relative inline-flex items-center ml-0.5">
             <Button
                 variant="unstyled" size="none"
                 ref={triggerRef}
                 onClick={(e) => { e.stopPropagation(); onToggle(); }}
                 onMouseDown={stopPropagation}
-                className={`p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-sky-700 dark:text-sky-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
+                className={`p-0.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-sky-700 dark:text-sky-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
                 title={`Lọc ${label}`}
             >
-                <AppIcon name="filter" size="lg" className={`${hasFilters ? "fill-current" : ""}`} />
+                <AppIcon name="filter" size="xs" className={`${hasFilters ? "fill-current" : ""}`} />
                 {hasFilters && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white dark:border-slate-800"></span>
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-rose-500 rounded-full border border-white dark:border-slate-800"></span>
                 )}
             </Button>
 

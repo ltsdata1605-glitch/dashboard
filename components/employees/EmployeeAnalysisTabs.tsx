@@ -92,7 +92,7 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                         title="Tạo tab thi đua mới"
                         className="ml-2 p-1.5 text-slate-400 hover:text-sky-700 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
                     >
-                        <AppIcon name="addCircle" size="lg" />
+                        <AppIcon name="addCircle" size="md" />
                     </Button>
                 </div>
                 {/* Scroll fade indicator */}

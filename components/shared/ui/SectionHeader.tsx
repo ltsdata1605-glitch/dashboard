@@ -42,10 +42,10 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                     </div>
                 )}
                 <div className="min-w-0">
-                    <h2 className={titleClassName || "text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight"}>{title}</h2>
+                    <h2 className={titleClassName || "text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight"}>{title}</h2>
                     {/* Điện thoại: tối đa 2 dòng thay vì cắt 1 dòng — "LỌC THEO KHO: TẤT CẢ | T…" mất hẳn
                         phần khoảng thời gian (iPhone, dữ liệu thật 2026-09-28). Desktop giữ 1 dòng. */}
-                    {subtitle && <div className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider line-clamp-2 leading-tight lg:truncate lg:leading-none mt-0.5">{subtitle}</div>}
+                    {subtitle && <div className="text-[11px] lg:text-[11px] font-normal text-slate-400 dark:text-slate-400 uppercase tracking-wider line-clamp-2 leading-tight lg:truncate lg:leading-none mt-0.5">{subtitle}</div>}
                 </div>
             </div>
             {/* flex-wrap ở hàng ngoài + max-w-full ở đây: khi tiêu đề và cụm nút không đủ chỗ chung một

@@ -22,8 +22,17 @@ interface RequestAccessInput {
     employeeName?: string;
 }
 
+export interface RequestAccessResult {
+    success: boolean;
+    autoApproved?: boolean;
+    role?: UserRole;
+    status?: UserStatus;
+    departmentId?: string;
+    employeeName?: string;
+}
+
 const resolveSessionFn = httpsCallable<Record<string, never>, SessionProfile>(functions, 'resolveSession');
-const requestAccessFn = httpsCallable<RequestAccessInput, { success: boolean }>(functions, 'requestAccess');
+const requestAccessFn = httpsCallable<RequestAccessInput, RequestAccessResult>(functions, 'requestAccess');
 
 // Gọi Cloud Function resolveSession (functions/src/session.ts) — thay cho việc
 // client tự đọc/ghi field role/status/departmentId/expiresAt trực tiếp vào
@@ -33,19 +42,19 @@ export const resolveSession = async (): Promise<SessionProfile> => {
     return result.data;
 };
 
-// Gọi Cloud Function requestAccess — chỉ được set role của chính người gọi
-// về 'pending', không thể tự nâng quyền (xem firestore.rules: protectedKeys()
-// bị chặn ghi trực tiếp qua client SDK).
+// Gọi Cloud Function requestAccess — hỗ trợ tự động duyệt (autoApproved)
+// theo cấu hình Super Admin / Quản lý
 export const requestAccess = async (
     requestedRole: 'manager' | 'employee',
     departmentId: string,
     employeeName?: string
-): Promise<void> => {
+): Promise<RequestAccessResult> => {
     const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('REQUEST_TIMEOUT')), 8000)
     );
-    await Promise.race([
+    const result = await Promise.race([
         requestAccessFn({ requestedRole, departmentId, employeeName }),
         timeoutPromise
     ]);
+    return result.data;
 };

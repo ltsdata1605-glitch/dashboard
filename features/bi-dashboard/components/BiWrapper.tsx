@@ -224,11 +224,10 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                     variant="unstyled" size="none"
                                     key={tab.id}
                                     onClick={() => handleTabChange(tab.id)}
-                                    // Đây là ĐIỀU HƯỚNG CHÍNH của Report BI trên điện thoại (Siêu thị /
-                                    // Nhân viên / Cập nhật). Đo trước khi sửa: chỉ 28x24px — dưới xa mức
-                                    // 44x44 tối thiểu của Apple, bấm rất dễ trượt.
-                                    className={`flex items-center justify-center gap-1 ${TOUCH_TARGET} rounded font-medium text-[11px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
-                                        isActive ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
+                                    className={`flex items-center justify-center w-8 h-8 rounded-lg font-medium text-[11px] transition-all hover:scale-105 active:scale-95 shrink-0 focus:outline-none ${
+                                        isActive
+                                            ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
+                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                                     }`}
                                     title={tab.label || tab.id}
                                 >
@@ -236,12 +235,11 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                                 </Button>
                             );
                         })}
-                        <div className="flex shrink-0 items-center pl-0.5 ml-0.5">
-                            {/* Bỏ `scale-90`: trên điện thoại nút chọn phông vốn đã 33x32px, thu nhỏ
-                                thêm 10% nữa thì càng khó bấm. */}
-                            <div className="rounded-xl overflow-hidden origin-right">
-                                <FontSelector />
-                            </div>
+                        <div className="flex shrink-0 items-center">
+                            <FontSelector 
+                                containerClassName="relative flex items-center"
+                                buttonClassName="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 transition-all hover:scale-105 active:scale-95 shrink-0" 
+                            />
                         </div>
                     </div>
                 ) : (

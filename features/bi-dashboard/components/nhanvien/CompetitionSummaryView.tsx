@@ -536,10 +536,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                         title="Chọn cột hiển thị"
                     >
-                        <AppIcon name="filter" size="md" />
+                        <AppIcon name="filter" size="sm" />
                         {selectedTitles.length > 0 && (
                             <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[11px] rounded-full w-4 h-4 flex items-center justify-center">
                                 {selectedTitles.length}
@@ -583,10 +583,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsEditingName(true)}
-                    className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     title="Đổi tên bảng"
                 >
-                    <AppIcon name="edit" size="md" />
+                    <AppIcon name="edit" size="sm" />
                 </Button>
             )}
 
@@ -595,10 +595,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
+                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all hover:scale-105 active:scale-95"
                     title="Xóa bảng"
                 >
-                    <AppIcon name="delete" size="md" />
+                    <AppIcon name="delete" size="sm" />
                 </Button>
             )}
 
@@ -636,12 +636,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors no-print"
+                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105 active:scale-95 no-print"
                 >
                     {isExportingByGroup ? (
-                        <AppIcon name="loading" size="md" spin className="text-sky-700" />
+                        <AppIcon name="loading" size="sm" spin className="text-sky-700" />
                     ) : (
-                        <AppIcon name="exportBatch" size="md" />
+                        <AppIcon name="exportBatch" size="sm" />
                     )}
                 </Button>
             )}
@@ -651,10 +651,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-1.5 rounded-lg flex items-center justify-center transition-all cursor-pointer ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
-                {showPercent ? <AppIcon name="hash" size="md" /> : <AppIcon name="percent" size="md" />}
+                {showPercent ? <AppIcon name="hash" size="sm" /> : <AppIcon name="percent" size="sm" />}
             </Button>
 
             <ExportButton

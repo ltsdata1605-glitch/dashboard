@@ -124,8 +124,9 @@ export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
   return profile;
 });
 
-// Thay thế contexts/AuthContext.tsx requestAccess() — chỉ được set role
-// về 'pending' cho CHÍNH người gọi, không thể tự nâng quyền.
+import { getApprovalConfigFromDb } from './approvalSettings';
+
+// Thay thế contexts/AuthContext.tsx requestAccess() — hỗ trợ tự động duyệt theo cấu hình Super Admin / Quản lý
 export const requestAccess = onCall(async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
@@ -145,7 +146,55 @@ export const requestAccess = onCall(async (request) => {
     throw new HttpsError('invalid-argument', 'Thiếu departmentId.');
   }
 
+  // Đọc cấu hình tự động duyệt từ Firestore
+  const approvalConfig = await getApprovalConfigFromDb();
+
+  let shouldAutoApprove = false;
+  if (requestedRole === 'manager') {
+    // Super Admin cấu hình tự động duyệt cho Quản lý (mặc định: false)
+    shouldAutoApprove = approvalConfig.autoApproveManagers === true;
+  } else if (requestedRole === 'employee') {
+    // Quản lý cấu hình tự động duyệt cho Nhân viên (mặc định: true)
+    if (
+      approvalConfig.autoApproveEmployeesByDept &&
+      approvalConfig.autoApproveEmployeesByDept[departmentId] !== undefined
+    ) {
+      shouldAutoApprove = approvalConfig.autoApproveEmployeesByDept[departmentId];
+    } else {
+      shouldAutoApprove = approvalConfig.autoApproveEmployees !== false;
+    }
+  }
+
   const userRef = db.collection('users').doc(uid);
+
+  if (shouldAutoApprove) {
+    // Tự động duyệt ngay lập tức: cấp quyền và custom claims
+    const claims = effectiveRootClaims(requestedRole, 'approved', departmentId);
+    await Promise.all([
+      userRef.update({
+        role: requestedRole,
+        status: 'approved',
+        requestedRole,
+        departmentId,
+        employeeName: employeeName ?? '',
+        approvedAt: FieldValue.serverTimestamp(),
+        approvedBy: 'system-auto',
+        requestDate: FieldValue.serverTimestamp(),
+      }),
+      mergeCustomClaims(uid, claims),
+    ]);
+
+    return {
+      success: true,
+      autoApproved: true,
+      role: requestedRole,
+      status: 'approved',
+      departmentId,
+      employeeName: employeeName ?? '',
+    };
+  }
+
+  // Trường hợp không tự động duyệt: đưa vào hàng đợi chờ duyệt như cũ
   await userRef.update({
     role: 'pending',
     status: 'pending',
@@ -154,6 +203,9 @@ export const requestAccess = onCall(async (request) => {
     employeeName: employeeName ?? '',
     requestDate: FieldValue.serverTimestamp(),
   });
+
+  // Gán claims pending để an toàn
+  await mergeCustomClaims(uid, effectiveRootClaims('pending', 'pending', departmentId));
 
   // Bọc timeout 2.5s cho notifyAdminsAndManagers để không giữ client chờ lâu/treo UI
   const notifyPromise = notifyAdminsAndManagers(departmentId, {
@@ -167,7 +219,14 @@ export const requestAccess = onCall(async (request) => {
   const notifyTimeout = new Promise<void>((resolve) => setTimeout(resolve, 2500));
   await Promise.race([notifyPromise, notifyTimeout]);
 
-  return { success: true };
+  return {
+    success: true,
+    autoApproved: false,
+    role: 'pending',
+    status: 'pending',
+    departmentId,
+    employeeName: employeeName ?? '',
+  };
 });
 
 // Lưới an toàn bổ sung (mục 5.5 trong implementation_plan.md) — phòng

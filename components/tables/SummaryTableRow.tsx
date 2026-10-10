@@ -201,8 +201,8 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     // dữ liệu để tính), 2 trường hợp trước đây bị gộp chung vì cả 2 đều cho ra đúng số 0.
     const traGopDisplay = revenue > 0 ? `${Math.ceil(traGopPercent)}%` : '-';
 
-    const cellClass = "px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px]"; 
-    const deltaCellClass = "px-1 sm:px-2 py-1 sm:py-1.5 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
+    const cellClass = "px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px]"; 
+    const deltaCellClass = "px-1 sm:px-2 py-1 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
     const separatorClass = "border-r border-slate-200 dark:border-slate-700";
 
     return (
@@ -212,16 +212,16 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 onClick={isExpandable ? () => toggleExpand(currentId) : undefined}
             >
                 {/* NGÀNH HÀNG */}
-                <td className={`px-2 sm:px-4 py-1 sm:py-1.5 text-[11px] sm:text-[13px] whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/95 dark:bg-slate-800/95'}`}>
-                    <div className={`flex items-center gap-1.5 sm:gap-3 ${contentColorClass}`} style={{ marginLeft: indentMargin }}>
+                <td className={`px-2 sm:px-3 py-1 text-[11px] sm:text-[13px] whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/95 dark:bg-slate-800/95'}`}>
+                    <div className={`flex items-center gap-1 sm:gap-1.5 ${contentColorClass}`} style={{ marginLeft: indentMargin }}>
                         {isExpandable ? (
-                            <div className={`w-4 h-4 sm:w-6 sm:h-6 rounded-md sm:rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''} flex-shrink-0 text-slate-400`}>
-                                <AppIcon name="chevronRight" size="sm" />
+                            <div className={`w-4 h-4 rounded bg-slate-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''} flex-shrink-0 text-slate-400`}>
+                                <AppIcon name="chevronRight" size="xs" />
                             </div>
                         ) : (
-                            <div className="w-4 h-4 sm:w-6 sm:h-6 inline-block flex-shrink-0"></div>
+                            <div className="w-4 h-4 inline-block flex-shrink-0"></div>
                         )}
-                        <span className="truncate tracking-tight" title={nodeKey}>{displayName}</span>
+                        <span className="truncate tracking-tight max-w-[130px] sm:max-w-[150px]" title={nodeKey}>{displayName}</span>
                     </div>
                 </td>
                 
@@ -242,7 +242,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* %SL */}
                 {visibleColumns.includes('slPercent') && (
                     isComparisonMode ? (
-                        <td className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
+                        <td className={`px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
                             {(() => {
                                 const qCurr = quantity;
                                 const qPrev = prevNode?.totalQuantity || 0;
@@ -275,7 +275,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* % DT Thuc */}
                 {visibleColumns.includes('dtThucPercent') && (
                     isComparisonMode ? (
-                        <td className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
+                        <td className={`px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
                             {(() => {
                                 const rCurr = revenue;
                                 const rPrev = prevNode?.totalRevenue || 0;

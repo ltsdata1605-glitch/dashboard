@@ -12,9 +12,10 @@ import { normalizeSalesData, parseExcelDate, getRowValue, toLocalISOString, work
 import { COL } from '../constants';
 import { workerResultToChunks, parseJsonChunks } from '../services/salesJsonChunks';
 
-const ISO_NGAY = /^\d{4}-\d{2}-\d{2}T/;
 import type { UploadConflictInfo } from '../components/modals/UploadConflictModal';
+import { formatYcxLuyKeTitle, cleanYcxFileName } from '../services/ycxAutoSyncService';
 
+const ISO_NGAY = /^\d{4}-\d{2}-\d{2}T/;
 
 interface FileUploadLogicProps {
     originalData: DataRow[];
@@ -51,6 +52,7 @@ export const useFileUploadLogic = ({
     const [processingTime, setProcessingTime] = useState(0);
     const [pendingNaming, setPendingNaming] = useState<{
         fileName: string;
+        defaultName?: string;
         resolve: (name: string) => void;
     } | null>(null);
     const [pendingConflict, setPendingConflict] = useState<{
@@ -167,7 +169,12 @@ export const useFileUploadLogic = ({
         }
     };
 
-    const handleFileProcessing = async (files: File[], isCloudSync: boolean = false, isHistorical: boolean = false) => {
+    const handleFileProcessing = async (
+        files: File[],
+        isCloudSync: boolean = false,
+        isHistorical: boolean = false,
+        options?: { autoFilename?: string }
+    ) => {
         if (!files || files.length === 0) return;
         setAppState('loading');
         setIsProcessing(true);
@@ -479,14 +486,22 @@ export const useFileUploadLogic = ({
                 }
 
                 if (isHistorical) {
-                    let customFilename = file.name;
-                    if (typeof window !== 'undefined') {
+                    let customFilename = options?.autoFilename;
+                    if (!customFilename && typeof window !== 'undefined') {
+                        const cleanSuggested = cleanYcxFileName(file.name);
                         customFilename = await new Promise<string>((resolve) => {
                             setPendingNaming({
                                 fileName: file.name,
+                                defaultName: cleanSuggested.startsWith('YCX') ? cleanSuggested : formatYcxLuyKeTitle(),
                                 resolve: resolve
                             });
                         });
+                    }
+
+                    if (!customFilename || !customFilename.trim()) {
+                        customFilename = cleanYcxFileName(file.name);
+                    } else {
+                        customFilename = customFilename.trim();
                     }
 
                     // Save this file's data to IDB

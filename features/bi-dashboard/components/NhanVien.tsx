@@ -22,8 +22,8 @@ import { Tabs } from '../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../components/shared/ui/MultiSelectDropdown';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
-import { standardizeEmployeeName } from '../utils/nhanVienHelpers';
-import { MOBILE_GUTTER, TOUCH_TARGET } from '../utils/mobileUi';
+import { standardizeEmployeeName, isIgnoredDept } from '../utils/nhanVienHelpers';
+import { MOBILE_GUTTER } from '../utils/mobileUi';
 
 const NAV_TABS: { tab: Tab; label: string }[] = [
     { tab: 'revenue', label: 'Doanh thu' },
@@ -207,12 +207,14 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                     headers: parsed[criterion].headers,
                     employees: parsed[criterion].employees.filter((emp: CompetitionEmployeeRow) => {
                         if (hiddenSet.has(emp.originalName || '')) return false;
+                        const dept = (employeeDepartmentMap[emp.originalName || ''] || emp.department || '').trim();
+                        if (!dept || isIgnoredDept(dept)) return false;
                         if (hasAnalysisEmployees) {
                             const empOrig = emp.originalName || '';
                             const canonical = standardizeEmployeeName(empOrig);
                             return allEmployees.some(e => e.originalName === empOrig || standardizeEmployeeName(e.originalName) === canonical);
                         }
-                        return true;
+                        return false;
                     })
                 };
             });
@@ -443,13 +445,13 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         absolute và xổ xuống NGOÀI khung pill (top-[calc(100%+8px)]), nên overflow-hidden của pill
                         (dù chỉ để bo tròn góc 2 nút) sẽ cắt mất panel, làm dropdown "mở" trong state nhưng không
                         hiện gì để bấm chọn được (user báo cáo thật). */}
-                    <div className={`flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm ${TOUCH_TARGET}`}>
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-8 sm:h-8.5">
                         {/* `w-auto`: mặc định `w-full` trên điện thoại khiến 2 nút chia ĐỀU khung (~95px mỗi nút)
                             → "Tân Hiệp" bị cắt "Tân…" trong khi nút "All" thừa chỗ (iPhone, 2026-09-28). */}
                         <MultiSelectDropdown
                             className="w-auto border-r border-slate-200 dark:border-slate-700"
-                            triggerClassName="rounded-l-full"
-                            icon={<AppIcon name="store" size="md" className="text-sky-500" />}
+                            triggerClassName="rounded-l-full whitespace-nowrap min-h-0 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
+                            icon={<AppIcon name="store" size="sm" className="text-sky-500" />}
                             triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                             count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
                             allLabel="Chọn tất cả"
@@ -464,8 +466,8 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         />
                         <MultiSelectDropdown
                             className="w-auto"
-                            triggerClassName="rounded-r-full"
-                            icon={<AppIcon name="restore" size="md" className="text-sky-500" />}
+                            triggerClassName="rounded-r-full whitespace-nowrap min-h-0 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
+                            icon={<AppIcon name="restore" size="sm" className="text-sky-500" />}
                             triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
                             count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}
                             allLabel="All"

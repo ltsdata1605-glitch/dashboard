@@ -62,17 +62,17 @@ describe('parseCompetitionDataBySupermarket', () => {
         expect(result['TGD_ABC - Chi nhánh Y'].programs[0].data).toEqual(['10', '20']);
     });
 
-    it('dòng "Tổng\\t<số liệu>" (tổng hợp toàn hệ thống) KHÔNG được nhận diện là 1 siêu thị — bị bỏ qua', () => {
-        // Khác dòng "Tổng" ĐỨNG RIÊNG (khớp isEntity qua so khớp cả dòng === 'TỔNG', xem test khác):
-        // dòng "Tổng" kèm số liệu trên CÙNG dòng không khớp bất kỳ nhánh isEntity nào (so khớp
-        // toàn dòng thất bại vì còn phần số liệu phía sau), rơi vào nhánh fallback rồi bị loại vì
-        // parts[0]="Tổng" không phải số — ghi lại đúng hành vi hiện tại, không phải hành vi mong đợi.
+    it('dòng "Tổng\\t<số liệu>" (tổng hợp toàn hệ thống) được nhận diện chính xác là thực thể "Tổng"', () => {
         const text = [
             'VAS\tSLLK\tTarget',
             'Tổng\t10\t20',
         ].join('\n');
         const result = parseCompetitionDataBySupermarket(text);
-        expect(result).toEqual({});
+        expect(result['Tổng']).toBeDefined();
+        expect(result['Tổng'].headers).toEqual(['SLLK', 'Target']);
+        expect(result['Tổng'].programs).toEqual([
+            { name: 'VAS', data: ['10', '20'], metric: 'SLLK' }
+        ]);
     });
 
     it('bỏ qua các dòng metadata (URL, "Cập nhật lúc", "Xuất Excel"...) không làm hỏng parse', () => {
@@ -99,28 +99,18 @@ describe('parseCompetitionDataBySupermarket', () => {
         expect(result['ĐM_STR - Kho X'].programs.map(p => p.name)).toEqual(['Ba lô', 'VAS']);
     });
 
-    it(
-        'BUG THẬT (phát hiện khi viết test, CHƯA sửa — ngoài phạm vi Đợt 0/1): dòng số liệu của ' +
-        'siêu thị bị NUỐT MẤT nếu nó đứng ngay TRƯỚC dòng header của chương trình kế tiếp, vì ' +
-        'nhánh "dòng đứng trước 1 dòng header = tên chương trình" (dòng ~157 dashboardHelpers.ts) ' +
-        'được kiểm tra TRƯỚC nhánh nhận diện siêu thị. Không có dòng đệm (ví dụ "Tổng") giữa 2 ' +
-        'khối dữ liệu liền nhau ⇒ mất số liệu của chương trình đứng trước, im lặng, không lỗi.',
-        () => {
-            const text = [
-                'VAS\tSLLK\tTarget',
-                'ĐM_STR - Kho X\t224\t39', // <- dòng này sẽ bị nuốt vì dòng NGAY SAU là header
-                'SIM TỔNG\tSLLK\tTarget',
-                'ĐM_STR - Kho X\t56\t22',
-            ].join('\n');
+    it('dòng số liệu của siêu thị KHÔNG bị nuốt mất khi đứng ngay trước header tiếp theo', () => {
+        const text = [
+            'VAS\tSLLK\tTarget',
+            'ĐM_STR - Kho X\t224\t39', // kiểm tra không bị nuốt khi dòng ngay sau là header
+            'SIM TỔNG\tSLLK\tTarget',
+            'ĐM_STR - Kho X\t56\t22',
+        ].join('\n');
 
-            const result = parseCompetitionDataBySupermarket(text);
-            const names = (result['ĐM_STR - Kho X']?.programs ?? []).map(p => p.name);
-            // Hành vi ĐÚNG mong đợi phải là ['SIM TỔNG', 'VAS'] (2 chương trình) — nhưng thực tế
-            // chỉ còn 1, vì dòng số liệu của VAS bị hiểu nhầm thành tên chương trình mới.
-            expect(names).not.toContain('VAS');
-            expect(names).toEqual(['SIM TỔNG']);
-        }
-    );
+        const result = parseCompetitionDataBySupermarket(text);
+        const names = (result['ĐM_STR - Kho X']?.programs ?? []).map(p => p.name);
+        expect(names.sort()).toEqual(['SIM TỔNG', 'VAS']);
+    });
 
     it('cách né bug trên trong thực tế: chèn 1 dòng đệm bất kỳ (không phải header) giữa 2 khối', () => {
         const text = [

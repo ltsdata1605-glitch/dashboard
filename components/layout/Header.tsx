@@ -99,8 +99,17 @@ const Header: React.FC<HeaderProps> = ({
                                 title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
                                 <AppIcon name="upload" size="md" />
-                                <span>File YCX</span>
+                                <span>YCX</span>
                             </Button>
+                            <a 
+                                href="https://report.mwgroup.vn/home/dashboard/77"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                                title="Tải dữ liệu báo cáo"
+                            >
+                                <AppIcon name="link" size="md" />
+                            </a>
                             {onOpenHistory && (
                                 <Button
                                     variant="unstyled" size="none"
@@ -114,15 +123,6 @@ const Header: React.FC<HeaderProps> = ({
                             )}
                         </>
                     )}
-                    <a 
-                        href="https://report.mwgroup.vn/home/dashboard/77"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                        title="Tải dữ liệu báo cáo"
-                    >
-                        <AppIcon name="externalLink" size="md" />
-                    </a>
 
                     <AnimatePresence mode="wait">
                         {hasSalesData && (

@@ -88,12 +88,17 @@
   .ycx-icon {
     width: var(--ycx-icon-m, 18px);
     height: var(--ycx-icon-m, 18px);
+    min-width: var(--ycx-icon-m, 18px);
+    min-height: var(--ycx-icon-m, 18px);
     flex-shrink: 0;
+    aspect-ratio: 1 / 1;
   }
   @media (min-width: 64rem) {
     .ycx-icon {
       width: var(--ycx-icon-d, 16px);
       height: var(--ycx-icon-d, 16px);
+      min-width: var(--ycx-icon-d, 16px);
+      min-height: var(--ycx-icon-d, 16px);
     }
   }
 

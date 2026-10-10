@@ -28,9 +28,82 @@ export function resolveYcxMode(requested: YcxMode, now: Date = new Date()): YcxM
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const ddmm = (d: Date) => `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`;
 
+/**
+ * Tiêu đề tự động cho YCX Luỹ kế:
+ * "YCX Từ ngày 1 - Ngày hiện tại -1 + hh:mm"
+ * Ví dụ: Ngày 10/10 lúc 08:45 -> "YCX Từ ngày 1 - 9/10 + 08:45"
+ * Nếu hôm nay là ngày 1 -> Lùi về ngày cuối tháng trước (ví dụ: ngày 1/10 -> "YCX Từ ngày 1 - 30/9 + 08:45")
+ */
+export function formatYcxLuyKeTitle(now: Date = new Date()): string {
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+    const day = yesterday.getDate();
+    const month = yesterday.getMonth() + 1;
+    const hh = pad2(now.getHours());
+    const mm = pad2(now.getMinutes());
+    return `YCX Từ ngày 1 - ${day}/${month} + ${hh}:${mm}`;
+}
+
+/**
+ * Tiêu đề tự động cho YCX khi chọn tháng:
+ * "YCX Tháng được chọn"
+ * Ví dụ: "YCX Tháng 9.2026" hoặc "YCX Tháng 10.2026"
+ */
+export function formatYcxMonthTitle(monthVal?: string | Date): string {
+    if (!monthVal) {
+        const d = new Date();
+        return `YCX Tháng ${d.getMonth() + 1}.${d.getFullYear()}`;
+    }
+    if (monthVal instanceof Date) {
+        return `YCX Tháng ${monthVal.getMonth() + 1}.${monthVal.getFullYear()}`;
+    }
+    if (/^\d{4}-\d{2}$/.test(monthVal)) {
+        const [y, m] = monthVal.split('-');
+        return `YCX Tháng ${parseInt(m, 10)}.${y}`;
+    }
+    if (/^\d{6}$/.test(monthVal)) {
+        const y = monthVal.slice(0, 4);
+        const m = parseInt(monthVal.slice(4), 10);
+        return `YCX Tháng ${m}.${y}`;
+    }
+    if (/^\d{1,2}\/\d{4}$/.test(monthVal)) {
+        const [m, y] = monthVal.split('/');
+        return `YCX Tháng ${parseInt(m, 10)}.${y}`;
+    }
+    return `YCX Tháng ${monthVal}`;
+}
+
+/**
+ * Chuẩn hoá tên tệp YCX nếu là tên tệp xuất thô từ MWG report 77
+ * (ví dụ: "Chitiếtyêucầuxuấtcbe3c931...20261010_081500_...").
+ * Trích xuất ngày giờ xuất để tạo tiêu đề đẹp: "YCX Từ ngày 1 - 9/10 + 08:15".
+ */
+export function cleanYcxFileName(rawFilename?: string): string {
+    if (!rawFilename) return formatYcxLuyKeTitle();
+    const isMwgRaw = /^(?:Chiti[eế]ty[eê]uc[aâ]uxu[aấ]t|Report|Chi\s*tiết\s*yêu\s*cầu\s*xuất)/i.test(rawFilename);
+    if (!isMwgRaw) return rawFilename;
+
+    const m = rawFilename.match(/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/);
+    if (m) {
+        const [_, y, mo, d, h, mi] = m;
+        const fileDate = new Date(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi));
+        if (!isNaN(fileDate.getTime())) {
+            return formatYcxLuyKeTitle(fileDate);
+        }
+    }
+    return formatYcxLuyKeTitle();
+}
+
 /** Khoảng ngày sẽ chọn trên báo cáo 77 (hiển thị cho người dùng — userscript tự tính lại cùng công thức). */
-export function ycxDateRange(mode: YcxMode, now: Date = new Date()): { from: string; to: string } {
+export function ycxDateRange(mode: YcxMode, now: Date = new Date(), month?: string): { from: string; to: string } {
     if (mode === 'realtime') return { from: ddmm(now), to: ddmm(now) };
+    if (month) {
+        const [y, m] = month.includes('-') ? month.split('-').map(Number) : [Number(month.slice(0, 4)), Number(month.slice(4))];
+        const lastDay = new Date(y, m, 0).getDate();
+        return {
+            from: `01/${pad2(m)}/${y}`,
+            to: `${pad2(lastDay)}/${pad2(m)}/${y}`
+        };
+    }
     const homQua = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
     return { from: ddmm(new Date(now.getFullYear(), now.getMonth(), 1)), to: ddmm(homQua) };
 }
@@ -111,8 +184,9 @@ export function newYcxJobId(): string {
     return `ycx-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export function buildYcxReportUrl(jobId: string, mode: YcxMode = 'realtime'): string {
-    return `${YCX_REPORT_URL}?ycx_ycx=${mode}&ycx_job=${encodeURIComponent(jobId)}`;
+export function buildYcxReportUrl(jobId: string, mode: YcxMode = 'realtime', month?: string): string {
+    const mParam = month ? `&ycx_month=${encodeURIComponent(month)}` : '';
+    return `${YCX_REPORT_URL}?ycx_ycx=${mode}&ycx_job=${encodeURIComponent(jobId)}${mParam}`;
 }
 
 /**
@@ -120,9 +194,9 @@ export function buildYcxReportUrl(jobId: string, mode: YcxMode = 'realtime'): st
  * PHẢI gọi ngay trong cú bấm của người dùng — nếu không trình duyệt chặn cửa sổ bật lên.
  * Trả về false nếu trình duyệt vẫn chặn.
  */
-export function startYcxJob(jobId: string, mode: YcxMode = 'realtime', opts: { auto?: boolean } = {}): Promise<boolean> {
-    window.dispatchEvent(new CustomEvent(EVT_START, { detail: { source: YCX_SOURCE, type: 'start-job', jobId, mode } }));
-    const url = buildYcxReportUrl(jobId, mode);
+export function startYcxJob(jobId: string, mode: YcxMode = 'realtime', opts: { auto?: boolean; month?: string } = {}): Promise<boolean> {
+    window.dispatchEvent(new CustomEvent(EVT_START, { detail: { source: YCX_SOURCE, type: 'start-job', jobId, mode, month: opts.month } }));
+    const url = buildYcxReportUrl(jobId, mode, opts.month);
     if (!opts.auto) {
         // Bấm tay: mở NGAY trong cú bấm (chờ gì trước đó là trình duyệt chặn cửa sổ bật lên)
         const w = window.open(url, '_blank');

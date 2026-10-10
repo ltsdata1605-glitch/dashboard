@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
-import { listenSystemAnnouncement } from '../../services/systemAnnouncementService';
+import { listenSystemAnnouncement, isAnnouncementExpired } from '../../services/systemAnnouncementService';
 import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../shared/ui/Modal';
 import toast from 'react-hot-toast';
@@ -20,6 +20,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
     const { user, userRole } = useAuth();
     const [content, setContent] = useState('');
     const [active, setActive] = useState(false);
+    const [expiresDate, setExpiresDate] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     // Fetch active announcement settings ONCE when modal opens
@@ -33,9 +34,22 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 if (found) {
                     setContent(found.content || '');
                     setActive(found.active || false);
+                    if (found.expiresAt) {
+                        try {
+                            const d = typeof (found.expiresAt as any).toDate === 'function'
+                                ? (found.expiresAt as any).toDate()
+                                : new Date(found.expiresAt as any);
+                            setExpiresDate(d.toISOString().split('T')[0]);
+                        } catch {
+                            setExpiresDate('');
+                        }
+                    } else {
+                        setExpiresDate('');
+                    }
                 } else {
                     setContent('');
                     setActive(false);
+                    setExpiresDate('');
                 }
                 hasInitialized = true;
             }
@@ -55,7 +69,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
         setIsLoading(true);
         try {
             const sharedConfigsRef = collection(db, 'shared_configs');
-            const savePromise = addDoc(sharedConfigsRef, {
+            const payload: Record<string, any> = {
                 uid: user.uid,
                 authorName: user.displayName || 'Super Admin',
                 authorEmail: user.email,
@@ -66,7 +80,12 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                 content: content.trim(),
                 active: active,
                 createdAt: serverTimestamp()
-            });
+            };
+            if (expiresDate) {
+                payload.expiresAt = expiresDate;
+            }
+
+            const savePromise = addDoc(sharedConfigsRef, payload);
 
             const timeoutPromise = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error("Mạng chập chờn, vui lòng thử lại")), 10000)
@@ -83,6 +102,8 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
             setIsLoading(false);
         }
     };
+
+    const isCurrentExpired = isAnnouncementExpired({ content, expiresAt: expiresDate });
 
     return (
         <Modal
@@ -105,6 +126,30 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
                         className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-semibold resize-none"
                     />
                 </div>
+
+                <div>
+                    <label className="block text-[11px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+                        Tự động ẩn sau ngày (Tùy chọn)
+                    </label>
+                    <input
+                        type="date"
+                        value={expiresDate}
+                        onChange={(e) => setExpiresDate(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-800 dark:text-white text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all font-semibold"
+                    />
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+                        Nếu để trống, thông báo sẽ luôn hiển thị khi được bật cho đến khi bạn tắt thủ công.
+                    </p>
+                </div>
+
+                {isCurrentExpired && active && (
+                    <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+                        <AppIcon name="warning" size="sm" className="text-amber-600 shrink-0" />
+                        <span>
+                            Ngày hết hạn đã chọn ở trong quá khứ nên thông báo sẽ bị tự động ẩn. Vui lòng chọn ngày trong tương lai hoặc để trống.
+                        </span>
+                    </div>
+                )}
 
                 <label
                     className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl cursor-pointer select-none transition-all hover:brightness-95"

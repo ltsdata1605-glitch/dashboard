@@ -96,19 +96,19 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         selector bên dưới) định vị absolute, xổ ra NGOÀI khung pill; overflow-hidden
                         sẽ cắt mất panel dù dropdown vẫn "mở" trong state (không bấm chọn được gì) —
                         xem giải thích đầy đủ ở NhanVien.tsx, nơi bug này được user báo cáo trước. */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-8 sm:h-8.5">
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
-                            className="min-h-11 sm:min-h-0 flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-1.5 sm:py-2 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-[11px] sm:text-sm font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors select-none cursor-pointer whitespace-nowrap shrink-0"
+                            className="h-full min-h-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-xs sm:text-xs font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 active:scale-98 transition-all select-none cursor-pointer whitespace-nowrap shrink-0"
                             title="Bấm để chuyển đổi giữa Realtime và Luỹ kế"
                         >
-                            <AppIcon name="info" size="sm" className="text-sky-500 animate-pulse" />
+                            <AppIcon name="info" size="xs" className="text-sky-500 animate-pulse" />
                             <span className="whitespace-nowrap">{activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}</span>
                         </Button>
                         <MultiSelectDropdown
-                            triggerClassName="rounded-r-full whitespace-nowrap"
-                            icon={<AppIcon name="store" size="md" className="text-sky-500" />}
+                            triggerClassName="rounded-r-full whitespace-nowrap min-h-0 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
+                            icon={<AppIcon name="store" size="sm" className="text-sky-500" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
                             allLabel="Chọn tất cả"
@@ -128,42 +128,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 relative rounded-2xl shadow-xs overflow-hidden">
                 {/* Sub-tabs row */}
-                <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/60 hide-on-export flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+                <div className="px-4 sm:px-5 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800/60 hide-on-export flex items-center justify-between gap-2">
                     <Tabs
                         items={SUB_TABS.map(({ tab, label }) => ({ id: tab, label }))}
                         activeId={activeSubTab}
                         onChange={(id) => setActiveSubTab(id as SubTab)}
                         variant="underline"
                     />
-
-                    {/* 2 nút Tự động Realtime & Tự động Luỹ kế nhỏ gọn: chỉ hiển thị trên màn hình < lg (trên laptop đã có floating dock nổi bên phải) */}
-                    {onStartAutoSync && (
-                        <div className="flex lg:hidden items-center gap-1.5 shrink-0 ml-auto pb-0.5">
-                            {/* Nút Tự động Realtime */}
-                            <Button
-                                variant="unstyled"
-                                size="none"
-                                onClick={() => onStartAutoSync('realtime')}
-                                title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-amber-600/30 whitespace-nowrap"
-                            >
-                                <AppIcon name="quick" size="xs" className="text-amber-100 fill-amber-200" />
-                                <span>Tự động Realtime</span>
-                            </Button>
-
-                            {/* Nút Tự động Luỹ kế */}
-                            <Button
-                                variant="unstyled"
-                                size="none"
-                                onClick={() => onStartAutoSync('luyke')}
-                                title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                                className="min-h-7 sm:min-h-0 h-6.5 sm:h-7 flex items-center gap-1 px-2.5 py-1 text-[11px] sm:text-[11.5px] font-semibold rounded-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white shadow-2xs hover:shadow-xs active:scale-95 transition-all cursor-pointer border border-emerald-600/30 whitespace-nowrap"
-                            >
-                                <AppIcon name="trendUp" size="xs" className="text-emerald-100" />
-                                <span>Tự động Luỹ kế</span>
-                            </Button>
-                        </div>
-                    )}
                 </div>
 
                 {/* Content Title + Inline Actions + Quote + TimeProgressBar */}
@@ -198,10 +169,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
+                                variant="ghost" size="icon" className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
                                 title="Xuất tất cả ảnh"
                             >
-                                {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
+                                {isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}
                             </Button>
 
                             {/* Single export */}
@@ -209,10 +180,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-full shrink-0"
+                                    variant="ghost" size="icon" className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
                                     title="Xuất ảnh"
                                 >
-                                    {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="lg" />}
+                                    {isExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportImage" size="sm" />}
                                 </Button>
                             )}
                         </div>

@@ -535,41 +535,57 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
             continue;
         }
 
-        // Check if this line is a Program Name (e.g. "Nồi cơm", "Sim Tổng", "Tivi")
-        if (i + 1 < lines.length && isHeaderLine(lines[i + 1])) {
+        const isDataRow = line.includes('\t') && (() => {
+            const p = line.split('\t').map(x => x.trim());
+            return p.length > 1 && (/^-?[\d.,]+%?$/.test(p[1]) || p[1] === '-' || p[1] === '—');
+        })();
+
+        // Check if this line is a Program Name (e.g. "Nồi cơm", "Sim Tổng", "Tivi", "T10 - Máy Lạnh")
+        // Dòng tên chương trình không bao giờ chứa cột số liệu tab-separated.
+        if (!isDataRow && i + 1 < lines.length && isHeaderLine(lines[i + 1])) {
             currentCompetition = line;
             continue;
         }
 
-        // If line is an entity name (e.g. "TỔNG", "ĐML_STR_STR - 99 Hùng Vương", "DMX Cần Thơ", "1234 - ĐM...")
-        // ĐMM/ĐMS (vd "1678 - ĐMM_AGI_TTO - Tri Tôn", "7904 - ĐMS_AGI_TTO - Cô Tô"): trước 2026-10-01 thiếu 2 tiền tố
-        // này nên dòng có mã kho đầu bị BỎ HẲN (rơi xuống luật " - " vốn loại dòng bắt đầu bằng số).
-        const isEntity = line.toUpperCase() === 'TỔNG' || 
-                         /^(?:ĐMX|DMX|ĐMM|DMM|ĐMS|DMS|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
-                         /^\d+\s*-\s*(?:ĐMX|DMX|ĐMM|DMM|ĐMS|DMS|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(line) ||
-                         (!isEmployeeName(line) && line.includes(' - ') && !line.includes(':') && !line.includes('/') && !line.includes('%') && !/^\d{3,8}\s*-/.test(line));
+        // Check entity (supermarket or "Tổng")
+        // Hỗ trợ cả định dạng tab-separated cùng dòng số liệu ("Tổng\t10\t20" hoặc "1066 - ĐMX...\t10\t20")
+        // và định dạng tên siêu thị đứng riêng dòng trước dòng số liệu.
+        const firstToken = (line.split('\t')[0] || '').trim();
+        const isEntity = firstToken.toUpperCase() === 'TỔNG' || 
+                         /^(?:ĐMX|DMX|ĐMM|DMM|ĐMS|DMS|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(firstToken) ||
+                         /^\d+\s*-\s*(?:ĐMX|DMX|ĐMM|DMM|ĐMS|DMS|ĐML_|DML_|ĐML|DML|ĐM|DM|TGDĐ|TGDD|TGD|KHO|CH|STR|SIÊU\s*THỊ|CHI\s*NHÁNH|BHX)(?:[\s_\-:\d]|$)/i.test(firstToken) ||
+                         (!isEmployeeName(firstToken) && firstToken.includes(' - ') && !firstToken.includes(':') && !firstToken.includes('/') && !firstToken.includes('%') && !/^\d{3,8}\s*-/.test(firstToken));
 
         if (isEntity) {
             // Check if tab-separated on same line with numbers
             if (line.includes('\t')) {
                 const parts = line.split('\t').map(p => p.trim());
-                if (parts.length > 1 && (/^-?[\d.,]+%?$/.test(parts[1]) || parts[1] === '-')) {
-                    const smName = parts[0];
+                if (parts.length > 1 && (/^-?[\d.,]+%?$/.test(parts[1]) || parts[1] === '-' || parts[1] === '—')) {
+                    const smName = parts[0].toUpperCase() === 'TỔNG' ? 'Tổng' : parts[0];
                     if (currentCompetition) {
                         if (!supermarketData[smName]) {
                             supermarketData[smName] = { headers: currentHeaders, programs: [] };
                         }
                         supermarketData[smName].headers = currentHeaders;
-                        supermarketData[smName].programs.push({
-                            name: currentCompetition,
-                            data: parts.slice(1),
-                            metric: currentMetric
-                        });
+                        const existingIdx = supermarketData[smName].programs.findIndex(p => p.name === currentCompetition);
+                        if (existingIdx !== -1) {
+                            supermarketData[smName].programs[existingIdx] = {
+                                name: currentCompetition,
+                                data: parts.slice(1),
+                                metric: currentMetric
+                            };
+                        } else {
+                            supermarketData[smName].programs.push({
+                                name: currentCompetition,
+                                data: parts.slice(1),
+                                metric: currentMetric
+                            });
+                        }
                     }
                     continue;
                 }
             }
-            lastEntityName = line;
+            lastEntityName = line.toUpperCase() === 'TỔNG' ? 'Tổng' : line;
             continue;
         }
 
@@ -582,12 +598,22 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
                     supermarketData[smName] = { headers: currentHeaders, programs: [] };
                 }
                 supermarketData[smName].headers = currentHeaders;
-                supermarketData[smName].programs.push({
-                    name: currentCompetition,
-                    data: parts,
-                    metric: currentMetric
-                });
+                const existingIdx = supermarketData[smName].programs.findIndex(p => p.name === currentCompetition);
+                if (existingIdx !== -1) {
+                    supermarketData[smName].programs[existingIdx] = {
+                        name: currentCompetition,
+                        data: parts,
+                        metric: currentMetric
+                    };
+                } else {
+                    supermarketData[smName].programs.push({
+                        name: currentCompetition,
+                        data: parts,
+                        metric: currentMetric
+                    });
+                }
                 lastEntityName = null;
+                continue;
             }
         }
     }

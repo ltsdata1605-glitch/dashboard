@@ -28,6 +28,7 @@ export interface ExportImageOptions {
     fitWidthToTable?: boolean;
     mode?: ExportMode;
     onCloneReady?: ((clone: HTMLElement) => void) | null;
+    throwOnLineError?: boolean;
 }
 
 interface ExportLogicProps {

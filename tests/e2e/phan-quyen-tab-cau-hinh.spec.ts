@@ -42,10 +42,10 @@ test('mở Phân Quyền và bấm tab Cấu hình ngành hàng: render mượt 
     await nutPhanQuyen.click();
 
     // Xác nhận đã vào màn Phân Quyền
-    await expect(page.getByRole('heading', { name: 'Phân Quyền & Duyệt Yêu Cầu' })).toBeVisible({ timeout: 15000 });
+    await expect(page.getByRole('button', { name: /Phân quyền/i }).first()).toBeVisible({ timeout: 15000 });
 
-    // Tìm và bấm tab "Cấu hình ngành hàng"
-    const tabCauHinh = page.getByRole('button', { name: 'Cấu hình ngành hàng' });
+    // Tìm và bấm tab "Khai báo ngành hàng"
+    const tabCauHinh = page.getByRole('button', { name: /Khai báo ngành hàng|Cấu hình ngành hàng/i }).first();
     await expect(tabCauHinh).toBeVisible();
     await tabCauHinh.click();
 

@@ -116,8 +116,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         return <span className={`text-[11px] font-bold ${colorClass}`}>{isPositive ? '+' : '-'}{formattedVal}</span>;
     };
 
-    const footerCellClass = "px-1 sm:px-2 py-1 sm:py-2 text-center text-[11px] sm:text-[13px]";
-    const footerDeltaCellClass = "px-1 sm:px-2 py-1 sm:py-2 text-center text-[11px] sm:text-[13px]"; 
+    const footerCellClass = "px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px]";
+    const footerDeltaCellClass = "px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px]"; 
     const separatorClass = "border-r border-slate-200 dark:border-slate-700";
 
     // --- Helper to get options and selected state dynamically ---
@@ -237,7 +237,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[180px] px-2 sm:px-3 py-1 sm:py-1.5 text-left uppercase text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -341,7 +341,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[180px] px-2 sm:px-3 py-1 sm:py-1.5 text-left uppercase text-[11px] font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-slate-900`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -448,7 +448,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         </tbody>
                         <tfoot className="bg-sky-100 dark:bg-sky-900/40 font-bold text-sm border-t-2 border-sky-200 dark:border-sky-800">
                            <tr>
-                                <td className={`px-2 sm:px-4 py-1 sm:py-2 text-left sticky left-0 z-40 bg-sky-100 dark:bg-sky-900/60 font-extrabold text-[11px] sm:text-[13px] uppercase tracking-widest text-sky-700 dark:text-sky-300 ${separatorClass}`}>TỔNG</td>
+                                <td className={`px-2 sm:px-3 py-1 text-left sticky left-0 z-40 bg-sky-100 dark:bg-sky-900/60 font-extrabold text-[11px] sm:text-[13px] uppercase tracking-widest text-sky-700 dark:text-sky-300 ${separatorClass}`}>TỔNG</td>
                                 {/* Quantity */}
                                 {visibleColumns.includes('totalQuantity') && (
                                     <>

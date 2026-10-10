@@ -1,25 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
+import { formatYcxLuyKeTitle, formatYcxMonthTitle } from '../../services/ycxAutoSyncService';
 
 interface FileNamingModalProps {
     isOpen: boolean;
     onConfirm: (name: string) => void;
+    defaultName?: string;
 }
 
 export const FileNamingModal: React.FC<FileNamingModalProps> = ({
     isOpen,
     onConfirm,
+    defaultName,
 }) => {
     const [inputValue, setInputValue] = useState('');
 
-    // Reset input value when modal opens
+    // Tự động điền tiêu đề mặc định khi mở modal: "YCX Từ ngày 1 - Ngày hiện tại -1 + hh:mm"
     useEffect(() => {
         if (isOpen) {
-            setInputValue('');
+            setInputValue(defaultName || formatYcxLuyKeTitle());
         }
-    }, [isOpen]);
+    }, [isOpen, defaultName]);
 
     const handleConfirm = (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,16 +32,25 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
         }
     };
 
-    const suggestions = [
-        "YCX 1.1.2025 - 30.6.2025",
-        "YCX Tháng 5.2026"
-    ];
+    const suggestions = useMemo(() => {
+        const now = new Date();
+        const autoLuyKe = formatYcxLuyKeTitle(now);
+        const thisMonth = formatYcxMonthTitle(now);
+        const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const prevMonthTitle = formatYcxMonthTitle(prevMonth);
+        return [
+            autoLuyKe,
+            thisMonth,
+            prevMonthTitle
+        ];
+    }, [isOpen]);
 
     return (
         <Modal
             isOpen={isOpen}
             onClose={() => {}}
             maxWidth="md"
+            zIndex="z-[1100]"
             hideHeader
             ariaLabel="Đặt tên hiển thị"
             hideCloseButton
@@ -69,6 +81,7 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
                             autoFocus
                             value={inputValue}
                             onChange={(e) => setInputValue(e.target.value)}
+                            onFocus={(e) => e.target.select()}
                             placeholder="Nhập tên hiển thị..."
                             className="w-full h-11 px-3.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/80 rounded-md text-slate-800 dark:text-white placeholder:text-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all font-semibold"
                         />

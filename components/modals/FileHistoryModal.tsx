@@ -14,6 +14,7 @@ interface FileHistoryModalProps {
     registry: UploadedFileRegistryItem[];
     onToggleActive: (id: string) => Promise<void> | void;
     onDelete: (id: string) => Promise<void> | void;
+    onRename?: (id: string, newFilename: string) => Promise<void> | void;
     onDeleteAll?: () => Promise<void> | void;
     onProcessFile: (files: File[], isCloudSync?: boolean, isHistorical?: boolean) => void;
     onViewReport?: () => void;
@@ -25,6 +26,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
     registry,
     onToggleActive,
     onDelete,
+    onRename,
     onDeleteAll,
     onProcessFile,
     onViewReport
@@ -117,6 +119,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                             registry={registry}
                             onToggleActive={onToggleActive}
                             onDelete={onDelete}
+                            onRename={onRename}
                             compact={true}
                         />
                     </div>

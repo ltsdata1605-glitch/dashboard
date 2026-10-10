@@ -4,6 +4,7 @@ import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { BiSyncMode, BiSyncProgress, USERSCRIPT_URL } from '../services/biAutoSyncService';
+import { setStoredUserscriptVersion } from '../services/userscriptProbeService';
 import { TampermonkeyInstallGuideContent } from './common/TampermonkeyInstallGuideContent';
 
 interface BiAutoSyncModalProps {
@@ -173,10 +174,30 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                 </p>
                                 <p className="text-rose-800 dark:text-rose-300 leading-relaxed">
                                     Trình duyệt đang chạy bản cũ{currentVersion ? ` (v${currentVersion})` : ''}. Đã tự mở trang cập nhật ở tab mới:
-                                    bấm <b>Cập nhật</b> (Update) trong Tampermonkey, rồi quay lại bấm <b>Tự động</b> lần nữa.
-                                    Không thấy tab mới (trình duyệt chặn) thì bấm nút dưới đây.
+                                    bấm <b>Cập nhật</b> (Update) trong Tampermonkey. Sau khi cập nhật xong, <b>hệ thống sẽ tự động phát hiện ngầm và tự động đổ dữ liệu</b> mà không cần F5 hay bấm lại.
                                 </p>
-                                <div className="pt-2 flex flex-wrap gap-2">
+                                <div className="flex items-center gap-1.5 text-rose-700 dark:text-rose-300 font-semibold text-[11px] bg-rose-100/60 dark:bg-rose-900/40 px-2.5 py-1.5 rounded-lg border border-rose-200/80 dark:border-rose-800/50">
+                                    <AppIcon name="loading" size="xs" spin className="text-rose-600 dark:text-rose-400 shrink-0" />
+                                    <span>Đang kiểm tra ngầm liên tục... Sẽ tự động đổ dữ liệu ngay khi cập nhật xong.</span>
+                                </div>
+                                <div className="pt-1.5 flex flex-wrap gap-2">
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
+                                        onClick={() => {
+                                            if (latestVersion) {
+                                                setStoredUserscriptVersion(latestVersion);
+                                            }
+                                            if (onRetry) {
+                                                onRetry();
+                                            }
+                                        }}
+                                        className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-all cursor-pointer"
+                                        title="Bấm để kiểm tra lại và tự động đổ dữ liệu ngay nếu bạn đã cài đặt xong trong Tampermonkey"
+                                    >
+                                        <AppIcon name="check" size="sm" />
+                                        <span>Đã cài đặt xong · Đổ dữ liệu ngay</span>
+                                    </Button>
                                     <Button
                                         variant="unstyled"
                                         size="none"
@@ -184,7 +205,7 @@ export const BiAutoSyncModal: React.FC<BiAutoSyncModalProps> = ({
                                         className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
                                     >
                                         <AppIcon name="externalLink" size="sm" />
-                                        <span>Mở trang cập nhật Userscript{latestVersion ? ` v${latestVersion}` : ''}</span>
+                                        <span>Mở lại trang cập nhật Userscript{latestVersion ? ` v${latestVersion}` : ''}</span>
                                     </Button>
                                     <Button
                                         variant="secondary"

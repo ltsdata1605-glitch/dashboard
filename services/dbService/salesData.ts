@@ -3,6 +3,7 @@ import { getDb, getSetting, saveSetting, APP_STORE, resetDbConnection, saveSetti
 import { biHubDbName } from '../../utils/localDbScope';
 import { storedSalesJsonWrap } from '../salesJsonChunks';
 import type { SalesJsonWriteRequest } from '../salesJsonWriter.worker';
+import { cleanYcxFileName } from '../ycxAutoSyncService';
 
 // ── Đợt 6 (2026-09-30): ghi JSON dựng sẵn NGOÀI luồng chính ─────────────────────────────────────
 // `rawChunks` = các khúc JSON UTF-8 do Worker đọc tệp tạo ra (services/salesJsonChunks.ts). Worker ghi
@@ -96,9 +97,10 @@ export async function saveSyncCloudData(
         await saveSalesFileData(syncId, data);
 
         // 2. Chuyển registry sang bản mới — từ đây app đọc bản mới. Ghi hỏng → bỏ bản mới vừa ghi, bản cũ nguyên.
+        const cleanName = cleanYcxFileName(filename);
         const item: UploadedFileRegistryItem = {
             id: syncId,
-            filename,
+            filename: cleanName,
             rowCount: data.length,
             savedAt,             // Use the cloud savedAt
             fileLastModified,    // Use the cloud fileLastModified
@@ -318,7 +320,20 @@ export async function clearSalesData(): Promise<void> {
 
 export async function getSalesFilesRegistry(): Promise<UploadedFileRegistryItem[]> {
     const registry = await getSetting<UploadedFileRegistryItem[]>('salesFilesRegistry');
-    return registry || [];
+    if (!registry || registry.length === 0) return [];
+    let changed = false;
+    const cleaned = registry.map(f => {
+        const cleanName = cleanYcxFileName(f.filename);
+        if (cleanName !== f.filename) {
+            changed = true;
+            return { ...f, filename: cleanName };
+        }
+        return f;
+    });
+    if (changed) {
+        saveSettingOrThrow('salesFilesRegistry', cleaned).catch(() => {});
+    }
+    return cleaned;
 }
 
 // Audit D11/DATA08 (2026-10-08): trước dùng saveSetting() — lỗi ghi vĩnh viễn (hết dung lượng, bị từ chối)
@@ -349,8 +364,29 @@ export async function saveSalesFilesRegistry(registry: UploadedFileRegistryItem[
 // sẵn dữ liệu mới trong tay).
 export async function resetHistoricalFilesToInactive(): Promise<UploadedFileRegistryItem[]> {
     const registry = await getSalesFilesRegistry();
-    if (!registry.some(f => f.isActive)) return registry;
-    const updated = registry.map(f => f.isActive ? { ...f, isActive: false } : f);
+    if (registry.length === 0) return registry;
+
+    const hasRealtime = await hasTempRealtimeData();
+
+    // Nếu ĐÃ CÓ dữ liệu Realtime trong IndexedDB (temp_realtime_sales_data):
+    // Ưu tiên hiển thị Realtime -> reset các file lịch sử/lũy kế về inactive để tránh gộp nặng không mong muốn.
+    if (hasRealtime) {
+        if (!registry.some(f => f.isActive)) return registry;
+        const updated = registry.map(f => f.isActive ? { ...f, isActive: false } : f);
+        await saveSalesFilesRegistry(updated);
+        return updated;
+    }
+
+    // Nếu KHÔNG CÓ dữ liệu Realtime (người dùng chỉ làm việc với file tải lên hoặc file lũy kế):
+    // 1. Nếu đang có file active -> GIỮ NGUYÊN trạng thái active để khi refresh (F5) không bị mất dữ liệu!
+    if (registry.some(f => f.isActive)) {
+        return registry;
+    }
+
+    // 2. Nếu chưa có file nào active -> tự động kích hoạt file mới nhất để người dùng luôn thấy dữ liệu khi reload
+    const sorted = [...registry].sort((a, b) => b.savedAt - a.savedAt);
+    const latestId = sorted[0].id;
+    const updated = registry.map(f => f.id === latestId ? { ...f, isActive: true } : f);
     await saveSalesFilesRegistry(updated);
     return updated;
 }

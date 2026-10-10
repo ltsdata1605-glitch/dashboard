@@ -27,6 +27,7 @@ import * as dbService from './dbService';
 import { getRowValue, parseKhoList } from '../utils/dataUtils';
 import { COL } from '../constants';
 import { mapWithLimit } from './mapWithLimit';
+import { cleanYcxFileName } from './ycxAutoSyncService';
 
 /** Số file / chunk tải song song tối đa (audit GĐ3 — trước đây không giới hạn). Tối đa 3 × 4 = 12 request. */
 const FILE_CONCURRENCY = 3;
@@ -126,6 +127,7 @@ export async function uploadKhoSalesData(
 ): Promise<void> {
     if (!user || !maKho || data.length === 0) return;
 
+    const cleanedFileName = cleanYcxFileName(filename);
     const rowsByMonth = new Map<string, DataRow[]>();
     for (const row of data) {
         const m = rowMonthKey(row);
@@ -134,7 +136,7 @@ export async function uploadKhoSalesData(
     }
 
     for (const [month, rows] of rowsByMonth) {
-        await uploadKhoMonthSlot(user, maKho, month, rows, filename, fileLastModified, isRealtime, uploadedByName);
+        await uploadKhoMonthSlot(user, maKho, month, rows, cleanedFileName, fileLastModified, isRealtime, uploadedByName);
     }
 }
 

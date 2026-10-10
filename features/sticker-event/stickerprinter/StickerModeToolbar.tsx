@@ -46,82 +46,88 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
     // chỉ còn ~250px → phần dư vuốt ngang trong lớp này thay vì đẩy cả trang tràn ngang 140px.
     // Các nút là <Button> dùng chung nên đã tự cao 44px trên mobile (min-h-11), không cần nới thêm.
     return createPortal(
-        <div className="max-w-[calc(100vw-140px)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:max-w-none lg:overflow-visible">
-        <div className="flex items-center gap-0.5 lg:gap-1 bg-white/60 dark:bg-slate-900/60 p-1 lg:p-1.5 rounded-full w-max lg:w-auto border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">
-            <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-0.5 lg:p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+        <div className="max-w-[calc(100vw-110px)] min-[540px]:max-w-[calc(100vw-180px)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:max-w-none lg:overflow-visible py-0.5">
+        <div className="flex items-center gap-0.5 lg:gap-1 bg-white/70 dark:bg-slate-900/70 p-0.5 lg:p-1 rounded-full w-max lg:w-auto border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl shadow-xs animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">
+            <div className="flex bg-slate-100/90 dark:bg-slate-800/90 p-0.5 rounded-full border border-slate-200/40 dark:border-slate-700/40 items-center">
                 <Button
-                    variant="ghost"
+                    variant="unstyled"
+                    size="none"
                     onClick={onSelectGiaSoc}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
+                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
                         stickerMode === 'sticker' && stickerType === 'gia_soc'
-                            ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 font-bold shadow-xs'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
                     }`}
                 >
                     <span className="lg:hidden">Giá Sốc</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <AppIcon name="success" size="md" className="text-sky-600" />}Giá Sốc</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <AppIcon name="success" size="sm" className="text-sky-600" />}Giá Sốc</span>
                 </Button>
                 <Button
-                    variant="ghost"
+                    variant="unstyled"
+                    size="none"
                     onClick={onSelectGioVang}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
+                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
                         stickerMode === 'sticker' && stickerType === 'gio_vang'
-                            ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 font-bold shadow-xs'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
                     }`}
                 >
                     <span className="lg:hidden">Giờ Vàng</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <AppIcon name="success" size="md" className="text-amber-600" />}Giờ Vàng</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <AppIcon name="success" size="sm" className="text-amber-600" />}Giờ Vàng</span>
                 </Button>
                 <Button
-                    variant="ghost"
+                    variant="unstyled"
+                    size="none"
                     onClick={onSelectDraw}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
+                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
                         stickerMode === 'sticker' && stickerType === 'draw'
-                            ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 font-bold shadow-xs'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
                     }`}
                 >
                     <span className="lg:hidden">Phiếu</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'draw' && <AppIcon name="success" size="md" className="text-rose-600" />}Phiếu</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'sticker' && stickerType === 'draw' && <AppIcon name="success" size="sm" className="text-rose-600" />}Phiếu</span>
                 </Button>
                 <Button
-                    variant="ghost"
+                    variant="unstyled"
+                    size="none"
                     onClick={onSelectEvent}
-                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold whitespace-nowrap text-[11px] lg:text-[13px] transition-all ${
+                    className={`flex items-center justify-center gap-1 h-6 lg:h-7 px-2 lg:px-2.5 rounded-full text-[11px] lg:text-xs whitespace-nowrap transition-all ${
                         stickerMode === 'event'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold shadow-xs'
+                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 font-medium'
                     }`}
                 >
                     <span className="lg:hidden">Sticker</span>
-                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'event' && <AppIcon name="success" size="md" className="text-emerald-600" />}<AppIcon name="product" size="md" />Sticker</span>
+                    <span className="hidden lg:inline-flex items-center gap-1">{stickerMode === 'event' && <AppIcon name="success" size="sm" className="text-emerald-600" />}<AppIcon name="product" size="sm" />Sticker</span>
                 </Button>
             </div>
 
             {stickerMode === 'sticker' && (
                 <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
-                    <span className="text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400 whitespace-nowrap">
+                    <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400 whitespace-nowrap">
                         {stickerType === 'draw' ? `${getDrawActiveFieldLabel()}:` : `${getActiveFieldLabel()}:`}
                     </span>
-                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-sm h-[22px] lg:h-[26px]">
+                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full shadow-xs h-[22px] lg:h-[24px]">
                         <Button
-                            variant="ghost"
+                            variant="unstyled"
+                            size="none"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onDecreaseFontSize}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
+                            className="h-full w-5 lg:w-5.5 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black rounded-l-full transition-colors text-xs"
                             title="Giảm size"
                         >
                             -
                         </Button>
-                        <span className="px-0 text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">
+                        <span className="px-0.5 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 min-w-5 lg:min-w-6 text-center">
                             {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
                         </span>
                         <Button
-                            variant="ghost"
+                            variant="unstyled"
+                            size="none"
                             onMouseDown={(e) => e.preventDefault()}
                             onClick={onIncreaseFontSize}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-full h-full w-auto px-2.5 lg:px-2 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
+                            className="h-full w-5 lg:w-5.5 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black rounded-r-full transition-colors text-xs"
                             title="Tăng size"
                         >
                             +

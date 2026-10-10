@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <title>Userscript Probe</title>
+</head>
+<body style="background:transparent;margin:0;padding:0;">
+    <div style="width:4px;height:4px;overflow:hidden;opacity:0.01;">probe</div>
+    <script>
+        (function() {
+            var BRIDGE_SOURCE = 'ycx-bonus-bridge';
+            var EVT_PING = 'ycx-bonus-bridge:ping';
+            var EVT_PONG = 'ycx-bonus-bridge:pong';
+
+            function sendVersionToParent(ver) {
+                if (!ver) return;
+                try {
+                    localStorage.setItem('ycx_userscript_installed_version', ver);
+                    localStorage.setItem('ycx_userscript_last_probe', String(Date.now()));
+                } catch (e) {}
+                try {
+                    window.parent.postMessage({ type: 'ycx-probe-version', version: ver }, '*');
+                } catch (e) {}
+            }
+
+            // Lắng nghe pong từ Userscript được Tampermonkey inject vào iframe này
+            window.addEventListener(EVT_PONG, function(e) {
+                var detail = e && e.detail;
+                if (detail && detail.source === BRIDGE_SOURCE && detail.version) {
+                    sendVersionToParent(detail.version);
+                }
+            });
+
+            // Lắng nghe ping từ trang mẹ
+            window.addEventListener('message', function(e) {
+                if (e.data && e.data.type === 'ycx-probe-ping') {
+                    window.dispatchEvent(new CustomEvent(EVT_PING, {
+                        detail: { source: BRIDGE_SOURCE, type: 'ping', nonce: 'probe_' + Date.now() }
+                    }));
+                }
+            });
+
+            // Tự động ping liên tục mỗi 500ms
+            var timer = setInterval(function() {
+                window.dispatchEvent(new CustomEvent(EVT_PING, {
+                    detail: { source: BRIDGE_SOURCE, type: 'ping', nonce: 'probe_' + Date.now() }
+                }));
+            }, 500);
+        })();
+    </script>
+</body>
+</html>

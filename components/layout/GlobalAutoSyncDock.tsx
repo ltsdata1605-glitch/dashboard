@@ -18,8 +18,10 @@ import {
     YCX_MIN_USERSCRIPT_VERSION, YCX_REPORT_URL, YCX_USERSCRIPT_URL,
     compareVersions, detectYcxUserscript, fetchLatestYcxUserscriptVersion,
     listenYcxJob, newYcxJobId, resolveYcxMode, startYcxJob, ycxBufferToFile, ycxSteps,
+    formatYcxLuyKeTitle, formatYcxMonthTitle,
     type YcxMode, type YcxStep,
 } from '../../services/ycxAutoSyncService';
+import YcxLuyKePickerModal from '../modals/YcxLuyKePickerModal';
 import { navigateToYcxAnalysis } from '../../features/bi-dashboard/services/autoNavigationService';
 
 type YcxPhase = 'idle' | 'running' | 'error' | 'done';
@@ -59,6 +61,7 @@ export default function GlobalAutoSyncDock() {
     /** Chế độ lượt YCX đang chạy (Luỹ kế bấm ngày 01 → Realtime) và nút người dùng đã bấm */
     const [ycxMode, setYcxMode] = useState<YcxMode>('realtime');
     const [ycxYeuCau, setYcxYeuCau] = useState<YcxMode>('realtime');
+    const [ycxLuyKePickerOpen, setYcxLuyKePickerOpen] = useState(false);
     const ycxJobRef = useRef<string | null>(null);
     /** Lượt hẹn giờ đang chạy — để ghi kết quả (xong / lỗi) vào nhật ký hẹn giờ */
     const lichDangChayRef = useRef<{ key: ScheduleKey; time: string; at: number } | null>(null);
@@ -78,6 +81,7 @@ export default function GlobalAutoSyncDock() {
     useEffect(() => { const t = setInterval(() => nhipPhut((n) => n + 1), 60_000); return () => clearInterval(t); }, []);
     const nhanHen = (k: ScheduleKey) => { const t = nextScheduleLabel(lich[k]); return t ? `⏰ Hẹn ${t}` : null; };
     const ycxStopRef = useRef<(() => void) | null>(null);
+    const ycxAutoSendRef = useRef<AutoSendItem[]>([]);
 
     useEffect(() => {
         const handleResize = () => setManHep(window.innerWidth < 1536);
@@ -154,7 +158,7 @@ export default function GlobalAutoSyncDock() {
         return () => window.removeEventListener('ycx-trigger-bi-auto-sync', handleBiTrigger);
     }, [handleStartBiSync]);
 
-    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime', opts: { auto?: boolean; autoSend?: AutoSendItem[] } = {}) => {
+    const handleTriggerYcxSync = useCallback((requested: YcxMode = 'realtime', opts: { auto?: boolean; autoSend?: AutoSendItem[]; month?: string } = {}) => {
         ycxAutoSendRef.current = opts.autoSend || [];
         // Luỹ kế = 01 → hôm qua; hôm nay ngày 01 thì chưa có ngày nào để luỹ kế → chạy Realtime (chủ dự án chốt)
         const mode = resolveYcxMode(requested);
@@ -174,7 +178,7 @@ export default function GlobalAutoSyncDock() {
         setYcxStep('open');
         setYcxMessage('Đang mở report.mwgroup.vn…');
         setYcxLog([]);
-        ghiYcxLog(`Bắt đầu lượt Tự động ${TEN_YCX[mode]}`);
+        ghiYcxLog(`Bắt đầu lượt Tự động ${TEN_YCX[mode]}${opts.month ? ` (${opts.month})` : ''}`);
         if (requested !== mode) {
             ghiYcxLog('Hôm nay là ngày 01 — chưa có ngày nào để luỹ kế, chạy Realtime');
             toast('Hôm nay là ngày 01 — YCX Luỹ kế chạy Realtime', { icon: <AppIcon name="calendar" size="md" className="text-sky-600" /> });
@@ -204,23 +208,31 @@ export default function GlobalAutoSyncDock() {
                 setYcxPhase('done');
                 setYcxModalOpen(false);
 
+                // Tự động tạo tên theo quy tắc:
+                // + Khi chọn luỹ kế: YCX Từ ngày 1 - Ngày hiện tại -1 + hh:mm
+                // + khi chọn tháng: YCX Tháng được chọn
+                const autoFilename = mode === 'luyke'
+                    ? (opts.month ? formatYcxMonthTitle(opts.month) : formatYcxLuyKeTitle())
+                    : undefined;
+
                 // Lưu file tạm vào global để DashboardView nhận ngay cả khi đang ở tab khác.
                 // mode: Realtime → "Tệp Realtime", Luỹ kế → "Lũy kế / Quá khứ"
                 (window as any).__pendingYcxAutoSyncFile = file;
                 (window as any).__pendingYcxAutoSyncMode = mode;
+                (window as any).__pendingYcxAutoFilename = autoFilename;
                 // Lượt hẹn giờ có khu vực tự gửi LINE riêng → Phân tích xuất đúng các khu vực đó sau khi nạp xong
                 const autoSend = ycxAutoSendRef.current;
                 (window as any).__pendingYcxAutoSend = autoSend;
-                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoSend } }));
+                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoFilename, autoSend } }));
 
-                toast.success(`Đã tự động tải và nạp file ${TEN_YCX[mode]}!`);
+                toast.success(`Đã tự động tải và nạp file ${autoFilename || TEN_YCX[mode]}!`);
                 // Tự động mở tab Phân tích khi chạy xong (?tab=analysis)
                 navigateToYcxAnalysis();
                 setActiveTab('analysis');
             }
         });
 
-        void startYcxJob(jobId, mode, { auto: opts.auto }).then((ok) => {
+        void startYcxJob(jobId, mode, { auto: opts.auto, month: opts.month }).then((ok) => {
             if (ok) return;
             ghiKetQuaLich('ycx-', 'error', 'không mở được tab report.mwgroup.vn');
             setYcxPhase('error');
@@ -389,8 +401,8 @@ export default function GlobalAutoSyncDock() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => handleTriggerYcxSync('luyke')}
-                            title={ycxDangChay && ycxMode === 'luyke' ? 'Tự động YCX Luỹ kế (Đang chạy...)' : 'Tự động YCX Luỹ kế (Phân Tích, 01 → hôm qua)'}
+                            onClick={() => setYcxLuyKePickerOpen(true)}
+                            title={ycxDangChay && ycxMode === 'luyke' ? 'Tự động YCX Luỹ kế (Đang chạy...)' : 'Tự động YCX Luỹ kế (Phân Tích, 01 → hôm qua / chọn tháng)'}
                             aria-label="Tự động YCX Luỹ kế"
                             className={`preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-emerald-700 via-emerald-700 to-emerald-800 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer ${
                                 ycxDangChay && ycxMode === 'luyke' ? 'ring-2 ring-emerald-400 animate-pulse' : ''
@@ -430,17 +442,17 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleStartBiSync('realtime')}
                             aria-label="Tự động Realtime (Report BI)"
                             title="Tự động thu thập dữ liệu Realtime từ MWG qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_6px_20px_rgba(245,158,11,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-amber-500 via-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:from-amber-600 active:to-amber-600 border border-amber-300/40 dark:border-amber-400/30 shadow-[0_4px_14px_rgba(245,158,11,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(245,158,11,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
-                            <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
-                                <AppIcon name="quick" size="md" className="text-amber-100 fill-amber-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.9)]" />
+                            <div className="preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
+                                <AppIcon name="quick" size="sm" className="text-amber-100 fill-amber-300 drop-shadow-[0_0_6px_rgba(253,224,71,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     BI Realtime
                                 </span>
-                                <span className="text-[11px] font-semibold text-amber-100/90 leading-none mt-1 truncate">
+                                <span className="text-[10px] font-semibold text-amber-100/90 leading-none mt-0.5 truncate">
                                     {nhanHen('bi-realtime') || 'Hôm nay'}
                                 </span>
                             </div>
@@ -457,17 +469,17 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleStartBiSync('luyke')}
                             aria-label="Tự động Luỹ kế (Report BI)"
                             title="Tự động thu thập dữ liệu Luỹ kế từ MWG qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(16,185,129,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(16,185,129,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-600 via-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 active:from-emerald-700 active:to-emerald-700 border border-emerald-300/40 dark:border-emerald-400/30 shadow-[0_4px_14px_rgba(16,185,129,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
-                            <div className="preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
-                                <AppIcon name="trendUp" size="md" className="text-emerald-100 drop-shadow-[0_0_6px_rgba(110,231,183,0.9)]" />
+                            <div className="preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
+                                <AppIcon name="trendUp" size="sm" className="text-emerald-100 drop-shadow-[0_0_6px_rgba(110,231,183,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     BI Luỹ kế
                                 </span>
-                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1 truncate">
+                                <span className="text-[10px] font-semibold text-emerald-100/90 leading-none mt-0.5 truncate">
                                     {nhanHen('bi-luyke') || 'Tháng đến nay'}
                                 </span>
                             </div>
@@ -484,19 +496,19 @@ export default function GlobalAutoSyncDock() {
                             onClick={handleTriggerAutoBonus}
                             aria-label="Tự động Đổ Thưởng"
                             title="Tự động thu thập điểm và đổ thưởng nhân viên từ HRM qua Tampermonkey"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:from-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(147,51,234,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(147,51,234,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-600 via-sky-600 to-sky-600 hover:from-sky-500 hover:from-sky-500 active:from-sky-700 active:to-sky-700 border border-sky-300/40 dark:border-sky-400/30 shadow-[0_4px_14px_rgba(147,51,234,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(147,51,234,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
-                            <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
+                            <div className={`preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                 bonusStatus.isBusy ? 'animate-pulse' : ''
                             }`}>
-                                <AppIcon name="gift" size="md" className="text-sky-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
+                                <AppIcon name="gift" size="sm" className="text-sky-100 drop-shadow-[0_0_6px_rgba(216,180,254,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     Đổ Thưởng
                                 </span>
-                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1 truncate">
+                                <span className="text-[10px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
                                     {bonusStatus.isBusy ? (bonusStatus.label || 'Đang xử lý...') : (nhanHen('bonus') || 'Nhân viên')}
                                 </span>
                             </div>
@@ -513,20 +525,20 @@ export default function GlobalAutoSyncDock() {
                             onClick={() => handleTriggerYcxSync('realtime')}
                             title="Tự động xuất & nạp file YCX Realtime từ report.mwgroup.vn (báo cáo 77)"
                             aria-label="Tự động YCX Realtime"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_6px_20px_rgba(3,105,161,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(3,105,161,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-700 to-sky-800 hover:from-sky-600 hover:to-sky-700 active:from-sky-800 active:to-sky-800 border border-sky-400/40 dark:border-sky-400/30 shadow-[0_4px_14px_rgba(3,105,161,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(3,105,161,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
-                            <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
+                            <div className={`preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                 ycxDangChay && ycxMode === 'realtime' ? 'animate-pulse' : ''
                             }`}>
-                                <AppIcon name="spreadsheet" size="md" className="text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
+                                <AppIcon name="spreadsheet" size="sm" className="text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     YCX Realtime
                                 </span>
-                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-1 truncate">
-                                    {ycxDangChay && ycxMode === 'realtime' ? 'Đang chạy… bấm để xem' : (nhanHen('ycx-realtime') || 'Đổ & cập nhật')}
+                                <span className="text-[10px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
+                                    {ycxDangChay && ycxMode === 'realtime' ? 'Đang chạy…' : (nhanHen('ycx-realtime') || 'Đổ & cập nhật')}
                                 </span>
                             </div>
                         </button>
@@ -540,23 +552,23 @@ export default function GlobalAutoSyncDock() {
                         {/* Nút 5: YCX Luỹ kế (Phân Tích) — Từ 01 đầu tháng → Đến HÔM QUA; ngày 01 chạy Realtime */}
                         <button
                             type="button"
-                            onClick={() => handleTriggerYcxSync('luyke')}
-                            title="Tự động xuất & nạp file YCX Luỹ kế (01 → hôm qua) từ report.mwgroup.vn (báo cáo 77). Ngày 01 sẽ chạy Realtime."
+                            onClick={() => setYcxLuyKePickerOpen(true)}
+                            title="Tự động xuất & nạp file YCX Luỹ kế (01 → hôm qua hoặc chọn tháng) từ report.mwgroup.vn (báo cáo 77). Ngày 01 sẽ chạy Realtime."
                             aria-label="Tự động YCX Luỹ kế"
-                            className="preserve-rounded group relative overflow-hidden flex items-center gap-3 pl-3 pr-9 py-2.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_6px_20px_rgba(4,120,87,0.32),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_8px_25px_rgba(4,120,87,0.48),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-emerald-700 via-emerald-700 to-emerald-800 hover:from-emerald-600 hover:to-emerald-700 active:from-emerald-800 active:to-emerald-800 border border-emerald-400/40 dark:border-emerald-400/30 shadow-[0_4px_14px_rgba(4,120,87,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(4,120,87,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
                         >
                             <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
-                            <div className={`preserve-rounded relative w-8 h-8 rounded-lg bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
+                            <div className={`preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200 ${
                                 ycxDangChay && ycxMode === 'luyke' ? 'animate-pulse' : ''
                             }`}>
-                                <AppIcon name="dateRange" size="md" className="text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
+                                <AppIcon name="dateRange" size="sm" className="text-emerald-100 drop-shadow-[0_0_6px_rgba(167,243,208,0.9)]" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[12.5px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
                                     YCX Luỹ kế
                                 </span>
-                                <span className="text-[11px] font-semibold text-emerald-100/90 leading-none mt-1 truncate">
-                                    {ycxDangChay && ycxMode === 'luyke' ? 'Đang chạy… bấm để xem' : (nhanHen('ycx-luyke') || '01 → hôm qua')}
+                                <span className="text-[10px] font-semibold text-emerald-100/90 leading-none mt-0.5 truncate">
+                                    {ycxDangChay && ycxMode === 'luyke' ? 'Đang chạy…' : (nhanHen('ycx-luyke') || '01 → hôm qua')}
                                 </span>
                             </div>
                         </button>
@@ -569,11 +581,11 @@ export default function GlobalAutoSyncDock() {
                         <button
                             type="button"
                             onClick={() => setShowGuideModal(true)}
-                            title="Bấm để xem hướng dẫn cài đặt tiện ích Tampermonkey hoặc kiểm tra kết nối"
+                            title="Bấm để xem hướng dẫn cài đặt hoặc kiểm tra kết nối"
                             className="preserve-rounded flex items-center justify-center gap-1.5 pt-1.5 border-t border-slate-200/60 dark:border-slate-800/80 text-[11px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer w-full text-center"
                         >
                             <AppIcon name="sparkles" size="xs" className="text-amber-500/80" />
-                            <span>HƯỚNG DẪN CÀI ĐẶT TAMPERMONKEY</span>
+                            <span>HƯỚNG DẪN CÀI ĐẶT</span>
                         </button>
                     </>
                 )}
@@ -646,7 +658,7 @@ export default function GlobalAutoSyncDock() {
                             </p>
                             {ycxPhase === 'error' && (
                                 <p className="text-[12px] text-slate-500">
-                                    Có thể làm tay: mở <a className="text-sky-700 dark:text-sky-400 underline" href={YCX_REPORT_URL} target="_blank" rel="noreferrer">báo cáo 77</a> → Xuất excel → Lịch sử xuất excel → Tải file excel → bấm <b>File YCX</b> → <b>{ycxMode === 'luyke' ? 'Lũy kế / Quá khứ' : 'Tệp Realtime'}</b>.
+                                    Có thể làm tay: mở <a className="text-sky-700 dark:text-sky-400 underline" href={YCX_REPORT_URL} target="_blank" rel="noreferrer">báo cáo 77</a> → Xuất excel → Lịch sử xuất excel → Tải file excel → bấm <b>YCX</b> → <b>{ycxMode === 'luyke' ? 'Lũy kế / Quá khứ' : 'Tệp Realtime'}</b>.
                                 </p>
                             )}
                             {ycxLog.length > 1 && (
@@ -669,6 +681,13 @@ export default function GlobalAutoSyncDock() {
                 isOpen={showGuideModal}
                 onClose={() => setShowGuideModal(false)}
                 onRetry={kiemTraYcxScript}
+            />
+            <YcxLuyKePickerModal
+                isOpen={ycxLuyKePickerOpen}
+                onClose={() => setYcxLuyKePickerOpen(false)}
+                onStart={(month) => {
+                    handleTriggerYcxSync('luyke', { month });
+                }}
             />
         </>
     );

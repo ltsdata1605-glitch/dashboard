@@ -664,7 +664,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-sm transition-colors"
                                             title="Lưu bảng nháp thành bảng mới"
                                         >
-                                            <AppIcon name="add" size="lg" />
+                                            <AppIcon name="add" size="md" />
                                         </Button>
                                         <Button
                                             variant="unstyled" size="none"
@@ -673,7 +673,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shadow-sm"
                                             title="Xuất ảnh"
                                         >
-                                            <AppIcon name="exportImage" size="lg" />
+                                            <AppIcon name="exportImage" size="md" />
                                         </Button>
                                     </>
                                 }

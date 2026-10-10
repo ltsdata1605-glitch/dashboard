@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 import { getSetting, saveSetting } from '../../services/dbService';
-import { listenSystemAnnouncement } from '../../services/systemAnnouncementService';
+import { listenSystemAnnouncement, isAnnouncementExpired } from '../../services/systemAnnouncementService';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -100,9 +100,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
-        handleRestoreGroup,
-        cloudSyncBanner,
-        handleDismissCloudSyncBanner
+        handleRestoreGroup
     } = logic;
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
@@ -170,19 +168,23 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         const pendingFile = (window as any).__pendingYcxAutoSyncFile;
         if (pendingFile) {
             const laLuyKe = (window as any).__pendingYcxAutoSyncMode === 'luyke';
+            const autoFilename = (window as any).__pendingYcxAutoFilename;
             delete (window as any).__pendingYcxAutoSyncFile;
             delete (window as any).__pendingYcxAutoSyncMode;
+            delete (window as any).__pendingYcxAutoFilename;
             delete (window as any).__pendingYcxAutoSend;
-            handleFileProcessing([pendingFile], false, laLuyKe);
+            handleFileProcessing([pendingFile], false, laLuyKe, { autoFilename });
         }
 
         const handleAutoSyncFile = (e: any) => {
             const file = e.detail?.file;
             if (file) {
+                const autoFilename = e.detail?.autoFilename || (window as any).__pendingYcxAutoFilename;
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
+                delete (window as any).__pendingYcxAutoFilename;
                 delete (window as any).__pendingYcxAutoSend;
-                handleFileProcessing([file], false, e.detail?.mode === 'luyke');
+                handleFileProcessing([file], false, e.detail?.mode === 'luyke', { autoFilename });
             }
         };
         window.addEventListener('ycx-auto-sync-file', handleAutoSyncFile);
@@ -420,6 +422,23 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         salesClearTitle={salesClearTitle}
                     />
 
+                    {/* Super Admin Announcement Marquee — Luôn hiển thị cho toàn bộ người dùng với độ rộng khớp nội dung trang */}
+                    {announcement && announcement.active && announcement.content && !isAnnouncementExpired(announcement) && (
+                        <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 w-full mb-2 no-print z-20">
+                            <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 px-3 sm:px-4 flex items-center overflow-hidden relative rounded-none shadow-md border border-rose-500/30">
+                                <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-none z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
+                                    <AppIcon name="announcement" size="md" className="animate-bounce" />
+                                    <span className="uppercase tracking-wider text-[11px] font-black">Thông báo</span>
+                                </div>
+                                <div className="flex-1 overflow-hidden relative h-5 flex items-center">
+                                    <div className="absolute whitespace-nowrap animate-marquee will-change-transform text-rose-50 dark:text-rose-100">
+                                        {announcement.content}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {status.message && status.type === 'error' && <StatusDisplay status={status} />}
 
                     {logic.kpiCardsConfig && (
@@ -441,6 +460,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             registry={logic.fileRegistry}
                             onToggleActive={logic.handleToggleFileActive}
                             onDelete={logic.handleDeleteFile}
+                            onRename={logic.handleRenameFile}
                             onViewReport={logic.handleViewReport}
                         />
                     )}
@@ -484,43 +504,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-0.5 lg:py-1 space-y-3 lg:space-y-4">
 
-                                    {/* Super Admin Announcement Marquee */}
-                                    {announcement && announcement.active && announcement.content && (
-                                        <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[11px] sm:text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-none shadow-md border border-rose-500/25 mb-2 no-print">
-                                            <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-lg z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
-                                                <AppIcon name="announcement" size="md" className="animate-bounce" />
-                                                <span className="uppercase tracking-wider text-[11px] font-black">Thông báo</span>
-                                            </div>
-                                            <div className="flex-1 overflow-hidden relative h-5 flex items-center">
-                                                <div className="absolute whitespace-nowrap animate-marquee will-change-transform text-rose-50 dark:text-rose-100">
-                                                    {announcement.content}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-
                                     {/* Cloud Data Sync Banner — Hiển thị trên 1 dòng nhỏ gọn, nằm ngay dưới thông báo đỏ */}
-                                    {cloudSyncBanner && (
-                                        <div className="w-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-md flex items-center justify-between text-[11px] sm:text-xs font-semibold shadow-xs mb-1.5 transition-all no-print">
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className="relative flex h-2 w-2 flex-shrink-0">
-                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                                </span>
-                                                <AppIcon name="cloud" size="xs" className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-                                                <span className="truncate">{cloudSyncBanner}</span>
-                                            </div>
-                                            <button
-                                                type="button"
-                                                onClick={handleDismissCloudSyncBanner}
-                                                className="text-emerald-600/70 hover:text-emerald-900 dark:text-emerald-400/70 dark:hover:text-emerald-100 p-0.5 rounded hover:bg-emerald-500/15 transition-colors ml-2 flex-shrink-0 cursor-pointer"
-                                                title="Đóng thông báo"
-                                                aria-label="Đóng thông báo"
-                                            >
-                                                <AppIcon name="close" size="xs" />
-                                            </button>
-                                        </div>
-                                    )}
+
 
                                     {/* Data Coverage Indicator */}
                                     <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">
@@ -557,16 +542,17 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
                                                 <div
                                                     onClick={() => setIsUnconfiguredModalOpen(true)}
-                                                    className="relative bg-amber-50 dark:bg-amber-955/20 border-b border-amber-200/60 dark:border-amber-900/60 text-amber-800 dark:text-amber-400 px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-amber-100/80 dark:hover:bg-amber-900/50 transition-colors z-[20] animate-pulse hide-on-export"
+                                                    className="relative bg-amber-50/70 dark:bg-amber-955/20 border-b border-amber-100 dark:border-amber-900/40 text-amber-800 dark:text-amber-400 px-3 sm:px-4 py-1 sm:py-1.5 flex items-center justify-between cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-900/40 transition-colors z-[20] animate-pulse hide-on-export text-[11px] sm:text-xs"
                                                 >
-                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
-                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
+                                                    <div className="flex items-center gap-1.5 font-bold">
+                                                        <span className="relative flex h-1.5 w-1.5">
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
                                                         </span>
-                                                        <AppIcon name="warning" size="sm" className="text-amber-600 shrink-0" />PHÁT HIỆN {unconfiguredGroups.length} NHÓM HÀNG MỚI CHƯA CẤU HÌNH (DỮ LIỆU ĐANG BỊ BỎ QUA)
+                                                        <AppIcon name="warning" size="xs" className="text-amber-600 shrink-0" />
+                                                        <span>PHÁT HIỆN {unconfiguredGroups.length} NHÓM HÀNG MỚI CHƯA CẤU HÌNH (DỮ LIỆU ĐANG BỊ BỎ QUA)</span>
                                                     </div>
-                                                    <div className="text-[11px] font-bold underline underline-offset-2 flex items-center gap-0.5">
+                                                    <div className="text-[11px] font-semibold underline underline-offset-2 flex items-center gap-0.5 opacity-85 hover:opacity-100">
                                                         <span>Xem & Cập nhật</span>
                                                         <AppIcon name="chevronRight" size="xs" />
                                                     </div>
@@ -577,16 +563,16 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {overdueUnshippedOrders.length > 0 && (
                                                 <div
                                                     onClick={() => setActiveModal('unshipped_overdue')}
-                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20] hide-on-export"
+                                                    className="relative bg-rose-50/70 dark:bg-rose-950/20 border-b border-rose-100 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 px-3 sm:px-4 py-1 sm:py-1.5 flex items-center justify-between cursor-pointer hover:bg-rose-100/70 dark:hover:bg-rose-900/40 transition-colors z-[20] hide-on-export text-[11px] sm:text-xs"
                                                 >
-                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
-                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
+                                                    <div className="flex items-center gap-1.5 font-bold">
+                                                        <span className="relative flex h-1.5 w-1.5">
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
                                                         </span>
-                                                        ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueUnshippedOrders.length})
+                                                        <span>ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueUnshippedOrders.length})</span>
                                                     </div>
-                                                    <div className="text-[11px] sm:text-xs font-semibold underline underline-offset-2">
+                                                    <div className="text-[11px] font-semibold underline underline-offset-2 opacity-85 hover:opacity-100">
                                                         Xem chi tiết & Cập nhật nhanh
                                                     </div>
                                                 </div>
@@ -596,22 +582,22 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0 && (
                                                 <div
                                                     onClick={() => setActiveModal('uncollected')}
-                                                    className="relative bg-amber-50 dark:bg-amber-955/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20] hide-on-export"
+                                                    className="relative bg-amber-50/70 dark:bg-amber-955/20 border-b border-amber-100 dark:border-amber-900/40 text-amber-800 dark:text-amber-400 px-3 sm:px-4 py-1 sm:py-1.5 flex items-center justify-between cursor-pointer hover:bg-amber-100/70 dark:hover:bg-amber-950/40 transition-colors z-[20] hide-on-export text-[11px] sm:text-xs"
                                                 >
-                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
-                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
+                                                    <div className="flex items-center gap-1.5 font-bold">
+                                                        <span className="relative flex h-1.5 w-1.5">
                                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
                                                         </span>
-                                                        ĐƠN HÀNG CHƯA THU | CHƯA HỦY ({processedData.uncollectedOrders.length})
+                                                        <span>ĐƠN HÀNG CHƯA THU | CHƯA HỦY ({processedData.uncollectedOrders.length})</span>
                                                     </div>
-                                                    <div className="text-[11px] sm:text-xs font-semibold underline underline-offset-2">
+                                                    <div className="text-[11px] font-semibold underline underline-offset-2 opacity-85 hover:opacity-100">
                                                         Xem danh sách
                                                     </div>
                                                 </div>
                                             )}
 
-                                            <div className="relative z-10 pt-1 lg:pt-3">
+                                            <div className="relative z-10 pt-1 lg:pt-2">
                                                 <SectionHeader
                                                     title="TỔNG QUAN DOANH THU"
                                                     subtitle={<>
@@ -739,6 +725,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             registry={logic.fileRegistry}
                             onToggleActive={logic.handleToggleFileActive}
                             onDelete={logic.handleDeleteFile}
+                            onRename={logic.handleRenameFile}
                             onDeleteAll={handleClearAllData}
                             onProcessFile={(files, isCloudSync, isHistorical) => {
                                 setIsFileHistoryModalOpen(false);
@@ -748,6 +735,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         />
                         <FileNamingModal
                             isOpen={!!pendingNaming}
+                            defaultName={pendingNaming?.defaultName}
                             onConfirm={(name) => {
                                 if (pendingNaming) {
                                     pendingNaming.resolve(name);

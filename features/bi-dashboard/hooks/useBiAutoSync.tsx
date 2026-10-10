@@ -5,7 +5,7 @@ import {
     BiSyncMode,
     BiSyncProgress,
     startBiAutoSyncSession,
-    readPendingAutoSync,
+    claimPendingAutoSync,
     savePendingAutoSync,
     clearPendingAutoSync,
     PENDING_MAX_RELOADS,
@@ -14,6 +14,7 @@ import {
     onBiDone,
     onBiError,
 } from '../services/biAutoSyncService';
+import { startUserscriptUpdateWatcher } from '../services/userscriptProbeService';
 import { BiAutoSyncModal } from '../components/BiAutoSyncModal';
 import { LuyKeMonthPickerModal } from '../components/LuyKeMonthPickerModal';
 
@@ -73,22 +74,33 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
         }
     }, []);
 
-    // KHÔNG tự chạy tiếp lượt dở ở đây: có lượt dở thì BiWrapper mở thẳng mục "Cập nhật" và DataUpdater chạy tiếp.
-    // Trước đây cả 2 nơi cùng chạy tiếp → mở 2+ tab MWG sau mỗi lần cập nhật userscript (chủ dự án gặp 2026-10-01).
+    // Tự chạy tiếp lượt dở sau khi tải lại trang (nếu người dùng bấm F5 ngoài tab employees)
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.location.search.includes('tab=employees')) {
+            return;
+        }
+        const p = claimPendingAutoSync();
+        if (!p) return;
+        pendingReloadsRef.current = p.reloads;
+        void handleStartAutoSync(p.mode, { tuChayTiep: true, month: p.month });
+    }, [handleStartAutoSync]);
 
-    // Tự tải lại khi cập nhật xong Tampermonkey
+    // Kiểm tra ngầm liên tục khi đang báo cần cập nhật Userscript
     useEffect(() => {
         if (!autoSyncModalOpen || autoSyncStatus !== 'outdated') return;
-        const onVisible = () => {
-            if (document.visibilityState !== 'visible') return;
-            const p = readPendingAutoSync();
-            if (!p || p.reloads >= PENDING_MAX_RELOADS) return;
-            savePendingAutoSync({ ...p, reloads: p.reloads + 1 });
-            window.location.reload();
+        const targetVer = autoSyncLatestVersion || '7.22';
+
+        const stopWatcher = startUserscriptUpdateWatcher(targetVer, (installedVer) => {
+            clearPendingAutoSync();
+            setAutoSyncStatus('running');
+            toast.success(`Đã nhận diện Userscript v${installedVer}! Tự động đổ dữ liệu...`, { duration: 4000 });
+            void handleStartAutoSync(autoSyncMode, { month: autoSyncMonth, tuChayTiep: true });
+        });
+
+        return () => {
+            stopWatcher();
         };
-        document.addEventListener('visibilitychange', onVisible);
-        return () => document.removeEventListener('visibilitychange', onVisible);
-    }, [autoSyncModalOpen, autoSyncStatus]);
+    }, [autoSyncModalOpen, autoSyncStatus, autoSyncLatestVersion, autoSyncMode, autoSyncMonth, handleStartAutoSync]);
 
     useEffect(() => {
         const unsubProgress = onBiProgress((prog) => {

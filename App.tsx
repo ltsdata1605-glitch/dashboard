@@ -265,14 +265,14 @@ function AppContent() {
                     {(() => {
                         const brandIconAndTitle = (
                             <>
-                                <div className="w-8 h-8 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 rounded-xl flex items-center justify-center shadow-md shadow-sky-300/30 dark:shadow-sky-900/30">
+                                <div className="w-8 h-8 shrink-0 aspect-square min-w-8 min-h-8 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 rounded-xl flex items-center justify-center shadow-md shadow-sky-300/30 dark:shadow-sky-900/30">
                                     {getTabIcon()}
                                 </div>
                                 {/* In Sticker gửi thanh 4 chế độ + chỉnh cỡ chữ (~470px) lên thanh này; iPhone chỉ
                                     có ~370px → trang từng tràn ngang 140px, chuông thông báo nằm NGOÀI màn hình.
-                                    Riêng màn đó ẩn chữ tiêu đề dưới 440px (nút quay lại + icon vẫn còn) để 4 nút
+                                    Riêng màn đó ẩn chữ tiêu đề dưới 540px (nút quay lại + icon vẫn còn) để 4 nút
                                     chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
-                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[440px]:flex' : 'flex'} flex-col items-start min-w-0`}>
+                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[540px]:flex' : 'flex'} flex-col items-start min-w-0`}>
                                     {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone.
                                         leading-tight chứ KHÔNG leading-none: truncate = overflow:hidden, khung cao đúng 14px
                                         sẽ xén dấu tiếng Việt (Phân, Báo cáo, Tích… cao 17px) — đo được ở iPhone SE. */}
@@ -286,18 +286,18 @@ function AppContent() {
                                 variant="unstyled" size="none"
                                 onClick={() => setActiveTab('analysis')}
                                 title="Về Dashboard"
-                                className="min-h-11 shrink-0 flex items-center gap-2.5 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
+                                className="min-h-11 shrink-0 flex items-center gap-2 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
                             >
-                                <AppIcon name="chevronLeft" size="md" className="text-slate-400 -mr-1.5" />
+                                <AppIcon name="chevronLeft" size="md" className="text-slate-400 -mr-1.5 shrink-0" />
                                 {brandIconAndTitle}
                             </Button>
                         ) : (
-                            <div className="flex items-center gap-2.5 min-w-0">{brandIconAndTitle}</div>
+                            <div className="flex items-center gap-2.5 min-w-0 shrink-0">{brandIconAndTitle}</div>
                         );
                     })()}
-                    <div className="flex items-center gap-0.5 shrink-0">
+                    <div className="flex items-center gap-0.5 min-w-0 shrink">
                         <div id="mobile-topbar-actions" className="flex items-center min-w-0"></div>
-                        <NotificationDropdown />
+                        <NotificationDropdown buttonClassName="relative flex items-center justify-center w-8 h-8 min-w-8 min-h-8 aspect-square text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0" />
                     </div>
                 </div>
 

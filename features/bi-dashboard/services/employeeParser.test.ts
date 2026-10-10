@@ -34,16 +34,14 @@ describe('employeeParser - Analysis Employees Priority', () => {
         expect(depts[0].employeeCount).toBe(3);
     });
 
-    it('getDepartmentsFromAnalysis phân bổ vào các phòng ban nếu có nhiều phòng ban trong báo cáo thô', () => {
-        const multiDeptReport = [
-            'BP Bán Hàng\t\t',
-            '101 - Nguyễn Văn A\t10,000,000',
-            'BP Thu Ngân\t\t',
-            '102 - Trần Thị B\t8,000,000',
-            '103 - Lê Văn C\t12,000,000',
-        ].join('\n');
+    it('getDepartmentsFromAnalysis phân bổ vào các phòng ban theo khai báo từ Phân Tích', () => {
+        const multiDeptAnalysis: AnalysisEmployeeItem[] = [
+            { id: '101', name: 'Nguyễn Văn A', originalName: '101 - Nguyễn Văn A', department: 'BP Bán Hàng' },
+            { id: '102', name: 'Trần Thị B', originalName: '102 - Trần Thị B', department: 'BP Thu Ngân' },
+            { id: '103', name: 'Lê Văn C', originalName: '103 - Lê Văn C', department: 'BP Thu Ngân' },
+        ];
 
-        const depts = getDepartmentsFromAnalysis(mockAnalysisEmployees, multiDeptReport, []);
+        const depts = getDepartmentsFromAnalysis(multiDeptAnalysis, '', []);
         expect(depts).toHaveLength(2);
         expect(depts.find(d => d.name === 'BP Bán Hàng')?.employeeCount).toBe(1);
         expect(depts.find(d => d.name === 'BP Thu Ngân')?.employeeCount).toBe(2);
@@ -99,11 +97,10 @@ describe('extractEmployeeId - Mã số nhân viên', () => {
 });
 
 /**
- * MỖI SIÊU THỊ CÓ DANH SÁCH NHÂN VIÊN RIÊNG (chủ dự án chốt 2026-09-23).
- * Cách xác định: giao giữa "Luỹ kế doanh thu nhân viên" dán cho siêu thị đó (dư — có người của
- * siêu thị khác) và danh sách nhân viên cập nhật ở Phân Tích (đủ và đúng).
+ * DANH SÁCH NHÂN VIÊN CHỈ LẤY TỪ BÁO CÁO PHÂN TÍCH (FILE YCX).
+ * Không lấy hoặc lọc theo "Dữ liệu Luỹ Kế Doanh Thu".
  */
-describe('Danh sách nhân viên riêng theo từng siêu thị', () => {
+describe('Danh sách nhân viên chỉ lấy từ Báo cáo Phân Tích (file YCX)', () => {
     const analysis: AnalysisEmployeeItem[] = [
         { id: '101', name: 'Nguyễn Văn A', originalName: '101 - Nguyễn Văn A', department: 'BP ALL IN ONE - DMX' },
         { id: '102', name: 'Trần Thị B', originalName: '102 - Trần Thị B', department: 'BP ALL IN ONE - DMX' },
@@ -111,7 +108,6 @@ describe('Danh sách nhân viên riêng theo từng siêu thị', () => {
         { id: '104', name: 'Phạm Thị D', originalName: '104 - Phạm Thị D', department: 'BP ALL IN ONE - DMX' },
     ];
 
-    // Siêu thị 1: có 101, 102 + 1 người lạ không thuộc Phân Tích
     const luyKeTanHiep = [
         'BP ALL IN ONE - DMX\t\t',
         '101 - Nguyễn Văn A\t10,000,000\t100',
@@ -119,43 +115,32 @@ describe('Danh sách nhân viên riêng theo từng siêu thị', () => {
         '900 - Người Siêu Thị Khác\t5,000,000\t50',
     ].join('\n');
 
-    // Siêu thị 2: có 103, 104 + 1 người lạ
-    const luyKeThanhAn = [
-        'BP ALL IN ONE - DMX\t\t',
-        '103 - Lê Văn C\t12,000,000\t120',
-        '104 - Phạm Thị D\t9,000,000\t90',
-        '901 - Người Siêu Thị Khác\t4,000,000\t40',
-    ].join('\n');
-
-    it('mỗi siêu thị chỉ lấy nhân viên của mình, không lấy trọn danh sách Phân Tích', () => {
-        const tanHiep = getEmployeesFromAnalysis(analysis, [], luyKeTanHiep);
-        const thanhAn = getEmployeesFromAnalysis(analysis, [], luyKeThanhAn);
-
-        expect(tanHiep.map(e => e.originalName)).toEqual(['101 - Nguyễn Văn A', '102 - Trần Thị B']);
-        expect(thanhAn.map(e => e.originalName)).toEqual(['103 - Lê Văn C', '104 - Phạm Thị D']);
+    it('không bị lọc theo dữ liệu luỹ kế doanh thu dán thô, lấy toàn bộ danh sách Phân Tích', () => {
+        const emps = getEmployeesFromAnalysis(analysis, [], luyKeTanHiep);
+        expect(emps).toHaveLength(4);
+        expect(emps.map(e => e.originalName)).toEqual([
+            '101 - Nguyễn Văn A',
+            '102 - Trần Thị B',
+            '103 - Lê Văn C',
+            '104 - Phạm Thị D'
+        ]);
     });
 
-    it('người lạ trong báo cáo luỹ kế không được thêm vào (Phân Tích là nguồn đúng)', () => {
+    it('người lạ trong báo cáo luỹ kế không bao giờ được thêm vào', () => {
         const names = getEmployeesFromAnalysis(analysis, [], luyKeTanHiep).map(e => e.originalName);
         expect(names.some(n => n.includes('Người Siêu Thị Khác'))).toBe(false);
     });
 
-    it('số NV theo bộ phận cũng tính riêng từng siêu thị', () => {
-        expect(getDepartmentsFromAnalysis(analysis, luyKeTanHiep, [])[0].employeeCount).toBe(2);
-        expect(getDepartmentsFromAnalysis(analysis, luyKeThanhAn, [])[0].employeeCount).toBe(2);
+    it('số NV theo bộ phận cũng lấy từ Phân Tích, không phụ thuộc báo cáo luỹ kế', () => {
+        expect(getDepartmentsFromAnalysis(analysis, luyKeTanHiep, [])[0].employeeCount).toBe(4);
     });
 
-    it('nhân viên bị ẩn vẫn bị loại khỏi danh sách của siêu thị', () => {
+    it('nhân viên bị ẩn vẫn bị loại khỏi danh sách', () => {
         const names = getEmployeesFromAnalysis(analysis, ['101 - Nguyễn Văn A'], luyKeTanHiep).map(e => e.originalName);
-        expect(names).toEqual(['102 - Trần Thị B']);
+        expect(names).toEqual(['102 - Trần Thị B', '103 - Lê Văn C', '104 - Phạm Thị D']);
     });
 
-    it('siêu thị chưa dán báo cáo luỹ kế: giữ nguyên toàn bộ danh sách (không làm trắng màn hình)', () => {
+    it('khi không truyền báo cáo luỹ kế hoặc truyền chuỗi rỗng: vẫn lấy đủ danh sách Phân Tích', () => {
         expect(getEmployeesFromAnalysis(analysis, [], '')).toHaveLength(4);
-    });
-
-    it('dán báo cáo nhưng không khớp ai: cũng giữ nguyên danh sách thay vì để trống', () => {
-        const laLung = ['BP ALL IN ONE - DMX\t\t', '999 - Người Lạ\t1,000\t1'].join('\n');
-        expect(getEmployeesFromAnalysis(analysis, [], laLung)).toHaveLength(4);
     });
 });

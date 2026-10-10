@@ -507,9 +507,9 @@ const RevenueView: React.FC<{
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
+                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
-                        <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="md" />
+                        <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="sm" />
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
@@ -518,9 +518,9 @@ const RevenueView: React.FC<{
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-slate-400"
+                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
-                        {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
+                        {isExportingByDept ? <AppIcon name="loading" spin size="sm" /> : <AppIcon name="exportBatch" size="sm" />}
                     </Button>
                     <ExportButton options={exportOptions} />
                 </div>

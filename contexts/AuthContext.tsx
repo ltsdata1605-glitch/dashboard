@@ -22,7 +22,7 @@ interface AuthContextType {
     logout: () => Promise<void>;
     isDemoMode: boolean;
     setDemoMode: (val: boolean) => void;
-    requestAccess: (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => Promise<void>;
+    requestAccess: (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => Promise<{ autoApproved?: boolean; role?: string; status?: string } | void>;
     functions: Functions;
     db: Firestore;
 }
@@ -240,18 +240,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const requestAccess = async (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => {
         if (!user) return;
+        let res: { success?: boolean; autoApproved?: boolean; role?: any; status?: any } | undefined;
         try {
-            // Gọi Cloud Function requestAccess (functions/src/session.ts) — hàm này tự
-            // gửi notification cho admin/manager của deptId, client không cần gọi lại.
-            await requestAccessApi(requestedRole, deptId, empName);
+            // Gọi Cloud Function requestAccess (functions/src/session.ts) — hỗ trợ tự động duyệt
+            // theo cấu hình Super Admin / Quản lý
+            res = await requestAccessApi(requestedRole, deptId, empName);
         } catch (error) {
             console.warn("[Auth] requestAccessApi gặp cảnh báo/timeout, kiểm tra Firestore trực tiếp:", error);
             try {
                 const { doc, getDoc } = await import('firebase/firestore');
                 const snap = await getDoc(doc(db, 'users', user.uid));
                 const data = snap.data();
-                if (data && data.status === 'pending') {
-                    console.log("[Auth] Firestore đã ghi nhận trạng thái pending thành công!");
+                if (data && (data.status === 'pending' || data.status === 'approved')) {
+                    console.log("[Auth] Firestore đã ghi nhận trạng thái:", data.status);
+                    res = { success: true, autoApproved: data.status === 'approved', role: data.role, status: data.status };
                 } else {
                     throw error;
                 }
@@ -260,14 +262,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 throw error;
             }
         }
-        setUserRole('pending');
-        setStatus('pending');
+
+        const isAuto = Boolean(res?.autoApproved);
+        const finalRole = isAuto ? (res?.role || requestedRole) : 'pending';
+        const finalStatus = isAuto ? (res?.status || 'approved') : 'pending';
+
+        setUserRole(finalRole);
+        setStatus(finalStatus);
         setDepartmentId(deptId);
         setEmployeeName(empName);
-        saveSetting('cached_user_role', 'pending').catch(() => {});
-        saveSetting('cached_user_status', 'pending').catch(() => {});
+        saveSetting('cached_user_role', finalRole).catch(() => {});
+        saveSetting('cached_user_status', finalStatus).catch(() => {});
         if (deptId) saveSetting('cached_dept_id', deptId).catch(() => {});
         if (empName) saveSetting('cached_emp_name', empName).catch(() => {});
+
+        // Nếu được tự động duyệt, làm mới ID token ngay để Firestore Rules và claims nhận diện quyền mới
+        if (isAuto) {
+            try {
+                await user.getIdToken(true);
+            } catch (err) {
+                console.warn('[Auth] Không thể làm mới token sau khi tự động duyệt:', err);
+            }
+        }
+
+        return { autoApproved: isAuto, role: finalRole, status: finalStatus };
     };
 
     const loginWithGoogle = async () => {

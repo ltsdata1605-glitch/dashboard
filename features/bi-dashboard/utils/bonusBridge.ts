@@ -76,6 +76,17 @@ function isJobErrorDetail(v: unknown): v is JobErrorDetail {
         && typeof v.jobId === 'string' && typeof v.message === 'string';
 }
 
+function compareVer(a: string, b: string): number {
+    const pa = (a || '').split('.').map(n => parseInt(n, 10) || 0);
+    const pb = (b || '').split('.').map(n => parseInt(n, 10) || 0);
+    const maxLen = Math.max(pa.length, pb.length);
+    for (let i = 0; i < maxLen; i++) {
+        const diff = (pa[i] || 0) - (pb[i] || 0);
+        if (diff !== 0) return diff;
+    }
+    return 0;
+}
+
 /** Dò userscript có cài không: ping rồi chờ pong hợp lệ tối đa `timeoutMs`. */
 export function detectUserscript(timeoutMs = 1000): Promise<{ installed: boolean; version?: string }> {
     return new Promise(resolve => {
@@ -93,14 +104,30 @@ export function detectUserscript(timeoutMs = 1000): Promise<{ installed: boolean
         const onPongEvt = (e: Event) => {
             const detail = (e as CustomEvent).detail;
             if (isPongDetail(detail) && detail.nonce === nonce) {
-                finish({ installed: true, version: detail.version });
+                let v = detail.version;
+                try {
+                    const stored = localStorage.getItem('ycx_userscript_installed_version');
+                    if (stored && (!v || compareVer(stored, v) > 0)) {
+                        v = stored;
+                    }
+                } catch {}
+                finish({ installed: true, version: v });
             }
         };
 
         window.addEventListener(EVT_PONG, onPongEvt as EventListener);
         window.dispatchEvent(new CustomEvent(EVT_PING, { detail: { source: BRIDGE_SOURCE, type: 'ping', nonce } }));
 
-        setTimeout(() => finish({ installed: false }), timeoutMs);
+        setTimeout(() => {
+            try {
+                const stored = localStorage.getItem('ycx_userscript_installed_version');
+                if (stored) {
+                    finish({ installed: true, version: stored });
+                    return;
+                }
+            } catch {}
+            finish({ installed: false });
+        }, timeoutMs);
     });
 }
 

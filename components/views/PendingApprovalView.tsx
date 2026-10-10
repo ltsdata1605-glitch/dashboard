@@ -40,10 +40,14 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
 
         setIsSubmitting(true);
         try {
-            await requestAccess(selectedRole, deptId, empName);
-            toast.success(forceDeptUpdate 
-                ? 'Cập nhật mã kho thành công! Vui lòng chờ duyệt.'
-                : 'Gửi yêu cầu thành công! Admin/Quản lý sẽ duyệt sớm nhất.');
+            const res = await requestAccess(selectedRole, deptId, empName);
+            if (res && res.autoApproved) {
+                toast.success('Hệ thống đã tự động duyệt thành công! Đang chuyển vào trang chính...', { duration: 3000 });
+            } else {
+                toast.success(forceDeptUpdate 
+                    ? 'Cập nhật mã kho thành công! Vui lòng chờ duyệt.'
+                    : 'Gửi yêu cầu thành công! Admin/Quản lý sẽ duyệt sớm nhất.');
+            }
         } catch (error) {
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
         } finally {

@@ -181,9 +181,27 @@ export const getYesterdayDateString = () => {
     return `${yesterday.getDate()}/${yesterday.getMonth() + 1}`;
 };
 
-export const isIgnoredDept = (name: string) => {
-    const lower = name.toLowerCase();
-    return lower.includes('quản lý siêu thị') || lower.includes('trưởng ca') || lower.includes('chưa xác định') || lower.includes('không phân ca');
+export const isIgnoredDept = (name?: string): boolean => {
+    if (!name || typeof name !== 'string') return true;
+    const clean = name.trim();
+    if (!clean) return true;
+    const lower = clean.toLowerCase();
+    const stripped = normalizeText(clean);
+    return (
+        lower.includes('chưa xác định') ||
+        lower.includes('không xác định') ||
+        lower.includes('không phân ca') ||
+        lower.includes('chưa phân ca') ||
+        lower.includes('chưa có bộ phận') ||
+        lower.includes('chưa phân bộ phận') ||
+        lower.includes('chưa gán') ||
+        lower.includes('chưa cài đặt') ||
+        stripped.includes('chua xac dinh') ||
+        stripped.includes('khong xac dinh') ||
+        stripped.includes('khong phan ca') ||
+        stripped.includes('chua phan ca') ||
+        stripped.includes('chua co bo phan')
+    );
 };
 
 export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
@@ -666,9 +684,9 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         }
 
         const matchedFullName = isTotal ? 'Tổng' : (isDept ? rawName : findFullName(rawName));
-        const resolvedDept = isDept ? rawName : (employeeDepartmentMap[matchedFullName] || employeeDepartmentMap[rawName] || 'BP Tiếp đón');
+        const resolvedDept = isDept ? rawName : (employeeDepartmentMap[matchedFullName] || employeeDepartmentMap[rawName] || '');
 
-        if (resolvedDept && isIgnoredDept(resolvedDept)) return;
+        if (!isDept && (!resolvedDept || isIgnoredDept(resolvedDept))) return;
         if (isDept && isIgnoredDept(rawName)) return;
 
         const updateTarget = (target: InstallmentRow) => {
@@ -819,7 +837,7 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
                 department = match.dept;
             }
 
-            if (!department && namePart.includes(' - ')) {
+            if (!department && namePart.includes(' - ') && currentDeptFallback !== 'BP Khác') {
                 department = currentDeptFallback;
                 matchedOriginalName = namePart;
             }
@@ -987,9 +1005,9 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         const canonical = standardizeEmployeeName(rawEmpName);
         const match = fastDeptMap.get(normalizeText(canonical)) || fastDeptMap.get(normalizeText(rawEmpName));
         const matchedOriginalName = match ? match.orig : rawEmpName;
-        const department = match ? match.dept : 'BP ALL IN ONE - DMX';
+        const department = match ? match.dept : '';
 
-        if (department && isIgnoredDept(department)) return;
+        if (!department || isIgnoredDept(department)) return;
 
         const formattedName = formatEmployeeName(matchedOriginalName);
 

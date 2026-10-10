@@ -64,6 +64,7 @@ export const useDashboardLogic = () => {
         refreshRegistry,
         handleToggleFileActive,
         handleDeleteFile: handleDeleteFileRaw,
+        handleRenameFile: handleRenameFileRaw,
         hasRealtimeData,
         handleClearRealtimeData,
         handleClearAllData: handleClearAllDataRaw,
@@ -166,6 +167,7 @@ export const useDashboardLogic = () => {
     const stableHandleShiftFileProcessing = useStableCallback(handleShiftFileProcessing);
     const stableHandleFileProcessing = useStableCallback(handleFileProcessing);
     const stableHandleAcceptCloudSync = useStableCallback(handleAcceptCloudSyncRaw);
+    const stableHandleRenameFile = useStableCallback(handleRenameFileRaw);
 
     const updateGtdhTarget = useStableCallback(async (nhomHang: string, target: number) => {
         const newTargets = { ...gtdhTargets, [nhomHang]: target };
@@ -306,6 +308,7 @@ export const useDashboardLogic = () => {
         refreshRegistry,
         handleToggleFileActive,
         handleDeleteFile,
+        handleRenameFile: stableHandleRenameFile,
         hasRealtimeData,
         handleClearRealtimeData,
         handleViewReport,
@@ -338,7 +341,7 @@ export const useDashboardLogic = () => {
         kpiCardsConfig, updateKpiCardsConfig,
         kpiTargets, updateKpiTargets,
         updateDepartmentMap,
-        fileRegistry, refreshRegistry, handleToggleFileActive, handleDeleteFile,
+        fileRegistry, refreshRegistry, handleToggleFileActive, handleDeleteFile, stableHandleRenameFile,
         hasRealtimeData, handleClearRealtimeData, handleViewReport,
         unconfiguredGroups, ignoredUnconfiguredGroups, handleIgnoreGroup, handleRestoreGroup,
         editingTargetKho,

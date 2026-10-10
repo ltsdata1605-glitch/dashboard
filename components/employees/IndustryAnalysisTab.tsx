@@ -361,7 +361,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                  title="Tạo thẻ mới"
                                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-sky-700 flex items-center justify-center shrink-0"
                              >
-                                 <AppIcon name="add" size="lg" />
+                                 <AppIcon name="add" size="md" />
                              </Button>
                         )}
                     </div>

@@ -12,6 +12,7 @@ interface LandingPageViewProps {
     registry?: UploadedFileRegistryItem[];
     onToggleActive?: (id: string) => Promise<void> | void;
     onDelete?: (id: string) => Promise<void> | void;
+    onRename?: (id: string, newFilename: string) => Promise<void> | void;
     onViewReport?: () => void;
 }
 
@@ -22,6 +23,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
     registry = [],
     onToggleActive = () => {},
     onDelete = () => {},
+    onRename,
     onViewReport = () => {}
 }) => {
     // Nhân viên chỉ xem dữ liệu thừa kế từ quản lý Kho (implementation_plan.md mục 37) —
@@ -71,6 +73,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                                                 registry={registry}
                                                 onToggleActive={onToggleActive}
                                                 onDelete={onDelete}
+                                                onRename={onRename}
                                                 onViewReport={onViewReport}
                                             />
                                         )}

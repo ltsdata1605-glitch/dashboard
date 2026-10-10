@@ -278,14 +278,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center transition-colors ${
+                className={`h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
                     hiddenSupermarkets.length > 0
                         ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                 }`}
                 title="Lọc danh sách siêu thị"
             >
-                <AppIcon name="filter" size="md" />
+                <AppIcon name="filter" size="sm" />
             </Button>
             {isSupermarketFilterOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
@@ -326,14 +326,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 rounded-full flex items-center justify-center transition-colors ${
+                className={`h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
                     isColumnSelectorOpen
                         ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
             >
-                <AppIcon name="settings" size="md" />
+                <AppIcon name="settings" size="sm" />
             </Button>
             {isColumnSelectorOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-md shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
@@ -387,10 +387,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {/* Tuỳ chọn: Sử dụng Target DTQĐ sau chỉnh làm target cho các thẻ KPI & bảng bên dưới */}
             {setUseAdjustedTarget && (
                 <label
-                    className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 inline-flex items-center justify-center gap-1.5 sm:gap-2 h-8 w-8 sm:w-auto px-0 sm:px-3.5 rounded-full text-[11px] sm:text-[12px] transition-all cursor-pointer select-none border shadow-2xs shrink-0 ${
+                    className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 h-7.5 w-7.5 sm:h-8 sm:w-auto px-0 sm:px-3 rounded-lg text-xs transition-all cursor-pointer select-none border shrink-0 ${
                         useAdjustedTarget
-                            ? 'bg-sky-50/90 border-sky-300 text-sky-700 dark:bg-sky-950/60 dark:border-sky-700 dark:text-sky-300 font-semibold shadow-xs'
-                            : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'
+                            ? 'bg-sky-50 border-sky-300 text-sky-700 dark:bg-sky-950/60 dark:border-sky-700 dark:text-sky-300 font-semibold'
+                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'
                     }`}
                     title="Target sau chỉnh: Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target Doanh thu) làm Target cho các thẻ KPI và bảng Doanh thu bên dưới"
                 >
@@ -402,9 +402,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                     />
                     <span className="sm:hidden flex items-center justify-center pointer-events-none" aria-hidden="true">
                         {useAdjustedTarget ? (
-                            <AppIcon name="checkboxOn" size="md" className="text-sky-600" />
+                            <AppIcon name="checkboxOn" size="sm" className="text-sky-600" />
                         ) : (
-                            <AppIcon name="checkboxOff" size="md" className="text-slate-400" />
+                            <AppIcon name="checkboxOff" size="sm" className="text-slate-400" />
                         )}
                     </span>
                     <span className="hidden sm:inline whitespace-nowrap">Target sau chỉnh</span>

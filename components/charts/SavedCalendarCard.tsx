@@ -154,7 +154,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                                 className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shadow-sm"
                                 title="Xuất ảnh"
                             >
-                                {isExporting ? <><AppIcon name="loading" size="lg" spin /></> : <><AppIcon name="exportImage" size="lg" /></>}
+                                {isExporting ? <><AppIcon name="loading" size="md" spin /></> : <><AppIcon name="exportImage" size="md" /></>}
                             </Button>
                             <Button
                                 variant="unstyled" size="none"
@@ -162,7 +162,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                                 className="p-1.5 bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-700/50 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors shadow-sm"
                                 title="Xóa bảng lịch"
                             >
-                                <AppIcon name="delete" size="lg" />
+                                <AppIcon name="delete" size="md" />
                             </Button>
                         </div>
                     }

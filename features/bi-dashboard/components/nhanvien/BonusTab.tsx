@@ -148,9 +148,9 @@ export const BonusView: React.FC<{
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 text-sky-700 dark:text-sky-400"
+                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
-                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
+                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="sm" /> : <AppIcon name="viewList" size="sm" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Dropdown
@@ -165,9 +165,9 @@ export const BonusView: React.FC<{
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={`inline-flex items-center justify-center h-8 w-8 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 rounded-md transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
+                                className={`inline-flex items-center justify-center h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg transition-all hover:scale-105 active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
                             >
-                                <AppIcon name={activePeriodMode.icon} size="md" />
+                                <AppIcon name={activePeriodMode.icon} size="sm" />
                             </span>
                         }
                     />

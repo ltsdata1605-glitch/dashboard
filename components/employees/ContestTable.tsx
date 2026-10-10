@@ -411,17 +411,16 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <AppIcon name="addCircle" size="lg" />
+                            <AppIcon name="addCircle" size="md" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <AppIcon name="settings" size="lg" />
+                            <AppIcon name="settings" size="md" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-rose-50 transition-colors">
-                            <AppIcon name="delete" size="lg" />
+                            <AppIcon name="delete" size="md" />
                         </Button>
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
-                            {isExporting ? <AppIcon name="loading" size="lg" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="lg" className="hidden lg:block" />}
+                            {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
                         </Button>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { useMemo, useCallback } from 'react';
 import { Criterion, CompetitionHeader, Employee } from '../types/nhanVienTypes';
-import { extractEmployeeId, standardizeEmployeeName, type CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
+import { extractEmployeeId, standardizeEmployeeName, isIgnoredDept, type CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
 
 interface UseCompetitionDataProps {
     groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: CompetitionEmployeeRow[] }>;
@@ -77,7 +77,7 @@ export const useCompetitionData = ({
         };
 
         return uniqueEmployees
-            .filter((emp) => emp && (activeDepartments.includes('all') || activeDepartments.includes(emp.department)))
+            .filter((emp) => emp && emp.department && !isIgnoredDept(emp.department) && (activeDepartments.includes('all') || activeDepartments.includes(emp.department)))
             .filter((emp) => !isStoreRow(emp.name))
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [groupedData, activeDepartments, isActive]);

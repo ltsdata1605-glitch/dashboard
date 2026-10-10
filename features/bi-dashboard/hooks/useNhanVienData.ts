@@ -4,7 +4,7 @@ import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { appendBonusHistory } from '../utils/bonusHistory';
 import { RevenueRow, BonusMetrics, ManualDeptMapping, InstallmentRow, BonusComparePart, BonusCompareStore } from '../types/nhanVienTypes';
-import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId, isSameEmployee } from '../utils/nhanVienHelpers';
+import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId, isSameEmployee, isIgnoredDept } from '../utils/nhanVienHelpers';
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem, isSystemOrIgnoredEmployee } from '../services/analysisEmployeeSyncService';
@@ -350,7 +350,7 @@ export function useNhanVienData(isActive?: boolean) {
         const rawList = analysisEmployeesPayload?.employees || [];
         return rawList.filter(emp => {
             const dept = (emp.department || '').trim();
-            return dept && !isSystemOrIgnoredEmployee(emp.originalName, dept);
+            return dept && !isSystemOrIgnoredEmployee(emp.originalName, dept) && !isIgnoredDept(dept);
         });
     }, [analysisEmployeesPayload]);
 
@@ -399,9 +399,9 @@ export function useNhanVienData(isActive?: boolean) {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     const dept = (r.department || '').trim();
-                    if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
+                    if (!dept || isSystemOrIgnoredEmployee(r.originalName, dept) || isIgnoredDept(dept)) return false;
                     if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
-                    return true;
+                    return false;
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu:', err));
@@ -421,9 +421,9 @@ export function useNhanVienData(isActive?: boolean) {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     const dept = (r.department || '').trim();
-                    if (dept && isSystemOrIgnoredEmployee(r.originalName, dept)) return false;
+                    if (!dept || isSystemOrIgnoredEmployee(r.originalName, dept) || isIgnoredDept(dept)) return false;
                     if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
-                    return true;
+                    return false;
                 }));
             }
         }).catch(err => console.error('[useNhanVienData] Lỗi parse danh sách doanh thu realtime:', err));
@@ -489,7 +489,7 @@ export function useNhanVienData(isActive?: boolean) {
             if (!seen.has(dedupKey)) {
                 seen.add(dedupKey);
                 const dept = employeeDepartmentMap[emp.originalName] || employeeDepartmentMap[canonical] || emp.department;
-                if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept)) continue;
+                if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept) || isIgnoredDept(dept)) continue;
                 list.push({
                     name: emp.name || formatEmployeeName(emp.originalName),
                     originalName: emp.originalName,
@@ -517,7 +517,8 @@ export function useNhanVienData(isActive?: boolean) {
                     if (r.type !== 'employee') return true;
                     if (!r.originalName || hiddenEmployeesSet.has(r.originalName)) return false;
                     if (hasAnalysisEmployees) return isEmployeeInAnalysis(r.originalName);
-                    return true;
+                    const dept = (employeeDepartmentMap[r.originalName] || r.department || '').trim();
+                    return dept && !isIgnoredDept(dept) && !isSystemOrIgnoredEmployee(r.originalName, dept);
                 });
                 // Dòng TỔNG CỘNG của báo cáo gốc còn cộng cả người đã bị lọc (ngoài Phân Tích / bị ẩn) — đo 2026-10-09:
                 // bảng chỉ hiện NV 101 (200/1.000) mà dòng tổng ra 650/2.000. Tính lại tổng từ đúng các dòng còn lại.
@@ -542,7 +543,8 @@ export function useNhanVienData(isActive?: boolean) {
                     if (employeeDepartmentMap[parts[1]]) return employeeDepartmentMap[parts[1]];
                 }
             }
-            return currentDept || 'BP Khác';
+            if (currentDept && !isIgnoredDept(currentDept) && !isSystemOrIgnoredEmployee(origName, currentDept)) return currentDept;
+            return '';
         };
 
         // Nếu có danh sách nhân viên từ Phân Tích (allEmployees):
@@ -636,15 +638,21 @@ export function useNhanVienData(isActive?: boolean) {
         }
 
         // Fallback khi chưa có danh sách phân tích
-        const mappedRows = sourceRows.map(row => {
-            if (row.type === 'employee' && row.originalName) {
-                return { 
-                    ...row, 
-                    department: getDeptForEmployee(row.originalName, row.department)
-                };
-            }
-            return row;
-        });
+        const mappedRows = sourceRows
+            .filter(row => {
+                if (row.type !== 'employee') return true;
+                const dept = getDeptForEmployee(row.originalName, row.department);
+                return dept && !isIgnoredDept(dept) && !isSystemOrIgnoredEmployee(row.originalName, dept);
+            })
+            .map(row => {
+                if (row.type === 'employee' && row.originalName) {
+                    return { 
+                        ...row, 
+                        department: getDeptForEmployee(row.originalName, row.department)
+                    };
+                }
+                return row;
+            });
 
         const finalRows: RevenueRow[] = [];
         const currentDeptsInMap = Array.from(new Set(Object.values(employeeDepartmentMap))).sort();
@@ -685,7 +693,7 @@ export function useNhanVienData(isActive?: boolean) {
     const allDepartmentNames = useMemo(() => {
         if (isActive === false) return [];
         return Array.from(new Set(Object.values(employeeDepartmentMap as Record<string, string>)))
-            .filter((d): d is string => typeof d === 'string' && Boolean(d) && !d.toLowerCase().includes('chưa xác định') && !d.toLowerCase().includes('không phân ca'))
+            .filter((d): d is string => typeof d === 'string' && Boolean(d) && !isIgnoredDept(d))
             .sort();
     }, [employeeDepartmentMap, isActive]);
 
@@ -695,8 +703,8 @@ export function useNhanVienData(isActive?: boolean) {
     // hiển thị gì (xem allDepartmentNames ở trên).
     const departmentOptions = useMemo(() => {
         if (isActive === false) return [];
-        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca'];
-        return allDepartmentNames.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)));
+        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng', 'chưa xác định', 'không phân ca', 'bp khác', 'khác'];
+        return allDepartmentNames.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)) && !isIgnoredDept(d));
     }, [allDepartmentNames, isActive]);
 
     const [activeDepartmentsRaw, setActiveDepartments] = useIndexedDBState<string[]>('nhanvien-active-depts-multi', ['all']);
@@ -737,9 +745,40 @@ export function useNhanVienData(isActive?: boolean) {
     const employeeInstallmentMap = useMemo(() => {
         if (isActive === false) return new Map();
         const map = new Map<string, number>();
-        installmentRows.forEach(row => { if (row.originalName) map.set(row.originalName, row.totalPercent); });
+        installmentRows.forEach(row => {
+            if (row.type !== 'employee' && row.type !== undefined) return;
+            const pct = row.totalPercent ?? 0;
+
+            // 1. Chỉ mục theo originalName và name
+            if (row.originalName) {
+                map.set(row.originalName, pct);
+                const canonical = standardizeEmployeeName(row.originalName);
+                if (canonical) map.set(canonical, pct);
+                const formatted = formatEmployeeName(row.originalName);
+                if (formatted) map.set(formatted, pct);
+                if (row.originalName.includes(' - ')) {
+                    const parts = row.originalName.split(' - ').map(p => p.trim());
+                    if (parts.length >= 2) {
+                        map.set(`${parts[1]} - ${parts[0]}`, pct);
+                    }
+                }
+            }
+            if (row.name) {
+                map.set(row.name, pct);
+                const canonical = standardizeEmployeeName(row.name);
+                if (canonical) map.set(canonical, pct);
+                const formatted = formatEmployeeName(row.name);
+                if (formatted) map.set(formatted, pct);
+            }
+            // 2. Chỉ mục theo Mã số nhân viên duy nhất (Employee ID, ví dụ "59814")
+            const empId = extractEmployeeId(row.originalName || '') || extractEmployeeId(row.name || '');
+            if (empId) {
+                map.set(empId, pct);
+            }
+        });
         return map;
     }, [installmentRows, isActive]);
+
 
 
     // Siêu thị GỐC (chưa rút gọn) của 1 nhân viên — dùng employeeSupermarketMap khi có (chỉ

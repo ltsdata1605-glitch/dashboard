@@ -125,5 +125,38 @@ describe('Revenue Matching and Display with Analysis Employees', () => {
             expect(employeeRows[0].originalName).toBe('12345 - Trần Văn An');
             expect(employeeRows[1].originalName).toBe('7587 - Nguyễn Thị Tùy');
         });
+
+        it('correctly matches employee installment percentage even with differing name formats (ID - Name vs Name - ID)', () => {
+            const installmentMap = new Map<string, number>();
+            // Raw BI installment table format: "Nguyễn Thị Tùy - 7587" or ID "7587"
+            installmentMap.set('Nguyễn Thị Tùy - 7587', 45.5);
+            installmentMap.set('7587', 45.5);
+            installmentMap.set('Trần Văn An - 12345', 68.2);
+
+            const result = useRevenueData({
+                rows: departmentRows,
+                departmentNames: ['BP All In One - ĐMX'],
+                sortConfig: { key: 'dtqd', direction: 'desc' },
+                prevMonthRows: [],
+                departmentWeights: { 'BP All In One - ĐMX': 100 },
+                deptEmployeeCounts: { 'BP All In One - ĐMX': 2 },
+                supermarketTarget: 200000000,
+                employeeInstallmentMap: installmentMap,
+                viewMode: 'group',
+                exportDeptFilter: null,
+                isActive: true
+            });
+
+            const employeeRows = result.displayList.filter(r => r.type === 'employee');
+            const empTuy = employeeRows.find(e => e.originalName === '7587 - Nguyễn Thị Tùy');
+            const empAn = employeeRows.find(e => e.originalName === '12345 - Trần Văn An');
+
+            expect(empTuy).toBeDefined();
+            expect(empTuy?.calculatedInstallment).toBe(45.5);
+
+            expect(empAn).toBeDefined();
+            expect(empAn?.calculatedInstallment).toBe(68.2);
+        });
     });
 });
+

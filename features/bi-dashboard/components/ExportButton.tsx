@@ -97,9 +97,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         onClick={hasOptions ? () => setIsOpen(p => !p) : handleSingleExport}
         disabled={disabled || isLoading}
         className={cn(
-          "export-button-component h-8 min-h-11 sm:min-h-0 rounded-full text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
-          // Nút chỉ có icon: vùng chạm 44px cả 2 chiều trên điện thoại (trước 2026-10-06 chỉ cao 44, rộng 32).
-          hasOptions ? "px-2 gap-1.5" : "w-8 min-w-11 sm:min-w-0 p-1.5",
+          "export-button-component h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
+          hasOptions ? "px-2 gap-1.5 w-auto" : "p-1.5",
           isOpen && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
           className
         )}
@@ -108,10 +107,10 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         aria-expanded={hasOptions ? isOpen : undefined}
       >
         {isLoading ? (
-          <AppIcon name="loading" spin size="md" className="text-sky-500" />
+          <AppIcon name="loading" spin size="sm" className="text-sky-500" />
         ) : (
           <>
-            {icon ? renderIcon(icon, 'md') : <AppIcon name="exportImage" size="md" />}
+            {icon ? renderIcon(icon, 'sm') : <AppIcon name="exportImage" size="sm" />}
             {hasOptions && (
               <AppIcon name="chevronDown" size="sm" className={cn("opacity-70 transition-transform duration-200", isOpen && "rotate-180")} />
             )}

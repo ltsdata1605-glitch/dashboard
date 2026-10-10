@@ -19,7 +19,7 @@ vi.mock('firebase/firestore', () => ({
     },
 }));
 vi.mock('../../services/firebase', () => ({ db: {} }));
-const { listenSystemAnnouncement } = await import('../../services/systemAnnouncementService');
+const { listenSystemAnnouncement, isAnnouncementExpired } = await import('../../services/systemAnnouncementService');
 
 describe('listenSystemAnnouncement', () => {
     beforeEach(() => { truyVan.length = 0; });
@@ -41,4 +41,31 @@ describe('listenSystemAnnouncement', () => {
         expect(cb).toHaveBeenCalledWith(expect.objectContaining({ id: 'tb' }));
         expect(loi).not.toHaveBeenCalled();
     });
+
+    it('không tự ý ẩn thông báo khi không có expiresAt kể cả khi nội dung có nhắc đến ngày cũ', () => {
+        const refDate = new Date(2026, 9, 10); // 10/10/2026
+        const activeAnnouncement = {
+            active: true,
+            content: 'theo dữ liệu mới. Dự kiến hoàn tất ngày 12/9/2026',
+        };
+        expect(isAnnouncementExpired(activeAnnouncement, refDate)).toBe(false);
+    });
+
+    it('tự động phát hiện thông báo quá hạn theo trường expiresAt', () => {
+        const refDate = new Date(2026, 9, 10); // 10/10/2026
+        const expiredAnnouncement = {
+            active: true,
+            content: 'Bảo trì khẩn cấp',
+            expiresAt: '2026-09-12',
+        };
+        expect(isAnnouncementExpired(expiredAnnouncement, refDate)).toBe(true);
+
+        const activeAnnouncement = {
+            active: true,
+            content: 'Bảo trì khẩn cấp',
+            expiresAt: '2026-10-20',
+        };
+        expect(isAnnouncementExpired(activeAnnouncement, refDate)).toBe(false);
+    });
 });
+
