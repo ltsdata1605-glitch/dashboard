@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import UserManagementView from '../UserManagementView';
+import { ProductConfigManagerTab } from '../../../features/product-config';
 import { formatCleanDisplayName, parseKhoList } from '../../../utils/dataUtils';
 
 export const SettingsAccountTab: React.FC = () => {
@@ -315,10 +316,23 @@ export const SettingsAccountTab: React.FC = () => {
                 </div>
             </div>
 
-            {/* Phân Quyền Section */}
-            {(userRole === 'admin' || userRole === 'manager') && (
+            {/* Phân Quyền Section & Khai Báo Ngành Hàng */}
+            {(userRole === 'admin' || userRole === 'manager') ? (
                 <div className="w-full">
                     <UserManagementView isEmbedded={true} />
+                </div>
+            ) : (
+                <div className="w-full space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700/60">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 flex items-center justify-center rounded-md">
+                            <AppIcon name="settings" size="lg" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Khai Báo Cấu Hình Ngành Hàng</h2>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Xem định nghĩa nhóm hàng, hệ số quy đổi và tải file Excel cấu hình toàn hệ thống</p>
+                        </div>
+                    </div>
+                    <ProductConfigManagerTab />
                 </div>
             )}
 

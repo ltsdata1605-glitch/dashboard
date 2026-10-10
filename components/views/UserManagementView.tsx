@@ -748,7 +748,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         </Button>
                         <Button variant="ghost" onClick={() => setListMode('config')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 sm:px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'config' ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'}`}>
                             <AppIcon name="settings" size="md" />
-                            Cấu hình ngành hàng
+                            Khai báo ngành hàng
                         </Button>
                     </div>
                     {listMode !== 'config' && (

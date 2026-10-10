@@ -19,7 +19,7 @@ import type { CategoryTableItem, ProductCodeTableItem, ProductConfigSummary } fr
 import * as dbService from '../../../services/dbService';
 
 export const ProductConfigManagerTab: React.FC = () => {
-    const { user, userRole } = useAuth();
+    const { user, userRole, departmentId } = useAuth();
     const [config, setConfig] = useState<ProductConfig | null>(null);
     const [summary, setSummary] = useState<ProductConfigSummary | null>(null);
     const [configType, setConfigType] = useState<'category' | 'productCode'>('category');
@@ -30,7 +30,12 @@ export const ProductConfigManagerTab: React.FC = () => {
     const [isDirty, setIsDirty] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const isCanManage = userRole === 'admin' || userRole === 'manager';
+    // CHỈ Super Admin mới có quyền thêm, sửa, xoá và lưu cấu hình
+    const isSuperAdmin = Boolean(
+        user?.email === 'lts.truongson@gmail.com' ||
+        (userRole === 'admin' && (departmentId || '').startsWith('ALL (Super Admin)'))
+    );
+    const isCanManage = isSuperAdmin;
 
     const loadConfig = async () => {
         setIsLoading(true);
@@ -126,6 +131,10 @@ export const ProductConfigManagerTab: React.FC = () => {
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+        if (!isCanManage) {
+            toast.error('Chỉ Super Admin mới có quyền tải file cấu hình lên.');
+            return;
+        }
         const toastId = toast.loading('Đang đọc file cấu hình Excel...');
         try {
             if (configType === 'productCode') {
@@ -167,6 +176,10 @@ export const ProductConfigManagerTab: React.FC = () => {
 
     const handleSaveToCloud = async () => {
         if (!config) return;
+        if (!isCanManage) {
+            toast.error('Chỉ Super Admin mới có quyền lưu cấu hình ngành hàng lên Cloud.');
+            return;
+        }
         setIsSaving(true);
         const toastId = toast.loading('Đang lưu cấu hình lên Firebase Firestore...');
         try {
@@ -202,6 +215,10 @@ export const ProductConfigManagerTab: React.FC = () => {
     };
 
     const mutateConfig = useCallback((fn: (cfg: ProductConfig) => void) => {
+        if (!isCanManage) {
+            toast.error('Chỉ Super Admin mới có quyền chỉnh sửa cấu hình ngành hàng.');
+            return;
+        }
         setConfig(prev => {
             if (!prev) return prev;
             const next = { ...prev };
@@ -212,7 +229,7 @@ export const ProductConfigManagerTab: React.FC = () => {
             setIsDirty(true);
             return next;
         });
-    }, [user]);
+    }, [user, isCanManage]);
 
     const handleAddItem = useCallback((item: CategoryTableItem) => {
         mutateConfig(cfg => {
@@ -353,17 +370,25 @@ export const ProductConfigManagerTab: React.FC = () => {
             <div className="bg-white border border-slate-200 rounded-card p-3.5 shadow-sm space-y-3">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
-                        <h2 className="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
+                        <h2 className="text-sm sm:text-base font-bold text-slate-800 flex items-center flex-wrap gap-2">
                             <AppIcon name="settings" size="md" className="text-sky-500" />
                             <span>Cấu Hình Ngành Hàng & Hệ Số Quy Đổi</span>
-                            {isDirty && (
+                            {isDirty && isCanManage && (
                                 <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-bold uppercase tracking-wider">
                                     Có thay đổi chưa lưu
                                 </span>
                             )}
+                            {!isCanManage && (
+                                <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 font-semibold flex items-center gap-1">
+                                    <AppIcon name="eye" size="xs" />
+                                    Chế độ xem (Chỉ Super Admin mới có quyền sửa & lưu)
+                                </span>
+                            )}
                         </h2>
                         <p className="text-xs text-slate-500 mt-0.5">
-                            Quản lý toàn bộ nhóm cha, nhóm con, mã ngành hàng và hệ số quy đổi áp dụng trực tiếp cho toàn hệ thống.
+                            {isCanManage
+                                ? 'Quản lý toàn bộ nhóm cha, nhóm con, mã ngành hàng và hệ số quy đổi áp dụng trực tiếp cho toàn hệ thống.'
+                                : 'Xem và tải file dữ liệu cấu hình ngành hàng, nhóm cha, nhóm con và hệ số quy đổi áp dụng toàn hệ thống.'}
                         </p>
                     </div>
                 </div>

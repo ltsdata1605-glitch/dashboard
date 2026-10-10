@@ -57,9 +57,16 @@ service cloud.firestore {
       }
     }
 
+    function isSuperAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'lts.truongson@gmail.com' ||
+        (role() == 'admin' && request.auth.token.departmentId is string && request.auth.token.departmentId.matches('^ALL \\(Super Admin\\).*'))
+      );
+    }
+
     match /shared_configs/{id} {
       allow read:  if true;
-      allow write: if isManager();
+      allow write: if isSuperAdmin();
     }
 
     // Dữ liệu doanh số DÙNG CHUNG theo Mã Kho (mục 37 implementation_plan.md) — khác với
