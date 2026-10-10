@@ -192,8 +192,8 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                 </div>
             </div>
 
-            {/* 6-Column Grid */}
-            <div className="industry-kpi-grid grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-2.5">
+            {/* 3-Column Grid on Mobile, 6-Column on Desktop */}
+            <div className="industry-kpi-grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2.5">
                 {metricList.map((metric, index) => (
                     <IndustryKpiCard
                         key={metric.id}
