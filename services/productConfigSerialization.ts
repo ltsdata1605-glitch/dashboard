@@ -30,7 +30,20 @@ export const toCloudProductConfig = <T extends object>(config: T): T => {
     return out as T;
 };
 
-/** Dạng lưu Cloud → runtime: mảng thành Set. Bản Cloud cũ đã hỏng (`{}`) thành Set RỖNG. */
+/** Các hình thức xuất mặc định tính doanh thu khi cấu hình từ Cloud chưa khai báo HTX */
+export const DEFAULT_REVENUE_ELIGIBLE_HTX = [
+    'bán lẻ', 'xuất bán lẻ', 'bán hàng', 'bán sỉ', 'bán trả góp', 'doanh thu',
+    'bán online', 'xuất bán online', 'giao hàng thu tiền', 'bán mang về',
+    'xuất bán hàng online tại siêu thị', 'xuất bán hàng online tiết kiệm', 'xuất bán hàng tại siêu thị',
+    'xuất bán hàng tại siêu thị (tcđm)', 'xuất bán online giá rẻ', 'xuất bán pre-order tại siêu thị',
+    'xuất bán ưu đãi cho nhân viên', 'xuất dịch vụ thu hộ bảo hiểm', 'xuất đổi bảo hành sản phẩm imei',
+    'xuất đổi bảo hành tại siêu thị', 'xuất bán hàng trả góp online', 'xuất bán hàng trả góp online giá rẻ',
+    'xuất bán hàng trả góp online tiết kiệm', 'xuất bán hàng trả góp tại siêu thị',
+    'xuất bán hàng trả góp tại siêu thị (tcđm)', 'xuất bán trả góp ưu đãi cho nhân viên',
+    'xuất đổi bảo hành sản phẩm trả góp có imei', 'xuất bán trả góp cho nv phục vụ công việc'
+];
+
+/** Dạng lưu Cloud → runtime: mảng thành Set. Tự động bù HTX mặc định nếu thiếu. */
 export const fromCloudProductConfig = (config: unknown): ProductConfig => {
     const c = { ...(config as Record<string, unknown>) };
     if (c.groups && typeof c.groups === 'object') {
@@ -39,15 +52,18 @@ export const fromCloudProductConfig = (config: unknown): ProductConfig => {
     for (const f of SET_FIELDS) {
         if (c[f] !== undefined && c[f] !== null) c[f] = new Set(thanhMang(c[f]));
     }
+    // Bù tập HTX tính doanh thu mặc định nếu Cloud config không có (khi xoá bỏ Google Sheet)
+    const revHtx = c.revenueEligibleHTX as Set<string> | undefined;
+    if (!revHtx || revHtx.size === 0) {
+        c.revenueEligibleHTX = new Set(DEFAULT_REVENUE_ELIGIBLE_HTX);
+    }
     return c as unknown as ProductConfig;
 };
 
 /**
- * Cấu hình có dùng được để TÍNH SỐ không. Sheet luôn sinh ra 2 tập hình thức xuất; cả hai rỗng nghĩa
- * là bản đã hỏng khi qua Cloud (xem đầu file) — dùng nó là ra số sai, phải tải lại từ Sheet.
+ * Cấu hình có dùng được để TÍNH SỐ không. Chỉ cần có nhóm hàng (groups).
  */
 export const isProductConfigComplete = (config: ProductConfig | null | undefined): boolean => {
     if (!config || !config.groups || Object.keys(config.groups).length === 0) return false;
-    const soMuc = (s?: Set<string>) => (s instanceof Set ? s.size : 0);
-    return soMuc(config.revenueEligibleHTX) + soMuc(config.nonRevenueEligibleHTX) > 0;
+    return true;
 };

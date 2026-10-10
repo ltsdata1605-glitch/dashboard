@@ -173,3 +173,88 @@ export async function exportProductConfigToExcel(config: ProductConfig): Promise
     XLSX.writeFile(workbook, `Cau_Hinh_Dashboard_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
+export async function exportProductCodeConfigToExcel(productCodeItems: import('../types').ProductCodeTableItem[]): Promise<void> {
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.utils.book_new();
+
+    const productRows: Array<[string | number, string, number | string, string, string]> = [
+        ['MÃ SẢN PHẨM', 'TÊN SẢN PHẨM', 'HỆ SỐ', 'LOẠI', 'NHÓM']
+    ];
+    productCodeItems.forEach(item => {
+        productRows.push([
+            item.maSanPham,
+            item.tenSanPham,
+            item.heSo,
+            item.loai || '',
+            item.nhom || ''
+        ]);
+    });
+    const productSheet = XLSX.utils.aoa_to_sheet(productRows);
+    XLSX.utils.book_append_sheet(workbook, productSheet, 'Bảo Hiểm ĐMX');
+
+    XLSX.writeFile(workbook, `Cau_Hinh_Ma_San_Pham_${new Date().toISOString().split('T')[0]}.xlsx`);
+}
+
+export async function parseExcelProductCodeConfigFile(file: File): Promise<import('../types').ProductCodeTableItem[]> {
+    const arrayBuffer = await file.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.read(data, { type: 'array' });
+
+    let targetSheetName = workbook.SheetNames.find((name: string) => {
+        const ln = name.toLowerCase().normalize('NFC');
+        return ln.includes('bảo hiểm') || ln.includes('bao hiem') || ln.includes('mã sản phẩm') || ln.includes('ma san pham') || ln.includes('vas') || ln.includes('hệ số');
+    }) || workbook.SheetNames[0];
+
+    const sheet = workbook.Sheets[targetSheetName];
+    if (!sheet) {
+        throw new Error('File Excel không có sheet nào hợp lệ.');
+    }
+
+    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    if (rows.length < 2) {
+        throw new Error(`Sheet '${targetSheetName}' không có đủ dữ liệu.`);
+    }
+
+    const headers = rows[0].map((h: any) => String(h || '').trim().toLowerCase().normalize('NFC'));
+    const codeIdx = headers.findIndex((h: string) => h.includes('mã sản phẩm') || h === 'mã' || h.includes('mã sp') || h.includes('code') || h.includes('khai'));
+    const nameIdx = headers.findIndex((h: string) => h.includes('tên sản phẩm') || h === 'tên' || h.includes('name'));
+    const multiplierIdx = headers.findIndex((h: string) => h.includes('hệ số') || h.includes('sl quy đổi') || h.includes('hệ số quy đổi') || h.includes('multiplier'));
+    const loaiIdx = headers.findIndex((h: string) => h.includes('loại') || h.includes('thi đua') || h.includes('type'));
+    const nhomIdx = headers.findIndex((h: string) => h.includes('nhóm') || h.includes('group'));
+
+    if (codeIdx === -1 || multiplierIdx === -1) {
+        throw new Error(`Sheet '${targetSheetName}' thiếu các cột bắt buộc: 'Mã sản phẩm' và 'Hệ số'. Vui lòng kiểm tra tiêu đề các cột.`);
+    }
+
+    const items: import('../types').ProductCodeTableItem[] = [];
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.length > Math.max(codeIdx, multiplierIdx)) {
+            const code = String(row[codeIdx] || '').trim();
+            if (!code) continue;
+            const nameVal = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+            const loaiVal = loaiIdx !== -1 ? String(row[loaiIdx] || '').trim() : '';
+            const nhomVal = nhomIdx !== -1 ? String(row[nhomIdx] || '').trim() : '';
+            const rawVal = String(row[multiplierIdx] || '').replace(',', '.');
+            const multiplier = parseFloat(rawVal);
+            if (!isNaN(multiplier)) {
+                items.push({
+                    maSanPham: code,
+                    tenSanPham: nameVal,
+                    heSo: multiplier,
+                    loai: loaiVal || undefined,
+                    nhom: nhomVal || undefined,
+                    sheetSource: targetSheetName,
+                });
+            }
+        }
+    }
+
+    if (items.length === 0) {
+        throw new Error(`Không tìm thấy dòng mã sản phẩm hợp lệ nào trong sheet '${targetSheetName}'.`);
+    }
+
+    return items;
+}
+

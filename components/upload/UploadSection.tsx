@@ -44,7 +44,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-4 text-left">
                     <div className="mb-4">
                         <label htmlFor="config-url" className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
-                            Nguồn cấu hình (Google Sheets CSV)
+                            Nguồn cấu hình sản phẩm
                         </label>
                         <input
                             type="text"
@@ -52,7 +52,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             value={configUrl}
                             onChange={(e) => onConfigUrlChange(e.target.value)}
                             className="w-full p-2.5 text-[13px] font-medium text-slate-900 dark:text-white bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                            placeholder="https://docs.google.com/..."
+                            placeholder="cloud://global_product_config hoặc URL"
                         />
                     </div>
                     <div className="text-right">

@@ -32,11 +32,11 @@ describe('productConfig qua Cloud', () => {
         toCloudProductConfig(c);
         expect(c.revenueEligibleHTX).toBeInstanceOf(Set);
     });
-    it('bản Cloud đã hỏng ({} ở 2 tập HTX) → Set rỗng và bị coi là KHÔNG dùng được', () => {
+    it('bản Cloud không có HTX → tự động bù tập HTX mặc định để tính số', () => {
         const hong = { ...toCloudProductConfig(cauHinh()), revenueEligibleHTX: {}, nonRevenueEligibleHTX: {} };
         const ve = fromCloudProductConfig(quaFirestore(hong));
-        expect(ve.revenueEligibleHTX?.size).toBe(0);
-        expect(isProductConfigComplete(ve)).toBe(false);
+        expect(ve.revenueEligibleHTX?.size).toBeGreaterThan(0);
+        expect(isProductConfigComplete(ve)).toBe(true);
     });
     it('không có groups → không dùng được', () => {
         expect(isProductConfigComplete({ ...cauHinh(), groups: {} })).toBe(false);

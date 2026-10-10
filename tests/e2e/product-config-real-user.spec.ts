@@ -31,8 +31,8 @@ test('Kiểm tra giao diện Cấu hình ngành hàng: đủ 5 cột chuẩn, c�
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/?tab=settings');
 
-    // Chuyển sang sub-tab "Cấu hình ngành hàng"
-    const tabBtn = page.getByRole('button', { name: 'Cấu hình ngành hàng' }).first();
+    // Chuyển sang sub-tab "Cấu hình ngành hàng" / "Khai báo ngành hàng"
+    const tabBtn = page.getByRole('button', { name: /(Cấu hình ngành hàng|Khai báo ngành hàng)/i }).first();
     await expect(tabBtn).toBeVisible({ timeout: 20_000 });
     await tabBtn.click();
 
@@ -43,10 +43,10 @@ test('Kiểm tra giao diện Cấu hình ngành hàng: đủ 5 cột chuẩn, c�
     // Xác nhận nút "Đồng bộ từ Google Sheets" KHÔNG còn xuất hiện
     await expect(page.getByRole('button', { name: /Đồng bộ từ Google Sheets/i })).toHaveCount(0);
 
-    // Kiểm tra các nút độc lập: Tải file Excel, Xuất Excel, Lưu Cloud
-    await expect(page.getByRole('button', { name: /Tải file Excel/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Xuất Excel/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Lưu lên Cloud Firebase/i })).toBeVisible();
+    // Kiểm tra các nút độc lập (Icon buttons): Tải file Excel, Xuất Excel, Lưu Cloud
+    await expect(page.locator('button[title*="Tải file Excel"]')).toBeVisible();
+    await expect(page.locator('button[title*="Xuất Excel"]')).toBeVisible();
+    await expect(page.locator('button[title*="Lưu lên Cloud Firebase"]')).toBeVisible();
 
     // Kiểm tra bảng cấu hình
     const table = page.locator('table').first();
@@ -62,8 +62,8 @@ test('Kiểm tra giao diện Cấu hình ngành hàng: đủ 5 cột chuẩn, c�
     expect(headers.some(h => h.includes('NHÓM CON')), 'Phải có cột NHÓM CON').toBe(true);
     expect(headers.some(h => h.includes('HỆ SỐ')), 'Phải có cột HỆ SỐ QUY ĐỔI').toBe(true);
 
-    // Chuyển sang loại "2. Cấu hình theo Mã sản phẩm"
-    const productCodeTabBtn = page.getByRole('button', { name: /2\. Cấu hình theo Mã sản phẩm/i }).first();
+    // Chuyển sang loại "Cấu hình theo Mã sản phẩm"
+    const productCodeTabBtn = page.getByRole('button', { name: /Cấu hình theo Mã sản phẩm/i }).first();
     await expect(productCodeTabBtn).toBeVisible({ timeout: 10_000 });
     await productCodeTabBtn.click();
     await page.waitForTimeout(1000);

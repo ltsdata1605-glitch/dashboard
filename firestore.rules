@@ -58,7 +58,7 @@ service cloud.firestore {
     }
 
     match /shared_configs/{id} {
-      allow read:  if isSignedIn();
+      allow read:  if true;
       allow write: if isManager();
     }
 

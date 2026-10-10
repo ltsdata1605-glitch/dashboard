@@ -194,6 +194,30 @@ describe('firebaseProductConfigService & serialization', () => {
         const summary = computeConfigSummary(config);
         expect(summary.productCodeCount).toBe(2);
     });
+
+    it('parseExcelProductCodeConfigFile parses file buffer accurately', async () => {
+        const { parseExcelProductCodeConfigFile } = await import('./firebaseProductConfigService');
+        const XLSX = await import('xlsx');
+
+        const mockProductRows = [
+            ['Mã sản phẩm', 'Tên sản phẩm', 'Hệ số', 'Loại', 'Nhóm'],
+            ['1997139000289', 'BHMR 1 năm Apple Watch', 3, 'Apple Watch', 'ICT'],
+            ['1997160000128', 'BHRV 12 tháng Apple Watch', 2, 'Apple Watch', 'ICT'],
+        ];
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(mockProductRows);
+        XLSX.utils.book_append_sheet(wb, ws, 'Bảo Hiểm ĐMX');
+        const u8 = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+        const mockFile = new File([u8], 'test-product-code.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        const parsed = await parseExcelProductCodeConfigFile(mockFile);
+        expect(parsed.length).toBe(2);
+        expect(parsed[0].maSanPham).toBe('1997139000289');
+        expect(parsed[0].heSo).toBe(3);
+        expect(parsed[1].maSanPham).toBe('1997160000128');
+        expect(parsed[1].heSo).toBe(2);
+    });
 });
 
 

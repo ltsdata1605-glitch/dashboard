@@ -177,7 +177,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
-                let isGlobalCloudConfig = cachedUrl === 'cloud://global_product_config';
+                let isGlobalCloudConfig = cachedUrl === 'cloud://global_product_config' || configUrl === 'cloud://global_product_config';
 
                 // PERF FIX: Render ngay lập tức từ IndexedDB nếu có (0ms instant display)
                 if (config && isProductConfigComplete(config)) {
@@ -186,44 +186,43 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 let loadedFromFirestore = false;
                 // ƯU TIÊN SỐ 1: Luôn kiểm tra & nạp cấu hình toàn hệ thống từ Firestore (shared_configs/global_product_config)
-                if (user && !isDemoMode) {
-                    try {
-                        const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
-                        const globalEntry = await getGlobalProductConfig();
-                        if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
-                            config = globalEntry.config;
+                // Đọc trực tiếp từ Firestore không phụ thuộc vào trạng thái đăng nhập user
+                try {
+                    const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
+                    const globalEntry = await getGlobalProductConfig();
+                    if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
+                        config = globalEntry.config;
+                        isGlobalCloudConfig = true;
+                        await dbService.saveProductConfig(config, 'cloud://global_product_config');
+                        setProductConfig(config);
+                        loadedFromFirestore = true;
+                    } else if (user && !isDemoMode) {
+                        // Dự phòng: cấu hình riêng của user trên Firestore nếu có
+                        const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
+                        const cloudConfigEntry = await fetchProductConfigFromCloud(user);
+                        const cloudConfig = cloudConfigEntry?.config;
+                        if (cloudConfig && isProductConfigComplete(cloudConfig)) {
+                            config = cloudConfig;
                             isGlobalCloudConfig = true;
                             await dbService.saveProductConfig(config, 'cloud://global_product_config');
                             setProductConfig(config);
                             loadedFromFirestore = true;
-                        } else {
-                            // Dự phòng: cấu hình riêng của user trên Firestore
-                            const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
-                            const cloudConfigEntry = await fetchProductConfigFromCloud(user);
-                            const cloudConfig = cloudConfigEntry?.config;
-                            if (cloudConfig && isProductConfigComplete(cloudConfig)) {
-                                config = cloudConfig;
-                                isGlobalCloudConfig = true;
-                                await dbService.saveProductConfig(config, 'cloud://global_product_config');
-                                setProductConfig(config);
-                                loadedFromFirestore = true;
-                            }
                         }
-                    } catch (e) {
-                        console.warn("Không đọc được cấu hình từ Firestore:", e);
                     }
+                } catch (e) {
+                    console.warn("Không đọc được cấu hình từ Firestore:", e);
                 }
 
-                // Chỉ tải từ Google Sheet khi CHƯA có cấu hình Cloud và bộ nhớ cục bộ thiếu
+                // Chỉ tải từ URL ngoài khi CHƯA có cấu hình Cloud, bộ nhớ cục bộ thiếu, và URL là HTTP hợp lệ
                 const isConfigMissing = !config || !config.groups || Object.keys(config.groups).length === 0;
-                if (!loadedFromFirestore && !isGlobalCloudConfig && (isConfigMissing || cachedUrl !== configUrl)) {
+                if (!loadedFromFirestore && !isGlobalCloudConfig && isConfigMissing && configUrl.startsWith('http')) {
                     try {
-                        setStatus({ message: 'Tải cấu hình từ Sheet...', type: 'info', progress: 15 });
+                        setStatus({ message: 'Tải cấu hình từ URL...', type: 'info', progress: 15 });
                         config = await loadConfigFromSheet(configUrl, () => {});
                         await dbService.saveProductConfig(config, configUrl);
                         setProductConfig(config);
                     } catch (e) {
-                        console.error("Không tải được cấu hình từ Sheet, sử dụng dữ liệu cũ rỗng.");
+                        console.error("Không tải được cấu hình từ URL bên ngoài.");
                     }
                 }
 
@@ -485,7 +484,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 // 3. Background Config Check:
                 // Nếu đang dùng Cloud Config toàn hệ thống của Firebase, KHÔNG bao giờ tải lại Google Sheet
                 // để tránh tình trạng ghi đè cấu hình tuỳ chỉnh và gây đơ lag trình duyệt.
-                if (config && !isGlobalCloudConfig && cachedUrl !== 'cloud://global_product_config') {
+                if (config && !isGlobalCloudConfig && configUrl.startsWith('http') && cachedUrl !== 'cloud://global_product_config') {
                     setTimeout(async () => {
                         try {
                             // FAST CHECK: Use HEAD request to get the published timestamp from the redirect URL
@@ -1228,11 +1227,19 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         } catch (cloudErr) {
                             console.warn('[useDataManagement] Lỗi đọc global config khi retry:', cloudErr);
                         }
-                        if (!config) {
-                            config = await loadConfigFromSheet(configUrl, () => {});
+                        if (!config && configUrl.startsWith('http')) {
+                            try {
+                                config = await loadConfigFromSheet(configUrl, () => {});
+                            } catch (sheetErr) {
+                                console.warn('[useDataManagement] Lỗi đọc config từ URL ngoài khi retry:', sheetErr);
+                            }
                         }
-                        dbService.saveProductConfig(config, configUrl).catch(console.error);
-                        setProductConfig(config);
+                        if (config) {
+                            dbService.saveProductConfig(config, 'cloud://global_product_config').catch(console.error);
+                            setProductConfig(config);
+                        } else {
+                            throw new Error('Không tìm thấy cấu hình ngành hàng trên Cloud.');
+                        }
                     } catch (e) {
                         console.error('[useDataManagement] Tải lại cấu hình thất bại:', e);
                         const msg = 'Không tải được cấu hình ngành hàng — kiểm tra kết nối mạng rồi thử lại.';
