@@ -199,7 +199,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-950">
+        <div className="flex flex-col h-full w-full min-w-0 overflow-x-hidden bg-white dark:bg-slate-950">
             {/* Slide Menu Header */}
             <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
                 <div className="flex items-center gap-1.5 sm:gap-2">
@@ -217,7 +217,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             </div>
 
             {/* Slide Menu Body */}
-            <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
+            <div className="flex-grow min-w-0 overflow-y-auto overflow-x-hidden overscroll-x-none custom-scrollbar pb-20">
                 <div className="p-2 sm:p-3 space-y-3 sm:space-y-4">
 
                     {/* Quản lý ca kíp / Phân ca Nhân viên */}
@@ -318,7 +318,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </Button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 [&>*]:min-w-0">
                         {/* 1. Kho Tạo */}
                         <div className="space-y-1 sm:space-y-1.5">
                             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -441,7 +441,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     <div className="space-y-2 sm:space-y-3 pt-1 px-1">
                         <div className="space-y-1 sm:space-y-1.5">
                             <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
-                            <div className="grid grid-cols-5 gap-1">
+                            <div className="grid grid-cols-5 gap-1 [&>*]:min-w-0">
                                 {[
                                     { range: 'today', label: 'H.Nay' }, { range: 'yesterday', label: 'H.Qua' },
                                     { range: 'week', label: 'Tuần này' }, { range: 'month', label: 'Tháng này' },
@@ -459,14 +459,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                             </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 gap-2 [&>*]:min-w-0">
                             <div className="space-y-1">
                                 <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest ml-1">Từ ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.startDate} 
                                     onChange={e => handleDateChange('startDate', e.target.value)} 
-                                    className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm font-medium px-2.5 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none shadow-none" 
+                                    className="w-full min-w-0 max-w-full appearance-none h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm font-medium px-2.5 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none shadow-none" 
                                 />
                             </div>
                             <div className="space-y-1">
@@ -475,7 +475,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                                     type="date" 
                                     value={localFilters.endDate} 
                                     onChange={e => handleDateChange('endDate', e.target.value)} 
-                                    className="w-full h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm font-medium px-2.5 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none shadow-none" 
+                                    className="w-full min-w-0 max-w-full appearance-none h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-xs sm:text-sm font-medium px-2.5 text-slate-900 dark:text-slate-100 focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none shadow-none" 
                                 />
                             </div>
                         </div>
@@ -484,7 +484,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     {/* Section Visibility */}
                     <div className="space-y-1.5 sm:space-y-2 pt-1.5 sm:pt-2 px-1">
                         <label className="text-[11px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
-                        <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
+                        <div className="grid grid-cols-2 gap-1 sm:gap-1.5 [&>*]:min-w-0">
                             {visibilityOptions.map(opt => (
                                 <ModernSwitch
                                     key={opt.key}
