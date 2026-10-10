@@ -2,6 +2,7 @@ import type { DataRow, ProductConfig, Status } from '../types';
 import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize, getErrorMessage } from '../utils/dataUtils';
 import { COL, DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../constants';
 import { isAllInOneDepartment, keepOnlyAllInOne } from '../utils/departmentFilter';
+import { autoNormalizeAndClassifyHTX } from './productConfigSerialization';
 
 type StatusUpdater = (status: Status) => void;
 
@@ -279,13 +280,20 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
                         if (htx) {
                             const htxKey = cleanAndNormalize(htx);
                             const normTinhDT = cleanAndNormalize(tinhDT).toLowerCase();
-                            if (normTinhDT === 'có' || normTinhDT === 'co' || normTinhDT === 'yes' || normTinhDT === '1' || normTinhDT.includes('doanh thu')) {
+                            const hinhThucLower = cleanAndNormalize(hinhThuc).toLowerCase();
+                            
+                            // Phân loại tính doanh thu: nếu cột tính DT hoặc cột loại chứa từ khoá bán/tiền mặt/trả góp/doanh thu
+                            const isCoDoanhThu = normTinhDT === 'có' || normTinhDT === 'co' || normTinhDT === 'yes' || normTinhDT === '1' || normTinhDT.includes('doanh thu')
+                                || hinhThucLower.includes('doanh thu') || hinhThucLower.includes('tiền mặt') || hinhThucLower.includes('trả góp') || hinhThucLower.includes('tra gop')
+                                || (!hinhThucLower.includes('thu hộ') && !hinhThucLower.includes('thu ho') && (htxKey.includes('bán') || htxKey.includes('ban')));
+
+                            if (isCoDoanhThu) {
                                 config.revenueEligibleHTX!.add(htxKey);
+                                config.revenueEligibleHTX!.add(htx);
                             } else {
                                 config.nonRevenueEligibleHTX!.add(htxKey);
                             }
                             
-                            const hinhThucLower = cleanAndNormalize(hinhThuc).toLowerCase();
                             if (hinhThucLower.includes('trả góp') || hinhThucLower.includes('tra gop')) {
                                 config.htxClassification![htxKey] = 'tra_gop';
                             } else if (hinhThucLower.includes('tiền mặt') || hinhThucLower.includes('tien mat')) {
@@ -305,6 +313,8 @@ export function parseProductConfigFromWorkbook(workbook: any, XLSX: any): Produc
             console.warn(`[Config] Lỗi khi xử lý sheet '${htxSheetName}':`, sheetError);
         }
     }
+
+    autoNormalizeAndClassifyHTX(config);
 
     return config;
 }

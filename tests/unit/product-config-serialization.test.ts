@@ -38,6 +38,19 @@ describe('productConfig qua Cloud', () => {
         expect(ve.revenueEligibleHTX?.size).toBeGreaterThan(0);
         expect(isProductConfigComplete(ve)).toBe(true);
     });
+    it('bản Cloud bị phân loại nhầm HTX bán hàng sang nonRevenueEligibleHTX → tự động sửa đưa sang revenueEligibleHTX', () => {
+        const configLoi = {
+            ...toCloudProductConfig(cauHinh()),
+            revenueEligibleHTX: ['Bán lẻ', 'Xuất bán lẻ'],
+            nonRevenueEligibleHTX: ['xuất bán hàng tại siêu thị', 'xuất bán hàng trả góp tại siêu thị', 'xuất dịch vụ thu hộ payoo']
+        };
+        const ve = fromCloudProductConfig(quaFirestore(configLoi));
+        expect(ve.revenueEligibleHTX?.has('xuất bán hàng tại siêu thị')).toBe(true);
+        expect(ve.revenueEligibleHTX?.has('xuất bán hàng trả góp tại siêu thị')).toBe(true);
+        expect(ve.nonRevenueEligibleHTX?.has('xuất bán hàng tại siêu thị')).toBe(false);
+        expect(ve.nonRevenueEligibleHTX?.has('xuất dịch vụ thu hộ payoo')).toBe(true);
+        expect(ve.htxClassification?.['xuất bán hàng trả góp tại siêu thị']).toBe('tra_gop');
+    });
     it('không có groups → không dùng được', () => {
         expect(isProductConfigComplete({ ...cauHinh(), groups: {} })).toBe(false);
         expect(isProductConfigComplete(null)).toBe(false);
