@@ -6,7 +6,6 @@ import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, forma
 import { COL } from '../../constants';
 import { Button } from '../shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
-import ExportDestinationButton from '../analysis/ExportDestinationButton';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
 
@@ -424,7 +423,6 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                             {isExporting ? <AppIcon name="loading" size="lg" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="lg" className="hidden lg:block" />}
                         </Button>
-                        <ExportDestinationButton reportKey={config.tableName} />
                     </div>
                 </div>
 

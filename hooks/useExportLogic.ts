@@ -11,11 +11,6 @@ import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants'
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
-import {
-    getExportDestination, loadExportDestinations, reportKeyFromFilename,
-    getReportCommand, sanitizeReportCommand, type ExportDestination,
-    LINE_EXPORT_TEMPORARILY_DISABLED
-} from '../services/analysisExportDestinations';
 import { describeBatchOutcome } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
 
@@ -33,16 +28,7 @@ export interface ExportImageOptions {
     fitWidthToTable?: boolean;
     mode?: ExportMode;
     onCloneReady?: ((clone: HTMLElement) => void) | null;
-    /** 'auto' (mặc định): theo đích đã đặt cho nút (tải về / gửi nhóm LINE). 'download': luôn tải về. */
-    destination?: 'auto' | 'download';
-    /** Ném lỗi nếu gửi LINE hỏng (dùng cho lượt tự gửi sau Auto Sync) thay vì chỉ báo toast */
-    throwOnLineError?: boolean;
-    /** Gửi vào nhóm này, bỏ qua đích đã đặt cho nút (lượt hẹn giờ có danh sách khu vực riêng — 2026-10-02) */
-    lineTarget?: { groupId: string; groupName: string } | null;
 }
-
-/** Độ nét khi chụp ảnh để GỬI LINE (2026-10-02, chủ dự án: "ảnh cao và nét"): 3x máy tính, 2x điện thoại (trần canvas iOS) */
-export const LINE_EXPORT_SCALE_DESKTOP = 3;
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
@@ -97,93 +83,22 @@ export const useExportLogic = ({
         if (!element) return null;
         {
             setIsExporting(true);
-            // Bảng chờ do bộ xuất ảnh chung tự mở (tiêu đề theo tên báo cáo) — không dùng lớp phủ cũ nữa
+            // Bảng chờ do bộ xuất ảnh chung tự mở (tiêu đề theo tên báo cáo)
             await new Promise(resolve => setTimeout(resolve, 150));
-            const { destination = 'auto', throwOnLineError = false, lineTarget = null, ...rest } = options;
-            await loadExportDestinations();
-            const reportKey = reportKeyFromFilename(filename);
-            const dest: ExportDestination = lineTarget?.groupId
-                ? { kind: 'line' as const, groups: [{ groupId: lineTarget.groupId, groupName: lineTarget.groupName }], groupId: lineTarget.groupId, groupName: lineTarget.groupName }
-                : destination === 'auto' ? getExportDestination(reportKey) : { kind: 'download' as const };
-            const cmd = sanitizeReportCommand(dest.command || getReportCommand(reportKey));
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
                 mode: 'blob-only' as ExportMode,
-                // Gửi LINE: chụp nét hơn (bộ xuất ảnh tự hạ khi vượt trần canvas)
-                ...(dest.kind === 'line' && !isMobileLikeDevice() ? { scale: LINE_EXPORT_SCALE_DESKTOP } : {}),
-                ...rest
+                ...options
             };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
-            if (blob && dest.kind === 'line' && !LINE_EXPORT_TEMPORARILY_DISABLED) {
-                const targetGroups = (dest.groups && dest.groups.length > 0)
-                    ? dest.groups
-                    : (dest.groupId ? [{ groupId: dest.groupId, groupName: dest.groupName || 'Nhóm LINE' }] : []);
-
-                if (targetGroups.length > 0) {
-                    const groupTitle = targetGroups.length === 1
-                        ? `nhóm LINE ${targetGroups[0].groupName}`
-                        : `${targetGroups.length} nhóm LINE`;
-                    const tId = toast.loading(`Đang gửi "${reportKey}" vào ${groupTitle}…`);
-                    try {
-                        const { sendReportImageToLineGroups } = await import('../services/lineReportDelivery');
-                        const now = new Date();
-                        const p2 = (n: number) => String(n).padStart(2, '0');
-                        const caption = `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`;
-                        const res = await sendReportImageToLineGroups({
-                            blob,
-                            groups: targetGroups,
-                            fileName: filename,
-                            caption,
-                            uid: user?.uid || '',
-                            departmentId,
-                            command: cmd,
-                            reportKey,
-                        });
-                        if (res.errors.length === 0) {
-                            toast.success(`Đã gửi "${reportKey}" vào ${groupTitle}`, { id: tId });
-                        } else if (res.ok > 0) {
-                            toast.error(`Đã gửi ${res.ok}/${targetGroups.length} nhóm. Lỗi: ${res.errors.join('; ')}`, { id: tId, duration: 8000 });
-                        } else {
-                            throw new Error(res.errors.join('; '));
-                        }
-                    } catch (err) {
-                        const msg = getErrorMessage(err);
-                        toast.error(`Gửi LINE thất bại: ${msg}`, { id: tId, duration: 8000 });
-                        if (throwOnLineError) throw new Error(msg);
-                    }
-                    return blob;
-                }
-            }
             if (blob) {
-                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
-                if (!isMobile) {
-                    downloadBlob(blob, filename);
-                } else {
-                    await shareBlob(blob, filename);
-                }
-
-                // Nếu khu vực xuất ảnh có cú pháp lệnh LINE (ví dụ "bc" cho Chi Tiết Theo Kho), tự động nạp ảnh ngầm lên bot
-                if (cmd && dest.kind === 'download') {
-                    const now = new Date();
-                    const p2 = (n: number) => String(n).padStart(2, '0');
-                    const caption = `📊 ${reportKey} — cập nhật ${p2(now.getHours())}:${p2(now.getMinutes())} ${p2(now.getDate())}/${p2(now.getMonth() + 1)}`;
-                    void import('../services/lineReportDelivery').then(({ syncReportImageForCommand }) => {
-                        void syncReportImageForCommand({
-                            blob,
-                            reportKey,
-                            command: cmd,
-                            fileName: filename,
-                            uid: user?.uid || '',
-                            departmentId,
-                            caption,
-                        });
-                    }).catch(() => {});
-                }
+                // Tự tải về máy + Tự sao chép ảnh vào clipboard để dán trực tiếp
+                downloadBlob(blob, filename);
             }
             return blob;
         }
-    }, [user?.uid, departmentId]);
+    }, []);
 
     const handlePendingDownload = useCallback(() => {
         if (pendingExport) {

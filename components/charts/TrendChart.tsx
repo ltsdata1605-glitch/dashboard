@@ -18,8 +18,6 @@ import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { Select } from '../shared/ui/Select';
-import ExportDestinationButton from '../analysis/ExportDestinationButton';
-import { registerAutoExport } from '../../services/analysisExportDestinations';
 import { Button } from '../shared/ui/Button';
 import { Overlay } from '../shared/ui/Overlay';
 
@@ -301,12 +299,6 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       }
   };
   // Tự xuất & gửi LINE sau Auto Sync YCX Realtime (khi nút đặt đích "nhóm LINE") — chỉ ở dạng biểu đồ
-  const autoExportRef = useRef<() => Promise<void>>(async () => {});
-  autoExportRef.current = async () => {
-      if (displayMode === 'calendar' || !chartCardRef.current) throw new Error('Xu hướng doanh thu đang ở dạng Bảng Lịch');
-      await handleExport(chartCardRef.current, `${getExportFilenamePrefix(filterState.kho)} - Xu Hướng Doanh Thu.png`, { captureAsDisplayed: true, throwOnLineError: true });
-  };
-  useEffect(() => registerAutoExport('Xu Hướng Doanh Thu', () => autoExportRef.current()), []);
   
   const textColor = '#64748b';
   const gridColor = '#f1f5f9';
@@ -587,7 +579,6 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name={displayMode === 'calendar' ? 'exportBatch' : 'exportImage'} size="md" className="lg:hidden" />}
             {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name={displayMode === 'calendar' ? 'exportBatch' : 'exportImage'} size="md" className="hidden lg:block" />}
           </Button>
-          {displayMode !== 'calendar' && <ExportDestinationButton reportKey="Xu Hướng Doanh Thu" />}
         </div>
       </SectionHeader>
 

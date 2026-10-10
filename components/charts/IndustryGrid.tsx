@@ -13,7 +13,6 @@ import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
 import { Button } from '../shared/ui/Button';
-import ExportDestinationButton from '../analysis/ExportDestinationButton';
 
 // Ramp phân loại nhóm — chỉ dùng sắc độ của 5 màu semantic (sky/emerald/amber/rose/slate)
 // + indigo (alias primary hợp lệ), đủ tương phản để phân biệt tới 12 nhóm mà vẫn trong palette.
@@ -294,7 +293,6 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                         {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                     </Button>
-                    <ExportDestinationButton reportKey="Tỷ Trọng Ngành Hàng" />
                     {drilldownPath.length > 0 && (
                         <Button
                             variant="unstyled" size="none"

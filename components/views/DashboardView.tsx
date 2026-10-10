@@ -48,9 +48,6 @@ const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal
 import ProcessingLoader from '../common/ProcessingLoader';
 import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
-import ExportDestinationButton from '../analysis/ExportDestinationButton';
-import { registerAutoExport, runLineAutoExports, runLineAutoExportsTo, LINE_EXPORT_TEMPORARILY_DISABLED } from '../../services/analysisExportDestinations';
-import type { AutoSendItem } from '../../services/autoSyncSchedule';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Button } from '../shared/ui/Button';
@@ -167,23 +164,15 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     // Mốc nạp YCX Realtime từ Auto Sync — đợi dữ liệu hiện xong thì tự gửi ảnh LINE (null = không chờ)
     const choGuiLineRef = useRef<number | null>(null);
-    /** Khu vực tự gửi của lượt hẹn giờ (rỗng = cách cũ: các nút đặt đích "nhóm LINE", chỉ Realtime) */
-    const khuVucGuiRef = useRef<AutoSendItem[]>([]);
     // Lắng nghe file YCX từ GlobalAutoSyncDock (chức năng Tự động YCX Realtime)
     useEffect(() => {
         // mode 'luyke' (YCX Luỹ kế) → nạp như "Lũy kế / Quá khứ" (isHistorical); còn lại → "Tệp Realtime"
         const pendingFile = (window as any).__pendingYcxAutoSyncFile;
         if (pendingFile) {
             const laLuyKe = (window as any).__pendingYcxAutoSyncMode === 'luyke';
-            const autoSend: AutoSendItem[] = (window as any).__pendingYcxAutoSend || [];
             delete (window as any).__pendingYcxAutoSyncFile;
             delete (window as any).__pendingYcxAutoSyncMode;
             delete (window as any).__pendingYcxAutoSend;
-            khuVucGuiRef.current = autoSend;
-            // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
-            if (!LINE_EXPORT_TEMPORARILY_DISABLED && laLuyKe && autoSend.length) {
-                choGuiLineRef.current = Date.now();
-            }
             handleFileProcessing([pendingFile], false, laLuyKe);
         }
 
@@ -193,38 +182,12 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
                 delete (window as any).__pendingYcxAutoSend;
-                const autoSend: AutoSendItem[] = Array.isArray(e.detail?.autoSend) ? e.detail.autoSend : [];
-                khuVucGuiRef.current = autoSend;
-                // Tính năng Realtime sau khi cập nhật: không cần xuất ảnh gửi LINE
-                if (!LINE_EXPORT_TEMPORARILY_DISABLED && e.detail?.mode === 'luyke' && autoSend.length) {
-                    choGuiLineRef.current = Date.now();
-                }
                 handleFileProcessing([file], false, e.detail?.mode === 'luyke');
             }
         };
         window.addEventListener('ycx-auto-sync-file', handleAutoSyncFile);
         return () => window.removeEventListener('ycx-auto-sync-file', handleAutoSyncFile);
     }, [handleFileProcessing]);
-
-    // Dữ liệu Auto Sync YCX Realtime đã hiện → tự xuất & gửi mọi nút đang đặt "Gửi nhóm LINE" (nếu không tắt)
-    useEffect(() => {
-        if (LINE_EXPORT_TEMPORARILY_DISABLED) return;
-        const moc = choGuiLineRef.current;
-        if (!moc || appState !== 'dashboard' || !processedData || isProcessing || isFilterProcessing) return;
-        if (Date.now() - moc > 10 * 60_000) { choGuiLineRef.current = null; return; }
-        const t = setTimeout(async () => {
-            if (choGuiLineRef.current !== moc) return;
-            choGuiLineRef.current = null;
-            const khuVuc = khuVucGuiRef.current;
-            khuVucGuiRef.current = [];
-            const kq = khuVuc.length ? await runLineAutoExportsTo(khuVuc) : await runLineAutoExports();
-            if (kq.length === 0) return;
-            const hong = kq.filter((r) => !r.ok);
-            if (hong.length) toast.error(`Tự gửi LINE: ${kq.length - hong.length}/${kq.length} ảnh — lỗi: ${hong.map((r) => r.key).join(', ')}`, { duration: 10000 });
-            else toast.success(`Tự gửi LINE: đã gửi ${kq.length} ảnh sau khi cập nhật YCX`);
-        }, 2500);
-        return () => clearTimeout(t);
-    }, [appState, processedData, isProcessing, isFilterProcessing]);
 
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
 
@@ -312,14 +275,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             });
         } else if (tuDong) throw new Error('Khối "Tổng quan doanh thu" chưa hiển thị');
     };
-    // Đăng ký để lượt Auto Sync YCX Realtime tự xuất & gửi LINE (chỉ chạy khi nút đặt đích "nhóm LINE")
-    const exportRunnersRef = useRef({ tongQuan: handleKpiCardsOnlyExport, banTin: handleBusinessOverviewExport });
-    exportRunnersRef.current = { tongQuan: handleKpiCardsOnlyExport, banTin: handleBusinessOverviewExport };
-    useEffect(() => {
-        const a = registerAutoExport('Tổng Quan Doanh Thu', () => exportRunnersRef.current.tongQuan(true));
-        const b = registerAutoExport('Toàn Bộ Bản Tin', () => exportRunnersRef.current.banTin(true));
-        return () => { a(); b(); };
-    }, []);
 
     useEffect(() => {
         document.body.classList.remove('is-capturing');
@@ -684,7 +639,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <AppIcon name="exportImage" size="md" />
                                                         </Button>
-                                                        <ExportDestinationButton reportKey="Toàn Bộ Bản Tin" />
                                                     </div>
                                                 </SectionHeader>
                                             </div>

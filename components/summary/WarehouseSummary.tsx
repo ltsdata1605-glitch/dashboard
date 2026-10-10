@@ -14,8 +14,6 @@ import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import ExportDestinationButton from '../analysis/ExportDestinationButton';
-import { registerAutoExport } from '../../services/analysisExportDestinations';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { FULLSCREEN_LAYER_CLASS } from '../shared/ui/Overlay';
 /** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
@@ -333,10 +331,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
             });
         } else if (tuDong) throw new Error('Bảng "Chi tiết theo kho" chưa hiển thị');
     };
-    // Tự xuất & gửi LINE sau Auto Sync YCX Realtime (khi nút đặt đích "nhóm LINE") — xem services/analysisExportDestinations
-    const singleExportRef = useRef(handleSingleExport);
-    singleExportRef.current = handleSingleExport;
-    useEffect(() => registerAutoExport('Chi Tiết Theo Kho', () => singleExportRef.current(true)), []);
 
     const { allIndustries, allGroups } = useMemo(() => {
         if (!productConfig) return { allIndustries: [] as string[], allGroups: [] as string[] };
@@ -679,7 +673,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
                             {isExporting ? <><AppIcon name="loading" size="md" spin /></> : <><AppIcon name="exportImage" size="md" /></>}
                         </Button>
-                        <ExportDestinationButton reportKey="Chi Tiết Theo Kho" />
                     </div>
                 </SectionHeader>
 

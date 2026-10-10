@@ -4,7 +4,6 @@ import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
 import { onActivateKey } from '../../shared/ui';
-import ExportDestinationButton from '../../analysis/ExportDestinationButton';
 import type { FilterState } from '../../../types';
 
 interface SummaryTableHeaderProps {
@@ -148,7 +147,6 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                             {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                                         </Button>
-                                        <ExportDestinationButton reportKey="Chi Tiết Ngành Hàng" />
                                     </div>
 
                                     {activeFilterKey === 'columns' && (

@@ -12,7 +12,7 @@
  *       → hàng loạt: thanh tiến trình, Huỷ, tổng kết mục lỗi.
  */
 export {
-    exportElementAsImage, downloadBlob, shareBlob, canShareFiles, fixOklchColors, EXPORT_MIN_WIDTH,
+    exportElementAsImage, downloadBlob, shareBlob, canShareFiles, copyBlobToClipboard, fixOklchColors, EXPORT_MIN_WIDTH,
     type ExportMode, type ExportImageOptions,
 } from './captureEngine';
 export {

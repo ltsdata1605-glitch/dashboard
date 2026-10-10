@@ -1,5 +1,6 @@
 import { isMobileLikeDevice, capPixelRatioForArea } from '../../../utils/dataUtils';
-import { deliverImage } from '../ui/imageDelivery';
+import { deliverImage, copyBlobToClipboard } from '../ui/imageDelivery';
+export { copyBlobToClipboard };
 import { getActiveExportJob, startExportJob, type ExportJob } from './exportProgress';
 import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible } from './exportLayout';
 import './ExportProgressHost';
@@ -180,8 +181,7 @@ async function exportRawCore(element: HTMLElement, filename: string, options: Ex
         if (!blob) throw new Error('Không thể tạo ảnh từ DOM (kết quả trả về trống).');
         if (mode === 'blob-only') return blob;
         stage(isMobileDevice ? 'Đang mở chia sẻ…' : 'Đang lưu ảnh…');
-        if (mode === 'share') await shareBlob(blob, filename);
-        else downloadBlob(blob, filename);
+        await deliverImage(blob, filename, { share: mode === 'share' ? true : undefined });
         return blob;
     } catch (error) {
         console.error(`Lỗi khi xuất ảnh: ${filename}`, error);
@@ -1427,14 +1427,9 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         // Handle based on export mode
         if (mode === 'blob-only') {
             return blob;
-        } else if (mode === 'share') {
-            await shareBlob(blob, filename);
-            return blob;
-        } else {
-            // Default: download
-            downloadBlob(blob, filename);
-            return blob;
         }
+        await deliverImage(blob, filename, { share: mode === 'share' ? true : undefined });
+        return blob;
         
     } catch (error) {
         console.error(`Lỗi khi xuất ảnh: ${filename}`, error);

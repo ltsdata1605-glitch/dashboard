@@ -1,22 +1,19 @@
 import { isAbortError, isNotAllowedError, isMobileLikeDevice } from '../../../utils/dataUtils';
 import { offerShareRetry } from './ShareRetryToast';
+import toast from 'react-hot-toast';
 
 /**
  * GIAO ẢNH ĐÃ DỰNG cho người dùng — dùng chung cho mọi khu vực (audit A05–A08, 2026-09-30).
  *
- * Trước đây mỗi khu vực tự viết một bản: có bản thu hồi blob URL ngay sau click() (Safari tải
- * hỏng), có bản không nhận iPad, có bản luôn tải file trên iPhone (không mở được Lưu ảnh/LINE/Zalo),
- * có bản không có nút chạm lại khi Safari từ chối chia sẻ. Hàm này theo đúng mẫu đã kiểm chứng của
- * services/uiService.ts (Phân tích) và trả về KẾT QUẢ THẬT để nơi gọi báo đúng.
- *
- * Chỉ lo KHÂU GIAO — dựng ảnh (html-to-image/html2canvas, bố cục, phông, QR…) vẫn thuộc từng khu
- * vực vì mỗi nơi có bố cục in riêng.
+ * TẤT CẢ chức năng xuất ảnh thực hiện đồng thời 2 hành động:
+ * 1. Tự tải về máy (download file ảnh .png)
+ * 2. Tự sao chép ảnh vào Clipboard (người dùng có thể Ctrl+V / Cmd+V dán trực tiếp ngay lập tức)
  */
 
 export type DeliveryResult =
     /** Bảng chia sẻ đã mở và người dùng chọn đích */
     | 'shared'
-    /** Đã tải file về máy */
+    /** Đã tải file về máy và copy vào clipboard */
     | 'downloaded'
     /** Người dùng đóng bảng chia sẻ */
     | 'cancelled'
@@ -35,24 +32,62 @@ export function downloadBlobFile(blob: Blob, filename: string): void {
     setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
+/** Sao chép ảnh vào Clipboard để người dùng dán (Ctrl+V / Cmd+V) trực tiếp */
+export async function copyBlobToClipboard(blob: Blob): Promise<boolean> {
+    try {
+        if (!navigator.clipboard || typeof window.ClipboardItem === 'undefined') {
+            return false;
+        }
+        // ClipboardItem chuẩn yêu cầu blob type là image/png
+        let pngBlob = blob;
+        if (blob.type !== 'image/png') {
+            pngBlob = new Blob([await blob.arrayBuffer()], { type: 'image/png' });
+        }
+        const item = new ClipboardItem({ 'image/png': pngBlob });
+        await navigator.clipboard.write([item]);
+        return true;
+    } catch (err) {
+        console.warn('[imageDelivery] Không thể sao chép ảnh vào clipboard:', err);
+        return false;
+    }
+}
+
 /** Tiêu đề hiển thị khi chia sẻ: bỏ đuôi .png, gạch dưới → khoảng trắng. */
 const displayNameOf = (filename: string) =>
     filename.replace(/\.png$/i, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim() || 'Anh xuat';
 
 /**
- * Giao ảnh: máy tính → tải về; điện thoại/iPad → bảng chia sẻ hệ thống (fallback tải về).
- * `share`: ép bật/tắt nhánh chia sẻ (mặc định theo thiết bị).
+ * Giao ảnh:
+ * Thực hiện 2 hành động đồng thời: Tự tải về máy + Copy ảnh vào bộ nhớ tạm (dán trực tiếp).
  */
 export async function deliverImage(
     blob: Blob,
     filename: string,
     opts: { share?: boolean; title?: string } = {},
 ): Promise<DeliveryResult> {
+    // 1. Tự động tải file về máy
+    downloadBlobFile(blob, filename);
+
+    // 2. Tự động sao chép ảnh vào bộ nhớ tạm (Clipboard)
+    const copied = await copyBlobToClipboard(blob);
+
+    if (copied) {
+        toast.success('Đã tải ảnh về máy & sao chép vào bộ nhớ tạm (có thể dán trực tiếp)!', {
+            id: 'export-image-success',
+            duration: 4000
+        });
+    } else {
+        toast.success('Đã tải ảnh về máy thành công!', {
+            id: 'export-image-success',
+            duration: 3000
+        });
+    }
+
     const wantShare = opts.share ?? isMobileLikeDevice();
     if (!wantShare) {
-        downloadBlobFile(blob, filename);
         return 'downloaded';
     }
+
     const displayName = opts.title || displayNameOf(filename);
     const shareData: ShareData = {
         files: [new File([blob], `${displayNameOf(filename)}.png`, { type: blob.type || 'image/png' })],
@@ -70,8 +105,7 @@ export async function deliverImage(
             offerShareRetry(shareData, () => downloadBlobFile(blob, filename));
             return 'retry-offered';
         }
-        console.error('[imageDelivery] Lỗi khi chia sẻ, chuyển sang tải file:', error);
+        console.error('[imageDelivery] Lỗi khi chia sẻ:', error);
     }
-    downloadBlobFile(blob, filename);
     return 'downloaded';
 }
