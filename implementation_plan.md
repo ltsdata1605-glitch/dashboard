@@ -7641,3 +7641,29 @@ Còn đúng 1 e2e đỏ có sẵn: `tax-paste-hrm` (cần trang ngoài, không c
 liệu). Trả chậm, Thi đua: dòng từ báo cáo BI, LỌC theo Phân Tích. Lỗi tìm thấy: dòng TỔNG CỘNG Trả chậm vẫn cộng
 người đã bị lọc → `recomputeInstallmentTotal()` trong `useNhanVienData.ts`. Test:
 `tests/e2e/bi-nhan-vien-moi-tab-tu-phan-tich.spec.ts` (đỏ khi bỏ phần sửa tổng).
+
+---
+
+# Giao diện chuẩn Apple + toast thống nhất + tăng tốc + gom code dùng chung (bắt đầu 2026-10-10)
+
+**Kế hoạch đầy đủ: `KE_HOACH_GIAO_DIEN_APPLE.md`** (29 lỗi soi từ 2 video iPhone 16 Pro Max, đặc tả component, số đo, 10 giai
+đoạn GĐ0–GĐ9). Mục này là NHẬT KÝ THI CÔNG từng giai đoạn.
+
+Yêu cầu chủ dự án (2026-10-10): thiết kế lại toàn bộ giao diện theo chuẩn Apple, sang trọng hiện đại; tiêu đề chính/phụ, nút icon
+bố trí khoa học; tương thích 100% iPhone + laptop; tìm mọi toast và đồng nhất thiết kế; tăng tốc tải và chuyển chức năng; dọn/gom
+code, mọi thứ dùng chung đưa về một nơi quản lý.
+
+Giữ các quyết định đã chốt: bảng luôn là bảng · UTM Avo · tắt dark mode · palette sky/slate/emerald/amber/rose · bo góc (B) ·
+chữ ≥ 11px · cách ly khu vực.
+
+## Số đo hiện trạng (trước khi sửa, 2026-10-10)
+
+- Gói mở app ≈ 465 KB gzip (index 132 · firebase 155 · react 61 · motion 42 · icons 19 · shared-utils 8 · CSS 48) + Google Fonts
+  7 họ chặn hiển thị. Gói `index` chứa ~96 KB code Report BI + `GlobalAutoSyncDock` 28 KB + hướng dẫn Tampermonkey 18 KB +
+  canvas-confetti 11 KB + LoginView/PendingApproval/Coupon 27 KB (đo bằng sourcemap).
+- `TrendChart` 326 KB, trong đó `lunar-javascript` 292 KB (chỉ cần cho chế độ Lịch).
+- Bản build, Dùng thử, 440×956, 4G 9 Mbps/60 ms, CPU ×4, TB 3 lượt: khung app 2007 ms · nội dung Phân tích 3398 ms (lượt lạnh
+  5877) · FCP 1625 ms · chuyển Report BI 733 ms · Check thưởng 2839 ms · về Phân tích 367 ms.
+- Toast: 451 lời gọi / 79 file (195 error, 184 success, 33 `toast()`, 16 dismiss, 8 loading, 7 remove, 4 custom), 1 Toaster
+  `bottom-right`, 5 kiểu tự vẽ, ~12 chỗ icon emoji.
+- Chữ: 551 `uppercase`, 351 `font-black`, ~30 cỡ chữ.
