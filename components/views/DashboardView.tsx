@@ -103,7 +103,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
-        handleRestoreGroup
+        handleRestoreGroup,
+        cloudSyncBanner,
+        handleDismissCloudSyncBanner
     } = logic;
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
@@ -539,6 +541,29 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                     {announcement.content}
                                                 </div>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* Cloud Data Sync Banner — Hiển thị trên 1 dòng nhỏ gọn, nằm ngay dưới thông báo đỏ */}
+                                    {cloudSyncBanner && (
+                                        <div className="w-full bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/25 text-emerald-800 dark:text-emerald-300 px-3 py-1.5 rounded-md flex items-center justify-between text-[11px] sm:text-xs font-semibold shadow-xs mb-1.5 transition-all no-print">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className="relative flex h-2 w-2 flex-shrink-0">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                                </span>
+                                                <AppIcon name="cloud" size="xs" className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                                                <span className="truncate">{cloudSyncBanner}</span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={handleDismissCloudSyncBanner}
+                                                className="text-emerald-600/70 hover:text-emerald-900 dark:text-emerald-400/70 dark:hover:text-emerald-100 p-0.5 rounded hover:bg-emerald-500/15 transition-colors ml-2 flex-shrink-0 cursor-pointer"
+                                                title="Đóng thông báo"
+                                                aria-label="Đóng thông báo"
+                                            >
+                                                <AppIcon name="close" size="xs" />
+                                            </button>
                                         </div>
                                     )}
 

@@ -84,6 +84,22 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
     const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean } } | null>(null);
 
+    const [cloudSyncBanner, setCloudSyncBanner] = useState<string | null>(() => {
+        try {
+            return localStorage.getItem('ycx-cloud-sync-banner') || sessionStorage.getItem('ycx-cloud-sync-banner');
+        } catch {
+            return null;
+        }
+    });
+
+    const handleDismissCloudSyncBanner = useCallback(() => {
+        setCloudSyncBanner(null);
+        try {
+            localStorage.removeItem('ycx-cloud-sync-banner');
+            sessionStorage.removeItem('ycx-cloud-sync-banner');
+        } catch {}
+    }, []);
+
     const latestActiveSalesMetaRef = useRef<{ savedAt: number; fileLastModified: number } | null>(null);
     const isCloudSyncingRef = useRef(false);
 
@@ -125,11 +141,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 });
             }).catch(console.error);
 
-            toast.success(`Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`, {
-                id: 'auto-cloud-sync',
-                duration: 3500,
-                icon: createElement(AppIcon, { name: 'cloud', size: 'md', className: 'text-emerald-600' })
-            });
+            // Cập nhật thông báo đồng bộ 1 dòng nhỏ gọn dưới thông báo đỏ thay vì toast góc dưới
+            const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`;
+            setCloudSyncBanner(syncMsg);
+            try {
+                localStorage.setItem('ycx-cloud-sync-banner', syncMsg);
+                sessionStorage.setItem('ycx-cloud-sync-banner', syncMsg);
+            } catch {}
         } catch (e: unknown) {
             console.error('Lỗi khi tự động nạp dữ liệu từ đám mây:', e);
             toast.error(`Lỗi tự động nạp dữ liệu đám mây: ${getErrorMessage(e)}`);
@@ -273,6 +291,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     };
                     setStatus({ message: 'Nạp dữ liệu đã lưu lên bảng điều khiển...', type: 'info', progress: 25 });
                     setFileInfo({ filename: savedSalesReq.filename, savedAt: savedSalesReq.savedAt.toLocaleString('vi-VN') });
+
+                    const activeCloudFile = freshRegistry.find(f => f.isActive && f.id.startsWith('cloud_sync_'));
+                    if (activeCloudFile || savedSalesReq.filename.toLowerCase().includes('cloud')) {
+                        const rowCount = activeCloudFile ? activeCloudFile.rowCount : savedSalesReq.data.length;
+                        const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${rowCount.toLocaleString('vi-VN')} dòng)`;
+                        setCloudSyncBanner(syncMsg);
+                    }
 
                     const parseDataAndSet = () => {
                         const srcData = normalizeSalesData(savedSalesReq.data);
@@ -450,9 +475,15 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             const localSavedAt = currentLocal ? currentLocal.savedAt : (savedSalesReq ? savedSalesReq.savedAt.getTime() : 0);
                             const localFileTs = currentLocal ? currentLocal.fileLastModified : (savedSalesReq ? savedSalesReq.fileLastModified : 0);
 
-                            // Skip if same file
+                            // Skip if same file but show status banner
                             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
                                 console.warn('[CloudData] Cloud data is same file as local. Skipping.');
+                                const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`;
+                                setCloudSyncBanner(syncMsg);
+                                try { 
+                                    localStorage.setItem('ycx-cloud-sync-banner', syncMsg);
+                                    sessionStorage.setItem('ycx-cloud-sync-banner', syncMsg); 
+                                } catch {}
                                 return;
                             }
 
@@ -640,8 +671,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             const localSavedAt = currentLocal ? currentLocal.savedAt : 0;
             const localFileTs = currentLocal ? currentLocal.fileLastModified : 0;
 
-            // Bỏ qua nếu trùng file
+            // Bỏ qua nếu trùng file nhưng cập nhật trạng thái hiển thị
             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
+                const syncMsg = `Đã tự động đồng bộ dữ liệu đám mây mới nhất (${cloudMeta.totalRows.toLocaleString('vi-VN')} dòng)`;
+                setCloudSyncBanner(syncMsg);
+                try { 
+                    localStorage.setItem('ycx-cloud-sync-banner', syncMsg);
+                    sessionStorage.setItem('ycx-cloud-sync-banner', syncMsg); 
+                } catch {}
                 return;
             }
 
@@ -866,6 +903,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             setOriginalData([]);
             setProcessedData(null);
             setFileInfo(null);
+            setCloudSyncBanner(null);
+            try { 
+                localStorage.removeItem('ycx-cloud-sync-banner');
+                sessionStorage.removeItem('ycx-cloud-sync-banner'); 
+            } catch {}
             setAppState('upload');
             toast.success('Đã xóa toàn bộ dữ liệu phân tích!');
         } catch (error) {
@@ -1398,6 +1440,18 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         await applyCloudSalesData(pendingCloudSync.data, pendingCloudSync.meta);
     };
 
+    useEffect(() => {
+        const onClear = () => {
+            setCloudSyncBanner(null);
+            try { 
+                localStorage.removeItem('ycx-cloud-sync-banner');
+                sessionStorage.removeItem('ycx-cloud-sync-banner'); 
+            } catch {}
+        };
+        window.addEventListener('ycx-sales-data-cleared', onClear);
+        return () => window.removeEventListener('ycx-sales-data-cleared', onClear);
+    }, []);
+
     return {
         originalData, setOriginalData,
         baseFilteredData,
@@ -1433,6 +1487,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
-        handleRestoreGroup
+        handleRestoreGroup,
+        cloudSyncBanner,
+        handleDismissCloudSyncBanner
     };
 };

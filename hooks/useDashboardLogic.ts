@@ -70,7 +70,9 @@ export const useDashboardLogic = () => {
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
-        handleRestoreGroup
+        handleRestoreGroup,
+        cloudSyncBanner,
+        handleDismissCloudSyncBanner
     } = useDataManagement({ filterState, configUrl, setStatus, setAppState, appState });
 
     // 3. Warehouse Targets Management
@@ -312,7 +314,9 @@ export const useDashboardLogic = () => {
         handleIgnoreGroup,
         handleRestoreGroup,
         editingTargetKho,
-        setEditingTargetKho
+        setEditingTargetKho,
+        cloudSyncBanner,
+        handleDismissCloudSyncBanner
     }), [
         status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, productConfig, processedData, employeeAnalysisData,
@@ -337,7 +341,8 @@ export const useDashboardLogic = () => {
         fileRegistry, refreshRegistry, handleToggleFileActive, handleDeleteFile,
         hasRealtimeData, handleClearRealtimeData, handleViewReport,
         unconfiguredGroups, ignoredUnconfiguredGroups, handleIgnoreGroup, handleRestoreGroup,
-        editingTargetKho
+        editingTargetKho,
+        cloudSyncBanner, handleDismissCloudSyncBanner
     ]);
 };
 
