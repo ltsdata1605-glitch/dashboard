@@ -79,6 +79,10 @@ là mọi thứ agent đẩy lên `main` sẽ tự về máy chủ dự án — 
      chạy bằng `node`/`npx tsx` với dữ liệu mẫu, đối chiếu kết quả trước/sau.
    - Với tính năng cần dữ liệu thật: dùng dữ liệu giả đã có sẵn cách dựng (xem memory
      `reference_bi_dashboard_seed_data_testing`, `reference_sticker_event_test_accounts`).
+   - **Đăng nhập tài khoản thật trên cloud** (2026-10-10): environment có `FIREBASE_TEST_UID` +
+     `FIREBASE_TEST_SA_B64` → `tests/e2e/helpers/customTokenLogin.ts` tự ký custom token, spec dùng
+     `dangNhapBangToken()` + `chanGhiCloud()` (chặn mọi lượt ghi). Mẫu: `tests/e2e/ios-du-lieu-that.spec.ts`.
+     Hook SessionStart tự đặt `E2E_CHROMIUM_PATH`/`PW_CHROMIUM` và `GOOGLE_APPLICATION_CREDENTIALS`.
    - Nếu thật sự không tự test được (thiếu dữ liệu thật/quyền/thiết bị), phải nói RÕ: đã thử cách
      nào, vướng ở đâu, và hướng dẫn người dùng các bước kiểm tra cụ thể — không nói chung chung
      "chưa test UI thật".
