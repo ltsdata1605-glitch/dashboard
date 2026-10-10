@@ -80,7 +80,17 @@ const Header: React.FC<HeaderProps> = ({
             )}
             {/* Portal timestamp into mobile top bar subtitle */}
             {mounted && fileInfo && document.getElementById('mobile-topbar-subtitle') && createPortal(
-                <span className="inline-flex items-center gap-1"><AppIcon name="calendar" size="xs" />Cập nhật: {fileInfo.savedAt}</span>,
+                <button
+                    type="button"
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+                    }}
+                    title="Chạm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
+                    className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                >
+                    <AppIcon name="refresh" size="xs" className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                    <span>Cập nhật: {fileInfo.savedAt}</span>
+                </button>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
             {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}

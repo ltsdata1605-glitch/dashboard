@@ -520,12 +520,19 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         </div>
                                         <div className="flex items-center gap-3">
                                             {logic.fileInfo && (
-                                                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
-                                                    <AppIcon name="calendar" size="sm" className="opacity-70" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+                                                    }}
+                                                    title="Bấm để kiểm tra & đồng bộ dữ liệu đám mây"
+                                                    className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 hover:bg-sky-50 dark:hover:bg-sky-950/30 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50 active:scale-95 transition-all cursor-pointer group"
+                                                >
+                                                    <AppIcon name="refresh" size="xs" className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
                                                     <span className="text-[11px] font-bold uppercase tracking-widest">
                                                         Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-black">{logic.fileInfo.savedAt}</span>
                                                     </span>
-                                                </div>
+                                                </button>
                                             )}
                                         </div>
                                     </div>

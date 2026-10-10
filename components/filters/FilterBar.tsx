@@ -182,6 +182,16 @@ const FilterBar: React.FC<FilterBarProps> = ({
                     >
                         <AppIcon name="link" size="md" />
                     </a>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={() => {
+                            window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+                        }}
+                        title="Đồng bộ dữ liệu đám mây"
+                        className="flex items-center justify-center w-8 h-8 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40 hover:text-sky-700 dark:hover:text-sky-300 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0"
+                    >
+                        <AppIcon name="refresh" size="md" />
+                    </Button>
                     {onOpenHistory && canManageFiles && (
                         <Button
                             variant="unstyled" size="none"

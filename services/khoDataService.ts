@@ -430,9 +430,18 @@ function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
  * là "cũ" và tải lại TẤT CẢ chunk của TẤT CẢ file kể cả những file không hề đổi, khiến tab
  * Phân Tích chậm dần theo thời gian khi Kho tích luỹ nhiều tháng dữ liệu Lũy kế (mục 39b).
  */
-async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; snapshot: string }> {
+async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; snapshot: string; latestUploadedAt?: number; latestFilename?: string }> {
     const files = pickKhoFilesToLoad(await getKhoActiveFilesMeta(maKho));
     const snapshot = computeFilesSnapshot(files);
+
+    let maxUploadedAt = 0;
+    let latestFilename = '';
+    for (const f of files) {
+        if (f.uploadedAt > maxUploadedAt) {
+            maxUploadedAt = f.uploadedAt;
+            latestFilename = f.filename;
+        }
+    }
 
     const sources = await mapWithLimit(files, FILE_CONCURRENCY, async (f) => {
         const cacheKey = khoFileCacheKey(maKho, f.fileId);
@@ -448,7 +457,12 @@ async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; sna
         return { uploadedAt: f.uploadedAt, rows };
     });
 
-    return { data: selectLatestRowsByMonth(sources), snapshot };
+    return {
+        data: selectLatestRowsByMonth(sources),
+        snapshot,
+        latestUploadedAt: maxUploadedAt > 0 ? maxUploadedAt : undefined,
+        latestFilename: latestFilename || undefined
+    };
 }
 
 /**
@@ -463,13 +477,17 @@ async function fetchKhoDataCached(maKho: string): Promise<{ data: DataRow[]; sna
  * local, 1 lần cho dữ liệu Kho giống hệt) mỗi lần mở app, vốn là nguyên nhân chính khiến màn
  * hình loading kéo dài không cần thiết (mục 39 implementation_plan.md).
  */
-export async function fetchAllowedKhoData(departmentId: string | undefined): Promise<{ data: DataRow[]; snapshot: string }> {
+export async function fetchAllowedKhoData(departmentId: string | undefined): Promise<{ data: DataRow[]; snapshot: string; latestUploadedAt?: number; latestFilename?: string }> {
     const allowedKhos = parseKhoList(departmentId);
     if (allowedKhos.length === 0) return { data: [], snapshot: '' };
 
     const results = await mapWithLimit(allowedKhos, 2, maKho => fetchKhoDataCached(maKho));
+    const allLatestUploadedAt = Math.max(0, ...results.map(r => r.latestUploadedAt || 0));
+    const latestFile = results.find(r => r.latestUploadedAt === allLatestUploadedAt);
     return {
         data: results.flatMap(r => r.data),
         snapshot: results.map(r => r.snapshot).join('|'),
+        latestUploadedAt: allLatestUploadedAt > 0 ? allLatestUploadedAt : undefined,
+        latestFilename: latestFile?.latestFilename
     };
 }

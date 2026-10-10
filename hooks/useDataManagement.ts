@@ -629,7 +629,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     // local họ tự tải (không đụng `originalData` trong trường hợp đó).
     useEffect(() => {
         if (isDemoMode || !user) return;
-        if (userRole !== 'manager' && userRole !== 'employee') return;
+        if (userRole !== 'manager' && userRole !== 'employee' && userRole !== 'admin') return;
         if (!departmentId) return;
 
         let cancelled = false;
@@ -642,7 +642,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         const appliedSnapshotKey = `khoDataAppliedSnapshot::${departmentId}`;
         import('../services/khoDataService').then(async ({ fetchAllowedKhoData }) => {
             try {
-                const { data: khoRows, snapshot } = await fetchAllowedKhoData(departmentId);
+                const { data: khoRows, snapshot, latestUploadedAt, latestFilename } = await fetchAllowedKhoData(departmentId);
                 if (cancelled || khoRows.length === 0) return;
 
                 const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
@@ -659,6 +659,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     setOriginalData(srcData);
                     setAppState('processing');
                 });
+                if (latestUploadedAt) {
+                    setFileInfo({
+                        filename: latestFilename || `Kho ${departmentId}`,
+                        savedAt: new Date(latestUploadedAt).toLocaleString('vi-VN')
+                    });
+                }
                 dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
             } catch (e: unknown) {
                 console.warn("⚠️ Đồng bộ dữ liệu Kho dùng chung thất bại (không ảnh hưởng app):", getErrorMessage(e));
@@ -733,6 +739,111 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             unsub();
         };
     }, [user, isDemoMode, applyCloudSalesData]);
+
+    const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+
+    // Kích hoạt đồng bộ đám mây (dùng chung cho cả visibilitychange khi người dùng mở lại điện thoại lẫn nút bấm thủ công)
+    const triggerCloudSync = useCallback(async (notifyIfUpToDate = false) => {
+        if (!user || isDemoMode) {
+            if (notifyIfUpToDate) toast('Vui lòng đăng nhập để đồng bộ dữ liệu.', { icon: 'ℹ️' });
+            return;
+        }
+        if (isCloudSyncingRef.current) return;
+        isCloudSyncingRef.current = true;
+        setIsSyncingCloud(true);
+
+        try {
+            if (notifyIfUpToDate) {
+                toast('Đang kiểm tra dữ liệu đám mây...', { id: 'cloud-check-toast', icon: '☁️', duration: 2000 });
+            }
+            const { getCloudDataMeta, downloadProcessedData } = await import('../services/cloudDataService');
+            const cloudMeta = await getCloudDataMeta(user);
+            const currentLocal = latestActiveSalesMetaRef.current;
+            const localSavedAt = currentLocal ? currentLocal.savedAt : 0;
+            const localFileTs = currentLocal ? currentLocal.fileLastModified : 0;
+
+            let updated = false;
+
+            if (cloudMeta && cloudMeta.savedAt) {
+                const isDifferent = (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified !== localFileTs) ||
+                                    (cloudMeta.savedAt > localSavedAt + 3000);
+                if (isDifferent) {
+                    const cloudResult = await downloadProcessedData(user, cloudMeta);
+                    if (cloudResult && cloudResult.data.length > 0) {
+                        await applyCloudSalesData(cloudResult.data, cloudResult.meta);
+                        toast.success(`Đã đồng bộ dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                        updated = true;
+                    }
+                }
+            }
+
+            // Đồng thời kiểm tra dữ liệu Kho nếu có departmentId
+            if (departmentId) {
+                const { fetchAllowedKhoData } = await import('../services/khoDataService');
+                const appliedSnapshotKey = `khoDataAppliedSnapshot::${departmentId}`;
+                const { data: khoRows, snapshot, latestUploadedAt, latestFilename } = await fetchAllowedKhoData(departmentId);
+                const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
+                if (khoRows.length > 0 && lastApplied !== snapshot) {
+                    const srcData = normalizeSalesData(khoRows);
+                    startTransition(() => {
+                        setOriginalData(srcData);
+                        setAppState('processing');
+                    });
+                    if (latestUploadedAt) {
+                        setFileInfo({
+                            filename: latestFilename || `Kho ${departmentId}`,
+                            savedAt: new Date(latestUploadedAt).toLocaleString('vi-VN')
+                        });
+                    }
+                    await dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
+                    if (!updated) {
+                        toast.success(`Đã cập nhật dữ liệu Kho mới nhất (${khoRows.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                        updated = true;
+                    }
+                }
+            }
+
+            if (!updated && notifyIfUpToDate) {
+                toast.success('Dữ liệu trên máy bạn đã là mới nhất!', { id: 'cloud-check-toast' });
+            }
+        } catch (err) {
+            console.error('[CloudSync] Lỗi đồng bộ đám mây:', err);
+            if (notifyIfUpToDate) toast.error('Không thể kiểm tra dữ liệu đám mây: ' + getErrorMessage(err), { id: 'cloud-check-toast' });
+        } finally {
+            isCloudSyncingRef.current = false;
+            setIsSyncingCloud(false);
+        }
+    }, [user, isDemoMode, departmentId, applyCloudSalesData, setOriginalData, setAppState]);
+
+    // Tự động kiểm tra và đồng bộ khi người dùng quay lại tab (visibilitychange / focus / online)
+    useEffect(() => {
+        let debounceTimer: ReturnType<typeof setTimeout>;
+        const handleWakeAndSync = () => {
+            if (document.visibilityState === 'visible') {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    triggerCloudSync(false);
+                }, 800);
+            }
+        };
+        const handleManualEvent = (e: Event) => {
+            const detail = (e as CustomEvent)?.detail;
+            triggerCloudSync(!!detail?.interactive);
+        };
+
+        document.addEventListener('visibilitychange', handleWakeAndSync);
+        window.addEventListener('focus', handleWakeAndSync);
+        window.addEventListener('online', handleWakeAndSync);
+        window.addEventListener('ycx-trigger-cloud-sync', handleManualEvent);
+
+        return () => {
+            clearTimeout(debounceTimer);
+            document.removeEventListener('visibilitychange', handleWakeAndSync);
+            window.removeEventListener('focus', handleWakeAndSync);
+            window.removeEventListener('online', handleWakeAndSync);
+            window.removeEventListener('ycx-trigger-cloud-sync', handleManualEvent);
+        };
+    }, [triggerCloudSync]);
 
     // Lắng nghe sự kiện cập nhật cấu hình tức thì từ Phân Quyền & Duyệt Yêu Cầu (áp dụng trực tiếp không cần reload trang)
     useEffect(() => {
@@ -1539,6 +1650,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         handleIgnoreGroup,
         handleRestoreGroup,
         cloudSyncBanner,
-        handleDismissCloudSyncBanner
+        handleDismissCloudSyncBanner,
+        triggerCloudSync,
+        isSyncingCloud
     };
 };
