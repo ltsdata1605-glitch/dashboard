@@ -7,6 +7,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import { Coupon, ParsedImportItem } from '../types/lineBot.types';
 import { parsePastedCouponList, extractProductSyntax, extractLatestDateFromText, getVietnamTodayString } from '../services/couponParser';
 import { downloadCouponSampleTemplate, readCouponExcelFile } from '../services/couponTemplateService';
+import { CouponBatchEditModal, ImportBatchData } from './CouponBatchEditModal';
 
 interface CouponImportModalProps {
     isOpen: boolean;
@@ -15,22 +16,16 @@ interface CouponImportModalProps {
     existingTypes: string[];
     coupons?: Coupon[];
     onDeleteBatch?: (couponIds: string[]) => Promise<number>;
+    onUpdateBatch?: (
+        couponIds: string[],
+        updates: Partial<Pick<Coupon, 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>>
+    ) => Promise<number>;
+    onUpdateDetailed?: (
+        items: Array<{ id: string; changes: Partial<Pick<Coupon, 'code' | 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>> }>
+    ) => Promise<number>;
 }
 
-interface ImportBatch {
-    id: string;
-    importedAt: string;
-    rawDate: string;
-    total: number;
-    unused: number;
-    sent: number;
-    revoked: number;
-    types: string[];
-    productSummary: string;
-    sampleCodes: string[];
-    expiryDate?: string;
-    couponIds: string[];
-}
+export type ImportBatch = ImportBatchData;
 
 const DEFAULT_TYPES = ['Event', 'VIVO', 'Giờ Vàng Giá Sốc', 'HONOR', 'SAMSUNG', 'CUSTOM'];
 
@@ -39,7 +34,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
     onClose,
     onImport,
     coupons = [],
-    onDeleteBatch
+    onDeleteBatch,
+    onUpdateBatch,
+    onUpdateDetailed
 }) => {
     const [mode, setMode] = useState<'paste' | 'history'>('paste');
     const [selectedType, setSelectedType] = useState<string>('Event');
@@ -87,9 +84,10 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
         }
     };
 
-    // State cho xoá đợt nạp
+    // State cho xoá & sửa đợt nạp
     const [deletingBatchId, setDeletingBatchId] = useState<string | null>(null);
     const [batchToDelete, setBatchToDelete] = useState<ImportBatch | null>(null);
+    const [batchToEdit, setBatchToEdit] = useState<ImportBatch | null>(null);
 
     // Bóc tách & nhóm danh sách mã theo Tên Sản Phẩm (Mỗi sản phẩm 1 dòng đại diện khi nạp)
     const groupedProducts = useMemo(() => {
@@ -198,7 +196,8 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                 productSummary: productSummary || 'Mã PMH',
                 sampleCodes,
                 expiryDate: expDate,
-                couponIds: batchCoupons.map(c => c.id)
+                couponIds: batchCoupons.map(c => c.id),
+                coupons: batchCoupons
             });
         }
 
@@ -658,7 +657,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                     {importBatches.map((batch, index) => (
                                         <div
                                             key={batch.id}
-                                            className="p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xs hover:border-slate-300 dark:hover:border-slate-600 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                                            onClick={() => setBatchToEdit(batch)}
+                                            className="p-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-600/70 rounded-xl shadow-2xs hover:shadow-xs transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer group"
+                                            title="Chạm vào để sửa tên model, loại PMH, hạn dùng hoặc khôi phục mã"
                                         >
                                             <div className="space-y-1.5 flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 flex-wrap">
@@ -693,7 +694,9 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                     <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">
                                                         [{batch.types.join(', ')}]
                                                     </span>
-                                                    <span className="truncate">{batch.productSummary}</span>
+                                                    <span className="truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors font-medium">
+                                                        {batch.productSummary}
+                                                    </span>
                                                 </div>
 
                                                 <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
@@ -711,12 +714,21 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                                                 </div>
                                             </div>
 
-                                            <div className="shrink-0 flex items-center gap-2">
+                                            <div className="shrink-0 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setBatchToEdit(batch)}
+                                                    className="px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs hover:shadow-xs active:scale-[0.98]"
+                                                    title="Chỉnh sửa tên sản phẩm, loại PMH, hạn dùng hoặc khôi phục mã"
+                                                >
+                                                    <AppIcon name="edit" size="sm" />
+                                                    <span>Sửa đợt này</span>
+                                                </button>
                                                 <Button
                                                     variant="danger"
                                                     onClick={() => setBatchToDelete(batch)}
                                                     disabled={deletingBatchId === batch.id}
-                                                    className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl transition-all flex items-center gap-1.5"
+                                                    className="px-3 py-1.5 text-xs font-bold text-rose-600 hover:text-white hover:bg-rose-600 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer"
                                                     title="Xoá toàn bộ mã thuộc đợt nạp này"
                                                 >
                                                     {deletingBatchId === batch.id ? (
@@ -736,6 +748,21 @@ export const CouponImportModal: React.FC<CouponImportModalProps> = ({
                 </div>
 
         </Modal>
+
+        {/* Modal chỉnh sửa đợt nạp khi người dùng bấm vào */}
+        <CouponBatchEditModal
+            isOpen={!!batchToEdit}
+            batch={batchToEdit}
+            onClose={() => setBatchToEdit(null)}
+            onSaveBatch={async (couponIds, updates) => {
+                if (!onUpdateBatch) {
+                    toast.error('Chức năng sửa đợt nạp chưa được cấu hình');
+                    return 0;
+                }
+                return await onUpdateBatch(couponIds, updates);
+            }}
+            onSaveDetailed={onUpdateDetailed}
+        />
 
         {/* Xác nhận xoá đợt nạp — ConfirmDialog dùng chung; Escape/đóng không hoạt động khi đang xoá dở */}
         <ConfirmDialog

@@ -697,25 +697,86 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         </Button>
                     )}
                 </div>
-                {/* Bên phải thanh bar — chế độ xem + export */}
-                <div className="flex items-center gap-1">
-                    {activeCompetitionTab === 'nhom' && activeVersionName === null && (
+            </div>
+
+            {/* 3. Thanh TẤT CẢ CHỨC NĂNG trên 1 dòng (Đồng bộ chuẩn Doanh thu & Trả chậm) */}
+            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full overflow-x-auto scrollbar-hide">
+                {/* Bên trái: Bộ lọc & Lựa chọn chức năng */}
+                <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
+                    {activeCompetitionTab === 'nhom' && (
                         <>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
-                                title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                                className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
-                            >
-                                {viewMode === 'group' ? <AppIcon name="viewGrid" size="sm" /> : <AppIcon name="viewList" size="sm" />}
-                            </Button>
-                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95">{isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}</Button>
-                            {highlightedEmployees.size > 0 && (
-                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95">{isExportingHighlights ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="users" size="sm" />}</Button>
-                            )}
-                            <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
+                            {/* Lọc nhóm — MultiSelectDropdown */}
+                            <MultiSelectDropdown
+                                className="w-auto shrink-0"
+                                triggerClassName="h-7.5 sm:h-8 min-h-0 py-0 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg shadow-2xs inline-flex items-center"
+                                icon={<AppIcon name="filter" size="sm" className="text-sky-500" />}
+                                triggerLabel="Lọc nhóm"
+                                count={isFiltered ? activeFilterCount : undefined}
+                                allLabel="Chọn tất cả"
+                                allChecked={activeFilterCount === totalFilterCount}
+                                onToggleAll={handleToggleAllCompetitions}
+                                groups={filterGroups}
+                                onToggleOption={handleToggleCompetition}
+                                searchValue={filterSearch}
+                                onSearchChange={setFilterSearch}
+                                searchPlaceholder="Tìm nhóm thi đua..."
+                                panelWidthClass="w-80"
+                                maxHeightClass="max-h-[80vh]"
+                                usePortal
+                            />
+                            {/* Highlight */}
+                            <div className="relative shrink-0" ref={employeeFilterRef}>
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={handleToggleEmployeeFilter}
+                                    className={`h-7.5 sm:h-8 min-h-0 gap-1 sm:gap-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border rounded-lg shadow-2xs transition-all inline-flex items-center shrink-0 ${
+                                        isEmployeeFilterOpen || highlightedEmployees.size > 0
+                                            ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700'
+                                            : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'
+                                    }`}
+                                >
+                                    <AppIcon name="users" size="sm" />
+                                    <span className="hidden sm:inline">Highlight</span>
+                                    {highlightedEmployees.size > 0 && (
+                                        <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[10px] sm:text-[11px] font-black rounded">
+                                            {highlightedEmployees.size}
+                                        </span>
+                                    )}
+                                    <AppIcon
+                                        name="chevronDown"
+                                        size="sm"
+                                        className={`transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`}
+                                    />
+                                </Button>
+                                {isEmployeeFilterOpen && createPortal(
+                                    <div
+                                        ref={employeeFilterPanelRef}
+                                        style={employeeFilterPanelStyle}
+                                        className="fixed w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
+                                    >
+                                        <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                                            <Input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" />
+                                            <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="unstyled" size="none" onClick={handleSelectAllEmployees} className="p-0 text-[11px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="unstyled" size="none" onClick={handleDeselectAllEmployees} className="p-0 text-[11px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
+                                        </div>
+                                        <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
+                                            {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {
+                                                const isSelected = highlightedEmployees.has(emp.originalName);
+                                                return (
+                                                    <div key={emp.originalName} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-default">
+                                                        <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer" onClick={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })} onKeyDown={onActivateKey(() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; }))}>
+                                                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getEmployeeDotColor(emp.originalName)}`}></span>
+                                                            <span className={`text-sm truncate ${isSelected ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{emp.name}</span>
+                                                        </div>
+                                                        <Switch checked={isSelected} onChange={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })} />
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>,
+                                    document.body
+                                )}
+                            </div>
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
@@ -725,7 +786,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 variant="unstyled"
                                 size="none"
                                 onClick={() => setCanhanGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                                className={`flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold border transition-all cursor-pointer rounded-none ${
+                                className={`h-7.5 sm:h-8 min-h-0 inline-flex items-center gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold border rounded-lg shadow-2xs transition-all cursor-pointer shrink-0 ${
                                     canhanGroupingMode === 'configured'
                                         ? 'border-sky-300 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:border-sky-700 dark:text-sky-300'
                                         : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
@@ -737,13 +798,15 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 }
                                 aria-label="Chuyển đổi nhóm tiêu chí Mặc định / Tuỳ chỉnh"
                             >
-                                <AppIcon name="layers" size="md" className="text-sky-500" />
+                                <AppIcon name="layers" size="sm" className="text-sky-500" />
                                 <span>{canhanGroupingMode === 'configured' ? 'Tuỳ chỉnh' : 'Mặc định'}</span>
                             </Button>
 
                             {/* Lọc nhóm — MultiSelectDropdown */}
                             <MultiSelectDropdown
-                                icon={<AppIcon name="filter" size="md" className="text-sky-500" />}
+                                className="w-auto shrink-0"
+                                triggerClassName="h-7.5 sm:h-8 min-h-0 py-0 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg shadow-2xs inline-flex items-center"
+                                icon={<AppIcon name="filter" size="sm" className="text-sky-500" />}
                                 triggerLabel="Lọc nhóm"
                                 count={isFiltered ? activeFilterCount : undefined}
                                 allLabel="Chọn tất cả"
@@ -758,10 +821,35 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 maxHeightClass="max-h-[80vh]"
                                 usePortal
                             />
+                        </>
+                    )}
+                </div>
 
+                {/* Bên phải: Chế độ xem & Export */}
+                <div className="flex gap-1 items-center shrink-0">
+                    {activeCompetitionTab === 'nhom' && activeVersionName === null && (
+                        <>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
+                                title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
+                                className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0"
+                            >
+                                {viewMode === 'group' ? <AppIcon name="viewGrid" size="sm" /> : <AppIcon name="viewList" size="sm" />}
+                            </Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-
-                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95">
+                            <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">{isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}</Button>
+                            {highlightedEmployees.size > 0 && (
+                                <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">{isExportingHighlights ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="users" size="sm" />}</Button>
+                            )}
+                            <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
+                        </>
+                    )}
+                    {activeCompetitionTab === 'canhan' && activeVersionName === null && (
+                        <>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                            <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">
                                 {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}
                             </Button>
                             <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} />
@@ -769,7 +857,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
                         <>
-                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95">
+                            <Button variant="ghost" size="icon" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">
                                 {isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}
                             </Button>
                         </>
@@ -777,8 +865,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 </div>
             </div>
 
-            {/* 3. Tiến độ thời gian */}
-            <div className="px-4 pt-3 pb-1">
+            {/* 4. Quỹ thời gian */}
+            <div className="px-4 pt-2.5 pb-1 no-print w-full">
                 <TimeProgressBar />
             </div>
 
@@ -787,62 +875,6 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     <div className="pt-2">
                         {activeCompetitionTab === 'nhom' && (
                             <>
-                            {/* Toolbar: Lọc nhóm + Highlight — canh phải */}
-                            <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    {/* Lọc nhóm — dùng chung MultiSelectDropdown (components/shared/ui) để đồng nhất
-                                        style với các bộ lọc khác trong dự án (VD bộ lọc siêu thị ngay phía trên) */}
-                                    <MultiSelectDropdown
-                                        icon={<AppIcon name="filter" size="md" className="text-sky-500" />}
-                                        triggerLabel="Lọc nhóm"
-                                        count={isFiltered ? activeFilterCount : undefined}
-                                        allLabel="Chọn tất cả"
-                                        allChecked={activeFilterCount === totalFilterCount}
-                                        onToggleAll={handleToggleAllCompetitions}
-                                        groups={filterGroups}
-                                        onToggleOption={handleToggleCompetition}
-                                        searchValue={filterSearch}
-                                        onSearchChange={setFilterSearch}
-                                        searchPlaceholder="Tìm nhóm thi đua..."
-                                        panelWidthClass="w-80"
-                                        maxHeightClass="max-h-[80vh]"
-                                        usePortal
-                                    />
-                                    {/* Highlight */}
-                                    <div className="relative" ref={employeeFilterRef}>
-                                        <Button variant="unstyled" size="none" onClick={handleToggleEmployeeFilter} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-sky-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
-                                            <AppIcon name="users" size="md" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">{highlightedEmployees.size}</span>}<AppIcon name="chevronDown" size="sm" className={`transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
-                                        </Button>
-                                        {isEmployeeFilterOpen && createPortal(
-                                            <div
-                                                ref={employeeFilterPanelRef}
-                                                style={employeeFilterPanelStyle}
-                                                className="fixed w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[999999] flex flex-col overflow-hidden"
-                                            >
-                                                <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                                    <Input ref={employeeFilterInputRef} type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." leftIcon="search" />
-                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="unstyled" size="none" onClick={handleSelectAllEmployees} className="p-0 text-[11px] font-bold text-sky-600 hover:underline">Chọn tất cả</Button><Button variant="unstyled" size="none" onClick={handleDeselectAllEmployees} className="p-0 text-[11px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
-                                                </div>
-                                                <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
-                                                    {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {
-                                                        const isSelected = highlightedEmployees.has(emp.originalName);
-                                                        return (
-                                                            <div key={emp.originalName} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-default">
-                                                                <div role="button" tabIndex={0} className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer" onClick={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })} onKeyDown={onActivateKey(() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; }))}>
-                                                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getEmployeeDotColor(emp.originalName)}`}></span>
-                                                                    <span className={`text-sm truncate ${isSelected ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{emp.name}</span>
-                                                                </div>
-                                                                <Switch checked={isSelected} onChange={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })} />
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>,
-                                            document.body
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
                             {selectedHeadersForNhom.length === 0 ? (
                                 <div className="mt-2 text-center py-12"><AppIcon name="users" size="hero" className="text-slate-400 mx-auto" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
                             ) : (
@@ -924,15 +956,17 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             })}
                                         </div>
 
-                                        {/* Right: Add Button */}
+                                        {/* Right: Add Button (Chỉ để icon xám như nút xuất ảnh, không cần text) */}
                                         <Button
-                                            variant="unstyled" size="none"
+                                            variant="ghost"
+                                            size="icon"
                                             type="button"
                                             onClick={handleAddSummaryTable}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-sky-700 transition-all shadow-md shadow-sky-500/10 active:scale-95 cursor-pointer"
+                                            title="Thêm bảng"
+                                            aria-label="Thêm bảng"
+                                            className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shrink-0"
                                         >
-                                            <AppIcon name="add" size="md" />
-                                            <span>Thêm bảng</span>
+                                            <AppIcon name="add" size="sm" />
                                         </Button>
                                     </div>
                                 )}

@@ -65,10 +65,47 @@ export async function deliverImage(
     filename: string,
     opts: { share?: boolean; title?: string } = {},
 ): Promise<DeliveryResult> {
-    // 1. Tự động tải file về máy
-    downloadBlobFile(blob, filename);
+    const wantShare = opts.share ?? isMobileLikeDevice();
 
-    // 2. Tự động sao chép ảnh vào bộ nhớ tạm (Clipboard)
+    // 1. TRÊN ĐIỆN THOẠI / IPAD: ƯU TIÊN 100% MỞ BẢNG CHIA SẺ HỆ THỐNG (LINE, Zalo, Lưu ảnh...)
+    if (wantShare) {
+        const displayName = opts.title || displayNameOf(filename);
+        const shareData: ShareData = {
+            files: [new File([blob], `${displayNameOf(filename)}.png`, { type: blob.type || 'image/png' })],
+            title: displayName,
+            text: displayName,
+        };
+
+        try {
+            if (typeof navigator !== 'undefined' && typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
+                await navigator.share(shareData);
+                return 'shared';
+            }
+        } catch (error) {
+            if (isAbortError(error)) return 'cancelled';
+            if (isNotAllowedError(error)) {
+                // Safari iOS từ chối do dựng ảnh lâu hơn ~1s -> hiển thị nút để người dùng chạm lại
+                // TUYỆT ĐỐI KHÔNG tự tiện tải file tại đây vì sẽ làm hiện popup "Bạn có muốn tải về..." của Safari
+                offerShareRetry(shareData, () => {
+                    downloadBlobFile(blob, filename);
+                    toast.success('Đã tải ảnh về máy!', { id: 'export-image-success' });
+                });
+                return 'retry-offered';
+            }
+            console.error('[imageDelivery] Lỗi khi chia sẻ:', error);
+        }
+
+        // Thiết bị di động không hỗ trợ canShare hoặc lỗi không xác định -> fallback tải về
+        downloadBlobFile(blob, filename);
+        toast.success('Đã tải ảnh về máy thành công!', {
+            id: 'export-image-success',
+            duration: 3000
+        });
+        return 'downloaded';
+    }
+
+    // 2. TRÊN MÁY TÍNH (DESKTOP): Tự tải file về máy + Tự copy vào Clipboard
+    downloadBlobFile(blob, filename);
     const copied = await copyBlobToClipboard(blob);
 
     if (copied) {
@@ -83,29 +120,5 @@ export async function deliverImage(
         });
     }
 
-    const wantShare = opts.share ?? isMobileLikeDevice();
-    if (!wantShare) {
-        return 'downloaded';
-    }
-
-    const displayName = opts.title || displayNameOf(filename);
-    const shareData: ShareData = {
-        files: [new File([blob], `${displayNameOf(filename)}.png`, { type: blob.type || 'image/png' })],
-        title: displayName,
-        text: displayName,
-    };
-    try {
-        if (typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
-            await navigator.share(shareData);
-            return 'shared';
-        }
-    } catch (error) {
-        if (isAbortError(error)) return 'cancelled';
-        if (isNotAllowedError(error)) {
-            offerShareRetry(shareData, () => downloadBlobFile(blob, filename));
-            return 'retry-offered';
-        }
-        console.error('[imageDelivery] Lỗi khi chia sẻ:', error);
-    }
     return 'downloaded';
 }

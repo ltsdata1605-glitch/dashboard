@@ -421,12 +421,12 @@ const RevenueView: React.FC<{
             </div>
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
-            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
-                <div className="flex gap-1.5 items-center">
+            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full overflow-x-auto scrollbar-hide">
+                <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
                     {!isRealtimeMode && (
                         <Button
-                            variant="secondary"
-                            size="sm"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => {
                                 if (!prevMonthRaw) {
                                     setIsPrevMonthModalOpen(true);
@@ -435,16 +435,16 @@ const RevenueView: React.FC<{
                                 }
                             }}
                             title={!prevMonthRaw ? 'Nhập dữ liệu cùng kỳ' : (isShowPrevMonth ? 'Bấm để tắt so sánh cùng kỳ' : 'Bấm để bật so sánh cùng kỳ')}
-                            className={`h-8 gap-1.5 px-2.5 text-xs transition-colors ${
+                            className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                                 prevMonthRaw
                                     ? isShowPrevMonth
-                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300'
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs'
                                         : 'bg-slate-100 border-slate-300 text-slate-400 hover:bg-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500'
-                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
                             }`}
                         >
-                            <AppIcon name="clock" size="md" className={prevMonthRaw && isShowPrevMonth ? 'text-emerald-600' : 'text-slate-400'} />
-                            <span>Cùng kỳ</span>{/* hiện cả trên điện thoại: nút chỉ có icon đồng hồ không ai đoán được (2026-09-28) */}
+                            <AppIcon name="clock" size="sm" className={prevMonthRaw && isShowPrevMonth ? 'text-emerald-600' : 'text-slate-400'} />
+                            <span>Cùng kỳ</span>
                             {prevMonthRaw && (
                                 <span
                                     role="button"
@@ -472,36 +472,37 @@ const RevenueView: React.FC<{
                     )}
                     {!isRealtimeMode && (
                         <Button
-                            variant="secondary"
-                            size="sm"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => setIsShowRemaining(p => !p)}
-                            className={`h-8 gap-1.5 px-2.5 text-xs ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100' : 'text-slate-500'}`}
+                            className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                                isShowRemaining 
+                                    ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 shadow-2xs' 
+                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
+                            }`}
                         >
-                            {/* Ô tích THẬT (chuẩn hoá icon 2026-10-06): trước là ô vuông 14px tự dựng chứa icon
-                                tích-tròn — lệch cỡ với đồng hồ/máy ảnh. Nay cùng cỡ md với cả thanh. */}
-                            <AppIcon name={isShowRemaining ? 'checkboxOn' : 'checkboxOff'} size="md" className={isShowRemaining ? 'text-amber-600' : 'text-slate-400'} />
+                            <AppIcon name={isShowRemaining ? 'checkboxOn' : 'checkboxOff'} size="sm" className={isShowRemaining ? 'text-amber-600' : 'text-slate-400'} />
                             <span>Còn lại</span>
                         </Button>
                     )}
-                </div>
-                <div className="flex gap-1.5 items-center">
-                    {/* Nút chuyển chế độ REALTIME */}
+                    {/* Nút chuyển chế độ REALTIME — gom về cùng nhóm bộ lọc bên trái */}
                     <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => setIsRealtimeMode(p => !p)}
-                        className={`h-8 gap-1.5 px-2.5 text-xs font-bold transition-all ${
+                        className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                             isRealtimeMode
-                                ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-sm ring-2 ring-amber-400/40'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                                ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/40'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
                         }`}
                         title={isRealtimeMode ? 'Đang xem Doanh thu Realtime (Bấm để xem Luỹ kế)' : 'Bấm để xem Doanh thu Realtime trong ngày'}
                     >
-                        {/* Icon Realtime (chuẩn hoá icon 2026-10-06) thay chấm tròn 8px — cùng cỡ md với cả thanh. */}
-                        <AppIcon name="live" size="md" className={isRealtimeMode ? 'text-white animate-pulse' : 'text-amber-500'} />
+                        <AppIcon name="live" size="sm" className={isRealtimeMode ? 'text-white animate-pulse' : 'text-amber-500'} />
                         <span>Realtime</span>
                     </Button>
-                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                </div>
+                {/* Nhóm công cụ bên phải: Chế độ xem + Xuất ảnh (CHUẨN) */}
+                <div className="flex gap-1.5 items-center shrink-0">
                     <Button
                         variant="ghost"
                         size="icon"

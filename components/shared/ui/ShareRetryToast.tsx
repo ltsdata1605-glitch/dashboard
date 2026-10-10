@@ -15,10 +15,12 @@ export function offerShareRetry(shareData: ShareData, onFail: () => void): void 
     toast(
         (t) => (
             <div className="flex items-center gap-3" data-testid="share-retry-toast">
-                <span className="text-[13px] text-slate-700 leading-snug">Ảnh đã sẵn sàng.</span>
+                <span className="text-[13px] font-medium text-slate-800 dark:text-slate-100 leading-snug">
+                    Ảnh đã sẵn sàng.
+                </span>
                 <Button
                     size="sm"
-                    className="min-h-11 sm:min-h-0 shrink-0"
+                    className="min-h-11 sm:min-h-0 shrink-0 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-sm"
                     onClick={async () => {
                         toast.dismiss(t.id);
                         try {
@@ -32,6 +34,6 @@ export function offerShareRetry(shareData: ShareData, onFail: () => void): void 
                 </Button>
             </div>
         ),
-        { id, duration: 20_000 },
+        { id, duration: 25_000 },
     );
 }

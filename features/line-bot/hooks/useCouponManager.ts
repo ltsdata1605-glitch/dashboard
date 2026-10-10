@@ -214,6 +214,29 @@ export function useCouponManager(overrideUserId?: string) {
         return res.deleted;
     }, [userId, loadCoupons]);
 
+    // Cập nhật hàng loạt mã theo đợt nạp
+    const updateCouponsBatch = useCallback(async (
+        couponIds: string[],
+        updates: Partial<Pick<Coupon, 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>>
+    ) => {
+        if (!userId || !couponIds || couponIds.length === 0) return 0;
+        const res = await lineBotFirestoreService.updateCouponsBatch(userId, couponIds, updates);
+        toast.success(`Đã cập nhật thành công ${res.updated} mã trong đợt!`);
+        await loadCoupons();
+        return res.updated;
+    }, [userId, loadCoupons]);
+
+    // Cập nhật chi tiết từng mã trong đợt
+    const updateCouponsDetailed = useCallback(async (
+        items: Array<{ id: string; changes: Partial<Pick<Coupon, 'code' | 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>> }>
+    ) => {
+        if (!userId || !items || items.length === 0) return 0;
+        const res = await lineBotFirestoreService.updateCouponsDetailed(userId, items);
+        toast.success(`Đã cập nhật chi tiết ${res.updated} mã!`);
+        await loadCoupons();
+        return res.updated;
+    }, [userId, loadCoupons]);
+
     // Ghi nhận thời gian copy mã coupon
     const recordCouponCopied = useCallback(async (couponId: string) => {
         if (!couponId) return;
@@ -298,6 +321,8 @@ export function useCouponManager(overrideUserId?: string) {
         restoreRevokedCoupons,
         deleteCoupon,
         deleteCouponsBatch,
+        updateCouponsBatch,
+        updateCouponsDetailed,
         deleteAllCoupons,
         exportToExcel,
         recordCouponCopied,

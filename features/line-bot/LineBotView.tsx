@@ -332,6 +332,8 @@ export default function LineBotView() {
                             onReclassifyCoupons={couponHook.reclassifyCoupons}
                             onDeleteCoupon={couponHook.deleteCoupon}
                             onDeleteCouponsBatch={couponHook.deleteCouponsBatch}
+                            onUpdateCouponsBatch={couponHook.updateCouponsBatch}
+                            onUpdateCouponsDetailed={couponHook.updateCouponsDetailed}
                             onDeleteAllCoupons={couponHook.deleteAllCoupons}
                             onExportExcel={couponHook.exportToExcel}
                             onRefresh={couponHook.loadCoupons}

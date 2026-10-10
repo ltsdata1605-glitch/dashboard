@@ -199,50 +199,87 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
                 let isGlobalCloudConfig = cachedUrl === 'cloud://global_product_config' || configUrl === 'cloud://global_product_config';
 
-                // PERF FIX: Render ngay lập tức từ IndexedDB nếu có (0ms instant display)
+                // PERF FIX (Ultra-Fast SWR): Nếu đã có cấu hình hoàn chỉnh trong IndexedDB (Local),
+                // kích hoạt NGAY LẬP TỨC (0ms) để không bắt người dùng dừng lại đợi mạng Firestore 3.2s!
+                // Việc kiểm tra và cập nhật cấu hình mới từ Firestore sẽ chạy ngầm hoàn toàn trong nền.
                 if (config && isProductConfigComplete(config)) {
                     setProductConfig(config);
-                }
-
-                let loadedFromFirestore = false;
-                // ƯU TIÊN SỐ 1: Luôn kiểm tra & nạp cấu hình toàn hệ thống từ Firestore (shared_configs/global_product_config)
-                // Đọc trực tiếp từ Firestore không phụ thuộc vào trạng thái đăng nhập user
-                try {
-                    const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
-                    const globalEntry = await getGlobalProductConfig();
-                    if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
-                        config = globalEntry.config;
-                        isGlobalCloudConfig = true;
-                        await dbService.saveProductConfig(config, 'cloud://global_product_config');
-                        setProductConfig(config);
-                        loadedFromFirestore = true;
-                    } else if (user && !isDemoMode) {
-                        // Dự phòng: cấu hình riêng của user trên Firestore nếu có
-                        const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
-                        const cloudConfigEntry = await fetchProductConfigFromCloud(user);
-                        const cloudConfig = cloudConfigEntry?.config;
-                        if (cloudConfig && isProductConfigComplete(cloudConfig)) {
-                            config = cloudConfig;
+                    // Đồng bộ kiểm tra bản cập nhật Cloud ngầm trong nền (non-blocking SWR)
+                    (async () => {
+                        try {
+                            const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
+                            const globalEntry = await getGlobalProductConfig();
+                            if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
+                                const cachedUpdatedAt = await dbService.getSetting<string>('global_product_config_updated_at');
+                                // Nếu Cloud không có cập nhật mới (cùng timestamp) -> KHÔNG LÀM GÌ, giữ nguyên bản máy
+                                if (globalEntry.updatedAt && cachedUpdatedAt && globalEntry.updatedAt === cachedUpdatedAt) {
+                                    return;
+                                }
+                                await dbService.saveSetting('global_product_config_updated_at', globalEntry.updatedAt || new Date().toISOString());
+                                await dbService.saveProductConfig(globalEntry.config, 'cloud://global_product_config');
+                                setProductConfig(globalEntry.config);
+                            } else if (user && !isDemoMode) {
+                                const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
+                                const cloudConfigEntry = await fetchProductConfigFromCloud(user);
+                                const cloudConfig = cloudConfigEntry?.config;
+                                if (cloudConfig && isProductConfigComplete(cloudConfig)) {
+                                    await dbService.saveProductConfig(cloudConfig, 'cloud://global_product_config');
+                                    setProductConfig(cloudConfig);
+                                }
+                            }
+                        } catch (bgErr) {
+                            console.warn('[useDataManagement] Lỗi cập nhật cấu hình ngầm từ Cloud:', bgErr);
+                        }
+                    })();
+                } else {
+                    // CHƯA CÓ CẤU HÌNH CỤC BỘ (máy mới / xóa cache): Mới cần tải từ Cloud Firestore
+                    let loadedFromFirestore = false;
+                    setStatus({ message: 'Đang tải cấu hình ngành hàng từ Cloud...', type: 'info', progress: 15 });
+                    try {
+                        const { getGlobalProductConfig } = await import('../features/product-config/services/firebaseProductConfigService');
+                        const globalEntry = await Promise.race([
+                            getGlobalProductConfig(),
+                            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
+                        ]);
+                        if (globalEntry?.config && isProductConfigComplete(globalEntry.config)) {
+                            config = globalEntry.config;
                             isGlobalCloudConfig = true;
+                            if (globalEntry.updatedAt) {
+                                await dbService.saveSetting('global_product_config_updated_at', globalEntry.updatedAt);
+                            }
                             await dbService.saveProductConfig(config, 'cloud://global_product_config');
                             setProductConfig(config);
                             loadedFromFirestore = true;
+                        } else if (user && !isDemoMode) {
+                            const { fetchProductConfigFromCloud } = await import('../services/firestoreService');
+                            const cloudConfigEntry = await Promise.race([
+                                fetchProductConfigFromCloud(user),
+                                new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000))
+                            ]);
+                            const cloudConfig = cloudConfigEntry?.config;
+                            if (cloudConfig && isProductConfigComplete(cloudConfig)) {
+                                config = cloudConfig;
+                                isGlobalCloudConfig = true;
+                                await dbService.saveProductConfig(config, 'cloud://global_product_config');
+                                setProductConfig(config);
+                                loadedFromFirestore = true;
+                            }
                         }
-                    }
-                } catch (e) {
-                    console.warn("Không đọc được cấu hình từ Firestore:", e);
-                }
-
-                // Chỉ tải từ URL ngoài khi CHƯA có cấu hình Cloud, bộ nhớ cục bộ thiếu, và URL là HTTP hợp lệ
-                const isConfigMissing = !config || !config.groups || Object.keys(config.groups).length === 0;
-                if (!loadedFromFirestore && !isGlobalCloudConfig && isConfigMissing && configUrl.startsWith('http')) {
-                    try {
-                        setStatus({ message: 'Tải cấu hình từ URL...', type: 'info', progress: 15 });
-                        config = await loadConfigFromSheet(configUrl, () => {});
-                        await dbService.saveProductConfig(config, configUrl);
-                        setProductConfig(config);
                     } catch (e) {
-                        console.error("Không tải được cấu hình từ URL bên ngoài.");
+                        console.warn("Không đọc được cấu hình từ Firestore:", e);
+                    }
+
+                    // Chỉ tải từ URL ngoài khi CHƯA có cấu hình Cloud, bộ nhớ cục bộ thiếu, và URL là HTTP hợp lệ
+                    const isConfigMissing = !config || !config.groups || Object.keys(config.groups).length === 0;
+                    if (!loadedFromFirestore && !isGlobalCloudConfig && isConfigMissing && configUrl.startsWith('http')) {
+                        try {
+                            setStatus({ message: 'Tải cấu hình từ URL...', type: 'info', progress: 18 });
+                            config = await loadConfigFromSheet(configUrl, () => {});
+                            await dbService.saveProductConfig(config, configUrl);
+                            setProductConfig(config);
+                        } catch (e) {
+                            console.error("Không tải được cấu hình từ URL bên ngoài.");
+                        }
                     }
                 }
 

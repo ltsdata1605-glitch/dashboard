@@ -32,6 +32,13 @@ interface CouponManagerTabProps {
     onReclassifyCoupons?: () => Promise<number>;
     onDeleteCoupon: (id: string) => Promise<void>;
     onDeleteCouponsBatch?: (couponIds: string[]) => Promise<number>;
+    onUpdateCouponsBatch?: (
+        couponIds: string[],
+        updates: Partial<Pick<Coupon, 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>>
+    ) => Promise<number>;
+    onUpdateCouponsDetailed?: (
+        items: Array<{ id: string; changes: Partial<Pick<Coupon, 'code' | 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>> }>
+    ) => Promise<number>;
     onDeleteAllCoupons: () => Promise<number>;
     onExportExcel: () => void;
     onRefresh: () => void;
@@ -56,6 +63,8 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     onReclassifyCoupons,
     onDeleteCoupon,
     onDeleteCouponsBatch,
+    onUpdateCouponsBatch,
+    onUpdateCouponsDetailed,
     onDeleteAllCoupons,
     onExportExcel,
     onRefresh,
@@ -824,6 +833,8 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     existingTypes={availableTypes}
                     coupons={coupons}
                     onDeleteBatch={onDeleteCouponsBatch}
+                    onUpdateBatch={onUpdateCouponsBatch}
+                    onUpdateDetailed={onUpdateCouponsDetailed}
                 />
             )}
         </div>

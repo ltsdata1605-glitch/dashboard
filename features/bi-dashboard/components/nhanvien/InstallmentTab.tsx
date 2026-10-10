@@ -407,35 +407,45 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
             </div>
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
-            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
-                <div className="flex gap-1.5 items-center">
+            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full overflow-x-auto scrollbar-hide">
+                <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
                     <input type="file" ref={importFileRef} onChange={handleFileImport} accept=".json" className="hidden" />
                     <Button
-                        variant="secondary"
-                        size="sm"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => importFileRef.current?.click()}
-                        className={`h-8 gap-1.5 px-2.5 text-xs ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100' : 'text-slate-500'}`}
+                        className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            prevMonthRaw 
+                                ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs' 
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
+                        }`}
                     >
-                        <AppIcon name="clock" size="md" />
-                        <span>Cùng kỳ</span>{/* hiện cả trên điện thoại: nút chỉ có icon đồng hồ không ai đoán được (2026-09-28) */}
+                        <AppIcon name="clock" size="sm" className={prevMonthRaw ? 'text-emerald-600' : 'text-slate-400'} />
+                        <span>Cùng kỳ</span>
                         {prevMonthRaw && (
                             <Button variant="ghost" size="none" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800">
                                 <AppIcon name="close" size="sm" />
                             </Button>
                         )}
                     </Button>
-                </div>
-                <div className="flex gap-1.5 items-center">
+
+                    {/* Nút bật/tắt cột % — đưa về nhóm cấu hình bên trái, chuẩn hoá kiểu dáng CHUẨN */}
                     <Button
-                        variant="ghost"
-                        size="icon"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => setHidePercent(v => !v)}
-                        title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'}
-                        className={`h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg text-[11px] font-black leading-none hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 ${hidePercent ? 'text-rose-500' : 'text-slate-400'}`}
+                        title={hidePercent ? 'Bấm để hiện cột %' : 'Bấm để ẩn cột %'}
+                        className={`h-7.5 sm:h-8 min-h-0 gap-1 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            !hidePercent
+                                ? 'bg-sky-50 border-sky-300 text-sky-700 hover:bg-sky-100 dark:bg-sky-950/40 dark:border-sky-800 dark:text-sky-300 shadow-2xs'
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
+                        }`}
                     >
-                        <span className={hidePercent ? 'line-through' : ''}>%</span>
+                        <span className={`font-black text-xs leading-none ${!hidePercent ? 'text-sky-600' : 'text-slate-400'}`}>%</span>
+                        <span>Cột %</span>
                     </Button>
-                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                </div>
+                <div className="flex gap-1.5 items-center shrink-0">
                     <Button
                         variant="ghost"
                         size="icon"

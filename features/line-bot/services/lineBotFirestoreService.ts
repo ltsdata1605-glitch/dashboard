@@ -314,6 +314,95 @@ export const lineBotFirestoreService = {
     },
 
     /**
+     * Cập nhật hàng loạt mã coupon theo danh sách ID (dùng khi sửa thông tin đợt nạp)
+     */
+    async updateCouponsBatch(
+        userId: string,
+        couponIds: string[],
+        updates: Partial<Pick<Coupon, 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>>
+    ): Promise<{ updated: number }> {
+        if (!userId || !couponIds || couponIds.length === 0) return { updated: 0 };
+        try {
+            const batchSize = 450;
+            let updated = 0;
+            const now = new Date().toISOString();
+            const cleanUpdates: Record<string, any> = { updatedAt: now };
+
+            if (updates.productName !== undefined) cleanUpdates.productName = updates.productName.trim();
+            if (updates.syntax !== undefined) cleanUpdates.syntax = updates.syntax.trim();
+            if (updates.type !== undefined) cleanUpdates.type = updates.type.trim();
+            if (updates.expiryDate !== undefined) cleanUpdates.expiryDate = updates.expiryDate.trim();
+            if (updates.status !== undefined) {
+                cleanUpdates.status = updates.status;
+                if (updates.status === 'UNUSED') {
+                    cleanUpdates.orderId = '';
+                    cleanUpdates.recipient = '';
+                    cleanUpdates.recipientId = '';
+                    cleanUpdates.revokedAt = '';
+                    cleanUpdates.revokeReason = '';
+                }
+            }
+
+            for (let i = 0; i < couponIds.length; i += batchSize) {
+                const chunk = couponIds.slice(i, i + batchSize);
+                const batch = writeBatch(db);
+                for (const id of chunk) {
+                    const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', id);
+                    batch.update(docRef, cleanUpdates);
+                    updated++;
+                }
+                await batch.commit();
+            }
+
+            await this.logAudit(userId, 'UPDATE_IMPORT_BATCH', `Đã cập nhật ${updated} mã coupon trong đợt nạp`, 'Quản lý');
+            return { updated };
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi updateCouponsBatch:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Cập nhật danh sách chi tiết các mã coupon khác nhau
+     */
+    async updateCouponsDetailed(
+        userId: string,
+        items: Array<{ id: string; changes: Partial<Pick<Coupon, 'code' | 'productName' | 'syntax' | 'type' | 'expiryDate' | 'status'>> }>
+    ): Promise<{ updated: number }> {
+        if (!userId || !items || items.length === 0) return { updated: 0 };
+        try {
+            const batchSize = 450;
+            let updated = 0;
+            const now = new Date().toISOString();
+
+            for (let i = 0; i < items.length; i += batchSize) {
+                const chunk = items.slice(i, i + batchSize);
+                const batch = writeBatch(db);
+                for (const item of chunk) {
+                    const docRef = doc(db, ROOT_COLLECTION, userId, 'coupons', item.id);
+                    const cleanChanges: Record<string, any> = { ...item.changes, updatedAt: now };
+                    if (item.changes.status === 'UNUSED') {
+                        cleanChanges.orderId = '';
+                        cleanChanges.recipient = '';
+                        cleanChanges.recipientId = '';
+                        cleanChanges.revokedAt = '';
+                        cleanChanges.revokeReason = '';
+                    }
+                    batch.update(docRef, cleanChanges);
+                    updated++;
+                }
+                await batch.commit();
+            }
+
+            await this.logAudit(userId, 'UPDATE_COUPONS_DETAILED', `Đã cập nhật chi tiết ${updated} mã coupon`, 'Quản lý');
+            return { updated };
+        } catch (error) {
+            console.error('[lineBotFirestoreService] Lỗi updateCouponsDetailed:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Tự động quét và xoá các mã coupon UNUSED đã quá ngày hết hạn khỏi kho
      * Đồng thời lưu thông tin sản phẩm hết hạn vào 'expired_products' để Bot LINE thông báo cho người dùng
      */
