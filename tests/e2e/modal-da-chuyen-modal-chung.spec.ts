@@ -80,3 +80,26 @@ test('nạp mã: hộp xác nhận xoá đợt nạp lồng trong modal chính �
     await expect(chinh).toHaveCount(0);
     expect(await page.evaluate(() => document.body.style.overflow)).toBe('');
 });
+
+test('nạp mã: bấm "Sửa đợt này" mở modal sửa đợt, đổi sang đợt khác vẫn đúng, Escape đóng về modal chính', async ({ page }) => {
+    // Luồng của CouponBatchEditModal (cha giữ modal gắn sẵn, đổi `batch` null→đợt→null→đợt khác). Lưu ý: bản cũ gọi hook SAU
+    // `if (!batch) return null` chỉ là vi phạm lint (rules-of-hooks) — React vẫn chạy được vì return nằm trước MỌI hook —
+    // nên test này KHÔNG đỏ trên bản cũ; nó khoá hành vi mở/đóng/đổi đợt sau khi tách vỏ + `key` theo đợt.
+    const loi: string[] = [];
+    page.on('pageerror', e => loi.push(e.message));
+    await page.goto('/');
+    await page.evaluate(async () => (await import('/tests/e2e/helpers/modalDaChuyenHarness.tsx' as string)).mountHarness());
+    await page.locator('#mo-nap-ma2').click();
+    const chinh = page.getByRole('dialog', { name: /Nạp Mã PMH & Quản Lý Lần Nạp/ });
+    await chinh.getByText(/Lịch Sử Các Lần Nạp/).click();
+    await chinh.getByRole('button', { name: /Sửa đợt này/ }).first().click();
+    const sua = page.getByRole('dialog', { name: /Chỉnh Sửa Thông Tin Đợt Nạp Mã/ });
+    await expect(sua).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(sua).toHaveCount(0);
+    await expect(chinh).toBeVisible();
+    // mở đợt thứ hai (đổi batch giữa hai lần) vẫn không lỗi
+    await chinh.getByRole('button', { name: /Sửa đợt này/ }).nth(1).click();
+    await expect(page.getByRole('dialog', { name: /Chỉnh Sửa Thông Tin Đợt Nạp Mã/ })).toBeVisible();
+    expect(loi, `lỗi trang: ${loi.join(' | ')}`).toEqual([]);
+});

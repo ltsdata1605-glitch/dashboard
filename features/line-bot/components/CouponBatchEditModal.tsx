@@ -37,15 +37,25 @@ interface CouponBatchEditModalProps {
 
 const COMMON_TYPES = ['Event', 'Giờ Vàng Giá Sốc', 'VIVO', 'HONOR', 'SAMSUNG', 'APPLE', 'OPPO', 'XIAOMI'];
 
-export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = ({
+type CouponBatchEditModalInnerProps = Omit<CouponBatchEditModalProps, 'batch'> & { batch: ImportBatchData };
+
+/**
+ * Vỏ ngoài: chỉ dựng phần có hook khi ĐÃ có đợt cần sửa. Trước đây `if (!batch) return null` đứng trước các hook (vi phạm
+ * eslint react-hooks/rules-of-hooks, làm đỏ `npm run check`; chạy được chỉ nhờ React tha khi mọi hook đều nằm sau return).
+ * `key` theo id đợt: mỗi đợt dựng mới nên state (sản phẩm, loại, hạn dùng…) luôn khởi tạo từ chính đợt đó.
+ */
+export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = ({ batch, ...rest }) => {
+    if (!batch) return null;
+    return <CouponBatchEditModalInner key={batch.id} batch={batch} {...rest} />;
+};
+
+const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
     isOpen,
     batch,
     onClose,
     onSaveBatch,
     onSaveDetailed
 }) => {
-    if (!batch) return null;
-
     // Danh sách sản phẩm riêng biệt trong đợt
     const distinctProducts = useMemo(() => {
         const set = new Set<string>();
