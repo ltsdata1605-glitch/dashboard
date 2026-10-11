@@ -37,22 +37,25 @@ interface CouponBatchEditModalProps {
 
 const COMMON_TYPES = ['Event', 'Giờ Vàng Giá Sốc', 'VIVO', 'HONOR', 'SAMSUNG', 'APPLE', 'OPPO', 'XIAOMI'];
 
-// Hook phải được gọi CÙNG THỨ TỰ ở mọi lần vẽ: bản cũ `return null` khi chưa có `batch` rồi mới gọi useState/useMemo → React
-// báo lỗi "Rendered more hooks than during the previous render" khi mở đợt nạp (ESLint rules-of-hooks đỏ, 2026-10-10).
-// Tách vỏ ngoài (kiểm `batch`) và phần thân (toàn bộ hook); `key` theo đợt để mở đợt khác thì trạng thái sửa làm mới từ đầu.
-export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = (props) => {
-    if (!props.batch) return null;
-    return <CouponBatchEditModalBody key={props.batch.id} {...props} batch={props.batch} />;
+type CouponBatchEditModalInnerProps = Omit<CouponBatchEditModalProps, 'batch'> & { batch: ImportBatchData };
+
+/**
+ * Vỏ ngoài: chỉ dựng phần có hook khi ĐÃ có đợt cần sửa. Trước đây `if (!batch) return null` đứng trước các hook (vi phạm
+ * eslint react-hooks/rules-of-hooks, làm đỏ `npm run check`; chạy được chỉ nhờ React tha khi mọi hook đều nằm sau return).
+ * `key` theo id đợt: mỗi đợt dựng mới nên state (sản phẩm, loại, hạn dùng…) luôn khởi tạo từ chính đợt đó.
+ */
+export const CouponBatchEditModal: React.FC<CouponBatchEditModalProps> = ({ batch, ...rest }) => {
+    if (!batch) return null;
+    return <CouponBatchEditModalInner key={batch.id} batch={batch} {...rest} />;
 };
 
-const CouponBatchEditModalBody: React.FC<CouponBatchEditModalProps & { batch: ImportBatchData }> = ({
+const CouponBatchEditModalInner: React.FC<CouponBatchEditModalInnerProps> = ({
     isOpen,
     batch,
     onClose,
     onSaveBatch,
     onSaveDetailed
 }) => {
-
     // Danh sách sản phẩm riêng biệt trong đợt
     const distinctProducts = useMemo(() => {
         const set = new Set<string>();
