@@ -11,14 +11,17 @@
          Excel do người dùng tải lên. SheetJS đã rời npm nên bản vá CHỈ có trên CDN riêng của
          họ; package.json của app cũng đã trỏ về đúng nguồn này từ Đợt 1. File check-thuong.html
          bị bỏ sót lúc đó vì nó là app vanilla độc lập, không đi qua npm. -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
+    <!-- GĐ2 tăng tốc (2026-10-11): xlsx (~900 KB) và html-to-image KHÔNG còn nạp chặn ở đây — trước đây iframe phải chờ tải
+         xong cả hai mới hiện (chuyển sang tab Check thưởng mất ~2,8 s trên 4G). Nay nạp theo nhu cầu bằng napThuVien()
+         (cùng URL, cùng phiên bản) khi nạp file Excel / xuất ảnh, và tải ngầm sẵn khi trang đã hiện + rảnh.
+         idb-keyval (CDN) cũng đã BỎ: thẻ script đó chặn phân tích trang tới khi jsdelivr trả lời (thêm 1 vòng DNS+TLS trên 4G,
+         treo khi mạng siêu thị chập chờn), trong khi trang có sẵn bộ lưu `idbKeyval` tương thích (cùng database 'keyval-store'
+         / store 'keyval') — lại vá được cả ca database bị tạo rỗng mà thư viện gốc không xử lý. -->
     <!-- Audit A39 (2026-09-30): ĐÃ BỎ link Google Fonts riêng của trang này. Trang luôn chạy trong
-         iframe của app, và CheckThuongView.tsx chép MỌI stylesheet của trang cha (index.html đã nạp
-         đúng các họ phông của bộ chọn phông, kể cả @font-face UTM Avo tự host) vào iframe khi tải —
-         link riêng ở đây là tải lần 2, lại chặn hiển thị iframe tới khi Google Fonts trả lời (mạng
-         yếu ở siêu thị, hoặc mất mạng). -->
+         iframe của app, và CheckThuongView.tsx chép MỌI stylesheet của trang cha (kể cả @font-face UTM Avo
+         tự host) vào iframe khi tải — link riêng ở đây là tải lần 2, lại chặn hiển thị iframe tới khi Google
+         Fonts trả lời (mạng yếu ở siêu thị, hoặc mất mạng). Từ 2026-10-11 trang cha nạp phông Google theo nhu
+         cầu (components/shared/ui/googleFonts.ts) → CheckThuongView tự gắn link phông người dùng đã chọn. -->
     <style>
         * { box-sizing: border-box; margin: 0; }
         body {
@@ -490,8 +493,44 @@
     </div>
 
     <script>
+        // ── Thư viện nặng nạp THEO NHU CẦU (GĐ2 tăng tốc 2026-10-11) ──────────────────────────────────────────────
+        // napThuVien('xlsx' | 'htmlToImage') → Promise của đối tượng thư viện (window.XLSX / window.htmlToImage).
+        // Mỗi thư viện chỉ chèn thẻ <script> một lần; lỗi mạng thì lần gọi sau thử lại.
+        const THU_VIEN = {
+            xlsx: { src: 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js', bien: 'XLSX' },
+            htmlToImage: { src: 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js', bien: 'htmlToImage' },
+        };
+        const _dangNapThuVien = {};
+        function napThuVien(ten) {
+            const tv = THU_VIEN[ten];
+            if (window[tv.bien]) return Promise.resolve(window[tv.bien]);
+            if (!_dangNapThuVien[ten]) {
+                _dangNapThuVien[ten] = new Promise((resolve, reject) => {
+                    const el = document.createElement('script');
+                    el.src = tv.src;
+                    el.async = true;
+                    el.onload = () => window[tv.bien] ? resolve(window[tv.bien]) : reject(new Error('Thư viện ' + ten + ' không khởi tạo được'));
+                    el.onerror = () => { el.remove(); reject(new Error('Không tải được thư viện ' + ten + ' — kiểm tra kết nối mạng rồi thử lại.')); };
+                    document.head.appendChild(el);
+                }).catch((err) => { delete _dangNapThuVien[ten]; throw err; });
+            }
+            return _dangNapThuVien[ten];
+        }
+        /** Chụp ảnh phần tử: như htmlToImage.toPng nhưng tự nạp thư viện nếu chưa có. */
+        const anhTuHtml = { toPng: (node, opts) => napThuVien('htmlToImage').then((lib) => lib.toPng(node, opts)) };
+        // Trang đã hiện + rảnh → HÂM bộ nhớ đệm HTTP cho 2 thư viện (chỉ tải byte, KHÔNG chạy): lúc bấm Nạp file / Xuất ảnh,
+        // napThuVien() lấy từ bộ nhớ đệm, không chờ mạng. Không chạy ngay vì xlsx ~900 KB — chạy script là một tác vụ dài
+        // khoá luồng chính (iframe dùng chung luồng với app) đúng lúc người dùng vừa mở tab (đo 2026-10-11).
+        window.addEventListener('load', () => {
+            const hamBoNhoDem = () => {
+                for (const tv of Object.values(THU_VIEN)) fetch(tv.src, { mode: 'no-cors', credentials: 'include' }).catch(() => {});
+            };
+            if ('requestIdleCallback' in window) requestIdleCallback(hamBoNhoDem, { timeout: 4000 }); else setTimeout(hamBoNhoDem, 1500);
+        });
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Simple offline-friendly fallback for idbKeyval if the CDN fails to load
+            // Bộ lưu `idbKeyval` của trang (get/set, cùng database 'keyval-store' / store 'keyval' như thư viện idb-keyval@6).
+            // Từ 2026-10-11 KHÔNG còn nạp idb-keyval từ CDN — đây là bản dùng thật, không chỉ là dự phòng.
             if (typeof idbKeyval === 'undefined') {
                 const DB_NAME = 'keyval-store';
                 const STORE_NAME = 'keyval';
@@ -1146,7 +1185,11 @@
                 reader.onerror = () => fileStatus.textContent = 'Không thể đọc file đã chọn.';
                 const fileExtension = file.name.split('.').pop().toLowerCase();
                 if (['xlsx', 'xls'].includes(fileExtension)) {
-                    reader.readAsArrayBuffer(file);
+                    // XLSX nạp theo nhu cầu (napThuVien) — đọc file sau khi thư viện sẵn sàng.
+                    napThuVien('xlsx').then(() => reader.readAsArrayBuffer(file)).catch((err) => {
+                        fileStatus.textContent = `Lỗi: ${err && err.message ? err.message : err}`;
+                        fileStatus.className = 'mt-4 text-left text-sm font-medium text-rose-600 whitespace-pre-wrap bg-rose-50 p-4 rounded-lg border border-rose-200 overflow-auto max-h-60';
+                    });
                 } else {
                     reader.readAsText(file, 'UTF-8');
                 }
@@ -2490,7 +2533,7 @@
                     const fullWidth = clampedWidth || Math.max(element.scrollWidth, element.offsetWidth, element.clientWidth);
                     const fullHeight = Math.max(element.scrollHeight, element.offsetHeight, element.clientHeight);
 
-                    const dataUrl = await htmlToImage.toPng(element, {
+                    const dataUrl = await anhTuHtml.toPng(element, {
                         pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
                         width: fullWidth,
                         height: fullHeight,
@@ -2672,7 +2715,7 @@
                     const fullWidth = EXPORT_WIDTH_PX;
                     const fullHeight = Math.max(exportContainer.scrollHeight, exportContainer.offsetHeight, exportContainer.clientHeight);
 
-                    const dataUrl = await htmlToImage.toPng(exportContainer, {
+                    const dataUrl = await anhTuHtml.toPng(exportContainer, {
                         pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
                         width: fullWidth,
                         height: fullHeight,
@@ -2957,7 +3000,7 @@
                             try {
                                 const fullWidth = Math.max(tempContainer.firstChild.scrollWidth, tempContainer.firstChild.offsetWidth, tempContainer.firstChild.clientWidth);
                                 const fullHeight = Math.max(tempContainer.firstChild.scrollHeight, tempContainer.firstChild.offsetHeight, tempContainer.firstChild.clientHeight);
-                                const dataUrl = await htmlToImage.toPng(tempContainer.firstChild, { 
+                                const dataUrl = await anhTuHtml.toPng(tempContainer.firstChild, { 
                                     pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2), 
                                     backgroundColor: '#ffffff',
                                     width: fullWidth,
@@ -3122,7 +3165,7 @@
 
                     // Audit A10: trước đây luôn tải file (iPhone không mở được Lưu ảnh/LINE/Zalo) và lỗi
                     // chụp bị bỏ qua lặng lẽ. Nay đi đường chia sẻ chung + báo lỗi.
-                    htmlToImage.toPng(tempContainer.firstChild, { 
+                    anhTuHtml.toPng(tempContainer.firstChild, { 
                          pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
                          backgroundColor: '#ffffff',
                          width: fullWidth,
@@ -3325,6 +3368,9 @@
                         applyLoadedData(e.data.payload, true);
                         idbKeyval.set('checkthuong_data', e.data.payload).catch(err => console.warn('IDB Sync Error:', err));
                     }
+                } else if (e.data && e.data.type === 'CHECK_THUONG_NO_DATA') {
+                    // Trang cha báo chắc chắn không có dữ liệu (2026-10-11) → hiện màn nạp file NGAY, không chờ đủ 500 ms dự phòng.
+                    if (!competitionData || competitionData.length === 0) showEmptyLanding();
                 }
             });
         });

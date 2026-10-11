@@ -1,0 +1,1 @@
+let a={cache:{},loaded:{}};const d=new Set,c=()=>{d.forEach(e=>e())},o={getState:()=>a,subscribe:e=>(d.add(e),()=>d.delete(e)),setCache:(e,t)=>{a={...a,cache:{...a.cache,[e]:t},loaded:{...a.loaded,[e]:!0}},c()},setLoaded:(e,t)=>{a={...a,loaded:{...a.loaded,[e]:t}},c()},clearCache:()=>{a={cache:{},loaded:{}},c()}};export{o as configStore};

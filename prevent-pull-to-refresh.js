@@ -19,11 +19,7 @@ function canScrollUp(el) {
     return false;
 }
 
-document.addEventListener('touchstart', function (e) {
-    if (e.touches.length === 1) lastTouchY = e.touches[0].clientY;
-}, { passive: true });
-
-document.addEventListener('touchmove', function (e) {
+function onTouchMove(e) {
     if (e.touches.length !== 1) return; // thu phóng / thao tác nhiều ngón — không can thiệp
     const touchY = e.touches[0].clientY;
     const pullingDown = touchY > lastTouchY;
@@ -31,4 +27,27 @@ document.addEventListener('touchmove', function (e) {
     if (!pullingDown || window.scrollY > 0 || !e.cancelable) return;
     if (canScrollUp(e.target)) return;
     e.preventDefault();
-}, { passive: false });
+}
+
+// SỬA 2026-10-11 (GĐ2 tăng tốc, KE_HOACH_GIAO_DIEN_APPLE.md mục 4.3 #8): bộ nghe `touchmove` KHÔNG thụ động bắt trình duyệt
+// chờ JS ở MỌI cú cuộn trên toàn trang. CSS `overscroll-behavior` chưa thay được vì Safari iOS vẫn kéo-tải-lại dù đặt `none`
+// (WebKit bug 275947) → giữ JS nhưng:
+//  - app cài lên Màn hình chính (standalone) không có kéo-tải-lại → không gắn gì cả;
+//  - chỉ gắn khi trang đang ở ĐỈNH (cú kéo duy nhất có thể tải lại trang), cuộn xuống thì gỡ → cuộn mượt, không chờ JS.
+const isStandalone = window.navigator.standalone === true
+    || (typeof window.matchMedia === 'function' && window.matchMedia('(display-mode: standalone)').matches);
+
+if (!isStandalone) {
+    document.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1) lastTouchY = e.touches[0].clientY;
+    }, { passive: true });
+
+    let attached = false;
+    const syncListener = function () {
+        const atTop = window.scrollY <= 0;
+        if (atTop && !attached) { document.addEventListener('touchmove', onTouchMove, { passive: false }); attached = true; }
+        else if (!atTop && attached) { document.removeEventListener('touchmove', onTouchMove, { passive: false }); attached = false; }
+    };
+    window.addEventListener('scroll', syncListener, { passive: true });
+    syncListener();
+}

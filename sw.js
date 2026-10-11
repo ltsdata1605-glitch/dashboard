@@ -3,24 +3,61 @@
  * và dữ liệu đã lưu trên máy (IndexedDB), không bị trang trắng "Không có kết nối".
  *
  * Chiến lược:
- *  - Cài đặt: tải sẵn index.html + mọi file /assets/ (tên có mã băm) + icon → đủ để chạy mọi màn khi offline.
+ *  - Cài đặt (GĐ2 tăng tốc 2026-10-11): chỉ tải LÕI (index.html + đúng các file index.html tự nạp) và CHÉP từ cache của bản
+ *    trước những file /assets/ không đổi (tên có mã băm → cùng tên là cùng nội dung) — không tải lại qua mạng.
+ *    Phần còn lại (mọi file /assets/ khác + icon) tải ngầm khi trang nhắn 'ycx-precache-rest' (trang đã vẽ xong + rảnh),
+ *    3 luồng một lúc → không giành băng thông với lượt mở app. Trước đây lượt cài tải cùng lúc 7,9 MB / 71 file.
  *  - Điều hướng (mở trang/tải lại): ƯU TIÊN MẠNG (luôn nhận bản mới khi có mạng, tránh kẹt bản cũ), quá 4 giây hoặc
  *    lỗi thì dùng bản đã lưu. Bản mới nhất tự được lưu lại.
  *  - /assets/*, phông, ảnh khung: ƯU TIÊN BẢN LƯU (tên có mã băm nên không bao giờ cũ); thiếu thì tải rồi lưu.
  *  - Yêu cầu khác origin (Firebase, LINE, Google…) KHÔNG đụng tới — SDK tự xử lý offline.
  */
-const VERSION = '08f359a91a48';
+const VERSION = 'c980c2acd867';
 const CACHE = 'ycx-shell-' + VERSION;
-const PRECACHE = ["/assets/AboutView-Cze1T4IR.js","/assets/BiWrapper-BL2OLMls.css","/assets/BiWrapper-Qqqg8jZh.js","/assets/ChangelogModal-5CkVCPRu.js","/assets/CheckThuongView-DHwM7is9.js","/assets/DashboardView-76y5_V45.js","/assets/DataUpdater-ReCBTGet.js","/assets/EmployeeAnalysis-7zU4XUPT.js","/assets/ExportOptionsModal-D84s5T_O.js","/assets/ExternalToolView-YDuwWcGf.js","/assets/FileHistoryModal-DCWY4TIC.js","/assets/FileNamingModal-Bb9eeszz.js","/assets/FontSelector-B6hVLItr.js","/assets/IndustryGrid-XhiGRssP.js","/assets/KhaiThacView-BsXK_C1y.js","/assets/KpiCardConfigModal-D0R8KRWU.js","/assets/LineBotView-Dkhg2AxA.js","/assets/NhanVien-xzPjysKj.js","/assets/PerformanceModal-k91XVLq4.js","/assets/PhanCaView-CYYjc8a5.css","/assets/PhanCaView-DXGL9LBM.js","/assets/PivotTable-q9rTBQws.js","/assets/PriceComparisonView-Drpv-HEF.js","/assets/SectionHeader-BYhdFc-5.js","/assets/SettingsView-BHSwK079.js","/assets/StickerEventApp-xH5JmSfC.js","/assets/StickerPrinterView-DjTeMYlK.js","/assets/SummaryTable-CBhNDv_a.js","/assets/SummaryTableUtils-CUAK7EFs.js","/assets/TaxCalculatorView-D2eGiVnc.js","/assets/TrendChart-CG1lORI7.js","/assets/UncollectedOrdersModal-DXEGBRJj.js","/assets/UnconfiguredGroupsModal-BdjQpJRe.js","/assets/UnshippedOrdersModal-DJbetdYL.js","/assets/UploadConflictModal-CrNO4GKr.js","/assets/UploadTypeSelectionModal-D14VQDSm.js","/assets/UserManagementView-CrGnEwKg.js","/assets/analytics.worker-CNAQL-46.js","/assets/analytics.worker-DPngphgu.js","/assets/analytics.worker-D_9AshrL.js","/assets/captureEngine-Cfy5xUgW.js","/assets/chartConfig-C-f7hsgo.js","/assets/checkThuongIframeService-DlxPXqbk.js","/assets/cloudDataService-DIU_9Gz-.js","/assets/dataService-hAsg7Esm.js","/assets/dbService-sewpHz2x.js","/assets/firebaseProductConfigService-DqVwR8zG.js","/assets/googleSheetsService-BGBmW1BJ.js","/assets/googleSheetsService-D0LTBUzq.js","/assets/html2canvas.esm-QH1iLAAe.js","/assets/index-CgJtiJsK.js","/assets/index-Cok6S9gG.js","/assets/index-DtAPt0m_.css","/assets/index-rD5Wtz2G.js","/assets/index.es-Cqc9cEeJ.js","/assets/jspdf.es.min-BwQt_5TG.js","/assets/khaiThacDb-D_H65bt2.js","/assets/khoDataService-CjoORu83.js","/assets/presetBi-CQRZt_Xd.js","/assets/salesJsonWriter.worker-BNAYiZX6.js","/assets/salesJsonWriter.worker-iky0iAuj.js","/assets/scheduleHeartbeat.worker-DY9MOOqR.js","/assets/shared-utils-CoyMcgY7.js","/assets/summaryService-QNgUBnDk.js","/assets/vendor-charts-cgUzaFZk.js","/assets/vendor-excel-BGhuli8m.js","/assets/vendor-firebase-BS_u-ZPy.js","/assets/vendor-icons-CmCra2aO.js","/assets/vendor-motion-CeUOfB9r.js","/assets/vendor-react-BFsc7Y4G.js","/assets/worker-DwBw6rNm.js","/favicon.svg","/icons/apple-touch-icon-120.png","/icons/apple-touch-icon-152.png","/icons/apple-touch-icon-167.png","/icons/apple-touch-icon-180.png","/icons/icon-192.png","/icons/icon-512.png","/icons/icon-maskable-512.png","/manifest.webmanifest","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js"];
+const PRECACHE = ["/assets/AboutView-B-bvRuSZ.js","/assets/Badge-Zes1F2RM.js","/assets/BiWrapper-BL2OLMls.css","/assets/BiWrapper-CAMGSPxM.js","/assets/ChangelogModal-D9aspxhC.js","/assets/CheckThuongView-CIdCa1R1.js","/assets/ConfirmDialog-MNcQlHLx.js","/assets/CouponConverterView-BirjhjUq.js","/assets/DashboardView-QjEROqeX.js","/assets/DataUpdater-D4ZGja-S.js","/assets/EmployeeAnalysis-_mDJz6jt.js","/assets/ExportOptionsModal-CMLOw-pN.js","/assets/ExternalToolView-YDuwWcGf.js","/assets/FileHistoryModal-VLsXiiDc.js","/assets/FileNamingModal-B0ky1ebN.js","/assets/FontSelector-BD4Z_RGf.js","/assets/GlobalAutoSyncDock-BRRCQ1ft.js","/assets/IndustryGrid-Kzs22YlM.js","/assets/Input-DmYGzpim.js","/assets/KhaiThacView-D5YaMMxN.js","/assets/KpiCard-DhEv5JJY.js","/assets/KpiCardConfigModal-BS2_Ggjk.js","/assets/LineBotView-8-MRUnE6.js","/assets/LoginView-BG69zzf5.js","/assets/MultiSelectDropdown-DQyxC5OI.js","/assets/NhanVien-6Eh-yhKh.js","/assets/PendingApprovalView-CFfZm1TJ.js","/assets/PerformanceModal-BEQbIVqN.js","/assets/PhanCaView-23aJtlwc.js","/assets/PhanCaView-CYYjc8a5.css","/assets/PivotTable-Dki4FUcM.js","/assets/PriceComparisonView-D7ZOQuTM.js","/assets/SectionCard-s_uS1jA_.js","/assets/SectionHeader-Bvqbwx-X.js","/assets/Select-D-VUBRgF.js","/assets/SettingsView-1mqGPGtM.js","/assets/StickerEventApp-vXLrUaEA.js","/assets/StickerPrinterView-bDlD0foR.js","/assets/SummaryTable-C9MI5MM0.js","/assets/SummaryTableUtils-CUAK7EFs.js","/assets/Tabs-l_-5YOiS.js","/assets/TaxCalculatorView-BVXhuNSq.js","/assets/TrendChart-CB7Clx9X.js","/assets/UncollectedOrdersModal-Yx_QSV_z.js","/assets/UnconfiguredGroupsModal-BYUt0jXk.js","/assets/UnshippedOrdersModal-BISTs1Hn.js","/assets/UploadConflictModal-BWZXfUL2.js","/assets/UploadTypeSelectionModal-_gmDOm5O.js","/assets/UserManagementView-B_G8-ADn.js","/assets/analysisEmployeeSyncService-CQ_pEyu3.js","/assets/analytics.worker-CNAQL-46.js","/assets/analytics.worker-DPngphgu.js","/assets/analytics.worker-D_9AshrL.js","/assets/autoNavigationService-FusTOMlF.js","/assets/captureEngine-D6tj5MN3.js","/assets/chartConfig-C-f7hsgo.js","/assets/checkThuongIframeService-B36z7EIW.js","/assets/cloudDataService-BveN0cjE.js","/assets/configStore-jfv_oEyo.js","/assets/dataService-DKBj1eAy.js","/assets/dbService-BQjYg8aG.js","/assets/firebaseProductConfigService-1VOmP2DJ.js","/assets/googleSheetsService-BGBmW1BJ.js","/assets/googleSheetsService-D0LTBUzq.js","/assets/html2canvas.esm-QH1iLAAe.js","/assets/index-BbJu6AQY.js","/assets/index-CgJtiJsK.js","/assets/index-ClgbZK3s.js","/assets/index-Cok6S9gG.js","/assets/index-D0TrS_aK.css","/assets/index.es-DkJ7X6_b.js","/assets/jspdf.es.min-B-6bg3E3.js","/assets/khaiThacDb-BNNLv1C6.js","/assets/khoDataService-BeNBO7NE.js","/assets/legacyIconNames-DiJHst2H.js","/assets/presetBi-Cn8eD4Z1.js","/assets/salesJsonWriter.worker-BNAYiZX6.js","/assets/salesJsonWriter.worker-iky0iAuj.js","/assets/scheduleHeartbeat.worker-DY9MOOqR.js","/assets/shared-utils-CoyMcgY7.js","/assets/summaryService-D8GxKuWH.js","/assets/useBiAutoSync-AWN8kVjE.js","/assets/useMultiMonthBonusRun-C-Scb3bV.js","/assets/vendor-charts-cgUzaFZk.js","/assets/vendor-excel-BGhuli8m.js","/assets/vendor-firebase-BiSu6BVL.js","/assets/vendor-firebase-analytics-C0xQhZhm.js","/assets/vendor-icons-CmCra2aO.js","/assets/vendor-motion-CeUOfB9r.js","/assets/vendor-react-BFsc7Y4G.js","/assets/worker-DwBw6rNm.js","/favicon.svg","/icons/apple-touch-icon-120.png","/icons/apple-touch-icon-152.png","/icons/apple-touch-icon-167.png","/icons/apple-touch-icon-180.png","/icons/icon-192.png","/icons/icon-512.png","/icons/icon-maskable-512.png","/manifest.webmanifest","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js"];
+const CORE = ["/assets/index-ClgbZK3s.js","/assets/vendor-react-BFsc7Y4G.js","/assets/shared-utils-CoyMcgY7.js","/assets/vendor-icons-CmCra2aO.js","/assets/vendor-firebase-BiSu6BVL.js","/assets/vendor-motion-CeUOfB9r.js","/assets/index-D0TrS_aK.css","/prevent-pull-to-refresh.js","/reload-on-chunk-error.js","/favicon.svg","/manifest.webmanifest"];
+
+/** File /assets/ có mã băm trong tên: bản ở HTTP cache / cache của bản cũ luôn đúng → không cần ép tải lại. */
+const requestFor = (u) => new Request(u, { cache: u.startsWith('/assets/') ? 'default' : 'reload' });
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     // index.html bắt buộc; file khác lỗi lẻ tẻ không làm hỏng cả lượt cài.
     await cache.add(new Request('/index.html', { cache: 'reload' }));
-    await Promise.allSettled(PRECACHE.map((u) => cache.add(new Request(u, { cache: 'reload' }))));
+    // Chép file /assets/ không đổi từ cache của bản trước (cache cũ chỉ bị dọn ở 'activate') — không tốn mạng.
+    await Promise.allSettled(PRECACHE.filter((u) => u.startsWith('/assets/')).map(async (u) => {
+      const old = await caches.match(u);
+      if (old) await cache.put(u, old);
+    }));
+    await Promise.allSettled(CORE.map(async (u) => { if (!(await cache.match(u))) await cache.add(requestFor(u)); }));
     await self.skipWaiting();
   })());
+});
+
+/** Tải ngầm phần còn lại (gọi khi trang báo đã rảnh). Chạy lại nhiều lần không sao: file đã có thì bỏ qua. */
+let restRun = null;
+function precacheRest() {
+  if (!restRun) {
+    restRun = (async () => {
+      const cache = await caches.open(CACHE);
+      const todo = [];
+      for (const u of PRECACHE) if (!(await cache.match(u))) todo.push(u);
+      let i = 0;
+      const lane = async () => {
+        while (i < todo.length) {
+          const u = todo[i++];
+          try { await cache.add(requestFor(u)); } catch { /* lỗi lẻ tẻ: lần mở sau tải tiếp */ }
+        }
+      };
+      await Promise.all([lane(), lane(), lane()]);
+    })().finally(() => { restRun = null; });
+  }
+  return restRun;
+}
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'ycx-precache-rest') event.waitUntil(precacheRest());
 });
 
 self.addEventListener('activate', (event) => {
