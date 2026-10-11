@@ -241,7 +241,7 @@ const CompactTargetItem: React.FC<{
     const t = COMPACT_TARGET_ITEM_THEMES[colorTheme] || COMPACT_TARGET_ITEM_THEMES.slate;
 
     return (
-        <div className={`p-2.5 sm:p-3 transition-colors border ${t.bg} ${t.border}`}>
+        <div className={`p-2.5 sm:p-3 transition-colors border ${t.bg} ${t.border} rounded-xl shadow-2xs`}>
             <div className="mb-2">
                 <div className="flex items-center justify-between">
                     <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{label}</span>
@@ -391,7 +391,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                     </Button>
                 </div>
             )}
-            <div className="grid grid-cols-2 gap-3 sm:gap-x-12 sm:gap-y-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
                 {/* Cột trái: Điều chỉnh Target chính */}
                 <div className="space-y-3">
                     <div className="flex justify-between items-center mb-1 px-1">
@@ -471,7 +471,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             const t = DEPARTMENT_PASTEL_THEMES[idx % DEPARTMENT_PASTEL_THEMES.length];
 
                             return (
-                                <div key={dept.name} className={`relative group p-2.5 sm:p-3 ${t.bg} border ${t.border} transition-colors`}>
+                                <div key={dept.name} className={`relative group p-2.5 sm:p-3 ${t.bg} border ${t.border} rounded-xl shadow-2xs transition-colors`}>
                                     <div className="mb-2">
                                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                                             <span className={`text-xs sm:text-[13px] font-bold uppercase tracking-wider ${t.label}`}>{dept.name}</span>
