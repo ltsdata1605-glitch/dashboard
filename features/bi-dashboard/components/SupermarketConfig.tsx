@@ -209,7 +209,7 @@ const GroupCombobox: React.FC<{
                         }
                     }}
                     placeholder={placeholder}
-                    className="h-8 py-1 px-2.5 text-xs font-normal pr-7 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400"
+                    className="h-7 py-0.5 px-2 text-xs font-normal pr-7 bg-white dark:bg-slate-900 rounded border-slate-200 dark:border-slate-700 shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400"
                 />
                 <Button
                     type="button"
@@ -729,15 +729,15 @@ const CompetitionTarget: React.FC<{
                         id: 'name',
                         header: 'Tiêu chí',
                         headerAlign: 'center',
-                        minWidth: '180px',
+                        minWidth: '150px',
                         cell: (comp, index) => {
                             const currentDisplayName = shortenName(comp.name, nameOverrides);
                             return (
-                                <div className="w-full flex items-center gap-2 py-0.5 px-0.5">
+                                <div className="w-full flex items-center gap-1.5 py-0 px-0.5">
                                     {/* Số thứ tự TO RÕ + Icon Kéo Thả */}
-                                    <div className="flex items-center gap-1.5 shrink-0 select-none" title="Kéo thả để sắp xếp vị trí">
-                                        <AppIcon name="dragHandle" size="sm" className="text-slate-400 hover:text-sky-500 cursor-grab active:cursor-grabbing transition-colors" />
-                                        <span className="inline-flex items-center justify-center min-w-[24px] h-[22px] px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black tabular-nums border border-slate-200/90 dark:border-slate-700 shadow-xs">
+                                    <div className="flex items-center gap-1 shrink-0 select-none" title="Kéo thả để sắp xếp vị trí">
+                                        <AppIcon name="dragHandle" size="xs" className="text-slate-400 hover:text-sky-500 cursor-grab active:cursor-grabbing transition-colors" />
+                                        <span className="inline-flex items-center justify-center min-w-[20px] h-[19px] px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-[11px] font-black tabular-nums border border-slate-200/90 dark:border-slate-700 shadow-2xs">
                                             {index + 1}
                                         </span>
                                     </div>
@@ -758,7 +758,7 @@ const CompetitionTarget: React.FC<{
                                                 else if (e.key === 'Escape') setEditingNameFor(null);
                                             }}
                                             placeholder={shortenName(comp.name)}
-                                            className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs sm:text-[13px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
+                                            className="h-6 py-0 px-1.5 bg-white dark:bg-slate-900 rounded border-slate-200 dark:border-slate-700 text-xs font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
                                         />
                                     ) : (
                                         <div
@@ -766,7 +766,7 @@ const CompetitionTarget: React.FC<{
                                                 setEditingNameFor(comp.name);
                                                 setEditingNameValue(currentDisplayName);
                                             }}
-                                            className="flex-1 text-left text-xs sm:text-[13px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
+                                            className="flex-1 text-left text-xs sm:text-[13px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-0.5 px-0.5 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
                                             title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
                                         >
                                             {currentDisplayName}
@@ -780,7 +780,7 @@ const CompetitionTarget: React.FC<{
                         id: 'base',
                         header: 'Gốc',
                         align: 'center',
-                        width: '100px',
+                        width: '85px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const unitSuffix = comp.criteria === 'SLLK' ? ' Cái' : ' Tr';
@@ -791,7 +791,7 @@ const CompetitionTarget: React.FC<{
                         id: 'after',
                         header: 'Sau',
                         align: 'center',
-                        width: '105px',
+                        width: '90px',
                         cell: (comp) => {
                             const idx = competitions.findIndex(c => c.name === comp.name);
                             const t = COMPETITION_ROW_THEMES[idx % COMPETITION_ROW_THEMES.length];
@@ -806,7 +806,7 @@ const CompetitionTarget: React.FC<{
                         id: 'perPerson',
                         header: '/Người',
                         align: 'center',
-                        width: '105px',
+                        width: '90px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const ratio = targets[comp.name] ?? 100;
@@ -821,13 +821,13 @@ const CompetitionTarget: React.FC<{
                         id: 'ratio',
                         header: '% Target',
                         align: 'center',
-                        width: '100px',
+                        width: '85px',
                         cell: (comp) => {
                             const t = RATIO_CONTROL_THEME;
                             const ratio = targets[comp.name] ?? 100;
                             return (
                                 <div className="flex items-center justify-center">
-                                    <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm shrink-0`}>
+                                    <div className={`flex items-center gap-0.5 ${t.inputBg} px-1 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-2xs shrink-0`}>
                                         <input
                                             type="number" inputMode="decimal"
                                             value={Math.round(ratio).toString()}
@@ -838,9 +838,9 @@ const CompetitionTarget: React.FC<{
                                                 const v = parseInt(val, 10);
                                                 if (!isNaN(v)) handleSliderChange(comp.name)(v);
                                             }}
-                                            className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                            className={`w-7 sm:w-8 bg-transparent text-center text-xs font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                         />
-                                        <span className="text-xs font-bold opacity-75">%</span>
+                                        <span className="text-[11px] font-bold opacity-75">%</span>
                                     </div>
                                 </div>
                             );
@@ -850,7 +850,7 @@ const CompetitionTarget: React.FC<{
                         id: 'group',
                         header: 'Nhóm tiêu chí',
                         headerAlign: 'center',
-                        width: '180px',
+                        width: '150px',
                         cell: (comp) => (
                             <CompetitionGroupCell
                                 value={groupOverrides[comp.name] ?? ''}
@@ -886,7 +886,6 @@ const CompetitionTarget: React.FC<{
                                     compact
                                     stickyHeader={false}
                                     columnDividers
-                                    overflowVisible
                                     fixedLayout
                                     className="!rounded-none"
                                     rowProps={(comp, index) => {

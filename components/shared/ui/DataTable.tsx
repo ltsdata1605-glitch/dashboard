@@ -195,8 +195,8 @@ export function DataTable<T>({
     return total > 0 ? `${total}px` : undefined;
   }, [columns, fixedLayout]);
 
-  const cellPadding = compact ? 'px-2 py-1.5' : 'px-3 py-2.5';
-  const headerPadding = compact ? 'px-2 py-1.5' : 'px-3 py-2';
+  const cellPadding = compact ? 'px-2 py-1' : 'px-3 py-2.5';
+  const headerPadding = compact ? 'px-2 py-1' : 'px-3 py-2';
 
   return (
     <div
