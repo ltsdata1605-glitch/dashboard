@@ -142,7 +142,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
         : percentOf(dtqd, totalVuotTroi);
 
     const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
-    const secondaryLabel = isRealtime ? 'Target' : 'Mục tiêu tháng';
+    const secondaryLabel = isRealtime ? 'Mục tiêu' : 'Mục tiêu tháng';
     const secondaryTargetStr = isRealtime
         ? (totalVuotTroi > 0 ? formatRevenueTy(totalVuotTroi, true).full : 'Nhấp đặt MT')
         : (totalVuotTroiMonthly > 0 ? formatRevenueTy(totalVuotTroiMonthly, false).full : undefined);
@@ -213,11 +213,11 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     isGood={true}
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline justify-center gap-1 w-full">
-                        <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400">
+                    <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
+                        <span className="text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums shrink-0 text-emerald-700 dark:text-emerald-400">
                             {dtlkFormatted.value}
                         </span>
-                        <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">
+                        <span className="text-[13px] sm:text-[15px] lg:text-[18px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
                             {dtlkFormatted.unit}
                         </span>
                     </div>
@@ -228,7 +228,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     iconColor="sky"
                     title="DTQĐ"
                     isGood={dtqdIsGood}
-                    trendLabel="Target"
+                    trendLabel={secondaryLabel}
                     progressPercent={secondaryPct}
                     trendValue={
                         <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
@@ -249,10 +249,10 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     onClick={handleGoToRevenueTarget}
                 >
                     <div className="flex items-baseline justify-center gap-1 flex-nowrap overflow-hidden w-full">
-                        <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums shrink-0 ${dtqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-sky-700 dark:text-sky-400'}`}>
+                        <span className="text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums shrink-0 text-sky-700 dark:text-sky-400">
                             {dtqdFormatted.value}
                         </span>
-                        <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
+                        <span className="text-[13px] sm:text-[15px] lg:text-[18px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
                             {dtqdFormatted.unit}
                         </span>
                     </div>
@@ -281,9 +281,12 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline justify-center gap-1 w-full">
-                        <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                            {Math.ceil(hqqd)}%
+                    <div className="flex items-baseline justify-center gap-0.5 flex-nowrap overflow-hidden w-full">
+                        <span className={`text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums shrink-0 ${hqqdIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                            {Math.ceil(hqqd)}
+                        </span>
+                        <span className="text-[13px] sm:text-[15px] lg:text-[18px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
+                            %
                         </span>
                     </div>
                 </KpiCard>
@@ -311,9 +314,12 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     }
                     onClick={handleGoToRevenueTarget}
                 >
-                    <div className="flex items-baseline justify-center gap-1 w-full">
-                        <span className={`text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] xl:text-[40px] font-black leading-tight tracking-tight tabular-nums ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                            {Math.round(tyTrongTraGop)}%
+                    <div className="flex items-baseline justify-center gap-0.5 flex-nowrap overflow-hidden w-full">
+                        <span className={`text-[26px] sm:text-[30px] lg:text-[38px] xl:text-[44px] 2xl:text-[48px] font-black leading-none tracking-tight tabular-nums shrink-0 ${traGopIsGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                            {Math.round(tyTrongTraGop)}
+                        </span>
+                        <span className="text-[13px] sm:text-[15px] lg:text-[18px] xl:text-[20px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
+                            %
                         </span>
                     </div>
                 </KpiCard>

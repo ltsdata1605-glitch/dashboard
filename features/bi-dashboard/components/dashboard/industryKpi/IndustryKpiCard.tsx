@@ -146,25 +146,25 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onDragEnd={onDragEnd}
-            className={`industry-kpi-card min-w-0 group relative bg-white border ${
+            className={`industry-kpi-card min-w-0 group relative bg-white dark:bg-slate-800/90 border ${
                 isDragOver
                     ? 'ring-2 ring-sky-500 border-sky-400 scale-[1.02] shadow-md z-10'
-                    : 'border-slate-200/90 hover:border-slate-300'
+                    : 'border-slate-200/90 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
             } ${
                 isDragging ? 'opacity-40 scale-95 shadow-none' : 'shadow-2xs hover:shadow-md'
             } rounded-xl sm:rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing select-none hover:-translate-y-0.5`}
             title={metric.parentName ? `${metric.displayTitle} (${metric.parentName}) — Kéo thả để sắp xếp` : `${metric.displayTitle} — Kéo thả để sắp xếp`}
         >
             {/* Top accent gradient bar */}
-            <div className={`h-[3.5px] w-full shrink-0 ${theme.topAccent}`} />
+            <div className={`h-[2.5px] sm:h-[3.5px] w-full shrink-0 ${theme.topAccent}`} />
 
-            <div className="p-1.5 sm:p-2.5 flex flex-col justify-between flex-1 min-h-[72px] sm:min-h-[78px]">
+            <div className="p-1 sm:p-2.5 flex flex-col justify-between flex-1 min-h-[58px] sm:min-h-[76px]">
                 {/* Header: Micro indicator dot + Tên ngành hàng + Nút X */}
-                <div className="flex items-center justify-between gap-1 sm:gap-1.5 mb-1">
-                    <div className="flex items-center gap-1 sm:gap-1.5 min-w-0 flex-1">
-                        <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0 ${theme.dotColor} shadow-2xs`} />
+                <div className="flex items-center justify-between gap-0.5 sm:gap-1 mb-0.5 sm:mb-1">
+                    <div className="flex items-center gap-1 min-w-0 flex-1">
+                        <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full shrink-0 ${theme.dotColor} shadow-2xs`} />
                         <span
-                            className="industry-kpi-title text-[11px] font-bold uppercase tracking-wider text-slate-700 truncate leading-tight"
+                            className="industry-kpi-title text-[8.5px] sm:text-[10.5px] font-extrabold uppercase tracking-tight text-slate-700 dark:text-slate-300 truncate leading-tight"
                             title={metric.displayTitle}
                         >
                             {metric.displayTitle}
@@ -190,35 +190,35 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     )}
                 </div>
 
-                {/* Hero Primary Metric - Canh giữa hoàn hảo */}
+                {/* Hero Primary Metric - Canh giữa hoàn hảo, SỐ LỚN RÕ RÀNG */}
                 <div className="w-full flex items-baseline justify-center py-0.5 sm:py-1 my-auto">
                     {isRevenueFocus ? (
                         <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 min-w-0">
-                            <span className="industry-kpi-num text-[16px] sm:text-[20px] font-black tracking-tight tabular-nums text-slate-800 leading-none">
+                            <span className="industry-kpi-num text-[17px] sm:text-[21px] font-black tracking-tight tabular-nums text-slate-800 dark:text-slate-100 leading-none">
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[11px] font-bold uppercase tracking-wider text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[8px] sm:text-[10px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-none">
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
                     ) : (
                         <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 min-w-0">
-                            <span className="industry-kpi-num text-[17px] sm:text-[22px] font-black tracking-tight tabular-nums text-slate-800 leading-none">
+                            <span className="industry-kpi-num text-[18px] sm:text-[23px] font-black tracking-tight tabular-nums text-slate-800 dark:text-slate-100 leading-none">
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[11px] font-extrabold uppercase tracking-wider text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[8.5px] sm:text-[10.5px] font-black uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-none">
                                 SL
                             </span>
                         </div>
                     )}
                 </div>
 
-                {/* Footer Sub-Metric - 1 dòng ngang gọn gàng */}
-                <div className="flex items-center justify-between gap-0.5 sm:gap-1 pt-1 sm:pt-1.5 mt-auto border-t border-slate-100 text-[11px] leading-none">
-                    <span className="text-slate-400 font-medium truncate text-[11px]">
+                {/* Footer Sub-Metric - 1 dòng ngang thu nhỏ gọn gàng */}
+                <div className="flex items-center justify-between gap-0.5 pt-0.5 sm:pt-1 mt-auto border-t border-slate-100 dark:border-slate-800 leading-none">
+                    <span className="industry-kpi-sublabel text-slate-400 dark:text-slate-500 font-medium truncate text-[8px] sm:text-[9.5px]">
                         {isRevenueFocus ? 'Số lượng' : (isRealtime ? 'DTQĐ' : 'QĐ')}
                     </span>
-                    <span className={`inline-flex items-center px-1 sm:px-1.5 py-0.5 rounded font-bold tabular-nums shrink-0 text-[11px] ${theme.subBadgeBg} ${theme.subBadgeText}`}>
+                    <span className={`industry-kpi-subnum inline-flex items-center px-1 py-0.5 rounded font-bold tabular-nums shrink-0 text-[8px] sm:text-[9.5px] ${theme.subBadgeBg} ${theme.subBadgeText}`}>
                         {isRevenueFocus
                             ? `${roundUp(metric.sl).toLocaleString('vi-VN')} SL`
                             : `${roundUp(metric.dtQd).toLocaleString('vi-VN')} Tr`}

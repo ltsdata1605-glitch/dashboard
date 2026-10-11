@@ -145,8 +145,11 @@ export function selectLatestRowsByMonth(sources: { uploadedAt: number; rows: Dat
 export function pickKhoFilesToLoad(files: KhoSalesFileMeta[]): KhoSalesFileMeta[] {
     const newestByMonth = new Map<string, KhoSalesFileMeta>();
     const newestLegacyByUploader = new Map<string, KhoSalesFileMeta>();
+    const uploadersWithMonth = new Set<string>();
+
     for (const f of files) {
         if (f.month && f.month !== 'nodate') {
+            uploadersWithMonth.add(f.uploadedByUid);
             const cur = newestByMonth.get(f.month);
             if (!cur || f.uploadedAt > cur.uploadedAt) newestByMonth.set(f.month, f);
         } else {
@@ -154,7 +157,10 @@ export function pickKhoFilesToLoad(files: KhoSalesFileMeta[]): KhoSalesFileMeta[
             if (!cur || f.uploadedAt > cur.uploadedAt) newestLegacyByUploader.set(f.uploadedByUid, f);
         }
     }
-    return [...newestByMonth.values(), ...newestLegacyByUploader.values()];
+
+    // Nếu uploader đã có file theo tháng (cấu trúc mới), bỏ qua bản legacy cũ của uploader đó
+    const activeLegacy = [...newestLegacyByUploader.values()].filter(f => !uploadersWithMonth.has(f.uploadedByUid));
+    return [...newestByMonth.values(), ...activeLegacy];
 }
 
 const filesCollectionRef = (maKho: string) => collection(db, 'khoData', maKho, 'salesFiles');
@@ -470,6 +476,18 @@ export async function syncDataToKhoIfManager(
             }
         })
     );
+
+    // Cập nhật thêm snapshot cho departmentId để useDataManagement không tự động ghi đè lại sau upload
+    try {
+        if (departmentId) {
+            const { snapshot: deptSnapshot } = await fetchAllowedKhoData(departmentId);
+            if (deptSnapshot) {
+                await dbService.saveSetting(`khoDataAppliedSnapshot::${departmentId}`, deptSnapshot).catch(() => {});
+            }
+        }
+    } catch {
+        /* ignore */
+    }
 }
 
 interface KhoFileCacheEntry {

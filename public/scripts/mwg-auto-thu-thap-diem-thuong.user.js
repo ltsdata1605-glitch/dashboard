@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.24
+// @version      7.25
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,12 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.25 — KHẮC PHỤC TRIỆT ĐỂ LỖI ĐỢI TẢI XONG MỚI COPY TRONG CHI TIẾT NGÀNH HÀNG (2026-10-11):
+ * - Tự động chờ bảng ngành hàng tải hoàn tất (acpWaitForTableReady): kiểm tra spinner, hàng dữ liệu thực tế và các nút [+] trước khi mở rộng.
+ * - Chờ toàn bộ các dòng con trải xong (expand complete): Sau khi click mở rộng, đợi spinner con tắt hẳn và chờ DOM ổn định để các nhóm hàng con xuất hiện đầy đủ trong DOM.
+ * - Cơ chế retry và chống copy dữ liệu rỗng: collectCurrentBiData kiểm tra số dòng thực tế, nếu chưa trải xong sẽ chờ tối đa 3 lần thử trước khi copy.
+ * - Nút ⚡ Copy All nổi: Thêm bước chờ bảng sẵn sàng và chờ trải dòng hoàn tất trước khi bôi đen trích xuất clipboard.
+ *
  * BẢN 7.24 — KHẮC PHỤC TRIỆT ĐỂ LỖI NGÀNH HÀNG REALTIME LẤY NHẰM LUỸ KẾ & LỌC BỎ CÁC DẤU [+] ẨN (2026-10-10):
  * - Sửa lỗi Ngành hàng Realtime lấy nhầm Luỹ kế:
  *   + Khi chạy Bước 3 (Ngành hàng BI), bắt buộc kích hoạt ensureRealtimeTabActive(), bật "DT quy đổi", bật "Trả góp" và chọn siêu thị trước khi copy.
@@ -1699,6 +1705,35 @@
     return false;
   }
 
+  // Chờ bảng dữ liệu render hoàn tất, có ít nhất minRows dòng và không còn spinner nào
+  async function acpWaitForTableReady(maxWaitMs = 25000, minRows = 1) {
+    const start = Date.now();
+    await sleep(250);
+    while (Date.now() - start < maxWaitMs) {
+      if (acpIsAnyLoadingActive()) {
+        await sleep(200);
+        continue;
+      }
+      const tables = document.querySelectorAll('table, .dx-datagrid, .ant-table');
+      if (tables.length > 0) {
+        const rows = document.querySelectorAll('table tbody tr, .dx-datagrid-rowsview .dx-data-row, .ant-table-tbody > tr');
+        let validRows = 0;
+        for (const r of rows) {
+          const txt = (r.textContent || '').trim();
+          if (txt && !txt.includes('Không có dữ liệu') && !txt.includes('No data') && !txt.includes('Đang tải')) {
+            validRows++;
+          }
+        }
+        if (validRows >= minRows) {
+          await sleep(200);
+          return true;
+        }
+      }
+      await sleep(200);
+    }
+    return false;
+  }
+
   // BẢN 5.3: Chờ mọi thao tác loading tắt hẳn trước khi tiếp tục
   // Cần ít nhất 3 nhịp polling liên tiếp không còn loading để đảm bảo không bị nháy giữa các request nối tiếp
   async function acpWaitForLoadingComplete(maxWaitMs = 45000, initialSettleMs = 500, postSettleMs = 400) {
@@ -2138,7 +2173,19 @@
       // đổi toggle, quét trước sẽ cầm phần tử đã bị gỡ khỏi DOM.
       toggles = await acpEnsureTogglesOn((label) => acpUpdateStatusToggling(statusBox, label));
 
-      const pending = acpGetPlusCandidates();
+      // ĐỢI LOAD HOÀN TẤT: Chờ bảng xuất hiện, có dữ liệu thực tế và hết sạch spinner
+      await acpWaitForTableReady(25000, 1);
+      await acpWaitForLoadingComplete(15000, 300, 200);
+
+      let pending = acpGetPlusCandidates();
+      if (pending.length === 0) {
+        // Thăm dò thêm nếu bảng đang render dở
+        for (let r = 0; r < 4; r++) {
+          await sleep(350);
+          pending = acpGetPlusCandidates();
+          if (pending.length > 0) break;
+        }
+      }
       const total = pending.length;
       let clicked = 0;
 
@@ -2189,17 +2236,30 @@
       // Thông báo rõ ràng cho người dùng chuyển sang giai đoạn tổng hợp & copy
       acpUpdateStatusProcessing(statusBox, clicked);
 
-      // Mỗi lần bấm Click+ CHỈ mở đúng 1 cấp (không tự lặp lại quét tìm cấp con mới) —
-      // người dùng chủ động bấm lại nút để mở tiếp cấp kế tiếp. Nếu bấm "Dừng lại" giữa
-      // chừng, vẫn cuộn/copy đúng phần dữ liệu đã mở được tới lúc đó, không bỏ dở dữ liệu.
+      // ĐỢI TRẢI XONG: Chờ dòng con tải xong từ server và render vào DOM
+      await sleep(350);
+      await acpWaitForLoadingComplete(20000, 300, 250);
       await acpForceRenderAllRows();
-      await sleep(60);
+      await sleep(150);
 
       observer.disconnect();
-      const currentText = acpExtractVisibleText();
-      const recoveryText = observer.buildRecoveryText();
-      const rawText = recoveryText ? `${currentText}\n${recoveryText}` : currentText;
-      const finalText = acpSanitizeText(rawText);
+      let currentText = acpExtractVisibleText();
+      let recoveryText = observer.buildRecoveryText();
+      let rawText = recoveryText ? `${currentText}\n${recoveryText}` : currentText;
+      let finalText = acpSanitizeText(rawText);
+
+      // Chống copy lúc chưa trải xong hoặc dữ liệu bị rỗng
+      if (!finalText || finalText.split('\n').filter(l => l.trim().length > 0).length < 2) {
+        console.warn('[Click+] Dữ liệu đang rỗng hoặc chưa trải xong, đang đợi tải thêm...');
+        await sleep(1200);
+        await acpWaitForLoadingComplete(15000, 200, 200);
+        await acpForceRenderAllRows();
+        currentText = acpExtractVisibleText();
+        recoveryText = observer.buildRecoveryText();
+        rawText = recoveryText ? `${currentText}\n${recoveryText}` : currentText;
+        finalText = acpSanitizeText(rawText);
+      }
+
       copyToClipboard(finalText);
 
       const stillPending = acpGetPlusCandidates().length;
@@ -2663,11 +2723,23 @@
     let guard = 0;
     let totalOpened = 0;
 
+    // ĐỢI LOAD BAN ĐẦU: Chờ bảng có dữ liệu thực tế và hết spinner trước khi mở rộng
+    await acpWaitForTableReady(25000, 1);
+    await acpWaitForLoadingComplete(15000, 300, 200);
+
     // Giới hạn maxRounds (mặc định = 2): Chỉ mở tối đa 2 cấp danh mục (Ngành hàng -> Nhóm hàng),
     // tuyệt đối không mở sâu tràn lan xuống từng mã sản phẩm SKU con đang ẩn làm tràn bảng 365 dòng
     while (guard < maxRounds) {
       guard++;
-      const candidates = acpGetPlusCandidates();
+      let candidates = acpGetPlusCandidates();
+      if (candidates.length === 0 && guard === 1) {
+        // Thăm dò thêm nếu bảng đang render dở ở round đầu
+        for (let retry = 0; retry < 5; retry++) {
+          await sleep(350);
+          candidates = acpGetPlusCandidates();
+          if (candidates.length > 0) break;
+        }
+      }
       if (candidates.length === 0) break;
 
       for (let i = 0; i < candidates.length; i++) {
@@ -2684,21 +2756,36 @@
         if ((i + 1) % 15 === 0 || i === candidates.length - 1) {
           await acpWaitForLoadingComplete(20000, 300, 250);
         } else {
-          await sleep(30);
+          await sleep(40);
         }
       }
 
+      // ĐỢI TRẢI XONG: Chờ spinner của các dòng con tắt và chờ render vào bảng
+      await sleep(350);
+      await acpWaitForLoadingComplete(20000, 350, 250);
       await sleep(200);
-      await acpWaitForLoadingComplete(15000, 250, 200);
     }
 
     return totalOpened;
   }
 
   async function collectCurrentBiData() {
+    await acpWaitForLoadingComplete(25000, 300, 300);
     await acpForceRenderAllRows();
-    await sleep(150);
-    await acpWaitForLoadingComplete(15000, 200, 200);
+    await sleep(200);
+
+    // Kiểm tra và retry nếu bảng chưa kịp trải xong dữ liệu
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const text = acpExtractVisibleText();
+      const lines = text.split('\n').filter(l => l.trim().length > 0);
+      if (lines.length >= 2 || attempt === 2) {
+        return text;
+      }
+      console.warn(`[BI-Sync] Bảng chưa trải xong dữ liệu (mới có ${lines.length} dòng), đang đợi tải thêm (lần ${attempt + 1}/3)...`);
+      await sleep(1200);
+      await acpWaitForLoadingComplete(15000, 250, 200);
+      await acpForceRenderAllRows();
+    }
     return acpExtractVisibleText();
   }
 

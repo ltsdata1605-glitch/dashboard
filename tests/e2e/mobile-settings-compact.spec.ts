@@ -39,37 +39,38 @@ test('Xác thực giao diện mobile gọn gàng và resize chuẩn trên tab Ph
     const heading = page.locator('text=Hồ Sơ Định Danh').first();
     await expect(heading).toBeVisible({ timeout: 15000 });
 
-    // 1. Kiểm tra nút Đăng Xuất trên topbar mobile
+    // 1. Kiểm tra nút Đăng Xuất trên topbar mobile (icon-only: 32x32px)
     const logoutBtn = page.locator('#mobile-topbar-actions button').first();
     await expect(logoutBtn).toBeVisible();
     const logoutBox = await logoutBtn.boundingBox();
     expect(logoutBox).not.toBeNull();
-    console.log('Logout button height:', logoutBox?.height);
-    // Chiều cao phải ~32px (không vượt quá 36px)
+    console.log('Logout button size:', logoutBox?.width, 'x', logoutBox?.height);
     expect(logoutBox!.height).toBeLessThanOrEqual(36);
     expect(logoutBox!.height).toBeGreaterThanOrEqual(28);
+    expect(logoutBox!.width).toBeLessThanOrEqual(36);
+    expect(logoutBox!.width).toBeGreaterThanOrEqual(28);
 
-    // 2. Kiểm tra nút Xoá dữ liệu (Mới)
+    // 2. Kiểm tra nút Xoá dữ liệu (icon-only trên mobile: 32x32px)
     const resetBtn = page.locator('button[title*="Xoá tất cả dữ liệu"]').first();
     await expect(resetBtn).toBeVisible();
     const resetBox = await resetBtn.boundingBox();
     expect(resetBox).not.toBeNull();
-    console.log('Reset button height:', resetBox?.height);
+    console.log('Reset button size:', resetBox?.width, 'x', resetBox?.height);
     expect(resetBox!.height).toBeLessThanOrEqual(36);
     expect(resetBox!.height).toBeGreaterThanOrEqual(28);
+    expect(resetBox!.width).toBeLessThanOrEqual(36);
+    expect(resetBox!.width).toBeGreaterThanOrEqual(28);
 
-    // Kiểm tra text trên mobile là rút gọn
-    const resetMobileText = resetBtn.locator('span.sm\\:hidden');
-    await expect(resetMobileText).toBeVisible();
-
-    // 3. Kiểm tra nút Gắn kho dùng chung (hoặc Đổi mã kho)
-    const actionProfileBtn = page.locator('button:has-text("Gắn kho dùng chung"), button:has-text("Đổi mã kho")').first();
+    // 3. Kiểm tra nút Gắn kho dùng chung / Đổi mã kho (icon-only trên mobile: 32x32px)
+    const actionProfileBtn = page.locator('button[title*="Gắn kho dùng chung"], button[title*="Đổi mã kho"]').first();
     await expect(actionProfileBtn).toBeVisible();
     const actionProfileBox = await actionProfileBtn.boundingBox();
     expect(actionProfileBox).not.toBeNull();
-    console.log('Action profile button height:', actionProfileBox?.height);
+    console.log('Action profile button size:', actionProfileBox?.width, 'x', actionProfileBox?.height);
     expect(actionProfileBox!.height).toBeLessThanOrEqual(36);
     expect(actionProfileBox!.height).toBeGreaterThanOrEqual(28);
+    expect(actionProfileBox!.width).toBeLessThanOrEqual(36);
+    expect(actionProfileBox!.width).toBeGreaterThanOrEqual(28);
 
     // 4. Kiểm tra nút Làm Mới
     const refreshBtn = page.locator('button:has-text("Làm Mới")').first();

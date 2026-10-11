@@ -969,7 +969,23 @@ export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistr
         let finalFileLastModified = 0;
         let isRealtime = false;
 
-        if (tempRealtime && tempRealtime.data.length > 0) {
+        // Kiểm tra tính lỗi thời của tempRealtime: nếu tệp lịch sử/lũy kế được lưu MỚI HƠN bản Realtime tạm,
+        // bản Realtime này là của phiên trước đó, không được phép gộp vào để tránh x2/cộng dồn sai lệch.
+        const realtimeSavedAt = tempRealtime?.savedAt ? new Date(tempRealtime.savedAt).getTime() : 0;
+        const isRealtimeStale = Boolean(
+            tempRealtime &&
+            historicalData.length > 0 &&
+            realtimeSavedAt > 0 &&
+            latestHistSavedAt > 0 &&
+            realtimeSavedAt < latestHistSavedAt
+        );
+
+        if (isRealtimeStale) {
+            // Tự dọn sạch bản Realtime cũ của phiên trước trong nền
+            salesDataDb.clearTempRealtimeData().catch(() => {});
+        }
+
+        if (tempRealtime && tempRealtime.data.length > 0 && !isRealtimeStale) {
             const realtimeOrderKeys = new Set<string>();
 
             for (let j = 0; j < tempRealtime.data.length; j++) {

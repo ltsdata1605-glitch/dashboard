@@ -785,9 +785,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const { data: khoRows, snapshot, latestUploadedAt, latestFilename } = await fetchAllowedKhoData(departmentId);
                 const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
 
-                // Nếu máy này vừa upload (localSavedAt còn mới) và dữ liệu Kho có timestamp <= localSavedAt + 3000ms:
+                // Nếu máy này vừa upload (localSavedAt còn mới) và dữ liệu Kho có timestamp <= localSavedAt + 60000ms:
                 // đó chính là bản ghi Kho do máy này vừa đồng bộ lên, KHÔNG ghi đè lại màn hình.
-                const isLocalNewerOrSame = localSavedAt > 0 && latestUploadedAt !== undefined && latestUploadedAt <= localSavedAt + 3000;
+                const isLocalNewerOrSame = localSavedAt > 0 && latestUploadedAt !== undefined && latestUploadedAt <= localSavedAt + 60000;
 
                 if (khoRows.length > 0 && lastApplied !== snapshot && !isLocalNewerOrSame) {
                     const srcData = normalizeSalesData(khoRows);

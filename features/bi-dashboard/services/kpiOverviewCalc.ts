@@ -181,7 +181,7 @@ export function formatRevenueTy(
     isRealtime: boolean = false
 ): { value: string; unit: string; full: string } {
     if (isNaN(valInMil) || valInMil === 0) {
-        const unit = isRealtime ? 'Tr' : 'tỷ';
+        const unit = isRealtime ? 'Tr' : 'Tỷ';
         return { value: '0', unit, full: `0 ${unit}` };
     }
 
@@ -193,11 +193,14 @@ export function formatRevenueTy(
 
     const ty = valInMil / 1000;
     const rounded = Math.round(ty * 10) / 10;
-    const valueStr = rounded % 1 === 0 ? rounded.toFixed(0) : rounded.toFixed(1);
+    // Với số tiền tỷ dưới 10 tỷ: luôn hiển thị 1 chữ số thập phân (ví dụ: 1.0 Tỷ, 1.3 Tỷ, 1.4 Tỷ)
+    // để chuẩn hoá độ dài số và đồng bộ định dạng với Phân Tích.
+    // Với số từ 10 tỷ trở lên: nếu tròn số (ví dụ 17 tỷ) thì bỏ .0 thành 17 Tỷ.
+    const valueStr = (rounded >= 10 && rounded % 1 === 0) ? rounded.toFixed(0) : rounded.toFixed(1);
     return {
         value: valueStr,
-        unit: 'tỷ',
-        full: `${valueStr} tỷ`
+        unit: 'Tỷ',
+        full: `${valueStr} Tỷ`
     };
 }
 

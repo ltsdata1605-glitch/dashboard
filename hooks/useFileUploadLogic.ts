@@ -192,9 +192,8 @@ export const useFileUploadLogic = ({
             // bỏ JSON.stringify ~1,4s. null = có tệp không dùng được JSON gốc → lưu kiểu cũ.
             let realtimeJsonParts: ArrayBuffer[] | null = [];
             
-            if (!isHistorical) {
-                await dbService.clearTempRealtimeData();
-            }
+            // Luôn dọn sạch dữ liệu Realtime tạm cũ trước khi nạp tệp mới để tránh rác phiên cũ cộng dồn x2
+            await dbService.clearTempRealtimeData().catch(() => {});
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];

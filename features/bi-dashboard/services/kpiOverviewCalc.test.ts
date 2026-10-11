@@ -331,40 +331,47 @@ describe('formatRevenueTy — Rút gọn số lại thành tỷ', () => {
     it('17.000 Tr => 17 tỷ (số nguyên tròn tỷ)', () => {
         const res = formatRevenueTy(17000);
         expect(res.value).toBe('17');
-        expect(res.unit).toBe('tỷ');
-        expect(res.full).toBe('17 tỷ');
+        expect(res.unit).toBe('Tỷ');
+        expect(res.full).toBe('17 Tỷ');
     });
 
     it('20.766 Tr => 20.8 tỷ (làm tròn 1 chữ số thập phân)', () => {
         const res = formatRevenueTy(20766);
         expect(res.value).toBe('20.8');
-        expect(res.unit).toBe('tỷ');
-        expect(res.full).toBe('20.8 tỷ');
+        expect(res.unit).toBe('Tỷ');
+        expect(res.full).toBe('20.8 Tỷ');
     });
 
     it('11.075 Tr => 11.1 tỷ (làm tròn 1 chữ số thập phân)', () => {
         const res = formatRevenueTy(11075);
         expect(res.value).toBe('11.1');
-        expect(res.unit).toBe('tỷ');
-        expect(res.full).toBe('11.1 tỷ');
+        expect(res.unit).toBe('Tỷ');
+        expect(res.full).toBe('11.1 Tỷ');
     });
 
     it('31.876 Tr => 31.9 tỷ', () => {
         const res = formatRevenueTy(31876);
         expect(res.value).toBe('31.9');
-        expect(res.full).toBe('31.9 tỷ');
+        expect(res.full).toBe('31.9 Tỷ');
     });
 
     it('41.415 Tr => 41.4 tỷ', () => {
         const res = formatRevenueTy(41415);
         expect(res.value).toBe('41.4');
-        expect(res.full).toBe('41.4 tỷ');
+        expect(res.full).toBe('41.4 Tỷ');
     });
 
     it('24.415 Tr => 24.4 tỷ (cho độ lệch còn lại)', () => {
         const res = formatRevenueTy(24415);
         expect(res.value).toBe('24.4');
-        expect(res.full).toBe('24.4 tỷ');
+        expect(res.full).toBe('24.4 Tỷ');
+    });
+
+    it('1.014 Tr ở Realtime => 1.0 Tỷ (dưới 10 tỷ giữ 1 số thập phân)', () => {
+        const res = formatRevenueTy(1014, true);
+        expect(res.value).toBe('1.0');
+        expect(res.unit).toBe('Tỷ');
+        expect(res.full).toBe('1.0 Tỷ');
     });
 
     it('ở Realtime nếu số < 1000 Tr thì giữ nguyên đơn vị Tr', () => {
