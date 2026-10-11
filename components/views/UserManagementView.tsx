@@ -771,7 +771,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 size="none"
                                 onClick={() => fetchRequests(true)}
                                 disabled={isLoading}
-                                className="min-h-11 sm:min-h-0 h-8 px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-2xs shrink-0"
+                                className="h-8 min-h-0 px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-2xs shrink-0 active:scale-95"
                             >
                                 <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                                 <span>Làm Mới</span>
@@ -830,7 +830,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         <option value="dept">Mã Kho</option>
                                         <option value="logins">Truy cập</option>
                                     </Select>
-                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 px-1.5 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-7 w-7 min-h-0 min-w-0 p-0 flex items-center justify-center text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                         <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="sm" />
                                     </Button>
                                 </div>

@@ -152,17 +152,18 @@ export const SettingsAccountTab: React.FC = () => {
         <div className="space-y-8">
             {/* Tài Khoản Section */}
             <div>
-                <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white">Hồ Sơ Định Danh</h3>
+                <div className="flex items-center justify-between gap-2 mb-3 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2.5">
+                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white whitespace-nowrap">Hồ Sơ Định Danh</h3>
                     <Button
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsResetModalOpen(true)}
-                        className="min-h-11 sm:min-h-0 px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95"
+                        className="h-8 min-h-0 px-2.5 sm:px-3 text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95 shrink-0"
                         title="Xoá tất cả dữ liệu cục bộ và đưa về trạng thái như người dùng mới hoàn toàn"
                     >
-                        <AppIcon name="delete" size="md" />
-                        <span>Xoá tất cả dữ liệu (Người dùng mới)</span>
+                        <AppIcon name="delete" size="sm" />
+                        <span className="sm:hidden">Xoá dữ liệu (Mới)</span>
+                        <span className="hidden sm:inline">Xoá tất cả dữ liệu (Người dùng mới)</span>
                     </Button>
                 </div>
 
@@ -186,14 +187,12 @@ export const SettingsAccountTab: React.FC = () => {
                     </div>
                 )}
 
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
+                <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-5 border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
                     {/* Header: Avatar + Name/Email/Role + Action Button */}
-                    {/* iPhone: nút sửa xuống hàng riêng (trước nằm chung hàng → tràn khỏi thẻ, dòng thông tin
-                        bị ép thành cột hẹp, chữ gãy vụn). Từ sm: trở lên giữ bố cục 1 hàng như cũ. */}
                     <div className={`flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
-                        <div className="flex items-start gap-3 sm:gap-6 flex-1 min-w-0">
+                        <div className="flex items-start gap-3 sm:gap-5 flex-1 min-w-0">
                             {/* Avatar */}
-                            <div className="w-16 h-16 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
+                            <div className="w-12 h-12 sm:w-20 sm:h-20 overflow-hidden shadow-xs bg-sky-100 dark:bg-sky-900/50 flex items-center justify-center flex-shrink-0 rounded-xl">
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
@@ -203,27 +202,27 @@ export const SettingsAccountTab: React.FC = () => {
 
                             {/* Name & Email & Role + Info Cards */}
                             <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
-                                    <h4 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white">
+                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2.5 mb-0.5 sm:mb-1">
+                                    <h4 className="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-snug">
                                         {formatCleanDisplayName(user?.displayName)}
                                     </h4>
-                                    <span className={`px-2.5 py-1 text-xs font-bold uppercase tracking-wide inline-flex items-center gap-1.5 rounded-md ${
+                                    <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wide inline-flex items-center gap-1 rounded-md ${
                                         userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                         userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
                                         'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                     }`}>
-                                        <AppIcon name={resolveIconName(userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users') ?? 'help'} size="sm" />
+                                        <AppIcon name={resolveIconName(userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users') ?? 'help'} size="xs" />
                                         {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
                                     </span>
                                 </div>
-                                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-2.5">{user?.email}</p>
+                                <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-2">{user?.email}</p>
 
-                                {/* Info Line - Tất cả thông tin nằm trên 1 dòng, ngăn cách bởi | */}
+                                {/* Info Line - Tổ chức dạng grid 1 cột trên mobile, 2 cột trên sm và flex trên lg */}
                                 {!isEditingProfile && (
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-600 dark:text-slate-300 pt-0.5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 dark:text-slate-300 pt-0.5">
                                         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <AppIcon name="location" size="sm" className="text-rose-500" />
-                                            <span className="font-medium text-slate-500 dark:text-slate-400">Mã Kho:</span>
+                                            <AppIcon name="location" size="xs" className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400 shrink-0">Mã Kho:</span>
                                             <span className="font-bold text-slate-800 dark:text-white font-mono">{isSuperAdmin ? 'ALL (Super Admin)' : (departmentId || 'Chưa đăng ký')}</span>
                                             {isSuperAdmin && (
                                                 <span className="font-medium text-slate-500 dark:text-slate-400">
@@ -232,29 +231,29 @@ export const SettingsAccountTab: React.FC = () => {
                                             )}
                                         </div>
 
-                                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
+                                        <span className="hidden lg:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
-                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <AppIcon name="userCheck" size="sm" className="text-rose-500" />
-                                            <span className="font-medium text-slate-500 dark:text-slate-400">Tên NV:</span>
-                                            <span className="font-bold text-amber-700 dark:text-amber-400 italic">{employeeName || 'N/A'}</span>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <AppIcon name="userCheck" size="xs" className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400 shrink-0">Tên NV:</span>
+                                            <span className="font-bold text-amber-700 dark:text-amber-400 italic truncate">{employeeName || 'N/A'}</span>
                                         </div>
 
-                                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
+                                        <span className="hidden lg:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
-                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <AppIcon name="security" size="sm" className="text-rose-500" />
-                                            <span className="font-medium text-slate-500 dark:text-slate-400">Chức năng:</span>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <AppIcon name="security" size="xs" className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400 shrink-0">Chức năng:</span>
                                             <span className="font-bold text-slate-800 dark:text-white">
                                                 {userRole === 'admin' ? 'Toàn bộ' : userRole === 'manager' ? 'Quản lý kho' : 'Xem báo cáo'}
                                             </span>
                                         </div>
 
-                                        <span className="hidden sm:inline text-slate-300 dark:text-slate-600 select-none">|</span>
+                                        <span className="hidden lg:inline text-slate-300 dark:text-slate-600 select-none">|</span>
 
-                                        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
-                                            <AppIcon name="calendar" size="sm" className="text-rose-500" />
-                                            <span className="font-medium text-slate-500 dark:text-slate-400">Hạn:</span>
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <AppIcon name="calendar" size="xs" className="text-rose-500 shrink-0" />
+                                            <span className="font-medium text-slate-500 dark:text-slate-400 shrink-0">Hạn:</span>
                                             <span className="font-bold text-emerald-700 dark:text-emerald-400">
                                                 {expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô hạn'}
                                             </span>
@@ -265,35 +264,35 @@ export const SettingsAccountTab: React.FC = () => {
                         </div>
 
                         {/* Action Button — admin cũng sửa được (Super Admin: gắn Kho dùng chung) */}
-                            <div className="flex items-center justify-end gap-2 flex-shrink-0">
-                                {isEditingProfile && (
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        onClick={() => {
-                                            setIsEditingProfile(false);
-                                            setStagedDept(khoDeSua(departmentId));
-                                            setStagedEmployee(employeeName || '');
-                                            setDeptError('');
-                                        }}
-                                        className="px-3 py-2 text-xs font-semibold"
-                                    >
-                                        Hủy
-                                    </Button>
-                                )}
+                        <div className="flex items-center justify-end gap-2 flex-shrink-0 self-end sm:self-start mt-1 sm:mt-0">
+                            {isEditingProfile && (
                                 <Button
-                                    variant="unstyled" size="none"
-                                    onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                    className={`px-4 py-2.5 text-sm font-bold flex items-center gap-2 transition-all shadow-sm rounded-lg flex-shrink-0 ${
-                                        isEditingProfile
-                                            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                            : 'bg-white dark:bg-slate-800 border-2 border-rose-200 dark:border-rose-800/30 text-slate-700 dark:text-slate-300 hover:border-rose-400'
-                                    }`}
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => {
+                                        setIsEditingProfile(false);
+                                        setStagedDept(khoDeSua(departmentId));
+                                        setStagedEmployee(employeeName || '');
+                                        setDeptError('');
+                                    }}
+                                    className="h-8 px-3 text-xs font-semibold"
                                 >
-                                    <AppIcon name={isEditingProfile ? 'save' : 'edit'} size="md" />
-                                    {isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
+                                    Hủy
                                 </Button>
-                            </div>
+                            )}
+                            <Button
+                                variant="unstyled" size="none"
+                                onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
+                                className={`h-8 min-h-0 px-3 text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs rounded-lg flex-shrink-0 ${
+                                    isEditingProfile
+                                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                        : 'bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800/40 text-slate-700 dark:text-slate-300 hover:border-rose-400 hover:text-rose-600 active:scale-95'
+                                }`}
+                            >
+                                <AppIcon name={isEditingProfile ? 'save' : 'edit'} size="sm" />
+                                <span>{isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}</span>
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Editing Form */}
@@ -397,10 +396,10 @@ export const SettingsAccountTab: React.FC = () => {
                     variant="unstyled"
                     size="none"
                     onClick={logout}
-                    className="min-h-11 sm:min-h-0 shrink-0 whitespace-nowrap flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200 dark:border-rose-800 transition-colors mr-1"
+                    className="h-8 min-h-0 shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200/80 dark:border-rose-800 transition-colors mr-1 shadow-2xs active:scale-95"
                     title="Đăng xuất tài khoản"
                 >
-                    <AppIcon name="logout" size="md" />
+                    <AppIcon name="logout" size="sm" />
                     <span>Đăng Xuất</span>
                 </Button>,
                 document.getElementById('mobile-topbar-actions')!
