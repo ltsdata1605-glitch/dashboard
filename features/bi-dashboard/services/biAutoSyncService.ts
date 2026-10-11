@@ -9,9 +9,7 @@ import { detectUserscript } from '../utils/bonusBridge';
 
 export const getDetailedTimestamp = () => {
     const now = new Date();
-    const time = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-    return `${time} ${date}`;
+    return now.toLocaleString('vi-VN');
 };
 
 export const EVT_BI_START_JOB = 'ycx-bi-automation:start-job';
