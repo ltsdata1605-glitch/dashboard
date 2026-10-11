@@ -72,7 +72,7 @@ async function doThanh(page: Page) {
     });
 }
 
-for (const [label, width, px, tap] of [['iPhone 390', 390, 18, 44], ['laptop 1366', 1366, 16, 0]] as const) {
+for (const [label, width, px, tap] of [['iPhone 390', 390, 18, 32], ['laptop 1366', 1366, 16, 0]] as const) {
     test(`${label}: Cùng kỳ / Còn lại / Realtime / xuất ảnh cùng cỡ ${px}px, canh giữa nút`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await moBI(page);

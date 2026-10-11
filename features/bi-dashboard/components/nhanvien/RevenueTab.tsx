@@ -435,7 +435,7 @@ const RevenueView: React.FC<{
                                 }
                             }}
                             title={!prevMonthRaw ? 'Nhập dữ liệu cùng kỳ' : (isShowPrevMonth ? 'Bấm để tắt so sánh cùng kỳ' : 'Bấm để bật so sánh cùng kỳ')}
-                            className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                                 prevMonthRaw
                                     ? isShowPrevMonth
                                         ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs'
@@ -443,7 +443,7 @@ const RevenueView: React.FC<{
                                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
                             }`}
                         >
-                            <AppIcon name="clock" size="sm" className={prevMonthRaw && isShowPrevMonth ? 'text-emerald-600' : 'text-slate-400'} />
+                            <AppIcon name="clock" size="md" className={prevMonthRaw && isShowPrevMonth ? 'text-emerald-600' : 'text-slate-400'} />
                             <span>Cùng kỳ</span>
                             {prevMonthRaw && (
                                 <span
@@ -475,13 +475,13 @@ const RevenueView: React.FC<{
                             variant="unstyled"
                             size="none"
                             onClick={() => setIsShowRemaining(p => !p)}
-                            className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                                 isShowRemaining 
                                     ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 shadow-2xs' 
                                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
                             }`}
                         >
-                            <AppIcon name={isShowRemaining ? 'checkboxOn' : 'checkboxOff'} size="sm" className={isShowRemaining ? 'text-amber-600' : 'text-slate-400'} />
+                            <AppIcon name={isShowRemaining ? 'checkboxOn' : 'checkboxOff'} size="md" className={isShowRemaining ? 'text-amber-600' : 'text-slate-400'} />
                             <span>Còn lại</span>
                         </Button>
                     )}
@@ -490,14 +490,14 @@ const RevenueView: React.FC<{
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsRealtimeMode(p => !p)}
-                        className={`h-7.5 sm:h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                             isRealtimeMode
                                 ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/40'
                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
                         }`}
                         title={isRealtimeMode ? 'Đang xem Doanh thu Realtime (Bấm để xem Luỹ kế)' : 'Bấm để xem Doanh thu Realtime trong ngày'}
                     >
-                        <AppIcon name="live" size="sm" className={isRealtimeMode ? 'text-white animate-pulse' : 'text-amber-500'} />
+                        <AppIcon name="live" size="md" className={isRealtimeMode ? 'text-white animate-pulse' : 'text-amber-500'} />
                         <span>Realtime</span>
                     </Button>
                 </div>
@@ -508,9 +508,9 @@ const RevenueView: React.FC<{
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
-                        <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="sm" />
+                        <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="md" />
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Button
@@ -519,9 +519,9 @@ const RevenueView: React.FC<{
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="w-8 h-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
-                        {isExportingByDept ? <AppIcon name="loading" spin size="sm" /> : <AppIcon name="exportBatch" size="sm" />}
+                        {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>
                     <ExportButton options={exportOptions} />
                 </div>

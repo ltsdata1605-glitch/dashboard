@@ -841,14 +841,14 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         size="icon"
                                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0"
+                                        className="w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0"
                                     >
-                                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="sm" /> : <AppIcon name="viewList" size="sm" />}
+                                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                                     </Button>
                                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                                    <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">{isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}</Button>
+                                    <Button variant="ghost" size="icon" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="w-8 h-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">{isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}</Button>
                                     {highlightedEmployees.size > 0 && (
-                                        <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">{isExportingHighlights ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="users" size="sm" />}</Button>
+                                        <Button variant="ghost" size="icon" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="w-8 h-8 text-amber-600 dark:text-amber-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">{isExportingHighlights ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="users" size="md" />}</Button>
                                     )}
                                     <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
                                 </>
@@ -856,10 +856,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                                 <>
                                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                                    <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="h-7 w-7 sm:h-8 sm:w-8 p-1 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">
-                                        {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}
+                                    <Button variant="ghost" size="icon" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="w-8 h-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0">
+                                        {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                     </Button>
-                                    <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} className="h-7 w-7 sm:h-8 sm:w-8 p-1" />
+                                    <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} className="w-8 h-8" />
                                 </>
                             )}
                             {activeCompetitionTab === 'tong' && activeVersionName === null && (
@@ -869,9 +869,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     onClick={handleSummaryBatchExport}
                                     disabled={isBatchExporting || summaryTables.length === 0}
                                     title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'}
-                                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0"
+                                    className="w-8 h-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0"
                                 >
-                                    {isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}
+                                    {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                 </Button>
                             )}
                         </div>
@@ -971,9 +971,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             onClick={handleAddSummaryTable}
                                             title="Thêm bảng"
                                             aria-label="Thêm bảng"
-                                            className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shrink-0"
+                                            className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shrink-0"
                                         >
-                                            <AppIcon name="add" size="sm" />
+                                            <AppIcon name="add" size="md" />
                                         </Button>
                                     </div>
                                 )}
