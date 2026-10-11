@@ -137,10 +137,37 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
 };
 
+const defaultTabContext: TabContextType = {
+    activeTab: typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('tab') || 'analysis') : 'analysis',
+    setActiveTab: (tab: string) => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app-switch-tab', { detail: { tab } }));
+        }
+    }
+};
+
+const defaultLayoutContext: LayoutContextType = {
+    isSidebarCollapsed: true,
+    setIsSidebarCollapsed: () => {},
+    isMobileSidebarOpen: false,
+    setIsMobileSidebarOpen: () => {},
+    isDarkMode: false,
+    toggleDarkMode: () => {},
+    activeTab: typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('tab') || 'analysis') : 'analysis',
+    setActiveTab: (tab: string) => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app-switch-tab', { detail: { tab } }));
+        }
+    },
+};
+
 export const useLayout = () => {
     const context = useContext(LayoutContext);
     if (context === undefined) {
-        throw new Error('useLayout must be used within a LayoutProvider');
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('[LayoutContext] useLayout được gọi ngoài LayoutProvider, sử dụng giá trị fallback an toàn.');
+        }
+        return defaultLayoutContext;
     }
     return context;
 };
@@ -153,7 +180,10 @@ export const useLayout = () => {
 export const useActiveTab = () => {
     const context = useContext(TabContext);
     if (context === undefined) {
-        throw new Error('useActiveTab must be used within a LayoutProvider');
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('[LayoutContext] useActiveTab được gọi ngoài LayoutProvider, sử dụng giá trị fallback an toàn.');
+        }
+        return defaultTabContext;
     }
     return context;
 };

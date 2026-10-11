@@ -297,6 +297,50 @@ export const employeeTargetKeys = (originalName: string): string[] => {
     return Array.from(keys);
 };
 
+export function findCompetitionSlider(
+    competitionTargetsData: Record<string, number> | undefined,
+    compName: string
+): number {
+    if (!competitionTargetsData) return 100;
+    
+    // 1. Khớp chính xác
+    if (competitionTargetsData[compName] !== undefined) {
+        return competitionTargetsData[compName];
+    }
+    
+    const cleanComp = compName.trim().toLowerCase();
+    
+    // 2. Khớp sau khi trim & lowercase
+    for (const [key, val] of Object.entries(competitionTargetsData)) {
+        if (key.trim().toLowerCase() === cleanComp) {
+            return val;
+        }
+    }
+    
+    // 3. Khớp bỏ tiền tố tháng (T10/, T09/, Tháng 10/, ...)
+    const stripMonth = (s: string) => s.replace(/^(?:T\d+|Tháng\s*\d+)\s*[\/\-_]\s*/i, '').trim().toLowerCase();
+    const noMonthComp = stripMonth(cleanComp);
+    for (const [key, val] of Object.entries(competitionTargetsData)) {
+        if (stripMonth(key) === noMonthComp) {
+            return val;
+        }
+    }
+    
+    // 4. Khớp chứa nhau / hậu tố (vd: BẢO HIỂM THỢ ĐMX vs T10/BẢO HIỂM THỢ ĐMX_ICT)
+    for (const [key, val] of Object.entries(competitionTargetsData)) {
+        const cleanKey = key.trim().toLowerCase();
+        const noMonthKey = stripMonth(key);
+        if (
+            cleanComp.includes(cleanKey) || cleanKey.includes(cleanComp) ||
+            noMonthComp.includes(noMonthKey) || noMonthKey.includes(noMonthComp)
+        ) {
+            return val;
+        }
+    }
+    
+    return 100;
+}
+
 export const parseEmployeeCompetitionTargets = (
     lines: string[],
     activeSupermarkets: string[],
@@ -365,16 +409,24 @@ export const parseEmployeeCompetitionTargets = (
             const baseTarget = parseNumber(targetValRaw);
             if (baseTarget <= 0) continue;
 
-            const slider = competitionTargetsData?.[compName] ?? 100;
+            const slider = findCompetitionSlider(competitionTargetsData, compName);
             const adjTarget = baseTarget * (slider / 100);
 
-            if (!targets.has(compName)) targets.set(compName, new Map());
-            const compT = targets.get(compName)!;
-            allEmployees.forEach(emp => {
-                const existing = compT.get(emp.originalName) || 0;
-                const next = existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW));
-                employeeTargetKeys(emp.originalName).forEach(k => compT.set(k, next));
-            });
+            const registerTargetForComp = (alias: string) => {
+                if (!targets.has(alias)) targets.set(alias, new Map());
+                const compT = targets.get(alias)!;
+                allEmployees.forEach(emp => {
+                    const existing = compT.get(emp.originalName) || 0;
+                    const next = existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW));
+                    employeeTargetKeys(emp.originalName).forEach(k => compT.set(k, next));
+                });
+            };
+
+            registerTargetForComp(compName);
+            const clean = compName.trim();
+            if (clean !== compName) registerTargetForComp(clean);
+            const noMonth = compName.replace(/^(?:T\d+|Tháng\s*\d+)\s*[\/\-_]\s*/i, '').trim();
+            if (noMonth && noMonth !== compName) registerTargetForComp(noMonth);
         }
     }
     return targets;

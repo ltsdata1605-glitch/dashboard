@@ -12,6 +12,7 @@ import { Input } from '../../../../components/shared/ui/Input';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { calculateRunRate } from '../../services/metricService';
+import { resolveEmployeeTarget } from '../../services/competitionSummaryCalc';
 
 interface CompetitionCompareViewProps {
     allEmployees: Employee[];
@@ -244,7 +245,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
             headers.filter(h => selectedCompetitions.has(h.originalTitle)).forEach(comp => {
-                const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(emp.originalName) ?? 0;
+                const target = resolveEmployeeTarget(employeeCompetitionTargets, comp.originalTitle, emp.originalName);
                 const actual = employeeDataMap.get(emp.name)?.values[comp.title] ?? 0;
                 if (target > 0 || actual > 0) {
                     total++;
@@ -282,11 +283,11 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             if (filteredHeaders.length === 0) return;
 
             filteredHeaders.forEach(comp => {
-                const targetA = employeeCompetitionTargets.get(comp.originalTitle)?.get(empA.originalName) ?? 0;
+                const targetA = resolveEmployeeTarget(employeeCompetitionTargets, comp.originalTitle, empA.originalName);
                 const actualA = employeeDataMap.get(empA.name)?.values[comp.title] ?? 0;
                 const pctA = targetA > 0 ? (actualA / targetA) * 100 : 0;
 
-                const targetB = employeeCompetitionTargets.get(comp.originalTitle)?.get(empB.originalName) ?? 0;
+                const targetB = resolveEmployeeTarget(employeeCompetitionTargets, comp.originalTitle, empB.originalName);
                 const actualB = employeeDataMap.get(empB.name)?.values[comp.title] ?? 0;
                 const pctB = targetB > 0 ? (actualB / targetB) * 100 : 0;
 

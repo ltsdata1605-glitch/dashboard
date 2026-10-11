@@ -73,6 +73,7 @@ function readSavedBiView(): 'dashboard' | 'employee' | 'updater' {
 
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
+    const isTabActive = isActive !== undefined ? isActive : activeTab === 'employees';
     // Còn lượt "Tự động" dở (vừa tải lại sau khi cập nhật userscript) → mở thẳng mục Cập nhật để DataUpdater chạy tiếp
     // Không có lượt dở → `?view=` trên URL (deep link) nếu có, không thì mục lần trước (localStorage): app cài trên
     // iPhone bị iOS giải phóng khỏi RAM khi ở nền, mở lại luôn chạy từ "/" (Đợt A, kế hoạch iPhone).
@@ -214,7 +215,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     border-radius: 0px !important;
                 }
             `}</style>
-            {mounted && activeTab === 'employees' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
+            {mounted && isTabActive && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
                 isMobile ? (
                     <div className="flex items-center gap-0.5 animate-in fade-in zoom-in duration-300">
                         {navigationLinks.map(tab => {

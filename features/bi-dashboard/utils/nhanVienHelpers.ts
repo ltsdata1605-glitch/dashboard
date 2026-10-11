@@ -134,7 +134,9 @@ export const isSameEmployee = (aName?: string, bName?: string): boolean => {
     // So sánh qua Mã số nhân viên (chuỗi số duy nhất trong MWG)
     const idA = extractEmployeeId(aTrim);
     const idB = extractEmployeeId(bTrim);
-    if (idA && idB && idA === idB) return true;
+    if (idA && idB) {
+        return idA === idB;
+    }
 
     // So sánh qua dạng chuẩn hóa
     const canA = standardizeEmployeeName(aTrim);
@@ -145,6 +147,19 @@ export const isSameEmployee = (aName?: string, bName?: string): boolean => {
     const fmtA = formatEmployeeName(aTrim);
     const fmtB = formatEmployeeName(bTrim);
     if (fmtA && fmtB && fmtA.toLowerCase() === fmtB.toLowerCase()) return true;
+
+    // Khi 1 trong 2 bên không có Mã số nhân viên (ví dụ tên dán thô hoặc chỉ có Họ tên):
+    // so sánh phần tên họ
+    const extractNameOnly = (s: string) => {
+        const can = standardizeEmployeeName(s);
+        if (can.includes(' - ')) {
+            return can.split(' - ')[0].trim().toLowerCase();
+        }
+        return can.trim().toLowerCase();
+    };
+    const nameA = extractNameOnly(aTrim);
+    const nameB = extractNameOnly(bTrim);
+    if (nameA && nameB && nameA === nameB) return true;
 
     return false;
 };

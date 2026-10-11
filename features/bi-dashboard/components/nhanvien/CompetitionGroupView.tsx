@@ -11,6 +11,7 @@ import {
     groupByDepartment,
     computeTimeProgress,
 } from '../../services/competitionGroupCalc';
+import { resolveEmployeeTarget } from '../../services/competitionSummaryCalc';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
@@ -160,7 +161,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
     let globalRowIndex = 0;
 
     const renderEmployeeRow = (employee: Employee, _index: number) => {
-        const target = employeeCompetitionTargets.get(header.originalTitle)?.get(employee.originalName) ?? 0;
+        const target = resolveEmployeeTarget(employeeCompetitionTargets, header.originalTitle, employee.originalName);
         const actual = employeeDataMap.get(employee.name)?.values[header.title] ?? 0;
         const completion = target > 0 ? (actual / target) * 100 : 0;
         const remaining = actual - target;
@@ -306,7 +307,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                                 let totalTarget = 0;
                                 let totalActual = 0;
                                 employeesInDept.forEach(emp => {
-                                    totalTarget += employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                                    totalTarget += resolveEmployeeTarget(employeeCompetitionTargets, header.originalTitle, emp.originalName);
                                     totalActual += employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
                                 });
                                 const totalRemaining = totalActual - totalTarget;

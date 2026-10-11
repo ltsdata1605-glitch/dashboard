@@ -23,6 +23,7 @@ import {
     getIndividualMonthProgress,
     computePerformanceRow,
 } from '../../services/individualCompetitionCalc';
+import { resolveEmployeeTarget } from '../../services/competitionSummaryCalc';
 import { PieChart, Pie, Cell } from 'recharts';
 import { getGroupTheme } from '../dashboard/competition/CompetitionListView';
 
@@ -543,7 +544,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 if (filteredHeaders.length === 0) return;
 
                 const rows = filteredHeaders.map(comp => {
-                    const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
+                    const target = resolveEmployeeTarget(employeeCompetitionTargets, comp.originalTitle, selectedEmployee.originalName);
                     const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
                     const { completion, remaining } = computePerformanceRow(target, actual);
                     const dkht = target > 0 ? (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100 : (actual > 0 ? 100 : 0);
@@ -565,7 +566,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 if (filteredHeaders.length === 0) return;
 
                 filteredHeaders.forEach(comp => {
-                    const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(selectedEmployee.originalName) ?? 0;
+                    const target = resolveEmployeeTarget(employeeCompetitionTargets, comp.originalTitle, selectedEmployee.originalName);
                     const actual = employeeDataMap.get(selectedEmployee.name)?.values[comp.title] ?? 0;
                     const { completion, remaining } = computePerformanceRow(target, actual);
                     const dkht = target > 0 ? (calculateRunRate(actual, daysPassed, daysInMonth) / target) * 100 : (actual > 0 ? 100 : 0);

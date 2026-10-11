@@ -699,16 +699,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 </div>
             </div>
 
-            {/* 3. Thanh Quỹ thời gian DUY NHẤT dùng chung cho tất cả các tab thi đua */}
-            <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 w-full">
-                <TimeProgressBar />
-            </div>
-
-            {/* 4. Thanh công cụ riêng theo tab (Lọc nhóm, Highlight, Xuất batch...) */}
-            {(activeCompetitionTab === 'nhom' || (activeCompetitionTab === 'canhan' && activeVersionName === null) || (activeCompetitionTab === 'tong' && activeVersionName === null && summaryTables.length > 0)) && (
-                <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full overflow-x-auto scrollbar-hide">
-                        {/* Bên trái: Bộ lọc & Lựa chọn chức năng */}
-                        <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
+            {/* 3. Thanh TẤT CẢ CHỨC NĂNG & Quỹ thời gian CÙNG NẰM TRÊN 1 DÒNG DUY NHẤT */}
+            <div className="flex flex-nowrap items-center justify-between px-2.5 sm:px-4 py-1 sm:py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1.5 sm:gap-3 w-full overflow-x-auto scrollbar-hide">
+                {/* Bên trái: Bộ lọc & Lựa chọn chức năng (nếu có ở tab Nhóm hoặc Cá nhân) */}
+                {(activeCompetitionTab === 'nhom' || (activeCompetitionTab === 'canhan' && activeVersionName === null)) && (
+                    <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
                             {activeCompetitionTab === 'nhom' && (
                                 <>
                                     {/* Lọc nhóm — MultiSelectDropdown */}
@@ -830,8 +825,14 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 </>
                             )}
                         </div>
+                )}
 
-                        {/* Bên phải: Chế độ xem & Export */}
+                {/* Ở giữa: Quỹ thời gian (CÙNG NẰM TRÊN 1 DÒNG DUY NHẤT) */}
+                <div className="flex-1 min-w-[130px] sm:min-w-[160px] max-w-xl">
+                    <TimeProgressBar />
+                </div>
+
+                {/* Bên phải: Chế độ xem & Export */}
                         <div className="flex gap-1 items-center shrink-0">
                             {activeCompetitionTab === 'nhom' && activeVersionName === null && (
                                 <>
@@ -874,8 +875,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 </Button>
                             )}
                         </div>
-                    </div>
-            )}
+            </div>
 
             {/* 4. Nội dung thi đua */}
             <div className="w-full overflow-visible px-4 pb-4">

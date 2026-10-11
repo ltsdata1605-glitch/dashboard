@@ -980,7 +980,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                          </td>
                                          {groupedVisibleHeaders.map(header => {
                                              const totalActual = employees.reduce((sum, emp) => sum + (employeeDataMap.get(emp.name)?.values[header.title] ?? 0), 0);
-                                             const totalTarget = employees.reduce((sum, emp) => sum + (employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0), 0);
+                                             const totalTarget = employees.reduce((sum, emp) => sum + getTargetForEmployee(header.originalTitle, emp.originalName), 0);
                                              const totalHt = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
 
                                              return (

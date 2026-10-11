@@ -784,7 +784,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const appliedSnapshotKey = `khoDataAppliedSnapshot::${departmentId}`;
                 const { data: khoRows, snapshot, latestUploadedAt, latestFilename } = await fetchAllowedKhoData(departmentId);
                 const lastApplied = await dbService.getSetting<string>(appliedSnapshotKey).catch(() => null);
-                if (khoRows.length > 0 && lastApplied !== snapshot) {
+
+                // Nếu máy này vừa upload (localSavedAt còn mới) và dữ liệu Kho có timestamp <= localSavedAt + 3000ms:
+                // đó chính là bản ghi Kho do máy này vừa đồng bộ lên, KHÔNG ghi đè lại màn hình.
+                const isLocalNewerOrSame = localSavedAt > 0 && latestUploadedAt !== undefined && latestUploadedAt <= localSavedAt + 3000;
+
+                if (khoRows.length > 0 && lastApplied !== snapshot && !isLocalNewerOrSame) {
                     const srcData = normalizeSalesData(khoRows);
                     startTransition(() => {
                         setOriginalData(srcData);
@@ -801,6 +806,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         toast.success(`Đã cập nhật dữ liệu Kho mới nhất (${khoRows.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
                         updated = true;
                     }
+                } else if (khoRows.length > 0 && lastApplied !== snapshot && isLocalNewerOrSame) {
+                    // Cập nhật snapshot đã lưu để lần sau không so sánh lại
+                    await dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
                 }
             }
 

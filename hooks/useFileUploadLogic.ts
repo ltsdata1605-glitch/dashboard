@@ -591,6 +591,12 @@ export const useFileUploadLogic = ({
                 setOriginalData(srcData);
                 setAppState('processing');
 
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('ycx-sales-data-uploaded', {
+                        detail: { savedAt: merged.savedAt.getTime(), fileLastModified: merged.fileLastModified || merged.savedAt.getTime() }
+                    }));
+                }
+
                 // Báo tải file thành công — chỉ ở đây (thao tác upload do người dùng chủ động chọn file), KHÔNG đặt ở
                 // loadInitialData/Kho-sync. Pháo giấy đã bỏ 2026-10-11 (KE_HOACH_GIAO_DIEN_APPLE.md lỗi #26): không "sang", lại
                 // kéo thêm 11 KB vào gói khởi động.

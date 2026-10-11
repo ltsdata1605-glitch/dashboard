@@ -95,4 +95,26 @@ test.describe('Mobile BI Header Tests', () => {
             }
         }
     });
+
+    test('CompetitionTab: Thanh cong cu va Quy thoi gian cung nam tren 1 dong duy nhat', async ({ page }) => {
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/?tab=employees&subTab=competition');
+        await page.waitForLoadState('networkidle');
+
+        // Kiem tra phan tu TimeProgressBar nam ben trong container co flex-nowrap
+        const timeBar = page.locator('text=thời gian').first();
+        if (await timeBar.count() > 0) {
+            await expect(timeBar).toBeVisible();
+            // Container cha truc tiep phai la 1 flex row
+            const parentRow = page.locator('.overflow-x-auto').filter({ hasText: /thời gian/i }).first();
+            if (await parentRow.count() > 0) {
+                const box = await parentRow.boundingBox();
+                if (box) {
+                    // Chieu cao 1 dong duy nhat khong qua 56px
+                    expect(box.height).toBeLessThanOrEqual(56);
+                }
+            }
+        }
+    });
 });
+

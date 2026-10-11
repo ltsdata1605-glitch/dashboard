@@ -296,13 +296,18 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             if (lines.length === 0) return;
 
             // Song song hóa tất cả IDB reads cho tất cả siêu thị
-            const smDataResults = await Promise.all(activeSupermarkets.map(sm => {
+            const smDataResults = await Promise.all(activeSupermarkets.map(async sm => {
                 const safeName = shortenSupermarketName(sm);
-                return Promise.all([
+                const [compTargetsSafe, compTargetsRaw, deptWeights] = await Promise.all([
                     db.get<Record<string, number>>(`comptarget-${safeName}-targets`),
+                    db.get<Record<string, number>>(`comptarget-${sm}-targets`),
                     db.get<Record<string, number>>(`targethero-${safeName}-departmentweights`),
-                    sm // giữ lại tên SM để mapping
                 ]);
+                const compTargets = {
+                    ...(compTargetsRaw ?? {}),
+                    ...(compTargetsSafe ?? {})
+                };
+                return [compTargets, deptWeights ?? {}, sm] as const;
             }));
 
             const smDataMap = new Map<string, { competitionTargets: Record<string, number>; departmentWeights: Record<string, number> }>();
