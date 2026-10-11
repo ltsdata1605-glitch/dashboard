@@ -44,9 +44,42 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+export const isStandaloneMode = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return Boolean((window.navigator as any).standalone) ||
+           Boolean(window.matchMedia?.('(display-mode: standalone)').matches) ||
+           Boolean(window.matchMedia?.('(display-mode: fullscreen)').matches) ||
+           Boolean(window.matchMedia?.('(display-mode: minimal-ui)').matches);
+};
+
+export const isInAppBrowser = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return /FBAN|FBAV|Instagram|Zalo|Line|Twitter|Pinterest|Snapchat|GSA/i.test(ua);
+};
+
 export const loginWithGoogle = async () => {
+    // Trong môi trường PWA Standalone (Màn hình chính iOS/Android) hoặc In-App browser (Zalo/FB):
+    // Cửa sổ popup (signInWithPopup) bị WebKit chặn hoặc treo Promise vĩnh viễn khiến nút xoay mãi.
+    // Tự động dùng signInWithRedirect an toàn tuyệt đối!
+    if (isStandaloneMode() || isInAppBrowser()) {
+        console.info('[Auth] Môi trường PWA Standalone / In-App Browser phát hiện. Tự động dùng signInWithRedirect.');
+        await loginWithGoogleRedirect();
+        return;
+    }
+
     try {
-        const result = await signInWithPopup(auth, googleProvider);
+        // Bảo hiểm timeout 6 giây chống hanging promise nếu popup bị chặn ngầm trên thiết bị
+        const popupPromise = signInWithPopup(auth, googleProvider);
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => {
+                const err = new Error('Popup đăng nhập không phản hồi sau 6s. Đang chuyển hướng...');
+                (err as any).code = 'auth/popup-timeout';
+                reject(err);
+            }, 6000);
+        });
+
+        const result = await Promise.race([popupPromise, timeoutPromise]);
         const credential = GoogleAuthProvider.credentialFromResult(result);
         if (credential?.accessToken) {
             sessionStorage.setItem('googleOAuthToken', credential.accessToken);
@@ -54,6 +87,13 @@ export const loginWithGoogle = async () => {
         return result.user;
     } catch (error: any) {
         console.error("Lỗi đăng nhập Google popup:", error);
+        if (error?.code === 'auth/popup-timeout' || 
+            error?.code === 'auth/popup-blocked' || 
+            error?.code === 'auth/operation-not-supported-in-this-environment') {
+            console.warn('[Auth] Popup không khả dụng hoặc bị treo. Tự động chuyển hướng đăng nhập...');
+            await loginWithGoogleRedirect();
+            return;
+        }
         throw error;
     }
 };
