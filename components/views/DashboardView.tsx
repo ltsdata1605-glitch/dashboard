@@ -388,6 +388,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         hasDepartmentData={!!departmentMap}
                         showNewFileButton={appState === 'dashboard'}
                         fileInfo={fileInfo}
+                        isSyncingCloud={logic.isSyncingCloud}
                         onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
                         onSelectHistoryFile={handleFileProcessing}
                         onOpenHistory={() => setIsFileHistoryModalOpen(true)}

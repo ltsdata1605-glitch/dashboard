@@ -29,9 +29,9 @@ import { COL } from '../constants';
 import { mapWithLimit } from './mapWithLimit';
 import { cleanYcxFileName } from './ycxAutoSyncService';
 
-/** Số file / chunk tải song song tối đa (audit GĐ3 — trước đây không giới hạn). Tối đa 3 × 4 = 12 request. */
-const FILE_CONCURRENCY = 3;
-const CHUNK_CONCURRENCY = 4;
+/** Tối ưu tải chunk song song trên mobile/desktop qua HTTP/2 (tối đa 4 file x 8 chunks) */
+const FILE_CONCURRENCY = 4;
+const CHUNK_CONCURRENCY = 8;
 
 export interface KhoSalesFileMeta {
     fileId: string;

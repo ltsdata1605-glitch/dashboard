@@ -27,6 +27,7 @@ interface HeaderProps {
     hasSalesData?: boolean;
     salesClearTitle?: string;
     isClearingSalesData?: boolean;
+    isSyncingCloud?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -39,7 +40,8 @@ const Header: React.FC<HeaderProps> = ({
     onClearSalesData,
     hasSalesData,
     salesClearTitle,
-    isClearingSalesData
+    isClearingSalesData,
+    isSyncingCloud
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
@@ -88,8 +90,10 @@ const Header: React.FC<HeaderProps> = ({
                     title="Chạm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
                     className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
                 >
-                    <AppIcon name="refresh" size="xs" className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                    <span>Cập nhật: {fileInfo.savedAt}</span>
+                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                    <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                        {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
+                    </span>
                 </button>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
