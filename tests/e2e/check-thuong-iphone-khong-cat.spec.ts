@@ -14,11 +14,6 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * thật là bị cắt. Modal phải vừa chiều cao nhìn thấy (dvh), không vượt mép dưới.
  * Chromium giả lập — không phải Safari thật.
  */
-const IDB_KEYVAL_GIA = `(function(){function s(){return new Promise(function(res,rej){var r=indexedDB.open('keyval-store');
-r.onupgradeneeded=function(){r.result.createObjectStore('keyval')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
-function q(m,f){return s().then(function(db){return new Promise(function(res,rej){var t=db.transaction('keyval',m);var o=f(t.objectStore('keyval'));
-t.oncomplete=function(){res(o&&o.result)};t.onerror=function(){rej(t.error)}})})}
-window.idbKeyval={get:function(k){return q('readonly',function(st){return st.get(k)})},set:function(k,v){return q('readwrite',function(st){st.put(v,k)})}};})();`;
 
 const taoFile = () => {
     const rows: (string | number)[][] = [['STT', 'Vùng', 'Miền', 'Kênh', 'Siêu thị', 'Ngành hàng', '% dự kiến', 'Dự kiến vượt', 'Lấy top 10', 'Hạng vượt ưu', 'Hạng % target', 'Thưởng vượt ưu', 'Thưởng top %', 'Tổng thưởng']];
@@ -27,11 +22,10 @@ const taoFile = () => {
     const f = join(mkdtempSync(join(tmpdir(), 'ct-')), 'luy-ke-thi-dua.xlsx'); XLSX.writeFile(wb, f); return f;
 };
 
-const chuanBi = async (page: Page, coIdbKeyval: boolean) => {
-    // CDN không ra được từ máy test — phục vụ bản cục bộ (xlsx, html-to-image) / bản mô phỏng (idb-keyval)
+const chuanBi = async (page: Page) => {
+    // CDN không ra được từ máy test — phục vụ bản cục bộ (xlsx, html-to-image). idb-keyval: trang không gọi CDN nữa (2026-10-11).
     await page.route('https://cdn.sheetjs.com/**', r => r.fulfill({ path: 'node_modules/xlsx/dist/xlsx.full.min.js', contentType: 'application/javascript' }));
     await page.route('https://cdn.jsdelivr.net/npm/html-to-image**', r => r.fulfill({ path: 'node_modules/html-to-image/dist/html-to-image.js', contentType: 'application/javascript' }));
-    await page.route('https://cdn.jsdelivr.net/npm/idb-keyval**', r => coIdbKeyval ? r.fulfill({ body: IDB_KEYVAL_GIA, contentType: 'application/javascript' }) : r.abort());
 };
 
 const moCheckThuong = async (page: Page) => {
@@ -48,7 +42,7 @@ test.use({ viewport: { width: 390, height: 664 }, isMobile: true, hasTouch: true
 
 test('Check thưởng 390px: không nội dung nào bị cắt ngang; modal vừa màn hình', async ({ page }) => {
     test.setTimeout(120_000);
-    await chuanBi(page, true);
+    await chuanBi(page);
     const f = await moCheckThuong(page);
     await expect(f.getByText('Chưa có file nào được chọn')).toBeVisible({ timeout: 30_000 });
     await page.waitForTimeout(1500);

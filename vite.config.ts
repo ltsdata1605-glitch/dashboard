@@ -29,10 +29,18 @@ function offlineServiceWorker() {
         .filter((f) => (f.startsWith('assets/') && emitted.includes(f)) || f.startsWith('icons/') || f === 'favicon.svg' || f === 'manifest.webmanifest'
           || f === 'prevent-pull-to-refresh.js' || f === 'reload-on-chunk-error.js')
         .map((f) => `/${f}`);
+      const indexHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+      // LÕI = đúng những file index.html tự nạp (gói vào, modulepreload, CSS) + 2 script ở /public: đủ để dựng app khi
+      // mất mạng. Lúc cài service worker chỉ tải LÕI; phần còn lại tải ngầm sau khi trang đã rảnh (GĐ2 tăng tốc 2026-10-11)
+      // — trước đây lượt cài đầu tải cùng lúc 7,9 MB / 71 file, giành băng thông với chính lượt mở app trên 4G.
+      const core = Array.from(new Set([...indexHtml.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map((m) => m[1])))
+        .concat(['/prevent-pull-to-refresh.js', '/reload-on-chunk-error.js', '/favicon.svg', '/manifest.webmanifest'])
+        .filter((f) => precache.includes(f));
       const version = crypto.createHash('sha1')
-        .update(precache.join('|')).update(fs.readFileSync(path.join(dist, 'index.html'))).digest('hex').slice(0, 12);
+        .update(precache.join('|')).update(indexHtml).digest('hex').slice(0, 12);
       const tpl = fs.readFileSync(path.resolve(__dirname, 'scripts/sw-template.js'), 'utf8');
-      fs.writeFileSync(path.join(dist, 'sw.js'), tpl.replace('__VERSION__', version).replace('__PRECACHE__', JSON.stringify(precache)));
+      fs.writeFileSync(path.join(dist, 'sw.js'), tpl.replace('__VERSION__', version)
+        .replace('__PRECACHE__', JSON.stringify(precache)).replace('__CORE__', JSON.stringify(core)));
     },
   };
 }
@@ -72,6 +80,9 @@ export default defineConfig(() => {
                         // chỉ để lấy react-dom — dù tính năng biểu đồ chưa chắc được dùng tới.
                         if (id.includes('react-dom') || id.includes('/react/') || id.includes('\\react\\') || id.includes('scheduler')) return 'vendor-react';
                         if (id.includes('xlsx') || id.includes('papaparse')) return 'vendor-excel';
+                        // Analytics (+ installations nó kéo theo) nạp SAU khi trang rảnh (services/firebase.ts) → gói riêng,
+                        // không nằm trong vendor-firebase vốn được modulepreload lúc mở app.
+                        if (id.includes('@firebase/analytics') || id.includes('@firebase/installations') || /[\\/]firebase[\\/]analytics/.test(id)) return 'vendor-firebase-analytics';
                         if (id.includes('firebase')) return 'vendor-firebase';
                         if (id.includes('/motion/') || id.includes('\\motion\\')) return 'vendor-motion';
                         if (id.includes('lucide-react')) return 'vendor-icons';

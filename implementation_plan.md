@@ -7713,3 +7713,73 @@ xuat-hang-loat-dien-thoai… quá thời gian 4 phút) → dải mảnh NẰM TR
 xuat-anh-giao-anh-chung (8), xuat-hang-loat-dien-thoai-chia-se-mot-lan (2), bi-auto-sync-xong-dong-modal (2),
 bi-auto-luy-ke-dashboard (2), cloud-sync-notice-line, smoke, mo-lai-app-dung-cho-cu (5). `chuan-thiet-ke-b.spec.ts` đỏ TỪ TRƯỚC
 (bộ chọn `[data-ui="shared"]` không còn khớp nút nào trên màn Phân tích) — xử lý ở GĐ3 khi làm lại Button.
+
+**Triển khai GĐ0+GĐ1** (2026-10-11): gộp `main` mới (591c1ce — một phiên khác sửa đúng CouponBatchEditModal cùng cách → lấy bản của
+`main`, giữ phần đổi cỡ chữ) → f189a98, đẩy `main`, gh-pages; dashboard.pro.vn phục vụ `index-rD5Wtz2G.js`, `sw.js` VERSION
+`08f359a91a48`. 4 bài e2e đỏ (bi-mobile-iphone ×2, ios-report-bi-check-thuong Check thưởng, mobile-iphone-6-module) đã chạy lại trên
+c7ad4a3 (trước GĐ0): đỏ y hệt — chuông 32px (lỗi #1) và nút thanh trên Report BI 32px (lỗi #12), sửa ở GĐ4/GĐ6.
+
+## GĐ2 — Tăng tốc tải & chuyển tab (2026-10-11) — XONG
+
+**Gói vào ăn kiêng** (`App.tsx`): `LoginView`, `PendingApprovalView`, `CouponConverterView` → `lazyWithRetry` (+ `<Suspense>` với
+vòng quay khởi động); `GlobalAutoSyncDock` (kéo theo ~100 KB code Report BI: tự đồng bộ, đổ thưởng, hẹn giờ, hướng dẫn
+Tampermonkey) → gói riêng, gắn sau lần rảnh đầu (`useSauLanRanhDau`, requestIdleCallback ≤ 1,5 s; Safari 300 ms) — lượt hẹn giờ đầu
+vốn chờ 5 s nên không lỡ gì. Analytics (`@firebase/analytics` + installations ~33 KB) khởi tạo sau khi rảnh, gói riêng
+`vendor-firebase-analytics` (vite.config.ts). Bỏ hẳn **pháo giấy** (6 chỗ, gỡ `canvas-confetti` + `@types/canvas-confetti`).
+
+**Lịch âm nạp riêng** (`RevenueCalendar.tsx`): `lunar-javascript` (~290 KB) import động khi lịch vẽ lần đầu (`useAmLich`); chưa về
+thì lịch vẫn có ngày dương + số liệu. `choAmLichSanSang()` — 3 nút xuất ảnh lịch (TrendChart ×2, SavedCalendarCard) chờ nó + 2 khung
+hình trước khi chụp. Gói TrendChart 342 KB → 35 KB.
+
+**Phông Google theo nhu cầu** — mới `components/shared/ui/googleFonts.ts` (một nơi quản lý 7 họ): `index.html` bỏ thẻ CSS chặn hiển
+thị 7 họ (giữ preconnect); `index.tsx` nạp Roboto Condensed không chặn; phông người dùng chọn nạp ở `App.tsx`/`FontSelector`
+(mở menu thì nạp đủ để xem trước); In Sticker nạp đủ 7 họ khi mở tab; `CheckThuongView` tự gắn link phông đã chọn vào iframe.
+
+**Đổi lọc không chặn** — mới `components/shared/ui/BusyBar.tsx` (vạch 2px mép trên, chỉ hiện khi bận > 300 ms, giữ ≥ 400 ms, không
+chặn thao tác, `role=progressbar`): thay lớp "ĐANG XỬ LÝ BỘ LỌC" phủ kín màn (lỗi #9) — lọc chạy trong Worker và đã có cơ chế bỏ kết
+quả lượt cũ nên không cần chặn. Xoá `components/common/FilterProcessingOverlay.tsx`.
+
+**Tải trước tab chính**: tab đang mở (như cũ) rồi khi rảnh thêm 2 s tải trước 3 tab của thanh dưới + `<link rel=prefetch>
+/check-thuong.html` — một lần mỗi phiên, bỏ khi Tiết kiệm dữ liệu / 2G.
+
+**Check thưởng** (`public/check-thuong.html`): xlsx (~900 KB) + html-to-image hết là thẻ `<script>` chặn → `napThuVien()` nạp khi
+nạp file Excel / xuất ảnh, khi rảnh chỉ HÂM bộ nhớ đệm (fetch no-cors, không chạy — chạy xlsx là tác vụ dài khoá luồng chính); bỏ
+hẳn idb-keyval CDN (bộ lưu tích hợp tương thích đã có, còn vá được ca database rỗng); trang cha trả `CHECK_THUONG_NO_DATA` để iframe
+hiện màn nạp file ngay thay vì luôn chờ 500 ms.
+
+**Service worker** (`scripts/sw-template.js` + `vite.config.ts`): lúc cài chỉ tải LÕI (index.html + đúng file index.html nạp) và
+CHÉP file /assets/ không đổi từ cache bản trước (không tải lại qua mạng sau mỗi lần deploy); phần còn lại tải ngầm 3 luồng khi trang
+nhắn `ycx-precache-rest` (5 s sau load + rảnh; nhắn lại khi bản mới kích hoạt).
+
+**Kéo-tải-lại** (`public/prevent-pull-to-refresh.js`): CSS `overscroll-behavior` chưa thay được (Safari iOS vẫn kéo-tải-lại —
+WebKit bug 275947) → giữ JS nhưng chỉ gắn `touchmove` không thụ động khi trang ở đỉnh, bỏ hẳn khi chạy dạng app cài (standalone).
+
+**Đo** (`perf-apple.spec.ts`, bản build, 440×956, 4G 9 Mbps/60 ms, CPU ×4, TB 3 lượt):
+
+| Phép đo | Trước (10/10) | Sau GĐ2 |
+|---|---:|---:|
+| JS+CSS phải tải lúc mở (gzip) | ~465 KB | **386 KB** (gói vào 132 → 61 KB) |
+| Khung app hiện | 2007 ms | **~1310–1500 ms** |
+| FCP | 1625 ms | **~1240 ms** |
+| Nội dung Phân tích (lượt nóng / lạnh) | 2105–2212 / 5877 ms | **1834–2195 / ~4800 ms** |
+| Chuyển sang Report BI | 733 ms | **~557 ms** |
+| Chuyển sang Check thưởng | 2839 ms | **~1374 ms** |
+| Về Phân tích | 367 ms | **~270 ms** |
+
+Chưa đạt mục tiêu: Report BI ≤ 300 ms, Check thưởng ≤ 1 s, gói ≤ 330 KB. Đo trace: luồng chính bận ~540 ms khi sang Report BI, ~75 ms
+là `layoutId` của motion ở thanh tab dưới (đo lại DOM mỗi lần đổi tab) và `vendor-motion` 42 KB gzip còn ở đường khởi động vì
+`Modal`/`Sidebar`/`MobileBottomNav` dùng motion → gỡ khi làm lại các component đó (GĐ3 Modal, GĐ4 thanh tab/Sidebar), đo lại sau GĐ4/GĐ6.
+"JS tải" trong bảng đo tăng (~700 KB) vì đã gồm phần tải trước 3 tab khi rảnh — không phải gói khởi động.
+
+**Test**: `npm run check` xanh. Mới `tests/e2e/tang-toc-gd2.spec.ts` (5: lịch âm chỉ tải khi mở Lịch + vẫn ≥ 28 ngày âm; phông chỉ
+Roboto Condensed lúc mở, index.html không còn thẻ CSS phông, mở menu phông nạp đủ; dock vẫn hiện; prefetch check-thuong.html;
+BusyBar không nháy khi bận ngắn, không chặn bấm) + harness `busyBarHarness.tsx`. Cập nhật test theo hành vi mới: xlsx pin (đọc URL
+trong `THU_VIEN`), iframe-tabs-csp (gọi `napThuVien('xlsx')`), check-thuong-luu-du-lieu / -iphone-khong-cat (bỏ nhánh CDN
+idb-keyval, khẳng định không gọi CDN nữa), du-lieu-that-tour (chờ `[data-busy-bar]`). **Sửa test cũ đỏ trên main**:
+ycx-tu-dong-phan-tich ×2 — nút YCX Luỹ kế nay mở hộp chọn "Lũy kế / Chọn tháng" và đặt tên tự động (chủ dự án thêm ở f0a5558) →
+test bấm "Bắt đầu — Luỹ kế", kiểm toast tên tự động thay vì hộp hỏi tên; bi-sync-cap-nhat-xong-tu-chay-tiep ×2 — cũng ở f0a5558,
+"quay lại tab thì tự tải lại cả trang" được thay bằng iframe dò phiên bản (`userscriptProbeService`) → test viết lại: quay lại tab
+sau khi cập nhật là TỰ CHẠY TIẾP, 0 lần tải lại trang, đúng 1 tab MWG; chưa cập nhật thì vẫn báo, không tải lại/không mở tab.
+Loạt e2e của CI (33 spec, chạy cục bộ với CDN thật): 104 xanh + 5 bỏ qua, 2 đỏ chính là 2 bài vừa viết lại → nay xanh. Xanh: offline-app-shell (2), check-thuong-* (8), keo-tai-lai
+(5), hen-gio (2), line-gui-anh (3), ycx-tu-dong-phan-tich (6), auth-fresh-login (2), pwa-iphone (2), smoke, xuat-anh-* / bi-auto-* /
+mo-lai-app / ios-xuat-anh / sticker-pdf / sticker-nut (39), iframe-tabs-csp (3, CDN thật).

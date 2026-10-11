@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { AppIcon } from '../../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../../components/shared/ui/Button';
 import { toast } from '../../../../components/shared/ui/toast';
-import confetti from 'canvas-confetti';
 import { detectUserscript } from '../../utils/bonusBridge';
 
 const TAMPERMONKEY_STORE_URL = 'https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo';
@@ -59,11 +58,6 @@ export const TampermonkeyInstallGuideContent: React.FC<TampermonkeyInstallGuideC
             const { installed } = await detectUserscript(1500);
             if (installed) {
                 setCheckSuccess(true);
-                confetti({
-                    particleCount: 80,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
                 toast.success('Tuyệt vời! Tiện ích Tampermonkey & Script đã kết nối thành công!', {
                     duration: 4000,
                 });

@@ -86,6 +86,9 @@ test.describe('Tab dùng iframe không bị CSP chặn', () => {
      */
     test('check-thuong.html dùng xlsx đã vá lỗ hổng (>= 0.20.3), không phải bản 0.18.5', async ({ page }) => {
         await page.goto('/check-thuong.html');
+        // Từ 2026-10-11 xlsx nạp THEO NHU CẦU (napThuVien) thay vì thẻ <script> chặn hiển thị → gọi đúng hàm trang dùng khi
+        // người dùng nạp file Excel, để kiểm chính bản thư viện mà luồng thật sẽ chạy.
+        await page.evaluate(() => (window as unknown as { napThuVien?: (t: string) => Promise<unknown> }).napThuVien?.('xlsx')?.catch(() => undefined));
         // Chờ thư viện nạp xong thay vì ngủ cố định — script tải từ CDN, thời gian phụ thuộc mạng.
         await page.waitForFunction(
             () => Boolean((window as unknown as { XLSX?: { version?: string } }).XLSX?.version),

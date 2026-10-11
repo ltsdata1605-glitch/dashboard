@@ -3,7 +3,10 @@
  * và dữ liệu đã lưu trên máy (IndexedDB), không bị trang trắng "Không có kết nối".
  *
  * Chiến lược:
- *  - Cài đặt: tải sẵn index.html + mọi file /assets/ (tên có mã băm) + icon → đủ để chạy mọi màn khi offline.
+ *  - Cài đặt (GĐ2 tăng tốc 2026-10-11): chỉ tải LÕI (index.html + đúng các file index.html tự nạp) và CHÉP từ cache của bản
+ *    trước những file /assets/ không đổi (tên có mã băm → cùng tên là cùng nội dung) — không tải lại qua mạng.
+ *    Phần còn lại (mọi file /assets/ khác + icon) tải ngầm khi trang nhắn 'ycx-precache-rest' (trang đã vẽ xong + rảnh),
+ *    3 luồng một lúc → không giành băng thông với lượt mở app. Trước đây lượt cài tải cùng lúc 7,9 MB / 71 file.
  *  - Điều hướng (mở trang/tải lại): ƯU TIÊN MẠNG (luôn nhận bản mới khi có mạng, tránh kẹt bản cũ), quá 4 giây hoặc
  *    lỗi thì dùng bản đã lưu. Bản mới nhất tự được lưu lại.
  *  - /assets/*, phông, ảnh khung: ƯU TIÊN BẢN LƯU (tên có mã băm nên không bao giờ cũ); thiếu thì tải rồi lưu.
@@ -12,15 +15,49 @@
 const VERSION = '__VERSION__';
 const CACHE = 'ycx-shell-' + VERSION;
 const PRECACHE = __PRECACHE__;
+const CORE = __CORE__;
+
+/** File /assets/ có mã băm trong tên: bản ở HTTP cache / cache của bản cũ luôn đúng → không cần ép tải lại. */
+const requestFor = (u) => new Request(u, { cache: u.startsWith('/assets/') ? 'default' : 'reload' });
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE);
     // index.html bắt buộc; file khác lỗi lẻ tẻ không làm hỏng cả lượt cài.
     await cache.add(new Request('/index.html', { cache: 'reload' }));
-    await Promise.allSettled(PRECACHE.map((u) => cache.add(new Request(u, { cache: 'reload' }))));
+    // Chép file /assets/ không đổi từ cache của bản trước (cache cũ chỉ bị dọn ở 'activate') — không tốn mạng.
+    await Promise.allSettled(PRECACHE.filter((u) => u.startsWith('/assets/')).map(async (u) => {
+      const old = await caches.match(u);
+      if (old) await cache.put(u, old);
+    }));
+    await Promise.allSettled(CORE.map(async (u) => { if (!(await cache.match(u))) await cache.add(requestFor(u)); }));
     await self.skipWaiting();
   })());
+});
+
+/** Tải ngầm phần còn lại (gọi khi trang báo đã rảnh). Chạy lại nhiều lần không sao: file đã có thì bỏ qua. */
+let restRun = null;
+function precacheRest() {
+  if (!restRun) {
+    restRun = (async () => {
+      const cache = await caches.open(CACHE);
+      const todo = [];
+      for (const u of PRECACHE) if (!(await cache.match(u))) todo.push(u);
+      let i = 0;
+      const lane = async () => {
+        while (i < todo.length) {
+          const u = todo[i++];
+          try { await cache.add(requestFor(u)); } catch { /* lỗi lẻ tẻ: lần mở sau tải tiếp */ }
+        }
+      };
+      await Promise.all([lane(), lane(), lane()]);
+    })().finally(() => { restRun = null; });
+  }
+  return restRun;
+}
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'ycx-precache-rest') event.waitUntil(precacheRest());
 });
 
 self.addEventListener('activate', (event) => {

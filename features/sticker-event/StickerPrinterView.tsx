@@ -1,5 +1,6 @@
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { toast } from '../../components/shared/ui/toast';
+import { napPhongGoogle, PHONG_GOOGLE } from '../../components/shared/ui/googleFonts';
 
 import { StickerPage, SavedStickerList, PrintHistoryEntry } from './stickerprinter/types';
 import { StickerPrintPreview } from './stickerprinter/StickerPrintPreview';
@@ -17,6 +18,9 @@ import SaveListModal from './SaveListModal';
 
 export default function StickerPrinterView() {
     const { user } = useAuth();
+    // Tem dùng phông Google (Oswald, Roboto Condensed, Jost… — menu phông của thanh định dạng). Trước 2026-10-11 cả 7 họ nạp
+    // sẵn ở index.html cho MỌI màn; nay chỉ nạp khi mở In Sticker (components/shared/ui/googleFonts.ts).
+    useEffect(() => { napPhongGoogle(PHONG_GOOGLE); }, []);
     const {
         stickerMode, setStickerMode,
         eventEverOpened, setEventEverOpened,

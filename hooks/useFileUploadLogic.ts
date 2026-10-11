@@ -1,7 +1,6 @@
 import { useState, useRef, startTransition, useEffect, createElement } from 'react';
 import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import SalesWorker from '../services/worker?worker';
-import confetti from 'canvas-confetti';
 import type { DataRow, Status, AppState, ProductConfig, ProcessedData, FilterState } from '../types';
 import type { User } from 'firebase/auth';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
@@ -592,10 +591,9 @@ export const useFileUploadLogic = ({
                 setOriginalData(srcData);
                 setAppState('processing');
 
-                // Ăn mừng tải file thành công: tung hoa + thông báo nổi bật — chỉ bắn ở đây (thao
-                // tác upload do người dùng chủ động chọn file), KHÔNG đặt ở loadInitialData/Kho-sync
-                // để tránh tung hoa mỗi lần mở lại app.
-                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+                // Báo tải file thành công — chỉ ở đây (thao tác upload do người dùng chủ động chọn file), KHÔNG đặt ở
+                // loadInitialData/Kho-sync. Pháo giấy đã bỏ 2026-10-11 (KE_HOACH_GIAO_DIEN_APPLE.md lỗi #26): không "sang", lại
+                // kéo thêm 11 KB vào gói khởi động.
                 toast.success(`Đã tải lên và xử lý thành công ${merged.data.length.toLocaleString('vi-VN')} dòng dữ liệu!`, { duration: 3500 });
 
                 // Sync the merged result to Firebase

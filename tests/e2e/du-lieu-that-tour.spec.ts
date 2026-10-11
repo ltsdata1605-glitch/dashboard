@@ -110,7 +110,8 @@ test('tour Report BI + Phân tích trên dữ liệu thật', async ({ page }) =
     // ---- Phân tích: đo thời gian tới khi HẾT mọi lớp xử lý (lọc / nạp dữ liệu / AI engine)
     const t0 = Date.now();
     await page.goto('/?tab=analysis');
-    const lop = page.getByText(/Đang xử lý bộ lọc|AI ENGINE PROCESSING|Nạp dữ liệu|Đang tải/i).filter({ visible: true });
+    // Đổi lọc nay hiện thanh mảnh [data-busy-bar] (BusyBar) thay lớp chờ "Đang xử lý bộ lọc" (2026-10-11).
+    const lop = page.locator('[data-busy-bar]').or(page.getByText(/Đang xử lý bộ lọc|AI ENGINE PROCESSING|Nạp dữ liệu|Đang tải/i)).filter({ visible: true });
     let lanTrong = 0;
     const moc: string[] = [];
     for (let i = 0; i < 90 && lanTrong < 4; i++) {

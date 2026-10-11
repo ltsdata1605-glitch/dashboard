@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { toast } from '../../../components/shared/ui/toast';
-import confetti from 'canvas-confetti';
 import {
     BiSyncMode,
     BiSyncProgress,
@@ -120,11 +119,6 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
             try { window.focus(); } catch {}
             const res = await applyBiSyncResults(payload.mode, payload.results, activeSupermarket || null);
 
-            confetti({
-                particleCount: 80,
-                spread: 80,
-                origin: { y: 0.6 }
-            });
 
             const modeLabel = payload.mode === 'realtime' ? 'Realtime' : 'Luỹ kế';
             toast.success(`Tự động cập nhật thành công ${res.successCount} mục dữ liệu ${modeLabel}!`, { duration: 4000 });

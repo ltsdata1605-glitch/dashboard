@@ -2,7 +2,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
-import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4",
@@ -24,12 +23,19 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app);
 
-let analytics: Analytics | null = null;
-isSupported().then(yes => {
-    if (yes) {
-        analytics = getAnalytics(app);
-    }
-});
+// Google Analytics (lượt xem trang tự động): nạp SAU khi trang đã rảnh, gói riêng (GĐ2 tăng tốc 2026-10-11) — @firebase/analytics
+// + installations ~33 KB không cần cho lượt vẽ đầu. Trước đây import tĩnh ở đây nên luôn nằm trong gói firebase tải lúc mở app.
+if (typeof window !== 'undefined') {
+    const khoiDongAnalytics = () => {
+        import('firebase/analytics')
+            .then(({ getAnalytics, isSupported }) => isSupported().then(yes => { if (yes) getAnalytics(app); }))
+            .catch(() => { /* chặn quảng cáo / mất mạng: bỏ qua, không ảnh hưởng app */ });
+    };
+    const henGio = () => setTimeout(() => {
+        if ('requestIdleCallback' in window) window.requestIdleCallback(khoiDongAnalytics, { timeout: 10_000 }); else khoiDongAnalytics();
+    }, 3000);
+    if (document.readyState === 'complete') henGio(); else window.addEventListener('load', henGio, { once: true });
+}
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');

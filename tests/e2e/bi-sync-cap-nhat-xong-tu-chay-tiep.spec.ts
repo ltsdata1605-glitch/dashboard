@@ -5,16 +5,20 @@ import { fileURLToPath } from 'node:url';
 import { openReportBi } from './helpers/seed';
 
 /**
- * Chủ dự án 2026-10-01: bấm Cập nhật trong Tampermonkey rồi quay lại trang, đáng lẽ tự chạy tiếp nhưng vẫn báo "bản cũ",
- * phải tự tải lại trang. Nguyên nhân: Tampermonkey chỉ nạp bản mới khi trang TẢI LẠI.
- * Mong đợi: quay lại tab → trang tự tải lại → mở mục Cập nhật → tự chạy tiếp, nhờ userscript mở tab MWG (GM_openInTab).
- * Userscript giả lập: bản đang chạy đọc từ localStorage('__fakeVer') — "cập nhật" = đổi giá trị này (chỉ có hiệu lực
- * sau khi tải lại, đúng như Tampermonkey).
+ * Chủ dự án 2026-10-01: bấm Cập nhật trong Tampermonkey rồi quay lại trang, đáng lẽ tự chạy tiếp nhưng vẫn báo "bản cũ".
+ * Nguyên nhân: Tampermonkey chỉ nạp bản mới vào trang TẢI MỚI — trang Dashboard đang mở vẫn giữ bản cũ.
+ *
+ * Cách làm HIỆN TẠI (chủ dự án đổi ở f0a5558, 2026-10-10 — bỏ "quay lại tab thì tự tải lại cả trang"): khi đang báo "cần
+ * cập nhật", Dashboard dò ngầm qua iframe `/userscript-probe.html` (trang tải mới → Tampermonkey nạp bản MỚI vào đó), nạp
+ * lại iframe mỗi lần người dùng quay lại tab; thấy bản đủ mới thì lưu phiên bản và TỰ CHẠY TIẾP, KHÔNG tải lại trang (tab
+ * MWG mở mới nên chạy bản mới). Test cập nhật theo cách này 2026-10-11 — bản cũ của test đòi trang tự tải lại nên đỏ.
+ * Userscript giả lập: bản đang chạy đọc từ localStorage('__fakeVer') lúc MỖI KHUNG nạp (trang hoặc iframe) — "cập nhật" =
+ * đổi giá trị này (khung nạp sau mới thấy, đúng như Tampermonkey).
  */
 const USERSCRIPT_FILE = resolve(fileURLToPath(new URL('.', import.meta.url)), '../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js');
 const BAN_MOI_NHAT = readFileSync(USERSCRIPT_FILE, 'utf-8').match(/^\/\/\s*@version\s+([\d.]+)/m)![1];
 
-test('cập nhật userscript xong quay lại tab → tự tải lại và TỰ CHẠY TIẾP, không phải bấm lại', async ({ page }) => {
+test('cập nhật userscript xong quay lại tab → TỰ CHẠY TIẾP (không tải lại trang, không phải bấm lại)', async ({ page }) => {
     await page.context().route('https://baocao.dienmayxanh.com/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }));
     await page.addInitScript(() => {
         // Bản "đang chạy" chốt lúc trang nạp — giống Tampermonkey: đổi bản xong phải tải lại mới có hiệu lực
@@ -45,14 +49,14 @@ test('cập nhật userscript xong quay lại tab → tự tải lại và TỰ 
 
     // 2) Người dùng bấm Update trong Tampermonkey (giả: đổi bản) rồi quay lại tab Dashboard
     await page.evaluate((v) => localStorage.setItem('__fakeVer', v), BAN_MOI_NHAT);
-    const taiLai = page.waitForEvent('load');
+    let soLanTaiTrang = 0;
+    page.on('load', () => { soLanTaiTrang++; });
     await page.evaluate(() => {
         Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
         document.dispatchEvent(new Event('visibilitychange'));
     });
-    await taiLai;
 
-    // 3) Sau khi tải lại: tự vào mục Cập nhật, tự chạy, nhờ userscript mở tab MWG — KHÔNG bấm gì
+    // 3) Iframe dò thấy bản mới → tự chạy tiếp, nhờ userscript mở tab MWG — KHÔNG bấm gì, KHÔNG tải lại trang
     await expect.poll(() => page.evaluate(() => sessionStorage.getItem('__openWorker')), { timeout: 30_000 })
         .toContain('baocao.dienmayxanh.com/dashboard/revenue-consolidated?ycx_mode=realtime');
     const modal = page.getByRole('dialog', { name: /Tự động Cập nhật Realtime/i });
@@ -64,9 +68,10 @@ test('cập nhật userscript xong quay lại tab → tự tải lại và TỰ 
     expect(await page.evaluate(() => Number(sessionStorage.getItem('__soTabMwg')))).toBe(1);
     // Lượt dở đã được xoá → tải lại lần nữa không tự chạy lại
     expect(await page.evaluate(() => sessionStorage.getItem('ycx-bi-auto-pending'))).toBeNull();
+    expect(soLanTaiTrang, 'không cần tải lại cả trang').toBe(0);
 });
 
-test('chưa cập nhật mà quay lại tab: tự tải lại tối đa 2 lần rồi thôi (không vòng lặp)', async ({ page }) => {
+test('chưa cập nhật mà quay lại tab: vẫn báo cần cập nhật, KHÔNG tải lại trang, không mở thêm tab', async ({ page }) => {
     await page.context().route('https://baocao.dienmayxanh.com/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: '<html></html>' }));
     await page.addInitScript(() => {
         window.addEventListener('ycx-bonus-bridge:ping', (e) => {
@@ -85,13 +90,15 @@ test('chưa cập nhật mà quay lại tab: tự tải lại tối đa 2 lần 
     }).catch(() => { /* trang đang tải lại giữa chừng */ });
     let soLanTaiLai = 0;
     page.on('load', () => { soLanTaiLai++; });
-    // Quay lại tab nhiều lần (chưa cập nhật) — đếm tổng số lần trang tự tải lại
-    for (let lan = 0; lan < 5; lan++) {
+    let soTabMoi = 0;
+    page.context().on('page', () => { soTabMoi++; });
+    // Quay lại tab nhiều lần (chưa cập nhật) — iframe dò vẫn thấy bản cũ → không làm gì thêm
+    for (let lan = 0; lan < 3; lan++) {
         await expect(page.getByTestId('bi-sync-can-cap-nhat')).toBeVisible({ timeout: 30_000 });
         await quayLai();
         await page.waitForTimeout(2500);
     }
     await expect(page.getByTestId('bi-sync-can-cap-nhat')).toBeVisible({ timeout: 30_000 });
-    expect(soLanTaiLai, 'tự tải lại phải dừng ở tối đa 2 lần').toBeLessThanOrEqual(2);
-    expect(soLanTaiLai, 'phải có tự tải lại khi quay lại tab').toBeGreaterThanOrEqual(1);
+    expect(soLanTaiLai, 'không tải lại trang khi chưa cập nhật (vòng tải lại vô ích)').toBe(0);
+    expect(soTabMoi, 'không mở thêm tab cập nhật / tab MWG').toBe(0);
 });

@@ -116,6 +116,22 @@
     }
   }
 
+  /* BusyBar (components/shared/ui/BusyBar.tsx): vạch 2px chạy ngang ở mép trên khi đang tính lại ngầm — không chặn thao tác. */
+  .ycx-busy-bar__track {
+    animation: ycx-busy-slide 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes ycx-busy-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ycx-busy-bar__track {
+      animation: none;
+      width: 100%;
+      opacity: 0.6;
+    }
+  }
+
   .glass-card {
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300;
   }

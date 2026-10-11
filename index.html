@@ -96,10 +96,11 @@
     <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1290x2796.png">
     <link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1206x2622.png">
     <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/iphone-1320x2868.png">
-    <!-- Google Fonts -->
+    <!-- Google Fonts: KHÔNG còn thẻ CSS chặn hiển thị ở đây (2026-10-11, GĐ2 tăng tốc). Phông nạp theo nhu cầu bằng
+      components/shared/ui/googleFonts.ts → napPhongGoogle(): Roboto Condensed (nhãn cột) nạp ngay lúc khởi động nhưng không
+      chặn vẽ trang; 6 họ còn lại chỉ nạp khi chọn phông khác hoặc mở In Sticker. Giữ preconnect để lượt nạp đó nhanh. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-dvh antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">

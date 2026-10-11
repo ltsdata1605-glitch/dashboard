@@ -3,6 +3,7 @@ import { AppIcon } from '../shared/ui/icon';
 import { saveGlobalFont, getGlobalFont } from '../../services/dbService';
 import { createPortal } from 'react-dom';
 import { Button } from '../shared/ui/Button';
+import { napPhongGoogle, PHONG_GOOGLE } from '../shared/ui/googleFonts';
 
 interface FontOption {
     label: string;
@@ -46,6 +47,7 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
         getGlobalFont().then(font => {
             const activeFont = font || 'UTM Avo';
             setCurrentFont(activeFont);
+            napPhongGoogle(activeFont);
 
             // Apply on mount
             let styleEl = document.getElementById('dynamic-font-style');
@@ -119,6 +121,7 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
     const handleSelectFont = async (fontValue: string) => {
         const activeFont = fontValue || 'UTM Avo';
         setCurrentFont(activeFont);
+        napPhongGoogle(activeFont);
         await saveGlobalFont(activeFont);
 
         let styleEl = document.getElementById('dynamic-font-style');
@@ -141,6 +144,8 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
     };
 
     const toggleOpen = () => {
+        // Mỗi mục trong menu viết bằng chính phông của nó → nạp các phông Google khi mở menu (không nạp lúc mở app).
+        if (!isOpen) napPhongGoogle(PHONG_GOOGLE);
         setIsOpen(!isOpen);
     };
 

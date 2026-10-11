@@ -6,7 +6,6 @@ import Card from './Card';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import { toast } from '../../../components/shared/ui/toast';
-import confetti from 'canvas-confetti';
 import { TileLinkModal } from './TileLinkModal';
 import {
     DEFAULT_TILE_LINKS,
@@ -150,11 +149,6 @@ const StatusTile: React.FC<{
     const hasData = value && value.length > 0 && !error;
 
     const fireSuccessCelebration = () => {
-        confetti({
-            particleCount: 70,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
         toast.success(`Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
     };
 
@@ -627,11 +621,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             const targetSupermarket = activeSupermarket || supermarkets[0] || null;
             const res = await applyBiSyncResults(payload.mode, payload.results, targetSupermarket);
 
-            confetti({
-                particleCount: 80,
-                spread: 80,
-                origin: { y: 0.6 }
-            });
 
             const modeLabel = payload.mode === 'realtime' ? 'Realtime' : 'Luỹ kế';
             toast.success(`Tự động cập nhật thành công ${res.successCount} mục dữ liệu ${modeLabel}!`, { duration: 4000 });

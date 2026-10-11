@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
-import RevenueCalendar from './RevenueCalendar';
+import RevenueCalendar, { choAmLichSanSang } from './RevenueCalendar';
 import { isKhoMatch } from '../../services/filterService';
 import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
 import type { DataRow, ProductConfig } from '../../types';
@@ -28,6 +28,9 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
     const [isExporting, setIsExporting] = useState(false);
 
     const handleExport = async () => {
+        // Thư viện âm lịch nạp riêng (RevenueCalendar) — chờ đủ ngày âm rồi mới chụp.
+        try { await choAmLichSanSang(); } catch { /* không có mạng: ảnh không có ngày âm */ }
+        await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
         if (cardRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filter.kho);

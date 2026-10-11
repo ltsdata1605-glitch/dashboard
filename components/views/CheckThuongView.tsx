@@ -5,6 +5,7 @@ import { toast } from '../shared/ui/toast';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
+import { laPhongGoogle, tenHoPhong, urlPhongGoogle } from '../shared/ui/googleFonts';
 import { offerShareRetry } from '../shared/ui/ShareRetryToast';
 import { downloadBlob } from '../../services/uiService';
 import { getUnifiedCheckThuongData } from '../../services/checkThuongIframeService';
@@ -85,6 +86,9 @@ export const CheckThuongView: React.FC = () => {
                             type: 'CHECK_THUONG_INIT_DATA',
                             payload: saved
                         }, window.location.origin);
+                    } else {
+                        // Báo "không có dữ liệu" để iframe hiện màn nạp file ngay — trước đây nó luôn chờ đủ 500 ms (GĐ2 tăng tốc).
+                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_NO_DATA' }, window.location.origin);
                     }
                 });
             } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED' || e.data?.type === 'CHECK_THUONG_DATA_RESPONSE') {
@@ -190,6 +194,15 @@ export const CheckThuongView: React.FC = () => {
         }
 
         const activeFont = fontValue || 'UTM Avo';
+        // Phông Google nay nạp theo nhu cầu (components/shared/ui/googleFonts.ts) — trang cha chưa chắc đã có sẵn thẻ <link>
+        // của phông này lúc iframe chép stylesheet → tự gắn link vào iframe (một lần mỗi họ).
+        if (laPhongGoogle(activeFont) && !iframeDoc.head.querySelector(`link[data-phong-google="${tenHoPhong(activeFont)}"]`)) {
+            const link = iframeDoc.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = urlPhongGoogle([activeFont]);
+            link.dataset.phongGoogle = tenHoPhong(activeFont);
+            iframeDoc.head.appendChild(link);
+        }
         if (activeFont && activeFont !== 'UTM Avo') {
             styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
         } else {

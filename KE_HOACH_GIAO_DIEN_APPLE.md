@@ -275,6 +275,9 @@ thật sự phải chặn (đang ghi file, đang nhập Excel lớn).
 
 Công cụ đo: `tests/e2e/perf-apple.spec.ts` (GĐ0) — chạy lại sau mỗi giai đoạn để ghi số trước/sau.
 
+**Sau GĐ2 (2026-10-11)**: gói lúc mở 465 → 386 KB gzip · khung app ~1,3–1,5 s · FCP ~1,24 s · Report BI ~0,56 s · Check thưởng
+~1,37 s · về Phân tích ~0,27 s. Bảng đầy đủ + phần chưa đạt: `implementation_plan.md` mục "GĐ2".
+
 ### 4.3 Việc tăng tốc (GĐ2) và lợi ích ước tính
 
 | # | Việc | Lợi ích ước tính |
@@ -282,7 +285,7 @@ Công cụ đo: `tests/e2e/perf-apple.spec.ts` (GĐ0) — chạy lại sau mỗi
 | 1 | Gói vào "ăn kiêng": lazy `GlobalAutoSyncDock` (chỉ laptop, sau khi rảnh), `LoginView`, `PendingApprovalView`, `CouponConverterView`; tách code Report BI khỏi gói vào | −60~70 KB gzip lúc mở |
 | 2 | `RevenueCalendar` + `lunar-javascript` thành gói riêng, chỉ tải khi mở *Lịch* | tab Phân tích nhẹ hơn ~290 KB thô |
 | 3 | Google Fonts: chỉ nạp Roboto Condensed (cần cho nhãn cột) theo kiểu không chặn hiển thị; 6 họ còn lại nạp khi người dùng chọn | bỏ 1 yêu cầu chặn vẽ trang |
-| 4 | Bỏ `motion` khỏi đường khởi động (thanh tab / menu Khác dùng CSS transition) | −42 KB gzip lúc mở |
+| 4 | Bỏ `motion` khỏi đường khởi động (thanh tab / menu Khác dùng CSS transition) — *dời sang GĐ3 (Modal) + GĐ4 (thanh tab, Sidebar): motion nằm trong chính các component sẽ làm lại, làm ở GĐ2 là làm hai lần* | −42 KB gzip lúc mở |
 | 5 | Service worker: lúc cài chỉ tải sẵn khung + tab đang dùng; phần còn lại tải ngầm khi máy rảnh | lượt đầu trên 4G không bị tranh băng thông |
 | 6 | Tải trước 2 tab của thanh dưới sau khi tab hiện tại vẽ xong + rảnh 2 s; Check thưởng: giữ iframe đã nạp, `prefetch` `check-thuong.html` | chuyển tab ≤ 300 ms; Check thưởng ≤ 1 s |
 | 7 | Đổi lọc không chặn: bỏ lớp chờ toàn màn → `BusyBar` (> 300 ms mới hiện), số cũ giữ trên màn đến khi số mới về | hết cảm giác "đứng hình" |

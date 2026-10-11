@@ -46,7 +46,7 @@ const KpiCardConfigModal = React.lazy(() => import('../kpis/modals/KpiCardConfig
 const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal'));
 
 import ProcessingLoader from '../common/ProcessingLoader';
-import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
+import { BusyBar } from '../shared/ui/BusyBar';
 import ExportLoader from '../common/ExportLoader';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
@@ -466,7 +466,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                     {showDashboard && (
                         <>
-                            <FilterProcessingOverlay isVisible={isFilterProcessing} />
+                            {/* Đổi bộ lọc: tính lại trong Worker — thanh mảnh ở mép trên thay lớp chờ phủ kín màn (lỗi #9). */}
+                            <BusyBar active={isFilterProcessing} label="Đang tính lại theo bộ lọc" />
                             <FilterBar 
                                 onToggleAdvanced={() => setIsFilterSidebarOpen(true)} 
                                 onNewFile={handleNewFileClick} 

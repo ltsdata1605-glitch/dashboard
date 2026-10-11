@@ -9,19 +9,6 @@
     "iconRawSvg": 0,
     "iconEmoji": 10
   },
-  "components/common/FilterProcessingOverlay.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 2,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "iconRawSvg": 0
-  },
   "components/common/ProcessingLoader.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 2,

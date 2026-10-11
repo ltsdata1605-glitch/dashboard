@@ -4,7 +4,6 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { toast } from '../../../components/shared/ui/toast';
-import confetti from 'canvas-confetti';
 import TargetHero from './TargetHero';
 import * as db from '../utils/db';
 import { TileLinkModal } from './TileLinkModal';
@@ -383,11 +382,6 @@ const StatusTile: React.FC<{
     const hasData = value && value.length > 0 && !error;
 
     const fireSuccessCelebration = () => {
-        confetti({
-            particleCount: 70,
-            spread: 70,
-            origin: { y: 0.6 }
-        });
         toast.success(`Đã dán và cập nhật thành công ${title}!`, { duration: 3000 });
     };
 

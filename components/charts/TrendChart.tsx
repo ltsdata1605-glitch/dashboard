@@ -14,7 +14,7 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import { isKhoMatch } from '../../services/filterService';
 import { useTrendChartLogic, RechartsTrendData } from '../../hooks/useTrendChartLogic';
 import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
-import RevenueCalendar from './RevenueCalendar';
+import RevenueCalendar, { choAmLichSanSang } from './RevenueCalendar';
 import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
@@ -268,7 +268,14 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   
   const draftCalendarRef = useRef<HTMLDivElement>(null);
 
+  /** Ảnh lịch phải có ngày âm: thư viện âm lịch nạp riêng (RevenueCalendar) → chờ nó + 2 khung hình cho lịch vẽ lại. */
+  const choLichDuNgayAm = async () => {
+      try { await choAmLichSanSang(); } catch { return; }
+      await new Promise<void>(r => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+  };
+
   const handleExportDraft = async () => {
+      await choLichDuNgayAm();
       if (draftCalendarRef.current) {
           const prefix = getExportFilenamePrefix(filterState.kho);
           const monthLabel = calendarFilters.month ? calendarFilters.month.split('-').reverse().join('-') : 'lich';
@@ -279,6 +286,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   const handleExportClick = async () => {
       const prefix = getExportFilenamePrefix(filterState.kho);
       if (displayMode === 'calendar') {
+          await choLichDuNgayAm();
           const targets = document.querySelectorAll('.calendar-export-target');
           if (targets.length > 0) {
               const job = targets.length > 1 ? startExportJob({ title: 'Xuất ảnh lịch doanh thu', total: targets.length }) : null;

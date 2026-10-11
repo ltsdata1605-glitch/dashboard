@@ -14,6 +14,13 @@ export type { AppIconProps, IconName, IconSize } from './icon';
 export { toast, AppToaster, TOAST_DURATION } from './toast';
 export type { ToastKind, ToastAction, ToastOptions, ActionToastOptions } from './toast';
 
+// Thanh tiến trình mảnh cho việc tính lại ngầm (GĐ2 2026-10-11) — thay lớp chờ phủ kín màn khi không cần chặn thao tác
+export { BusyBar } from './BusyBar';
+export type { BusyBarProps } from './BusyBar';
+
+// Phông Google nạp theo nhu cầu (GĐ2 2026-10-11) — index.html không còn thẻ CSS phông chặn hiển thị
+export { napPhongGoogle, laPhongGoogle, tenHoPhong, urlPhongGoogle, PHONG_GOOGLE } from './googleFonts';
+
 // Existing components
 export { Overlay, MotionOverlay } from './Overlay';
 export type { OverlayProps, OverlayKind } from './Overlay';

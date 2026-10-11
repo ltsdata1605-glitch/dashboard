@@ -13,14 +13,9 @@ if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs)
  * khoản / Safari iOS tự xoá dữ liệu web) database bị tạo RỖNG, iframe không bao giờ tạo được store
  * `keyval` → mọi lần lưu/tải báo "Không lưu được thay đổi Check Thưởng", tải lại trang là mất dữ liệu.
  *
- * Chạy 2 nhánh của iframe: bản `idbKeyval` dự phòng tự viết, và nhánh thư viện idb-keyval@6 (CDN) —
- * mô phỏng đúng `createStore` của nó: mở KHÔNG kèm version, chỉ tạo store trong onupgradeneeded.
+ * Từ 2026-10-11 (GĐ2 tăng tốc) iframe KHÔNG còn nạp idb-keyval@6 từ CDN — bộ lưu `idbKeyval` của chính trang là bản dùng thật
+ * (trước đó test chạy 2 nhánh: bản tự viết và thư viện CDN). Test khẳng định thêm: trang không gọi CDN idb-keyval nữa.
  */
-const IDB_KEYVAL_GIA = `(function(){function s(){return new Promise(function(res,rej){var r=indexedDB.open('keyval-store');
-r.onupgradeneeded=function(){r.result.createObjectStore('keyval')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
-function q(m,f){return s().then(function(db){return new Promise(function(res,rej){var t=db.transaction('keyval',m);var o=f(t.objectStore('keyval'));
-t.oncomplete=function(){res(o&&o.result)};t.onerror=function(){rej(t.error)}})})}
-window.idbKeyval={get:function(k){return q('readonly',function(st){return st.get(k)})},set:function(k,v){return q('readwrite',function(st){st.put(v,k)})}};})();`;
 
 const taoFile = () => {
     const rows: (string | number)[][] = [['STT', 'Vùng', 'Miền', 'Kênh', 'Siêu thị', 'Ngành hàng', '% dự kiến', 'Dự kiến vượt', 'Lấy top 10', 'Hạng vượt ưu', 'Hạng % target', 'Thưởng vượt ưu', 'Thưởng top %', 'Tổng thưởng']];
@@ -29,11 +24,11 @@ const taoFile = () => {
     const f = join(mkdtempSync(join(tmpdir(), 'ct-')), 'luy-ke-thi-dua.xlsx'); XLSX.writeFile(wb, f); return f;
 };
 
-const chuanBi = async (page: Page, coIdbKeyval: boolean) => {
-    // CDN không ra được từ máy test — phục vụ bản cục bộ (xlsx, html-to-image) / bản mô phỏng (idb-keyval)
+const chuanBi = async (page: Page, goiCdnIdb: string[]) => {
+    // CDN không ra được từ máy test — phục vụ bản cục bộ (xlsx, html-to-image); idb-keyval: ghi lại nếu trang còn gọi
     await page.route('https://cdn.sheetjs.com/**', r => r.fulfill({ path: 'node_modules/xlsx/dist/xlsx.full.min.js', contentType: 'application/javascript' }));
     await page.route('https://cdn.jsdelivr.net/npm/html-to-image**', r => r.fulfill({ path: 'node_modules/html-to-image/dist/html-to-image.js', contentType: 'application/javascript' }));
-    await page.route('https://cdn.jsdelivr.net/npm/idb-keyval**', r => coIdbKeyval ? r.fulfill({ body: IDB_KEYVAL_GIA, contentType: 'application/javascript' }) : r.abort());
+    await page.route('https://cdn.jsdelivr.net/npm/idb-keyval**', r => { goiCdnIdb.push(r.request().url()); return r.abort(); });
 };
 
 const moCheckThuong = async (page: Page) => {
@@ -45,11 +40,12 @@ const moCheckThuong = async (page: Page) => {
     return page.frameLocator('iframe[src*="check-thuong"]');
 };
 
-for (const coIdbKeyval of [false, true]) {
+{
     for (const hongSan of [false, true]) {
-        test(`${coIdbKeyval ? 'idb-keyval CDN' : 'bản dự phòng'} — ${hongSan ? 'database đã bị tạo rỗng từ trước' : 'máy mới'}: lưu được, tải lại vẫn còn`, async ({ page }) => {
+        test(`bộ lưu của trang — ${hongSan ? 'database đã bị tạo rỗng từ trước' : 'máy mới'}: lưu được, tải lại vẫn còn`, async ({ page }) => {
             test.setTimeout(120_000);
-            await chuanBi(page, coIdbKeyval);
+            const goiCdnIdb: string[] = [];
+            await chuanBi(page, goiCdnIdb);
             const loi: string[] = [];
             page.on('console', m => { if (/object store|Lưu dữ liệu trong iframe thất bại|Tải dữ liệu đã lưu/.test(m.text())) loi.push(m.text()); });
             if (hongSan) {
@@ -68,6 +64,7 @@ for (const coIdbKeyval of [false, true]) {
             await page.reload();
             await expect(page.frameLocator('iframe[src*="check-thuong"]').getByText('Kết quả tra cứu').first(), 'tải lại trang là mất dữ liệu Check Thưởng').toBeVisible({ timeout: 20_000 });
             expect(loi, 'còn lỗi lưu/tải IndexedDB').toEqual([]);
+            expect(goiCdnIdb, 'trang Check thưởng vẫn gọi CDN idb-keyval (thẻ script chặn hiển thị)').toEqual([]);
         });
     }
 }

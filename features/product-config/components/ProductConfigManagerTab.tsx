@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
-import confetti from 'canvas-confetti';
 import { useAuth } from '../../../contexts/AuthContext';
 import type { ProductConfig } from '../../../types';
 import {
@@ -187,7 +186,6 @@ export const ProductConfigManagerTab: React.FC = () => {
             await dbService.saveProductConfig(config, 'cloud://global_product_config');
             window.dispatchEvent(new CustomEvent('ycx-product-config-changed', { detail: config }));
             setIsDirty(false);
-            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
             toast.success('Đã lưu cấu hình thành công lên Cloud toàn hệ thống!', { id: toastId });
         } catch (err) {
             console.error('[ProductConfigManagerTab] Lỗi lưu cấu hình:', err);

@@ -1,5 +1,34 @@
-import React, { useMemo } from 'react';
-import { Solar } from 'lunar-javascript';
+import React, { useEffect, useMemo, useState } from 'react';
+
+/**
+ * `lunar-javascript` (~290 KB) chỉ cần cho ngày âm + lễ âm lịch của chế độ Lịch → nạp RIÊNG khi lịch được vẽ lần đầu
+ * (GĐ2 tăng tốc, KE_HOACH_GIAO_DIEN_APPLE.md mục 4.3 #2). Trước đây nó nằm trong gói TrendChart — tab Phân tích phải tải
+ * cả thư viện âm lịch ngay cả khi chỉ xem biểu đồ cột. Chưa nạp xong thì lịch vẫn vẽ ngày dương + số liệu; ngày âm hiện
+ * ngay khi thư viện về (thường < 1 giây).
+ */
+type LunarLib = { Solar: { fromYmd: (y: number, m: number, d: number) => { getLunar: () => { getDay: () => number; getMonth: () => number } } } };
+let lunarLib: LunarLib | null = null;
+let lunarPromise: Promise<LunarLib> | null = null;
+
+/** Nạp thư viện âm lịch (một lần cho cả app). Nơi xuất ảnh lịch gọi trước khi chụp để ảnh luôn có ngày âm. */
+export function choAmLichSanSang(): Promise<LunarLib> {
+    if (!lunarPromise) {
+        lunarPromise = import('lunar-javascript').then((m: LunarLib) => (lunarLib = m));
+        lunarPromise.catch(() => { lunarPromise = null; }); // lỗi mạng → lần vẽ sau thử lại
+    }
+    return lunarPromise;
+}
+
+function useAmLich(): LunarLib | null {
+    const [lib, setLib] = useState<LunarLib | null>(lunarLib);
+    useEffect(() => {
+        if (lib) return;
+        let conSong = true;
+        choAmLichSanSang().then(m => { if (conSong) setLib(m); }, () => { /* không có âm lịch thì vẫn vẽ lịch dương */ });
+        return () => { conSong = false; };
+    }, [lib]);
+    return lib;
+}
 
 interface DailyData {
     rawDate?: Date;
@@ -45,6 +74,8 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
         return map;
     }, [data]);
 
+    const amLich = useAmLich();
+
     const calendarDays = useMemo(() => {
         const firstDayOfMonth = new Date(year, month, 1);
         const lastDayOfMonth = new Date(year, month + 1, 0);
@@ -64,9 +95,8 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
             const value = dataMap.get(dateStr);
 
-            const solar = Solar.fromYmd(year, month + 1, i);
-            const lunar = solar.getLunar();
-            let lunarStr = `${lunar.getDay()}/${lunar.getMonth()}`;
+            const lunar = amLich ? amLich.Solar.fromYmd(year, month + 1, i).getLunar() : null;
+            const lunarStr = lunar ? `${lunar.getDay()}/${lunar.getMonth()}` : '';
 
             let holidayName = null;
             
@@ -81,8 +111,8 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
             else if (i === 1 && month + 1 === 1) holidayName = 'Tết Dương 🎆';
 
             // Lunar Holidays
-            const lDay = lunar.getDay();
-            const lMonth = lunar.getMonth();
+            const lDay = lunar ? lunar.getDay() : 0;
+            const lMonth = lunar ? lunar.getMonth() : 0;
             if (lDay === 1 && lMonth === 1) holidayName = 'Mùng 1 Tết 🧧';
             else if (lDay === 2 && lMonth === 1) holidayName = 'Mùng 2 Tết 🧧';
             else if (lDay === 3 && lMonth === 1) holidayName = 'Mùng 3 Tết 🧧';
@@ -104,7 +134,7 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
         }
 
         return days;
-    }, [year, month, dataMap]);
+    }, [year, month, dataMap, amLich]);
 
     // Responsive sizing based on mode
     // compact takes priority (used in 2-column grid for both draft + saved)

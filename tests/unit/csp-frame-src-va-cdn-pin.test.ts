@@ -89,7 +89,9 @@ describe('Ghim phiên bản xlsx của check-thuong.html', () => {
      * (Prototype Pollution) + CVE-2024-22363 (ReDoS) trong khi chính nó parse file Excel người dùng
      * tải lên.
      */
-    const src = /<script[^>]+src="(https:\/\/[^"]*xlsx[^"]*)"/i.exec(html)?.[1] ?? '';
+    // Từ 2026-10-11 (GĐ2 tăng tốc) xlsx nạp THEO NHU CẦU: URL nằm trong bảng THU_VIEN của script trang
+    // (`src: 'https://cdn.sheetjs.com/…'`) thay vì thẻ <script src> — nhận cả hai dạng, ghim phiên bản vẫn như cũ.
+    const src = /(?:<script[^>]+src="|\bsrc:\s*')(https:\/\/[^"']*xlsx[^"']*)["']/i.exec(html)?.[1] ?? '';
 
     it('có nạp xlsx từ CDN', () => {
         expect(src, 'không tìm thấy thẻ script nạp xlsx').not.toBe('');

@@ -26,17 +26,22 @@ const TaxCalculatorView = lazyWithRetry(() => import('./features/tax-calculator/
 // BI Module Wrapper
 const BiWrapper = lazyWithRetry(() => import('./features/bi-dashboard/components/BiWrapper'), 'BiWrapper');
 
+// Không cần ngay lúc mở app (GĐ2 tăng tốc, KE_HOACH_GIAO_DIEN_APPLE.md mục 4.3): màn đăng nhập / chờ duyệt chỉ hiện với
+// người chưa có phiên; Rút gọn coupon là một tab; dock Auto Sync chỉ HIỆN trên laptop nhưng kéo theo ~100 KB code Report BI
+// (tự đồng bộ, đổ thưởng, hẹn giờ) — tách khỏi gói vào và gắn sau lần rảnh đầu tiên (xem useSauLanRanhDau).
+const LoginView = lazyWithRetry(() => import('./components/views/LoginView'), 'LoginView');
+const PendingApprovalView = lazyWithRetry(() => import('./components/views/PendingApprovalView'), 'PendingApprovalView');
+const CouponConverterView = lazyWithRetry(() => import('./components/views/CouponConverterView'), 'CouponConverterView');
+const GlobalAutoSyncDock = lazyWithRetry(() => import('./components/layout/GlobalAutoSyncDock'), 'GlobalAutoSyncDock');
+
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SyncProvider } from './contexts/SyncContext';
-import LoginView from './components/views/LoginView';
-import PendingApprovalView from './components/views/PendingApprovalView';
-import CouponConverterView from './components/views/CouponConverterView';
 import { AppToaster } from './components/shared/ui/toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
-import GlobalAutoSyncDock from './components/layout/GlobalAutoSyncDock';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 import InstallAppHint from './components/layout/InstallAppHint';
 import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
+import { napPhongGoogle } from './components/shared/ui/googleFonts';
 
 /**
  * TabContent — Isolated component that handles tab switching.
@@ -45,6 +50,55 @@ import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
  * heavy views (with IDB reads, Firebase listeners, etc.) that
  * the user may never open → saves CPU + battery.
  */
+/**
+ * `true` sau lần trình duyệt rảnh đầu tiên (tối đa `timeout` ms; Safari chưa có requestIdleCallback → 300 ms).
+ * Dùng để gắn phần chạy nền (dock Auto Sync, hẹn giờ) SAU khi trang đầu đã vẽ xong, không giành CPU/mạng với nó.
+ */
+function useSauLanRanhDau(timeout = 1500): boolean {
+    const [ready, setReady] = React.useState(false);
+    React.useEffect(() => {
+        if ('requestIdleCallback' in window) {
+            const h = window.requestIdleCallback(() => setReady(true), { timeout });
+            return () => window.cancelIdleCallback(h);
+        }
+        const t = setTimeout(() => setReady(true), 300);
+        return () => clearTimeout(t);
+    }, [timeout]);
+    return ready;
+}
+
+/** Chunk của 3 tab chính trên thanh dưới — tải trước khi máy rảnh (xem effect trong AppContent). */
+const TAI_TRUOC_TAB: Record<string, () => Promise<unknown>> = {
+    'analysis': () => import('./components/views/DashboardView'),
+    'employees': () => import('./features/bi-dashboard/components/BiWrapper'),
+    'check-thuong': () => import('./components/views/CheckThuongView'),
+};
+
+/** Bật "Tiết kiệm dữ liệu" hoặc mạng 2G → không tải trước gì (Safari không có navigator.connection → coi như được). */
+function mangChoPhepTaiTruoc(): boolean {
+    const c = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    return !(c?.saveData || /(^|-)2g$/.test(c?.effectiveType || ''));
+}
+
+let daTaiTruocTabChinh = false;
+function taiTruocTabChinh(): void {
+    if (daTaiTruocTabChinh || !mangChoPhepTaiTruoc()) return;
+    daTaiTruocTabChinh = true;
+    for (const tai of Object.values(TAI_TRUOC_TAB)) void tai().catch(() => { /* lúc mở tab sẽ tải lại */ });
+    // Check thưởng chạy trong iframe: tải trước trang HTML (trình duyệt giữ trong bộ nhớ đệm cho lần mở iframe).
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = '/check-thuong.html';
+    document.head.appendChild(link);
+}
+
+/** Vòng quay chờ toàn màn — lúc Firebase đang xác nhận phiên và lúc tải màn đăng nhập/chờ duyệt. */
+const ManChoKhoiDong = () => (
+    <div className="min-h-dvh bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+);
+
 const TabContent = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
     const [mountedTabs, setMountedTabs] = React.useState<Set<string>>(() => new Set([activeTab]));
@@ -168,41 +222,33 @@ function AppContent() {
     // hình quý giá của cả hai (bug user báo cáo). Ẩn thanh điều hướng chính khi đang ở các tab
     // này; đổi lại logo/tiêu đề ở top bar (vẫn hiện, không bị ẩn) trở thành nút "Về Dashboard".
     const isFullscreenMobileTool = activeTab === 'tools-print-sticker' || activeTab === 'tools-phanca';
+    const sauLanRanhDau = useSauLanRanhDau();
 
     // Viền mờ "còn cột bên phải" cho mọi bảng cuộn ngang (Đợt C, kế hoạch iPhone)
     React.useEffect(() => installTableScrollCue(), []);
 
     React.useEffect(() => {
-        // Preload the CURRENT tab's chunk in background so switching away and back feels instant.
-        // PERF FIX: trước đây prefetch CỨNG cả 3 tab nặng nhất (DashboardView 1.05MB lớn nhất dự
-        // án + CheckThuongView + BiWrapper) bất kể user đang dùng tab nào — tốn băng thông/CPU di
-        // động vô ích nếu user chỉ dùng Phân ca/In tem. Giờ chỉ tải trước đúng tab hiện tại (đã
-        // resolve xong từ IndexedDB lúc effect này chạy, do LayoutContext load activeTab async).
+        // Tải trước chunk của tab ĐANG MỞ (đổi tab rồi quay lại thấy tức thì), rồi khi máy rảnh tiếp thì tải trước 2 tab
+        // chính còn lại của thanh dưới + trang Check thưởng (GĐ2 tăng tốc — chuyển tab ≤ 0,3 s). Lịch sử: audit "PERF FIX"
+        // từng bỏ prefetch cứng 3 tab nặng vì tốn băng thông cho người chỉ dùng Phân ca/In tem → nay chỉ tải 3 tab CHÍNH,
+        // một lần mỗi phiên, sau khi tab hiện tại đã vẽ xong + rảnh, và bỏ hẳn khi bật Tiết kiệm dữ liệu / mạng 2G.
         let idleHandle: number | undefined;
+        let timer2: ReturnType<typeof setTimeout> | undefined;
+        const khiRanh = (fn: () => void, timeout: number) => {
+            if ('requestIdleCallback' in window) idleHandle = window.requestIdleCallback(fn, { timeout });
+            else fn();
+        };
         const timer = setTimeout(() => {
-            const preloadTarget = () => {
-                switch (activeTab) {
-                    case 'analysis':
-                        import('./components/views/DashboardView');
-                        break;
-                    case 'check-thuong':
-                        import('./components/views/CheckThuongView');
-                        break;
-                    case 'employees':
-                        import('./features/bi-dashboard/components/BiWrapper');
-                        break;
-                }
-            };
-            if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-                idleHandle = window.requestIdleCallback(preloadTarget);
-            } else {
-                preloadTarget();
-            }
+            khiRanh(() => {
+                void TAI_TRUOC_TAB[activeTab]?.().catch(() => { /* lỗi mạng: lúc mở tab sẽ tải lại */ });
+                timer2 = setTimeout(() => khiRanh(taiTruocTabChinh, 4000), 2000);
+            }, 3000);
         }, 1500);
         // Audit A28: trước đây chỉ huỷ setTimeout — lượt idle đã đặt vẫn chạy sau khi đổi tab và tải
         // trước chunk của tab vừa rời (tốn băng thông/CPU điện thoại vô ích).
         return () => {
             clearTimeout(timer);
+            if (timer2) clearTimeout(timer2);
             if (idleHandle !== undefined && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
         };
     }, [activeTab]);
@@ -213,6 +259,7 @@ function AppContent() {
     React.useEffect(() => {
         getGlobalFont().then(font => {
             const activeFont = font || 'UTM Avo';
+            napPhongGoogle(activeFont); // phông Google người dùng đã chọn — nạp theo nhu cầu (bỏ qua phông tự host)
             if (activeFont && activeFont !== 'UTM Avo') {
                 document.body.style.fontFamily = `'${activeFont}', sans-serif`;
             } else {
@@ -228,11 +275,7 @@ function AppContent() {
 
     // Hiển thị màn hình Loading nếu Firebase Auth đang kiểm tra phiên làm việc
     if (isLoading) {
-         return (
-             <div className="min-h-dvh bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-                 <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
-             </div>
-         );
+         return <ManChoKhoiDong />;
     }
 
     // Nếu chưa đăng nhập và cũng chưa bật chế độ Demo -> Bắt buộc ở màn Login.
@@ -240,17 +283,17 @@ function AppContent() {
     // chỉ đang chờ Firebase SDK xác nhận lại `user` (thường vài chục ms) — không hiện nhầm màn
     // Login trong lúc chờ (xem chú thích chi tiết ở AuthContext.tsx).
     if (!user && !isDemoMode && !hasCachedSession) {
-        return <LoginView />;
+        return <Suspense fallback={<ManChoKhoiDong />}><LoginView /></Suspense>;
     }
 
     // Hiển thị màn hình thông tin chờ duyệt hoặc form đăng ký cho user mới
     if (status === 'pending') {
-        return <PendingApprovalView />;
+        return <Suspense fallback={<ManChoKhoiDong />}><PendingApprovalView /></Suspense>;
     }
 
     // Bắt buộc nhập mã kho cho tất cả user đã approved (trừ admin/demo)
     if (user && !isDemoMode && userRole !== 'admin' && (!departmentId || departmentId.trim() === '')) {
-        return <PendingApprovalView forceDeptUpdate />;
+        return <Suspense fallback={<ManChoKhoiDong />}><PendingApprovalView forceDeptUpdate /></Suspense>;
     }
 
     return (
@@ -347,8 +390,9 @@ function AppContent() {
                     </div>
                 </main>
             </div>
-            {/* Global Auto Sync Pro Dock: Luôn hiển thị ở mọi nơi trên Laptop/Desktop */}
-            <GlobalAutoSyncDock />
+            {/* Global Auto Sync Pro Dock: hiện trên Laptop/Desktop; logic hẹn giờ/tự đồng bộ của nó chạy ở mọi thiết bị.
+                Gắn sau lần rảnh đầu (gói riêng) — lượt hẹn giờ đầu tiên vốn chờ 5 giây nên không lỡ gì. */}
+            {sauLanRanhDau && <Suspense fallback={null}><GlobalAutoSyncDock /></Suspense>}
         </div>
     );
 }

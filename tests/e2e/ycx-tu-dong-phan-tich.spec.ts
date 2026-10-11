@@ -169,7 +169,17 @@ test('Phân tích: màn 1366px → khung thu gọn thành cột icon, mở tạm
     expect((await dock.boundingBox())!.width).toBeLessThan(80);
 });
 
-/** YCX Luỹ kế (userscript 7.15): Từ 01 → hôm qua, nạp như "Lũy kế / Quá khứ" (hỏi tên gợi nhớ, lưu kho dữ liệu). */
+/** Nút YCX Luỹ kế mở hộp chọn "Lũy kế tháng hiện tại / Chọn tháng" (chủ dự án thêm ở f0a5558, 2026-10-10) → bấm "Bắt đầu". */
+async function batDauLuyKe(page: Page, dock: ReturnType<Page['getByTestId']>) {
+    await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
+    // Hộp chọn và hộp tiến trình cùng tên "Tự động YCX Luỹ kế" → nhận hộp chọn qua nội dung riêng của nó.
+    const hop = page.getByRole('dialog').filter({ hasText: 'Lũy kế tháng hiện tại' });
+    await expect(hop).toBeVisible();
+    await hop.getByRole('button', { name: /Bắt đầu — Luỹ kế/ }).click();
+    await expect(hop).toHaveCount(0); // đợi hộp chọn đóng hẳn (hoạt ảnh) trước khi kiểm hộp tiến trình
+}
+
+/** YCX Luỹ kế (userscript 7.15): Từ 01 → hôm qua, nạp như "Lũy kế / Quá khứ" với TÊN TỰ ĐỘNG (không hỏi tên — f0a5558). */
 test('Phân tích: YCX Luỹ kế ngày 15 → mở báo cáo 77 chế độ luyke, nạp file như Lũy kế / Quá khứ', async ({ page }) => {
     test.setTimeout(120_000);
     await moPhanTichCoUserscript(page, '2026-10-15T09:00:00');
@@ -178,7 +188,7 @@ test('Phân tích: YCX Luỹ kế ngày 15 → mở báo cáo 77 chế độ luy
     await expect(dock).toContainText('YCX Luỹ kế');
 
     const popupP = page.waitForEvent('popup');
-    await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
+    await batDauLuyKe(page, dock);
     const popup = await popupP;
     expect(popup.url()).toMatch(/\?ycx_ycx=luyke&ycx_job=ycx-/);
     const jobId = new URL(popup.url()).searchParams.get('ycx_job')!;
@@ -191,12 +201,9 @@ test('Phân tích: YCX Luỹ kế ngày 15 → mở báo cáo 77 chế độ luy
     await page.screenshot({ path: test.info().outputPath('luyke-dang-chay.png') });
 
     await gmSet(page, 'ycx_ycx_done', { source: 'ycx-ycx-auto', type: 'done', jobId, mode: 'luyke', url: 'https://report.mwgroup.vn/files/YCX-LuyKe.xlsx', fileName: 'YCX-LuyKe.xlsx', at: 9 });
-    // Nạp kiểu Lũy kế / Quá khứ → Phân tích hỏi tên gợi nhớ (Tệp Realtime thì không hỏi)
-    const ten = page.getByPlaceholder('Nhập tên hiển thị...');
-    await expect(ten).toBeVisible({ timeout: 30_000 });
-    await page.screenshot({ path: test.info().outputPath('luyke-dat-ten.png') });
-    await ten.fill('Luỹ kế 01-14/10');
-    await ten.press('Enter');
+    // Nạp kiểu Lũy kế / Quá khứ với tên tự động "YCX Từ ngày 1 - 14/10 + hh:mm" — KHÔNG còn hộp hỏi tên gợi nhớ.
+    await expect(page.getByText(/Đã tự động tải và nạp file YCX Từ ngày 1 - 14\/10/)).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByPlaceholder('Nhập tên hiển thị...')).toHaveCount(0);
     await expect(page.locator('#business-overview')).toContainText('66 Tr', { timeout: 60_000 });
     await page.screenshot({ path: test.info().outputPath('luyke-da-nap.png') });
 });
@@ -207,7 +214,7 @@ test('Phân tích: bấm YCX Luỹ kế vào NGÀY 01 → chạy Realtime', asyn
     const dock = page.getByTestId('ycx-auto-dock');
     await expect(dock).toHaveAttribute('data-userscript', /^7\.\d+/, { timeout: 5000 }); // chân khung bỏ dòng "bản 7.x" ở 41eb025f
     const popupP = page.waitForEvent('popup');
-    await dock.getByRole('button', { name: 'Tự động YCX Luỹ kế' }).click();
+    await batDauLuyKe(page, dock);
     expect((await popupP).url()).toMatch(/\?ycx_ycx=realtime&ycx_job=ycx-/);
     await expect(page.getByText('Hôm nay là ngày 01 — YCX Luỹ kế chạy Realtime')).toBeVisible();
     await expect(page.getByRole('dialog', { name: /Tự động YCX Realtime/ })).toBeVisible();
