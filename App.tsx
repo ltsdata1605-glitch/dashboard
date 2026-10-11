@@ -314,7 +314,7 @@ function AppContent() {
                                     có ~370px → trang từng tràn ngang 140px, chuông thông báo nằm NGOÀI màn hình.
                                     Riêng màn đó ẩn chữ tiêu đề dưới 540px (nút quay lại + icon vẫn còn) để 4 nút
                                     chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
-                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[540px]:flex' : 'flex'} flex-col items-start min-w-0`}>
+                                <div className={`${activeTab === 'tools-print-sticker' || activeTab === 'check-thuong' ? 'hidden min-[540px]:flex' : 'flex'} flex-col items-start min-w-0`}>
                                     {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone.
                                         leading-tight chứ KHÔNG leading-none: truncate = overflow:hidden, khung cao đúng 14px
                                         sẽ xén dấu tiếng Việt (Phân, Báo cáo, Tích… cao 17px) — đo được ở iPhone SE. */}

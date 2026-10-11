@@ -123,14 +123,14 @@ export const BonusView: React.FC<{
                 <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
                     {cardTitle}
                 </h2>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-1">
+                <div className="text-[8.5px] sm:text-[9.5px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-0.5 sm:mt-1">
                     {cardSubtitle}
                 </div>
             </div>
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
-            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
-                <div className="flex gap-1.5 items-center">
+            <div className="flex flex-wrap justify-between items-center px-3 sm:px-4 py-1 sm:py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
+                <div className="hidden sm:flex gap-1.5 items-center">
                     <Button
                         variant="unstyled"
                         size="none"
@@ -142,7 +142,7 @@ export const BonusView: React.FC<{
                     </Button>
                     <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} onCompareDone={handleCompareDone} />
                 </div>
-                <div className="flex gap-1.5 items-center">
+                <div className="flex gap-1.5 items-center ml-auto">
                     <Button
                         variant="ghost"
                         size="icon"

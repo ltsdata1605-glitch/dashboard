@@ -705,13 +705,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             const localSavedAt = currentLocal ? currentLocal.savedAt : 0;
             const localFileTs = currentLocal ? currentLocal.fileLastModified : 0;
 
-            // Bỏ qua nếu trùng file
-            if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
+            // Bỏ qua nếu trùng file và thời điểm lưu không mới hơn
+            if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs && cloudMeta.savedAt <= localSavedAt + 2000) {
                 return;
             }
 
-            // Chỉ tự động tải khi bản ghi trên mây mới hơn bản hiện tại
-            if (cloudMeta.savedAt <= localSavedAt + 5000) {
+            // Chỉ tự động tải khi bản ghi trên mây mới hơn bản hiện tại hoặc khác file
+            if (cloudMeta.savedAt <= localSavedAt + 2000 && (!cloudMeta.fileLastModified || cloudMeta.fileLastModified === localFileTs)) {
                 return;
             }
 
@@ -723,6 +723,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const cloudResult = await downloadProcessedData(user, cloudMeta);
                 if (isMounted && cloudResult && cloudResult.data.length > 0) {
                     await applyCloudSalesData(cloudResult.data, cloudResult.meta);
+                    toast.success(`Đã tự động cập nhật dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'auto-cloud-sync' });
                 }
             } catch (err) {
                 console.warn('[CloudData] Tự động đồng bộ realtime thất bại:', err);
@@ -766,12 +767,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
             if (cloudMeta && cloudMeta.savedAt) {
                 const isDifferent = (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified !== localFileTs) ||
-                                    (cloudMeta.savedAt > localSavedAt + 3000);
+                                    (cloudMeta.savedAt > localSavedAt + 2000);
                 if (isDifferent) {
                     const cloudResult = await downloadProcessedData(user, cloudMeta);
                     if (cloudResult && cloudResult.data.length > 0) {
                         await applyCloudSalesData(cloudResult.data, cloudResult.meta);
-                        toast.success(`Đã đồng bộ dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                        toast.success(`Đã tự động cập nhật dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
                         updated = true;
                     }
                 }
@@ -815,9 +816,24 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }
     }, [user, isDemoMode, departmentId, applyCloudSalesData, setOriginalData, setAppState]);
 
-    // Tự động kiểm tra và đồng bộ khi người dùng quay lại tab (visibilitychange / focus / online)
+    // Tự động kiểm tra và đồng bộ khi người dùng mở trang, quay lại tab hoặc định kỳ ngầm
     useEffect(() => {
         let debounceTimer: ReturnType<typeof setTimeout>;
+
+        // 1. Tự động đồng bộ ngay khi vừa mở trang (người dùng không cần bấm gì)
+        const initialTimer = setTimeout(() => {
+            if (user && !isDemoMode) {
+                triggerCloudSync(false);
+            }
+        }, 1200);
+
+        // 2. Cờ chạy ngầm: Tự động kiểm tra Firebase mỗi 25 giây khi tab đang hoạt động
+        const backgroundInterval = setInterval(() => {
+            if (document.visibilityState === 'visible' && user && !isDemoMode && !isCloudSyncingRef.current) {
+                triggerCloudSync(false);
+            }
+        }, 25000);
+
         const handleWakeAndSync = () => {
             if (document.visibilityState === 'visible') {
                 clearTimeout(debounceTimer);
@@ -837,13 +853,15 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         window.addEventListener('ycx-trigger-cloud-sync', handleManualEvent);
 
         return () => {
+            clearTimeout(initialTimer);
+            clearInterval(backgroundInterval);
             clearTimeout(debounceTimer);
             document.removeEventListener('visibilitychange', handleWakeAndSync);
             window.removeEventListener('focus', handleWakeAndSync);
             window.removeEventListener('online', handleWakeAndSync);
             window.removeEventListener('ycx-trigger-cloud-sync', handleManualEvent);
         };
-    }, [triggerCloudSync]);
+    }, [user, isDemoMode, triggerCloudSync]);
 
     // Lắng nghe sự kiện cập nhật cấu hình tức thì từ Phân Quyền & Duyệt Yêu Cầu (áp dụng trực tiếp không cần reload trang)
     useEffect(() => {

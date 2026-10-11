@@ -10,8 +10,8 @@ async function navigateAndEnsureApp(page: Page, url: string) {
     if (await trialBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
         await trialBtn.click();
     }
-    // Chờ aside hoặc giao diện chính sẵn sàng
-    await page.locator('aside, nav, .kpi-overview-card').first().waitFor({ state: 'visible', timeout: 30_000 });
+    // Chờ aside (desktop) hoặc nav (mobile) hoặc thẻ KPI sẵn sàng
+    await page.locator('aside:visible, nav:visible, .kpi-overview-card:visible').first().waitFor({ state: 'visible', timeout: 30_000 });
 }
 
 test('Kiểm thử thực tế: Thẻ KPI trong Phân Tích & Report BI phải bo tròn 16px (rounded-2xl)', async ({ page }) => {
@@ -121,3 +121,77 @@ test('Kiểm thử thực tế: Thẻ KPI trong Phân Tích & Report BI phải b
         await page.screenshot({ path: 'test-results/kpi-verify-checkthuong.png' });
     }
 });
+
+test('Kiểm thử thực tế: Giao diện mobile thẻ KPI có icon nhỏ, tiêu đề cùng dòng, bỏ dấu chấm đỏ', async ({ page }) => {
+    // Đặt viewport mobile chuẩn (iPhone 14/15: 390x844)
+    await page.setViewportSize({ width: 390, height: 844 });
+    await navigateAndEnsureApp(page, '/?tab=analysis');
+
+    const ptCards = page.locator('.kpi-overview-card:visible');
+    await expect(ptCards.first()).toBeVisible({ timeout: 20_000 });
+    const count = await ptCards.count();
+    expect(count, 'Phải có đúng 4 thẻ KPI hiển thị trên mobile').toBe(4);
+
+    for (let i = 0; i < count; i++) {
+        const card = ptCards.nth(i);
+        // Mobile layout container
+        const mobileContainer = card.locator('.lg\\:hidden');
+        await expect(mobileContainer).toBeVisible();
+
+        // 1. Kiểm tra hàng 1 chứa cả icon và title
+        const row1 = mobileContainer.locator('> div').first();
+        const iconEl = row1.locator('.ycx-icon');
+        const titleEl = row1.locator('.kpi-overview-title');
+        
+        await expect(iconEl).toBeVisible();
+        await expect(titleEl).toBeVisible();
+
+        // 2. Kiểm tra không có dấu chấm đỏ/xanh trạng thái trong mobileContainer
+        const statusDot = mobileContainer.locator('.rounded-full.bg-rose-500, .rounded-full.bg-emerald-500');
+        expect(await statusDot.count(), `Thẻ #${i + 1} không được chứa dấu chấm đỏ/xanh`).toBe(0);
+    }
+
+    // Cuộn thẻ KPI vào giữa khung nhìn màn hình
+    await page.evaluate(() => {
+        const card = document.querySelector('.kpi-overview-card');
+        if (card) {
+            card.scrollIntoView({ block: 'center' });
+        }
+    });
+    await page.waitForTimeout(600);
+    await page.evaluate(() => {
+        const trendEl = document.getElementById('trend-chart-section');
+        if (trendEl) {
+            trendEl.scrollIntoView({ block: 'center' });
+        }
+    });
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: 'test-results/trend-chart-mobile.png' });
+});
+
+test('Kiểm thử thực tế: Nút chuyển chế độ Biểu đồ / Bảng lịch được gộp làm 1 nút toggle', async ({ page }) => {
+    await navigateAndEnsureApp(page, '/?tab=analysis');
+
+    // Nút toggle chuyển chế độ xem
+    const toggleBtn = page.locator('button[title*="dạng Bảng Lịch"], button[title*="dạng Biểu đồ"]').first();
+    await expect(toggleBtn).toBeVisible({ timeout: 15_000 });
+
+    // Ban đầu ở chart mode -> icon calendar
+    await expect(toggleBtn.locator('[data-icon="calendar"]')).toBeVisible();
+
+    // Click chuyển sang bảng lịch
+    await toggleBtn.click();
+    await page.waitForTimeout(400);
+
+    // Bây giờ icon đổi thành chartBar
+    await expect(toggleBtn.locator('[data-icon="chartBar"]')).toBeVisible();
+
+    // Click lần nữa để quay lại biểu đồ
+    await toggleBtn.click();
+    await page.waitForTimeout(400);
+    await expect(toggleBtn.locator('[data-icon="calendar"]')).toBeVisible();
+
+    await page.screenshot({ path: 'test-results/trend-chart-toggle-verify.png' });
+});
+
+

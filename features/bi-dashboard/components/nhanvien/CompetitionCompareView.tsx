@@ -42,17 +42,16 @@ const TugOfWar: React.FC<{
 }> = ({ label, valA, valB, formatter, colorA = 'bg-sky-600', textA = 'text-sky-700 dark:text-sky-400', colorB = 'bg-rose-600', textB = 'text-rose-700 dark:text-rose-400' }) => {
     const total = valA + valB;
     const pctA = total > 0 ? (valA / total) * 100 : 50;
-    /* Chuẩn "Bảng điều khiển ca trực": vạch 3px, không bo, không gradient phủ, không shadow-inner.
-       Mỗi người MỘT màu xuyên suốt (A = sky, B = rose) để mắt học một lần rồi đọc mọi thanh
-       — bản cũ đổi cặp màu theo từng chỉ tiêu, mỗi thanh phải đọc lại chú giải. */
+    /* Chuẩn "Bảng điều khiển ca trực": vạch 2.5-3px, không bo, không gradient phủ, không shadow-inner.
+       Mỗi người MỘT màu xuyên suốt (A = sky, B = rose) để mắt học một lần rồi đọc mọi thanh */
     return (
-        <div className="flex flex-col gap-1 w-full py-2 px-4 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
-            <div className="flex justify-between text-[14px] font-bold items-end tabular-nums">
+        <div className="flex flex-col gap-0.5 sm:gap-1 w-full py-1.5 sm:py-2 px-2 sm:px-4 border-b border-slate-100 dark:border-slate-800 last:border-b-0">
+            <div className="flex justify-between text-xs sm:text-[14px] font-bold items-end tabular-nums">
                 <span className={textA}>{formatter(valA)}</span>
-                <span className="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[11px] font-bold pb-0.5">{label}</span>
+                <span className="text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold pb-0.5">{label}</span>
                 <span className={textB}>{formatter(valB)}</span>
             </div>
-            <div className="h-[3px] w-full bg-slate-200 dark:bg-slate-700 flex">
+            <div className="h-[2.5px] sm:h-[3px] w-full bg-slate-200 dark:bg-slate-700 flex">
                 <div className={`${colorA} h-full`} style={{ width: `${pctA}%` }} />
                 <div className={`${colorB} h-full flex-1`} />
             </div>
@@ -66,9 +65,9 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
 
     // Epsilon tránh sai số dấu phẩy động (vd 2000/3000*100 vs 4000/6000*100) hiển thị nhầm
     // "+0%" thay vì "Hòa" dù 2 tỉ lệ về mặt toán học là bằng nhau.
-    if (diff > 1e-9) return <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 tabular-nums">◀ +{formatDiff(diff)}</span>;
-    if (diff < -1e-9) return <span className="text-[11px] font-bold text-rose-700 dark:text-rose-400 tabular-nums">+{formatDiff(Math.abs(diff))} ▶</span>;
-    return <span className="text-[11px] font-bold text-slate-400">Hòa</span>;
+    if (diff > 1e-9) return <span className="text-[10px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-400 tabular-nums">◀ +{formatDiff(diff)}</span>;
+    if (diff < -1e-9) return <span className="text-[10px] sm:text-[11px] font-bold text-rose-700 dark:text-rose-400 tabular-nums">+{formatDiff(Math.abs(diff))} ▶</span>;
+    return <span className="text-[10px] sm:text-[11px] font-bold text-slate-400">Hòa</span>;
 };
 
 const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmployees?: RevenueRow[] }> = ({ emp, colorClass, fallbackEmployees }) => {
@@ -91,7 +90,7 @@ const ProfileAvatar: React.FC<{ emp: Employee; colorClass: string; fallbackEmplo
 
     return (
         <div 
-            className={`relative group w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity preserve-rounded`}
+            className={`relative group w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full border-2 sm:border-4 ${colorClass} overflow-hidden mx-auto bg-white flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity preserve-rounded`}
             style={{
                 borderRadius: '50%',
                 clipPath: 'circle(50% at 50% 50%)',
@@ -158,9 +157,9 @@ const EmployeeSelector: React.FC<{
 
     return (
         <div className="relative w-full max-w-[200px]" ref={ref}>
-            <Button variant="unstyled" size="none" onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full px-3 py-1.5 text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded shadow-sm">
+            <Button variant="unstyled" size="none" onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full px-2 sm:px-3 py-1 sm:py-1.5 h-7.5 sm:h-8 text-[11px] sm:text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded shadow-sm">
                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : placeholder}</span>
-                <AppIcon name="chevronDown" size="sm" className="ml-2 text-slate-400" />
+                <AppIcon name="chevronDown" size="sm" className="ml-1 sm:ml-2 text-slate-400 shrink-0" />
             </Button>
             {isOpen && (
                 <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
@@ -370,50 +369,61 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 pb-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm p-4 sm:p-6 mt-4">
-            {/* Auto Pairing Quick Select */}
+        <div className="space-y-2.5 sm:space-y-4 pb-8 sm:pb-10 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm p-2 sm:p-6 mt-2 sm:mt-4">
+            {/* Auto Pairing Quick Select - Dãy tab trượt ngang */}
             {autoPairs.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 px-2 no-print justify-center sm:justify-start">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cặp So Sánh Nhanh (Theo DTQĐ):</span>
-                    <div className="flex flex-wrap gap-1.5">
-                        {autoPairs.map(pair => (
-                            <Button
-                                variant="unstyled" size="none"
-                                key={pair.label}
-                                onClick={() => { setEmpA(pair.a); setEmpB(pair.b); }}
-                                className={`px-2.5 py-1 text-[11px] font-bold rounded transition-colors border ${
-                                    (empA?.originalName === pair.a.originalName && empB?.originalName === pair.b.originalName)
-                                        ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400 hover:text-sky-600'
-                                }`}
-                            >
-                                {pair.label}
-                            </Button>
-                        ))}
+                <div className="flex items-center gap-1.5 sm:gap-2 px-1 sm:px-2 no-print overflow-hidden">
+                    <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 whitespace-nowrap flex items-center gap-1">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0"></span>
+                        <span className="sm:hidden">Cặp nhanh:</span>
+                        <span className="hidden sm:inline">Cặp So Sánh Nhanh (Theo DTQĐ):</span>
+                    </span>
+                    <div className="flex items-center overflow-x-auto no-scrollbar gap-1 sm:gap-1.5 py-1 flex-nowrap scroll-smooth touch-pan-x flex-1">
+                        {autoPairs.map(pair => {
+                            const isSelected = empA?.originalName === pair.a.originalName && empB?.originalName === pair.b.originalName;
+                            return (
+                                <Button
+                                    variant="unstyled" size="none"
+                                    key={pair.label}
+                                    onClick={(e) => {
+                                        setEmpA(pair.a);
+                                        setEmpB(pair.b);
+                                        (e.currentTarget as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                    }}
+                                    className={`px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold rounded whitespace-nowrap shrink-0 transition-colors border ${
+                                        isSelected
+                                            ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
+                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-400 hover:text-sky-600'
+                                    }`}
+                                >
+                                    {pair.label}
+                                </Button>
+                            );
+                        })}
                     </div>
                 </div>
             )}
 
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 px-2 no-print relative z-50">
-                <div className="flex flex-1 items-center gap-4 max-w-2xl mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-4 px-1 sm:px-2 no-print relative z-50">
+                <div className="flex flex-1 items-center gap-2 sm:gap-4 max-w-2xl">
                     <div className="flex-1 flex justify-end">
                         <EmployeeSelector allEmployees={allEmployees} selectedEmployee={empA} onSelect={setEmpA} placeholder="Chọn đối thủ 1" />
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-black italic flex items-center justify-center shrink-0 border-2 border-slate-700 text-sm">VS</div>
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-slate-800 text-white font-black italic flex items-center justify-center shrink-0 border-2 border-slate-700 text-xs sm:text-sm">VS</div>
                     <div className="flex-1 flex justify-start">
                         <EmployeeSelector allEmployees={allEmployees} selectedEmployee={empB} onSelect={setEmpB} placeholder="Chọn đối thủ 2" alignRight />
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded border border-slate-200 dark:border-slate-700">
-                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`px-2 py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
-                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
+                        <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-[11px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
-                    <Button variant="unstyled" size="none" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
+                    <Button variant="unstyled" size="none" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
                         <AppIcon name="exportBatch" size="md" className={isBatchExporting ? 'animate-pulse text-sky-500' : ''} />
                     </Button>
-                    <Button variant="unstyled" size="none" onClick={() => handleExportPNG()} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
+                    <Button variant="unstyled" size="none" onClick={() => handleExportPNG()} title="Xuất ảnh" className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
                         <AppIcon name="exportImage" size="md" />
                     </Button>
                 </div>
@@ -426,41 +436,41 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             ) : (
                 <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none overflow-hidden shadow-sm">
                     {/* Header Banner */}
-                    <div className="bg-slate-800 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
+                    <div className="bg-slate-800 p-3 sm:p-6 lg:p-8 flex items-center justify-between relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
                         
                         {/* NV A */}
-                        <div className="flex-1 flex flex-col items-center relative z-10">
+                        <div className="flex-1 flex flex-col items-center relative z-10 min-w-0">
                             <ProfileAvatar emp={empA} colorClass="border-sky-500" fallbackEmployees={revenueRows} />
-                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
-                            <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
-                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
-                                {(statsA.compStats.dkhtNotDat ?? 0) > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsA.compStats.noSale} No Sale</div>}
+                            <h3 className="text-xs sm:text-base lg:text-xl font-black text-white mt-1.5 sm:mt-3 text-center uppercase tracking-tight leading-tight line-clamp-1">{empA.name}</h3>
+                            <p className="text-[9px] sm:text-[10px] lg:text-[11px] text-sky-300 font-bold uppercase tracking-wider truncate max-w-[120px] sm:max-w-none">{empA.department}</p>
+                            <div className="flex items-center gap-1 mt-1.5 sm:mt-3 flex-wrap justify-center">
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[9px] sm:text-[11px] font-bold sm:font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
+                                {(statsA.compStats.dkhtNotDat ?? 0) > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[9px] sm:text-[11px] font-bold sm:font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[9px] sm:text-[11px] font-bold sm:font-black">{statsA.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
 
                         {/* VS Center */}
-                        <div className="flex flex-col items-center justify-center shrink-0 px-2 sm:px-6 relative z-10">
-                            <div className="text-4xl sm:text-6xl font-black italic text-slate-200" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
+                        <div className="flex flex-col items-center justify-center shrink-0 px-1 sm:px-4 lg:px-6 relative z-10">
+                            <div className="text-2xl sm:text-4xl lg:text-6xl font-black italic text-slate-200" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
                         </div>
 
                         {/* NV B */}
-                        <div className="flex-1 flex flex-col items-center relative z-10">
+                        <div className="flex-1 flex flex-col items-center relative z-10 min-w-0">
                             <ProfileAvatar emp={empB} colorClass="border-rose-500" fallbackEmployees={revenueRows} />
-                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
-                            <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
-                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[11px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
-                                {(statsB.compStats.dkhtNotDat ?? 0) > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[11px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[11px] font-black">{statsB.compStats.noSale} No Sale</div>}
+                            <h3 className="text-xs sm:text-base lg:text-xl font-black text-white mt-1.5 sm:mt-3 text-center uppercase tracking-tight leading-tight line-clamp-1">{empB.name}</h3>
+                            <p className="text-[9px] sm:text-[10px] lg:text-[11px] text-rose-300 font-bold uppercase tracking-wider truncate max-w-[120px] sm:max-w-none">{empB.department}</p>
+                            <div className="flex items-center gap-1 mt-1.5 sm:mt-3 flex-wrap justify-center">
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[9px] sm:text-[11px] font-bold sm:font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
+                                {(statsB.compStats.dkhtNotDat ?? 0) > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[9px] sm:text-[11px] font-bold sm:font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[9px] sm:text-[11px] font-bold sm:font-black">{statsB.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
                     </div>
 
                     {/* Tug of war bars */}
-                    <div className="px-2 sm:px-4 py-1 border-b border-slate-200 dark:border-slate-800">
+                    <div className="px-1 sm:px-4 py-0.5 sm:py-1 border-b border-slate-200 dark:border-slate-800">
                         <TugOfWar label="Thưởng Thu Nhập" valA={statsA.thuong} valB={statsB.thuong} formatter={fMoney.format} />
                         <TugOfWar label="Doanh Thu QĐ" valA={statsA.dtqd} valB={statsB.dtqd} formatter={f.format} />
                         <TugOfWar label="Trả Chậm" valA={statsA.tg} valB={statsB.tg} formatter={pct} />
@@ -468,17 +478,17 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
 
                     {/* Ranks Strip */}
                     <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-                        <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-sky-600">{statsA.compStats.dkhtNotDat}</span></div>
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
+                        <div className="py-1.5 sm:py-3 px-1 sm:px-4 flex justify-around items-center">
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-xs sm:text-base lg:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-xs sm:text-base lg:text-lg font-black text-sky-600">{statsA.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-xs sm:text-base lg:text-lg font-black text-sky-600">{statsA.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-xs sm:text-base lg:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
                         </div>
-                        <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-rose-600">#{statsB.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-rose-600">{statsB.compStats.dkhtNotDat}</span></div>
-                            <div className="text-center"><p className="text-[11px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
+                        <div className="py-1.5 sm:py-3 px-1 sm:px-4 flex justify-around items-center">
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-xs sm:text-base lg:text-lg font-black text-rose-600">#{statsB.dtRank}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-xs sm:text-base lg:text-lg font-black text-rose-600">{statsB.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-xs sm:text-base lg:text-lg font-black text-rose-600">{statsB.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[9px] sm:text-[11px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-xs sm:text-base lg:text-lg font-black text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
                         </div>
                     </div>
 
@@ -486,12 +496,12 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800 text-[11px] font-black uppercase text-slate-500 tracking-wider">
-                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-300 w-10 text-center">#</th>
-                                    <th className="px-4 py-3 border-b-[3px] border-b-slate-300">Chương trình thi đua</th>
-                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
-                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-300 text-center w-28">Chênh Lệch</th>
-                                    <th className="px-2 py-3 border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-24">{empB.name.split(' ').pop()}</th>
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-[10px] sm:text-[11px] font-black uppercase text-slate-500 tracking-wider">
+                                    <th className="px-2 sm:px-4 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 w-8 sm:w-10 text-center">#</th>
+                                    <th className="px-2 sm:px-4 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300">Chương trình thi đua</th>
+                                    <th className="px-1.5 sm:px-2 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-sky-700 dark:text-sky-300 w-20 sm:w-24 truncate">{empA.name.split(' ').pop()}</th>
+                                    <th className="px-1.5 sm:px-2 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center w-20 sm:w-28">Chênh Lệch</th>
+                                    <th className="px-1.5 sm:px-2 py-1.5 sm:py-3 border-b-2 sm:border-b-[3px] border-b-slate-300 text-center text-rose-700 dark:text-rose-300 w-20 sm:w-24 truncate">{empB.name.split(' ').pop()}</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -591,9 +591,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                                 <Button
                                                                     variant="unstyled" size="none"
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
-                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-700 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[11px]"
+                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center shrink-0 text-rose-700 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px]"
                                                                 >
-                                                                    <AppIcon name="restore" size="sm" />
                                                                     Chờ xuất: {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
                                                                 </Button>
                                                             )}

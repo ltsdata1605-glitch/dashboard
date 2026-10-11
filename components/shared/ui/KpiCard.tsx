@@ -184,22 +184,13 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             </div>
 
             {/* Layout đứng (vertical) cực gọn cho mobile (dưới lg) */}
-            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-2 py-2 text-center h-full gap-1">
-                {/* Hàng 1: Icon squircle + Status dot */}
-                <div className="flex items-center justify-between w-full">
-                    <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${style.iconBg} ${style.iconText}`}>
-                        <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
+            <div className="lg:hidden flex flex-col items-center justify-between flex-1 px-1 py-1.5 text-center h-full gap-1">
+                {/* Hàng 1: Icon nhỏ + Tiêu đề trên cùng 1 dòng (bỏ dấu chấm đỏ) */}
+                <div className="flex items-center justify-center gap-1 w-full min-w-0">
+                    <div className={`w-3.5 h-3.5 rounded-[4px] flex items-center justify-center shrink-0 ${style.iconBg} ${style.iconText}`}>
+                        <AppIcon name={resolveIconName(icon) ?? 'help'} px={9.5} />
                     </div>
-                    {!isGood ? (
-                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" title="Chưa đạt" />
-                    ) : (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Đạt" />
-                    )}
-                </div>
-                
-                {/* Hàng 2: Title */}
-                <div className="flex items-center justify-center w-full min-w-0">
-                    <h3 className="text-[11px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-tight truncate" title={title}>
+                    <h3 className="kpi-overview-title text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-tight truncate min-w-0" title={title}>
                         {title}
                     </h3>
                 </div>

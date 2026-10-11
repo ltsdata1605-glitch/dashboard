@@ -406,25 +406,35 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                 <div className="flex items-center gap-3">
                     <span className="text-slate-800 dark:text-slate-100 uppercase">XU HƯỚNG DOANH THU</span>
                 </div>
-                <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <span className="text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5 flex items-center gap-1.5 flex-wrap">
                     {displayMode !== 'calendar' && (
                         <>
-                            <span
-                                onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
-                                className={`cursor-pointer transition-colors ${
-                                    trendState.metric === 'thuc'
-                                        ? 'text-slate-700 dark:text-slate-200 font-bold'
-                                        : 'text-slate-400 dark:text-slate-500 font-medium hover:text-slate-600'
-                                }`}
-                            >DT THỰC</span>
-                            <span
-                                onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
-                                className={`cursor-pointer transition-colors ${
-                                    trendState.metric === 'qd'
-                                        ? 'text-slate-700 dark:text-slate-200 font-bold'
-                                        : 'text-slate-400 dark:text-slate-500 font-medium hover:text-slate-600'
-                                }`}
-                            >DTQĐ</span>
+                            <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[10px] font-bold shadow-2xs">
+                                <button
+                                    type="button"
+                                    onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
+                                    className={`px-1.5 py-0.5 rounded-md transition-all duration-200 cursor-pointer uppercase tracking-tight select-none active:scale-95 ${
+                                        trendState.metric === 'thuc'
+                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs font-black'
+                                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 font-bold'
+                                    }`}
+                                    title="Xem Biểu đồ theo Doanh Thu Thực"
+                                >
+                                    DT THỰC
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
+                                    className={`px-1.5 py-0.5 rounded-md transition-all duration-200 cursor-pointer uppercase tracking-tight select-none active:scale-95 ${
+                                        trendState.metric === 'qd'
+                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs font-black'
+                                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 font-bold'
+                                    }`}
+                                    title="Xem Biểu đồ theo Doanh Thu Quy Đổi"
+                                >
+                                    DTQĐ
+                                </button>
+                            </div>
                             {totalValue > 0 && (
                                 <span className="text-slate-500 dark:text-slate-400 font-medium">TỔNG: <span className="text-slate-700 dark:text-slate-200 font-bold">{formatCurrency(totalValue)}</span></span>
                             )}
@@ -547,27 +557,15 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
           <Button
               variant="unstyled" size="none"
-              onClick={() => setDisplayMode('chart')}
-              className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
-                  displayMode === 'chart'
-                      ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
-                      : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-              title="Dạng Biểu đồ"
-          >
-              <AppIcon name="chartBar" size="md" />
-          </Button>
-          <Button
-              variant="unstyled" size="none"
-              onClick={() => setDisplayMode('calendar')}
+              onClick={() => setDisplayMode(prev => prev === 'chart' ? 'calendar' : 'chart')}
               className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                   displayMode === 'calendar'
                       ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                       : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
-              title="Dạng Bảng Lịch"
+              title={displayMode === 'chart' ? 'Chuyển sang dạng Bảng Lịch' : 'Chuyển sang dạng Biểu đồ'}
           >
-              <AppIcon name="calendar" size="md" />
+              <AppIcon name={displayMode === 'chart' ? 'calendar' : 'chartBar'} size="md" />
           </Button>
 
           <Button

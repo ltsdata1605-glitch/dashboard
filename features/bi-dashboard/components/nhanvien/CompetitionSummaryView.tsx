@@ -502,14 +502,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     };
 
     const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1 w-full relative z-30">
+        <div className="flex items-center leading-tight min-w-0 max-w-full relative z-30">
             {isEditingName ? (
                 <div className="flex items-center gap-2 no-print">
                     <Input
                         type="text"
                         value={tempName}
                         onChange={(e) => setTempName(e.target.value)}
-                        className="w-48"
+                        className="w-40 sm:w-48 text-xs"
                         fullWidth={false}
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
@@ -522,7 +522,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     </Button>
                 </div>
             ) : (
-                <span className="js-report-title">
+                <span 
+                    className="js-report-title block truncate text-[11px] sm:text-sm font-bold tracking-tight text-slate-800 dark:text-slate-100 uppercase"
+                    title={`${tableName}${activeGroupFilter ? ` - ${activeGroupFilter}` : ''} - ĐẾN ${getYesterdayDateString()}`}
+                >
                     {tableName}{activeGroupFilter ? ` - ${activeGroupFilter}` : ''} - ĐẾN {getYesterdayDateString()}
                 </span>
             )}
@@ -530,18 +533,18 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     );
 
     const headerActions = (
-        <div className="flex items-center gap-2 relative z-30">
+        <div className="flex items-center gap-1 sm:gap-2 relative z-30 shrink-0">
             {!readOnly && (
-                <div className="relative" ref={filterRef}>
+                <div className="relative shrink-0" ref={filterRef}>
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
-                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                         title="Chọn cột hiển thị"
                     >
                         <AppIcon name="filter" size="sm" />
                         {selectedTitles.length > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[11px] rounded-full w-4 h-4 flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 bg-sky-600 text-white font-black text-[10px] rounded-full w-3.5 h-3.5 sm:w-4 sm:h-4 flex items-center justify-center">
                                 {selectedTitles.length}
                             </span>
                         )}
@@ -583,7 +586,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsEditingName(true)}
-                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 shrink-0"
                     title="Đổi tên bảng"
                 >
                     <AppIcon name="edit" size="sm" />
@@ -595,7 +598,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all hover:scale-105 active:scale-95"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center rounded-lg text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all hover:scale-105 active:scale-95 shrink-0"
                     title="Xóa bảng"
                 >
                     <AppIcon name="delete" size="sm" />
@@ -604,14 +607,14 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
 
             {/* Bộ lọc nhóm tiêu chí */}
             {allAvailableGroups.length > 0 && (
-                <div className="relative flex items-center no-print">
+                <div className="relative flex items-center no-print shrink-0">
                     <select
                         value={selectedGroupFilter}
                         onChange={(e) => setSelectedGroupFilter(e.target.value)}
-                        className="text-[11px] font-bold h-7.5 pl-2.5 pr-6 py-1 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer appearance-none shadow-sm hover:border-sky-300 dark:hover:border-sky-600 transition-colors"
+                        className="text-[10px] sm:text-[11px] font-bold h-7 sm:h-7.5 pl-2 pr-5 sm:pl-2.5 sm:pr-6 py-0.5 sm:py-1 rounded-lg sm:rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer appearance-none shadow-sm hover:border-sky-300 dark:hover:border-sky-600 transition-colors max-w-[95px] xs:max-w-[125px] sm:max-w-none truncate"
                         title="Lọc theo nhóm tiêu chí"
                     >
-                        <option value="all">Tất cả nhóm ({rawVisibleHeaders.length})</option>
+                        <option value="all">Tất cả ({rawVisibleHeaders.length})</option>
                         {allAvailableGroups.map((group) => {
                             const count = rawVisibleHeaders.filter(h => {
                                 const defaultGroup = getDefaultGroupLabel(h.metric);
@@ -624,7 +627,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                             );
                         })}
                     </select>
-                    <AppIcon name="chevronDown" size="sm" className="absolute right-1.5 text-slate-400 pointer-events-none" />
+                    <AppIcon name="chevronDown" size="sm" className="absolute right-1 sm:right-1.5 text-slate-400 pointer-events-none scale-75 sm:scale-100" />
                 </div>
             )}
 
@@ -636,7 +639,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105 active:scale-95 no-print"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-1 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105 active:scale-95 no-print shrink-0"
                 >
                     {isExportingByGroup ? (
                         <AppIcon name="loading" size="sm" spin className="text-sky-700" />
@@ -646,12 +649,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 </Button>
             )}
 
-            <div className="h-5 w-px bg-slate-200 dark:border-slate-700 mx-1" />
+            <div className="h-4 sm:h-5 w-px bg-slate-200 dark:border-slate-700 mx-0.5 sm:mx-1 shrink-0" />
 
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`h-7.5 w-7.5 sm:h-8 sm:w-8 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`h-7 w-7 sm:h-8 sm:w-8 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <AppIcon name="hash" size="sm" /> : <AppIcon name="percent" size="sm" />}
@@ -662,15 +665,26 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 icon={<AppIcon name="columns" size="md" />}
                 title="Xuất ảnh rút gọn (chỉ Nhân viên, %HT 100%, Hiệu quả)"
                 ariaLabel="Xuất ảnh rút gọn"
+                className="h-7 w-7 sm:h-8 sm:w-8 p-1"
             />
 
-            <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
+            <ExportButton 
+                onExportPNG={async () => { await handleExportPNG(); }} 
+                className="h-7 w-7 sm:h-8 sm:w-8 p-1"
+            />
         </div>
     );
 
     return (
         <div ref={cardRef} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <Card noPadding bordered={false} title={cardTitle} actionButton={headerActions}>
+            <Card 
+                noPadding 
+                bordered={false} 
+                title={cardTitle} 
+                actionButton={headerActions}
+                headerClassName="flex-nowrap gap-1.5 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2.5 overflow-hidden"
+                titleClassName="min-w-0 flex-1 truncate"
+            >
                 {selectedTitles.length === 0 ? (
                     <div className="py-20 text-center text-slate-400 italic bg-slate-50 dark:bg-slate-900/30">
                         {readOnly ? (

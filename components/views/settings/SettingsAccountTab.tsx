@@ -13,7 +13,7 @@ import { formatCleanDisplayName, parseKhoList } from '../../../utils/dataUtils';
 import { getApprovalSettings } from '../../../services/approvalSettingsService';
 
 export const SettingsAccountTab: React.FC = () => {
-    const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout } = useAuth();
+    const { user, userRole, departmentId, employeeName, expiresAt, requestAccess, logout, isDemoMode, loginWithGoogle } = useAuth();
     const { activeTab } = useActiveTab();
 
     const [mounted, setMounted] = useState(false);
@@ -165,6 +165,26 @@ export const SettingsAccountTab: React.FC = () => {
                         <span>Xoá tất cả dữ liệu (Người dùng mới)</span>
                     </Button>
                 </div>
+
+                {(!user || isDemoMode) && (
+                    <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                        <div className="flex items-center gap-3">
+                            <AppIcon name="warning" size="md" className="text-amber-500 shrink-0" />
+                            <div>
+                                <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Đang ở Chế độ Dùng Thử (Offline)</h4>
+                                <p className="text-xs text-amber-700 dark:text-amber-400">Đăng nhập tài khoản Google để tự động đồng bộ dữ liệu giữa laptop và điện thoại.</p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={loginWithGoogle}
+                            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-bold text-xs rounded-lg shadow-xs transition-all shrink-0 cursor-pointer"
+                        >
+                            Đăng Nhập Google Ngay
+                        </Button>
+                    </div>
+                )}
 
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm rounded-lg">
                     {/* Header: Avatar + Name/Email/Role + Action Button */}
