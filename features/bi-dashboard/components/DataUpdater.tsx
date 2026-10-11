@@ -186,28 +186,28 @@ const StatusTile: React.FC<{
 
     const themeColors = {
         emerald: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600 rounded-xl',
             text: 'text-emerald-800 dark:text-emerald-200',
             iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700',
-            ring: 'border-emerald-500 ring-2 ring-emerald-500/20'
+            ring: 'border-emerald-500 ring-2 ring-emerald-500/20 rounded-xl'
         },
         sky: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600 rounded-xl',
             text: 'text-sky-800 dark:text-sky-200',
             iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
-            ring: 'border-sky-500 ring-2 ring-sky-500/20'
+            ring: 'border-sky-500 ring-2 ring-sky-500/20 rounded-xl'
         },
         rose: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600 rounded-xl',
             text: 'text-rose-800 dark:text-rose-200',
             iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700',
-            ring: 'border-rose-500 ring-2 ring-rose-500/20'
+            ring: 'border-rose-500 ring-2 ring-rose-500/20 rounded-xl'
         },
         amber: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600 rounded-xl',
             text: 'text-amber-800 dark:text-amber-200',
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
-            ring: 'border-amber-500 ring-2 ring-amber-500/20'
+            ring: 'border-amber-500 ring-2 ring-amber-500/20 rounded-xl'
         },
     };
 
@@ -215,25 +215,25 @@ const StatusTile: React.FC<{
     const effectiveLink = linkUrl || downloadUrl;
 
     return (
-        <div className="relative group group/tile w-full">
+        <div className="relative group group/tile w-full h-full">
             <div
                 onClick={handleTileClick}
                 title={readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để tự động dán dữ liệu từ Clipboard'}
                 className={`
-                    cursor-pointer min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden border
+                    cursor-pointer min-h-[76px] transition-colors duration-200 flex flex-col justify-between p-2.5 relative overflow-hidden border rounded-xl shadow-2xs
                     ${readOnly ? 'cursor-default' : 'cursor-pointer'}
                     ${isPasting
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
                         : hasData
                             ? currentTheme.wrapper
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl'}
                 `}
             >
                 {isPasting ? (
-                    <div className="w-full flex items-center gap-2 animate-in fade-in duration-150">
+                    <div className="w-full flex flex-col gap-1.5 animate-in fade-in duration-150">
                         <textarea
                             autoFocus
-                            className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-mono resize-none p-1.5 h-12 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
                             placeholder={pasteHint(placeholder)}
                             onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');
@@ -250,89 +250,87 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="min-h-11 sm:min-h-0 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="h-6 px-2 self-end hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3 pr-[108px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
-                        <div className="flex items-center gap-3 min-w-0">
+                    <>
+                        <div className="flex items-center gap-2 min-w-0 w-full">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <AppIcon name="upload" size="md" />}
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                                 <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
-                                            <AppIcon name="clock" size="sm" /> {lastUpdated}
+                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
+                                            <AppIcon name="clock" size="xs" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">
-                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để tự dán'}
+                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate text-left">
+                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin') : 'Click tự dán'}
                                     </span>
                                 )}
                             </div>
                         </div>
-                    </div>
+
+                        <div className="flex items-center justify-end gap-1 mt-1 pt-1 border-t border-slate-100 dark:border-slate-700/40 w-full">
+                            {onOpenLinkModal && (
+                                <Button
+                                    type="button"
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onOpenLinkModal();
+                                    }}
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
+                                    title="Chỉnh sửa liên kết"
+                                    aria-label="Chỉnh sửa liên kết"
+                                >
+                                    <AppIcon name="edit" size="md" />
+                                </Button>
+                            )}
+
+                            {(effectiveLink || onOpenLinkModal) && (
+                                <a
+                                    href={effectiveLink || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!effectiveLink) {
+                                            e.preventDefault();
+                                            onOpenLinkModal?.();
+                                        }
+                                    }}
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
+                                    title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
+                                    aria-label="Mở liên kết báo cáo"
+                                >
+                                    <AppIcon name="link" size="md" />
+                                </a>
+                            )}
+
+                            {hasData && !readOnly && (
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onClear(title);
+                                    }}
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
+                                    title="Xoá"
+                                    aria-label="Xoá dữ liệu"
+                                >
+                                    <AppIcon name="delete" size="md" />
+                                </Button>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
-
-            {!isPasting && (
-                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 z-10">
-                    {onOpenLinkModal && (
-                        <Button
-                            type="button"
-                            variant="unstyled"
-                            size="none"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onOpenLinkModal();
-                            }}
-                            className="w-8 h-8 flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
-                            title="Chỉnh sửa liên kết"
-                            aria-label="Chỉnh sửa liên kết"
-                        >
-                            <AppIcon name="edit" size="md" />
-                        </Button>
-                    )}
-
-                    {(effectiveLink || onOpenLinkModal) && (
-                        <a
-                            href={effectiveLink || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (!effectiveLink) {
-                                    e.preventDefault();
-                                    onOpenLinkModal?.();
-                                }
-                            }}
-                            className="w-8 h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
-                            title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
-                            aria-label="Mở liên kết báo cáo"
-                        >
-                            <AppIcon name="link" size="md" />
-                        </a>
-                    )}
-
-                    {hasData && !readOnly && (
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onClear(title);
-                            }}
-                            className="w-8 h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
-                            title="Xoá"
-                            aria-label="Xoá dữ liệu"
-                        >
-                            <AppIcon name="delete" size="md" />
-                        </Button>
-                    )}
-                </div>
-            )}
 
             {error && (
                 <div className="mt-1 flex items-center gap-1 px-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200">
@@ -847,7 +845,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     <span className="text-[11px] text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">↗</span>
                                 </a>
                             </div>
-                            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={summaryRealtimeTs}
@@ -931,7 +929,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     <span className="text-[11px] text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">↗</span>
                                 </a>
                             </div>
-                            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={competitionRealtimeTs}
