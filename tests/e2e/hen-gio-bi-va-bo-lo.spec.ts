@@ -57,7 +57,8 @@ test('tab bị ngủ 14:59 → 15:30 (qua giờ hẹn): báo "Bỏ lỡ khung 15
     await page.clock.pauseAt(new Date('2026-10-15T14:59:30'));
     await page.clock.setSystemTime(new Date('2026-10-15T15:30:00')); // ngủ: thời gian trôi, không timer nào chạy
     await page.clock.resume();
-    await expect(page.getByText(/Bỏ lỡ khung 15:00/)).toBeVisible({ timeout: 60_000 });
+    // Bỏ toast lỗi tràn màn hình: không xuất hiện toast "Bỏ lỡ khung 15:00"
+    await expect(page.getByText(/Bỏ lỡ khung 15:00/)).toHaveCount(0);
     expect(await tabs(page)).toEqual([]);
     await page.getByTestId('sched-bi-realtime').click();
     await expect(page.getByTestId('sched-log-bi-realtime')).toContainText('Bỏ lỡ');

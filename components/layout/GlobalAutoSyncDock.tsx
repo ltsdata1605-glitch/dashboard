@@ -299,7 +299,7 @@ export default function GlobalAutoSyncDock() {
                 if (!claimScheduleRun(lo.marker)) continue;
                 const phut = Math.round((now.getTime() - truoc) / 60_000);
                 logSchedule({ key: lo.key, time: lo.time, status: 'missed', note: `trang không hoạt động ${phut} phút (tab ngủ / máy ngủ / chưa mở dashboard)` });
-                toast.error(`Bỏ lỡ khung ${lo.time} — ${SCHEDULE_LABELS[lo.key]}: lúc đó dashboard không hoạt động (tab bị trình duyệt cho ngủ hoặc máy ngủ).`, { duration: 15000 });
+                // Đã tắt popup toast.error theo yêu cầu (không hiện thông báo lỗi tràn màn hình khi mở lại app trên mobile & laptop)
             }
             // Mỗi lượt chỉ chạy 1 nút — nút khác đến hạn cùng lúc sẽ chạy ở lượt sau, đỡ giành tab
             const den = dueSchedules(getSchedules(), now, scheduleHasRun)[0];
