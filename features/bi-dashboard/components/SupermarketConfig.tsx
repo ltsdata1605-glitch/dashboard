@@ -487,7 +487,7 @@ const StatusTile: React.FC<{
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="min-h-11 sm:min-h-0 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
+                    <div className="flex items-center justify-between w-full gap-3 pr-[108px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <AppIcon name="upload" size="md" />}
@@ -519,11 +519,11 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onOpenLinkModal();
                             }}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
+                            className="w-8 h-8 flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
-                            <AppIcon name="edit" size="sm" />
+                            <AppIcon name="edit" size="md" />
                         </Button>
                     )}
 
@@ -539,11 +539,11 @@ const StatusTile: React.FC<{
                                     onOpenLinkModal?.();
                                 }
                             }}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95"
+                            className="w-8 h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
-                            <AppIcon name="link" size="sm" />
+                            <AppIcon name="link" size="md" />
                         </a>
                     )}
 
@@ -555,11 +555,11 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onClear(title);
                             }}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95"
+                            className="w-8 h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
-                            <AppIcon name="delete" size="sm" />
+                            <AppIcon name="delete" size="md" />
                         </Button>
                     )}
                 </div>
@@ -1229,7 +1229,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             ref={bookmarkletRef}
                             href={AUTO_CLICK_BOOKMARKLET_CODE}
                             draggable
-                            className="min-h-8 sm:min-h-0 group relative inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-sky-600/20 hover:shadow-sm hover:shadow-sky-600/30 border border-sky-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98]"
+                            className="h-8 group relative inline-flex items-center gap-1.5 px-3 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-sky-600/20 hover:shadow-sm hover:shadow-sky-600/30 border border-sky-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98] shrink-0"
                             title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();

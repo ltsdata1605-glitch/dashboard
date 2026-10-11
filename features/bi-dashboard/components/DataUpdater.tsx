@@ -43,7 +43,7 @@ import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { uploadSummaryLuyKeIfManager, uploadCompetitionLuyKeIfManager } from '../services/biDataService';
 import { fetchSupermarketMap, clearSupermarketMap } from '../services/biSupermarketMapService';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY } from '../services/analysisEmployeeSyncService';
-import { MOBILE_GUTTER, TOUCH_TARGET } from '../utils/mobileUi';
+import { MOBILE_GUTTER } from '../utils/mobileUi';
 
 /**
  * Chữ hướng dẫn ô dán dự phòng (khi trình duyệt không cho tự đọc Clipboard — hay gặp ở Safari iOS
@@ -253,7 +253,7 @@ const StatusTile: React.FC<{
                         <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="min-h-11 sm:min-h-0 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
+                    <div className="flex items-center justify-between w-full gap-3 pr-[108px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <AppIcon name="upload" size="md" />}
@@ -288,11 +288,11 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onOpenLinkModal();
                             }}
-                            className={`${TOUCH_TARGET} flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95`}
+                            className="w-8 h-8 flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
                             title="Chỉnh sửa liên kết"
                             aria-label="Chỉnh sửa liên kết"
                         >
-                            <AppIcon name="edit" size="sm" />
+                            <AppIcon name="edit" size="md" />
                         </Button>
                     )}
 
@@ -308,11 +308,11 @@ const StatusTile: React.FC<{
                                     onOpenLinkModal?.();
                                 }
                             }}
-                            className={`${TOUCH_TARGET} flex items-center justify-center p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95`}
+                            className="w-8 h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
                             title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                             aria-label="Mở liên kết báo cáo"
                         >
-                            <AppIcon name="link" size="sm" />
+                            <AppIcon name="link" size="md" />
                         </a>
                     )}
 
@@ -324,11 +324,11 @@ const StatusTile: React.FC<{
                                 e.stopPropagation();
                                 onClear(title);
                             }}
-                            className={`${TOUCH_TARGET} flex items-center justify-center p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95`}
+                            className="w-8 h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
                             title="Xoá"
                             aria-label="Xoá dữ liệu"
                         >
-                            <AppIcon name="delete" size="sm" />
+                            <AppIcon name="delete" size="md" />
                         </Button>
                     )}
                 </div>
@@ -802,18 +802,16 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     </h2>
                 </div>
                 <div className="flex flex-none items-center justify-end gap-2 ml-auto">
-                    <div className="flex items-center rounded-lg sm:rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={() => setIsConfirmingClear(true)}
-                            title="Đặt lại toàn bộ dữ liệu về mặc định"
-                            className="min-h-11 sm:min-h-0 flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors"
-                        >
-                            <AppIcon name="reset" size="md" className="text-rose-500" />
-                            <span className="text-[11px] sm:text-xs tracking-wide">Đặt lại</span>
-                        </Button>
-                    </div>
+                    <Button
+                        variant="unstyled"
+                        size="none"
+                        onClick={() => setIsConfirmingClear(true)}
+                        title="Đặt lại toàn bộ dữ liệu về mặc định"
+                        className="h-8 flex items-center gap-1.5 px-3 text-xs font-semibold rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs text-slate-600 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/40 dark:hover:text-rose-400 transition-colors shrink-0"
+                    >
+                        <AppIcon name="reset" size="md" className="text-rose-500" />
+                        <span className="text-[11px] sm:text-xs tracking-wide">Đặt lại</span>
+                    </Button>
                 </div>
             </div>
 
@@ -1025,7 +1023,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                             <Button
                                                 variant="unstyled" size="none"
                                                 onClick={() => setActiveSupermarket(sm)}
-                                                className={`min-h-11 sm:min-h-0 shrink-0 pl-3 pr-2 py-1.5 rounded-md text-[11px] font-bold transition-all border flex items-center gap-1.5 ${
+                                                className={`h-8 shrink-0 pl-3 pr-2.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 ${
                                                     activeSupermarket === sm
                                                         ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
                                                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
@@ -1046,10 +1044,10 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                                                 handleDeleteSupermarket(sm);
                                                             }
                                                         }}
-                                                        className="relative text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors after:absolute after:-inset-[13px] after:content-[''] lg:after:hidden"
+                                                        className="relative text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors"
                                                         title={`Xoá siêu thị tuỳ chỉnh "${shortName}"`}
                                                     >
-                                                        <AppIcon name="close" size="xs" />
+                                                        <AppIcon name="close" size="sm" />
                                                     </span>
                                                 )}
                                             </Button>
@@ -1059,7 +1057,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                 <Button
                                     variant="unstyled" size="none"
                                     onClick={() => setIsAddingSupermarket(true)}
-                                    className="min-h-11 sm:min-h-0 shrink-0 px-3 py-1.5 rounded-md text-[11px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1 transition-all"
+                                    className="h-8 shrink-0 px-3 rounded-lg text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 border border-dashed border-sky-300 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/50 flex items-center gap-1.5 transition-all"
                                     title="Thêm siêu thị mới để cấu hình và dán dữ liệu"
                                 >
                                     <AppIcon name="add" size="md" />

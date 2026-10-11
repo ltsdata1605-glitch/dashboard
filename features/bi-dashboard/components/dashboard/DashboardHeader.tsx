@@ -5,7 +5,7 @@ import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
-import { MOBILE_GUTTER, TOUCH_TARGET } from '../../utils/mobileUi';
+import { MOBILE_GUTTER } from '../../utils/mobileUi';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
 

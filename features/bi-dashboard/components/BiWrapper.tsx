@@ -5,7 +5,6 @@ import { readPendingAutoSync } from '../services/biAutoSyncService';
 import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import { TOUCH_TARGET } from '../utils/mobileUi';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
