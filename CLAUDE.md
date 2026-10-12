@@ -215,6 +215,13 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   import `react-hot-toast` ở mọi nơi khác; không tự vẽ khung toast/thẻ nổi `fixed bottom-*` (đè thanh tab iPhone). `AppToaster` (gắn
   một lần ở `App.tsx`) vẽ viên nang vật liệu mờ ở TRÊN GIỮA màn hình (iPhone dưới tai thỏ, laptop cách mép trên 12px), tối đa 3
   cái, vuốt để tắt. Không dùng emoji làm icon toast (emoji cũ tự quy đổi). Test: `tests/e2e/toast-thong-nhat.spec.ts`.
+- **Lớp Apple (2026-10-11, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ3 — `DESIGN_SYSTEM.md` mục 7):** chữ theo thang 9 bậc `type-*`
+  (token `--type-*`, ratchet `offScaleText` chỉ được giảm), tiêu đề viết thường như câu (IN HOA chỉ nhãn cột). Dùng component
+  dùng chung thay vì tự vẽ: `Switch` (công tắc), `Tabs variant="segment"` (segmented), `Banner` (thông báo tĩnh, cấm chữ chạy),
+  `ListGroup`/`ListRow` (trang cài đặt), `ActionMenu` (nút "⋯" — thanh/tiêu đề tối đa 1 nút chính + ≤ 2 icon), `usePageActions`
+  (màn khai báo nút cho thanh trên — KHÔNG `createPortal` vào thanh trên nữa), `BusyBar` (tính lại ngầm, không chặn màn),
+  `EmptyState`. Button: `primary` (một nút/màn) · `secondary` (xám tinted) · `tinted` · `destructive` · `danger` (chỉ xác nhận cuối).
+  Lớp nổi mới dùng `usePresence` + CSS, KHÔNG import `motion` (đang gỡ khỏi đường khởi động).
 - **Khung app không được chồng/tràn (2026-10-10):** `tests/e2e/apple-tuong-thich.spec.ts` quét mọi tab ở 6 khung màn hình (iPhone
   SE/16/16 Pro Max, iPad, laptop, màn lớn): trang không tràn ngang, nút trên thanh trên/thanh tab không đè nhau, vùng chạm ≥ 44px.
   Lỗi đã biết nằm trong `DA_BIET` của spec — chỉ được GỠ dần (như lint-ratchet), không thêm.

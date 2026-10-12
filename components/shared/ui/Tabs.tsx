@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useRef } from 'react';
 import { cn } from './utils';
 import { Button } from './Button';
 import { useCenterActiveInStrip } from './useCenterActiveInStrip';
@@ -155,43 +155,83 @@ export const Tabs = React.memo<TabsProps>(({
     );
   }
 
-  // Segment variant
+  // Segment variant — SEGMENTED CONTROL kiểu iOS (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 3.6): rãnh xám nhạt,
+  // "núm" trắng có bóng TRƯỢT sang mục được chọn, chữ 13px đậm vừa. Cảm ứng: mỗi mục cao 44px (HIG); chuột: 32/28px.
+  return <SegmentTrack items={items} activeId={activeId} onPick={handleClick} size={size} fullWidth={fullWidth} className={className} containerRef={containerRef} />;
+});
+
+Tabs.displayName = 'Tabs';
+
+/** Thân của segmented control: đo vị trí mục đang chọn để đặt núm trượt (transform + width, có chuyển động). */
+const SegmentTrack: React.FC<{
+  items: TabItem[]; activeId: string; onPick: (id: string) => void; size: 'sm' | 'md'; fullWidth: boolean;
+  className?: string; containerRef: React.RefObject<HTMLDivElement | null>;
+}> = ({ items, activeId, onPick, size, fullWidth, className, containerRef }) => {
+  const numRef = useRef<HTMLSpanElement>(null);
+  const daVe = useRef(false);
+  useLayoutEffect(() => {
+    const track = containerRef.current;
+    const num = numRef.current;
+    if (!track || !num) return;
+    const dat = () => {
+      const nut = track.querySelector<HTMLElement>('[data-active="true"]');
+      if (!nut) { num.style.opacity = '0'; return; }
+      num.style.opacity = '1';
+      num.style.width = `${nut.offsetWidth}px`;
+      num.style.height = `${nut.offsetHeight}px`;
+      num.style.transform = `translate(${nut.offsetLeft}px, ${nut.offsetTop}px)`;
+    };
+    // Lần vẽ đầu: đặt thẳng, không trượt từ góc trái.
+    if (!daVe.current) { num.style.transition = 'none'; dat(); void num.offsetWidth; num.style.transition = ''; daVe.current = true; }
+    else dat();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(dat);
+    ro.observe(track);
+    return () => ro.disconnect();
+  }, [activeId, items, containerRef]);
+
   return (
     <div
       ref={containerRef}
+      role="group"
+      data-segmented=""
       className={cn(
-        'inline-flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 overflow-x-auto no-scrollbar snap-x snap-proximity',
+        'relative inline-flex max-w-full items-stretch rounded-control bg-slate-200/70 p-0.5 overflow-x-auto no-scrollbar snap-x snap-proximity',
         fullWidth && 'w-full',
         className
       )}
     >
+      <span
+        ref={numRef}
+        aria-hidden="true"
+        className="pointer-events-none absolute left-0 top-0 rounded-md bg-white shadow-[0_1px_3px_rgba(15,23,42,0.12),0_1px_1px_rgba(15,23,42,0.06)] transition-[transform,width] duration-[250ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none"
+      />
       {items.map(item => {
         const isActive = item.id === activeId;
         return (
           <Button
             variant="unstyled" size="none"
             key={item.id}
+            // Nút bật/tắt (aria-pressed) chứ không role="tab": segmented control là nhóm nút chọn một — giữ vai trò `button`
+            // để luồng tự động/test đang tìm nút theo tên (vd "Cập nhật" ở Report BI) không phải đổi.
+            aria-pressed={isActive}
             data-active={isActive ? 'true' : undefined}
-            onClick={() => handleClick(item.id)}
+            onClick={() => onPick(item.id)}
             disabled={item.disabled}
             className={cn(
-              'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0 snap-center',
-              sizeClasses[size],
-              fullWidth && 'flex-1 justify-center',
-              isActive
-                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300',
+              'relative z-[1] flex items-center justify-center gap-1.5 px-3 whitespace-nowrap rounded-md shrink-0 snap-center transition-colors',
+              size === 'sm' ? 'text-[13px] min-h-7 pointer-coarse:min-h-11 max-sm:min-h-11' : 'text-[13px] min-h-8 pointer-coarse:min-h-11 max-sm:min-h-11',
+              fullWidth && 'flex-1',
+              isActive ? 'text-slate-900 font-semibold' : 'text-slate-600 font-medium hover:text-slate-900',
               item.disabled && 'opacity-40 cursor-not-allowed'
             )}
           >
-            {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, size)}</span>}
+            {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, 'sm')}</span>}
             {item.label}
             {item.badge !== undefined && (
               <span className={cn(
                 'min-w-[18px] h-[18px] rounded-full px-1 text-[11px] font-bold flex items-center justify-center leading-none',
-                isActive
-                  ? 'bg-sky-100 dark:bg-sky-500/20 text-sky-700 dark:text-sky-300'
-                  : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                isActive ? 'bg-sky-100 text-sky-700' : 'bg-slate-300/70 text-slate-600'
               )}>
                 {item.badge}
               </span>
@@ -201,6 +241,4 @@ export const Tabs = React.memo<TabsProps>(({
       })}
     </div>
   );
-});
-
-Tabs.displayName = 'Tabs';
+};

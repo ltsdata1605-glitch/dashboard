@@ -13,7 +13,7 @@ import { describe, it, expect } from 'vitest';
 import { createRequire } from 'node:module';
 
 const require_ = createRequire(import.meta.url);
-const { countOffPaletteColors, countIndigoAlias } = require_('../../scripts/lint-ratchet.cjs');
+const { countOffPaletteColors, countIndigoAlias, countOffScaleText } = require_('../../scripts/lint-ratchet.cjs');
 
 /** Bọc chuỗi class vào 1 dòng JSX giống code thật, để đi qua bộ lọc false-positive của script. */
 const line = (cls: string) => `                <div className="${cls}">x</div>`;
@@ -105,5 +105,20 @@ describe('GĐ4 — chuẩn thiết kế (B): luật chặn lệch chuẩn mới'
     it('offScaleRadius: đếm rounded-3xl và bo tự đặt số, không đếm thang chuẩn/var()', () => {
         expect(r.countOffScaleRadius('rounded-3xl rounded-t-3xl rounded-[12px]', 'a.tsx')).toBe(3);
         expect(r.countOffScaleRadius('rounded-card rounded-xl rounded-[var(--card-radius)] rounded-full', 'a.tsx')).toBe(0);
+    });
+});
+
+describe('offScaleText — cỡ chữ ngoài thang 9 bậc (GĐ3 2026-10-11)', () => {
+    const f = 'components/x/Vi.tsx';
+    it('cỡ trong thang không bị đếm (11/12/13/14/15/16/17/20/25/26/28/34 và xs/sm/base/xl)', () => {
+        const ok = ['text-[11px]', 'text-[12px]', 'text-[13px]', 'text-[15px]', 'text-[17px]', 'text-[20px]', 'text-[25px]', 'text-[34px]', 'text-xs', 'text-sm', 'text-base', 'text-xl'];
+        expect(countOffScaleText(line(ok.join(' ')), f)).toBe(0);
+    });
+    it('đếm cỡ px ngoài thang và cỡ có tên ngoài thang', () => {
+        expect(countOffScaleText(line('text-[18px] text-[22px] text-[9.5px]'), f)).toBe(2); // 9.5px đã thuộc tinyText
+        expect(countOffScaleText(line('text-lg lg:text-2xl text-4xl'), f)).toBe(3);
+    });
+    it('chỉ áp cho .tsx', () => {
+        expect(countOffScaleText(line('text-lg'), 'scripts/x.ts')).toBe(0);
     });
 });

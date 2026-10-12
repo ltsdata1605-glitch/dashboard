@@ -21,8 +21,23 @@ export type { BusyBarProps } from './BusyBar';
 // Phông Google nạp theo nhu cầu (GĐ2 2026-10-11) — index.html không còn thẻ CSS phông chặn hiển thị
 export { napPhongGoogle, laPhongGoogle, tenHoPhong, urlPhongGoogle, PHONG_GOOGLE } from './googleFonts';
 
+// LỚP APPLE (GĐ3 2026-10-11 — KE_HOACH_GIAO_DIEN_APPLE.md mục 3): công tắc, dải thông báo, danh sách nhóm, menu "⋯",
+// khai báo hành động của trang cho khung app, hiệu ứng vào/ra không cần motion
+export { Switch } from './Switch';
+export type { SwitchProps } from './Switch';
+export { Banner } from './Banner';
+export type { BannerProps, BannerTone } from './Banner';
+export { ListGroup, ListRow } from './ListGroup';
+export type { ListGroupProps, ListRowProps, ListIconTone } from './ListGroup';
+export { ActionMenu } from './ActionMenu';
+export type { ActionMenuItem, ActionMenuProps } from './ActionMenu';
+export { PageActionsProvider, usePageActions, useCurrentPageActions } from './PageActions';
+export type { PageActionsConfig, PagePrimaryAction } from './PageActions';
+export { usePresence } from './usePresence';
+export { useModalBehavior } from './useModalBehavior';
+
 // Existing components
-export { Overlay, MotionOverlay } from './Overlay';
+export { Overlay } from './Overlay';
 export type { OverlayProps, OverlayKind } from './Overlay';
 export { Select } from './Select';
 export type { SelectProps } from './Select';

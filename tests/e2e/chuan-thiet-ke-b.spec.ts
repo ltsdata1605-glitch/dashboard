@@ -17,10 +17,8 @@ test('bo góc theo thang chuẩn: nút 8px, thẻ KPI 16px, modal 16px', async (
     await page.waitForTimeout(1500);
 
     const radius = (sel: string) => page.locator(sel).first().evaluate(el => getComputedStyle(el).borderTopLeftRadius);
-    const btn = await radius('[data-ui="shared"]:not(.rounded-full):not([class*="rounded-none"])');
     const kpi = await radius('.kpi-overview-card');
-    console.log('BO GÓC — nút:', btn, '| thẻ KPI:', kpi);
-    expect(btn).toBe('8px');
+    console.log('BO GÓC — thẻ KPI:', kpi);
     expect(kpi).toBe('16px');
     await page.screenshot({ path: 'test-results/chuan-b/phan-tich.png' });
 
@@ -32,5 +30,11 @@ test('bo góc theo thang chuẩn: nút 8px, thẻ KPI 16px, modal 16px', async (
     const modal = await dialog.evaluate(el => getComputedStyle(el).borderTopLeftRadius);
     console.log('BO GÓC — modal:', modal);
     expect(modal).toBe('16px');
+    // Nút dùng chung (kiểu chuẩn, không phải 'unstyled'): đo nút trong modal. 2026-10-11: màn Phân tích hiện KHÔNG còn nút
+    // kiểu chuẩn nào (mọi nút ở đó là 'unstyled' tự tạo kiểu — chính là việc GĐ4/GĐ5 làm lại) nên bộ chọn cũ chờ mãi.
+    const btn = await dialog.locator('[data-ui="shared"]:not(.rounded-full):not([class*="rounded-none"])').first()
+        .evaluate(el => getComputedStyle(el).borderTopLeftRadius);
+    console.log('BO GÓC — nút:', btn);
+    expect(btn).toBe('8px');
     await page.screenshot({ path: 'test-results/chuan-b/modal.png' });
 });

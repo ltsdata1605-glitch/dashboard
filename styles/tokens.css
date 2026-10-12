@@ -486,3 +486,38 @@
   /* Focus Ring — Dark */
   --focus-ring-color:    rgba(56, 189, 248, 0.5);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   LỚP APPLE (GĐ3 2026-10-11) — xem DESIGN_SYSTEM.md mục 7
+   ═══════════════════════════════════════════════════════════ */
+:root {
+  /* ─── LỚP APPLE (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3) ───
+     Thang chữ 9 bậc — MỌI chữ mới chọn 1 trong 9 bậc (class `type-*` ở styles.css). Bậc có 2 giá trị iPhone/laptop:
+     laptop đọc gần hơn và màn dày chữ hơn nên nhỏ hơn 1px (đổi ở khối @media cuối file).
+     Bảng giữ nguyên: số trong bảng 13px = `subhead`, nhãn cột 11px = `caption` (IN HOA, Roboto Condensed). */
+  --type-large-title: 28px;  --type-large-title-lh: 34px;   /* tiêu đề trang (vùng nội dung) */
+  --type-title: 20px;        --type-title-lh: 25px;         /* tiêu đề sheet/modal lớn */
+  --type-headline: 17px;     --type-headline-lh: 22px;      /* tiêu đề khối, tiêu đề thanh trên */
+  --type-body: 15px;         --type-body-lh: 20px;          /* nội dung, ô nhập, nút */
+  --type-subhead: 13px;      --type-subhead-lh: 18px;       /* phụ đề, số trong bảng */
+  --type-footnote: 12px;     --type-footnote-lh: 16px;      /* chú thích, giờ cập nhật */
+  --type-caption: 11px;      --type-caption-lh: 13px;       /* nhãn cột (IN HOA), nhãn thanh tab */
+  --type-kpi: 25px;          --type-kpi-lh: 28px;           /* số thẻ KPI (tabular-nums) */
+  --type-kpi-lg: 34px;       --type-kpi-lg-lh: 38px;        /* một con số nổi bật */
+
+  /* Vật liệu mờ cho 3 vùng nổi nhỏ cố định: thanh trên, thanh tab, toast (class .ycx-material) */
+  --material-bg: rgb(255 255 255 / 0.84);
+  --material-filter: saturate(180%) blur(20px);
+  --hairline: rgb(15 23 42 / 0.08);
+  /* Chuyển động: sheet / núm công tắc / segmented (vào nhanh, dừng êm) */
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Laptop (≥ lg 1024px): đọc gần hơn → 3 bậc nhỏ đi 1–2px như bảng thang chữ. */
+@media (min-width: 1024px) {
+  :root {
+    --type-large-title: 26px;  --type-large-title-lh: 32px;
+    --type-headline: 16px;
+    --type-body: 14px;
+  }
+}

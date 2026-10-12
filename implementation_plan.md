@@ -7783,3 +7783,36 @@ sau khi cập nhật là TỰ CHẠY TIẾP, 0 lần tải lại trang, đúng 1
 Loạt e2e của CI (33 spec, chạy cục bộ với CDN thật): 104 xanh + 5 bỏ qua, 2 đỏ chính là 2 bài vừa viết lại → nay xanh. Xanh: offline-app-shell (2), check-thuong-* (8), keo-tai-lai
 (5), hen-gio (2), line-gui-anh (3), ycx-tu-dong-phan-tich (6), auth-fresh-login (2), pwa-iphone (2), smoke, xuat-anh-* / bi-auto-* /
 mo-lai-app / ios-xuat-anh / sticker-pdf / sticker-nut (39), iframe-tabs-csp (3, CDN thật).
+
+## GĐ3 — Lớp thiết kế Apple: token + component dùng chung (2026-10-11) — XONG
+
+**Mới ở `components/shared/ui/`** (xuất qua `index.ts`): `Switch` (công tắc iOS 44×26, bật emerald-500, `role=switch`, vùng chạm
+≥ 44 nhờ `::after`), `Banner` (thông báo tĩnh ≤ 2 dòng + "Xem thêm", vạch trái 3px — thay chữ chạy), `ListGroup`/`ListRow` (inset
+grouped, hàng ≥ 44/48px, kẻ mảnh thụt lề), `ActionMenu` (nút "⋯": laptop menu thả có phím ↑/↓/Home/End/Esc, Esc nghe pha capture
+để menu trong modal không đóng luôn modal; iPhone action sheet: nhóm nguy hiểm riêng + nút Huỷ; `onSelect` chạy ngay trong lượt
+bấm), `PageActions` (`PageActionsProvider` + `usePageActions` + `useCurrentPageActions`: 2 context tách — màn chỉ đăng ký, khung
+app vẽ; chỉ vẽ lại khi phần nhìn thấy đổi; hàm xử lý luôn là bản mới nhất), `usePresence` (vào/ra bằng CSS), `useModalBehavior.ts`
+(tách khỏi Modal.tsx, Modal re-export).
+
+**Làm lại (giữ chữ ký)**: `Modal` bỏ motion — vào/ra CSS, kéo-để-đóng sheet tự viết bằng Pointer Events (ngưỡng 100px / 500 px/s;
+vận tốc chỉ tính khi có ≥ 20 ms dữ liệu), thân chỉ cuộn dọc (`overflow-x-hidden`, con `min-w-0`), né bàn phím iOS
+(`visualViewport` → đệm đáy + `--ycx-vvh`), prop mới `primaryAction`/`cancelLabel` (sheet iPhone: [Huỷ] — Tiêu đề — [Lưu]; laptop:
+cặp nút ở chân). `Tabs variant="segment"` → segmented control núm trắng trượt (nhóm nút `aria-pressed` — giữ vai trò `button` để luồng tự động/test tìm nút theo tên không phải đổi). `SectionHeader` v2: tiêu đề 17px
+(laptop 16) đậm vừa, KHÔNG in hoa bằng CSS, phụ đề 13px; prop mới `quick` (≤ 2 nút icon) + `actions` ("⋯") → luôn một hàng.
+`EmptyState`: icon theo tên, chữ theo thang. `Button`: thêm `tinted`, `destructive`; `secondary` thành tinted xám không viền;
+nút nổi bật `font-semibold`. `Overlay`: bỏ `MotionOverlay` (tạm chuyển vào MobileBottomNav tới GĐ4).
+
+**Token/CSS**: `styles/tokens.css` khối "LỚP APPLE" — thang chữ 9 bậc `--type-*` (laptop nhỏ hơn ở 3 bậc), vật liệu, hairline,
+`--ease-ios`; `styles.css` — `@utility type-*`, `.ycx-switch::after`, `.ycx-list-row` (kẻ thụt lề 16/56px, 0,5px trên retina).
+`scripts/lint-ratchet.cjs`: chỉ số mới `offScaleText` (cỡ chữ ngoài thang; gieo mốc 223 bằng cờ mới `--seed-metric=`), test đơn vị.
+Tài liệu: DESIGN_SYSTEM.md mục 4.1 (5 kiểu nút), 4.3 (Modal), mục 7 "Lớp Apple"; CLAUDE.md thêm quy tắc lớp Apple.
+
+**Sửa test cũ đỏ trên main**: `chuan-thiet-ke-b.spec.ts` — màn Phân tích KHÔNG còn nút kiểu chuẩn nào (mọi nút là `unstyled`) nên
+bộ chọn chờ mãi → đo nút chuẩn trong modal "Tùy chỉnh KPI" (8px), thẻ KPI 16px, modal 16px — xanh.
+
+**Test**: `npm run check` xanh (1194 unit). Mới `tests/e2e/lop-apple-gd3.spec.ts` (10) + harness `appleUiHarness.tsx`: Switch (role,
+Space, 44×26, ::after), segmented (aria-pressed, núm trùng mục chọn, 44px), Banner (≤ 2 dòng, Xem thêm, ×, không animation), ListRow (48px, kẻ 56px),
+ActionMenu iPhone (2 nhóm, hàng 52px, Huỷ) + laptop (vạch ngăn, ↓, Esc trả focus), PageActions (tiêu đề/phụ đề cập nhật, gọi hàm mới
+nhất, màn ẩn thì gỡ), Modal sheet (đầu iOS, overflow-x hidden, kéo thanh nắm đóng, Lưu) + laptop (cặp nút chân, Esc). Xanh: modal-*
+(39), ui-dung-chung-dot-2, o-nhap-*, nhan-giu, toast (4), chuan-thiet-ke-b. Loạt rộng (33 spec của CI + quét 6 khung, khai-thac,
+tang-toc-gd2, lop-apple-gd3, xuất ảnh, check-thuong, sheet…): 151 xanh, 5 bỏ qua, 0 đỏ.

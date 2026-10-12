@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'motion/react';
 import { cn } from './utils';
 
 /**
@@ -30,8 +29,8 @@ export const Overlay = React.forwardRef<HTMLDivElement, OverlayProps>(function O
   );
 });
 
-/** Bản có hoạt ảnh (initial/animate/exit của motion) — dùng cho lớp nền mờ dần của sheet/menu. */
-export const MotionOverlay = motion.create(Overlay);
+// (GĐ3 2026-10-11) Đã bỏ `MotionOverlay` (bản bọc motion): Overlay dùng chung không còn kéo thư viện motion vào đường khởi động.
+// Lớp nổi cần hiệu ứng vào/ra dùng `usePresence` + CSS transition (xem ActionMenu, Modal).
 
 /**
  * Dùng khi cùng một phần tử LÚC THÌ nằm trong luồng, LÚC THÌ phủ kín màn hình (nút "Toàn màn hình" của bảng):

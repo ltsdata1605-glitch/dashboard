@@ -6,7 +6,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 import { AppIcon, type IconName } from '../shared/ui/icon';
 import { NAV_TAB_ICONS } from './navIcons';
-import { MotionOverlay } from '../shared/ui/Overlay';
+import { Overlay } from '../shared/ui/Overlay';
+
+// Tạm giữ hiệu ứng motion cho lớp nền menu "Khác" tới khi làm lại thanh tab bằng CSS (GĐ4) — Overlay dùng chung đã bỏ motion.
+const MotionOverlay = motion.create(Overlay);
 
 const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();

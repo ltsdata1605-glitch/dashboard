@@ -139,17 +139,21 @@ mới.)* Cấm tự đặt `rounded-xl`/`rounded-2xl`/`rounded-[…]` cho thẻ/
 Mọi phần tử tương tác **bắt buộc** dùng `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự
 dựng modal `fixed inset-0`.
 
-### 4.1 Button — 4 kiểu, hết
-`primary` (nền `--accent`) · `secondary` (viền `--line-1`, nền trắng) · `danger` (chữ `--bad`) ·
-`icon`. **Không có kiểu "ghost" không viền** — trên nền trắng dày đặc, nút không viền trông như chữ
-thường và người dùng không biết bấm được.
+### 4.1 Button — 5 kiểu (lớp Apple, 2026-10-11)
+`primary` sky-600 đặc — **mỗi màn chỉ một** · `secondary` "tinted" xám (nền `slate-100`, chữ đậm, không viền — vẫn rõ là
+nút vì có nền) · `tinted` nền `sky-50` chữ `sky-700` (hành động phụ quan trọng) · `destructive` nền `rose-50` chữ `rose-600`
+(việc nguy hiểm, đặt cuối nhóm) · `danger` đỏ **đặc** — CHỈ nút xác nhận cuối trong ConfirmDialog. `ghost`/`outline` giữ cho
+chỗ cũ (nút icon, thanh công cụ dày). Chữ nút nổi bật `font-semibold`. **Không có nút không nền giữa nội dung** — trên nền
+trắng dày đặc, nút không nền trông như chữ thường. *(Bản trước 2026-10-11: 4 kiểu, `secondary` viền xám nền trắng.)*
 
 ### 4.2 Input
 Tích hợp sẵn ring focus. Không hardcode class ring cục bộ. Bo `8px` (`rounded-control`).
 
 ### 4.3 Modal (`<Modal />`)
-Bo `16px` (`rounded-overlay`), bóng `shadow-xl`. Luôn có nút `X` góc trên phải, đóng được bằng `Esc`,
-thân dài phải `overflow-y-auto`. Con số trong modal dùng đúng thang màu ngữ nghĩa như trong bảng —
+Bo `16px` (`rounded-overlay`), bóng `shadow-xl`. Có nút `X` góc trên phải (hoặc đầu sheet iOS khi truyền `primaryAction`),
+đóng được bằng `Esc`, thân **chỉ cuộn dọc** (`overflow-x-hidden`, con `min-w-0` — bảng rộng tự cuộn ngang trong khung riêng).
+`position="bottom"` trên iPhone là sheet: thanh nắm, kéo xuống để đóng, né bàn phím ảo (visualViewport). Tiêu đề modal luôn
+màu chữ chính — **không tô đỏ/hồng** (đỏ chỉ cho hộp xác nhận xoá). Con số trong modal dùng đúng thang màu ngữ nghĩa như trong bảng —
 không có bảng màu riêng cho modal.
 *(Bản cũ nhắc `<ModalWrapper />` — component đó KHÔNG tồn tại, đừng đi tìm.)*
 
@@ -286,3 +290,45 @@ View nào có toolbar desktop (portal vào `#global-header-actions`) **bắt bu�
 
 Hỗ trợ cảm ứng: không để hover state gây kẹt trên điện thoại. Bảng dài có `.scrollbar-hide` cho cuộn
 ngang.
+
+---
+
+## 7. LỚP APPLE (2026-10-11) — `KE_HOACH_GIAO_DIEN_APPLE.md`
+
+Áp chuẩn Apple HIG cho dashboard bán lẻ, **giữ nguyên** mọi quyết định đã chốt (bảng luôn là bảng, UTM Avo + Roboto Condensed,
+tắt dark mode, bảng màu 5 họ, thang bo góc B, chữ ≥ 11px). Mọi thứ dưới đây nằm ở `components/shared/ui/` + `styles/tokens.css`.
+
+**Thang chữ 9 bậc** — class `type-*` (styles.css), giá trị ở token `--type-*` (tự đổi iPhone/laptop):
+
+| Class | iPhone | Laptop | Dùng cho |
+|---|---|---|---|
+| `type-large-title` | 28/34 | 26/32 | Tiêu đề trang |
+| `type-title` | 20/25 | 20/25 | Tiêu đề sheet/modal lớn |
+| `type-headline` | 17/22 | 16/22 | Tiêu đề khối, thanh trên |
+| `type-body` | 15/20 | 14/20 | Nội dung, ô nhập, nút |
+| `type-subhead` | 13/18 | 13/18 | Phụ đề, **số trong bảng** |
+| `type-footnote` | 12/16 | 12/16 | Chú thích, giờ cập nhật |
+| `type-caption` | 11/13 | 11/13 | **Nhãn cột** (IN HOA, Roboto Condensed), nhãn thanh tab |
+| `type-kpi` / `type-kpi-lg` | 25/28 · 34/38 | như iPhone | Số thẻ KPI (tabular-nums) |
+
+IN HOA chỉ cho `caption`. Tiêu đề viết thường như câu ("Chi tiết theo kho"). Không dùng `font-black`. `lint-ratchet`
+`offScaleText` đếm cỡ chữ ngoài thang — chỉ được giảm.
+
+**Component lớp Apple:**
+
+| Component | Thay cho | Ghi chú |
+|---|---|---|
+| `Switch` | ≥ 15 công tắc tự vẽ mỗi nơi một màu | bật `emerald-500`, 44×26, `role="switch"` |
+| `Tabs variant="segment"` | — | segmented control, núm trắng trượt, cao 44px trên cảm ứng |
+| `Banner` | dải "THÔNG BÁO" chữ chạy, khối cảnh báo tự vẽ | chữ đứng yên ≤ 2 dòng + "Xem thêm" |
+| `ListGroup` / `ListRow` | lưới ô màu, thẻ viền màu ở trang cài đặt | inset grouped như app Cài đặt |
+| `ActionMenu` | dàn 5–7 nút icon trên thanh/tiêu đề | laptop: menu thả; iPhone: action sheet; mục `destructive` cuối, đỏ |
+| `PageActions` (`usePageActions`) | 7 chỗ `createPortal` vào thanh trên | màn khai báo, khung app tự xếp: 1 nút chính + "⋯" |
+| `SectionHeader` v2 (`quick` + `actions`) | cụm nút tự xuống dòng | ≤ 2 nút icon + "⋯", luôn một hàng |
+| `BusyBar` | lớp chờ phủ kín màn khi tính lại ngầm | vạch 2px, chỉ hiện khi > 300 ms |
+| `EmptyState` (icon theo tên) | 4 kiểu "không có dữ liệu" | |
+| `usePresence` | `AnimatePresence` của motion | vào/ra bằng CSS — motion rời đường khởi động |
+
+**Vật liệu mờ** (`.ycx-material`) chỉ cho 3 vùng nhỏ cố định: thanh trên, thanh tab, toast/action sheet. Chuyển động sheet /
+núm công tắc / segmented: `cubic-bezier(0.32, 0.72, 0, 1)` (token `--ease-ios`); tôn trọng `prefers-reduced-motion`.
+Test: `tests/e2e/lop-apple-gd3.spec.ts` (harness `helpers/appleUiHarness.tsx`).

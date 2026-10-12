@@ -245,7 +245,26 @@ function countOffScaleRadius(content, file = '') {
   return (content.match(/\brounded(?:-[trbl]{1,2})?-(?:3xl|\[(?!var\()[^\]]+\])/g) || []).length;
 }
 
-const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji', 'rawOverlay', 'tinyText', 'offScaleRadius'];
+/**
+ * offScaleText (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3): cỡ chữ NGOÀI thang 9 bậc của lớp Apple. Thang (px):
+ * 11 caption · 12 footnote · 13 subhead · 15/14 body · 17/16 headline · 20 title · 25 kpi · 28/26 large-title · 34 kpi-lg
+ * (số sau "/" là bản laptop). Đếm `text-[Npx]` với N ≥ 11 không thuộc thang (N < 11 đã có `tinyText`) và cỡ có tên ngoài thang
+ * `text-lg`(18) `text-2xl`(24) `text-3xl`(30) `text-4xl`(36)… — `text-xs/sm/base/xl` = 12/14/16/20 nằm trong thang.
+ * Ghi chú: ~30 cỡ chữ khác nhau là một trong 3 nguyên nhân gốc của cảm giác "rối" — chỉ số này chỉ được GIẢM.
+ */
+const TYPE_SCALE_PX = new Set([11, 12, 13, 14, 15, 16, 17, 20, 25, 26, 28, 34]);
+function countOffScaleText(content, file = '') {
+  if (!file.endsWith('.tsx')) return 0;
+  let n = 0;
+  for (const m of content.matchAll(/\btext-\[(\d+(?:\.\d+)?)px\]/g)) {
+    const px = Number(m[1]);
+    if (px >= 11 && !TYPE_SCALE_PX.has(px)) n++;
+  }
+  n += (content.match(/\btext-(?:lg|[2-9]xl)\b/g) || []).length;
+  return n;
+}
+
+const METRIC_KEYS = ['nonSemanticColor', 'indigoAlias', 'missingMobileToolbar', 'iconDirectImport', 'iconNumericSize', 'iconLegacyCall', 'iconRawSvg', 'iconEmoji', 'rawOverlay', 'tinyText', 'offScaleRadius', 'offScaleText'];
 
 function computeViolations() {
   const files = walk(ROOT, []);
@@ -264,6 +283,7 @@ function computeViolations() {
       rawOverlay: countRawOverlay(content, relPath(file)),
       tinyText: countTinyText(content, relPath(file)),
       offScaleRadius: countOffScaleRadius(content, relPath(file)),
+      offScaleText: countOffScaleText(content, relPath(file)),
     };
     if (METRIC_KEYS.some((k) => counts[k])) {
       result[relPath(file)] = counts;
@@ -285,6 +305,24 @@ function saveBaseline(data) {
 function main() {
   const current = computeViolations();
   const baseline = loadBaseline();
+
+  // `--seed-metric=<tên>`: GIEO baseline cho một chỉ số MỚI (mốc = hiện trạng của đúng chỉ số đó, chỉ số khác giữ nguyên).
+  // Chỉ dùng một lần lúc thêm chỉ số; từ lần chạy sau chỉ số mới cũng chỉ được giảm như mọi chỉ số khác.
+  const seedArg = process.argv.find((a) => a.startsWith('--seed-metric='));
+  if (seedArg && baseline) {
+    const key = seedArg.split('=')[1];
+    if (!METRIC_KEYS.includes(key)) { console.error(`[lint-ratchet] Không có chỉ số "${key}".`); process.exit(1); }
+    const next = { ...baseline };
+    let tong = 0;
+    for (const [file, counts] of Object.entries(current)) {
+      if (!counts[key]) continue;
+      next[file] = { ...(next[file] || Object.fromEntries(METRIC_KEYS.map((k) => [k, 0]))), [key]: counts[key] };
+      tong += counts[key];
+    }
+    saveBaseline(next);
+    console.log(`[lint-ratchet] Đã gieo baseline cho "${key}": ${tong} vi phạm hiện có.`);
+    return;
+  }
 
   if (!baseline) {
     if (CHECK_ONLY) {
@@ -349,6 +387,6 @@ if (require.main === module) {
 module.exports = {
   countOffPaletteColors, countIndigoAlias, countMissingMobileToolbar,
   countIconDirectImport, countIconNumericSize, countIconLegacyCall, countIconRawSvg, countIconEmoji,
-  countRawOverlay, countTinyText, countOffScaleRadius,
+  countRawOverlay, countTinyText, countOffScaleRadius, countOffScaleText,
   computeViolations, saveBaseline, METRIC_KEYS,
 };

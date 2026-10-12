@@ -132,6 +132,40 @@
     }
   }
 
+  /* ═══ LỚP APPLE (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2–3) ═══ */
+
+  /* Công tắc (components/shared/ui/Switch.tsx): vùng chạm vô hình ≥ 44×44 trên màn cảm ứng — không đổi bố cục. */
+  @media (pointer: coarse) {
+    .ycx-switch::after {
+      content: '';
+      position: absolute;
+      inset: -9px -4px;
+    }
+  }
+
+  /* Danh sách nhóm (components/shared/ui/ListGroup.tsx): đường kẻ mảnh GIỮA các hàng, thụt lề theo nhãn như iOS
+     (16px khi không icon, 16 + 28 + 12 = 56px khi có ô icon). Màn retina: 0,5px. */
+  .ycx-list-row + .ycx-list-row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 16px;
+    height: 1px;
+    background: rgb(15 23 42 / 0.08);
+    pointer-events: none;
+  }
+  .ycx-list-row.ycx-list-row--icon + .ycx-list-row::before,
+  .ycx-list-row + .ycx-list-row.ycx-list-row--icon::before {
+    left: 56px;
+  }
+  @media (min-resolution: 2dppx) {
+    .ycx-list-row + .ycx-list-row::before {
+      transform: scaleY(0.5);
+      transform-origin: top;
+    }
+  }
+
   .glass-card {
     @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-sm transition-all duration-300;
   }
@@ -809,3 +843,15 @@ summary,
     }
   }
 }
+
+/* THANG CHỮ 9 BẬC — class `type-*` (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.3). Giá trị ở styles/tokens.css
+   (khối "LỚP APPLE"), tự đổi iPhone/laptop theo media query ở đó. Chỉ đặt CỠ + DÒNG; độ đậm dùng font-* như thường. */
+@utility type-large-title { font-size: var(--type-large-title); line-height: var(--type-large-title-lh); letter-spacing: -0.02em; }
+@utility type-title { font-size: var(--type-title); line-height: var(--type-title-lh); letter-spacing: -0.015em; }
+@utility type-headline { font-size: var(--type-headline); line-height: var(--type-headline-lh); }
+@utility type-body { font-size: var(--type-body); line-height: var(--type-body-lh); }
+@utility type-subhead { font-size: var(--type-subhead); line-height: var(--type-subhead-lh); }
+@utility type-footnote { font-size: var(--type-footnote); line-height: var(--type-footnote-lh); }
+@utility type-caption { font-size: var(--type-caption); line-height: var(--type-caption-lh); }
+@utility type-kpi { font-size: var(--type-kpi); line-height: var(--type-kpi-lh); font-variant-numeric: tabular-nums; }
+@utility type-kpi-lg { font-size: var(--type-kpi-lg); line-height: var(--type-kpi-lg-lh); font-variant-numeric: tabular-nums; }

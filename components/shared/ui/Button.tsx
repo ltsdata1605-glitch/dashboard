@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline' | 'unstyled';
+export type ButtonVariant = 'primary' | 'secondary' | 'tinted' | 'danger' | 'destructive' | 'ghost' | 'outline' | 'unstyled';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'none';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -56,14 +56,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const focusRing = 'focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500';
     const baseStyles = isUnstyled
       ? `outline-none ${focusRing} disabled:opacity-50 disabled:cursor-not-allowed`
-      : `inline-flex items-center justify-center font-medium transition-colors duration-200 outline-none ${focusRing} disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap`;
-    
+      : `inline-flex items-center justify-center transition-colors duration-200 outline-none ${focusRing} disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap active:opacity-80`;
+
+    // 5 KIỂU NÚT kiểu Apple (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 3.14) — mỗi màn CHỈ MỘT nút `primary`:
+    //  primary     sky-600 đặc — hành động chính.
+    //  secondary   "tinted" xám: nền slate-100, chữ đậm, KHÔNG viền (trước: trắng viền xám) — Huỷ, hành động phụ.
+    //  tinted      nền sky-50, chữ sky-700 — hành động phụ QUAN TRỌNG (vẫn rõ là nút, không tranh với nút chính).
+    //  destructive đỏ nhạt (nền rose-50, chữ rose-600) — việc nguy hiểm đặt cuối nhóm; bấm vẫn phải hỏi xác nhận.
+    //  danger      đỏ ĐẶC — CHỈ cho nút xác nhận cuối cùng (ConfirmDialog "Xoá").
+    //  ghost / outline giữ cho chỗ cũ (nút icon, thanh công cụ dày).
     const variants: Record<ButtonVariant, string> = {
-      primary: 'bg-sky-600 hover:bg-sky-700 text-white border border-transparent',
-      secondary: 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700',
-      danger: 'bg-rose-600 hover:bg-rose-700 text-white border border-transparent',
-      ghost: 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent',
-      outline: 'bg-transparent text-sky-700 dark:text-sky-400 border border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20',
+      primary: 'font-semibold bg-sky-600 hover:bg-sky-700 text-white border border-transparent',
+      secondary: 'font-semibold bg-slate-100 hover:bg-slate-200/80 text-slate-800 border border-transparent dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700',
+      tinted: 'font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-transparent',
+      danger: 'font-semibold bg-rose-600 hover:bg-rose-700 text-white border border-transparent',
+      destructive: 'font-semibold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-transparent',
+      ghost: 'font-medium bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent',
+      outline: 'font-medium bg-transparent text-sky-700 dark:text-sky-400 border border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20',
       unstyled: '',
     };
 
