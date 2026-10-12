@@ -19,6 +19,9 @@ const ALLOWED_FILES = new Set([
     'services/firebase.ts',
     'features/phan-ca/services/firebase.ts',
     'features/sticker-event/firebase-applet-config.json',
+    // Trang đăng nhập cho app Màn hình chính iPhone (Firebase Hosting auth.dashboard.pro.vn, 2026-10-12) — CÙNG khoá web
+    // công khai với services/firebase.ts (đã đối chiếu), không phải khoá bí mật.
+    'auth-hosting/pwa-login.html',
     'tests/unit/no-hardcoded-api-keys.test.ts',
 ]);
 

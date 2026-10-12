@@ -5,6 +5,29 @@
       "rules": "firestore.rules"
     }
   ],
+  "hosting": {
+    "site": "dashboa-7e20b",
+    "public": "auth-hosting",
+    "cleanUrls": false,
+    "redirects": [
+      {
+        "source": "/",
+        "destination": "https://dashboard.pro.vn/",
+        "type": 302
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
+  },
   "functions": [
     {
       "source": "functions",

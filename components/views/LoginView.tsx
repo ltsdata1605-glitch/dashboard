@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
-import { isStandaloneMode, isInAppBrowser, isAppleOrSafari } from '../../services/firebase';
+import {
+    isStandaloneMode, isInAppBrowser, isAppleOrSafari, isIOSStandalonePwa,
+    preparePwaHandoff, startPwaHandoffLogin, claimPwaHandoff, hasPendingPwaHandoff, clearPendingPwaHandoff,
+    type PreparedPwaHandoff,
+} from '../../services/firebase';
 
 const LoginView: React.FC = () => {
     const { loginWithGoogle, loginWithGoogleRedirect, setDemoMode, isLoading } = useAuth();
@@ -13,8 +17,79 @@ const LoginView: React.FC = () => {
     const [isInAppWebView] = useState(() => isInAppBrowser());
     const [isStandalone] = useState(() => isStandaloneMode());
     const [isSafari] = useState(() => isAppleOrSafari());
+    const [isIOSPwa] = useState(() => isIOSStandalonePwa());
+
+    // ── App ở Màn hình chính iPhone: đăng nhập ở trang auth.dashboard.pro.vn rồi nhận phiên về
+    // (redirect thường không chạy được — xem services/firebase.ts → claimPwaHandoff).
+    const preparedRef = useRef<PreparedPwaHandoff | null>(null);
+    const [waitingHandoff, setWaitingHandoff] = useState(() => isIOSPwa && hasPendingPwaHandoff());
+    useEffect(() => {
+        if (!isIOSPwa) return;
+        preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
+    }, [isIOSPwa]);
+    useEffect(() => {
+        if (!waitingHandoff) return;
+        let stopped = false;
+        let busy = false;
+        const tick = async () => {
+            if (stopped || busy || document.visibilityState !== 'visible') return;
+            if (!hasPendingPwaHandoff()) {
+                setWaitingHandoff(false);
+                setIsLoggingIn(false);
+                return;
+            }
+            busy = true;
+            try {
+                // Vào được thì onAuthStateChanged ở AuthContext tự chuyển màn hình.
+                if (await claimPwaHandoff()) stopped = true;
+            } catch (err: unknown) {
+                console.error('[Auth] Nhận phiên đăng nhập từ trang Google lỗi:', err);
+                clearPendingPwaHandoff();
+                setWaitingHandoff(false);
+                setIsLoggingIn(false);
+                setError(`Chưa nhận được phiên đăng nhập (${getErrorCode(err) || getErrorMessage(err)}). Vui lòng bấm "Tiếp tục với Cổng Google" lại.`);
+            } finally {
+                busy = false;
+            }
+        };
+        tick();
+        const timer = setInterval(tick, 2500);
+        document.addEventListener('visibilitychange', tick);
+        window.addEventListener('focus', tick);
+        return () => {
+            stopped = true;
+            clearInterval(timer);
+            document.removeEventListener('visibilitychange', tick);
+            window.removeEventListener('focus', tick);
+        };
+    }, [waitingHandoff]);
+
+    const handlePwaLogin = () => {
+        const prepared = preparedRef.current;
+        if (!prepared) {
+            setError('Đang chuẩn bị đăng nhập, vui lòng bấm lại sau giây lát.');
+            return;
+        }
+        setError(null);
+        setIsLoggingIn(true);
+        startPwaHandoffLogin(prepared);
+        setWaitingHandoff(true);
+        // Mã đã dùng: chuẩn bị mã mới cho lần bấm sau.
+        preparedRef.current = null;
+        preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
+    };
+
+    const handleCancelPwaLogin = () => {
+        clearPendingPwaHandoff();
+        setWaitingHandoff(false);
+        setIsLoggingIn(false);
+    };
 
     const handleLogin = async () => {
+        if (isIOSPwa) {
+            handlePwaLogin();
+            return;
+        }
         try {
             setError(null);
             setIsLoggingIn(true);
@@ -165,12 +240,12 @@ const LoginView: React.FC = () => {
                         <div className="mt-2.5 pt-2 border-t border-rose-200/60 dark:border-rose-800/50 flex items-center justify-end">
                             <button
                                 type="button"
-                                onClick={handleRedirectLogin}
+                                onClick={isIOSPwa ? handlePwaLogin : handleRedirectLogin}
                                 disabled={isLoggingIn}
                                 className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
                             >
                                 <AppIcon name="refresh" size="sm" />
-                                Đăng nhập chuyển hướng →
+                                {isIOSPwa ? 'Thử đăng nhập lại →' : 'Đăng nhập chuyển hướng →'}
                             </button>
                         </div>
                     </div>
@@ -200,7 +275,23 @@ const LoginView: React.FC = () => {
                             <span>Tiếp tục với Cổng Google</span>
                         </Button>
 
-                        {/* Subtle fallback redirect link */}
+                        {isIOSPwa ? (
+                            <div className="text-center pt-2 text-[11px] text-slate-500 leading-relaxed">
+                                {waitingHandoff ? (
+                                    <>
+                                        Chọn tài khoản trong cửa sổ Google vừa mở, xong bấm “Quay lại ứng dụng”.{' '}
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
+                                            onClick={handleCancelPwaLogin}
+                                            className="inline font-bold text-sky-700 hover:underline cursor-pointer"
+                                        >
+                                            Huỷ
+                                        </Button>
+                                    </>
+                                ) : 'Mở cửa sổ đăng nhập Google an toàn rồi tự quay về ứng dụng.'}
+                            </div>
+                        ) : (
                         <div className="text-center pt-2">
                             <button
                                 type="button"
@@ -212,6 +303,7 @@ const LoginView: React.FC = () => {
                                 {isStandalone ? 'Đang kích hoạt đăng nhập chuyển hướng' : 'Gặp lỗi xoay? Đăng nhập chuyển hướng →'}
                             </button>
                         </div>
+                        )}
                     </div>
                     
                     {/* Clean Minimal Divider */}

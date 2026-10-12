@@ -7841,3 +7841,17 @@ nhiều chỉnh mobile ở Report BI). Gộp vào `claude/giao-dien-apple` trư�
 - **Còn lại cho GĐ7 (Check thưởng)**: các spec ngoài CI còn mở `public/check-thuong.html` (check-thuong-luu-du-lieu,
   check-thuong-iphone-khong-cat, check-thuong-mobile-topbar, check-thuong-xuat-anh-toan-dien, o-nhap-a17 phần Check thưởng) — trang
   vẫn còn trong `public/` nên chạy được, nhưng không còn là thứ người dùng thấy; chuyển sang bản React ở GĐ7.
+
+## Đăng nhập Google cho app Màn hình chính iPhone (2026-10-12)
+
+**Lỗi:** app thêm vào Màn hình chính (iOS standalone) → bấm đăng nhập → chọn tài khoản Google → quay về app vẫn ở màn đăng nhập.
+**Nguyên nhân:** iOS mở trang ngoài phạm vi app (auth.dashboard.pro.vn, accounts.google.com) trong khung trình duyệt riêng, bộ nhớ
+tách khỏi app; kết quả `signInWithRedirect` nằm trong khung đó nên `getRedirectResult` trong app trả `null`.
+**Sửa:** chỉ khi `isIOSStandalonePwa()`:
+- `components/views/LoginView.tsx` → `services/firebase.ts` `preparePwaHandoff/startPwaHandoffLogin`: sinh `verifier`, mở
+  `https://auth.dashboard.pro.vn/pwa-login.html#c=sha256(verifier)`, rồi 2,5 s/lần (và khi app hiện lại) gọi `pwaHandoffClaim`.
+- `auth-hosting/pwa-login.html` (Firebase Hosting site `dashboa-7e20b`, khai trong `firebase.json` → `hosting`): cùng origin authDomain
+  nên redirect chạy; xong gọi `pwaHandoffStore` (bắt buộc đăng nhập) gửi Google idToken/accessToken.
+- `functions/src/pwaHandoff.ts`: lưu `pwaHandoff/{code}` ≤5 phút, claim một lần rồi xoá; rules khoá hẳn với client.
+- App `signInWithCredential(GoogleAuthProvider.credential(idToken, accessToken))` — không cần custom token/IAM signBlob.
+**Kiểm:** `tests/e2e/ios-pwa-dang-nhap.spec.ts`; gọi thật 2 function (chưa đăng nhập → 401, sai verifier → rỗng, claim lần 2 → rỗng).
