@@ -20,6 +20,7 @@
     "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist",
     "deploy:rules": "firebase deploy --only firestore",
     "deploy:functions": "firebase deploy --only functions",
+    "deploy:hosting": "firebase deploy --only hosting",
     "test:rules": "npx firebase emulators:exec --only firestore \"node tests/firestore.rules.test.mjs\"",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",

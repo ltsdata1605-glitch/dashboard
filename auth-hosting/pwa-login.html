@@ -6,54 +6,65 @@
 <meta name="robots" content="noindex">
 <title>Đăng nhập Dashboard YCX</title>
 <!--
-  Trang đăng nhập cho app ở MÀN HÌNH CHÍNH iPhone (2026-10-12). Phục vụ tại
-  https://auth.dashboard.pro.vn/pwa-login.html (Firebase Hosting site dashboa-7e20b, `firebase.json` → hosting).
-  Cùng origin với authDomain nên signInWithRedirect chạy bình thường trong khung trình duyệt mà iOS mở ra.
-  Xong thì gửi phiên về app qua Cloud Function pwaHandoffStore — xem functions/src/pwaHandoff.ts.
+  Trang đăng nhập cho app ở MÀN HÌNH CHÍNH iPhone (PWA Standalone).
+  Phục vụ tại: https://auth.dashboard.pro.vn/pwa-login.html
 -->
 <style>
   :root { color-scheme: light; }
-  * { box-sizing: border-box; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body { margin: 0; min-height: 100dvh; display: flex; align-items: center; justify-content: center;
-         padding: 16px; background: #f1f5f9; color: #0f172a;
+         padding: 16px; background: #f8fafc; color: #0f172a;
          font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  .card { width: 100%; max-width: 380px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px;
-          padding: 24px; box-shadow: 0 1px 2px rgba(15,23,42,.06); text-align: center; }
-  h1 { font-size: 18px; margin: 0 0 6px; }
-  p { margin: 0 0 16px; color: #475569; font-size: 14px; }
+  .card { width: 100%; max-width: 380px; background: #fff; border: 1px solid #e2e8f0; border-radius: 20px;
+          padding: 28px 24px; box-shadow: 0 10px 25px -5px rgba(15,23,42,.08), 0 8px 10px -6px rgba(15,23,42,.04); text-align: center; }
+  .logo { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #0ea5e9, #0284c7);
+          display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(2,132,199,.25); }
+  h1 { font-size: 20px; font-weight: 800; margin: 0 0 8px; color: #0f172a; }
+  p { margin: 0 0 20px; color: #64748b; font-size: 13.5px; line-height: 1.5; }
   button, a.btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
-          min-height: 48px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a;
-          font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; }
-  button:disabled { opacity: .5; }
-  a.btn.primary { background: #0284c7; border-color: #0284c7; color: #fff; }
-  .msg { margin-top: 14px; font-size: 13px; color: #475569; white-space: pre-line; }
-  .msg.err { color: #be123c; }
-  .msg.ok { color: #047857; font-weight: 700; }
-  .spin { width: 22px; height: 22px; border: 3px solid #0284c7; border-top-color: transparent; border-radius: 50%;
-          animation: s 0.8s linear infinite; margin: 8px auto; }
+          min-height: 48px; border-radius: 12px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a;
+          font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; transition: all .15s ease; }
+  button:active, a.btn:active { transform: scale(0.98); }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+  button.google { background: #fff; border-color: #cbd5e1; color: #1e293b; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+  button.google:hover { background: #f8fafc; border-color: #94a3b8; }
+  a.btn.primary { background: #0284c7; border-color: #0284c7; color: #fff; font-weight: 700; }
+  a.btn.primary:hover { background: #0369a1; }
+  .msg { margin-top: 16px; font-size: 13px; color: #475569; white-space: pre-line; line-height: 1.5; }
+  .msg.err { color: #e11d48; font-weight: 600; background: #fff1f2; padding: 10px 14px; border-radius: 10px; border: 1px solid #fecdd3; }
+  .msg.ok { color: #059669; font-weight: 700; background: #ecfdf5; padding: 10px 14px; border-radius: 10px; border: 1px solid #a7f3d0; }
+  .spin { width: 28px; height: 28px; border: 3px solid #0284c7; border-top-color: transparent; border-radius: 50%;
+          animation: s 0.8s linear infinite; margin: 16px auto; }
   @keyframes s { to { transform: rotate(360deg); } }
   [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main class="card">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+  </div>
   <h1>Dashboard YCX</h1>
-  <p id="lead">Đăng nhập Google cho ứng dụng trên Màn hình chính.</p>
+  <p id="lead">Đăng nhập tài khoản Google để đồng bộ dữ liệu vào ứng dụng Màn hình chính.</p>
+  
   <div id="busy" class="spin" hidden></div>
-  <button id="go" type="button" hidden>
+
+  <button id="go" type="button" class="btn google">
     <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
     Tiếp tục với Google
   </button>
+
   <a id="back" class="btn primary" href="https://dashboard.pro.vn/" hidden>Quay lại ứng dụng</a>
   <div id="msg" class="msg"></div>
 </main>
+
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
   import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult }
     from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js';
   import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-functions.js';
 
-  // Cùng cấu hình web công khai với services/firebase.ts.
+  // Cấu hình Firebase công khai
   const app = initializeApp({
     apiKey: 'AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4',
     authDomain: 'auth.dashboard.pro.vn',
@@ -65,12 +76,12 @@
   const show = (id, on) => { $(id).hidden = !on; };
   const say = (text, kind = '') => { $('msg').textContent = text; $('msg').className = 'msg ' + kind; };
 
-  // Mã chuyển phiên: trong #c=… lúc app mở trang; giữ qua sessionStorage vì bước redirect có thể làm mất hash.
+  // Mã chuyển phiên: trong #c=… lúc app mở trang; lưu sessionStorage để giữ qua bước redirect
   const KEY = 'ycxPwaHandoffCode';
   const fromHash = new URLSearchParams(location.hash.slice(1)).get('c');
   if (fromHash && fromHash !== sessionStorage.getItem(KEY)) {
     sessionStorage.setItem(KEY, fromHash);
-    sessionStorage.removeItem(KEY + ':tried');
+    sessionStorage.removeItem(KEY + ':returning');
   }
   const code = fromHash || sessionStorage.getItem(KEY);
 
@@ -79,52 +90,106 @@
   provider.addScope('https://www.googleapis.com/auth/drive.file');
   provider.setCustomParameters({ prompt: 'select_account' });
 
+  // Xử lý khi người dùng CHỦ ĐỘNG bấm nút (User Gesture đích thực -> Không bao giờ bị Safari chặn)
   $('go').addEventListener('click', async () => {
     $('go').disabled = true;
     show('busy', true);
-    try { await signInWithRedirect(auth, provider); }
-    catch (e) { show('busy', false); $('go').disabled = false; say('Không mở được trang Google: ' + (e.code || e.message), 'err'); }
+    sessionStorage.setItem(KEY + ':returning', '1');
+    say('Đang chuyển hướng sang trang đăng nhập Google…');
+
+    // Failsafe timer: Nếu sau 10s trình duyệt chưa chuyển hướng, mở lại nút
+    const failsafe = setTimeout(() => {
+      show('busy', false);
+      $('go').disabled = false;
+      say('Nếu trình duyệt chưa chuyển sang Google, vui lòng bấm nút một lần nữa.', 'err');
+    }, 10000);
+
+    try {
+      await signInWithRedirect(auth, provider);
+    } catch (e) {
+      clearTimeout(failsafe);
+      show('busy', false);
+      $('go').disabled = false;
+      say('Không thể mở trang Google (' + (e.code || e.message) + '). Vui lòng thử lại.', 'err');
+    }
   });
 
   async function main() {
     if (!code || !/^[A-Za-z0-9_-]{43}$/.test(code)) {
-      say('Hãy mở trang này bằng nút "Tiếp tục với Cổng Google" trong ứng dụng Dashboard YCX.', 'err');
+      say('Vui lòng mở trang này từ nút "Tiếp tục với Cổng Google" trong ứng dụng Dashboard YCX.', 'err');
+      show('go', false);
       show('back', true);
       return;
     }
+
+    // 1. Lần đầu mở từ App sang (có #c=... trong URL và chưa từng qua Google redirect):
+    // HIỂN THỊ NÚT ĐĂNG NHẬP NGAY LẬP TỨC. Tuyệt đối không tự động click ngầm gây treo trình duyệt iOS.
+    if (fromHash && !sessionStorage.getItem(KEY + ':returning')) {
+      show('busy', false);
+      show('go', true);
+      return;
+    }
+
+    // 2. Bước quay lại sau khi đã xác thực tài khoản Google:
     show('busy', true);
+    show('go', false);
+    $('lead').textContent = 'Đang nhận diện tài khoản Google…';
+    say('Vui lòng đợi giây lát trong khi hoàn tất phiên đăng nhập.');
+
     let result = null;
-    try { result = await getRedirectResult(auth); }
-    catch (e) { say('Đăng nhập Google không thành công (' + (e.code || e.message) + '). Thử lại nhé.', 'err'); }
-    if (!result) {
-      // Lần đầu mở từ app: đi thẳng sang Google, đỡ một lần bấm. Đã thử rồi mà quay lại tay không thì hiện nút.
-      if (!sessionStorage.getItem(KEY + ':tried') && !$('msg').textContent) {
-        sessionStorage.setItem(KEY + ':tried', '1');
-        $('go').click();
-        return;
+    try {
+      result = await Promise.race([
+        getRedirectResult(auth),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000))
+      ]);
+    } catch (e) {
+      console.error('[PWA-Auth] getRedirectResult error:', e);
+      if (e.message !== 'timeout') {
+        say('Đăng nhập Google không thành công (' + (e.code || e.message) + '). Thử lại nhé.', 'err');
       }
-      show('busy', false); show('go', true); return;
+    }
+
+    if (!result) {
+      // Không có kết quả redirect -> Hiển thị nút cho người dùng bấm lại
+      show('busy', false);
+      show('go', true);
+      $('lead').textContent = 'Đăng nhập Google cho ứng dụng trên Màn hình chính.';
+      say('Vui lòng bấm nút bên dưới để đăng nhập vào tài khoản Google.');
+      return;
     }
 
     const cred = GoogleAuthProvider.credentialFromResult(result);
-    if (!cred?.idToken) { show('busy', false); show('go', true); say('Google không trả về thông tin đăng nhập. Thử lại nhé.', 'err'); return; }
-    say('Đang gửi phiên đăng nhập về ứng dụng…');
+    if (!cred?.idToken) {
+      show('busy', false);
+      show('go', true);
+      say('Google không trả về thông tin đăng nhập. Vui lòng bấm thử lại.', 'err');
+      return;
+    }
+
+    say('Đang đồng bộ phiên về ứng dụng…');
     try {
-      await httpsCallable(getFunctions(app), 'pwaHandoffStore')({ code, idToken: cred.idToken, accessToken: cred.accessToken || null });
+      await httpsCallable(getFunctions(app), 'pwaHandoffStore')({
+        code,
+        idToken: cred.idToken,
+        accessToken: cred.accessToken || null
+      });
       sessionStorage.removeItem(KEY);
-      sessionStorage.removeItem(KEY + ':tried');
-      // Trang này chỉ là trạm trung chuyển: không giữ phiên lại trên máy.
+      sessionStorage.removeItem(KEY + ':returning');
       await auth.signOut().catch(() => {});
       history.replaceState(null, '', location.pathname);
+
       show('busy', false);
+      show('go', false);
       $('lead').textContent = 'Đã đăng nhập: ' + (result.user.email || '');
-      say('Xong! Bấm "Quay lại ứng dụng" (hoặc nút đóng ở góc trên) — ứng dụng sẽ tự vào.', 'ok');
+      say('✅ Đăng nhập thành công!\nBấm "Quay lại ứng dụng" (hoặc nút đóng [X] ở góc trên) để tiếp tục.', 'ok');
       show('back', true);
     } catch (e) {
-      show('busy', false); show('go', true);
+      show('busy', false);
+      show('go', true);
       say('Không gửi được phiên về ứng dụng (' + (e.code || e.message) + '). Thử lại nhé.', 'err');
     }
   }
+
   main();
 </script>
 </body>
