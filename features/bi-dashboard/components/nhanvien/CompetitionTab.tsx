@@ -269,6 +269,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         htmlEl.style.minHeight = 'auto';
                         if (htmlEl.classList.contains('competition-group-card')) {
                             htmlEl.classList.remove('h-full');
+                            htmlEl.style.width = '100%';
+                            htmlEl.style.minWidth = '0';
+                            htmlEl.style.maxWidth = 'none';
                         }
                     });
 

@@ -340,24 +340,116 @@ export function fitTablesToContent(root: HTMLElement): number {
         }
     });
 
-    // Đo bảng rộng nhất + đệm/viền các khối bọc nó
+    // Đo đệm và viền ngang của 1 phần tử
+    const getHorizPadBorder = (el: HTMLElement): number => {
+        const cs = getComputedStyle(el);
+        return (parseFloat(cs.paddingLeft || '0') || 0) + (parseFloat(cs.paddingRight || '0') || 0)
+            + (parseFloat(cs.borderLeftWidth || '0') || 0) + (parseFloat(cs.borderRightWidth || '0') || 0);
+    };
+
+    // Nhận diện số cột của container dạng grid
+    const detectGridCols = (gridEl: HTMLElement): number => {
+        const inline = gridEl.style.gridTemplateColumns;
+        if (inline) {
+            const rep = inline.match(/repeat\((\d+)/);
+            if (rep) return parseInt(rep[1], 10);
+            const parts = inline.trim().split(/\s+/).filter(p => p && !p.startsWith('minmax') && !p.startsWith('('));
+            if (parts.length > 1) return parts.length;
+        }
+        for (const cls of Array.from(gridEl.classList)) {
+            const m = cls.match(/(?:^|:)(?:grid-cols-)(\d+)/);
+            if (m) return parseInt(m[1], 10);
+        }
+        try {
+            const cs = getComputedStyle(gridEl);
+            if (cs.display === 'grid' && cs.gridTemplateColumns && cs.gridTemplateColumns !== 'none') {
+                const tracks = cs.gridTemplateColumns.split(' ').filter(Boolean);
+                if (tracks.length > 1) return tracks.length;
+            }
+        } catch {}
+        return 1;
+    };
+
+    // Lấy khoảng cách gap ngang của grid/flex
+    const getHorizGap = (el: HTMLElement): number => {
+        const cs = getComputedStyle(el);
+        const gap = parseFloat(cs.columnGap || cs.gap || '0');
+        if (!isNaN(gap) && gap > 0) return gap;
+        for (const cls of Array.from(el.classList)) {
+            const m = cls.match(/(?:^|:)gap-(?:x-)?(\d+(?:\.\d+)?)/);
+            if (m) return parseFloat(m[1]) * 4;
+        }
+        return 20; // fallback mặc định 20px
+    };
+
+    // 1. Đo bảng đơn lẻ rộng nhất + đệm/viền các khối bọc nó
     let widest = 0;
     tables.forEach((table) => {
-        const w = Math.ceil(table.getBoundingClientRect().width);
+        const w = Math.ceil(table.getBoundingClientRect().width) || parseFloat(table.style.width) || 0;
         if (w <= 0) return;
         let extra = 0;
         let node: HTMLElement | null = table.parentElement;
         while (node && node !== root) {
-            const cs = getComputedStyle(node);
-            extra += parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0')
-                + parseFloat(cs.borderLeftWidth || '0') + parseFloat(cs.borderRightWidth || '0');
+            extra += getHorizPadBorder(node);
             node = node.parentElement;
         }
         const csRoot = getComputedStyle(root);
-        extra += parseFloat(csRoot.paddingLeft || '0') + parseFloat(csRoot.paddingRight || '0');
+        extra += (parseFloat(csRoot.paddingLeft || '0') || 0) + (parseFloat(csRoot.paddingRight || '0') || 0);
         // +2px: bảng `border-collapse` có nửa viền ngoài nằm NGOÀI hộp đo được — thiếu là mất viền phải trong ảnh
         widest = Math.max(widest, Math.ceil(w + extra + 2));
     });
+
+    // 2. Đo các khối bố cục đa cột (Grid hoặc Flex ngang) chứa nhiều bảng cạnh nhau
+    const multiContainers = Array.from(root.querySelectorAll<HTMLElement>('.grid, [style*="grid"], .flex-row'));
+    multiContainers.forEach((container) => {
+        const childrenWithTables = Array.from(container.children).filter((child) =>
+            child instanceof HTMLElement && (child.querySelector('table') || child.tagName === 'TABLE')
+        ) as HTMLElement[];
+
+        if (childrenWithTables.length <= 1) return;
+
+        const isGrid = container.classList.contains('grid') ||
+            container.style.display === 'grid' ||
+            getComputedStyle(container).display === 'grid';
+
+        const cols = isGrid ? detectGridCols(container) : childrenWithTables.length;
+        const effectiveCols = Math.min(cols, childrenWithTables.length);
+        if (effectiveCols <= 1) return;
+
+        // Bề rộng lớn nhất của 1 card/cột trong container
+        let maxItemW = 0;
+        childrenWithTables.forEach((item) => {
+            const table = item.tagName === 'TABLE' ? item : item.querySelector('table');
+            if (!table) return;
+            const tableW = Math.ceil(table.getBoundingClientRect().width) || parseFloat(table.style.width) || 0;
+            let itemExtra = 0;
+            let curr: HTMLElement | null = table.parentElement;
+            while (curr && curr !== container) {
+                itemExtra += getHorizPadBorder(curr);
+                curr = curr.parentElement;
+            }
+            maxItemW = Math.max(maxItemW, tableW + itemExtra);
+        });
+
+        if (maxItemW <= 0) return;
+
+        const gap = getHorizGap(container);
+        const containerNeededW = effectiveCols * maxItemW + (effectiveCols - 1) * gap;
+
+        // Đệm và viền từ container lên đến root
+        let ancestorExtra = 0;
+        let anc: HTMLElement | null = container.parentElement;
+        while (anc && anc !== root) {
+            ancestorExtra += getHorizPadBorder(anc);
+            anc = anc.parentElement;
+        }
+        const csRoot = getComputedStyle(root);
+        ancestorExtra += (parseFloat(csRoot.paddingLeft || '0') || 0) + (parseFloat(csRoot.paddingRight || '0') || 0);
+
+        const totalNeededW = Math.ceil(containerNeededW + ancestorExtra + 2);
+        widest = Math.max(widest, totalNeededW);
+    });
+
     return widest;
 }
 

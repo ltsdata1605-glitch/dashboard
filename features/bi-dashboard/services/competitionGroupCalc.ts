@@ -1,5 +1,6 @@
 import type { Employee, CompetitionHeader } from '../types/nhanVienTypes';
 import { resolveEmployeeTarget } from './competitionSummaryCalc';
+import { roundUp } from '../../../utils/dataUtils';
 
 /**
  * Dòng tổng của siêu thị (tên bắt đầu bằng "ĐMX -" / "DMX -"), KHÔNG phải nhân viên.
@@ -40,7 +41,8 @@ export function getEmployeeMetrics(
     data: EmployeeDataMap,
     targets: CompetitionTargets
 ): EmployeeMetrics {
-    const target = resolveEmployeeTarget(targets, header.originalTitle, emp.originalName);
+    const rawTarget = resolveEmployeeTarget(targets, header.originalTitle, emp.originalName);
+    const target = roundUp(rawTarget);
     const actual = data.get(emp.name)?.values[header.title] ?? 0;
     return {
         target,
@@ -103,7 +105,7 @@ export function computeGrandTotals(
     let target = 0;
     let actual = 0;
     employees.forEach(emp => {
-        target += resolveEmployeeTarget(targets, header.originalTitle, emp.originalName);
+        target += roundUp(resolveEmployeeTarget(targets, header.originalTitle, emp.originalName));
         actual += data.get(emp.name)?.values[header.title] ?? 0;
     });
     return {

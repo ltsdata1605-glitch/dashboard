@@ -567,13 +567,20 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
                             supermarketData[smName] = { headers: currentHeaders, programs: [] };
                         }
                         supermarketData[smName].headers = currentHeaders;
+                        const targetIdx = currentHeaders.findIndex(h => h.toUpperCase().includes('TARGET') || h.toUpperCase().includes('MỤC TIÊU'));
                         const existingIdx = supermarketData[smName].programs.findIndex(p => p.name === currentCompetition);
                         if (existingIdx !== -1) {
-                            supermarketData[smName].programs[existingIdx] = {
-                                name: currentCompetition,
-                                data: parts.slice(1),
-                                metric: currentMetric
-                            };
+                            const existingProg = supermarketData[smName].programs[existingIdx];
+                            const existingTarget = targetIdx !== -1 ? parseNumber(existingProg.data[targetIdx]) : 0;
+                            const newTarget = targetIdx !== -1 ? parseNumber(parts.slice(1)[targetIdx]) : 0;
+                            // Không ghi đè nếu chương trình đã có target tháng hợp lệ lớn hơn (tránh Realtime ngày ghi đè Luỹ kế tháng)
+                            if (existingTarget <= 0 || newTarget >= existingTarget) {
+                                supermarketData[smName].programs[existingIdx] = {
+                                    name: currentCompetition,
+                                    data: parts.slice(1),
+                                    metric: currentMetric
+                                };
+                            }
                         } else {
                             supermarketData[smName].programs.push({
                                 name: currentCompetition,
@@ -598,13 +605,19 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
                     supermarketData[smName] = { headers: currentHeaders, programs: [] };
                 }
                 supermarketData[smName].headers = currentHeaders;
+                const targetIdx = currentHeaders.findIndex(h => h.toUpperCase().includes('TARGET') || h.toUpperCase().includes('MỤC TIÊU'));
                 const existingIdx = supermarketData[smName].programs.findIndex(p => p.name === currentCompetition);
                 if (existingIdx !== -1) {
-                    supermarketData[smName].programs[existingIdx] = {
-                        name: currentCompetition,
-                        data: parts,
-                        metric: currentMetric
-                    };
+                    const existingProg = supermarketData[smName].programs[existingIdx];
+                    const existingTarget = targetIdx !== -1 ? parseNumber(existingProg.data[targetIdx]) : 0;
+                    const newTarget = targetIdx !== -1 ? parseNumber(parts[targetIdx]) : 0;
+                    if (existingTarget <= 0 || newTarget >= existingTarget) {
+                        supermarketData[smName].programs[existingIdx] = {
+                            name: currentCompetition,
+                            data: parts,
+                            metric: currentMetric
+                        };
+                    }
                 } else {
                     supermarketData[smName].programs.push({
                         name: currentCompetition,

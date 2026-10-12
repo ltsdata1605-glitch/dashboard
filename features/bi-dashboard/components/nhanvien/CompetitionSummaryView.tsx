@@ -533,7 +533,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     );
 
     const headerActions = (
-        <div className="flex items-center gap-1 sm:gap-2 relative z-30 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 relative z-40 shrink-0">
             {!readOnly && (
                 <div className="relative shrink-0" ref={filterRef}>
                     <Button
@@ -550,7 +550,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         )}
                     </Button>
                     {isFilterOpen && (
-                        <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
+                        <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl z-[60] p-2 space-y-1">
                             <div className="px-2 py-[5px] border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                                 <Input
                                     type="text"
@@ -682,7 +682,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 bordered={false} 
                 title={cardTitle} 
                 actionButton={headerActions}
-                headerClassName="flex-nowrap gap-1.5 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2.5 overflow-hidden"
+                headerClassName="flex-nowrap gap-1.5 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2.5 overflow-visible relative z-40"
                 titleClassName="min-w-0 flex-1 truncate"
             >
                 {selectedTitles.length === 0 ? (

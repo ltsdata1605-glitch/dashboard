@@ -982,7 +982,7 @@ export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistr
 
         if (isRealtimeStale) {
             // Tự dọn sạch bản Realtime cũ của phiên trước trong nền
-            salesDataDb.clearTempRealtimeData().catch(() => {});
+            clearTempRealtimeData().catch(() => {});
         }
 
         if (tempRealtime && tempRealtime.data.length > 0 && !isRealtimeStale) {

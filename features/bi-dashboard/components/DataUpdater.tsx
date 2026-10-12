@@ -220,13 +220,13 @@ const StatusTile: React.FC<{
                 onClick={handleTileClick}
                 title={readOnly ? (readOnlyHint || 'Chỉ quản lý/admin được cập nhật') : 'Click để tự động dán dữ liệu từ Clipboard'}
                 className={`
-                    cursor-pointer min-h-[76px] transition-colors duration-200 flex flex-col justify-between p-2.5 relative overflow-hidden border rounded-xl shadow-2xs
+                    transition-colors duration-200 relative overflow-hidden border rounded-xl shadow-2xs
                     ${readOnly ? 'cursor-default' : 'cursor-pointer'}
                     ${isPasting
-                        ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
+                        ? `p-2.5 bg-white dark:bg-slate-800 flex flex-col ${currentTheme.ring}`
                         : hasData
-                            ? currentTheme.wrapper
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl'}
+                            ? `${currentTheme.wrapper} p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2`
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2'}
                 `}
             >
                 {isPasting ? (
@@ -254,27 +254,27 @@ const StatusTile: React.FC<{
                     </div>
                 ) : (
                     <>
-                        <div className="flex items-center gap-2 min-w-0 w-full">
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <AppIcon name="upload" size="md" />}
                             </div>
-                            <div className="min-w-0 flex-1">
-                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
+                            <div className="min-w-0 flex-1 flex flex-col justify-center">
+                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 leading-tight ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 mt-0.5 opacity-80 ${currentTheme.text}`}>
+                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 ${currentTheme.text}`}>
                                             <AppIcon name="clock" size="xs" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 block truncate text-left">
+                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5">
                                         {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin') : 'Click tự dán'}
                                     </span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-1 mt-1 pt-1 border-t border-slate-100 dark:border-slate-700/40 w-full">
+                        <div className="flex items-center justify-end gap-1 shrink-0 ml-2">
                             {onOpenLinkModal && (
                                 <Button
                                     type="button"
@@ -845,7 +845,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     <span className="text-[11px] text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">↗</span>
                                 </a>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={summaryRealtimeTs}
@@ -929,7 +929,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                     <span className="text-[11px] text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">↗</span>
                                 </a>
                             </div>
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
                                 <StatusTile
                                     title="Realtime"
                                     lastUpdated={competitionRealtimeTs}

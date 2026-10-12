@@ -3,13 +3,18 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { toast } from '../shared/ui/toast';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
+import { useAuth } from '../../contexts/AuthContext';
+import { getGlobalFont, saveSettingOrThrow, saveSettingFromCloud } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
 import { laPhongGoogle, tenHoPhong, urlPhongGoogle } from '../shared/ui/googleFonts';
 import { offerShareRetry } from '../shared/ui/ShareRetryToast';
 import { downloadBlob } from '../../services/uiService';
-import { getUnifiedCheckThuongData } from '../../services/checkThuongIframeService';
+import { getUnifiedCheckThuongData, saveCheckThuongDataToIframeDb } from '../../services/checkThuongIframeService';
 import { CheckThuongLeaderboardView } from '../../features/check-thuong';
+import { db } from '../../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { assembleChunkedHeavyValue, restoreNestedArraysFromFirestore } from '../../services/firestoreService';
+import { extractCloudTimeMs } from '../../services/heavySyncPolicy';
 
 
 export const CheckThuongView: React.FC = () => {
@@ -23,11 +28,75 @@ export const CheckThuongView: React.FC = () => {
     const [competitionData, setCompetitionData] = useState<any[][]>([]);
     const [fileName, setFileName] = useState<string>('');
     const [uploadTime, setUploadTime] = useState<string>('');
+    const { user, isDemoMode } = useAuth();
+    const [isSyncingCloud, setIsSyncingCloud] = useState(false);
     // Đọc được activeTab MỚI NHẤT bên trong listener của effect deps [] bên dưới (không re-subscribe
     // message/cloud-sync listener mỗi lần đổi tab) — dùng để chỉ hiện cảnh báo cập nhật Cloud khi
     // người dùng ĐANG xem đúng tab Check Thưởng, tránh toast lạc ngữ cảnh ở tab khác.
     const activeTabRef = useRef(activeTab);
     useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+
+    const handleManualCloudSync = useCallback(async () => {
+        if (!user || isDemoMode) {
+            toast.error('Vui lòng đăng nhập tài khoản đám mây (Google) trên cả Điện Thoại và Laptop để đồng bộ dữ liệu!', {
+                id: 'checkthuong-cloud-login-req',
+                duration: 5000,
+            });
+            return;
+        }
+
+        setIsSyncingCloud(true);
+        const toastId = toast.loading('Đang kiểm tra và đồng bộ dữ liệu Check Thưởng từ Đám Mây...', { id: 'checkthuong-cloud-syncing' });
+
+        try {
+            const docRef = doc(db, 'users', user.uid, 'configs', 'checkthuong_data');
+            const docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                toast.info('Chưa có dữ liệu Check Thưởng trên Đám Mây để đồng bộ.', { id: toastId, duration: 4000 });
+                setIsSyncingCloud(false);
+                return;
+            }
+
+            const data = docSnap.data();
+            let val: any;
+            if (data?.chunked) {
+                val = await assembleChunkedHeavyValue(docSnap.ref);
+            } else {
+                val = restoreNestedArraysFromFirestore(data?.value);
+            }
+
+            if (!val || !val.competitionData || !Array.isArray(val.competitionData) || val.competitionData.length === 0) {
+                toast.info('Dữ liệu Check Thưởng trên Đám Mây không hợp lệ hoặc đang trống.', { id: toastId, duration: 4000 });
+                setIsSyncingCloud(false);
+                return;
+            }
+
+            const cloudTime = extractCloudTimeMs(data) || Date.now();
+            await saveSettingFromCloud('checkthuong_data', val, cloudTime);
+            await saveCheckThuongDataToIframeDb(val);
+
+            setHasData(true);
+            setCompetitionData(val.competitionData);
+            if (val.fileName) setFileName(val.fileName);
+            if (val.uploadTime) setUploadTime(val.uploadTime);
+            if (val.code1) setCodes(prev => ({ ...prev, code1: val.code1 }));
+            if (val.code2) setCodes(prev => ({ ...prev, code2: val.code2 }));
+
+            iframeRef.current?.contentWindow?.postMessage({
+                type: 'CHECK_THUONG_INIT_DATA',
+                payload: val
+            }, window.location.origin);
+
+            const timeStr = val.uploadTime ? new Date(val.uploadTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(val.uploadTime).toLocaleDateString('vi-VN') : '';
+            toast.success(`Đã đồng bộ thành công dữ liệu Check Thưởng từ Đám Mây${timeStr ? ` (${timeStr})` : ''}!`, { id: toastId, duration: 4000 });
+        } catch (err: any) {
+            console.error('[CheckThuong] Lỗi đồng bộ thủ công:', err);
+            toast.error(`Đồng bộ thất bại: ${err?.message || 'Lỗi mạng hoặc kết nối'}`, { id: toastId, duration: 5000 });
+        } finally {
+            setIsSyncingCloud(false);
+        }
+    }, [user, isDemoMode]);
 
     useEffect(() => {
         setMounted(true);
@@ -65,19 +134,22 @@ export const CheckThuongView: React.FC = () => {
                 if (e.data.uploadTime) setUploadTime(e.data.uploadTime);
 
                 if (e.data.competitionData && Array.isArray(e.data.competitionData) && e.data.competitionData.length > 0) {
-                    const filePayload = {
-                        schemaVersion: 1,
-                        source: 'check-thuong',
-                        competitionData: e.data.competitionData,
-                        fileName: e.data.fileName || 'file_cu.xlsx',
-                        uploadTime: e.data.uploadTime || null,
-                        code1: e.data.code1 || '910',
-                        code2: e.data.code2 || '',
-                        lastModified: Date.now()
-                    };
-                    saveSettingOrThrow('checkthuong_data', filePayload).catch(err => {
-                        console.error('[CheckThuong] Lưu dữ liệu từ file loaded thất bại:', err);
-                    });
+                    // Nếu nạp từ bộ nhớ tạm (cache), không ghi đè mốc thời gian Date.now() để không chặn bản cập nhật mới từ Cloud
+                    if (!e.data.fromCache) {
+                        const filePayload = {
+                            schemaVersion: 1,
+                            source: 'check-thuong',
+                            competitionData: e.data.competitionData,
+                            fileName: e.data.fileName || 'file_cu.xlsx',
+                            uploadTime: e.data.uploadTime || null,
+                            code1: e.data.code1 || '910',
+                            code2: e.data.code2 || '',
+                            lastModified: e.data.lastModified || Date.now()
+                        };
+                        saveSettingOrThrow('checkthuong_data', filePayload).catch(err => {
+                            console.error('[CheckThuong] Lưu dữ liệu từ file loaded thất bại:', err);
+                        });
+                    }
                 }
             } else if (e.data?.type === 'CHECK_THUONG_REQUEST_DATA_FROM_PARENT') {
                 getUnifiedCheckThuongData().then((saved) => {
@@ -386,13 +458,22 @@ export const CheckThuongView: React.FC = () => {
                         >
                             <AppIcon name="upload" size="xs" />
                         </Button>
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={handleManualCloudSync}
+                            disabled={isSyncingCloud}
+                            className={`${isMobile ? 'w-7 h-7 rounded-full border border-sky-200/70 dark:border-sky-800/70 shadow-xs' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 transition-colors ${isSyncingCloud ? 'opacity-70' : ''}`}
+                            title="Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)"
+                        >
+                            <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="xs" className={isSyncingCloud ? 'animate-spin' : ''} />
+                        </Button>
                     </div>
                 </>
             )}
 
-            {/* KHI Ở TAB TOP THƯỞNG: NÚT ĐỔI FILE */}
+            {/* KHI Ở TAB TOP THƯỞNG: NÚT ĐỔI FILE & ĐỒNG BỘ CLOUD */}
             {activeSubTab === 'leaderboard' && (
-                <div className="flex items-center shrink-0">
+                <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                         variant="unstyled" size="none"
                         onClick={handleChangeFile}
@@ -401,6 +482,16 @@ export const CheckThuongView: React.FC = () => {
                     >
                         <AppIcon name="upload" size="xs" />
                         <span>Đổi file</span>
+                    </Button>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleManualCloudSync}
+                        disabled={isSyncingCloud}
+                        className={`${isMobile ? 'h-7 px-2 text-[11px] rounded-full border border-sky-200/70 dark:border-sky-800/70 shadow-xs' : 'px-2.5 py-1 text-xs rounded-full border border-sky-200 dark:border-sky-800 shadow-sm'} flex items-center gap-1 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 transition-colors font-bold ${isSyncingCloud ? 'opacity-70' : ''}`}
+                        title="Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)"
+                    >
+                        <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="xs" className={isSyncingCloud ? 'animate-spin' : ''} />
+                        <span>Đồng bộ Cloud</span>
                     </Button>
                 </div>
             )}

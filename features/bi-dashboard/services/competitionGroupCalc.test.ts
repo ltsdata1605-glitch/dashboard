@@ -38,6 +38,16 @@ describe('getEmployeeMetrics', () => {
         expect(m.completion).toBe(0);
         expect(Number.isFinite(m.completion)).toBe(true);
     });
+
+    it('target số thập phân được làm tròn lên (Math.ceil)', () => {
+        const m1 = getEmployeeMetrics(emp('A'), H, data({ A: 282 }), targets({ A: 96.9 }));
+        expect(m1.target).toBe(97);
+        expect(m1.remaining).toBe(185);
+
+        const m2 = getEmployeeMetrics(emp('B'), H, data({ B: 0 }), targets({ B: 2.8 }));
+        expect(m2.target).toBe(3);
+        expect(m2.remaining).toBe(-3);
+    });
 });
 
 describe('selectAndSortEmployees — lọc ai được lên thẻ', () => {
