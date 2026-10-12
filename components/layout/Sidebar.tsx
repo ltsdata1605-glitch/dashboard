@@ -61,7 +61,7 @@ const NavItem = React.memo(({
                 title={item.label}
                 aria-label={item.label}
                 className={`
-                    relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 group cursor-pointer
+                    relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 group cursor-pointer
                     ${isActive
                         ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 font-semibold shadow-xs'
                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400'
@@ -70,7 +70,7 @@ const NavItem = React.memo(({
             >
                 {/* Active left indicator bar matching Sky blue chữ TÍCH */}
                 {isActive && (
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-sky-600 dark:bg-sky-400 rounded-r-full shadow-[0_0_8px_rgba(2,132,199,0.4)]" />
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-sky-600 dark:bg-sky-400 rounded-r-full shadow-[0_0_8px_rgba(2,132,199,0.4)]" />
                 )}
 
                 <AppIcon 
@@ -80,7 +80,7 @@ const NavItem = React.memo(({
                 />
 
                 {item.id === 'pending-approval' && (
-                    <span className="absolute top-1 right-1 flex h-1.5 w-1.5">
+                    <span className="absolute top-2 right-2 flex h-1.5 w-1.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
                     </span>
@@ -171,7 +171,7 @@ export default function Sidebar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className="hidden lg:flex fixed top-[62px] left-8 z-[130] flex-col items-center py-1.5 px-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[48px]"
+                    className="hidden lg:flex fixed top-[62px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]"
                 >
                     {/* Function Items */}
                     <div className="flex flex-col items-center w-full space-y-0.5">
@@ -186,7 +186,7 @@ export default function Sidebar() {
                     </div>
 
                     {secondaryItems.length > 0 && (
-                        <div className="w-full pt-1 mt-1 border-t border-slate-100 dark:border-slate-800/60 flex flex-col items-center">
+                        <div className="w-full pt-1.5 mt-1 border-t border-slate-100 dark:border-slate-800/60 flex flex-col items-center">
                             {secondaryItems.map(item => (
                                 <NavItem
                                     key={item.id}
@@ -199,7 +199,7 @@ export default function Sidebar() {
                     )}
 
                     {/* Thin divider */}
-                    <div className="w-6 h-[1px] bg-slate-100 dark:bg-slate-800 my-1" />
+                    <div className="w-8 h-[1px] bg-slate-100 dark:bg-slate-800 my-1.5" />
 
                     {/* User Profile / Settings */}
                     <div className="relative group flex items-center justify-center my-0.5">
@@ -208,13 +208,13 @@ export default function Sidebar() {
                             onClick={() => setActiveTab('settings')}
                             title="Cài đặt & Phân quyền"
                             aria-label="Cài đặt & Phân quyền"
-                            className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                            className="relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                         >
-                            <div className="w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shadow-xs">
+                            <div className="w-[34px] h-[34px] rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shadow-xs">
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                 ) : (
-                                    <span className="font-bold text-[11px] text-sky-700 dark:text-sky-400">
+                                    <span className="font-bold text-xs text-sky-700 dark:text-sky-400">
                                         {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
                                     </span>
                                 )}

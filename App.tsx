@@ -373,11 +373,11 @@ function AppContent() {
                                     title={isDesktopMenuOpen ? "Ẩn menu" : "Hiện menu chức năng"}
                                     aria-label={isDesktopMenuOpen ? "Ẩn menu" : "Hiện menu chức năng"}
                                     className={`
-                                        w-8 h-8 rounded-full border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 
-                                        shadow-xs flex items-center justify-center text-slate-500 dark:text-slate-400 
-                                        hover:text-sky-600 hover:border-sky-300 dark:hover:border-sky-600 hover:bg-sky-50/60 dark:hover:bg-slate-700 
+                                        w-8 h-8 rounded-full flex items-center justify-center 
+                                        text-slate-500 dark:text-slate-400 
+                                        hover:text-sky-600 hover:bg-slate-200/60 dark:hover:bg-slate-800 
                                         active:scale-90 transition-all duration-200 cursor-pointer
-                                        ${isDesktopMenuOpen ? 'text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/40 border-sky-300 dark:border-sky-700' : ''}
+                                        ${isDesktopMenuOpen ? 'text-sky-600 dark:text-sky-400 bg-sky-100/60 dark:bg-sky-950/50' : 'bg-transparent'}
                                     `}
                                 >
                                     <AppIcon 
