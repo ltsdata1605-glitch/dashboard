@@ -353,7 +353,7 @@ function AppContent() {
                     {/* Global Page Header */}
                     <div data-app-chrome="header" className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
-                            <div className="hidden lg:flex items-center gap-3 shrink-0">
+                            <div className="hidden lg:flex items-center shrink-0">
                                 {/* Logo tròn Giống Hình 2 - Khung w-[56px] căn giữa thẳng hàng tuyệt đối với thanh Dock bên dưới */}
                                 <div className="w-[56px] flex items-center justify-center shrink-0">
                                     <button
@@ -368,14 +368,14 @@ function AppContent() {
                                     </button>
                                 </div>
 
-                                {/* Nút tròn Show/Hide Menu Giống Hình 2 (Red Box 1) */}
+                                {/* Nút tròn Show/Hide Menu - Di chuyển gần vào logo */}
                                 <button
                                     type="button"
                                     onClick={toggleDesktopMenu}
                                     title={isDesktopMenuOpen ? "Ẩn menu" : "Hiện menu chức năng"}
                                     aria-label={isDesktopMenuOpen ? "Ẩn menu" : "Hiện menu chức năng"}
                                     className={`
-                                        w-8 h-8 rounded-full flex items-center justify-center 
+                                        -ml-1 w-8 h-8 rounded-full flex items-center justify-center 
                                         text-slate-500 dark:text-slate-400 
                                         hover:text-sky-600 hover:bg-slate-200/60 dark:hover:bg-slate-800 
                                         active:scale-90 transition-all duration-200 cursor-pointer
@@ -389,7 +389,7 @@ function AppContent() {
                                     />
                                 </button>
 
-                                <div className="h-8 w-1 bg-sky-600 rounded-full shadow-[0_0_12px_rgba(2,132,199,0.4)] ml-1" />
+                                <div className="h-8 w-1 bg-sky-600 rounded-full shadow-[0_0_12px_rgba(2,132,199,0.4)] ml-2.5 mr-3" />
                                 <div className="flex flex-col">
                                     <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                                         {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
