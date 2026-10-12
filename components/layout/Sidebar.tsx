@@ -171,7 +171,7 @@ export default function Sidebar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className="hidden lg:flex fixed top-[62px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]"
+                    className="hidden lg:flex fixed top-[72px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]"
                 >
                     {/* Function Items */}
                     <div className="flex flex-col items-center w-full space-y-0.5">

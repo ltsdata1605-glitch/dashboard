@@ -354,17 +354,19 @@ function AppContent() {
                     <div data-app-chrome="header" className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
                             <div className="hidden lg:flex items-center gap-3 shrink-0">
-                                {/* Logo tròn Giống Hình 2 */}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setActiveTab('analysis');
-                                    }}
-                                    className="w-9 h-9 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-md shadow-sky-300/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                                    title="Trang chủ Phân tích"
-                                >
-                                    <AppIcon name="chartBar" size="md" className="text-white" />
-                                </button>
+                                {/* Logo tròn Giống Hình 2 - Khung w-[56px] căn giữa thẳng hàng tuyệt đối với thanh Dock bên dưới */}
+                                <div className="w-[56px] flex items-center justify-center shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setActiveTab('analysis');
+                                        }}
+                                        className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-md shadow-sky-300/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                        title="Trang chủ Phân tích"
+                                    >
+                                        <AppIcon name="chartBar" size="lg" className="text-white" />
+                                    </button>
+                                </div>
 
                                 {/* Nút tròn Show/Hide Menu Giống Hình 2 (Red Box 1) */}
                                 <button
