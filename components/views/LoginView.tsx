@@ -3,7 +3,7 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
-import { isStandaloneMode, isInAppBrowser } from '../../services/firebase';
+import { isStandaloneMode, isInAppBrowser, isAppleOrSafari } from '../../services/firebase';
 
 const LoginView: React.FC = () => {
     const { loginWithGoogle, loginWithGoogleRedirect, setDemoMode, isLoading } = useAuth();
@@ -12,6 +12,7 @@ const LoginView: React.FC = () => {
 
     const [isInAppWebView] = useState(() => isInAppBrowser());
     const [isStandalone] = useState(() => isStandaloneMode());
+    const [isSafari] = useState(() => isAppleOrSafari());
 
     const handleLogin = async () => {
         try {
@@ -25,7 +26,8 @@ const LoginView: React.FC = () => {
             }, 180000);
 
             try {
-                if (isStandalone || isInAppWebView) {
+                // Safari (macOS & iOS) mặc định chặn popup và treo promise -> dùng redirect trực tiếp 100% tin cậy
+                if (isStandalone || isInAppWebView || isSafari) {
                     await loginWithGoogleRedirect();
                 } else {
                     await loginWithGoogle();

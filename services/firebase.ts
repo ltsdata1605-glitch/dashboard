@@ -44,6 +44,25 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+export const isSafariBrowser = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const isChrome = /CriOS|Chrome|Chromium|Edg|OPR|Android/i.test(ua);
+    const isFirefox = /FxiOS|Firefox/i.test(ua);
+    return /Safari/i.test(ua) && !isChrome && !isFirefox;
+};
+
+export const isIOSDevice = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const isIPadOS = navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1;
+    return /iPad|iPhone|iPod/.test(ua) || isIPadOS;
+};
+
+export const isAppleOrSafari = (): boolean => {
+    return isIOSDevice() || isSafariBrowser();
+};
+
 export const isStandaloneMode = (): boolean => {
     if (typeof window === 'undefined') return false;
     return Boolean((window.navigator as any).standalone) ||
@@ -57,11 +76,11 @@ export const isInAppBrowser = (): boolean => {
 };
 
 export const loginWithGoogle = async () => {
-    // Trong môi trường PWA Standalone (Màn hình chính iOS/Android) hoặc In-App browser (Zalo/FB):
-    // Cửa sổ popup (signInWithPopup) bị WebKit chặn trong PWA mode.
-    // Tự động dùng signInWithRedirect an toàn tuyệt đối!
-    if (isStandaloneMode() || isInAppBrowser()) {
-        console.info('[Auth] Môi trường PWA Standalone / In-App Browser phát hiện. Tự động dùng signInWithRedirect.');
+    // Trên Safari (macOS & iOS), PWA Standalone hoặc In-App browser (Zalo/FB):
+    // Apple WebKit mặc định chặn popup ("Block Pop-up Windows") và làm treo Promise vĩnh viễn (nút xoay mãi).
+    // Tự động dùng signInWithRedirect trực tiếp để chuyển hướng tức thì và an toàn 100%!
+    if (isAppleOrSafari() || isStandaloneMode() || isInAppBrowser()) {
+        console.info('[Auth] Phát hiện Safari / iOS / PWA. Tự động dùng signInWithRedirect trực tiếp.');
         await loginWithGoogleRedirect();
         return;
     }
