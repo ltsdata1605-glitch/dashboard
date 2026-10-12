@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
-import { motion } from 'motion/react';
 import { toast } from '../shared/ui/toast';
 import { Button } from '../shared/ui/Button';
 
@@ -62,10 +61,9 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-sky-500/10 dark:bg-sky-500/5 rounded-full blur-[100px]"></div>
             </div>
 
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-white dark:bg-slate-900 rounded-overlay shadow-xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 border border-slate-100 dark:border-slate-800"
+            {/* Vào bằng CSS (GĐ4 — bỏ thư viện motion khỏi app). */}
+            <div
+                className="w-full max-w-md bg-white dark:bg-slate-900 rounded-overlay shadow-xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden relative z-10 border border-slate-100 dark:border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-300"
             >
                 {/* Header Decoration */}
                 <div className="h-32 bg-gradient-to-br from-sky-500 to-sky-700 relative overflow-hidden">
@@ -179,7 +177,9 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                             </div>
                             )}
                             
-                            <motion.div animate={{ height: (selectedRole || forceDeptUpdate) ? 'auto' : 0, opacity: (selectedRole || forceDeptUpdate) ? 1 : 0 }} className="overflow-hidden space-y-4">
+                            {/* Mở/đóng mượt bằng lưới 0fr ↔ 1fr (CSS) thay cho motion animate height:auto. */}
+                            <div className={`grid transition-[grid-template-rows,opacity] duration-300 motion-reduce:transition-none ${(selectedRole || forceDeptUpdate) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                            <div className="overflow-hidden space-y-4 min-h-0">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Mã Kho (Chi nhánh):</label>
                                     <input 
@@ -240,7 +240,8 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                         </Button>
                                     </div>
                                 )}
-                            </motion.div>
+                            </div>
+                            </div>
                         </form>
                     )}
 
@@ -253,7 +254,7 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                         <span>Đăng xuất tài khoản khác</span>
                     </Button>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };

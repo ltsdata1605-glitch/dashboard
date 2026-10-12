@@ -11,7 +11,8 @@ export { useModalBehavior } from './useModalBehavior';
 
 /** Màn hẹp hơn mốc `sm` (640px) — đúng mốc mà bố cục `position="bottom"` dán đáy màn hình. */
 const SHEET_QUERY = '(max-width: 639px)';
-function useIsSheetWidth() {
+/** `true` khi màn hẹp (< 640px) — lớp nổi nên mở dạng sheet từ đáy thay vì menu thả/hộp giữa (dùng chung với nơi khác). */
+export function useIsSheetWidth() {
   const [match, setMatch] = useState(() => typeof window.matchMedia === 'function' && window.matchMedia(SHEET_QUERY).matches);
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return;

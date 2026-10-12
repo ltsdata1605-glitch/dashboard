@@ -7855,3 +7855,35 @@ tách khỏi app; kết quả `signInWithRedirect` nằm trong khung đó nên `
 - `functions/src/pwaHandoff.ts`: lưu `pwaHandoff/{code}` ≤5 phút, claim một lần rồi xoá; rules khoá hẳn với client.
 - App `signInWithCredential(GoogleAuthProvider.credential(idToken, accessToken))` — không cần custom token/IAM signBlob.
 **Kiểm:** `tests/e2e/ios-pwa-dang-nhap.spec.ts`; gọi thật 2 function (chưa đăng nhập → 401, sai verifier → rỗng, claim lần 2 → rỗng).
+
+## GĐ4 — Khung ứng dụng: thanh trên, thanh tab, menu Khác, laptop (2026-10-12) — PHẦN 1 XONG
+
+**Nguyên tắc khi gộp với thiết kế mới của chủ dự án (26 commit cùng ngày):** laptop GIỮ khung chủ dự án vừa làm (logo tròn bật/tắt
+dock nổi 56px, tiêu đề 2 màu IN HOA, cụm nút nhóm dạng viên, nút "Cập nhật: <giờ>" ở dòng phụ); iPhone đổi sang chuẩn Apple. Nút
+32px chủ dự án chuẩn hoá (eaf71b2/145f03c) giữ CỠ NHÌN THẤY, chỉ nới vùng chạm vô hình lên 44px.
+
+**Mới:** `components/layout/MobileNavBar.tsx` (thanh trên iPhone: vật liệu mờ + đường tóc, [‹][ô icon][tiêu đề 17px viết như câu /
+dòng phụ 12px] … [nút màn][⋯][chuông 44px]; giữ 2 khe `#mobile-topbar-subtitle`/`#mobile-topbar-actions` cho màn chưa chuyển),
+`components/layout/PageActionsBar.tsx` (vẽ khai báo `usePageActions`: iPhone ≤ 1 nút chính + 1 nút nhanh + "⋯"; laptop nút có
+chữ), `PageActionsConfig.scope` ('all' | 'mobile' | 'desktop'), `useIsSheetWidth` xuất từ Modal. `App.tsx`: bọc
+`PageActionsProvider`, tiêu đề iPhone `TAB_NAV_TITLES` (viết như câu), logo dùng `toggleDesktopMenu` (nhớ trạng thái dock — trước
+gọi thẳng setter nên mở lại app là mất), `PageActionsBar` laptop cạnh `#global-header-actions`.
+
+**Làm lại:** `MobileBottomNav` — CSS thuần (bỏ motion), vật liệu mờ + đường tóc, icon 24px, mục chọn sky-600 trên viên nền nhạt,
+`aria-current`; "Khác" = `Modal position="bottom"` + `ListGroup`/`ListRow` (thẻ tài khoản + Đăng xuất, nhóm Công cụ, nhóm Hệ thống).
+`Sidebar` (dock) — `usePresence` thay motion, `<button>` thô → `Button`. `Header.tsx` (Phân tích laptop) — dải đỏ chữ chạy lỗi đồng
+bộ → `Banner`, bỏ motion. `FilterBar.tsx` — 5 nút 32px portal vào thanh trên → `usePageActions` (scope 'mobile'): [Tải YCX lên]
+[Bộ lọc nâng cao] [⋯ Mở báo cáo BCNB · Quản lý tệp đã lưu · — Xoá dữ liệu YCX]; bỏ ~170 dòng code chết (lọc tuần/chip không còn vẽ).
+`NotificationDropdown` — iPhone mở sheet "Thông báo" (laptop giữ menu thả). `PendingApprovalView`, `UserManagementView` — CSS thay
+motion → **gỡ hẳn gói `motion`** (package.json, vite manualChunks). `styles.css` `.ycx-navbar`: vùng chạm 44 bằng `::after` cho nút
+trong 2 khe cũ; dòng phụ không rộng quá khe (hộp nút từng chồng lên nút bên phải). `lint-ratchet` `missingMobileToolbar` nhận
+`<MobileNavBar` / `usePageActions(` là thanh công cụ mobile hợp lệ.
+
+**Test:** mới `tests/e2e/khung-app-gd4.spec.ts` (8): iPhone SE — tiêu đề 17px, 4 nút 44px không lọt màn, khe cũ trống, không tràn
+ngang, "⋯" là action sheet (Xoá ở nhóm cuối), tab khác không còn nút Phân tích; 16 Pro Max — thanh tab vật liệu mờ/aria-current,
+sheet "Khác" (nhóm, hàng ≥ 48px, chọn Phân ca → chuyển tab + nút ‹ Về Dashboard), chuông → sheet, nút 32px Report BI có vùng chạm
+44 qua ::after; laptop — logo bật/tắt dock + nhớ qua tải lại, Phân tích không vẽ trùng thanh nút, mở app KHÔNG tải motion.
+`apple-tuong-thich` (6 khung × 11 tab): gỡ 6 mẫu DA_BIET (chuông, Phân tích ×4, Report BI, Phân quyền) — còn đúng 1 (In Sticker,
+GĐ7). Cập nhật theo thiết kế mới: `icon-dieu-huong` (thanh tab 24px, dock 24px của chủ dự án, sheet Khác), 8 spec giả lập đăng nhập
+thiếu `signInWithCredential` sau bản đăng nhập iOS PWA (trang trắng), 3 spec Phân quyền tìm nút ảnh đại diện theo tiêu đề mới của
+dock, `super-admin-kho-dung-chung` (dòng "chưa gắn" chủ dự án đã bỏ), `bi-du-lieu-khong-lan…` (nút "Cập nhật" chính xác).

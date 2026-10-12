@@ -20,6 +20,7 @@ export function onAuthStateChanged(auth, cb) { window.__authCb = cb; setTimeout(
 export async function signInWithPopup() { window.__authCb(fakeUser); return { user: fakeUser }; }
 export async function signInWithRedirect() {}
 export async function getRedirectResult() { return null; }
+export async function signInWithCredential() { return { user: null }; } // đăng nhập app Màn hình chính iPhone (services/firebase.ts, 2026-10-12)
 export async function signOut() { window.__authCb(null); }
 export const browserLocalPersistence = {}; export const browserSessionPersistence = {};
 export async function setPersistence() {}
@@ -55,7 +56,7 @@ test('bấm qua lại 3 tab: mỗi tab tốn đúng 1 lượt gọi, không có 
     const choDung = (mongDoi: string[]) => expect.poll(() => doc(page), { timeout: 20000 }).toEqual(mongDoi);
     await moApp(page);
     await page.goto('/?tab=analysis');
-    const nutPhanQuyen = page.getByTitle('Phân Quyền & Duyệt Yêu Cầu').first();
+    const nutPhanQuyen = page.getByTitle('Cài đặt & Phân quyền') /* nút ảnh đại diện ở dock nổi (chủ dự án 2026-10-12; trước: 'Phân Quyền & Duyệt Yêu Cầu') */.first();
     await nutPhanQuyen.waitFor({ state: 'visible', timeout: 60000 });
     await nutPhanQuyen.click();
     await page.getByRole('button', { name: /Chờ duyệt/i }).first().waitFor({ state: 'visible', timeout: 20000 });

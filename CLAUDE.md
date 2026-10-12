@@ -221,7 +221,14 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   `ListGroup`/`ListRow` (trang cài đặt), `ActionMenu` (nút "⋯" — thanh/tiêu đề tối đa 1 nút chính + ≤ 2 icon), `usePageActions`
   (màn khai báo nút cho thanh trên — KHÔNG `createPortal` vào thanh trên nữa), `BusyBar` (tính lại ngầm, không chặn màn),
   `EmptyState`. Button: `primary` (một nút/màn) · `secondary` (xám tinted) · `tinted` · `destructive` · `danger` (chỉ xác nhận cuối).
-  Lớp nổi mới dùng `usePresence` + CSS, KHÔNG import `motion` (đang gỡ khỏi đường khởi động).
+  Lớp nổi mới dùng `usePresence` + CSS — thư viện `motion` ĐÃ GỠ khỏi dự án (GĐ4 2026-10-12), đừng cài lại.
+- **Khung app (GĐ4 2026-10-12):** thanh trên iPhone là `components/layout/MobileNavBar.tsx` (tiêu đề 17px viết như câu ·
+  dòng phụ 12px · nút 44×44 · vật liệu mờ); màn khai báo nút bằng `usePageActions({ scope, primary, quick, items })` →
+  `PageActionsBar` tự xếp [nút chính][1 nút nhanh][⋯] (`scope: 'mobile'` khi màn đã có thanh công cụ laptop riêng — vd Phân tích).
+  2 khe cũ `#mobile-topbar-subtitle` / `#mobile-topbar-actions` VẪN chạy (màn chưa chuyển); nút nhỏ trong đó tự được vùng chạm 44
+  bằng `::after` (styles.css `.ycx-navbar`) — giữ cỡ nhìn thấy 32px của chủ dự án. Thanh tab dưới + sheet "Khác" (Modal +
+  ListGroup) ở `MobileBottomNav.tsx`; chuông mở sheet trên iPhone. Laptop: GIỮ khung của chủ dự án (logo bật/tắt dock nổi — nhớ
+  trạng thái, tiêu đề 2 màu IN HOA). Test: `tests/e2e/khung-app-gd4.spec.ts`.
 - **Khung app không được chồng/tràn (2026-10-10):** `tests/e2e/apple-tuong-thich.spec.ts` quét mọi tab ở 6 khung màn hình (iPhone
   SE/16/16 Pro Max, iPad, laptop, màn lớn): trang không tràn ngang, nút trên thanh trên/thanh tab không đè nhau, vùng chạm ≥ 44px.
   Lỗi đã biết nằm trong `DA_BIET` của spec — chỉ được GỠ dần (như lint-ratchet), không thêm.

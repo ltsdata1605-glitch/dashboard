@@ -35,6 +35,11 @@ export interface PageActionsConfig {
   quick?: ActionMenuItem[];
   /** Mọi thao tác còn lại — vào menu "⋯". Mục `destructive` tự xuống nhóm cuối, chữ đỏ. */
   items?: ActionMenuItem[];
+  /**
+   * Vẽ ở đâu (GĐ4): `'all'` (mặc định) — thanh trên iPhone lẫn thanh tiêu đề laptop; `'mobile'` — chỉ thanh trên iPhone (màn đã
+   * có thanh công cụ laptop riêng, vd Phân tích giữ cụm nút nhóm của chủ dự án); `'desktop'` — chỉ laptop.
+   */
+  scope?: 'all' | 'mobile' | 'desktop';
 }
 
 interface Entry { owner: string; get: () => PageActionsConfig | null; sig: string }
@@ -51,7 +56,7 @@ const StateContext = createContext<Entry | null>(null);
 function chuKy(c: PageActionsConfig): string {
   const m = (i: ActionMenuItem) => [i.id, i.label, i.icon, i.disabled ? 1 : 0, i.destructive ? 1 : 0, i.section ?? '', i.description ?? ''];
   return JSON.stringify([
-    c.title ?? '', c.subtitle ?? '',
+    c.title ?? '', c.subtitle ?? '', c.scope ?? 'all',
     c.primary ? [c.primary.id, c.primary.label, c.primary.icon, c.primary.disabled ? 1 : 0, c.primary.loading ? 1 : 0] : null,
     (c.quick ?? []).map(m), (c.items ?? []).map(m),
   ]);

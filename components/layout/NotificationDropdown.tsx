@@ -9,6 +9,7 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { toast } from '../shared/ui/toast';
 import AdminAnnouncementModal from '../modals/AdminAnnouncementModal';
 import { Button } from '../shared/ui/Button';
+import { Modal, useIsSheetWidth } from '../shared/ui/Modal';
 
 // listManagedUsers (Cloud Function) trả ISO string cho ngày tháng (Timestamp Firestore
 // không "sống sót" qua RPC) — bọc lại có .toMillis()/.toDate() để khớp shape AppNotification
@@ -40,6 +41,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
     const [isOpen, setIsOpen] = useState(false);
     const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    // iPhone (< 640px): mở dạng sheet từ đáy (GĐ4) — menu thả 288px neo góc phải che nửa màn và khó đóng bằng một tay.
+    const laSheet = useIsSheetWidth();
     
     const knownNotifIdsRef = useRef<Set<string>>(new Set());
     const isInitialLoadRef = useRef(true);
@@ -187,6 +190,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
     }, [user, pendingUsers, pendingLoaded, updateCombinedNotifications]);
 
     useEffect(() => {
+        // Sheet tự đóng bằng nền/kéo/Esc (Modal) — chạm TRONG sheet (portal ra body) không được coi là "bấm ra ngoài".
+        if (laSheet) return;
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
@@ -200,7 +205,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
-    }, [isOpen]);
+    }, [isOpen, laSheet]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -215,6 +220,91 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             markAllAsRead(user.uid);
         }
     };
+
+    // Nút đầu bảng (cấu hình thông báo hệ thống · đánh dấu đã đọc) + danh sách — dùng chung cho menu thả (laptop) và sheet (iPhone).
+    const nutDau = (
+        <div className="flex items-center gap-2">
+            {(userRole === 'admin' || user?.email === 'lts.truongson@gmail.com' || user?.email === 'nguyendangkhoafit2@gmail.com') && (
+                <Button
+                    variant="unstyled" size="none"
+                    onClick={() => setIsAdminModalOpen(true)}
+                    className="p-1.5 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 text-slate-500 hover:text-rose-700 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
+                    title="Cấu hình thông báo hệ thống"
+                >
+                    <AppIcon name="announcement" size="sm" />
+                </Button>
+            )}
+            {unreadCount > 0 && (
+                <Button variant="unstyled" size="none" onClick={handleMarkAll} className="min-h-11 sm:min-h-0 px-1 text-[13px] sm:text-xs font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300">
+                    Đánh dấu đã đọc
+                </Button>
+            )}
+        </div>
+    );
+
+    const danhSach = (
+        <>
+            {notifications.length === 0 ? (
+                <div className="p-8 flex flex-col items-center justify-center text-center">
+                    <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-3">
+                        <AppIcon name="notificationOff" size="lg" className="text-slate-400" />
+                    </div>
+                    <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Không có thông báo mới</p>
+                    <p className="text-xs text-slate-500 mt-1">Hệ thống sẽ báo cho bạn khi có biến động về phân quyền</p>
+                </div>
+            ) : (
+                <div className="flex flex-col">
+                    {notifications.map((notif) => (
+                        <div 
+                            key={notif.id}
+                            onClick={() => {
+                                handleMarkAsRead(notif.id);
+                                if (notif.title.includes('Đăng ký') || notif.title.includes('Yêu cầu') || notif.title.includes('Phân quyền')) {
+                                    setActiveTab('approval');
+                                    setIsOpen(false);
+                                }
+                            }}
+                            className={`p-2.5 sm:p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer transition-colors flex gap-2 sm:gap-3 ${!notif.read ? 'bg-sky-50/30 dark:bg-sky-900/10' : ''}`}
+                        >
+                            <div className="mt-0.5 flex-shrink-0">
+                                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
+                                    notif.type === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' :
+                                    notif.type === 'warning' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30' :
+                                    notif.type === 'error' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30' :
+                                    'bg-sky-100 text-sky-700 dark:bg-sky-900/30'
+                                }`}>
+                                    {/* Trước 2026-10-02: 2 icon (cỡ mobile/desktop) và loại `error` gọi tên 'alert-octagon' KHÔNG có
+                                        trong components/common/Icon.tsx → âm thầm hiện dấu hỏi. Nay 1 icon, size tự đổi theo màn. */}
+                                    <AppIcon name={
+                                        notif.type === 'success' ? 'success' :
+                                        notif.type === 'warning' ? 'warning' :
+                                        notif.type === 'error' ? 'error' :
+                                        'info'
+                                    } size="sm" />
+                                </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h4 className={`text-xs sm:text-sm tracking-tight truncate ${!notif.read ? 'font-bold text-slate-800 dark:text-white' : 'font-semibold text-slate-600 dark:text-slate-300'}`}>
+                                    {notif.title}
+                                </h4>
+                                <p className={`text-[11px] sm:text-xs mt-0.5 sm:mt-1 line-clamp-2 ${!notif.read ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-500'}`}>
+                                    {notif.message}
+                                </p>
+                                {notif.createdAt && (
+                                    <span className="text-[11px] text-slate-400 mt-2 block">
+                                        {notif.createdAt.toDate().toLocaleString('vi-VN')}
+                                    </span>
+                                )}
+                            </div>
+                            {!notif.read && (
+                                <div className="flex-shrink-0 w-2 h-2 rounded-full bg-sky-500 mt-1.5 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </>
+    );
 
     return (
         <div className="relative z-[300]" ref={dropdownRef}>
@@ -235,7 +325,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                 )}
             </Button>
 
-            {isOpen && (
+            {/* Laptop / màn rộng: menu thả neo dưới chuông. */}
+            {isOpen && !laSheet && (
                 <div 
                     className="absolute right-0 mt-2 w-72 sm:w-96 max-w-[calc(100vw-24px)] bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden z-[400] flex flex-col animate-in fade-in slide-in-from-top-2 duration-150"
                 >
@@ -246,88 +337,26 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                 <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 text-[11px] sm:text-xs">{unreadCount} mới</span>
                             )}
                         </h3>
-                        <div className="flex items-center gap-2">
-                            {(userRole === 'admin' || user?.email === 'lts.truongson@gmail.com' || user?.email === 'nguyendangkhoafit2@gmail.com') && (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    onClick={() => setIsAdminModalOpen(true)}
-                                    className="p-1.5 text-slate-500 hover:text-rose-700 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
-                                    title="Cấu hình thông báo hệ thống"
-                                >
-                                    <AppIcon name="announcement" size="sm" />
-                                </Button>
-                            )}
-                            {unreadCount > 0 && (
-                                <Button variant="unstyled" size="none" onClick={handleMarkAll} className="text-[11px] sm:text-xs font-bold text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300">
-                                    Đánh dấu đã đọc
-                                </Button>
-                            )}
-                        </div>
+                        {nutDau}
                     </div>
 
                     <div className="flex-1 overflow-y-auto max-h-[350px] sm:max-h-[400px]">
-                        {notifications.length === 0 ? (
-                            <div className="p-8 flex flex-col items-center justify-center text-center">
-                                <div className="w-12 h-12 bg-slate-50 dark:bg-slate-900/50 rounded-full flex items-center justify-center mb-3">
-                                    <AppIcon name="notificationOff" size="lg" className="text-slate-400" />
-                                </div>
-                                <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Không có thông báo mới</p>
-                                <p className="text-xs text-slate-500 mt-1">Hệ thống sẽ báo cho bạn khi có biến động về phân quyền</p>
-                            </div>
-                        ) : (
-                            <div className="flex flex-col">
-                                {notifications.map((notif) => (
-                                    <div 
-                                        key={notif.id}
-                                        onClick={() => {
-                                            handleMarkAsRead(notif.id);
-                                            if (notif.title.includes('Đăng ký') || notif.title.includes('Yêu cầu') || notif.title.includes('Phân quyền')) {
-                                                setActiveTab('approval');
-                                                setIsOpen(false);
-                                            }
-                                        }}
-                                        className={`p-2.5 sm:p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer transition-colors flex gap-2 sm:gap-3 ${!notif.read ? 'bg-sky-50/30 dark:bg-sky-900/10' : ''}`}
-                                    >
-                                        <div className="mt-0.5 flex-shrink-0">
-                                            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
-                                                notif.type === 'success' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30' :
-                                                notif.type === 'warning' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30' :
-                                                notif.type === 'error' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30' :
-                                                'bg-sky-100 text-sky-700 dark:bg-sky-900/30'
-                                            }`}>
-                                                {/* Trước 2026-10-02: 2 icon (cỡ mobile/desktop) và loại `error` gọi tên 'alert-octagon' KHÔNG có
-                                                    trong components/common/Icon.tsx → âm thầm hiện dấu hỏi. Nay 1 icon, size tự đổi theo màn. */}
-                                                <AppIcon name={
-                                                    notif.type === 'success' ? 'success' :
-                                                    notif.type === 'warning' ? 'warning' :
-                                                    notif.type === 'error' ? 'error' :
-                                                    'info'
-                                                } size="sm" />
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className={`text-xs sm:text-sm tracking-tight truncate ${!notif.read ? 'font-bold text-slate-800 dark:text-white' : 'font-semibold text-slate-600 dark:text-slate-300'}`}>
-                                                {notif.title}
-                                            </h4>
-                                            <p className={`text-[11px] sm:text-xs mt-0.5 sm:mt-1 line-clamp-2 ${!notif.read ? 'text-slate-600 dark:text-slate-400' : 'text-slate-500 dark:text-slate-500'}`}>
-                                                {notif.message}
-                                            </p>
-                                            {notif.createdAt && (
-                                                <span className="text-[11px] text-slate-400 mt-2 block">
-                                                    {notif.createdAt.toDate().toLocaleString('vi-VN')}
-                                                </span>
-                                            )}
-                                        </div>
-                                        {!notif.read && (
-                                            <div className="flex-shrink-0 w-2 h-2 rounded-full bg-sky-500 mt-1.5 shadow-[0_0_8px_rgba(99,102,241,0.6)]"></div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        {danhSach}
                     </div>
                 </div>
             )}
+
+            {/* iPhone: sheet từ đáy — kéo xuống / chạm nền / Esc để đóng; danh sách cuộn trong sheet. */}
+            <Modal
+                isOpen={isOpen && laSheet}
+                onClose={() => setIsOpen(false)}
+                position="bottom"
+                title="Thông báo"
+                subTitle={unreadCount > 0 ? `${unreadCount} thông báo mới` : undefined}
+                controls={nutDau}
+            >
+                <div className="-mx-3 -my-3">{danhSach}</div>
+            </Modal>
             <AdminAnnouncementModal 
                 isOpen={isAdminModalOpen} 
                 onClose={() => setIsAdminModalOpen(false)} 

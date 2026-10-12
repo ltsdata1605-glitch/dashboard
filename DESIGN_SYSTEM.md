@@ -327,8 +327,15 @@ IN HOA chỉ cho `caption`. Tiêu đề viết thường như câu ("Chi tiết 
 | `SectionHeader` v2 (`quick` + `actions`) | cụm nút tự xuống dòng | ≤ 2 nút icon + "⋯", luôn một hàng |
 | `BusyBar` | lớp chờ phủ kín màn khi tính lại ngầm | vạch 2px, chỉ hiện khi > 300 ms |
 | `EmptyState` (icon theo tên) | 4 kiểu "không có dữ liệu" | |
-| `usePresence` | `AnimatePresence` của motion | vào/ra bằng CSS — motion rời đường khởi động |
+| `usePresence` | `AnimatePresence` của motion | vào/ra bằng CSS — thư viện motion đã gỡ hẳn (GĐ4) |
+| `MobileNavBar` + `PageActionsBar` (khung app) | khối thanh trên dựng tay + 7 chỗ portal nút | tiêu đề 17px, nút 44px, ≤ 1 nút chính + 1 nút nhanh + "⋯" |
 
 **Vật liệu mờ** (`.ycx-material`) chỉ cho 3 vùng nhỏ cố định: thanh trên, thanh tab, toast/action sheet. Chuyển động sheet /
 núm công tắc / segmented: `cubic-bezier(0.32, 0.72, 0, 1)` (token `--ease-ios`); tôn trọng `prefers-reduced-motion`.
 Test: `tests/e2e/lop-apple-gd3.spec.ts` (harness `helpers/appleUiHarness.tsx`).
+
+**Khung app (GĐ4, 2026-10-12)** — iPhone/iPad: thanh trên vật liệu mờ + đường tóc dưới, [‹][ô icon 32px][tiêu đề 17px / dòng phụ
+12px] … [nút màn 44px][⋯][chuông 44px]; thanh tab dưới vật liệu mờ cao 56px + vùng thanh Home, icon 24px, mục đang chọn sky-600 trên
+viên nền nhạt (không vạch chỉ báo), chưa chọn slate-500; "Khác" là sheet danh sách nhóm (tài khoản → Công cụ → Hệ thống); chuông mở
+sheet "Thông báo". Nút nhỏ (32px) ở thanh trên được nới vùng chạm 44px bằng `::after` — cỡ nhìn thấy giữ nguyên. Laptop: logo tròn
+bật/tắt dock nổi 56px (nhớ trạng thái), tiêu đề 2 màu IN HOA, cụm nút nhóm dạng viên (thiết kế chủ dự án 2026-10-12).

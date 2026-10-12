@@ -29,10 +29,11 @@ for (const width of [360, 390, 430]) {
         await page.setViewportSize({ width, height: 800 });
         await vaoDungThu(page);
 
+        // GĐ4 (2026-10-12): icon thanh tab cỡ `xl` 24px như thanh tab iOS (trước `lg` 22px).
         const nav = await doIcon(page, 'nav.mobile-chrome svg.ycx-icon');
         expect(nav.map((i) => i.name)).toEqual(['navAnalysis', 'navReportBi', 'navRewardCheck', 'navTools']);
         for (const i of nav) {
-            expect([i.w, i.h], i.name!).toEqual([22, 22]);
+            expect([i.w, i.h], i.name!).toEqual([24, 24]);
             expect(i.stroke, i.name!).toBe('2');
         }
 
@@ -44,25 +45,28 @@ for (const width of [360, 390, 430]) {
         const tapH = await page.$$eval('nav.mobile-chrome button', (b) => b.map((x) => x.getBoundingClientRect().height));
         for (const h of tapH) expect(h).toBeGreaterThanOrEqual(44);
 
-        // Bảng "Khác": mọi icon công cụ cùng cỡ lg, cùng hình với Sidebar.
+        // Bảng "Khác" (GĐ4: sheet danh sách nhóm kiểu Cài đặt iOS): mọi icon công cụ cùng hình với Sidebar, cùng cỡ `sm` (16px)
+        // trong ô màu 28px của ListRow.
         await page.locator('nav.mobile-chrome button').last().click();
         await page.waitForTimeout(600);
-        const sheet = await doIcon(page, 'div.fixed.bottom-0 svg.ycx-icon[data-icon^="nav"]');
+        const sheet = await doIcon(page, '[role="dialog"] svg.ycx-icon[data-icon^="nav"]');
         expect(sheet.length).toBeGreaterThanOrEqual(9);
         expect(sheet.find((i) => i.name === 'navStickerPrint')).toBeTruthy();
-        for (const i of sheet) expect([i.w, i.h], i.name!).toEqual([22, 22]);
+        for (const i of sheet) expect([i.w, i.h], i.name!).toEqual([16, 16]);
         if (width === 390) await page.screenshot({ path: `test-results/icon-nav-${width}.png` });
     });
 }
 
-test('laptop 1366px: thanh trái đúng icon, cỡ lg 20px; header 16px; không có icon dự phòng', async ({ page }) => {
+test('laptop 1366px: dock trái đúng icon, cỡ xl 24px; header 16px; không có icon dự phòng', async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 800 });
     await vaoDungThu(page);
 
     const side = await doIcon(page, 'aside svg.ycx-icon[data-icon^="nav"]');
     expect(side.map((i) => i.name)).toEqual(expect.arrayContaining(['navAnalysis', 'navReportBi', 'navRewardCheck', 'navReports', 'navTools']));
+    // Dock nổi của chủ dự án (1e97ab0, 2026-10-12): icon `xl` 24px cho dễ nhìn/dễ bấm; mục đang chọn phóng 105% (25,2px).
     for (const i of side) {
-        expect([i.w, i.h], i.name!).toEqual([20, 20]);
+        expect([24, 25.2], i.name!).toContain(Math.round(i.w * 10) / 10);
+        expect(i.h, i.name!).toBeCloseTo(i.w, 1);
         expect(i.stroke).toBe('2');
     }
 

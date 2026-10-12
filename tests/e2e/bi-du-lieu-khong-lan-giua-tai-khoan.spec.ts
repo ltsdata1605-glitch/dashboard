@@ -28,6 +28,7 @@ export function onAuthStateChanged(auth, cb) {
 export async function signInWithPopup() { window.__authCb(fakeUser); return { user: fakeUser }; }
 export async function signInWithRedirect() {}
 export async function getRedirectResult() { return null; }
+export async function signInWithCredential() { return { user: null }; } // đăng nhập app Màn hình chính iPhone (services/firebase.ts, 2026-10-12)
 export async function signOut() { window.__authCb(null); }
 export const browserLocalPersistence = {}; export const browserSessionPersistence = {};
 export async function setPersistence() {}
@@ -78,7 +79,8 @@ test('Report BI: tài khoản thứ hai trên cùng máy không thấy siêu th�
     const demSieuThiTrenManHinh = async (anh: string) => {
         await page.reload();
         await page.waitForTimeout(4000);
-        await page.getByRole('button', { name: /Cập nhật dữ liệu|Cập nhật/i }).first().click().catch(() => {});
+        // exact: phụ đề tiêu đề có nút "Cập nhật dữ liệu" (bấm là CHẠY tự động MWG) — phải bấm đúng mục "Cập nhật" của Report BI.
+        await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click().catch(() => {});
         await page.waitForTimeout(2500);
         const soLan = await page.getByText('Tân Hiệp', { exact: false }).count();
         await page.screenshot({ path: anh, fullPage: false });

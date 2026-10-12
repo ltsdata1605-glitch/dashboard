@@ -143,6 +143,50 @@
     }
   }
 
+  /* Dòng phụ thanh trên: nút "Cập nhật: <giờ>" các màn gửi vào KHÔNG được rộng hơn khe (trước đây hộp nút dài hơn khe, chữ bị cắt
+     nhưng HỘP vẫn chồng lên nút bên phải) — co hộp về bề rộng khe, phần chữ tự "…". Không đặt overflow:hidden trên chính nút:
+     sẽ xén mất vùng chạm ::after bên dưới. */
+  .ycx-navbar #mobile-topbar-subtitle > * {
+    max-width: 100%;
+  }
+  .ycx-navbar #mobile-topbar-subtitle :where(button, [role='button']) > span:last-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Thanh trên iPhone (components/layout/MobileNavBar.tsx, GĐ4): nút các màn tự đưa lên 2 khe cũ có kích cỡ NHÌN THẤY theo
+     chuẩn chủ dự án (32px, icon md — eaf71b2/145f03c) nhưng Apple cần vùng chạm 44 → nới vùng chạm vô hình bằng ::after,
+     không đổi bố cục. Nằm trong @layer components nên lớp tiện ích của chính nút (absolute, after:…) vẫn thắng.
+     - Khe nút: nới đều về 44×44 quanh tâm (nút ≥ 44 thì giữ nguyên — min(0px, …)); thanh cao 52px nên không lấn xuống nội dung.
+     - Khe dòng phụ ("Cập nhật: <giờ>" — nút đồng bộ): nới LÊN phủ dòng tiêu đề (không bấm được gì khác) và xuống tới mép thanh,
+       đủ 44 mà không lấn ra nội dung trang bên dưới. */
+  @media (pointer: coarse) {
+    .ycx-navbar #mobile-topbar-actions :where(button, a[href], [role='button']) {
+      position: relative;
+    }
+    .ycx-navbar #mobile-topbar-actions :where(button, a[href], [role='button'])::after {
+      content: '';
+      position: absolute;
+      top: min(0px, calc((100% - 44px) / 2));
+      bottom: min(0px, calc((100% - 44px) / 2));
+      left: min(0px, calc((100% - 44px) / 2));
+      right: min(0px, calc((100% - 44px) / 2));
+    }
+    .ycx-navbar #mobile-topbar-subtitle :where(button, [role='button']) {
+      position: relative;
+    }
+    .ycx-navbar #mobile-topbar-subtitle :where(button, [role='button'])::after {
+      content: '';
+      position: absolute;
+      top: -22px;
+      bottom: -6px;
+      left: -4px;
+      right: -4px;
+    }
+  }
+
   /* Danh sách nhóm (components/shared/ui/ListGroup.tsx): đường kẻ mảnh GIỮA các hàng, thụt lề theo nhãn như iOS
      (16px khi không icon, 16 + 28 + 12 = 56px khi có ô icon). Màn retina: 0,5px. */
   .ycx-list-row + .ycx-list-row::before {

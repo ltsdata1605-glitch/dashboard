@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AppIcon } from '../shared/ui/icon';
-import { motion, AnimatePresence } from 'motion/react';
 import { Button } from '../shared/ui/Button';
+import { Banner } from '../shared/ui/Banner';
 
 import FontSelector from './FontSelector';
 import NotificationDropdown from './NotificationDropdown';
@@ -68,22 +68,16 @@ const Header: React.FC<HeaderProps> = ({
     
     return (
         <>
+            {/* Lỗi đồng bộ: thông báo ĐỨNG YÊN (Banner dùng chung) thay dải chữ chạy đỏ — chữ chạy khó đọc, Apple không dùng (GĐ4). */}
             {syncState === 'error' && (
-                <div 
-                    className="w-full bg-rose-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between overflow-hidden relative mb-2 rounded-lg shadow-sm"
-                >
-                    <div className="flex-1 overflow-hidden relative h-5 flex items-center">
-                        <div className="absolute whitespace-nowrap animate-marquee will-change-transform flex items-center gap-1">
-                            <AppIcon name="warning" size="xs" className="shrink-0" />
-                            <span>Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."}</span>
-                        </div>
-                    </div>
-                </div>
+                <Banner tone="danger" title="Đồng bộ dữ liệu thất bại" className="mb-2">
+                    {lastError || 'Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy.'}
+                </Banner>
             )}
             {/* Portal timestamp into mobile top bar subtitle */}
             {mounted && fileInfo && document.getElementById('mobile-topbar-subtitle') && createPortal(
-                <button
-                    type="button"
+                <Button
+                    variant="unstyled" size="none"
                     onClick={() => {
                         window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
                     }}
@@ -94,14 +88,14 @@ const Header: React.FC<HeaderProps> = ({
                     <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
                         {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
                     </span>
-                </button>,
+                </Button>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
 
             {/* Portal timestamp into desktop header subtitle */}
             {mounted && fileInfo && document.getElementById('desktop-header-subtitle') && createPortal(
-                <button
-                    type="button"
+                <Button
+                    variant="unstyled" size="none"
                     onClick={() => {
                         window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
                     }}
@@ -112,7 +106,7 @@ const Header: React.FC<HeaderProps> = ({
                     <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
                         {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
                     </span>
-                </button>,
+                </Button>,
                 document.getElementById('desktop-header-subtitle')!
             )}
             {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}
@@ -156,21 +150,17 @@ const Header: React.FC<HeaderProps> = ({
                         </>
                     )}
 
-                    <AnimatePresence mode="wait">
-                        {hasSalesData && (
-                            <motion.button
-                                initial={{ width: 0, opacity: 0 }}
-                                animate={{ width: 'auto', opacity: 1 }}
-                                exit={{ width: 0, opacity: 0 }}
-                                onClick={handleSalesClear}
-                                disabled={isClearingSalesData}
-                                className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 ${salesClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer'}`}
-                                title={salesClearTitle || "Xóa dữ liệu YCX"}
-                            >
-                                <AppIcon name={salesClearSuccess ? 'check' : (isClearingSalesData ? 'loading' : 'delete')} size="md" spin={isClearingSalesData} />
-                            </motion.button>
-                        )}
-                    </AnimatePresence>
+                    {hasSalesData && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={handleSalesClear}
+                            disabled={isClearingSalesData}
+                            className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 animate-in fade-in duration-200 ${salesClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer'}`}
+                            title={salesClearTitle || "Xóa dữ liệu YCX"}
+                        >
+                            <AppIcon name={salesClearSuccess ? 'check' : (isClearingSalesData ? 'loading' : 'delete')} size="md" spin={isClearingSalesData} />
+                        </Button>
+                    )}
 
                 </div>
                 

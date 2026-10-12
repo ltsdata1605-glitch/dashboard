@@ -26,6 +26,7 @@ export function onAuthStateChanged(auth, cb) { window.__authCb = cb; setTimeout(
 export async function signInWithPopup() { window.__authCb(fakeUser); return { user: fakeUser }; }
 export async function signInWithRedirect() {}
 export async function getRedirectResult() { return null; }
+export async function signInWithCredential() { return { user: null }; } // đăng nhập app Màn hình chính iPhone (services/firebase.ts, 2026-10-12)
 export async function signOut() { window.__authCb(null); }
 export const browserLocalPersistence = {}; export const browserSessionPersistence = {};
 export async function setPersistence() {}
@@ -77,7 +78,7 @@ test('mở màn Phân quyền: hiện danh sách NGAY, không gọi lại Cloud 
     // 2. Người dùng bấm vào thẻ tài khoản ở sidebar để mở màn Phân quyền — ĐIỀU HƯỚNG TRONG APP
     //    (không tải lại trang), đúng như thao tác thật.
     const t0 = Date.now();
-    await page.getByTitle('Phân Quyền & Duyệt Yêu Cầu').first().click();
+    await page.getByTitle('Cài đặt & Phân quyền') /* nút ảnh đại diện ở dock nổi (chủ dự án 2026-10-12; trước: 'Phân Quyền & Duyệt Yêu Cầu') */.first().click();
     await page.getByRole('button', { name: /Chờ duyệt/i }).first().waitFor({ state: 'visible', timeout: 20000 });
 
     // Chờ khu danh sách thôi hiện spinner "Đang tải danh sách..."

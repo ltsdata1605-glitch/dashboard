@@ -18,6 +18,7 @@ export function onAuthStateChanged(auth, cb) { setTimeout(() => cb(fakeUser), 30
 export async function signInWithPopup() { return { user: fakeUser }; }
 export async function signInWithRedirect() {}
 export async function getRedirectResult() { return null; }
+export async function signInWithCredential() { return { user: null }; } // đăng nhập app Màn hình chính iPhone (services/firebase.ts, 2026-10-12)
 export async function signOut() {}
 export const browserLocalPersistence = {}; export const browserSessionPersistence = {};
 export async function setPersistence() {}
@@ -44,7 +45,8 @@ test('Super Admin gắn được Kho dùng chung 910', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/?tab=settings');
     await expect(page.getByText('Hồ Sơ Định Danh')).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText(/Kho dùng chung:\s*chưa gắn/)).toBeVisible();
+    // Chưa gắn: chủ dự án ẩn hẳn mục "Kho dùng chung" (2026-10-11, trước hiện "chưa gắn") — hồ sơ chỉ còn "Kho: ALL".
+    await expect(page.getByText(/Kho dùng chung:/)).toHaveCount(0);
     await page.screenshot({ path: `test-results/sa-1-truoc.png` });
     await page.getByRole('button', { name: /Gắn kho dùng chung/ }).click();
     const o = page.getByPlaceholder('Ví dụ: 1032, 3717, 910, 58614');

@@ -84,7 +84,7 @@ export default defineConfig(() => {
                         // không nằm trong vendor-firebase vốn được modulepreload lúc mở app.
                         if (id.includes('@firebase/analytics') || id.includes('@firebase/installations') || /[\\/]firebase[\\/]analytics/.test(id)) return 'vendor-firebase-analytics';
                         if (id.includes('firebase')) return 'vendor-firebase';
-                        if (id.includes('/motion/') || id.includes('\\motion\\')) return 'vendor-motion';
+                        // (GĐ4 2026-10-12) Đã gỡ hẳn thư viện motion — mọi chuyển động là CSS (usePresence, animate-in).
                         if (id.includes('lucide-react')) return 'vendor-icons';
                         if (id.includes('recharts')) return 'vendor-charts';
                         return;

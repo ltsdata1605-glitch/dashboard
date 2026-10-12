@@ -148,7 +148,10 @@ function countMissingMobileToolbar(content) {
   // portal riêng vào mount point 'mobile-topbar-actions' (Header/SettingsView/
   // BiWrapper/CheckThuongView dùng pattern này — ratchet trước đây không nhận
   // diện được, gây false-positive).
-  const hasMobileToolbar = content.includes('lg:hidden') || content.includes('mobile-topbar-actions');
+  // GĐ4 (2026-10-12): thêm 2 dấu hiệu hợp lệ — khung app vẽ thanh trên iPhone bằng `MobileNavBar` (App.tsx chỉ còn khe laptop),
+  // và màn khai báo nút bằng `usePageActions` (khung app tự vẽ cho CẢ iPhone lẫn laptop).
+  const hasMobileToolbar = content.includes('lg:hidden') || content.includes('mobile-topbar-actions')
+    || content.includes('<MobileNavBar') || content.includes('usePageActions(');
   return hasDesktopPortal && !hasMobileToolbar ? 1 : 0;
 }
 

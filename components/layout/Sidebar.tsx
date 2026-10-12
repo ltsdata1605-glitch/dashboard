@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Button } from '../shared/ui/Button';
+import { usePresence } from '../shared/ui/usePresence';
+import { cn } from '../shared/ui/utils';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppIcon, type IconName } from '../shared/ui/icon';
@@ -55,8 +57,8 @@ const NavItem = React.memo(({
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <button
-                type="button"
+            <Button
+                variant="unstyled" size="none"
                 onClick={handleClick}
                 title={item.label}
                 aria-label={item.label}
@@ -85,7 +87,7 @@ const NavItem = React.memo(({
                         <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
                     </span>
                 )}
-            </button>
+            </Button>
 
             {/* Flyout Submenu for tools */}
             {hasSubItems && isHovered && (
@@ -94,9 +96,9 @@ const NavItem = React.memo(({
                         {item.label}
                     </div>
                     {item.subItems?.map((sub) => (
-                        <button
+                        <Button
                             key={sub.id}
-                            type="button"
+                            variant="unstyled" size="none"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (sub.externalUrl) {
@@ -115,7 +117,7 @@ const NavItem = React.memo(({
                         >
                             <AppIcon name={sub.icon} size="sm" className="shrink-0" />
                             <span className="truncate">{sub.label}</span>
-                        </button>
+                        </Button>
                     ))}
                 </div>
             )}
@@ -162,16 +164,18 @@ export default function Sidebar() {
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: NAV_TAB_ICONS['pending-approval'], path: '/pending' }] : []),
     ];
 
+    // Vào/ra bằng CSS (GĐ4): bỏ thư viện motion khỏi đường mở app — dock vẫn mờ dần + trượt nhẹ như trước (180 ms).
+    const { mounted, shown } = usePresence(isDesktopMenuOpen, 180);
+    if (!mounted) return null;
+
     return (
-        <AnimatePresence>
-            {isDesktopMenuOpen && (
-                <motion.aside
+                <aside
                     data-testid="desktop-nav-menu"
-                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                    transition={{ duration: 0.18, ease: 'easeOut' }}
-                    className="hidden lg:flex fixed top-[72px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]"
+                    className={cn(
+                        "hidden lg:flex fixed top-[72px] left-8 z-[130] flex-col items-center py-2 px-1.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[56px]",
+                        "origin-top transition-[opacity,transform] duration-[180ms] ease-out motion-reduce:transition-none",
+                        shown ? "opacity-100 translate-y-0 scale-100" : "opacity-0 -translate-y-2 scale-95",
+                    )}
                 >
                     {/* Function Items */}
                     <div className="flex flex-col items-center w-full space-y-0.5">
@@ -203,8 +207,8 @@ export default function Sidebar() {
 
                     {/* User Profile / Settings */}
                     <div className="relative group flex items-center justify-center my-0.5">
-                        <button
-                            type="button"
+                        <Button
+                            variant="unstyled" size="none"
                             onClick={() => setActiveTab('settings')}
                             title="Cài đặt & Phân quyền"
                             aria-label="Cài đặt & Phân quyền"
@@ -219,7 +223,7 @@ export default function Sidebar() {
                                     </span>
                                 )}
                             </div>
-                        </button>
+                        </Button>
 
                         {/* Flyout Card hiển thị thông tin người dùng ngay khi hover */}
                         <div className="absolute left-full ml-3 bottom-0 p-3 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-2xl min-w-[210px] z-[230] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-150 scale-95 group-hover:scale-100 origin-bottom-left flex flex-col gap-2.5">
@@ -257,27 +261,25 @@ export default function Sidebar() {
                                 </div>
                             </div>
                             <div className="flex items-center justify-between gap-1.5">
-                                <button
-                                    type="button"
+                                <Button
+                                    variant="unstyled" size="none"
                                     onClick={() => setActiveTab('settings')}
                                     className="flex-1 py-1.5 px-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 text-xs font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors text-center cursor-pointer"
                                 >
                                     Phân quyền
-                                </button>
-                                <button
-                                    type="button"
+                                </Button>
+                                <Button
+                                    variant="unstyled" size="none"
                                     onClick={() => logout()}
                                     className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                                     title="Đăng xuất"
                                     aria-label="Đăng xuất"
                                 >
                                     <AppIcon name="logout" size="sm" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
-                </motion.aside>
-            )}
-        </AnimatePresence>
+                </aside>
     );
 }

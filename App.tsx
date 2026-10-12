@@ -5,8 +5,8 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';
-import { Button } from './components/shared/ui/Button';
 import { AppIcon } from './components/shared/ui/icon';
+import { Button } from './components/shared/ui/Button';
 import { navTabIcon } from './components/layout/navIcons';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -37,7 +37,9 @@ const GlobalAutoSyncDock = lazyWithRetry(() => import('./components/layout/Globa
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { SyncProvider } from './contexts/SyncContext';
 import { AppToaster } from './components/shared/ui/toast';
-import NotificationDropdown from './components/layout/NotificationDropdown';
+import MobileNavBar from './components/layout/MobileNavBar';
+import PageActionsBar from './components/layout/PageActionsBar';
+import { PageActionsProvider } from './components/shared/ui/PageActions';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 import InstallAppHint from './components/layout/InstallAppHint';
 import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
@@ -207,8 +209,29 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'pending-approval': { main: 'Hồ Sơ', highlight: 'Quyền' },
 };
 
+/**
+ * Tiêu đề thanh trên iPhone — viết như câu, đúng tên chức năng (GĐ4, KE_HOACH_GIAO_DIEN_APPLE.md mục 2.2). Laptop vẫn dùng
+ * TAB_TITLES (tiêu đề 2 màu IN HOA theo thiết kế khung laptop của chủ dự án 2026-10-12).
+ */
+const TAB_NAV_TITLES: Record<string, string> = {
+    'analysis': 'Phân tích',
+    'check-thuong': 'Check thưởng',
+    'employees': 'Report BI',
+    'tools': 'Công cụ',
+    'tools-print-sticker': 'In Sticker',
+    'tools-coupon': 'Rút gọn coupon',
+    'tools-tax': 'Tính thuế',
+    'tools-price-compare': 'So sánh giá',
+    'tools-phanca': 'Phân ca',
+    'tools-line-bot': 'Bot LINE PMH',
+    'reports': 'Báo cáo khai thác',
+    'settings': 'Phân quyền & duyệt',
+    'help': 'Giới thiệu',
+    'pending-approval': 'Hồ sơ quyền',
+};
+
 function AppContent() {
-    const { isDarkMode, toggleDarkMode, isDesktopMenuOpen, setIsDesktopMenuOpen, toggleDesktopMenu } = useLayout();
+    const { isDarkMode, toggleDarkMode, isDesktopMenuOpen, toggleDesktopMenu } = useLayout();
     const { activeTab, setActiveTab } = useActiveTab();
     const { user, userRole, isDemoMode, isLoading, departmentId, status, hasCachedSession } = useAuth();
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
@@ -250,8 +273,6 @@ function AppContent() {
         };
     }, [activeTab]);
 
-    // Ô icon trang trên thanh tiêu đề mobile — cùng map với Sidebar/MobileBottomNav (navIcons.ts).
-    const getTabIcon = () => <AppIcon name={navTabIcon(activeTab)} size="md" className="text-white" />;
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
@@ -299,46 +320,13 @@ function AppContent() {
             {!isFullscreenMobileTool && <MobileBottomNav />}
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
-                {/* Mobile Top Bar - Hidden in Desktop View */}
-                <div data-app-chrome="topbar" className="mobile-chrome lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
-                    {(() => {
-                        const brandIconAndTitle = (
-                            <>
-                                <div className="w-8 h-8 shrink-0 aspect-square min-w-8 min-h-8 bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 rounded-xl flex items-center justify-center shadow-md shadow-sky-300/30 dark:shadow-sky-900/30">
-                                    {getTabIcon()}
-                                </div>
-                                {/* In Sticker gửi thanh 4 chế độ + chỉnh cỡ chữ (~470px) lên thanh này; iPhone chỉ
-                                    có ~370px → trang từng tràn ngang 140px, chuông thông báo nằm NGOÀI màn hình.
-                                    Riêng màn đó ẩn chữ tiêu đề dưới 540px (nút quay lại + icon vẫn còn) để 4 nút
-                                    chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
-                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[540px]:flex' : 'flex'} flex-col items-start min-w-0`}>
-                                    {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone.
-                                        leading-tight chứ KHÔNG leading-none: truncate = overflow:hidden, khung cao đúng 14px
-                                        sẽ xén dấu tiếng Việt (Phân, Báo cáo, Tích… cao 17px) — đo được ở iPhone SE. */}
-                                    <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-tight truncate max-w-full">{titleData.main} {titleData.highlight}</span>
-                                    <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-full"></span>
-                                </div>
-                            </>
-                        );
-                        return isFullscreenMobileTool ? (
-                            <Button
-                                variant="unstyled" size="none"
-                                onClick={() => setActiveTab('analysis')}
-                                title="Về Dashboard"
-                                className="min-h-11 shrink-0 flex items-center gap-2 justify-start -ml-1 pl-1 pr-2 py-1 rounded-xl active:bg-slate-100 dark:active:bg-slate-800 transition-colors"
-                            >
-                                <AppIcon name="chevronLeft" size="md" className="text-slate-400 -mr-1.5 shrink-0" />
-                                {brandIconAndTitle}
-                            </Button>
-                        ) : (
-                            <div className="flex items-center gap-2.5 min-w-0 shrink-0">{brandIconAndTitle}</div>
-                        );
-                    })()}
-                    <div className="flex items-center gap-0.5 min-w-0 shrink">
-                        <div id="mobile-topbar-actions" className="flex items-center min-w-0"></div>
-                        <NotificationDropdown buttonClassName="relative flex items-center justify-center w-8 h-8 min-w-8 min-h-8 aspect-square text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105 active:scale-95 shrink-0" />
-                    </div>
-                </div>
+                {/* Thanh trên iPhone/iPad (GĐ4) — vật liệu mờ, tiêu đề 17px, nút 44px; laptop dùng thanh tiêu đề bên dưới. */}
+                <MobileNavBar
+                    title={TAB_NAV_TITLES[activeTab] || `${titleData.main} ${titleData.highlight ?? ''}`.trim()}
+                    tabIcon={navTabIcon(activeTab)}
+                    onBack={isFullscreenMobileTool ? () => setActiveTab('analysis') : undefined}
+                    hideTitleOnNarrow={activeTab === 'tools-print-sticker'}
+                />
 
                 <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">
                     {/* Nhắc cài app (chỉ Safari iPhone): dải mảnh NẰM TRONG trang ở đầu nội dung — không nổi đè lên nội dung. */}
@@ -353,18 +341,19 @@ function AppContent() {
                             <div className="hidden lg:flex items-center shrink-0">
                                 {/* Logo tròn - Bấm về trang chủ & thu gọn/mở rộng menu bar */}
                                 <div className="w-[56px] flex items-center justify-center shrink-0">
-                                    <button
-                                        type="button"
+                                    <Button
+                                        variant="unstyled" size="none"
                                         onClick={() => {
                                             setActiveTab('analysis');
-                                            setIsDesktopMenuOpen(prev => !prev);
+                                            // toggleDesktopMenu (không phải setIsDesktopMenuOpen): nhớ trạng thái dock qua lần mở sau.
+                                            toggleDesktopMenu();
                                         }}
                                         className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-md shadow-sky-300/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
                                         title={isDesktopMenuOpen ? "Bấm vào để thu gọn menu" : "Bấm vào để mở rộng menu"}
                                         aria-label="Trang chủ & Menu"
                                     >
                                         <AppIcon name="chartBar" size="lg" className="text-white" />
-                                    </button>
+                                    </Button>
                                 </div>
 
                                 <div className="h-8 w-1 bg-sky-600 rounded-full shadow-[0_0_12px_rgba(2,132,199,0.4)] ml-1 mr-3" />
@@ -375,7 +364,11 @@ function AppContent() {
                                     <div id="desktop-header-subtitle" className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 flex items-center"></div>
                                 </div>
                             </div>
-                            <div id="global-header-actions" className="flex items-center z-50 overflow-visible shrink-0 justify-end pb-1 lg:pb-0"></div>
+                            <div className="flex items-center gap-2 shrink-0 justify-end">
+                                {/* Màn khai báo bằng usePageActions (phạm vi 'all'/'desktop') — màn cũ vẫn portal vào khe bên cạnh. */}
+                                <PageActionsBar variant="desktop" />
+                                <div id="global-header-actions" className="flex items-center z-50 overflow-visible shrink-0 justify-end pb-1 lg:pb-0"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -419,7 +412,10 @@ export default function App() {
             <SyncProvider>
                 <LayoutProvider>
                     <ErrorBoundary name="App_Root">
-                        <AppContent />
+                        {/* Màn khai báo tiêu đề/nút → khung app (thanh trên iPhone, thanh tiêu đề laptop) tự vẽ — GĐ4. */}
+                        <PageActionsProvider>
+                            <AppContent />
+                        </PageActionsProvider>
                         {/* Toast dùng chung: viên nang trên giữa màn hình, không đè thanh tab (components/shared/ui/toast). */}
                         <AppToaster />
                         {/* Màn cảm ứng: nhấn giữ nút có `title` để đọc chú thích (audit A14) */}

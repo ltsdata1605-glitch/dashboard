@@ -34,12 +34,8 @@ const KHUNG_LAPTOP = [
  * Vi phạm có dạng `<tab>@<rộng>:<thanh>:<loại>:<tên nút>`. Gỡ từng mẫu khi giai đoạn tương ứng xong.
  */
 const DA_BIET: { mau: RegExp; lyDo: string }[] = [
-    { mau: /^[a-z-]+@\d+:topbar:vung-cham-nho:Thông báo$/, lyDo: 'Chuông 32px trên thanh trên — GĐ4 (lỗi #1)' },
-    { mau: /^analysis@\d+:topbar:(vung-cham-nho|de-nhau|ngoai-man):/, lyDo: '7 nút thanh trên Phân tích đè nhau / lọt khỏi màn / 32px — GĐ4 (lỗi #1)' },
-    { mau: /^analysis@(375|393):trang-tran-ngang:/, lyDo: 'Thanh trên Phân tích đẩy trang tràn ngang ở iPhone SE / iPhone 16 — GĐ4 (lỗi #1)' },
-    { mau: /^analysis@(375|393):tabbar:ngoai-man:Khác$/, lyDo: 'Hệ quả trang tràn ngang: nút "Khác" lọt khỏi màn — GĐ4 (lỗi #1)' },
-    { mau: /^employees@\d+:topbar:vung-cham-nho:/, lyDo: 'Report BI: 4 icon không chữ 32px trên thanh trên — GĐ6 (lỗi #12)' },
-    { mau: /^settings@\d+:topbar:(vung-cham-nho|de-nhau):/, lyDo: 'Phân quyền: nút Đăng xuất trên thanh trên đè chuông — GĐ7' },
+    // GĐ4 (2026-10-12) đã gỡ: chuông 32px (lỗi #1), 7 nút Phân tích đè nhau/tràn ngang/"Khác" lọt màn (lỗi #1), icon 32px Report BI
+    // (vùng chạm 44 nhờ ::after ở thanh trên), nút Đăng xuất Phân quyền.
     { mau: /^tools-print-sticker@\d+:topbar:/, lyDo: 'In Sticker: dải chế độ + cỡ chữ nhét vào thanh trên — GĐ7' },
 ];
 

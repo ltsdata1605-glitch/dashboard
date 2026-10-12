@@ -10,7 +10,6 @@ import { Button } from '../shared/ui/Button';
 import { Modal } from '../shared/ui/Modal';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { toast } from '../shared/ui/toast';
-import { motion, AnimatePresence } from 'motion/react';
 import { adminUpdateUser, listManagedUsers, AdminRole, AdminStatus, ManagedUserDoc } from '../../services/adminUserService';
 import {
     getPendingApprovalsSnapshot,
@@ -856,14 +855,14 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 ) : listMode === 'approval_settings' ? (
                     <ApprovalSettingsTab />
                 ) : (
-                    <AnimatePresence>
+                    <>
                         {isLoading ? (
                             <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
                                 <AppIcon name="loading" size="state" spin className="text-sky-500 mb-4" />
                                 <p className="text-slate-500 font-medium">Đang tải danh sách...</p>
                             </div>
                         ) : requests.length === 0 ? (
-                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
+                            <div className="animate-in fade-in duration-200 flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
                                 <div className="w-16 h-16 bg-sky-50 dark:bg-sky-900/20 rounded-full flex items-center justify-center mb-4"><AppIcon name="success" size="state" className="text-sky-400" /></div>
                                 <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
                                     {listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : listMode === 'expired' ? 'Không có người dùng hết hạn' : 'Chưa có người dùng hoạt động'}
@@ -871,7 +870,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <p className="text-slate-500 mt-1 text-sm">
                                     {listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : listMode === 'expired' ? 'Tất cả tài khoản đều đang trong thời hạn hợp lệ.' : 'Danh sách trống hoặc chưa cập nhật.'}
                                 </p>
-                            </motion.div>
+                            </div>
                         ) : (
                             <div className="flex flex-col gap-2">
                                 {requests.filter(req => {
@@ -888,7 +887,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         case 'date': default: return dir * ((a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
                                     }
                                 }).map((req) => (
-                                    <motion.div key={req.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`bg-white dark:bg-slate-800 border rounded-md ${actionLoadingId === req.id ? 'ring-2 ring-sky-500/60 border-sky-400 dark:border-sky-500 shadow-md' : !req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200 dark:border-slate-700/50'} shadow-sm transition-all overflow-hidden`}>
+                                    <div key={req.id} className={`animate-in fade-in slide-in-from-bottom-2 duration-200 bg-white dark:bg-slate-800 border rounded-md ${actionLoadingId === req.id ? 'ring-2 ring-sky-500/60 border-sky-400 dark:border-sky-500 shadow-md' : !req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200 dark:border-slate-700/50'} shadow-sm transition-all overflow-hidden`}>
                                         {/* Row 1: Avatar + Name + Role + Actions */}
                                         <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/30">
                                             <div className="relative shrink-0">
@@ -1118,11 +1117,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 <span className="text-xs font-bold text-sky-700 dark:text-sky-400">{req.loginCount ?? 0} lần</span>
                                             </div>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 ))}
                             </div>
                         )}
-                    </AnimatePresence>
+                    </>
                 )}
             </div>
 

@@ -11,6 +11,7 @@ export function onAuthStateChanged(auth, cb) { window.__authCb = cb; setTimeout(
 export async function signInWithPopup() { window.__authCb(fakeUser); return { user: fakeUser }; }
 export async function signInWithRedirect() {}
 export async function getRedirectResult() { return null; }
+export async function signInWithCredential() { return { user: null }; } // đăng nhập app Màn hình chính iPhone (services/firebase.ts, 2026-10-12)
 export async function signOut() { window.__authCb(null); }
 export const browserLocalPersistence = {}; export const browserSessionPersistence = {};
 export async function setPersistence() {}
