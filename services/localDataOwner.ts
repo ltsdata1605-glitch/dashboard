@@ -42,6 +42,8 @@ const LOCAL_STORAGE_PREFIXES = [
     'hasSeenSticker',               // hasSeenStickerDiscountTooltip
     'summaryTableExpandedIds',
     'analysis_',                    // analysis_alert_rules
+    'warehouseViewMode',
+    'warehouseVerticalKhoFilter',
 ];
 
 export const getLocalDataOwner = (): string | null => {

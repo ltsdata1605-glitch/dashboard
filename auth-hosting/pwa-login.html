@@ -181,8 +181,11 @@
       show('busy', false);
       show('go', false);
       $('lead').textContent = 'Đã đăng nhập: ' + (result.user.email || '');
-      say('✅ Đăng nhập thành công!\nBấm "Quay lại ứng dụng" (hoặc nút đóng [X] ở góc trên) để tiếp tục.', 'ok');
+      say('✅ Đăng nhập thành công!\nĐang chuyển về ứng dụng...', 'ok');
       show('back', true);
+      setTimeout(() => {
+        window.location.href = 'https://dashboard.pro.vn/';
+      }, 1000);
     } catch (e) {
       show('busy', false);
       show('go', true);

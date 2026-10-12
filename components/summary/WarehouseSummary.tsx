@@ -89,7 +89,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     updateWarehouseDTThucTarget, filterState, handleFilterChange,
     isLuyKe, handleLuyKeChange, kpiTargets
 }) => {
-    const { userRole } = useAuth();
+    const { user, userRole } = useAuth();
 
     const rawData = processedData?.warehouseSummary ?? [];
     const data = rawData;
@@ -100,15 +100,36 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     // này). "TỔNG" được coi như 1 lựa chọn trong CÙNG 1 dropdown thay vì tách riêng nút bật/tắt —
     // gọn hơn cho người dùng (xem verticalOptions/showVerticalTotal bên dưới).
     const khoOptions = useMemo(() => rawData.map(d => d.khoName), [rawData]);
-    const [verticalKhoFilter, setVerticalKhoFilter] = useState<string[]>([]);
+    const [verticalKhoFilter, setVerticalKhoFilter] = useState<string[]>(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const cached = localStorage.getItem('warehouseVerticalKhoFilter');
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed)) return parsed;
+                }
+            } catch {
+                /* bỏ qua lỗi parse */
+            }
+        }
+        return [];
+    });
     useEffect(() => {
         getSetting<string[]>('warehouseVerticalKhoFilter').then(saved => {
-            if (saved) setVerticalKhoFilter(saved);
+            if (saved && Array.isArray(saved)) {
+                setVerticalKhoFilter(saved);
+                try {
+                    localStorage.setItem('warehouseVerticalKhoFilter', JSON.stringify(saved));
+                } catch { /* bỏ qua */ }
+            }
         }).catch(console.error);
-    }, []);
+    }, [user?.uid]);
 
     const handleVerticalKhoFilterChange = (selected: string[]) => {
         setVerticalKhoFilter(selected);
+        try {
+            localStorage.setItem('warehouseVerticalKhoFilter', JSON.stringify(selected));
+        } catch { /* bỏ qua */ }
         saveSetting('warehouseVerticalKhoFilter', selected).catch(console.error);
     };
 
@@ -127,17 +148,59 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     const [columnsLoaded, setColumnsLoaded] = useState(true);
 
     // Chế độ xem: ngang (mặc định) hoặc dọc (transpose)
-    const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>('horizontal');
+    // Lưu song song vào localStorage để khởi tạo đồng bộ tức thì, không bị nhảy giao diện khi reset/tải lại
+    const [viewMode, setViewMode] = useState<'horizontal' | 'vertical'>(() => {
+        if (typeof window !== 'undefined') {
+            const cached = localStorage.getItem('warehouseViewMode');
+            if (cached === 'vertical' || cached === 'horizontal') return cached;
+            // Mặc định trên màn hình di động (< 768px): bảng Dọc giúp hiển thị vừa vặn không bị cuộn ngang
+            if (window.innerWidth < 768) return 'vertical';
+        }
+        return 'horizontal';
+    });
     useEffect(() => {
         getSetting<'horizontal' | 'vertical'>('warehouseViewMode').then(mode => {
-            if (mode) setViewMode(mode);
+            if (mode) {
+                setViewMode(mode);
+                try {
+                    localStorage.setItem('warehouseViewMode', mode);
+                } catch { /* bỏ qua */ }
+            }
         }).catch(console.error);
-    }, []);
+    }, [user?.uid]);
     const toggleViewMode = () => {
         const next = viewMode === 'horizontal' ? 'vertical' : 'horizontal';
         setViewMode(next);
+        try {
+            localStorage.setItem('warehouseViewMode', next);
+        } catch { /* bỏ qua */ }
         saveSetting('warehouseViewMode', next).catch(console.error);
     };
+
+    // Lắng nghe thay đổi cài đặt từ các sự kiện để đồng bộ tức thì
+    useEffect(() => {
+        const handleSettingChanged = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            if (!detail?.key) return;
+            if (detail.key === 'warehouseViewMode') {
+                getSetting<'horizontal' | 'vertical'>('warehouseViewMode').then(mode => {
+                    if (mode) {
+                        setViewMode(mode);
+                        try { localStorage.setItem('warehouseViewMode', mode); } catch { /* bỏ qua */ }
+                    }
+                }).catch(console.error);
+            } else if (detail.key === 'warehouseVerticalKhoFilter') {
+                getSetting<string[]>('warehouseVerticalKhoFilter').then(saved => {
+                    if (saved && Array.isArray(saved)) {
+                        setVerticalKhoFilter(saved);
+                        try { localStorage.setItem('warehouseVerticalKhoFilter', JSON.stringify(saved)); } catch { /* bỏ qua */ }
+                    }
+                }).catch(console.error);
+            }
+        };
+        window.addEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
+        return () => window.removeEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
+    }, []);
 
     // Target riêng cho từng chỉ số con (Mục 62) — columnId -> khoName -> target. Chỉ DTQĐ/DT Thực dùng
     // warehouseTargets/warehouseDTThucTargets sẵn có, các chỉ số khác dùng store generic này.
