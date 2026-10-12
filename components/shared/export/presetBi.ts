@@ -1,7 +1,7 @@
 import { capPixelRatioForArea, isMobileLikeDevice } from '../../../utils/dataUtils';
 import type { ExportMode, ExportImageOptions } from './captureEngine';
 import { fixOklchColors, downloadBlob, shareBlob, EXPORT_MIN_WIDTH } from './captureEngine';
-import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible } from './exportLayout';
+import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible, applyExportTextTruncation, truncateExportName } from './exportLayout';
 
 /**
  * BỘ QUY TẮC TRÌNH BÀY "REPORT BI" của bộ xuất ảnh chung (kế hoạch "Hợp nhất xuất ảnh", 2026-10-01).
@@ -38,10 +38,11 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 export async function exportBiCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
     const isMobileDevice = isMobileLikeDevice();
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
+    const { elementsToHide = ['.hide-on-export', '.no-print'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
     forceContentVisible(clone);
+    applyExportTextTruncation(clone, 24);
 
     elementsToHide.forEach((s: string) => {
         clone.querySelectorAll<HTMLElement>(s).forEach((e) => {
@@ -102,7 +103,7 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
 
     // Fix employee names and truncated elements to prevent clipping or wrapping during export
     const isEmployeeNamePattern = (text: string) => {
-        return text.includes(' - ') && /\d+/.test(text);
+        return text.includes(' - ') && /\b\d{4,8}\b/.test(text);
     };
 
     clone.querySelectorAll<HTMLElement>('td, span, button, div, th').forEach((el) => {
@@ -119,6 +120,9 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         if (isInTable) {
             if (el.classList.contains('truncate')) {
                 el.classList.remove('truncate');
+                if (el.children.length === 0 && text.length > 24) {
+                    el.textContent = truncateExportName(text, 24);
+                }
                 if (!isEmployeeNamePattern(text)) {
                     el.style.setProperty('white-space', 'normal', 'important');
                     el.style.setProperty('word-break', 'break-word', 'important');
@@ -150,6 +154,9 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
             }
 
             el.classList.remove('truncate');
+            if (el.children.length === 0 && text.length > 24 && !matchesEmployeeName) {
+                el.textContent = truncateExportName(text, 24);
+            }
             el.style.setProperty('white-space', 'nowrap', 'important');
             el.style.setProperty('overflow', 'visible', 'important');
             el.style.setProperty('text-overflow', 'clip', 'important');

@@ -50,6 +50,7 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
     const [selectedCategory, setSelectedCategory] = useState<{ name: string; channel: string } | null>(null);
 
     const bannerRef = useRef<HTMLDivElement>(null);
+    const overviewExportRef = useRef<HTMLDivElement>(null);
     const mainViewRef = useRef<HTMLDivElement>(null);
     const analysisRef = useRef<HTMLDivElement>(null);
     const comparisonRef = useRef<HTMLDivElement>(null);
@@ -99,7 +100,7 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
         }
 
         return (
-            <div className="flex-1 overflow-y-auto p-3 sm:p-5 max-w-5xl mx-auto w-full">
+            <div className="w-full p-3 sm:p-5 max-w-5xl mx-auto">
                 <CheckThuongComparisonView
                     store1Data={store1Data}
                     store2Data={store2Data}
@@ -146,41 +147,71 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
         ? groupDefs
         : groupDefs.filter(g => g.key === activeFilter);
 
-    return (
-        <div ref={mainViewRef} className="flex-1 overflow-y-auto p-3 sm:p-5 max-w-5xl mx-auto w-full space-y-4">
-            {/* Hero Banner */}
-            <CheckThuongHeroBanner
-                storeName={storeName}
-                formattedUploadTime={formattedUploadTime}
-                totalBonus={totalBonus}
-                countAchieved100={countAchieved100}
-                totalCategories={totalCategories}
-                bannerRef={bannerRef}
-                onExportBanner={() => {
-                    if (bannerRef.current) {
-                        exportElementAsImage(bannerRef.current, `Tong_Hop_Thuong_${code1}.png`, {
-                            progressTitle: 'Xuất ảnh tổng hợp'
-                        });
+    const handleExportOverview = () => {
+        const el = overviewExportRef.current || bannerRef.current;
+        if (el) {
+            exportElementAsImage(el, `Tong_Hop_Thuong_${code1}.png`, {
+                progressTitle: 'Xuất ảnh tổng hợp thưởng',
+                forcedWidth: 480,
+                preset: 'raw',
+                backgroundColor: '#f8fafc',
+                onCloneReady: (clone) => {
+                    // Đảm bảo lưới 6 thẻ KPI hiển thị 3 cột x 2 hàng gọn gàng xem trên mobile
+                    const kpiGrid = clone.querySelector('.check-thuong-kpi-grid');
+                    if (kpiGrid instanceof HTMLElement) {
+                        kpiGrid.style.setProperty('display', 'grid', 'important');
+                        kpiGrid.style.setProperty('grid-template-columns', 'repeat(3, minmax(0, 1fr))', 'important');
+                        kpiGrid.style.setProperty('gap', '8px', 'important');
                     }
-                }}
-            />
+                    // Bọc padding 12px xung quanh để các thẻ card giữ trọn bo góc và viền nổi bật
+                    clone.style.setProperty('padding', '12px', 'important');
+                    clone.style.setProperty('background', '#f8fafc', 'important');
+                }
+            });
+        }
+    };
 
-            {/* Status Summary & Filter Tools */}
-            <CheckThuongStatusSummary
-                groups={groupDefs}
-                totalCount={totalCategories}
-                activeFilter={activeFilter}
-                onSelectFilter={setActiveFilter}
-                viewMode={viewMode}
-                onToggleViewMode={() => setViewMode(prev => prev === 'list' ? 'card' : 'list')}
-                onExportFiltered={() => {
-                    if (mainViewRef.current) {
-                        exportElementAsImage(mainViewRef.current, `Bao_Cao_Thuong_${code1}_${activeFilter}.png`, {
-                            progressTitle: 'Xuất ảnh bảng thưởng'
-                        });
-                    }
-                }}
-            />
+    return (
+        <div ref={mainViewRef} className="w-full p-2.5 sm:p-5 max-w-5xl mx-auto space-y-3 sm:space-y-4">
+            {/* Vùng đóng khung đỏ xuất ảnh di động (Hero Banner + 6 Thẻ KPI + Phân Tích & Đề Xuất) */}
+            <div ref={overviewExportRef} className="space-y-3 sm:space-y-4">
+                {/* Hero Banner */}
+                <CheckThuongHeroBanner
+                    storeName={storeName}
+                    formattedUploadTime={formattedUploadTime}
+                    totalBonus={totalBonus}
+                    countAchieved100={countAchieved100}
+                    totalCategories={totalCategories}
+                    bannerRef={bannerRef}
+                    onExportBanner={handleExportOverview}
+                />
+
+                {/* Status Summary & Filter Tools */}
+                <CheckThuongStatusSummary
+                    groups={groupDefs}
+                    totalCount={totalCategories}
+                    activeFilter={activeFilter}
+                    onSelectFilter={setActiveFilter}
+                    viewMode={viewMode}
+                    onToggleViewMode={() => setViewMode(prev => prev === 'list' ? 'card' : 'list')}
+                    onExportFiltered={() => {
+                        if (mainViewRef.current) {
+                            exportElementAsImage(mainViewRef.current, `Bao_Cao_Thuong_${code1}_${activeFilter}.png`, {
+                                progressTitle: 'Xuất ảnh bảng thưởng'
+                            });
+                        }
+                    }}
+                >
+                    {/* Analysis & Recommendations Card (Đặt ngay dưới các thẻ KPI) */}
+                    <CheckThuongAnalysisCard
+                        analysis={analysis}
+                        totalBonus={totalBonus}
+                        cardRef={analysisRef}
+                        onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
+                        onExportAnalysis={handleExportOverview}
+                    />
+                </CheckThuongStatusSummary>
+            </div>
 
             {/* Category Groups View (List or Cards) */}
             {viewMode === 'list' ? (
@@ -212,21 +243,6 @@ export const CheckThuongSearchView: React.FC<CheckThuongSearchViewProps> = ({
                     }}
                 />
             )}
-
-            {/* Analysis & Recommendations Card */}
-            <CheckThuongAnalysisCard
-                analysis={analysis}
-                totalBonus={totalBonus}
-                cardRef={analysisRef}
-                onSelectCategory={(name, channel) => setSelectedCategory({ name, channel })}
-                onExportAnalysis={() => {
-                    if (analysisRef.current) {
-                        exportElementAsImage(analysisRef.current, `Phan_Tich_Thuong_${code1}.png`, {
-                            progressTitle: 'Xuất ảnh phân tích đề xuất'
-                        });
-                    }
-                }}
-            />
 
             {/* Ranking Modal */}
             {selectedCategory && (

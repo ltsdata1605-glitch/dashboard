@@ -44,6 +44,9 @@ describe('checkThuongSearch service', () => {
 
         const achievedGroup = groups.find(g => g.key === 'achieved');
         expect(achievedGroup?.data.length).toBe(2); // TIVI and GIA DỤNG
+        // Verify default sort by % dự kiến descending: TIVI (1.2) before GIA DỤNG (0.8)
+        expect(achievedGroup?.data[0][CHECK_THUONG_COLS.NGANH_HANG]).toBe('TIVI');
+        expect(achievedGroup?.data[1][CHECK_THUONG_COLS.NGANH_HANG]).toBe('GIA DỤNG');
 
         const nearlyGroup = groups.find(g => g.key === 'nearly');
         expect(nearlyGroup?.data.length).toBe(1); // TỦ LẠNH (rank 15 is <= cutoff 10 + 20)
@@ -63,6 +66,10 @@ describe('checkThuongSearch service', () => {
         expect(analysis.achievedCount).toBe(2);
         expect(analysis.totalCategories).toBe(4);
         expect(analysis.noSaleCount).toBe(1);
+        expect(analysis.warningList.length).toBe(1);
+        expect(analysis.warningList[0].nganhHang).toBe('GIA DỤNG');
+        expect(analysis.warningList[0].currentRank).toBe(8);
+        expect(analysis.warningList[0].cutoffRank).toBe(10);
         expect(analysis.opportunityList.length).toBeGreaterThanOrEqual(1);
     });
 

@@ -12,6 +12,7 @@ export interface CheckThuongStoreSummary {
 }
 
 export type LeaderboardSortField = 'rank' | 'channel' | 'code' | 'name' | 'achievedCount' | 'percent' | 'bonus';
+export type CategoryTableSortField = 'category' | 'percent' | 'duKienVuot' | 'rank' | 'bonus';
 export type SortDirection = 'asc' | 'desc';
 
 export interface LeaderboardFilterState {
@@ -47,6 +48,8 @@ export interface CheckThuongPotentialBonus {
 export interface CheckThuongWarningItem {
     nganhHang: string;
     kenh: string;
+    currentRank?: number;
+    cutoffRank?: number;
 }
 
 export interface CheckThuongOpportunityItem {

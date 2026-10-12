@@ -24,10 +24,104 @@ function stripWidthClasses(el: Element) {
 }
 
 /**
+ * Rút gọn các tên quá dài (ngành hàng, tiêu đề) thành đuôi '...' khi xuất ảnh,
+ * tránh làm dãn cột quá mức và lấn các cột số liệu bên cạnh.
+ */
+export function truncateExportName(name: string, maxLength: number = 26): string {
+    const trimmed = name.trim();
+    if (trimmed.length <= maxLength) return trimmed;
+
+    let sliced = trimmed.slice(0, maxLength);
+
+    // Nếu trong đoạn cắt có dấu phẩy (vd danh sách đối tác / danh mục con), ưu tiên ngắt tại dấu phẩy
+    const lastComma = sliced.lastIndexOf(',');
+    if (lastComma >= 14) {
+        sliced = sliced.slice(0, lastComma);
+    } else {
+        // Ngắt tại từ trọn vẹn (khoảng trắng hoặc gạch nối) nếu có
+        const lastSpace = Math.max(sliced.lastIndexOf(' '), sliced.lastIndexOf(' - '));
+        if (lastSpace >= 14) {
+            sliced = sliced.slice(0, lastSpace);
+        }
+    }
+
+    // Bỏ các ký tự thừa ở cuối như dấu phẩy, gạch ngang, gạch chéo, dấu chấm, dấu cộng
+    const cleaned = sliced.trim().replace(/[, \-_/.:;+]+$/, '');
+    return `${cleaned}...`;
+}
+
+/**
+ * Quét toàn bộ DOM clone để tự động rút gọn các tên dài quá giới hạn thành '...'
+ */
+export function applyExportTextTruncation(root: HTMLElement, maxLength: number = 24): void {
+    // 1. Quét các phần tử có class 'truncate' hoặc đánh dấu ngành hàng / tên
+    root.querySelectorAll<HTMLElement>('.truncate, [data-category-name], [data-truncate-export]').forEach((el) => {
+        if (el.children.length === 0) {
+            const txt = el.textContent?.trim() || '';
+            if (txt.length > maxLength) {
+                el.textContent = truncateExportName(txt, maxLength);
+            }
+        } else {
+            Array.from(el.childNodes).forEach((node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const txt = node.textContent?.trim() || '';
+                    if (txt.length > maxLength) {
+                        node.textContent = truncateExportName(txt, maxLength);
+                    }
+                }
+            });
+        }
+    });
+
+    // 2. Quét các bảng có cột NGÀNH HÀNG / TÊN / SẢN PHẨM / NHÓM
+    root.querySelectorAll('table').forEach((table) => {
+        const thead = table.querySelector('thead');
+        if (!thead) return;
+        const ths = Array.from(thead.querySelectorAll('tr:last-child th'));
+        const nameColIndices = new Set<number>();
+        ths.forEach((th, idx) => {
+            const hText = th.textContent?.trim().toUpperCase() || '';
+            if (hText.includes('NGÀNH HÀNG') || hText.includes('TÊN') || hText.includes('SẢN PHẨM')) {
+                nameColIndices.add(idx);
+            }
+        });
+
+        if (nameColIndices.size > 0) {
+            table.querySelectorAll('tbody tr').forEach((tr) => {
+                const tds = Array.from(tr.querySelectorAll('td'));
+                nameColIndices.forEach((colIdx) => {
+                    const td = tds[colIdx];
+                    if (!td) return;
+                    const targetEls = td.querySelectorAll<HTMLElement>('span, div, p, a');
+                    if (targetEls.length === 0) {
+                        const txt = td.textContent?.trim() || '';
+                        if (txt.length > maxLength) {
+                            td.textContent = truncateExportName(txt, maxLength);
+                        }
+                    } else {
+                        targetEls.forEach((target) => {
+                            if (target.children.length === 0) {
+                                const txt = target.textContent?.trim() || '';
+                                if (txt.length > maxLength) {
+                                    target.textContent = truncateExportName(txt, maxLength);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        }
+    });
+}
+
+/**
  * Co mọi bảng trong `root` vừa nội dung. Trả về bề rộng (px) của bảng rộng nhất, đã cộng đệm/viền của
  * các khối bọc giữa bảng và `root` — để ép cả khối ảnh về đúng bề rộng đó. 0 = không có bảng.
  */
 export function fitTablesToContent(root: HTMLElement): number {
+    // Tự động rút gọn các tên quá dài thành '...' trước khi tính toán độ rộng cột
+    applyExportTextTruncation(root, 24);
+
     const tables = Array.from(root.querySelectorAll('table'));
     if (tables.length === 0) return 0;
 
@@ -73,7 +167,16 @@ export function fitTablesToContent(root: HTMLElement): number {
             if (isHeader) cell.style.setProperty('word-break', 'keep-all', 'important');
             cell.querySelectorAll<HTMLElement>('*').forEach((c) => {
                 if (c.classList.contains('export-wrap')) return;
-                if (c.classList.contains('truncate')) c.classList.remove('truncate');
+                const hadTruncate = c.classList.contains('truncate') || c.hasAttribute('data-category-name') || c.hasAttribute('data-truncate-export');
+                if (hadTruncate) {
+                    c.classList.remove('truncate');
+                    if (c.children.length === 0) {
+                        const txt = c.textContent?.trim() || '';
+                        if (txt.length > 24) {
+                            c.textContent = truncateExportName(txt, 24);
+                        }
+                    }
+                }
                 c.style.setProperty('white-space', ws, 'important');
                 c.style.setProperty('text-overflow', 'clip', 'important');
                 if (!isHeader) {

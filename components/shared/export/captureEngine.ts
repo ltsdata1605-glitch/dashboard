@@ -2,7 +2,7 @@ import { isMobileLikeDevice, capPixelRatioForArea } from '../../../utils/dataUti
 import { deliverImage, copyBlobToClipboard } from '../ui/imageDelivery';
 export { copyBlobToClipboard };
 import { getActiveExportJob, startExportJob, type ExportJob } from './exportProgress';
-import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible } from './exportLayout';
+import { fitTablesToContent, appendExportFooter, fixCircularAvatars, forceContentVisible, applyExportTextTruncation, truncateExportName } from './exportLayout';
 import './ExportProgressHost';
 
 /**
@@ -136,9 +136,10 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
  */
 async function exportRawCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
     const isMobileDevice = isMobileLikeDevice();
-    const { elementsToHide = ['.hide-on-export'], mode = 'download', footer = true } = options;
+    const { elementsToHide = ['.hide-on-export', '.no-print'], mode = 'download', footer = true } = options;
     const clone = element.cloneNode(true) as HTMLElement;
     forceContentVisible(clone);
+    applyExportTextTruncation(clone, 24);
     elementsToHide.forEach((sel) => clone.querySelectorAll(sel).forEach((e) => e.remove()));
     options.onCloneReady?.(clone);
 
@@ -194,12 +195,13 @@ async function exportRawCore(element: HTMLElement, filename: string, options: Ex
 async function exportElementAsImageCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
     const isMobileDevice = isMobileLikeDevice();
     const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, fitWidthToTable = false, mode = 'download' as ExportMode, onCloneReady = null, footer = true } = options;
+    const { elementsToHide = ['.hide-on-export', '.no-print'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, fitWidthToTable = false, mode = 'download' as ExportMode, onCloneReady = null, footer = true } = options;
     // Co cột vừa nội dung: mặc định BẬT, trừ khi nơi gọi khoá bề rộng (chụp như đang hiển thị / ép bề rộng)
     const doFit = options.fitColumns ?? (!captureAsDisplayed && !forcedWidth);
 
     const clone = element.cloneNode(true) as HTMLElement;
     forceContentVisible(clone);
+    applyExportTextTruncation(clone, 24);
 
     elementsToHide.forEach((s: string) => {
         clone.querySelectorAll<HTMLElement>(s).forEach((e) => {
@@ -260,7 +262,7 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
 
     // Fix employee names and truncated elements to prevent clipping or wrapping during export
     const isEmployeeNamePattern = (text: string) => {
-        return text.includes(' - ') && /\d+/.test(text);
+        return text.includes(' - ') && /\b\d{4,8}\b/.test(text);
     };
 
     clone.querySelectorAll<HTMLElement>('td, span, button, div, th').forEach((el) => {
@@ -271,6 +273,9 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         if (isInTable) {
             if (el.classList.contains('truncate')) {
                 el.classList.remove('truncate');
+                if (el.children.length === 0 && text.length > 24) {
+                    el.textContent = truncateExportName(text, 24);
+                }
                 el.style.setProperty('white-space', 'normal', 'important');
                 el.style.setProperty('word-break', 'break-word', 'important');
                 el.style.setProperty('overflow', 'visible', 'important');
@@ -286,6 +291,9 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
         const matchesEmployeeName = isEmployeeNamePattern(text) && el.children.length === 0;
         if (el.classList.contains('truncate') || matchesEmployeeName) {
             el.classList.remove('truncate');
+            if (el.children.length === 0 && text.length > 24 && !matchesEmployeeName) {
+                el.textContent = truncateExportName(text, 24);
+            }
             el.style.setProperty('white-space', 'nowrap', 'important');
             el.style.setProperty('overflow', 'visible', 'important');
             el.style.setProperty('text-overflow', 'clip', 'important');

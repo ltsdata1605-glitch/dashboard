@@ -143,7 +143,7 @@ const TabContent = React.memo(() => {
         { id: 'settings', className: 'w-full', component: <SettingsView /> },
         { id: 'pending-approval', className: 'w-full', component: <PendingApprovalView /> },
         { id: 'help', className: 'w-full', component: <AboutView /> },
-        { id: 'check-thuong', component: <CheckThuongView /> },
+        { id: 'check-thuong', className: 'w-full', component: <CheckThuongView /> },
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },

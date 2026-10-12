@@ -341,7 +341,7 @@ export const CheckThuongView: React.FC = () => {
     );
 
     return (
-        <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0 overflow-hidden">
+        <div className="w-full flex-1 flex flex-col bg-white dark:bg-slate-900 min-h-0">
             {/* Input file ẩn cho nút "Đổi file / Tải file" trên toolbar */}
             <input
                 ref={fileInputHiddenRef}
@@ -421,7 +421,7 @@ export const CheckThuongView: React.FC = () => {
 
             {/* TAB 2: GIAO DIỆN BẢNG XẾP HẠNG TOP SIÊU THỊ THƯỞNG CAO */}
             {activeSubTab === 'leaderboard' && (
-                <div className="w-full h-full flex-grow overflow-hidden">
+                <div className="w-full flex-grow">
                     <CheckThuongLeaderboardView
                         competitionData={competitionData}
                         uploadTime={uploadTime}

@@ -3,6 +3,7 @@ import {
     CheckThuongGroupDef,
     CheckThuongPotentialBonus,
     CheckThuongAnalysisResult,
+    CheckThuongWarningItem,
     CheckThuongComparisonItem,
 } from '../types';
 
@@ -129,6 +130,14 @@ export const getPotentialBonus = (row: any[], preprocessed: CheckThuongPreproces
     }
 };
 
+export const sortByPercentDesc = (rows: any[][]): any[][] => {
+    return [...rows].sort((a, b) => {
+        const valA = parseNumber(a[CHECK_THUONG_COLS.PERCENT_DU_KIEN]);
+        const valB = parseNumber(b[CHECK_THUONG_COLS.PERCENT_DU_KIEN]);
+        return valB - valA;
+    });
+};
+
 export const getGroupDefinitions = (data: any[][], preprocessed: CheckThuongPreprocessed): CheckThuongGroupDef[] => {
     const { noFundGroups } = preprocessed;
 
@@ -138,14 +147,14 @@ export const getGroupDefinitions = (data: any[][], preprocessed: CheckThuongPrep
             title: 'Đạt thưởng',
             shortTitle: 'Đạt thưởng',
             color: 'bg-emerald-500',
-            data: data.filter(row => parseNumber(row[CHECK_THUONG_COLS.TONG_THUONG]) > 0)
+            data: sortByPercentDesc(data.filter(row => parseNumber(row[CHECK_THUONG_COLS.TONG_THUONG]) > 0))
         },
         {
             key: 'nearly',
             title: 'Sắp có',
             shortTitle: 'Sắp có',
             color: 'bg-amber-500',
-            data: data.filter(row => {
+            data: sortByPercentDesc(data.filter(row => {
                 const groupKey = `${String(row[CHECK_THUONG_COLS.KENH] || 'N/A').trim().toUpperCase()}|${String(row[CHECK_THUONG_COLS.NGANH_HANG] || '').trim().toUpperCase()}`;
                 if (noFundGroups.has(groupKey)) return false;
                 if (parseNumber(row[CHECK_THUONG_COLS.TONG_THUONG]) > 0) return false;
@@ -160,42 +169,42 @@ export const getGroupDefinitions = (data: any[][], preprocessed: CheckThuongPrep
                 const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20;
 
                 return isNearlyVuot || isNearlyTarget;
-            })
+            }))
         },
         {
             key: 'achieved100',
             title: 'Nhóm Đạt ≥ 100%',
             shortTitle: 'Đạt ≥ 100%',
             color: 'bg-sky-500',
-            data: data.filter(row => parseNumber(row[CHECK_THUONG_COLS.PERCENT_DU_KIEN]) >= 1)
+            data: sortByPercentDesc(data.filter(row => parseNumber(row[CHECK_THUONG_COLS.PERCENT_DU_KIEN]) >= 1))
         },
         {
             key: 'notAchieved100',
             title: 'Nhóm Chưa Đạt < 100%',
             shortTitle: '< 100%',
             color: 'bg-rose-500',
-            data: data.filter(row => parseNumber(row[CHECK_THUONG_COLS.PERCENT_DU_KIEN]) < 1)
+            data: sortByPercentDesc(data.filter(row => parseNumber(row[CHECK_THUONG_COLS.PERCENT_DU_KIEN]) < 1))
         },
         {
             key: 'noFund',
             title: 'Không Quỹ',
             shortTitle: 'Không Quỹ',
             color: 'bg-sky-500',
-            data: data.filter(row => {
+            data: sortByPercentDesc(data.filter(row => {
                 const groupKey = `${String(row[CHECK_THUONG_COLS.KENH] || 'N/A').trim().toUpperCase()}|${String(row[CHECK_THUONG_COLS.NGANH_HANG] || '').trim().toUpperCase()}`;
                 return noFundGroups.has(groupKey);
-            })
+            }))
         },
         {
             key: 'noSale',
             title: 'No Sale',
             shortTitle: 'No Sale',
             color: 'bg-slate-600',
-            data: data.filter(row => {
+            data: sortByPercentDesc(data.filter(row => {
                 const groupKey = `${String(row[CHECK_THUONG_COLS.KENH] || 'N/A').trim().toUpperCase()}|${String(row[CHECK_THUONG_COLS.NGANH_HANG] || '').trim().toUpperCase()}`;
                 if (noFundGroups.has(groupKey)) return false;
                 return parseNumber(row[CHECK_THUONG_COLS.PERCENT_DU_KIEN]) === 0;
-            })
+            }))
         }
     ];
 };
@@ -209,7 +218,7 @@ export const analyzeStoreData = (data: any[][], preprocessed: CheckThuongPreproc
     const achievedCount = data.filter(row => parseNumber(row[CHECK_THUONG_COLS.TONG_THUONG]) > 0).length;
     const totalCategories = data.length;
 
-    const warningList = data.filter(row => {
+    const warningList: CheckThuongWarningItem[] = data.filter(row => {
         const bonus = parseNumber(row[CHECK_THUONG_COLS.TONG_THUONG]);
         if (bonus === 0) return false;
         const cutoffRank = parseInt(String(row[CHECK_THUONG_COLS.LAY_TOP_10] || ''), 10);
@@ -219,10 +228,21 @@ export const analyzeStoreData = (data: any[][], preprocessed: CheckThuongPreproc
         const isAtRiskVuot = !isNaN(rankVuot) && rankVuot <= cutoffRank && rankVuot > cutoffRank - 3;
         const isAtRiskTarget = !isNaN(rankTarget) && rankTarget <= cutoffRank && rankTarget > cutoffRank - 3;
         return isAtRiskVuot || isAtRiskTarget;
-    }).map(row => ({
-        nganhHang: String(row[CHECK_THUONG_COLS.NGANH_HANG] || ''),
-        kenh: String(row[CHECK_THUONG_COLS.KENH] || '')
-    }));
+    }).map(row => {
+        const cutoffRank = parseInt(String(row[CHECK_THUONG_COLS.LAY_TOP_10] || ''), 10);
+        const rankVuot = parseInt(String(row[CHECK_THUONG_COLS.HANG_VUOT_UU] || ''), 10);
+        const rankTarget = parseInt(String(row[CHECK_THUONG_COLS.HANG_PERCENT_TARGET] || ''), 10);
+        const validR1 = isNaN(rankVuot) || rankVuot <= 0 ? Infinity : rankVuot;
+        const validR2 = isNaN(rankTarget) || rankTarget <= 0 ? Infinity : rankTarget;
+        const bestRank = Math.min(validR1, validR2);
+
+        return {
+            nganhHang: String(row[CHECK_THUONG_COLS.NGANH_HANG] || ''),
+            kenh: String(row[CHECK_THUONG_COLS.KENH] || ''),
+            currentRank: bestRank === Infinity ? undefined : bestRank,
+            cutoffRank: isNaN(cutoffRank) ? undefined : cutoffRank
+        };
+    });
 
     const opportunityList = data.filter(row => {
         const groupKey = `${String(row[CHECK_THUONG_COLS.KENH] || 'N/A').trim().toUpperCase()}|${String(row[CHECK_THUONG_COLS.NGANH_HANG] || '').trim().toUpperCase()}`;

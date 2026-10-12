@@ -11,6 +11,7 @@ interface CheckThuongStatusSummaryProps {
     onToggleViewMode: () => void;
     onExportFiltered?: () => void;
     onExportAll?: () => void;
+    children?: React.ReactNode;
 }
 
 const STAT_COLORS: Record<string, { border: string; glow: string; text: string; bg: string }> = {
@@ -30,12 +31,13 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
     viewMode,
     onToggleViewMode,
     onExportFiltered,
-    onExportAll
+    onExportAll,
+    children
 }) => {
     return (
-        <div className="space-y-3">
-            {/* 6 Mini Stat Cards in a responsive grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="space-y-3 sm:space-y-4">
+            {/* 6 Mini Stat Cards in a responsive grid: 3 cột trên mobile, 6 cột trên desktop */}
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-1.5 sm:gap-2 check-thuong-kpi-grid">
                 {groups.map(group => {
                     const styling = STAT_COLORS[group.key] || STAT_COLORS.achieved;
                     const isSelected = activeFilter === group.key;
@@ -49,18 +51,18 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                                 borderLeftColor: styling.border,
                                 backgroundColor: isSelected ? styling.glow : undefined
                             }}
-                            className={`p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 border-l-4 text-left transition-all hover:shadow-md cursor-pointer relative overflow-hidden group flex flex-col justify-between min-h-[72px] ${
+                            className={`p-2 sm:p-3 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 border-l-[3px] sm:border-l-4 text-left transition-all hover:shadow-md cursor-pointer relative overflow-hidden group flex flex-col justify-between min-h-[56px] sm:min-h-[72px] ${
                                 isSelected ? 'ring-2 ring-sky-500 shadow-sm' : ''
                             }`}
                         >
-                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate mb-1">
+                            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate mb-0.5 sm:mb-1">
                                 {group.shortTitle || group.title}
                             </p>
                             <div className="flex items-baseline justify-between mt-auto">
-                                <span className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">
+                                <span className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">
                                     {group.data.length}
                                 </span>
-                                <span className={`text-[11px] font-bold ${styling.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                <span className={`text-[10px] sm:text-[11px] font-bold ${styling.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
                                     {group.data.length > 0 && totalCount > 0 ? `${Math.round((group.data.length / totalCount) * 100)}%` : ''}
                                 </span>
                             </div>
@@ -69,8 +71,11 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                 })}
             </div>
 
+            {/* Injected Analysis Card directly under KPI cards */}
+            {children}
+
             {/* Filter Pills + Actions Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 hide-on-export no-print">
                 {/* Pill filters */}
                 <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar text-xs">
                     <button
@@ -108,7 +113,7 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                 </div>
 
                 {/* View Mode & Export Tools */}
-                <div className="flex items-center gap-1.5 shrink-0 no-print">
+                <div className="flex items-center gap-1.5 shrink-0 no-print hide-on-export">
                     <button
                         type="button"
                         onClick={onToggleViewMode}
