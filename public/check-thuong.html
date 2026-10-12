@@ -815,7 +815,7 @@
             const formatCurrency = formatCurrencySimple;
             const formatCurrencyFull = (value) => {
                 const num = parseNumber(value);
-                return new Intl.NumberFormat('vi-VN').format(Math.floor(num));
+                return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.round(num));
             };
             const formatNumber = (value) => {
                 const num = parseNumber(value);

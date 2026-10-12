@@ -6,7 +6,10 @@ import {
     parseStoreSummaryFromData,
     filterAndSortStoreSummaries,
     getDistinctChannels,
-    calculateSystemStats
+    calculateSystemStats,
+    formatCurrencyFull,
+    formatCurrency,
+    formatNumber
 } from './checkThuongCalc';
 
 describe('checkThuongCalc', () => {
@@ -200,6 +203,20 @@ describe('checkThuongCalc', () => {
             expect(stats.totalBonus).toBe(80000000);
             expect(stats.avgAchievedPercent).toBe(70);
             expect(stats.topStore?.storeCode).toBe('1024');
+        });
+    });
+
+    describe('formatCurrencyFull & formatNumber (bỏ các số lẻ)', () => {
+        it('loại bỏ hoàn toàn các số lẻ sau dấu phẩy (làm tròn số nguyên)', () => {
+            // Trường hợp thực tế của user: 11888468.073 -> 11.888.468
+            const result = formatCurrencyFull(11888468.073);
+            expect(result).not.toContain(',073');
+            expect(result).not.toContain('.073');
+            expect(result).toBe('11.888.468');
+
+            expect(formatNumber(11888468.073)).toBe('11.888.468');
+            expect(formatCurrency(11888468.073)).toBe('11.9 tr');
+            expect(formatCurrency(54000.89)).toBe('54 k');
         });
     });
 });
