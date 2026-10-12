@@ -354,17 +354,17 @@ function AppContent() {
                     <div data-app-chrome="header" className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
                             <div className="hidden lg:flex items-center shrink-0">
-                                {/* Logo tròn - Bấm về trang chủ & show menu bar */}
+                                {/* Logo tròn - Bấm về trang chủ & thu gọn/mở rộng menu bar */}
                                 <div className="w-[56px] flex items-center justify-center shrink-0">
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setActiveTab('analysis');
-                                            setIsDesktopMenuOpen(true);
+                                            setIsDesktopMenuOpen(prev => !prev);
                                         }}
                                         className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-md shadow-sky-300/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                                        title="Trang chủ Phân tích (Về trang chủ & Hiện menu)"
-                                        aria-label="Trang chủ Phân tích"
+                                        title={isDesktopMenuOpen ? "Bấm vào để thu gọn menu" : "Bấm vào để mở rộng menu"}
+                                        aria-label="Trang chủ & Menu"
                                     >
                                         <AppIcon name="chartBar" size="lg" className="text-white" />
                                     </button>
