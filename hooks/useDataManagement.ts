@@ -982,6 +982,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
             setFileRegistry(validatedReg);
             toast.success('Đã cập nhật trạng thái thành công!');
+
+            const merged = await dbService.getMergedSalesData(updated);
+            if (merged) {
+                setFileInfo({ filename: merged.filename, savedAt: merged.savedAt.toLocaleString('vi-VN') });
+                const srcData = normalizeSalesData(merged.data);
+                setOriginalData(srcData);
+                setAppState(srcData.length > 0 ? 'processing' : 'upload');
+            }
         } catch (error) {
             console.error('[Registry] Error toggling active state:', error);
             toast.error('Có lỗi xảy ra khi cập nhật trạng thái!');

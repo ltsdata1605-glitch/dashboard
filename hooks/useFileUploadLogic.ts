@@ -541,6 +541,19 @@ export const useFileUploadLogic = ({
                 await dbService.saveSalesFilesRegistry(updatedRegistry);
                 registrySaved = true;
             } else {
+                // Đổ Realtime: Tự động bỏ active các file lịch sử/luỹ kế để người dùng xem đúng số liệu Realtime hôm nay,
+                // không bị dính/gộp số liệu luỹ kế cũ từ các ngày trước làm sai lệch doanh thu và %HT mục tiêu ngày.
+                let registryChanged = false;
+                for (let k = 0; k < updatedRegistry.length; k++) {
+                    if (updatedRegistry[k].isActive) {
+                        updatedRegistry[k].isActive = false;
+                        registryChanged = true;
+                    }
+                }
+                if (registryChanged) {
+                    await dbService.saveSalesFilesRegistry(updatedRegistry);
+                }
+
                 // Determine combined filename for realtime
                 let realtimeFilename = '';
                 if (files.length === 1) {

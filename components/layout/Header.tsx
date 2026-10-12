@@ -97,6 +97,24 @@ const Header: React.FC<HeaderProps> = ({
                 </button>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
+
+            {/* Portal timestamp into desktop header subtitle */}
+            {mounted && fileInfo && document.getElementById('desktop-header-subtitle') && createPortal(
+                <button
+                    type="button"
+                    onClick={() => {
+                        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+                    }}
+                    title="Bấm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
+                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                >
+                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                    <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                        {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
+                    </span>
+                </button>,
+                document.getElementById('desktop-header-subtitle')!
+            )}
             {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}
 
         {/* Desktop: Full inline toolbar ported to Global Header */}
@@ -154,28 +172,31 @@ const Header: React.FC<HeaderProps> = ({
                         )}
                     </AnimatePresence>
 
-                    <div className="border-l border-slate-100 dark:border-slate-700">
-                        <FontSelector />
-                    </div>
                 </div>
                 
-                {/* Settings Group - Standalone pill like Notification */}
-                {onToggleFilters && (
-                    <div className="flex items-center rounded-full bg-sky-500 hover:bg-sky-600 text-white shadow-sm transition-all active:scale-95">
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={onToggleFilters}
-                            title="Bộ lọc nâng cao / Tuỳ chỉnh"
-                            className="flex items-center justify-center p-2 text-white rounded-full"
-                        >
-                            <AppIcon name="viewOptions" size="md" />
-                        </Button>
-                    </div>
-                )}
+                {/* View, Font & Notification Group (3 chức năng cùng 1 nhóm) */}
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative z-[150]">
+                    <FontSelector 
+                        containerClassName="relative flex items-center"
+                        buttonClassName="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                    />
 
-                {/* Notification Group */}
-                <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm relative z-[150]">
-                    <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-700 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-full" />
+                    {onToggleFilters && (
+                        <div className="border-l border-slate-100 dark:border-slate-700">
+                            <Button
+                                variant="unstyled" size="none"
+                                onClick={onToggleFilters}
+                                title="Bộ lọc nâng cao / Tuỳ chỉnh"
+                                className="w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                            >
+                                <AppIcon name="viewOptions" size="md" />
+                            </Button>
+                        </div>
+                    )}
+
+                    <div className="border-l border-slate-100 dark:border-slate-700">
+                        <NotificationDropdown buttonClassName="relative w-9 h-9 flex items-center justify-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
+                    </div>
                 </div>
             </div>,
             document.getElementById('global-header-actions')!

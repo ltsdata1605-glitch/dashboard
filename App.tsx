@@ -211,7 +211,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
 };
 
 function AppContent() {
-    const { isDarkMode, toggleDarkMode } = useLayout();
+    const { isDarkMode, toggleDarkMode, isDesktopMenuOpen, setIsDesktopMenuOpen, toggleDesktopMenu } = useLayout();
     const { activeTab, setActiveTab } = useActiveTab();
     const { user, userRole, isDemoMode, isLoading, departmentId, status, hasCachedSession } = useAuth();
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
@@ -297,7 +297,7 @@ function AppContent() {
     }
 
     return (
-        <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
+        <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
             <Sidebar />
             {!isFullscreenMobileTool && <MobileBottomNav />}
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
@@ -314,12 +314,12 @@ function AppContent() {
                                     có ~370px → trang từng tràn ngang 140px, chuông thông báo nằm NGOÀI màn hình.
                                     Riêng màn đó ẩn chữ tiêu đề dưới 540px (nút quay lại + icon vẫn còn) để 4 nút
                                     chế độ vừa khít; phần còn lại cuộn ngang trong StickerModeToolbar. */}
-                                <div className={`${activeTab === 'tools-print-sticker' || activeTab === 'check-thuong' ? 'hidden min-[540px]:flex' : 'flex'} flex-col items-start min-w-0`}>
+                                <div className={`${activeTab === 'tools-print-sticker' ? 'hidden min-[540px]:flex' : 'flex'} flex-col items-start min-w-0`}>
                                     {/* truncate: tiêu đề dài ("Phân Quyền & Duyệt Yêu Cầu") từng chèn vào nút bên phải trên iPhone.
                                         leading-tight chứ KHÔNG leading-none: truncate = overflow:hidden, khung cao đúng 14px
                                         sẽ xén dấu tiếng Việt (Phân, Báo cáo, Tích… cao 17px) — đo được ở iPhone SE. */}
                                     <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-tight truncate max-w-full">{titleData.main} {titleData.highlight}</span>
-                                    <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
+                                    <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-full"></span>
                                 </div>
                             </>
                         );
@@ -353,11 +353,47 @@ function AppContent() {
                     {/* Global Page Header */}
                     <div data-app-chrome="header" className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
-                            <div className="hidden lg:flex items-center gap-4 shrink-0">
-                                <div className="h-10 w-1.5 bg-sky-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
-                                <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
-                                    {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
-                                </h1>
+                            <div className="hidden lg:flex items-center gap-3 shrink-0">
+                                {/* Logo tròn Giống Hình 2 */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveTab('analysis');
+                                    }}
+                                    className="w-9 h-9 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-md shadow-sky-300/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                    title="Trang chủ Phân tích"
+                                >
+                                    <AppIcon name="chartBar" size="md" className="text-white" />
+                                </button>
+
+                                {/* Nút tròn Show/Hide Menu Giống Hình 2 (Red Box 1) */}
+                                <button
+                                    type="button"
+                                    onClick={toggleDesktopMenu}
+                                    title={isDesktopMenuOpen ? "Ẩn menu" : "Hiện menu chức năng"}
+                                    aria-label={isDesktopMenuOpen ? "Ẩn menu" : "Hiện menu chức năng"}
+                                    className={`
+                                        w-8 h-8 rounded-full border border-slate-200/90 dark:border-slate-700 bg-white dark:bg-slate-800 
+                                        shadow-xs flex items-center justify-center text-slate-500 dark:text-slate-400 
+                                        hover:text-sky-600 hover:border-sky-300 dark:hover:border-sky-600 hover:bg-sky-50/60 dark:hover:bg-slate-700 
+                                        active:scale-90 transition-all duration-200 cursor-pointer
+                                        ${isDesktopMenuOpen ? 'text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/40 border-sky-300 dark:border-sky-700' : ''}
+                                    `}
+                                >
+                                    <AppIcon 
+                                        name={isDesktopMenuOpen ? "chevronLeft" : "chevronRight"} 
+                                        size="sm" 
+                                        className="transition-transform duration-200" 
+                                    />
+                                </button>
+
+                                <div className="h-8 w-1 bg-sky-600 rounded-full shadow-[0_0_12px_rgba(2,132,199,0.4)] ml-1" />
+                                <div className="flex flex-col">
+                                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                                        {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
+                                    </h1>
+                                    <div id="desktop-header-subtitle" className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 flex items-center"></div>
+                                </div>
                             </div>
                             <div id="global-header-actions" className="flex items-center z-50 overflow-visible shrink-0 justify-end pb-1 lg:pb-0"></div>
                         </div>

@@ -327,6 +327,24 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 document.getElementById('mobile-topbar-subtitle')!
             )}
 
+            {/* Portal timestamp into desktop header subtitle */}
+            {mounted && isTabActive && document.getElementById('desktop-header-subtitle') && createPortal(
+                <button
+                    type="button"
+                    onClick={() => {
+                        handleStartAutoSync(dashboardMainTab === 'luyke' ? 'luyke' : 'realtime');
+                    }}
+                    title="Bấm để kiểm tra & đồng bộ dữ liệu BI mới nhất"
+                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                >
+                    <AppIcon name="refresh" size="xs" spin={isBiSyncing} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                    <span className={isBiSyncing ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                        {isBiSyncing ? 'Đang đồng bộ từ Cloud...' : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
+                    </span>
+                </button>,
+                document.getElementById('desktop-header-subtitle')!
+            )}
+
 
 
 

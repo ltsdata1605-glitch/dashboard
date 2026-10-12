@@ -27,3 +27,54 @@ export interface CheckThuongSystemStats {
     avgAchievedPercent: number;
     topStore: CheckThuongStoreSummary | null;
 }
+
+export type CheckThuongGroupKey = 'achieved' | 'nearly' | 'achieved100' | 'notAchieved100' | 'noFund' | 'noSale';
+
+export interface CheckThuongGroupDef {
+    key: CheckThuongGroupKey;
+    title: string;
+    shortTitle: string;
+    color: string;
+    data: any[][];
+}
+
+export interface CheckThuongPotentialBonus {
+    vuot: number;
+    top: number;
+    total: number;
+}
+
+export interface CheckThuongWarningItem {
+    nganhHang: string;
+    kenh: string;
+}
+
+export interface CheckThuongOpportunityItem {
+    name: string;
+    ranksNeeded: number;
+    kenh: string;
+}
+
+export interface CheckThuongAnalysisResult {
+    achievedCount: number;
+    totalCategories: number;
+    warningList: CheckThuongWarningItem[];
+    opportunityList: CheckThuongOpportunityItem[];
+    noSaleCount: number;
+}
+
+export interface CheckThuongComparisonItem {
+    category: string;
+    row1?: any[];
+    row2?: any[];
+    percent1: number;
+    percent2: number;
+    rankV1: number;
+    rankV2: number;
+    bonus1: number;
+    bonus2: number;
+    bonusDiff: number;
+}
+
+export type CheckThuongViewMode = 'list' | 'card';
+

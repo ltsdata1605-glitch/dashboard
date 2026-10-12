@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Button } from '../shared/ui/Button';
 import { AppIcon, type IconName } from '../shared/ui/icon';
 import { NAV_TAB_ICONS } from './navIcons';
 import { formatCleanDisplayName } from '../../utils/dataUtils';
@@ -25,172 +24,121 @@ interface NavMenuItem {
 
 const NavItem = React.memo(({
     item,
-    isCollapsed,
     activeTab,
-    expandedMenus,
-    setExpandedMenus,
     setActiveTab,
-    setIsMobileSidebarOpen
 }: {
-    item: NavMenuItem,
-    isCollapsed: boolean,
-    activeTab: string,
-    expandedMenus: string[],
-    setExpandedMenus: React.Dispatch<React.SetStateAction<string[]>>,
-    setActiveTab: (id: string) => void,
-    setIsMobileSidebarOpen: (val: boolean) => void
+    item: NavMenuItem;
+    activeTab: string;
+    setActiveTab: (id: string) => void;
 }) => {
     const isActive = activeTab === item.id || (item.subItems?.some((sub) => activeTab === sub.id));
-    const isExpanded = expandedMenus.includes(item.id);
-    const hasSubItems = item.subItems && item.subItems.length > 0;
-    
-    const toggleExpand = (e: React.MouseEvent) => {
-        if (hasSubItems && !isCollapsed) {
-            e.stopPropagation();
-            setExpandedMenus(prev => 
-                prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
-            );
+    const [isHovered, setIsHovered] = useState(false);
+    const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
+
+    const handleClick = () => {
+        if (item.externalUrl) {
+            window.open(item.externalUrl, '_blank');
+        } else {
+            if (item.path === '/analysis') setActiveTab('analysis');
+            else if (item.path === '/') setActiveTab('check-thuong');
+            else if (item.path === '/employees') setActiveTab('employees');
+            else if (item.path === '/reports') setActiveTab('reports');
+            else if (item.path === '/line-bot') setActiveTab('tools-line-bot');
+            else if (item.path === '/tools') setActiveTab('tools');
+            else if (item.id) setActiveTab(item.id);
         }
     };
 
     return (
-        <div className="w-full">
-            <Button
-                variant="unstyled"
-                size="none"
-                onClick={(e) => {
-                    if (hasSubItems && !isCollapsed) {
-                        toggleExpand(e);
-                    } else if (item.externalUrl) {
-                        window.open(item.externalUrl, '_blank');
-                    } else {
-                        if (item.path === '/analysis') setActiveTab('analysis');
-                        else if (item.path === '/') setActiveTab('check-thuong');
-                        else if (item.path === '/employees') setActiveTab('employees');
-                        else if (item.path === '/reports') setActiveTab('reports');
-                        else if (item.path === '/line-bot') setActiveTab('tools-line-bot');
-                        else if (item.path === '/tools') setActiveTab('tools');
-                        else if (item.id) setActiveTab(item.id);
-                        if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
-                    }
-                }}
+        <div 
+            className="relative w-full flex items-center justify-center my-0.5"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            <button
+                type="button"
+                onClick={handleClick}
+                title={item.label}
+                aria-label={item.label}
                 className={`
-                    flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
+                    relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 group cursor-pointer
                     ${isActive
-                        ? 'bg-sky-100 dark:bg-sky-900/40 text-sky-700 font-semibold hover:bg-sky-200 dark:hover:bg-sky-900/60'
-                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-sky-700 dark:hover:text-sky-500'
+                        ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 font-semibold shadow-xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400'
                     }
                 `}
             >
-                <div className={`flex items-center justify-center min-w-5 transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
-                    <AppIcon name={item.icon} size="lg" className={isActive ? 'text-sky-700' : 'group-hover:scale-110 transition-transform duration-300'} />
-                </div>
-                
-                <motion.div 
-                    initial={false}
-                    animate={{ 
-                        opacity: isCollapsed ? 0 : 1,
-                        width: isCollapsed ? 0 : 'auto',
-                        marginLeft: isCollapsed ? 0 : 12,
-                        display: isCollapsed ? 'none' : 'flex'
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="flex-grow overflow-hidden items-center justify-between"
-                >
-                    <span className="font-medium whitespace-nowrap flex items-center gap-2">
-                        {item.label}
-                        {item.id === 'pending-approval' && (
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                            </span>
-                        )}
-                    </span>
-                    
-                    {hasSubItems && (
-                        <AppIcon
-                            name="chevronDown"
-                            size="md"
-                            className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                        />
-                    )}
-                </motion.div>
-
-                {isCollapsed && (
-                    <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[100] shadow-xl flex items-center gap-2">
-                        {item.label}
-                        {item.id === 'pending-approval' && (
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                            </span>
-                        )}
-                    </div>
+                {/* Active left indicator bar matching Sky blue chữ TÍCH */}
+                {isActive && (
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-sky-600 dark:bg-sky-400 rounded-r-full shadow-[0_0_8px_rgba(2,132,199,0.4)]" />
                 )}
-            </Button>
 
-            {!isCollapsed && hasSubItems && (
-                <AnimatePresence>
-                    {isExpanded && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                            className="overflow-hidden"
+                <AppIcon 
+                    name={item.icon} 
+                    size="md" 
+                    className={`transition-transform duration-200 ${isActive ? 'scale-105 text-sky-600 dark:text-sky-400' : 'group-hover:scale-110'}`} 
+                />
+
+                {item.id === 'pending-approval' && (
+                    <span className="absolute top-1 right-1 flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
+                    </span>
+                )}
+            </button>
+
+            {/* Flyout Submenu for tools */}
+            {hasSubItems && isHovered && (
+                <div className="absolute left-full ml-2.5 top-0 py-1.5 px-1.5 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-xl min-w-[160px] z-[220] flex flex-col space-y-0.5 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="px-2.5 py-1 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 mb-0.5">
+                        {item.label}
+                    </div>
+                    {item.subItems?.map((sub) => (
+                        <button
+                            key={sub.id}
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (sub.externalUrl) {
+                                    window.open(sub.externalUrl, '_blank');
+                                } else {
+                                    setActiveTab(sub.id);
+                                }
+                            }}
+                            className={`
+                                flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-left transition-colors cursor-pointer
+                                ${activeTab === sub.id 
+                                    ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400' 
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-sky-600 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }
+                            `}
                         >
-                            <div className="ml-5 pl-4 border-l-2 border-slate-200 dark:border-slate-700/50 mt-1 space-y-1">
-                                {item.subItems?.map((sub) => (
-                                    <Button
-                                        variant="unstyled"
-                                        size="none"
-                                        key={sub.id}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (sub.externalUrl) {
-                                                window.open(sub.externalUrl, '_blank');
-                                            } else {
-                                                setActiveTab(sub.id);
-                                                if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
-                                            }
-                                        }}
-                                        className={`
-                                            flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200 group relative
-                                            ${activeTab === sub.id
-                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-sky-700 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                            }
-                                        `}
-                                    >
-                                        <span className="flex-grow text-left">{sub.label}</span>
-                                        {sub.externalUrl && (
-                                            <AppIcon name="externalLink" size="xs" className="opacity-50 group-hover:opacity-100 transition-opacity" />
-                                        )}
-                                    </Button>
-                                ))}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            <AppIcon name={sub.icon} size="sm" className="shrink-0" />
+                            <span className="truncate">{sub.label}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Tooltip for items without subItems */}
+            {!hasSubItems && isHovered && (
+                <div className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900/90 backdrop-blur-sm text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap pointer-events-none transition-all duration-150 z-[220] animate-in fade-in zoom-in-95">
+                    {item.label}
+                </div>
             )}
         </div>
     );
 });
 
 export default function Sidebar() {
-    const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
-    const { user, userRole, logout, isDemoMode } = useAuth();
-    const [isHovered, setIsHovered] = useState(false);
-    const [isTempExpanded, setIsTempExpanded] = useState(false);
-    const [isMobile, setIsMobile] = useState(false);
-    const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
+    const { isDesktopMenuOpen, activeTab, setActiveTab } = useLayout();
+    const { user, userRole, employeeName, departmentId, isDemoMode, logout } = useAuth();
 
-    // Icon theo TÊN CHỨC NĂNG (chuẩn hoá icon 2026-10-02) — cùng tên với MobileBottomNav.
+    // Icon theo TÊN CHỨC NĂNG (chuẩn hoá icon 2026-10-02)
     const menuItems: NavMenuItem[] = [
         { id: 'analysis', label: 'Phân tích YCX', icon: NAV_TAB_ICONS['analysis'], path: '/analysis' },
         { id: 'employees', label: 'Report BI', icon: NAV_TAB_ICONS['employees'], path: '/employees' },
         { id: 'check-thuong', label: 'Check thưởng', icon: NAV_TAB_ICONS['check-thuong'], path: '/' },
-
         { id: 'reports', label: 'Báo cáo', icon: NAV_TAB_ICONS['reports'], path: '/reports' },
         ...(isDemoMode || userRole === 'admin' || userRole === 'manager' ? [
             { id: 'tools-line-bot', label: 'Bot LINE', icon: NAV_TAB_ICONS['tools-line-bot'], path: '/line-bot' }
@@ -210,169 +158,126 @@ export default function Sidebar() {
         },
     ];
 
-    // "Cài đặt" và "Giới thiệu" đã bỏ khỏi menu chính — Avatar ở cuối sidebar (dòng
-    // ~350) đã dẫn thẳng tới Cài đặt, không cần trùng lặp. "Giới thiệu" bỏ hẳn theo
-    // yêu cầu người dùng, chấp nhận không còn đường vào trên desktop.
     const secondaryItems: NavMenuItem[] = [
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: NAV_TAB_ICONS['pending-approval'], path: '/pending' }] : []),
     ];
 
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 1024);
-            if (window.innerWidth >= 1024) {
-                setIsMobileSidebarOpen(false);
-            }
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, [setIsMobileSidebarOpen]);
-
-    const sidebarVariants = {
-        expanded: { width: 260 },
-        collapsed: { width: 80 }
-    };
-
-    const sidebarTransition: React.ComponentProps<typeof motion.div>['transition'] = { duration: 0.2, ease: 'easeInOut' };
-    const effectiveCollapsed = isMobile ? false : (isSidebarCollapsed && !isHovered && !isTempExpanded);
-
     return (
-        <>
-            {/* Sidebar Container — Desktop Only, mobile uses MobileBottomNav */}
-            <motion.aside
-                initial={false}
-                onMouseEnter={() => !isMobile && setIsHovered(true)}
-                onClick={() => {
-                    if (!isMobile && isSidebarCollapsed && !isTempExpanded) {
-                        setIsTempExpanded(true);
-                    }
-                }}
-                onMouseLeave={() => {
-                    setIsHovered(false);
-                    setIsTempExpanded(false);
-                }}
-                animate={effectiveCollapsed ? 'collapsed' : 'expanded'}
-                variants={sidebarVariants}
-                transition={sidebarTransition}
-                className={`
-                    hidden lg:flex fixed top-0 left-0 h-screen z-[160] 
-                    bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
-                    flex-col transition-colors duration-300
-                    ${!effectiveCollapsed ? 'shadow-2xl' : ''}
-                `}
-            >
-                {/* Logo Section */}
-                <div className="h-20 flex items-center px-5 border-b border-slate-100 dark:border-slate-800/50">
-                    <div className="flex items-center gap-3 overflow-hidden w-full">
-                        <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-sky-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-sky-200 dark:shadow-sky-900/20">
-                            <AppIcon name="chartBar" size="xl" className="text-white" />
-                        </div>
-                        <motion.div
-                            initial={false}
-                            animate={{ 
-                                opacity: effectiveCollapsed ? 0 : 1,
-                                x: effectiveCollapsed ? -20 : 0,
-                                display: effectiveCollapsed ? 'none' : 'flex'
-                            }}
-                            transition={{ duration: 0.2 }}
-                            className="flex flex-col whitespace-nowrap"
-                        >
-                            <span className="font-bold text-slate-800 dark:text-white text-[13px] leading-tight">Dashboard Report</span>
-                            <span className="text-[11px] font-bold text-sky-500 dark:text-sky-400">Công cụ phân tích dữ liệu</span>
-                        </motion.div>
-                    </div>
-                </div>
-
-                {/* Navigation Items */}
-                <div className="flex-grow overflow-y-auto py-6 px-4 custom-scrollbar">
-                    <div className="space-y-1">
-                        {!effectiveCollapsed && (
-                            <p className="px-3 mb-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Menu Chính</p>
-                        )}
+        <AnimatePresence>
+            {isDesktopMenuOpen && (
+                <motion.aside
+                    data-testid="desktop-nav-menu"
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    transition={{ duration: 0.18, ease: 'easeOut' }}
+                    className="hidden lg:flex fixed top-[62px] left-8 z-[130] flex-col items-center py-1.5 px-1 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-lg shadow-slate-900/5 dark:shadow-black/40 w-[48px]"
+                >
+                    {/* Function Items */}
+                    <div className="flex flex-col items-center w-full space-y-0.5">
                         {menuItems.map(item => (
                             <NavItem 
                                 key={item.id} 
                                 item={item} 
-                                isCollapsed={effectiveCollapsed}
                                 activeTab={activeTab}
-                                expandedMenus={expandedMenus}
-                                setExpandedMenus={setExpandedMenus}
                                 setActiveTab={setActiveTab}
-                                setIsMobileSidebarOpen={setIsMobileSidebarOpen}
                             />
                         ))}
                     </div>
 
                     {secondaryItems.length > 0 && (
-                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800/50 space-y-1">
-                            {!effectiveCollapsed && (
-                                <p className="px-3 mb-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hệ Thống</p>
-                            )}
+                        <div className="w-full pt-1 mt-1 border-t border-slate-100 dark:border-slate-800/60 flex flex-col items-center">
                             {secondaryItems.map(item => (
                                 <NavItem
                                     key={item.id}
                                     item={item}
-                                    isCollapsed={effectiveCollapsed}
                                     activeTab={activeTab}
-                                    expandedMenus={expandedMenus}
-                                    setExpandedMenus={setExpandedMenus}
                                     setActiveTab={setActiveTab}
-                                    setIsMobileSidebarOpen={setIsMobileSidebarOpen}
                                 />
                             ))}
                         </div>
                     )}
-                </div>
 
-                {/* Bottom Section: thẻ tài khoản (bấm -> Phân Quyền) + nút Đăng xuất bên phải
-                    (chỉ hiện khi sidebar mở — thu gọn thì thẻ chỉ còn avatar, hover ra là thấy nút) */}
-                <div className="p-4 flex items-center gap-1">
-                    <Button
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => {
-                            setActiveTab('settings');
-                            if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
-                        }}
-                        className={`flex-1 min-w-0 flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'justify-start gap-3 px-2'} mt-1`}
-                        title="Phân Quyền & Duyệt Yêu Cầu"
-                    >
-                        <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
-                            {user?.photoURL ? (
-                                <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                            ) : (
-                                <span className="font-bold text-sky-700 dark:text-sky-400">
-                                    {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
-                                </span>
-                            )}
+                    {/* Thin divider */}
+                    <div className="w-6 h-[1px] bg-slate-100 dark:bg-slate-800 my-1" />
+
+                    {/* User Profile / Settings */}
+                    <div className="relative group flex items-center justify-center my-0.5">
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('settings')}
+                            title="Cài đặt & Phân quyền"
+                            aria-label="Cài đặt & Phân quyền"
+                            className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        >
+                            <div className="w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shadow-xs">
+                                {user?.photoURL ? (
+                                    <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                ) : (
+                                    <span className="font-bold text-[11px] text-sky-700 dark:text-sky-400">
+                                        {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
+                                    </span>
+                                )}
+                            </div>
+                        </button>
+
+                        {/* Flyout Card hiển thị thông tin người dùng ngay khi hover */}
+                        <div className="absolute left-full ml-3 bottom-0 p-3 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-2xl min-w-[210px] z-[230] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all duration-150 scale-95 group-hover:scale-100 origin-bottom-left flex flex-col gap-2.5">
+                            <div className="flex items-center gap-2.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                <div className="w-9 h-9 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 flex items-center justify-center overflow-hidden shrink-0">
+                                    {user?.photoURL ? (
+                                        <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                    ) : (
+                                        <span className="font-bold text-xs text-sky-700 dark:text-sky-400">
+                                            {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
+                                            {employeeName || formatCleanDisplayName(user?.displayName, isDemoMode ? "Tài khoản Thử nghiệm" : "Khách")}
+                                        </span>
+                                        {userRole && (
+                                            <span className={`text-[11px] font-bold px-1 py-0.2 rounded uppercase tracking-wider shrink-0 ${
+                                                userRole === 'admin' 
+                                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' 
+                                                    : userRole === 'manager' 
+                                                    ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300' 
+                                                    : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                            }`}>
+                                                {userRole === 'admin' ? 'Admin' : userRole === 'manager' ? 'Quản lý' : 'Nhân viên'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <span className="text-[11px] text-slate-400 truncate mt-0.5">
+                                        {user?.email || (departmentId ? `Kho: ${departmentId}` : "Chế độ Offline")}
+                                        {departmentId && user?.email ? ` • Kho ${departmentId}` : ''}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between gap-1.5">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('settings')}
+                                    className="flex-1 py-1.5 px-2.5 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400 text-xs font-bold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors text-center cursor-pointer"
+                                >
+                                    Phân quyền
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => logout()}
+                                    className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                                    title="Đăng xuất"
+                                    aria-label="Đăng xuất"
+                                >
+                                    <AppIcon name="logout" size="sm" />
+                                </button>
+                            </div>
                         </div>
-                        <motion.div
-                            initial={false}
-                            animate={{ 
-                                opacity: effectiveCollapsed ? 0 : 1,
-                                display: effectiveCollapsed ? 'none' : 'flex'
-                            }}
-                            className="flex flex-col overflow-hidden whitespace-nowrap text-left"
-                        >
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{formatCleanDisplayName(user?.displayName, isDemoMode ? "Tài khoản Thử nghiệm" : "Guest")}</span>
-                            <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{user?.email || "Chế độ Offline"}</span>
-                        </motion.div>
-                    </Button>
-                    {!effectiveCollapsed && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={logout}
-                            title="Đăng xuất"
-                            aria-label="Đăng xuất"
-                            className="mt-1 shrink-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400"
-                        >
-                            <AppIcon name="logout" size="md" />
-                        </Button>
-                    )}
-                </div>
-            </motion.aside>
-        </>
+                    </div>
+                </motion.aside>
+            )}
+        </AnimatePresence>
     );
 }

@@ -47,9 +47,7 @@ googleProvider.setCustomParameters({
 export const isStandaloneMode = (): boolean => {
     if (typeof window === 'undefined') return false;
     return Boolean((window.navigator as any).standalone) ||
-           Boolean(window.matchMedia?.('(display-mode: standalone)').matches) ||
-           Boolean(window.matchMedia?.('(display-mode: fullscreen)').matches) ||
-           Boolean(window.matchMedia?.('(display-mode: minimal-ui)').matches);
+           Boolean(window.matchMedia?.('(display-mode: standalone)').matches);
 };
 
 export const isInAppBrowser = (): boolean => {
@@ -60,7 +58,7 @@ export const isInAppBrowser = (): boolean => {
 
 export const loginWithGoogle = async () => {
     // Trong môi trường PWA Standalone (Màn hình chính iOS/Android) hoặc In-App browser (Zalo/FB):
-    // Cửa sổ popup (signInWithPopup) bị WebKit chặn hoặc treo Promise vĩnh viễn khiến nút xoay mãi.
+    // Cửa sổ popup (signInWithPopup) bị WebKit chặn trong PWA mode.
     // Tự động dùng signInWithRedirect an toàn tuyệt đối!
     if (isStandaloneMode() || isInAppBrowser()) {
         console.info('[Auth] Môi trường PWA Standalone / In-App Browser phát hiện. Tự động dùng signInWithRedirect.');
@@ -69,14 +67,14 @@ export const loginWithGoogle = async () => {
     }
 
     try {
-        // Bảo hiểm timeout 6 giây chống hanging promise nếu popup bị chặn ngầm trên thiết bị
+        // Cho người dùng đủ thời gian (180s = 3 phút) để chọn tài khoản, nhập mật khẩu và hoàn tất xác thực 2 bước (2FA) trên thiết bị mới
         const popupPromise = signInWithPopup(auth, googleProvider);
         const timeoutPromise = new Promise<never>((_, reject) => {
             setTimeout(() => {
-                const err = new Error('Popup đăng nhập không phản hồi sau 6s. Đang chuyển hướng...');
+                const err = new Error('Quá thời gian chờ đăng nhập Google (180s).');
                 (err as any).code = 'auth/popup-timeout';
                 reject(err);
-            }, 6000);
+            }, 180000);
         });
 
         const result = await Promise.race([popupPromise, timeoutPromise]);
@@ -87,10 +85,14 @@ export const loginWithGoogle = async () => {
         return result.user;
     } catch (error: any) {
         console.error("Lỗi đăng nhập Google popup:", error);
+        // Nếu người dùng chủ động tắt cửa sổ popup: ném lỗi ra để component reset spinner, không tự ép redirect
+        if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+            throw error;
+        }
         if (error?.code === 'auth/popup-timeout' || 
             error?.code === 'auth/popup-blocked' || 
             error?.code === 'auth/operation-not-supported-in-this-environment') {
-            console.warn('[Auth] Popup không khả dụng hoặc bị treo. Tự động chuyển hướng đăng nhập...');
+            console.warn('[Auth] Popup không khả dụng hoặc bị chặn. Tự động chuyển hướng đăng nhập...');
             await loginWithGoogleRedirect();
             return;
         }

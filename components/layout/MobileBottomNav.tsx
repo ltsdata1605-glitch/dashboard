@@ -7,10 +7,11 @@ import { Button } from '../shared/ui/Button';
 import { AppIcon, type IconName } from '../shared/ui/icon';
 import { NAV_TAB_ICONS } from './navIcons';
 import { MotionOverlay } from '../shared/ui/Overlay';
+import { formatCleanDisplayName } from '../../utils/dataUtils';
 
 const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
-    const { userRole } = useAuth();
+    const { user, userRole, employeeName, departmentId, isDemoMode, logout } = useAuth();
     const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isPending, startTransition] = useTransition();
 
@@ -93,6 +94,64 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 >
                                     <AppIcon name="close" size="md" />
                                 </Button>
+                            </div>
+
+                            {/* User Profile Card — Hiển thị ngay thông tin người đăng nhập */}
+                            <div className="px-4 pt-3 pb-1 shrink-0">
+                                <div className="p-3 bg-gradient-to-r from-sky-50/90 via-slate-50 to-white dark:from-sky-950/40 dark:via-slate-800/50 dark:to-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs flex items-center justify-between gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleTabClick('settings')}
+                                        className="flex items-center gap-3 min-w-0 flex-1 text-left active:opacity-80 transition-opacity cursor-pointer"
+                                        title="Chạm để mở Phân Quyền & Cài Đặt"
+                                    >
+                                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-sky-400 to-sky-600 p-0.5 shadow-sm shrink-0">
+                                            <div className="w-full h-full rounded-full bg-white dark:bg-slate-900 flex items-center justify-center overflow-hidden">
+                                                {user?.photoURL ? (
+                                                    <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                                ) : (
+                                                    <span className="font-black text-sm text-sky-600 dark:text-sky-400">
+                                                        {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
+                                                    {employeeName || formatCleanDisplayName(user?.displayName, isDemoMode ? "Tài khoản Thử nghiệm" : "Khách")}
+                                                </span>
+                                                {userRole && (
+                                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 ${
+                                                        userRole === 'admin' 
+                                                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' 
+                                                            : userRole === 'manager' 
+                                                            ? 'bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300' 
+                                                            : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                                    }`}>
+                                                        {userRole === 'admin' ? 'Admin' : userRole === 'manager' ? 'Quản lý' : 'Nhân viên'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                                {user?.email || (departmentId ? `Kho: ${departmentId}` : "Chế độ Offline")}
+                                                {departmentId && user?.email ? ` • Kho ${departmentId}` : ''}
+                                            </span>
+                                        </div>
+                                        <AppIcon name="chevronRight" size="sm" className="text-slate-400 shrink-0" />
+                                    </button>
+
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={logout}
+                                        title="Đăng xuất"
+                                        aria-label="Đăng xuất"
+                                        className="w-9 h-9 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 dark:hover:text-rose-400 shrink-0"
+                                    >
+                                        <AppIcon name="logout" size="md" />
+                                    </Button>
+                                </div>
                             </div>
 
                             <div data-testid="mobile-more-scroll" className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
