@@ -12,15 +12,19 @@ async function navigateAndEnsureApp(page: Page, url: string) {
     await page.locator('[data-app-chrome="header"]:visible, [data-app-chrome="topbar"]:visible, iframe:visible').first().waitFor({ state: 'visible', timeout: 30_000 });
 }
 
-test('Thanh menu desktop lúc nào cũng hiển thị sẵn: mở mặc định, chuyển tab không tự đóng, có thể ẩn/hiện bằng nút toggle', async ({ page }) => {
+test('Thanh menu desktop lúc nào cũng hiển thị sẵn: mở mặc định, bấm Logo về trang chủ và luôn show menu, không còn nút toggle <', async ({ page }) => {
     await navigateAndEnsureApp(page, '/?tab=analysis');
 
-    // 1. Kiểm tra header desktop có nút toggle tròn
+    // 1. Kiểm tra header desktop có nút Logo tròn
     const header = page.locator('[data-app-chrome="header"]');
     await expect(header).toBeVisible({ timeout: 10_000 });
 
-    const toggleBtn = header.getByRole('button', { name: /Hiện menu chức năng|Ẩn menu/i });
-    await expect(toggleBtn).toBeVisible();
+    const logoBtn = header.getByRole('button', { name: /Trang chủ Phân tích/i });
+    await expect(logoBtn).toBeVisible();
+
+    // Biểu tượng nút toggle [<] đã được loại bỏ hoàn toàn
+    const oldToggleBtn = header.getByRole('button', { name: /Hiện menu chức năng|Ẩn menu/i });
+    await expect(oldToggleBtn).toHaveCount(0);
 
     // 2. Ban đầu: THANH MENU LUÔN HIỂN THỊ SẴN MẶC ĐỊNH
     const floatingMenu = page.locator('[data-testid="desktop-nav-menu"]');
@@ -40,12 +44,9 @@ test('Thanh menu desktop lúc nào cũng hiển thị sẵn: mở mặc định,
     const titleHighlight = header.locator('span.text-sky-600');
     await expect(titleHighlight).toContainText('Thưởng');
 
-    // 4. Bấm nút toggle [<] -> menu thu gọn ẩn đi khi người dùng muốn
-    await toggleBtn.click();
-    await expect(floatingMenu).toHaveCount(0);
-
-    // 5. Bấm nút toggle [>] -> menu hiển thị trở lại
-    await toggleBtn.click();
+    // 4. Bấm vào Logo -> Về lại trang chủ Phân Tích và show menu bar
+    await logoBtn.click();
+    await expect(page).toHaveURL(/.*tab=analysis.*/);
     await expect(floatingMenu).toBeVisible({ timeout: 5_000 });
 
     // Chụp ảnh lại bằng chứng
