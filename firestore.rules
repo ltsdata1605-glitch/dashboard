@@ -253,6 +253,12 @@ service cloud.firestore {
     match /report_commands/{cmd} {
       allow read, write: if false;
     }
+
+    // Chuyển phiên đăng nhập Google vào app Màn hình chính iPhone (functions/src/pwaHandoff.ts):
+    // chứa Google idToken/accessToken sống ≤5 phút — chỉ Cloud Functions đọc/ghi.
+    match /pwaHandoff/{code} {
+      allow read, write: if false;
+    }
   }
 }
 

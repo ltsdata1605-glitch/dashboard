@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, signOut, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithCredential } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getFunctions } from 'firebase/functions';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const firebaseConfig = {
     apiKey: "AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4",
@@ -143,6 +143,69 @@ export const checkRedirectLoginResult = async () => {
         console.error("Lỗi getRedirectResult:", error);
         return null;
     }
+};
+
+// ─── Đăng nhập cho app ở MÀN HÌNH CHÍNH iPhone (2026-10-12) ─────────────────────────────────────
+// iOS mở trang Google trong khung trình duyệt RIÊNG (bộ nhớ tách khỏi app) nên signInWithRedirect quay
+// về app tay không. Thay vào đó: app mở https://auth.dashboard.pro.vn/pwa-login.html (đăng nhập xong ở
+// đó), rồi nhận phiên về qua Cloud Function pwaHandoffClaim. Chi tiết: functions/src/pwaHandoff.ts.
+
+export const isIOSStandalonePwa = (): boolean => isIOSDevice() && isStandaloneMode();
+
+const PWA_HANDOFF_KEY = 'ycxPwaHandoff';
+const PWA_HANDOFF_MAX_AGE_MS = 6 * 60 * 1000;
+const PWA_LOGIN_URL = 'https://auth.dashboard.pro.vn/pwa-login.html';
+
+const toBase64Url = (bytes: Uint8Array): string =>
+    btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+export interface PreparedPwaHandoff { verifier: string; url: string; }
+
+/** Sinh sẵn mã (băm SHA-256 là bất đồng bộ) để lúc bấm nút mở cửa sổ được NGAY trong cử chỉ chạm. */
+export const preparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
+    const verifier = toBase64Url(crypto.getRandomValues(new Uint8Array(32)));
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    return { verifier, url: `${PWA_LOGIN_URL}#c=${toBase64Url(new Uint8Array(digest))}` };
+};
+
+/** Gọi ĐỒNG BỘ trong onClick. */
+export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff): void => {
+    try {
+        localStorage.setItem(PWA_HANDOFF_KEY, JSON.stringify({ v: prepared.verifier, at: Date.now() }));
+    } catch { /* bộ nhớ bị chặn: vẫn mở được, chỉ là không tự nhận phiên sau khi app bị tải lại */ }
+    const win = window.open(prepared.url, '_blank');
+    if (!win) window.location.assign(prepared.url);
+};
+
+const readPendingHandoff = (): string | null => {
+    try {
+        const raw = localStorage.getItem(PWA_HANDOFF_KEY);
+        if (!raw) return null;
+        const { v, at } = JSON.parse(raw) as { v?: string; at?: number };
+        if (typeof v === 'string' && typeof at === 'number' && Date.now() - at < PWA_HANDOFF_MAX_AGE_MS) return v;
+        localStorage.removeItem(PWA_HANDOFF_KEY);
+    } catch { /* bỏ qua */ }
+    return null;
+};
+
+export const hasPendingPwaHandoff = (): boolean => readPendingHandoff() !== null;
+
+export const clearPendingPwaHandoff = (): void => {
+    try { localStorage.removeItem(PWA_HANDOFF_KEY); } catch { /* bỏ qua */ }
+};
+
+/** Hỏi máy chủ xem trang đăng nhập đã gửi phiên về chưa; có thì đăng nhập luôn. Trả về true khi đã vào. */
+export const claimPwaHandoff = async (): Promise<boolean> => {
+    const verifier = readPendingHandoff();
+    if (!verifier) return false;
+    const res = await httpsCallable<{ verifier: string }, { ready: boolean; idToken?: string; accessToken?: string | null }>(
+        functions, 'pwaHandoffClaim')({ verifier });
+    const { ready, idToken, accessToken } = res.data;
+    if (!ready || !idToken) return false;
+    clearPendingPwaHandoff();
+    await signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken ?? undefined));
+    if (accessToken) sessionStorage.setItem('googleOAuthToken', accessToken);
+    return true;
 };
 
 export const loginWithGoogleForceConsent = async () => {
