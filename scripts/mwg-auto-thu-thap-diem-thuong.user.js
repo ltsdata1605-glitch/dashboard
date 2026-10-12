@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.25
+// @version      7.26
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,12 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.26 — KHẮC PHỤC TRIỆT ĐỂ LỖI YCX REALTIME NHẬN NHẦM TỆP LUỸ KẾ VỪA XUẤT TRƯỚC ĐÓ (2026-10-12):
+ * - Sửa lỗi ycxWaitFile nhận nhầm tệp vừa xuất trước đó trong Lịch sử xuất excel (do mốc cho phép 120s quá rộng):
+ *   + Siết chặt điều kiện thời gian: chỉ chấp nhận dòng bắt đầu sau thời điểm bấm xuất (sai số tối đa 10s).
+ *   + Chặn tuyệt đối nhận lại dòng đã hoàn tất (LINKDOWNLOAD và !ISLOADING) mà thời gian tạo trước khi click xuất.
+ *   + Thêm LINKDOWNLOAD vào ycxRowKey để loại trừ chính xác 100% mọi tệp cũ đã có trong lịch sử.
+ *
  * BẢN 7.25 — KHẮC PHỤC TRIỆT ĐỂ LỖI ĐỢI TẢI XONG MỚI COPY TRONG CHI TIẾT NGÀNH HÀNG (2026-10-11):
  * - Tự động chờ bảng ngành hàng tải hoàn tất (acpWaitForTableReady): kiểm tra spinner, hàng dữ liệu thực tế và các nút [+] trước khi mở rộng.
  * - Chờ toàn bộ các dòng con trải xong (expand complete): Sau khi click mở rộng, đợi spinner con tắt hẳn và chờ DOM ổn định để các nhóm hàng con xuất hiện đầy đủ trong DOM.
@@ -553,7 +559,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.25';
+  const SCRIPT_VERSION_FALLBACK = '7.26';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -4290,7 +4296,7 @@
     throw new Error(`Lịch sử xuất excel — ${loi.join('; ')}`);
   }
 
-  function ycxRowKey(r) { return String(r.UNIQUEQUERYID || `${r.DYNAMICREPORTNAME}|${r.STARTTIME}`); }
+  function ycxRowKey(r) { return String(r.UNIQUEQUERYID || r.LINKDOWNLOAD || `${r.DYNAMICREPORTNAME}|${r.STARTTIME}`); }
 
   /** STARTTIME: "/Date(1759300000000)/", ISO, hoặc "dd/MM/yyyy HH:mm:ss" → ms (0 nếu không đọc được). */
   function ycxParseTime(v) {
@@ -4520,9 +4526,19 @@
         onWait(`Đọc Lịch sử xuất excel lỗi (${e.message}) — thử lại…`);
         continue;
       }
-      const moi = rows.filter((r) => !before.has(ycxRowKey(r))
-        // Chụp mốc trước khi xuất hỏng (không đọc được lịch sử) → nhận dòng bắt đầu sau lúc bấm (lệch giờ tối đa 2 phút)
-        || (before.size === 0 && ycxParseTime(r.STARTTIME) >= startedAt - 120000));
+      const moi = rows.filter((r) => {
+        // Nếu đã có trong danh sách trước khi bấm xuất -> chắc chắn là file cũ của lượt trước
+        if (before.has(ycxRowKey(r))) return false;
+        // Nếu trước đó chưa chụp được danh sách cũ (before.size === 0):
+        const rTime = ycxParseTime(r.STARTTIME);
+        if (before.size === 0) {
+          // Chỉ nhận dòng bắt đầu sau thời điểm bấm xuất (sai số tối đa 10s cho lệch đồng hồ)
+          if (rTime > 0 && rTime < startedAt - 10000) return false;
+          // Tuyệt đối không nhận một dòng đã có sẵn LINKDOWNLOAD và !ISLOADING mà bắt đầu trước startedAt
+          if (rTime <= startedAt && r.LINKDOWNLOAD && !r.ISLOADING) return false;
+        }
+        return true;
+      });
       const dung = moi.filter((r) => /yeu cau xuat/.test(ycxNorm(r.DYNAMICREPORTNAME)));
       const ung = (dung.length ? dung : moi).sort((a, b) => ycxParseTime(b.STARTTIME) - ycxParseTime(a.STARTTIME))[0];
       const giay = Math.round((Date.now() - t0) / 1000);
