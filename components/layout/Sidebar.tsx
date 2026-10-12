@@ -75,7 +75,7 @@ const NavItem = React.memo(({
 
                 <AppIcon 
                     name={item.icon} 
-                    size="md" 
+                    size="xl" 
                     className={`transition-transform duration-200 ${isActive ? 'scale-105 text-sky-600 dark:text-sky-400' : 'group-hover:scale-110'}`} 
                 />
 
