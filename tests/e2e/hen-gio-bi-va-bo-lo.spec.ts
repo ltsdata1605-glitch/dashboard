@@ -57,7 +57,12 @@ test('tab bị ngủ 14:59 → 15:30 (qua giờ hẹn): báo "Bỏ lỡ khung 15
     await page.clock.pauseAt(new Date('2026-10-15T14:59:30'));
     await page.clock.setSystemTime(new Date('2026-10-15T15:30:00')); // ngủ: thời gian trôi, không timer nào chạy
     await page.clock.resume();
-    await expect(page.getByText(/Bỏ lỡ khung 15:00/)).toBeVisible({ timeout: 60_000 });
+    // Nhịp kiểm kế tiếp mới phát hiện "bỏ lỡ" — chờ nhật ký ghi nhận (bản trước chờ toast tới 60 s; toast đã bỏ theo yêu cầu
+    // 2026-10-11 nên câu `toHaveCount(0)` qua ngay khi nhịp kiểm CHƯA chạy, rồi bước mở nhật ký bên dưới đỏ vì chưa có gì).
+    await expect.poll(() => page.evaluate(() => (JSON.parse(localStorage.getItem('ycx-sched-log') || '[]') as { key: string; time: string; status: string }[])
+        .some(x => x.key === 'bi-realtime' && x.time === '15:00' && x.status === 'missed')), { timeout: 60_000 }).toBe(true);
+    // Bỏ toast lỗi tràn màn hình: không xuất hiện toast "Bỏ lỡ khung 15:00"
+    await expect(page.getByText(/Bỏ lỡ khung 15:00/)).toHaveCount(0);
     expect(await tabs(page)).toEqual([]);
     await page.getByTestId('sched-bi-realtime').click();
     await expect(page.getByTestId('sched-log-bi-realtime')).toContainText('Bỏ lỡ');

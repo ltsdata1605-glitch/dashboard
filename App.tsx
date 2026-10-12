@@ -85,11 +85,8 @@ function taiTruocTabChinh(): void {
     if (daTaiTruocTabChinh || !mangChoPhepTaiTruoc()) return;
     daTaiTruocTabChinh = true;
     for (const tai of Object.values(TAI_TRUOC_TAB)) void tai().catch(() => { /* lúc mở tab sẽ tải lại */ });
-    // Check thưởng chạy trong iframe: tải trước trang HTML (trình duyệt giữ trong bộ nhớ đệm cho lần mở iframe).
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = '/check-thuong.html';
-    document.head.appendChild(link);
+    // (2026-10-12) Bỏ prefetch /check-thuong.html: Check thưởng nay là component React (không còn iframe) — chunk của nó
+    // đã nằm trong TAI_TRUOC_TAB, tải trang HTML cũ chỉ phí ~100 KB.
 }
 
 /** Vòng quay chờ toàn màn — lúc Firebase đang xác nhận phiên và lúc tải màn đăng nhập/chờ duyệt. */
@@ -143,7 +140,7 @@ const TabContent = React.memo(() => {
         { id: 'settings', className: 'w-full', component: <SettingsView /> },
         { id: 'pending-approval', className: 'w-full', component: <PendingApprovalView /> },
         { id: 'help', className: 'w-full', component: <AboutView /> },
-        { id: 'check-thuong', component: <CheckThuongView /> },
+        { id: 'check-thuong', className: 'w-full', component: <CheckThuongView /> },
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
@@ -211,7 +208,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
 };
 
 function AppContent() {
-    const { isDarkMode, toggleDarkMode } = useLayout();
+    const { isDarkMode, toggleDarkMode, isDesktopMenuOpen, setIsDesktopMenuOpen, toggleDesktopMenu } = useLayout();
     const { activeTab, setActiveTab } = useActiveTab();
     const { user, userRole, isDemoMode, isLoading, departmentId, status, hasCachedSession } = useAuth();
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
@@ -229,7 +226,7 @@ function AppContent() {
 
     React.useEffect(() => {
         // Tải trước chunk của tab ĐANG MỞ (đổi tab rồi quay lại thấy tức thì), rồi khi máy rảnh tiếp thì tải trước 2 tab
-        // chính còn lại của thanh dưới + trang Check thưởng (GĐ2 tăng tốc — chuyển tab ≤ 0,3 s). Lịch sử: audit "PERF FIX"
+        // chính còn lại của thanh dưới (GĐ2 tăng tốc — chuyển tab ≤ 0,3 s). Lịch sử: audit "PERF FIX"
         // từng bỏ prefetch cứng 3 tab nặng vì tốn băng thông cho người chỉ dùng Phân ca/In tem → nay chỉ tải 3 tab CHÍNH,
         // một lần mỗi phiên, sau khi tab hiện tại đã vẽ xong + rảnh, và bỏ hẳn khi bật Tiết kiệm dữ liệu / mạng 2G.
         let idleHandle: number | undefined;
@@ -297,7 +294,7 @@ function AppContent() {
     }
 
     return (
-        <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
+        <div className="flex min-h-dvh bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
             <Sidebar />
             {!isFullscreenMobileTool && <MobileBottomNav />}
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
@@ -319,7 +316,7 @@ function AppContent() {
                                         leading-tight chứ KHÔNG leading-none: truncate = overflow:hidden, khung cao đúng 14px
                                         sẽ xén dấu tiếng Việt (Phân, Báo cáo, Tích… cao 17px) — đo được ở iPhone SE. */}
                                     <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-tight truncate max-w-full">{titleData.main} {titleData.highlight}</span>
-                                    <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
+                                    <span id="mobile-topbar-subtitle" className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5 truncate max-w-full"></span>
                                 </div>
                             </>
                         );
@@ -353,11 +350,30 @@ function AppContent() {
                     {/* Global Page Header */}
                     <div data-app-chrome="header" className="hidden lg:block lg:sticky lg:top-0 z-[150] bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-3 pb-1 lg:pb-1 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-between gap-4 w-full flex-nowrap">
-                            <div className="hidden lg:flex items-center gap-4 shrink-0">
-                                <div className="h-10 w-1.5 bg-sky-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
-                                <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
-                                    {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
-                                </h1>
+                            <div className="hidden lg:flex items-center shrink-0">
+                                {/* Logo tròn - Bấm về trang chủ & thu gọn/mở rộng menu bar */}
+                                <div className="w-[56px] flex items-center justify-center shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setActiveTab('analysis');
+                                            setIsDesktopMenuOpen(prev => !prev);
+                                        }}
+                                        className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 flex items-center justify-center shadow-md shadow-sky-300/30 hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                                        title={isDesktopMenuOpen ? "Bấm vào để thu gọn menu" : "Bấm vào để mở rộng menu"}
+                                        aria-label="Trang chủ & Menu"
+                                    >
+                                        <AppIcon name="chartBar" size="lg" className="text-white" />
+                                    </button>
+                                </div>
+
+                                <div className="h-8 w-1 bg-sky-600 rounded-full shadow-[0_0_12px_rgba(2,132,199,0.4)] ml-1 mr-3" />
+                                <div className="flex flex-col">
+                                    <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                                        {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
+                                    </h1>
+                                    <div id="desktop-header-subtitle" className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 flex items-center"></div>
+                                </div>
                             </div>
                             <div id="global-header-actions" className="flex items-center z-50 overflow-visible shrink-0 justify-end pb-1 lg:pb-0"></div>
                         </div>

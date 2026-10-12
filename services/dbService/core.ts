@@ -134,10 +134,13 @@ async function saveSettingInternal(key: string, value: unknown, source: string |
                 const store = tx.objectStore(SETTINGS_STORE);
                 const dongDau = () => {
                     if (key !== 'localSettingsLastModified' && !key.startsWith('lastModified_')) {
-                        const now = Date.now();
+                        let mtime = Date.now();
+                        if (value && typeof value === 'object' && typeof (value as any).lastModified === 'number' && (value as any).lastModified > 0) {
+                            mtime = (value as any).lastModified;
+                        }
                         // Chỉ khoá đồng bộ nhẹ mới đóng mốc chung (utils/localDbScope.ts → isLightSyncKey); mốc riêng từng khoá giữ nguyên.
-                        if (isLightSyncKey(key)) store.put(now, 'localSettingsLastModified');
-                        store.put(now, `lastModified_${key}`);
+                        if (isLightSyncKey(key)) store.put(mtime, 'localSettingsLastModified');
+                        store.put(mtime, `lastModified_${key}`);
                     }
                 };
                 // Khoá đồng bộ nhẹ lưu LẠI đúng giá trị đang có (component ghi lại state vừa nạp lúc mở app —

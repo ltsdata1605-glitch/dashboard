@@ -170,9 +170,8 @@ jobs:
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/smoke.spec.ts --output=test-results/smoke
 
-      - name: 'E2E: pivot-table'
-        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
-        run: npx playwright test tests/e2e/pivot-table.spec.ts --output=test-results/pivot-table
+      # (2026-10-12) Bỏ bước pivot-table: chủ dự án gỡ hẳn bảng phân tích động (PivotTable) cùng spec ở d1b4294 — bước
+      # còn trỏ vào file đã xoá nên Playwright báo "No tests found" và làm đỏ cả job e2e.
 
       - name: 'E2E: phan-tich-performance-modal'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}

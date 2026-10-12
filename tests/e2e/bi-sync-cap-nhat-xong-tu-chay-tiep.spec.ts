@@ -34,7 +34,7 @@ test('cập nhật userscript xong quay lại tab → TỰ CHẠY TIẾP (không
         });
     });
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
 
     // 1) Bản cũ → tự mở trang cập nhật, modal báo cần cập nhật
     // Bắt YÊU CẦU ĐIỀU HƯỚNG tới file userscript, không đọc URL của tab mới: Chrome coi đường dẫn `.user.js` là lượt
@@ -80,7 +80,7 @@ test('chưa cập nhật mà quay lại tab: vẫn báo cần cập nhật, KHÔ
         });
     });
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     const tab = page.context().waitForEvent('page');
     await page.getByRole('button', { name: /Tự động Realtime/i }).click();
     await tab;

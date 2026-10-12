@@ -11,6 +11,7 @@ import {
     groupByDepartment,
     computeTimeProgress,
 } from '../../services/competitionGroupCalc';
+import { resolveEmployeeTarget } from '../../services/competitionSummaryCalc';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
@@ -129,6 +130,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
     }, [sortedEmployeesForCard]);
 
     const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+    const formatTargetDisplay = (val: number, _metric?: string) => {
+        if (val <= 0) return '-';
+        return formatter.format(roundUp(val));
+    };
     
     const employeesByDept = useMemo(
         () => groupByDepartment(sortedEmployeesForCard, viewMode),
@@ -160,7 +165,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
     let globalRowIndex = 0;
 
     const renderEmployeeRow = (employee: Employee, _index: number) => {
-        const target = employeeCompetitionTargets.get(header.originalTitle)?.get(employee.originalName) ?? 0;
+        const rawTarget = resolveEmployeeTarget(employeeCompetitionTargets, header.originalTitle, employee.originalName);
+        const target = roundUp(rawTarget);
         const actual = employeeDataMap.get(employee.name)?.values[header.title] ?? 0;
         const completion = target > 0 ? (actual / target) * 100 : 0;
         const remaining = actual - target;
@@ -239,7 +245,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                         <span className="truncate font-bold">{employee.name}</span>
                     </div>
                 </td>
-                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>{formatter.format(roundUp(target))}</td>
+                <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${isHighlighted ? 'text-slate-900 dark:text-white' : 'text-slate-800 dark:text-slate-200'}`}>{formatTargetDisplay(target, header.metric)}</td>
                 <td className={`w-[1%] px-2 py-0.5 sm:py-1 text-center text-[11px] font-bold whitespace-nowrap tabular-nums border-r border-slate-100 dark:border-slate-700/50 ${actualClass}`} style={actualInlineStyle}>
                     {(!actual || actual === 0) ? '-' : formatter.format(roundUp(actual))}
                 </td>
@@ -256,10 +262,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
             ref={cardRef} 
             className="competition-group-card cv-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm hover:shadow-md transition-shadow flex flex-col h-full overflow-hidden"
         >
-            {/* Title bar — solid blue background with compact padding */}
-            <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-1.5 sm:py-2 border-b border-sky-500/40 dark:border-sky-600/60">
-                <div className="flex justify-center items-center relative">
-                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center whitespace-normal px-8 leading-snug tracking-wider drop-shadow-xs" title={header.originalTitle}>
+            {/* Title bar — solid blue background with generous padding for clear separation */}
+            <div className="bg-sky-600 dark:bg-sky-700 text-white px-4 py-2.5 sm:py-3 border-b-2 border-sky-500/50 dark:border-sky-600/60 overflow-hidden">
+                <div className="flex justify-center items-center relative min-w-0 w-full">
+                    <h4 className="text-[13px] sm:text-[14px] font-black uppercase text-white text-center truncate whitespace-nowrap px-8 leading-snug tracking-wider drop-shadow-xs min-w-0 w-full" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -267,7 +273,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                             type="button"
                             variant="unstyled" size="none"
                             onClick={handleExportPNG}
-                            className="export-button-component p-1 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                            className="export-button-component p-1.5 rounded text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <AppIcon name="exportImage" size="md" />
@@ -280,19 +286,19 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                 <table className="table-pin-first w-full border-collapse">
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider bg-sky-600 dark:bg-sky-700 text-white">
-                            <th className="text-left px-3 py-1.5 sm:py-2 border-b border-r border-sky-500/40 text-white min-w-[170px]">
+                            <th className="text-left px-3 py-2 sm:py-2.5 border-b border-r border-sky-500/40 text-white min-w-[170px]">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('name')} className="font-black uppercase tracking-wider flex items-center justify-start w-full group text-white hover:text-sky-100 py-0.5">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('target')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('actual')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('completion')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">%HT{getSortIcon('completion')}</Button>
                             </th>
-                            <th className="w-[1%] text-center px-3 py-1.5 sm:py-2 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
+                            <th className="w-[1%] text-center px-3 py-2 sm:py-2.5 whitespace-nowrap border-b border-r border-sky-500/40 text-white">
                                 <Button variant="unstyled" size="none" onClick={() => handleCardSort('remaining')} className="font-black uppercase tracking-wider flex items-center justify-center w-full group text-white hover:text-sky-100 py-0.5">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>
@@ -306,7 +312,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = React.m
                                 let totalTarget = 0;
                                 let totalActual = 0;
                                 employeesInDept.forEach(emp => {
-                                    totalTarget += employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                                    totalTarget += roundUp(resolveEmployeeTarget(employeeCompetitionTargets, header.originalTitle, emp.originalName));
                                     totalActual += employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
                                 });
                                 const totalRemaining = totalActual - totalTarget;

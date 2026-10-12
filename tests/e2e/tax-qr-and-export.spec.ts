@@ -249,12 +249,10 @@ test('menu không còn mục "Kiểm quỹ"', async ({ page }) => {
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     await expect(page.getByRole('button', { name: /Xuất ảnh/i })).toBeVisible({ timeout: 30_000 });
 
-    // Sidebar thu gọn: rê chuột vào để nó bung ra rồi mở nhóm "Công cụ"
-    const sidebar = page.locator('aside').first();
-    await sidebar.hover();
-    const toolsBtn = page.getByText('Công cụ', { exact: true }).first();
+    // Dock điều hướng (chủ dự án 2026-10-12): "Công cụ" là nút icon, rê chuột vào thì bung danh sách công cụ con bên phải.
+    const toolsBtn = page.locator('aside').first().getByRole('button', { name: 'Công cụ', exact: true });
     await expect(toolsBtn).toBeVisible({ timeout: 10_000 });
-    await toolsBtn.click();
+    await toolsBtn.hover();
 
     await expect(page.getByText('In Sticker').first()).toBeVisible();
     await expect(page.getByText('Tính thuế').first()).toBeVisible();

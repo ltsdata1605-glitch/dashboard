@@ -13,6 +13,9 @@ interface LayoutContextType {
     setIsSidebarCollapsed: (collapsed: boolean) => void;
     isMobileSidebarOpen: boolean;
     setIsMobileSidebarOpen: (open: boolean) => void;
+    isDesktopMenuOpen: boolean;
+    setIsDesktopMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    toggleDesktopMenu: () => void;
     isDarkMode: boolean;
     toggleDarkMode: () => void;
     activeTab: string;
@@ -26,6 +29,11 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [activeTab, setActiveTabRaw] = useState('analysis');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(() => {
+        if (typeof window === 'undefined') return true;
+        const saved = localStorage.getItem('ycx_desktop_menu_open');
+        return saved !== null ? saved === 'true' : true;
+    });
     // Dark Mode đã bị vô hiệu hoá toàn dự án theo yêu cầu — luôn Sáng, không thể bật.
     const [isDarkMode] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -110,6 +118,18 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Giữ lại cho tương thích API (nhiều nơi vẫn nhận toggleDarkMode qua context) nhưng không làm gì.
     const toggleDarkMode = () => { /* Dark Mode đã tắt toàn dự án — no-op */ };
 
+    const toggleDesktopMenu = useCallback(() => {
+        setIsDesktopMenuOpen(prev => {
+            const next = !prev;
+            try {
+                localStorage.setItem('ycx_desktop_menu_open', String(next));
+            } catch {
+                // Ignore storage errors
+            }
+            return next;
+        });
+    }, []);
+
     // Memoize tab context to prevent re-renders of tab consumers when layout state changes
     const tabContextValue = useMemo(() => ({
         activeTab,
@@ -122,11 +142,14 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         setIsSidebarCollapsed, 
         isMobileSidebarOpen,
         setIsMobileSidebarOpen,
+        isDesktopMenuOpen,
+        setIsDesktopMenuOpen,
+        toggleDesktopMenu,
         isDarkMode, 
         toggleDarkMode,
         activeTab,
         setActiveTab
-    }), [isSidebarCollapsed, isMobileSidebarOpen, isDarkMode, activeTab, setActiveTab]);
+    }), [isSidebarCollapsed, isMobileSidebarOpen, isDesktopMenuOpen, toggleDesktopMenu, isDarkMode, activeTab, setActiveTab]);
 
     return (
         <TabContext.Provider value={tabContextValue}>
@@ -137,10 +160,40 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     );
 };
 
+const defaultTabContext: TabContextType = {
+    activeTab: typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('tab') || 'analysis') : 'analysis',
+    setActiveTab: (tab: string) => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app-switch-tab', { detail: { tab } }));
+        }
+    }
+};
+
+const defaultLayoutContext: LayoutContextType = {
+    isSidebarCollapsed: true,
+    setIsSidebarCollapsed: () => {},
+    isMobileSidebarOpen: false,
+    setIsMobileSidebarOpen: () => {},
+    isDesktopMenuOpen: false,
+    setIsDesktopMenuOpen: () => {},
+    toggleDesktopMenu: () => {},
+    isDarkMode: false,
+    toggleDarkMode: () => {},
+    activeTab: typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('tab') || 'analysis') : 'analysis',
+    setActiveTab: (tab: string) => {
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('app-switch-tab', { detail: { tab } }));
+        }
+    },
+};
+
 export const useLayout = () => {
     const context = useContext(LayoutContext);
     if (context === undefined) {
-        throw new Error('useLayout must be used within a LayoutProvider');
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('[LayoutContext] useLayout được gọi ngoài LayoutProvider, sử dụng giá trị fallback an toàn.');
+        }
+        return defaultLayoutContext;
     }
     return context;
 };
@@ -153,7 +206,10 @@ export const useLayout = () => {
 export const useActiveTab = () => {
     const context = useContext(TabContext);
     if (context === undefined) {
-        throw new Error('useActiveTab must be used within a LayoutProvider');
+        if (process.env.NODE_ENV === 'development') {
+            console.warn('[LayoutContext] useActiveTab được gọi ngoài LayoutProvider, sử dụng giá trị fallback an toàn.');
+        }
+        return defaultTabContext;
     }
     return context;
 };

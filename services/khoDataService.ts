@@ -24,14 +24,14 @@ import type { User } from 'firebase/auth';
 import type { DataRow } from '../types';
 import { cleanRow, chunkData, BATCH_GROUP_SIZE } from './cloudDataService';
 import * as dbService from './dbService';
-import { getRowValue, parseKhoList } from '../utils/dataUtils';
+import { getRowValue, parseKhoList, parseExcelDate } from '../utils/dataUtils';
 import { COL } from '../constants';
 import { mapWithLimit } from './mapWithLimit';
 import { cleanYcxFileName } from './ycxAutoSyncService';
 
-/** Số file / chunk tải song song tối đa (audit GĐ3 — trước đây không giới hạn). Tối đa 3 × 4 = 12 request. */
-const FILE_CONCURRENCY = 3;
-const CHUNK_CONCURRENCY = 4;
+/** Tối ưu tải chunk song song trên mobile/desktop qua HTTP/2 (tối đa 4 file x 8 chunks) */
+const FILE_CONCURRENCY = 4;
+const CHUNK_CONCURRENCY = 8;
 
 export interface KhoSalesFileMeta {
     fileId: string;
@@ -57,51 +57,110 @@ export interface KhoSalesFileMeta {
     rev?: string;
 }
 
-/** Tháng của 1 dòng (YYYY-MM) — đọc được cả Date (lúc tải lên) lẫn chuỗi ISO (lúc tải xuống). */
+/** Tháng của 1 dòng (YYYY-MM) — chuẩn hoá từ parsedDate hoặc cột Ngày Tạo (dd/MM/yyyy). */
 export function rowMonthKey(row: DataRow): string {
+    let d: Date | null = null;
     const raw = row.parsedDate as unknown;
-    const d = raw instanceof Date ? raw : (typeof raw === 'string' || typeof raw === 'number') ? new Date(raw) : null;
+    if (raw instanceof Date && !isNaN(raw.getTime())) {
+        d = raw;
+    } else if (raw) {
+        d = parseExcelDate(raw);
+    }
+    if (!d || isNaN(d.getTime())) {
+        const rawDate = getRowValue(row, COL.DATE_CREATED);
+        if (rawDate) {
+            d = parseExcelDate(rawDate);
+        }
+    }
     if (!d || isNaN(d.getTime())) return 'nodate';
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/** Khóa định danh 1 dòng giao dịch (Mã đơn hàng + Mã sản phẩm) để deduplicate chính xác. */
+function getRowUniqueKey(row: DataRow): string {
+    const id = String(getRowValue(row, COL.ID) || '').trim();
+    const sp = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
+    if (id && sp) return `${id}__${sp}`;
+    if (id) return id;
+    if (row.__hash) return String(row.__hash);
+    return '';
+}
+
 /**
- * Audit 2026-10-07 (D02): MỖI lượt đồng bộ lên Kho là BẢN CHỤP ĐẦY ĐỦ dữ liệu đã gộp của người tải
- * (getMergedSalesData) — trước đây file Lũy kế dùng ID mới mỗi lần nên các bản chụp nằm chồng lên nhau
- * và bị CỘNG DỒN khi đọc (cùng dữ liệu tải 2 lần → doanh thu x2).
+ * Audit 2026-10-07 (D02) & 2026-10-11: MỖI lượt đồng bộ lên Kho là BẢN CHỤP ĐẦY ĐỦ dữ liệu đã gộp của người tải.
  *
- * Quy tắc đọc: với MỖI THÁNG, chỉ lấy các dòng từ NGUỒN MỚI NHẤT (uploadedAt) có dữ liệu tháng đó.
- * Không xoá gì trên cloud — dữ liệu đã trùng từ trước tự hết trùng khi đọc.
+ * Quy tắc đọc:
+ * 1. Với MỖI THÁNG, chỉ lấy các dòng từ NGUỒN MỚI NHẤT (uploadedAt) có dữ liệu tháng đó.
+ * 2. Deduplicate đơn hàng giữa các nguồn: nguồn mới nhất giữ nguyên toàn bộ; nguồn cũ hơn nếu có
+ *    đơn hàng trùng mã đơn (hoặc tháng đã có ở nguồn mới hơn) sẽ bị loại bỏ để KHÔNG cộng dồn x2.
  */
 export function selectLatestRowsByMonth(sources: { uploadedAt: number; rows: DataRow[] }[]): DataRow[] {
-    const covered = new Set<string>();
+    const coveredMonths = new Set<string>();
+    const seenOrderKeysFromNewerSources = new Set<string>();
     const out: DataRow[] = [];
-    for (const src of [...sources].sort((a, b) => b.uploadedAt - a.uploadedAt)) {
-        const monthsHere = new Set<string>();
+
+    const sortedSources = [...sources].sort((a, b) => b.uploadedAt - a.uploadedAt);
+
+    for (let sIdx = 0; sIdx < sortedSources.length; sIdx++) {
+        const src = sortedSources[sIdx];
+        const isNewestSource = sIdx === 0;
+        const monthsInThisSrc = new Set<string>();
+
         for (const row of src.rows) {
             const m = rowMonthKey(row);
-            if (covered.has(m)) continue;
-            monthsHere.add(m);
+
+            // Nếu tháng này đã có ở nguồn mới hơn, bỏ qua dòng này
+            if (m !== 'nodate' && coveredMonths.has(m)) continue;
+
+            // Nếu là nguồn cũ hơn và không xác định được tháng trong khi nguồn mới đã có dữ liệu: bỏ qua
+            if (!isNewestSource && m === 'nodate' && coveredMonths.size > 0) continue;
+
+            const orderKey = getRowUniqueKey(row);
+            if (!isNewestSource && orderKey && seenOrderKeysFromNewerSources.has(orderKey)) {
+                // Đơn hàng này đã tồn tại ở nguồn mới hơn -> bỏ qua bản cũ
+                continue;
+            }
+
+            if (m !== 'nodate') {
+                monthsInThisSrc.add(m);
+            }
             out.push(row);
         }
-        monthsHere.forEach(m => covered.add(m));
+
+        // Ghi nhận các orderKey của nguồn này để chặn các nguồn cũ hơn phía sau
+        for (const row of src.rows) {
+            const orderKey = getRowUniqueKey(row);
+            if (orderKey) seenOrderKeysFromNewerSources.add(orderKey);
+        }
+        monthsInThisSrc.forEach(m => coveredMonths.add(m));
     }
     return out;
 }
 
 /**
- * Chọn file cần tải: mọi ô theo tháng + với file cũ (bản chụp gộp, không có `month`) chỉ bản MỚI
- * NHẤT của từng người tải — các bản cũ hơn của cùng người là bản chụp trước đó, đã bị bản mới bao trùm.
+ * Chọn file cần tải:
+ * - Với các file theo tháng (`f.month`): mỗi tháng chỉ lấy 1 file MỚI NHẤT (uploadedAt cao nhất).
+ * - Với file cũ (bản chụp gộp, không có `month`): chỉ bản MỚI NHẤT của từng người tải.
  */
 export function pickKhoFilesToLoad(files: KhoSalesFileMeta[]): KhoSalesFileMeta[] {
-    const monthSlots = files.filter(f => f.month);
+    const newestByMonth = new Map<string, KhoSalesFileMeta>();
     const newestLegacyByUploader = new Map<string, KhoSalesFileMeta>();
+    const uploadersWithMonth = new Set<string>();
+
     for (const f of files) {
-        if (f.month) continue;
-        const cur = newestLegacyByUploader.get(f.uploadedByUid);
-        if (!cur || f.uploadedAt > cur.uploadedAt) newestLegacyByUploader.set(f.uploadedByUid, f);
+        if (f.month && f.month !== 'nodate') {
+            uploadersWithMonth.add(f.uploadedByUid);
+            const cur = newestByMonth.get(f.month);
+            if (!cur || f.uploadedAt > cur.uploadedAt) newestByMonth.set(f.month, f);
+        } else {
+            const cur = newestLegacyByUploader.get(f.uploadedByUid);
+            if (!cur || f.uploadedAt > cur.uploadedAt) newestLegacyByUploader.set(f.uploadedByUid, f);
+        }
     }
-    return [...monthSlots, ...newestLegacyByUploader.values()];
+
+    // Nếu uploader đã có file theo tháng (cấu trúc mới), bỏ qua bản legacy cũ của uploader đó
+    const activeLegacy = [...newestLegacyByUploader.values()].filter(f => !uploadersWithMonth.has(f.uploadedByUid));
+    return [...newestByMonth.values(), ...activeLegacy];
 }
 
 const filesCollectionRef = (maKho: string) => collection(db, 'khoData', maKho, 'salesFiles');
@@ -360,6 +419,15 @@ export async function purgeKhoSalesFiles(maKho: string): Promise<void> {
     }
 }
 
+/** Chuỗi đại diện trạng thái hiện tại của các file active trong Kho — dùng để trả về cho
+ * tầng gọi (useDataManagement.ts) so sánh, quyết định có cần ghi đè `originalData`/chạy lại
+ * worker xử lý hay không. */
+function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
+    return JSON.stringify(
+        files.map(f => ({ id: f.fileId, t: f.fileLastModified, r: f.rev ?? null })).sort((a, b) => a.id.localeCompare(b.id))
+    );
+}
+
 /**
  * Điểm gọi DUY NHẤT cho mọi nơi re-sync dữ liệu lên cloud (tải file mới, xoá file, xoá
  * Realtime, xem báo cáo — đều đi qua đây thay vì tự viết lại logic tách theo Kho ở từng
@@ -395,12 +463,31 @@ export async function syncDataToKhoIfManager(
     }
 
     await Promise.all(
-        Array.from(rowsByKho.entries()).map(([maKho, rows]) =>
-            uploadKhoSalesData(user, maKho, rows, filename, fileLastModified, isRealtime, uploadedByName)
-                .then(() => pruneStaleKhoFiles(maKho))
-                .catch(err => console.error(`[KhoData] Đồng bộ thất bại cho Kho ${maKho}:`, err))
-        )
+        Array.from(rowsByKho.entries()).map(async ([maKho, rows]) => {
+            try {
+                await uploadKhoSalesData(user, maKho, rows, filename, fileLastModified, isRealtime, uploadedByName);
+                await pruneStaleKhoFiles(maKho);
+                // Đánh dấu đã áp dụng snapshot cho Kho này để useDataManagement không tự động ghi đè lại sau upload
+                const files = pickKhoFilesToLoad(await getKhoActiveFilesMeta(maKho));
+                const snapshot = computeFilesSnapshot(files);
+                await dbService.saveSetting(`khoDataAppliedSnapshot::${maKho}`, snapshot).catch(() => {});
+            } catch (err) {
+                console.error(`[KhoData] Đồng bộ thất bại cho Kho ${maKho}:`, err);
+            }
+        })
     );
+
+    // Cập nhật thêm snapshot cho departmentId để useDataManagement không tự động ghi đè lại sau upload
+    try {
+        if (departmentId) {
+            const { snapshot: deptSnapshot } = await fetchAllowedKhoData(departmentId);
+            if (deptSnapshot) {
+                await dbService.saveSetting(`khoDataAppliedSnapshot::${departmentId}`, deptSnapshot).catch(() => {});
+            }
+        }
+    } catch {
+        /* ignore */
+    }
 }
 
 interface KhoFileCacheEntry {
@@ -410,15 +497,6 @@ interface KhoFileCacheEntry {
 }
 
 const khoFileCacheKey = (maKho: string, fileId: string) => `khoDataCache_${maKho}_${fileId}`;
-
-/** Chuỗi đại diện trạng thái hiện tại của các file active trong Kho — dùng để trả về cho
- * tầng gọi (useDataManagement.ts) so sánh, quyết định có cần ghi đè `originalData`/chạy lại
- * worker xử lý hay không. */
-function computeFilesSnapshot(files: KhoSalesFileMeta[]): string {
-    return JSON.stringify(
-        files.map(f => ({ id: f.fileId, t: f.fileLastModified, r: f.rev ?? null })).sort((a, b) => a.id.localeCompare(b.id))
-    );
-}
 
 /**
  * Tải dữ liệu 1 Kho, có cache cục bộ theo TỪNG FILE (IndexedDB, dùng chung cơ chế key-value

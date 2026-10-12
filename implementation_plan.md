@@ -7816,3 +7816,28 @@ ActionMenu iPhone (2 nhóm, hàng 52px, Huỷ) + laptop (vạch ngăn, ↓, Esc 
 nhất, màn ẩn thì gỡ), Modal sheet (đầu iOS, overflow-x hidden, kéo thanh nắm đóng, Lưu) + laptop (cặp nút chân, Esc). Xanh: modal-*
 (39), ui-dung-chung-dot-2, o-nhap-*, nhan-giu, toast (4), chuan-thiet-ke-b. Loạt rộng (33 spec của CI + quét 6 khung, khai-thac,
 tang-toc-gd2, lop-apple-gd3, xuất ảnh, check-thuong, sheet…): 151 xanh, 5 bỏ qua, 0 đỏ.
+
+## Gộp 26 commit mới của chủ dự án vào nhánh GĐ3 (2026-10-12)
+
+`main` có thêm 26 commit (dock nổi + logo bật/tắt menu, thẻ đăng nhập mới, Check thưởng chuyển sang React gốc — bỏ iframe,
+nhiều chỉnh mobile ở Report BI). Gộp vào `claude/giao-dien-apple` trước khi deploy GĐ3:
+
+- **Xung đột 2 file**: `MobileBottomNav.tsx` (giữ `MotionOverlay` cục bộ của GĐ3 + thêm `formatCleanDisplayName` của chủ dự án);
+  `SectionHeader.tsx` (giữ v2 viết thường 17px, nhận `flex-1` của chủ dự án; phụ đề chủ dự án muốn "nhỏ gọn thanh thoát" — để
+  ở bậc `type-footnote` 12px thay vì 13px, không xuống dưới 11px vì quy tắc cỡ chữ tối thiểu).
+- **lint-ratchet**: các commit mới thêm chữ 8–10px (`tinyText` +101 ở 21 file Report BI/Phân tích/Check thưởng/khung app),
+  `offScaleText` +16 (7 file, phần lớn thư mục mới `features/check-thuong/`), `offScaleRadius` +2, màu ngoài bảng ở thẻ đăng nhập
+  (`nonSemanticColor` +2, `indigoAlias` +1) → ghi nhận vào `violations-baseline.json` như mốc mới (thay đổi có chủ đích của chủ dự
+  án; đưa về thang chữ ≥ 11px / bảng màu chuẩn khi làm lại từng màn ở GĐ4–GĐ7 — chỉ được giảm từ đây).
+- **CI `main` đỏ từ trước khi gộp** (đo trên run 38236198327): (1) bước `E2E: pivot-table` trỏ vào spec đã bị xoá cùng tính năng →
+  bỏ bước; (2) phụ đề tiêu đề có nút mới "Cập nhật: <giờ>" (bấm là CHẠY tự động MWG) đứng trước nút "Cập nhật" của Report BI trong
+  DOM → 15 chỗ test tìm `/Cập nhật/i` bấm nhầm, mở modal tự động rồi kẹt (bi-competition, bi-sync-*, hen-gio-*, xss-header…) →
+  tìm đúng tên `'Cập nhật'` (exact); (3) `iframe-tabs-csp` + `check-thuong-top-feature` còn chờ iframe Check thưởng → viết lại theo
+  bản React: kiểm tab không còn iframe/khung bị chặn; nạp dữ liệu bằng ô chọn file (TSV đúng cột) như người dùng thật; tin
+  `postMessage` giả không nạp được dữ liệu (audit S11 vẫn giữ nghĩa); (4) `line-bot-webhook-chu-ky` quá 5 s một lần trên CI (chạy
+  lại cục bộ xanh — theo dõi).
+- **GĐ2 chỉnh theo**: bỏ prefetch `/check-thuong.html` (trang iframe cũ không còn dùng, ~100 KB) — chunk Check thưởng đã nằm trong
+  danh sách tải trước; `tang-toc-gd2` kiểm chunk CheckThuongView + BiWrapper được tải trước và trang cũ KHÔNG bị tải.
+- **Còn lại cho GĐ7 (Check thưởng)**: các spec ngoài CI còn mở `public/check-thuong.html` (check-thuong-luu-du-lieu,
+  check-thuong-iphone-khong-cat, check-thuong-mobile-topbar, check-thuong-xuat-anh-toan-dien, o-nhap-a17 phần Check thưởng) — trang
+  vẫn còn trong `public/` nên chạy được, nhưng không còn là thứ người dùng thấy; chuyển sang bản React ở GĐ7.

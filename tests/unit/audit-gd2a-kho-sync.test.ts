@@ -99,6 +99,27 @@ describe('D02 — đồng bộ Kho không nhân đôi', () => {
         const { data } = await kho.fetchAllowedKhoData('910');
         expect(total(data)).toBe(8); // tháng 8 (7) từ bản cũ + tháng 9 (1) từ bản mới, bỏ 999 của tháng 9 cũ
     });
+
+    it('định dạng ngày Việt Nam dd/MM/yyyy HH:mm:ss nhận diện đúng tháng 10 và không bị cộng dồn thành x2', async () => {
+        const userB = { uid: 'mgrB', email: 'b@x' } as never;
+        // File cũ xuất lúc 11:50 (doanh thu 363)
+        const oldData = [
+            { 'Mã kho tạo': '910', 'Mã Đơn Hàng': 'DH001', 'Tên Sản Phẩm': 'Tivi', 'Ngày tạo': '11/10/2026 11:50:00', 'Doanh thu': 363 } as unknown as DataRow
+        ];
+        // File mới xuất lúc 12:03 (doanh thu 488, chứa đơn hàng DH001 cập nhật và đơn mới DH002)
+        const newData = [
+            { 'Mã kho tạo': '910', 'Mã Đơn Hàng': 'DH001', 'Tên Sản Phẩm': 'Tivi', 'Ngày tạo': '11/10/2026 12:03:00', 'Doanh thu': 400 } as unknown as DataRow,
+            { 'Mã kho tạo': '910', 'Mã Đơn Hàng': 'DH002', 'Tên Sản Phẩm': 'Tủ lạnh', 'Ngày tạo': '11/10/2026 12:03:00', 'Doanh thu': 88 } as unknown as DataRow,
+        ];
+        await kho.uploadKhoSalesData(user, '910', oldData, 'file_1150.xlsx', 1000, false);
+        await new Promise(r => setTimeout(r, 5));
+        await kho.uploadKhoSalesData(userB, '910', newData, 'file_1203.xlsx', 2000, false);
+
+        const { data } = await kho.fetchAllowedKhoData('910');
+        // Doanh thu chỉ được lấy bản mới nhất (400 + 88 = 488), tuyệt đối không được cộng dồn với bản cũ thành 851
+        expect(total(data)).toBe(488);
+        expect(data).toHaveLength(2);
+    });
 });
 
 describe('D03 — dữ liệu chưa đầy đủ', () => {

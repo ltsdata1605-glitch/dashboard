@@ -209,7 +209,7 @@ const GroupCombobox: React.FC<{
                         }
                     }}
                     placeholder={placeholder}
-                    className="h-8 py-1 px-2.5 text-xs font-normal pr-7 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400"
+                    className="h-7 py-0.5 px-2 text-xs font-normal pr-7 bg-white dark:bg-slate-900 rounded border-slate-200 dark:border-slate-700 shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400"
                 />
                 <Button
                     type="button"
@@ -421,28 +421,28 @@ const StatusTile: React.FC<{
 
     const themeColors = {
         emerald: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-emerald-600 rounded-xl',
             text: 'text-emerald-800 dark:text-emerald-200',
             iconActive: 'text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700',
-            ring: 'border-emerald-500 ring-2 ring-emerald-500/20'
+            ring: 'border-emerald-500 ring-2 ring-emerald-500/20 rounded-xl'
         },
         sky: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-sky-600 rounded-xl',
             text: 'text-sky-800 dark:text-sky-200',
             iconActive: 'text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-700',
-            ring: 'border-sky-500 ring-2 ring-sky-500/20'
+            ring: 'border-sky-500 ring-2 ring-sky-500/20 rounded-xl'
         },
         rose: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-rose-600 rounded-xl',
             text: 'text-rose-800 dark:text-rose-200',
             iconActive: 'text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-700',
-            ring: 'border-rose-500 ring-2 ring-rose-500/20'
+            ring: 'border-rose-500 ring-2 ring-rose-500/20 rounded-xl'
         },
         amber: {
-            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600',
+            wrapper: 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 border-l-[3px] border-l-amber-600 rounded-xl',
             text: 'text-amber-800 dark:text-amber-200',
             iconActive: 'text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-700',
-            ring: 'border-amber-500 ring-2 ring-amber-500/20'
+            ring: 'border-amber-500 ring-2 ring-amber-500/20 rounded-xl'
         },
     };
 
@@ -450,24 +450,24 @@ const StatusTile: React.FC<{
     const effectiveLink = linkUrl || downloadUrl;
 
     return (
-        <div className="relative group group/tile w-full">
+        <div className="relative group group/tile w-full h-full">
             <div 
                 onClick={handleTileClick}
                 title="Click để tự động dán dữ liệu từ Clipboard"
                 className={`
-                    cursor-pointer min-h-[56px] transition-colors duration-200 flex items-center px-3 relative overflow-hidden border
+                    cursor-pointer transition-colors duration-200 relative overflow-hidden border rounded-xl shadow-2xs
                     ${isPasting 
-                        ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
+                        ? `p-2.5 bg-white dark:bg-slate-800 flex flex-col ${currentTheme.ring}`
                         : hasData 
-                            ? currentTheme.wrapper
-                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300'}
+                            ? `${currentTheme.wrapper} p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2`
+                            : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-300 rounded-xl p-2 sm:px-3 sm:py-2.5 min-h-[50px] flex items-center justify-between gap-2'}
                 `}
             >
                 {isPasting ? (
-                    <div className="w-full flex items-center gap-2 animate-in fade-in duration-150">
+                    <div className="w-full flex flex-col gap-1.5 animate-in fade-in duration-150">
                         <textarea
                             autoFocus
-                            className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
+                            className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-mono resize-none p-1.5 h-12 leading-tight placeholder-slate-400 outline-none text-slate-800 dark:text-slate-200"
                             placeholder={pasteHint(placeholder)}
                             onPaste={async (e) => {
                                 const text = e.clipboardData.getData('text');
@@ -484,86 +484,85 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="min-h-11 sm:min-h-0 px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="h-6 px-2 self-end hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
-                    <div className="flex items-center justify-between w-full gap-3 pr-[140px] lg:pr-20 lg:group-hover/tile:pr-28 transition-all duration-150">
-                        <div className="flex items-center gap-3 min-w-0">
+                    <>
+                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <div className={`p-1.5 rounded-lg shrink-0 transition-colors duration-200 bg-white dark:bg-slate-800 ${hasData ? currentTheme.iconActive : 'border border-slate-200 dark:border-slate-700 text-slate-400'}`}>
                                 {icon || <AppIcon name="upload" size="md" />}
                             </div>
-                            <div className="min-w-0">
-                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
+                            <div className="min-w-0 flex-1 flex flex-col justify-center">
+                                <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 leading-tight ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                    <span className={`text-xs font-medium uppercase flex items-center gap-1 mt-[1px] opacity-80 ${currentTheme.text}`}>
-                                        <AppIcon name="clock" size="sm" /> {lastUpdated}
-                                    </span>
-                                )) : (
-                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-[1px] block truncate text-left">Click để tự dán</span>
+                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 ${currentTheme.text}`}>
+                                            <AppIcon name="clock" size="xs" /> {lastUpdated}
+                                        </span>
+                                    )
+                                ) : (
+                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5">Click tự dán</span>
                                 )}
                             </div>
                         </div>
-                    </div>
+
+                        <div className="flex items-center justify-end gap-1 shrink-0 ml-2">
+                            {onOpenLinkModal && (
+                                <Button
+                                    type="button"
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onOpenLinkModal();
+                                    }}
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
+                                    title="Chỉnh sửa liên kết"
+                                    aria-label="Chỉnh sửa liên kết"
+                                >
+                                    <AppIcon name="edit" size="md" />
+                                </Button>
+                            )}
+
+                            {(effectiveLink || onOpenLinkModal) && (
+                                <a
+                                    href={effectiveLink || '#'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!effectiveLink) {
+                                            e.preventDefault();
+                                            onOpenLinkModal?.();
+                                        }
+                                    }}
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
+                                    title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
+                                    aria-label="Mở liên kết báo cáo"
+                                >
+                                    <AppIcon name="link" size="md" />
+                                </a>
+                            )}
+
+                            {hasData && (
+                                <Button
+                                    variant="unstyled"
+                                    size="none"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onClear(title);
+                                    }}
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
+                                    title="Xoá"
+                                    aria-label="Xoá dữ liệu"
+                                >
+                                    <AppIcon name="delete" size="md" />
+                                </Button>
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
-
-            {!isPasting && (
-                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex items-center gap-1 z-10">
-                    {onOpenLinkModal && (
-                        <Button
-                            type="button"
-                            variant="unstyled"
-                            size="none"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onOpenLinkModal();
-                            }}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center lg:opacity-0 lg:group-hover/tile:opacity-100 focus:opacity-100 p-1.5 text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all duration-150 border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95"
-                            title="Chỉnh sửa liên kết"
-                            aria-label="Chỉnh sửa liên kết"
-                        >
-                            <AppIcon name="edit" size="sm" />
-                        </Button>
-                    )}
-
-                    {(effectiveLink || onOpenLinkModal) && (
-                        <a
-                            href={effectiveLink || '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (!effectiveLink) {
-                                    e.preventDefault();
-                                    onOpenLinkModal?.();
-                                }
-                            }}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-1.5 text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95"
-                            title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
-                            aria-label="Mở liên kết báo cáo"
-                        >
-                            <AppIcon name="link" size="sm" />
-                        </a>
-                    )}
-
-                    {hasData && (
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onClear(title);
-                            }}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center p-1.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95"
-                            title="Xoá"
-                            aria-label="Xoá dữ liệu"
-                        >
-                            <AppIcon name="delete" size="sm" />
-                        </Button>
-                    )}
-                </div>
-            )}
 
             {error && <p className="mt-1 text-[11px] text-rose-500 dark:text-rose-400 animate-in fade-in duration-200 px-1">{error}</p>}
         </div>
@@ -730,15 +729,15 @@ const CompetitionTarget: React.FC<{
                         id: 'name',
                         header: 'Tiêu chí',
                         headerAlign: 'center',
-                        minWidth: '180px',
+                        minWidth: '150px',
                         cell: (comp, index) => {
                             const currentDisplayName = shortenName(comp.name, nameOverrides);
                             return (
-                                <div className="w-full flex items-center gap-2 py-0.5 px-0.5">
+                                <div className="w-full flex items-center gap-1.5 py-0 px-0.5">
                                     {/* Số thứ tự TO RÕ + Icon Kéo Thả */}
-                                    <div className="flex items-center gap-1.5 shrink-0 select-none" title="Kéo thả để sắp xếp vị trí">
-                                        <AppIcon name="dragHandle" size="sm" className="text-slate-400 hover:text-sky-500 cursor-grab active:cursor-grabbing transition-colors" />
-                                        <span className="inline-flex items-center justify-center min-w-[24px] h-[22px] px-1.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-xs font-black tabular-nums border border-slate-200/90 dark:border-slate-700 shadow-xs">
+                                    <div className="flex items-center gap-1 shrink-0 select-none" title="Kéo thả để sắp xếp vị trí">
+                                        <AppIcon name="dragHandle" size="xs" className="text-slate-400 hover:text-sky-500 cursor-grab active:cursor-grabbing transition-colors" />
+                                        <span className="inline-flex items-center justify-center min-w-[20px] h-[19px] px-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 text-[11px] font-black tabular-nums border border-slate-200/90 dark:border-slate-700 shadow-2xs">
                                             {index + 1}
                                         </span>
                                     </div>
@@ -759,7 +758,7 @@ const CompetitionTarget: React.FC<{
                                                 else if (e.key === 'Escape') setEditingNameFor(null);
                                             }}
                                             placeholder={shortenName(comp.name)}
-                                            className="h-7 py-0.5 px-2 bg-white dark:bg-slate-900 rounded-md border-slate-200 dark:border-slate-700 text-xs sm:text-[13px] font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
+                                            className="h-6 py-0 px-1.5 bg-white dark:bg-slate-900 rounded border-slate-200 dark:border-slate-700 text-xs font-medium uppercase tracking-wide shadow-none focus-visible:ring-1 focus-visible:ring-sky-500 placeholder:text-slate-400 placeholder:normal-case flex-1"
                                         />
                                     ) : (
                                         <div
@@ -767,7 +766,7 @@ const CompetitionTarget: React.FC<{
                                                 setEditingNameFor(comp.name);
                                                 setEditingNameValue(currentDisplayName);
                                             }}
-                                            className="flex-1 text-left text-xs sm:text-[13px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-1 px-1 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
+                                            className="flex-1 text-left text-xs sm:text-[13px] font-bold uppercase tracking-wide text-slate-800 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition-colors cursor-pointer select-none py-0.5 px-0.5 rounded hover:bg-slate-100/60 dark:hover:bg-slate-800/60 truncate"
                                             title={`${comp.name} — Nhấp đúp để sửa tên hiển thị`}
                                         >
                                             {currentDisplayName}
@@ -781,7 +780,7 @@ const CompetitionTarget: React.FC<{
                         id: 'base',
                         header: 'Gốc',
                         align: 'center',
-                        width: '100px',
+                        width: '85px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const unitSuffix = comp.criteria === 'SLLK' ? ' Cái' : ' Tr';
@@ -792,7 +791,7 @@ const CompetitionTarget: React.FC<{
                         id: 'after',
                         header: 'Sau',
                         align: 'center',
-                        width: '105px',
+                        width: '90px',
                         cell: (comp) => {
                             const idx = competitions.findIndex(c => c.name === comp.name);
                             const t = COMPETITION_ROW_THEMES[idx % COMPETITION_ROW_THEMES.length];
@@ -807,7 +806,7 @@ const CompetitionTarget: React.FC<{
                         id: 'perPerson',
                         header: '/Người',
                         align: 'center',
-                        width: '105px',
+                        width: '90px',
                         cell: (comp) => {
                             const baseVal = baseTargets[comp.name] || 0;
                             const ratio = targets[comp.name] ?? 100;
@@ -822,13 +821,13 @@ const CompetitionTarget: React.FC<{
                         id: 'ratio',
                         header: '% Target',
                         align: 'center',
-                        width: '100px',
+                        width: '85px',
                         cell: (comp) => {
                             const t = RATIO_CONTROL_THEME;
                             const ratio = targets[comp.name] ?? 100;
                             return (
                                 <div className="flex items-center justify-center">
-                                    <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm shrink-0`}>
+                                    <div className={`flex items-center gap-0.5 ${t.inputBg} px-1 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-2xs shrink-0`}>
                                         <input
                                             type="number" inputMode="decimal"
                                             value={Math.round(ratio).toString()}
@@ -839,9 +838,9 @@ const CompetitionTarget: React.FC<{
                                                 const v = parseInt(val, 10);
                                                 if (!isNaN(v)) handleSliderChange(comp.name)(v);
                                             }}
-                                            className={`w-8 sm:w-10 bg-transparent text-center text-xs sm:text-[13px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                            className={`w-7 sm:w-8 bg-transparent text-center text-xs font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                         />
-                                        <span className="text-xs font-bold opacity-75">%</span>
+                                        <span className="text-[11px] font-bold opacity-75">%</span>
                                     </div>
                                 </div>
                             );
@@ -851,7 +850,7 @@ const CompetitionTarget: React.FC<{
                         id: 'group',
                         header: 'Nhóm tiêu chí',
                         headerAlign: 'center',
-                        width: '180px',
+                        width: '150px',
                         cell: (comp) => (
                             <CompetitionGroupCell
                                 value={groupOverrides[comp.name] ?? ''}
@@ -887,7 +886,6 @@ const CompetitionTarget: React.FC<{
                                     compact
                                     stickyHeader={false}
                                     columnDividers
-                                    overflowVisible
                                     fixedLayout
                                     className="!rounded-none"
                                     rowProps={(comp, index) => {
@@ -1146,9 +1144,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     const getDetailedTimestamp = () => {
         const now = new Date();
-        const time = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-        const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-        return `${time} ${date}`;
+        return now.toLocaleString('vi-VN');
     };
 
     const departments = useMemo(() => {
@@ -1231,7 +1227,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                             ref={bookmarkletRef}
                             href={AUTO_CLICK_BOOKMARKLET_CODE}
                             draggable
-                            className="min-h-8 sm:min-h-0 group relative inline-flex items-center gap-1.5 px-2.5 py-1 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-sky-600/20 hover:shadow-sm hover:shadow-sky-600/30 border border-sky-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98]"
+                            className="h-8 group relative inline-flex items-center gap-1.5 px-3 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-medium text-xs rounded-lg shadow-xs shadow-sky-600/20 hover:shadow-sm hover:shadow-sky-600/30 border border-sky-500/40 transition-all duration-150 cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-[0.98] shrink-0"
                             title="Bấm để xem hướng dẫn chi tiết hoặc Kéo thả lên thanh Dấu trang (Bookmarks)"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -1253,9 +1249,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-2 h-2 bg-sky-500 rounded-sm"></div>
                                 Siêu thị ngành hàng
                             </h3>
-                            {/* iPhone (2026-09-28, dữ liệu thật): 2 cột ở 390px chỉ còn ~170px/thẻ → 3 nút
-                                sửa/liên kết/xoá đè lên tên và giờ cập nhật. Dưới 640px xếp 1 cột. */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
                                     icon={<AppIcon name="clock" size="md" />} colorTheme="amber"
                                     linkUrl={getTileLink('industry-realtime', customLinks, supermarketName)}
@@ -1310,7 +1304,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                     DOANH THU NHÂN VIÊN
                                 </h3>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
                                 <StatusTile title="REALTIME" lastUpdated={employeeRealtimeTs} value={employeeRealtimeData} placeholder="Dán dữ liệu Realtime..." error={errors.employeeRealtime}
                                     icon={<AppIcon name="clock" size="md" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-realtime', customLinks, supermarketName)}
@@ -1373,7 +1367,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-2 h-2 bg-rose-500 rounded-sm"></div>
                                 THI ĐUA & TRẢ CHẬM
                             </h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-1 gap-2 sm:gap-2.5">
                                 <StatusTile title="THI ĐUA" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Dán dữ liệu Thi đua..." error={errors.thiDua} 
                                     icon={<AppIcon name="sparkles" size="md" />} colorTheme="amber"
                                     linkUrl={getTileLink('nhanvien-thidua', customLinks, supermarketName)}

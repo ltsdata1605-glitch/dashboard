@@ -1,40 +1,50 @@
-# Task Plan: Tích hợp cấu hình Ngành hàng & Dữ liệu vào Phân Quyền & Duyệt Yêu Cầu (Firebase Firestore)
+# Task Plan: Chuyển đổi tính năng Check Thưởng sang Native React (Bỏ hoàn toàn iframe)
 
 ## 1. Goal
-Chuyển đổi hoàn toàn cấu hình sản phẩm / ngành hàng (`ProductConfig`) từ việc phải nạp qua Google Sheet (chậm, phụ thuộc mạng, khó kiểm soát) sang quản lý trực tiếp trong màn hình **"Phân Quyền & Duyệt Yêu Cầu"**. Cho phép Admin/Quản lý nhập danh sách (Paste từ Excel/Sheet hoặc Tải file Excel lên), xem/chỉnh sửa, lưu trực tiếp lên Firebase Firestore. Toàn bộ Dashboard sẽ ưu tiên nạp cấu hình siêu tốc từ Firebase Firestore.
+Chuyển đổi hoàn toàn tính năng **Check Thưởng Thi Đua** từ `public/check-thuong.html` (chạy qua thẻ `<iframe>` trong `CheckThuongView.tsx`) sang **Native React Components** 100% trong `features/check-thuong/`. Xoá bỏ hoàn toàn iframe, xoá cầu nối `postMessage` và đồng bộ 2 tầng IndexedDB, giúp màn hình hiển thị tức thì, hỗ trợ Dark Mode hoàn hảo, mượt mà trên mobile và nhất quán với kiến trúc toàn dự án.
 
 ## 2. Architecture & Design
-- **Feature Location (FSD)**:
-  - Thư mục: `features/product-config/` (Feature-Sliced Design chuẩn mực).
-  - Giao diện: `ProductConfigManagerTab.tsx` tích hợp làm tab mới trong màn hình `UserManagementView.tsx` ("Phân Quyền & Duyệt Yêu Cầu").
-- **Data Model & Storage**:
-  - Firestore Document: `shared_configs/global_product_config`.
-  - Tuân thủ Firestore security rules hiện hữu (`shared_configs/{id}`: allow read `isSignedIn()`, allow write `isManager()`).
-  - Sử dụng `toCloudProductConfig()` và `fromCloudProductConfig()` từ `services/productConfigSerialization.ts` để lưu trữ an toàn mảng/Set.
-  - Lưu kèm metadata: `updatedAt`, `updatedBy` (email/tên admin), `version`, `summary` (số nhóm cha, số nhóm con, số mã ngành hàng, số hệ số quy đổi...).
-- **Data Input Modes (Linh hoạt tối đa cho người dùng)**:
-  1. **Tải lên file Excel (.xlsx)**: Kéo thả file Cấu hình Dashboard có sẵn (hỗ trợ đọc trọn vẹn mọi sheet: Ngành hàng, Ngành hàng BI, Bảo Hiểm ĐMX, Bảo Hiểm, Vas, Hình thức xuất).
-  2. **Dán nhanh từ Clipboard (Copy/Paste TSV từ Google Sheet / Excel)**: Cho phép dán trực tiếp dữ liệu dạng bảng.
-  3. **Xem và tìm kiếm danh sách cấu hình trực quan**: Bảng tra cứu nhóm cha, nhóm con, nhóm hàng, hệ số quy đổi.
-- **Loading & Performance**:
-  - Nâng cấp `useDataManagement.ts` / `services/dataService.ts`:
-    - Bước 1: Đọc nhanh từ `shared_configs/global_product_config` trên Firebase (hoặc IndexedDB cache).
-    - Bước 2: Nếu có trên Firebase, nạp ngay lập tức (<50ms), bỏ qua hoàn toàn việc gọi HTTP tải Google Sheet.
-    - Bước 3: Nếu Firebase chưa có, fallback về Google Sheet mặc định.
+- **Mô hình**: Feature-Sliced Design chuẩn mực tại `features/check-thuong/`.
+- **Tầng dịch vụ & thuật toán**:
+  - `features/check-thuong/services/checkThuongParser.ts`: Đọc file Excel (.xlsx) / CSV theo nhu cầu (`import('xlsx')` dynamic), tiền xử lý `preProcessData`, phân loại 6 nhóm thi đua.
+  - `features/check-thuong/services/checkThuongSearch.ts`: So khớp mã kho (`createStoreMatcher`), tính toán tra cứu đơn kho và so sánh 2 kho (Store Comparison).
+- **Tầng giao diện (Components chia nhỏ < 300 dòng)**:
+  1. `CheckThuongHeroBanner.tsx`: Hiển thị tên siêu thị, tổng tiền thưởng, tỷ lệ % nhóm đạt ≥ 100%, nút xuất ảnh banner.
+  2. `CheckThuongStatusSummary.tsx`: Cụm 6 thẻ mini trạng thái (Đạt thưởng, Sắp có, Đạt ≥ 100%, < 100%, Không quỹ, No Sale) kèm thanh bộ lọc pill filter và nút chuyển đổi chế độ xem (Bảng / Thẻ).
+  3. `CheckThuongCategoryTable.tsx`: Bảng danh sách ngành hàng (chế độ List view) với thanh tiến độ %DK, hạng VT/%, thưởng và badge sấm sét cho ngành hàng "Sắp có".
+  4. `CheckThuongCategoryCards.tsx`: Lưới thẻ ngành hàng (chế độ Card view) với màu pastel phong phú, chi tiết thưởng vượt trội và thưởng top target.
+  5. `CheckThuongAnalysisCard.tsx`: Phân tích tự động & Đề xuất hành động (Cơ hội vàng, Môn mấp mé rớt hạng, Môn chưa phát sinh số).
+  6. `CheckThuongComparisonView.tsx`: Màn hình So Sánh Trực Diện giữa 2 kho (Thẻ so sánh Winner, Top 3 thế mạnh, Bảng chi tiết so sánh +/- từng ngành hàng).
+  7. `CheckThuongRankingModal.tsx`: Hộp thoại xem Bảng Xếp Hạng toàn hệ thống cho từng môn thi khi click vào ngành hàng.
+  8. `CheckThuongEmptyDropzone.tsx`: Giao diện kéo-thả hoặc chọn file Excel khi chưa có dữ liệu.
+- **Tích hợp chính**:
+  - Cập nhật [`CheckThuongView.tsx`](file:///Users/ltson/dashboardycx/components/views/CheckThuongView.tsx) để render trực tiếp React components thay vì iframe.
+  - Giữ nguyên các chức năng Header Subtitle Portal, TopBar Search Bar Portal, và chuyển tab "Tra cứu" / "Top thưởng".
+- **Xuất ảnh**:
+  - Tái sử dụng `html-to-image` từ các tiện ích có sẵn của dự án, tuân thủ Image Export Standard (mở rộng đầy đủ cột, fit content).
 
 ## 3. Implementation Phases
-- [ ] **Phase 1: Service Layer & Parser**
-  - Xây dựng `features/product-config/services/firebaseProductConfigService.ts`:
-    - `saveGlobalProductConfig(config, user)`
-    - `getGlobalProductConfig()`
-    - `subscribeGlobalProductConfig()`
-  - Xây dựng parser đa năng `parsePastedConfig()` và tái sử dụng parser file Excel.
-- [ ] **Phase 2: UI Component trong Phân Quyền & Duyệt Yêu Cầu**
-  - Tạo `features/product-config/components/ProductConfigManagerTab.tsx` (< 300 dòng theo FSD).
-  - Tích hợp tab **"Cấu hình dữ liệu"** (hoặc "Cấu hình Ngành hàng") vào `UserManagementView.tsx`.
-- [ ] **Phase 3: Tích hợp vào Data Engine toàn hệ thống**
-  - Cập nhật luồng nạp cấu hình trong `services/dataService.ts` và `hooks/useDataManagement.ts`.
-- [ ] **Phase 4: Targeted Testing & Verification**
-  - Viết unit test cho service lưu/đọc config Firebase.
-  - Test E2E / component test.
-  - Chạy `npm run lint:ratchet:ci`.
+- [x] **Phase 1: Service Engine & Data Models**
+  - Xây dựng kiểu dữ liệu TypeScript cho ngành hàng, nhóm trạng thái, so sánh và ranking trong `features/check-thuong/types/`.
+  - Viết `checkThuongParser.ts` và `checkThuongSearch.ts` với đầy đủ unit test đảm bảo tính toán khớp 100% logic gốc.
+- [x] **Phase 2: Xây dựng UI Components (Tra cứu đơn kho)**
+  - Xây dựng `CheckThuongEmptyDropzone.tsx`.
+  - Xây dựng `CheckThuongHeroBanner.tsx`.
+  - Xây dựng `CheckThuongStatusSummary.tsx`.
+  - Xây dựng `CheckThuongCategoryTable.tsx` & `CheckThuongCategoryCards.tsx`.
+  - Xây dựng `CheckThuongAnalysisCard.tsx`.
+  - Xây dựng `CheckThuongRankingModal.tsx` (dùng Modal chuẩn hệ thống).
+- [x] **Phase 3: Xây dựng UI Component So Sánh 2 Kho**
+  - Xây dựng `CheckThuongComparisonView.tsx` (Thẻ đối đầu Sky/Amber, Top 3 thế mạnh, Bảng chi tiết chênh lệch).
+- [x] **Phase 4: Thay thế iframe trong CheckThuongView.tsx & Kiểm thử**
+  - Thay thế toàn bộ khối `<iframe>` bằng Native React View (`<CheckThuongSearchView />`).
+  - Đồng bộ state giữa Portal thanh Header và View.
+  - Chuẩn hoá design system token (loại bỏ hoàn toàn vi phạm `indigo`, `tinyText`, `rawOverlay`, `iconEmoji`).
+  - Chạy `npm run typecheck` (0 errors), Vitest targeted test (4/4 PASS), và Playwright E2E silent verification test (100% PASS, 2.7s).
+
+## 4. Status Tracking
+- Phase 1: Completed
+- Phase 2: Completed
+- Phase 3: Completed
+- Phase 4: Completed
+- **Overall Status**: Hoàn tất 100% chuyển đổi Check Thưởng sang Native React!

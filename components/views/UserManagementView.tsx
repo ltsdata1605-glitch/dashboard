@@ -724,123 +724,127 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 {/* Khu vực điều hướng & Lọc nhỏ gọn */}
                 <h1 className="sr-only">Phân quyền</h1>
                 <div className="bg-white dark:bg-slate-800 p-2 sm:p-2.5 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-lg space-y-2">
-                    {/* Hàng 1: Tabs chính & nút Làm Mới */}
-                    <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2">
-                        <div className="inline-flex items-center p-1 bg-slate-100 dark:bg-slate-900/60 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-x-auto">
+                    {/* Hàng 1: Tabs chính & nút Làm Mới (Cùng 1 hàng) */}
+                    <div className="flex items-center justify-between gap-1.5">
+                        <div className="inline-flex items-center p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900/60 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-x-auto min-w-0">
                             <button
                                 type="button"
                                 onClick={() => setListMode(lastPermissionTab)}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
                                     isPermissionsMode
                                         ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 shadow-2xs font-bold'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                             >
-                                <AppIcon name="users" size="sm" className={isPermissionsMode ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <AppIcon name="users" size="xs" className={isPermissionsMode ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
                                 <span>Phân quyền</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setListMode('config')}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
                                     listMode === 'config'
                                         ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 shadow-2xs font-bold'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                             >
-                                <AppIcon name="settings" size="sm" className={listMode === 'config' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
-                                <span>Khai báo ngành hàng</span>
+                                <AppIcon name="settings" size="xs" className={listMode === 'config' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <span className="sm:hidden">Ngành hàng</span>
+                                <span className="hidden sm:inline">Khai báo ngành hàng</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setListMode('approval_settings')}
-                                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
+                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
                                     listMode === 'approval_settings'
                                         ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-400 shadow-2xs font-bold'
                                         : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                             >
-                                <AppIcon name="security" size="sm" className={listMode === 'approval_settings' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
-                                <span>Cài đặt duyệt</span>
+                                <AppIcon name="security" size="xs" className={listMode === 'approval_settings' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
+                                <span className="sm:hidden">Duyệt</span>
+                                <span className="hidden sm:inline">Cài đặt duyệt</span>
                             </button>
                         </div>
 
-                        <div className="flex items-center justify-end">
-                            <Button
-                                variant="unstyled"
-                                size="none"
-                                onClick={() => fetchRequests(true)}
-                                disabled={isLoading}
-                                className="min-h-11 sm:min-h-0 h-8 px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center gap-1.5 rounded-md shadow-2xs shrink-0"
-                            >
-                                <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
-                                <span>Làm Mới</span>
-                            </Button>
-                        </div>
+                        <Button
+                            variant="unstyled"
+                            size="none"
+                            onClick={() => fetchRequests(true)}
+                            disabled={isLoading}
+                            className="w-7 h-7 min-w-7 min-h-7 sm:w-auto sm:h-8 p-0 sm:px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center justify-center sm:gap-1.5 rounded-lg shadow-2xs shrink-0 active:scale-95"
+                            title="Làm mới danh sách"
+                        >
+                            <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
+                            <span className="hidden sm:inline">Làm Mới</span>
+                        </Button>
                     </div>
 
-                    {/* Hàng 2: Bộ lọc con + Sắp xếp & Tìm kiếm (chỉ hiện khi ở tab Phân quyền) */}
+                    {/* Hàng 2 & 3: Bộ lọc con + Sắp xếp & Tìm kiếm (chỉ hiện khi ở tab Phân quyền) */}
                     {isPermissionsMode && (
-                        <div className="pt-2 border-t border-slate-100 dark:border-slate-700/50 flex flex-col sm:flex-row gap-2.5 items-start sm:items-center justify-between">
-                            <div className="inline-flex items-center border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs">
+                        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-700/50 space-y-1.5">
+                            {/* Hàng 2: Trạng thái 3 tab chia đều toàn chiều ngang */}
+                            <div className="grid grid-cols-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs w-full">
                                 <button
                                     type="button"
                                     onClick={() => { setListMode('pending'); setLastPermissionTab('pending'); }}
-                                    className={`h-7 px-2.5 sm:px-3 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${
+                                    className={`h-7 px-1 text-xs font-semibold transition-colors flex items-center justify-center gap-1 border-r border-slate-200 dark:border-slate-700 ${
                                         listMode === 'pending'
                                             ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 font-bold'
                                             : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'
                                     }`}
                                 >
                                     <AppIcon name="clock" size="xs" />
-                                    <span>Chờ duyệt</span>
+                                    <span className="truncate">Chờ duyệt</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => { setListMode('active'); setLastPermissionTab('active'); }}
-                                    className={`h-7 px-2.5 sm:px-3 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${
+                                    className={`h-7 px-1 text-xs font-semibold transition-colors flex items-center justify-center gap-1 border-r border-slate-200 dark:border-slate-700 ${
                                         listMode === 'active'
                                             ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 font-bold'
                                             : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'
                                     }`}
                                 >
                                     <AppIcon name="users" size="xs" />
-                                    <span>Hoạt động</span>
+                                    <span className="truncate">Hoạt động</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => { setListMode('expired'); setLastPermissionTab('expired'); }}
-                                    className={`h-7 px-2.5 sm:px-3 text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                                    className={`h-7 px-1 text-xs font-semibold transition-colors flex items-center justify-center gap-1 ${
                                         listMode === 'expired'
                                             ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400 font-bold'
                                             : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'
                                     }`}
                                 >
                                     <AppIcon name="schedule" size="xs" />
-                                    <span>Hết hạn</span>
+                                    <span className="truncate">Hết hạn</span>
                                 </button>
                             </div>
 
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                            {/* Hàng 3: Sắp xếp + Ô tìm kiếm nằm chung 1 hàng */}
+                            <div className="flex items-center gap-1.5 w-full">
                                 <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs">
-                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-7 text-xs rounded-none border-0 bg-transparent pr-7 shadow-none focus-visible:ring-0 py-0">
+                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-7 text-xs rounded-none border-0 bg-transparent pr-6 shadow-none focus-visible:ring-0 py-0">
                                         <option value="date">Ngày ĐK</option>
                                         <option value="name">Tên</option>
                                         <option value="role">Vai trò</option>
                                         <option value="dept">Mã Kho</option>
                                         <option value="logins">Truy cập</option>
                                     </Select>
-                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7 px-1.5 text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-7 w-7 min-h-0 min-w-0 p-0 flex items-center justify-center text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                         <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="sm" />
                                     </Button>
                                 </div>
-                                <div className="relative w-full sm:w-52">
+
+                                <div className="relative flex-1 min-w-0">
                                     <Input 
                                         leftIcon="search"
                                         placeholder="Tìm kiếm Email, Mã Kho..." 
                                         value={searchQuery} 
                                         onChange={e => setSearchQuery(e.target.value)} 
-                                        className="h-7 text-xs rounded-md py-0"
+                                        className="h-7 text-xs rounded-md py-0 w-full"
                                     />
                                 </div>
                             </div>

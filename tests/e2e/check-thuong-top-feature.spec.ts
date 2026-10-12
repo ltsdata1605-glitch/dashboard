@@ -10,8 +10,9 @@ import { CHECK_THUONG_COLS } from '../../features/check-thuong/services/checkThu
  * "xanh" suốt mà không kiểm gì; test còn lại treo 60 giây rồi timeout.
  *
  * Tính năng thật nằm ở component REACT (`CheckThuongLeaderboardView` → `CheckThuongChannelTopGrid`
- * + `CheckThuongTopTable`), nhận `competitionData` qua `postMessage`. Spec này bơm thẳng dữ liệu
- * bằng đúng kênh đó — không cần iframe, không cần file Excel, không cần đăng nhập.
+ * + `CheckThuongTopTable`). CẬP NHẬT 2026-10-12: Check Thưởng nay chạy hẳn trong app (chủ dự án bỏ iframe +
+ * kênh `postMessage`, 2026-10-11) → dữ liệu vào bằng ĐÚNG đường người dùng đi: chọn file ở ô nạp file (tệp
+ * TSV đúng vị trí cột `CHECK_THUONG_COLS`), không cần đăng nhập.
  *
  * Tầng TÍNH TOÁN đã được phủ ở `features/check-thuong/services/checkThuongCalc.test.ts` (10 test,
  * import hàm thật). Spec này chỉ giữ phần chỉ nó kiểm được: dữ liệu có chảy tới màn hình và hiển
@@ -37,45 +38,29 @@ const COMPETITION_DATA = [
     row('TGDD', '930 - Siêu Thị C', 'Ngành 1', 0.9, 200_000),
 ];
 
+/** Tệp TSV giống file Excel thật: dòng tiêu đề có "Siêu thị / Ngành hàng / Thưởng" đúng cột, rồi các dòng dữ liệu. */
+function tepDuLieu(): { name: string; mimeType: string; buffer: Buffer } {
+    const tieuDe: string[] = new Array(14).fill('');
+    tieuDe[CHECK_THUONG_COLS.KENH] = 'Kênh';
+    tieuDe[CHECK_THUONG_COLS.SIEU_THI] = 'Siêu thị';
+    tieuDe[CHECK_THUONG_COLS.NGANH_HANG] = 'Ngành hàng';
+    tieuDe[CHECK_THUONG_COLS.PERCENT_DU_KIEN] = '% Dự kiến';
+    tieuDe[CHECK_THUONG_COLS.TONG_THUONG] = 'Tổng thưởng';
+    const dong = [tieuDe, ...COMPETITION_DATA].map(r => r.join('\t')).join('\n');
+    return { name: 'du-lieu-gia.csv', mimeType: 'text/csv', buffer: Buffer.from(dong, 'utf-8') };
+}
+
 async function openTopThuong(page: import('@playwright/test').Page) {
-    await page.goto('/');
+    await page.goto('/?tab=check-thuong');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
 
-    // Sidebar thu gọn: nhãn chữ bị ẩn nên nhận diện bằng icon lucide (Sidebar.tsx dùng
-    // LayoutDashboard cho mục "Check thưởng").
-    const sidebar = page.locator('aside').first();
-    await sidebar.waitFor({ state: 'visible', timeout: 20_000 });
-    await sidebar.locator('button:has(svg[data-icon="navRewardCheck"])').first().click();
+    const oNapFile = page.locator('input[type="file"][accept*=".xlsx"]').first();
+    await oNapFile.waitFor({ state: 'attached', timeout: 30_000 });
+    await oNapFile.setInputFiles(tepDuLieu());
 
-    // Bơm dữ liệu qua đúng kênh mà CheckThuongView.tsx đang lắng nghe (tin 'message' từ iframe).
-    // CheckThuongView chỉ nhận tin có e.source là ĐÚNG iframe của mình + cùng origin (audit S11). Tin thật
-    // do check-thuong.html gửi có đúng 2 thuộc tính đó (đo 2026-10-07). Gửi qua `frame.evaluate` của
-    // Playwright thì e.source lại là cửa sổ cha (đo cùng ngày), chèn <script> vào iframe cũng không qua
-    // → dựng MessageEvent mang đúng source/origin của tin thật.
-    await page.waitForTimeout(1500);
-    await page.evaluate((data) => {
-        const iframe = document.querySelector('iframe[src*="check-thuong"]') as HTMLIFrameElement | null;
-        if (!iframe?.contentWindow) throw new Error('Không thấy iframe check-thuong');
-        window.dispatchEvent(new MessageEvent('message', {
-            origin: window.location.origin,
-            source: iframe.contentWindow,
-            data: {
-                type: 'CHECK_THUONG_FILE_LOADED',
-                competitionData: data,
-                fileName: 'du-lieu-gia.xlsx',
-                uploadTime: '18/09/2026 10:00',
-                code1: '910',
-            },
-        }));
-    }, COMPETITION_DATA);
-    await page.waitForTimeout(1200);
-
-    // Sidebar BUNG RA khi chuột đi ngang qua và che mất nút — đưa chuột về góc phải trước khi
-    // click, nếu không cú click bị nuốt và timeout 60 giây.
-    await page.mouse.move(1200, 400);
-    await page.waitForTimeout(500);
-    await page.getByRole('button', { name: /Top thưởng/i }).first().click();
-    await page.waitForTimeout(2000);
+    // Có dữ liệu thì thanh tra cứu (Tra cứu | Top thưởng) mới hiện trên thanh tiêu đề.
+    await page.getByRole('button', { name: /Top thưởng/i }).first().click({ timeout: 20_000 });
+    await expect(page.getByText(/Siêu Thị B/).first()).toBeVisible({ timeout: 15_000 });
 }
 
 test.describe('Check Thưởng — Top thưởng (component React)', () => {
@@ -108,20 +93,20 @@ test.describe('Check Thưởng — Top thưởng (component React)', () => {
         expect(count, 'Siêu Thị A bị lặp — dữ liệu chưa được gộp theo siêu thị').toBeLessThanOrEqual(2);
     });
 
-    test('tin từ nguồn LẠ (không phải iframe Check Thưởng) bị bỏ qua — audit S11', async ({ page }) => {
-        await page.goto('/');
+    test('không còn kênh postMessage: tin "CHECK_THUONG_FILE_LOADED" từ trang khác không nạp được dữ liệu — audit S11', async ({ page }) => {
+        await page.goto('/?tab=check-thuong');
         await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
-        const sidebar = page.locator('aside').first();
-        await sidebar.waitFor({ state: 'visible', timeout: 20_000 });
-        await sidebar.locator('button:has(svg[data-icon="navRewardCheck"])').first().click();
-        await page.waitForTimeout(1500);
+        await page.locator('input[type="file"][accept*=".xlsx"]').first().waitFor({ state: 'attached', timeout: 30_000 });
         await page.evaluate((data) => {
-            window.dispatchEvent(new MessageEvent('message', {
-                origin: 'https://trang-la.example', source: window,
-                data: { type: 'CHECK_THUONG_FILE_LOADED', competitionData: data, fileName: 'gia-mao.xlsx' },
-            }));
+            for (const origin of [window.location.origin, 'https://trang-la.example']) {
+                window.dispatchEvent(new MessageEvent('message', {
+                    origin, source: window,
+                    data: { type: 'CHECK_THUONG_FILE_LOADED', competitionData: data, fileName: 'gia-mao.xlsx' },
+                }));
+            }
         }, COMPETITION_DATA);
         await page.waitForTimeout(1200);
         await expect(page.getByRole('button', { name: /Top thưởng/i })).toHaveCount(0);
+        await expect(page.getByText(/Siêu Thị B/)).toHaveCount(0);
     });
 });

@@ -73,7 +73,7 @@ test('Report BI trên iPhone: dán 3 ô, xem Siêu thị, xuất ảnh → chạ
     await giaLapSafari(page); await batDemo(page);
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto('/?tab=employees');
-    await page.getByRole('button', { name: /Cập nhật/i }).first().tap({ timeout: 30_000 });
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().tap({ timeout: 30_000 });
     const dan = async (ten: RegExp, idx: number, text: string) => {
         await page.evaluate(t => navigator.clipboard.writeText(t), text);
         await page.locator('h4').filter({ hasText: ten }).nth(idx).tap();

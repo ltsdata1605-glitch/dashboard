@@ -297,84 +297,139 @@ export const employeeTargetKeys = (originalName: string): string[] => {
     return Array.from(keys);
 };
 
+export function findCompetitionSlider(
+    competitionTargetsData: Record<string, number> | undefined,
+    compName: string
+): number {
+    if (!competitionTargetsData) return 100;
+    
+    // 1. Khớp chính xác
+    if (competitionTargetsData[compName] !== undefined) {
+        return competitionTargetsData[compName];
+    }
+    
+    const cleanComp = compName.trim().toLowerCase();
+    
+    // 2. Khớp sau khi trim & lowercase
+    for (const [key, val] of Object.entries(competitionTargetsData)) {
+        if (key.trim().toLowerCase() === cleanComp) {
+            return val;
+        }
+    }
+    
+    // 3. Khớp bỏ tiền tố tháng (T10/, T09/, Tháng 10/, ...)
+    const stripMonth = (s: string) => s.replace(/^(?:T\d+|Tháng\s*\d+)\s*[\/\-_]\s*/i, '').trim().toLowerCase();
+    const noMonthComp = stripMonth(cleanComp);
+    for (const [key, val] of Object.entries(competitionTargetsData)) {
+        if (stripMonth(key) === noMonthComp) {
+            return val;
+        }
+    }
+    
+    // 4. Khớp chứa nhau / hậu tố (vd: BẢO HIỂM THỢ ĐMX vs T10/BẢO HIỂM THỢ ĐMX_ICT)
+    for (const [key, val] of Object.entries(competitionTargetsData)) {
+        const cleanKey = key.trim().toLowerCase();
+        const noMonthKey = stripMonth(key);
+        if (
+            cleanComp.includes(cleanKey) || cleanKey.includes(cleanComp) ||
+            noMonthComp.includes(noMonthKey) || noMonthKey.includes(noMonthComp)
+        ) {
+            return val;
+        }
+    }
+    
+    return 100;
+}
+
 export const parseEmployeeCompetitionTargets = (
-    lines: string[],
+    lines: string[] | string,
     activeSupermarkets: string[],
-    smDataMap: Map<string, { competitionTargets: Record<string, number>; departmentWeights: Record<string, number> }>,
-    allEmployees: NhanVienEmployee[]
+    smDataMap: Map<string, { competitionTargets: Record<string, number>; departmentWeights?: Record<string, number> }>,
+    allEmployees: NhanVienEmployee[],
+    fallbackLines?: string[] | string
 ): Map<string, Map<string, number>> => {
     const targets = new Map<string, Map<string, number>>();
-    const fullText = lines.join('\n');
+    const primaryText = Array.isArray(lines) ? lines.join('\n') : String(lines || '');
+    const fallbackText = fallbackLines ? (Array.isArray(fallbackLines) ? fallbackLines.join('\n') : String(fallbackLines)) : '';
 
     // Dùng parseCompetitionDataBySupermarket — đã xử lý đúng cả format cũ (tab ngang)
-    // lẫn format mới (BI dọc với DOANH THU/SỐ LƯỢNG/TARGET/% HT THÁNG)
-    const parsedBySm = parseCompetitionDataBySupermarket(fullText);
+    // lẫn format mới (BI dọc với DOANH THU/SỐ LƯỢNG/TARGET/% HT THÁNG).
+    // Báo cáo Luỹ kế (primaryText) chứa TARGET THÁNG chuẩn; Realtime chỉ dùng dự phòng.
+    const parsedPrimary = parseCompetitionDataBySupermarket(primaryText);
+    const parsedFallback = fallbackText ? parseCompetitionDataBySupermarket(fallbackText) : {};
 
     for (const sm of activeSupermarkets) {
         const smData = smDataMap.get(sm);
         const competitionTargetsData = smData?.competitionTargets;
-        const departmentWeightsData = smData?.departmentWeights;
         // Tìm siêu thị trong parsed data (sử dụng findMatchingSupermarketKey chuẩn hoá mã kho và tên)
-        const matchedSmKey = findMatchingSupermarketKey(sm, Object.keys(parsedBySm));
+        const matchedSmKey = findMatchingSupermarketKey(sm, Object.keys(parsedPrimary))
+            || (fallbackText ? findMatchingSupermarketKey(sm, Object.keys(parsedFallback)) : null);
 
-        if (!matchedSmKey || !parsedBySm[matchedSmKey]) continue;
+        if (!matchedSmKey) continue;
 
-        const smParsedData = parsedBySm[matchedSmKey];
+        const primarySmData = parsedPrimary[matchedSmKey];
+        const fallbackSmData = parsedFallback[matchedSmKey];
 
-        // empWeights: trọng số phòng ban chia đều cho NV trong BP đó
-        const deptCounts = new Map<string, number>();
-        allEmployees.forEach(emp => {
-            deptCounts.set(emp.department, (deptCounts.get(emp.department) || 0) + 1);
-        });
+        // Ưu tiên 100% chương trình từ Luỹ kế (chứa Target tháng chuẩn);
+        // Chỉ bổ sung thêm các chương trình chỉ xuất hiện ở Realtime (nếu có).
+        const primaryPrograms = primarySmData?.programs || [];
+        const fallbackPrograms = (fallbackSmData?.programs || []).filter(
+            fp => !primaryPrograms.some(pp => pp.name.trim().toLowerCase() === fp.name.trim().toLowerCase())
+        );
+        const allPrograms = [...primaryPrograms, ...fallbackPrograms];
 
-        let totalW = 0;
-        const empWeights = new Map<string, number>();
-        allEmployees.forEach(emp => {
-            const deptWeight = departmentWeightsData?.[emp.department];
-            const w = deptWeight !== undefined
-                ? deptWeight / (deptCounts.get(emp.department) || 1)
-                : (100 / allEmployees.length);
-            empWeights.set(emp.originalName, w);
-            totalW += w;
-        });
-
-        if (totalW <= 0) continue;
-
-        // Tìm cột TARGET trong headers
-        const headers = smParsedData.headers;
+        const headers = primarySmData?.headers || fallbackSmData?.headers || [];
         const targetIdx = headers.findIndex(h => {
             const up = h.toUpperCase();
             return up.includes('TARGET') || up.includes('MỤC TIÊU');
         });
 
-        if (targetIdx === -1) continue;
+        if (targetIdx === -1 || allPrograms.length === 0) continue;
 
-        // Duyệt từng chương trình thi đua, lấy target value, phân bổ cho NV.
-        // `lines` = Luỹ kế + Realtime nối nhau (NhanVien.tsx) nên MỖI chương trình xuất hiện 2 lần:
-        // bản Luỹ kế (TARGET tháng) rồi bản Realtime (TARGET ngày ≈ tháng/30). Trước đây cộng dồn
-        // cả 2 → M.TIÊU bị đội ~3% (đo trên dữ liệu thật 2026-09-22: 4.267 + 142 = 4.409).
-        // Chỉ lấy lần xuất hiện ĐẦU TIÊN của mỗi tên (Luỹ kế đứng trước; thiếu Luỹ kế thì mới tới Realtime).
+        // Mục tiêu thi đua mỗi nhân viên = Target sau điều chỉnh / Tổng số nhân viên tham gia
+        // Khớp 100% với cột /NGƯỜI trong Cấu hình Target Thi đua (SupermarketConfig.tsx)
+        const totalEmployees = allEmployees.length;
+        if (totalEmployees <= 0) continue;
+
         const seenPrograms = new Set<string>();
-        for (const program of smParsedData.programs) {
+        for (const program of allPrograms) {
             const compName = program.name;
-            if (seenPrograms.has(compName)) continue;
-            seenPrograms.add(compName);
+            const normCompName = compName.trim().toLowerCase();
+            if (seenPrograms.has(normCompName)) continue;
+            seenPrograms.add(normCompName);
+
             const targetValRaw = program.data[targetIdx];
             if (targetValRaw === undefined || targetValRaw === null) continue;
 
             const baseTarget = parseNumber(targetValRaw);
             if (baseTarget <= 0) continue;
 
-            const slider = competitionTargetsData?.[compName] ?? 100;
+            const slider = findCompetitionSlider(competitionTargetsData, compName);
             const adjTarget = baseTarget * (slider / 100);
+            const perPersonTarget = adjTarget / totalEmployees;
+            if (perPersonTarget <= 0) continue;
 
-            if (!targets.has(compName)) targets.set(compName, new Map());
-            const compT = targets.get(compName)!;
-            allEmployees.forEach(emp => {
-                const existing = compT.get(emp.originalName) || 0;
-                const next = existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW));
-                employeeTargetKeys(emp.originalName).forEach(k => compT.set(k, next));
-            });
+            const registerTargetForComp = (alias: string) => {
+                if (!targets.has(alias)) targets.set(alias, new Map());
+                const compT = targets.get(alias)!;
+                allEmployees.forEach(emp => {
+                    const existing = compT.get(emp.originalName) || 0;
+                    const next = existing + perPersonTarget;
+                    employeeTargetKeys(emp.originalName).forEach(k => compT.set(k, next));
+                });
+            };
+
+            registerTargetForComp(compName);
+            const clean = compName.trim();
+            if (clean !== compName) registerTargetForComp(clean);
+            const noMonth = compName.replace(/^(?:T\d+|Tháng\s*\d+)\s*[\/\-_]\s*/i, '').trim();
+            if (noMonth && noMonth !== compName) registerTargetForComp(noMonth);
+
+            // Các biến thể dấu phân cách gạch nối và gạch chéo để khớp tuyệt đối giữa bảng cấu hình và báo cáo
+            if (compName.includes('-')) registerTargetForComp(compName.replace(/\s*-\s*/g, '/'));
+            if (compName.includes('/')) registerTargetForComp(compName.replace(/\s*\/\s*/g, ' - '));
+            if (noMonth && noMonth.includes('-')) registerTargetForComp(noMonth.replace(/\s*-\s*/g, '/'));
+            if (noMonth && noMonth.includes('/')) registerTargetForComp(noMonth.replace(/\s*\/\s*/g, ' - '));
         }
     }
     return targets;

@@ -5,7 +5,6 @@ import { readPendingAutoSync } from '../services/biAutoSyncService';
 import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import { TOUCH_TARGET } from '../utils/mobileUi';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
@@ -13,6 +12,7 @@ import { Button } from '../../../components/shared/ui/Button';
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
+import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import type { ConfigTab } from './SupermarketConfig';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
 
@@ -73,6 +73,7 @@ function readSavedBiView(): 'dashboard' | 'employee' | 'updater' {
 
 const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
+    const isTabActive = isActive !== undefined ? isActive : activeTab === 'employees';
     // Còn lượt "Tự động" dở (vừa tải lại sau khi cập nhật userscript) → mở thẳng mục Cập nhật để DataUpdater chạy tiếp
     // Không có lượt dở → `?view=` trên URL (deep link) nếu có, không thì mục lần trước (localStorage): app cài trên
     // iPhone bị iOS giải phóng khỏi RAM khi ở nền, mở lại luôn chạy từ "/" (Đợt A, kế hoạch iPhone).
@@ -81,6 +82,45 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(readPendingAutoSync() ? ['dashboard', 'updater'] : ['dashboard', readSavedBiView()]));
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+    const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
+    const [summaryLuyKeTs] = useIndexedDBState<string | null>('summary-luy-ke-ts', null);
+    const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
+    const [competitionLuyKeTs] = useIndexedDBState<string | null>('competition-luy-ke-ts', null);
+    const [dashboardMainTab] = useIndexedDBState<string>('dashboard-main-tab', 'realtime');
+    const [hasSummaryRealtime] = useIndexedDBState<string>('summary-realtime', '');
+    const [hasSummaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
+    const [hasCompetitionRealtime] = useIndexedDBState<string>('competition-realtime', '');
+    const [isBiSyncing, setIsBiSyncing] = useState(false);
+
+    useEffect(() => {
+        const onStart = () => setIsBiSyncing(true);
+        const onEnd = () => setIsBiSyncing(false);
+        window.addEventListener('ycx-bi-automation:start-job', onStart);
+        window.addEventListener('ycx-bi-automation:progress', onStart);
+        window.addEventListener('ycx-bi-automation:done', onEnd);
+        window.addEventListener('ycx-bi-automation:error', onEnd);
+        return () => {
+            window.removeEventListener('ycx-bi-automation:start-job', onStart);
+            window.removeEventListener('ycx-bi-automation:progress', onStart);
+            window.removeEventListener('ycx-bi-automation:done', onEnd);
+            window.removeEventListener('ycx-bi-automation:error', onEnd);
+        };
+    }, []);
+
+    const currentTimestamp = React.useMemo(() => {
+        let ts: string | null = null;
+        if (dashboardMainTab === 'realtime') {
+            ts = summaryRealtimeTs || competitionRealtimeTs || summaryLuyKeTs || competitionLuyKeTs;
+        } else {
+            ts = summaryLuyKeTs || competitionLuyKeTs || summaryRealtimeTs || competitionRealtimeTs;
+        }
+        if (!ts && (hasSummaryRealtime || hasSummaryLuyKe || hasCompetitionRealtime)) {
+            const now = new Date();
+            return now.toLocaleDateString('vi-VN');
+        }
+        return ts;
+    }, [dashboardMainTab, summaryRealtimeTs, competitionRealtimeTs, summaryLuyKeTs, competitionLuyKeTs, hasSummaryRealtime, hasSummaryLuyKe, hasCompetitionRealtime]);
 
     // Kích hoạt tự động đồng bộ qua GlobalAutoSyncDock toàn cục
     const handleStartAutoSync = useCallback((mode: 'realtime' | 'luyke') => {
@@ -214,7 +254,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     border-radius: 0px !important;
                 }
             `}</style>
-            {mounted && activeTab === 'employees' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
+            {mounted && isTabActive && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
                 isMobile ? (
                     <div className="flex items-center gap-0.5 animate-in fade-in zoom-in duration-300">
                         {navigationLinks.map(tab => {
@@ -267,6 +307,42 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     </div>
                 ),
                 document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
+            )}
+
+            {/* Portal timestamp into mobile top bar subtitle */}
+            {mounted && isTabActive && document.getElementById('mobile-topbar-subtitle') && createPortal(
+                <button
+                    type="button"
+                    onClick={() => {
+                        handleStartAutoSync(dashboardMainTab === 'luyke' ? 'luyke' : 'realtime');
+                    }}
+                    title="Chạm để kiểm tra & đồng bộ dữ liệu BI mới nhất"
+                    className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                >
+                    <AppIcon name="refresh" size="xs" spin={isBiSyncing} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                    <span className={isBiSyncing ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                        {isBiSyncing ? 'Đang đồng bộ...' : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
+                    </span>
+                </button>,
+                document.getElementById('mobile-topbar-subtitle')!
+            )}
+
+            {/* Portal timestamp into desktop header subtitle */}
+            {mounted && isTabActive && document.getElementById('desktop-header-subtitle') && createPortal(
+                <button
+                    type="button"
+                    onClick={() => {
+                        handleStartAutoSync(dashboardMainTab === 'luyke' ? 'luyke' : 'realtime');
+                    }}
+                    title="Bấm để kiểm tra & đồng bộ dữ liệu BI mới nhất"
+                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                >
+                    <AppIcon name="refresh" size="xs" spin={isBiSyncing} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                    <span className={isBiSyncing ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                        {isBiSyncing ? 'Đang đồng bộ từ Cloud...' : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
+                    </span>
+                </button>,
+                document.getElementById('desktop-header-subtitle')!
             )}
 
 

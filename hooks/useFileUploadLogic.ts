@@ -192,9 +192,8 @@ export const useFileUploadLogic = ({
             // bỏ JSON.stringify ~1,4s. null = có tệp không dùng được JSON gốc → lưu kiểu cũ.
             let realtimeJsonParts: ArrayBuffer[] | null = [];
             
-            if (!isHistorical) {
-                await dbService.clearTempRealtimeData();
-            }
+            // Luôn dọn sạch dữ liệu Realtime tạm cũ trước khi nạp tệp mới để tránh rác phiên cũ cộng dồn x2
+            await dbService.clearTempRealtimeData().catch(() => {});
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
@@ -542,6 +541,19 @@ export const useFileUploadLogic = ({
                 await dbService.saveSalesFilesRegistry(updatedRegistry);
                 registrySaved = true;
             } else {
+                // Đổ Realtime: Tự động bỏ active các file lịch sử/luỹ kế để người dùng xem đúng số liệu Realtime hôm nay,
+                // không bị dính/gộp số liệu luỹ kế cũ từ các ngày trước làm sai lệch doanh thu và %HT mục tiêu ngày.
+                let registryChanged = false;
+                for (let k = 0; k < updatedRegistry.length; k++) {
+                    if (updatedRegistry[k].isActive) {
+                        updatedRegistry[k].isActive = false;
+                        registryChanged = true;
+                    }
+                }
+                if (registryChanged) {
+                    await dbService.saveSalesFilesRegistry(updatedRegistry);
+                }
+
                 // Determine combined filename for realtime
                 let realtimeFilename = '';
                 if (files.length === 1) {
@@ -590,6 +602,12 @@ export const useFileUploadLogic = ({
 
                 setOriginalData(srcData);
                 setAppState('processing');
+
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('ycx-sales-data-uploaded', {
+                        detail: { savedAt: merged.savedAt.getTime(), fileLastModified: merged.fileLastModified || merged.savedAt.getTime() }
+                    }));
+                }
 
                 // Báo tải file thành công — chỉ ở đây (thao tác upload do người dùng chủ động chọn file), KHÔNG đặt ở
                 // loadInitialData/Kho-sync. Pháo giấy đã bỏ 2026-10-11 (KE_HOACH_GIAO_DIEN_APPLE.md lỗi #26): không "sang", lại

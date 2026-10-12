@@ -123,14 +123,14 @@ export const BonusView: React.FC<{
                 <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
                     {cardTitle}
                 </h2>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-1">
+                <div className="text-[8.5px] sm:text-[9.5px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-0.5 sm:mt-1">
                     {cardSubtitle}
                 </div>
             </div>
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
-            <div className="flex flex-wrap justify-between items-center px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
-                <div className="flex gap-1.5 items-center">
+            <div className="flex flex-wrap justify-between items-center px-3 sm:px-4 py-1 sm:py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">
+                <div className="hidden sm:flex gap-1.5 items-center">
                     <Button
                         variant="unstyled"
                         size="none"
@@ -142,15 +142,15 @@ export const BonusView: React.FC<{
                     </Button>
                     <AutoBonusPanel autoBridge={autoBridge} multiMonthRun={multiMonthRun} employeeCount={employees.length} onUseManual={onBatchUpdate} onPeriodLabelChange={onSetBonusPeriodLabel} onCompareDone={handleCompareDone} />
                 </div>
-                <div className="flex gap-1.5 items-center">
+                <div className="flex gap-1.5 items-center ml-auto">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
-                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="sm" /> : <AppIcon name="viewList" size="sm" />}
+                        {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                     </Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <Dropdown
@@ -165,9 +165,9 @@ export const BonusView: React.FC<{
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={`inline-flex items-center justify-center h-7.5 w-7.5 sm:h-8 sm:w-8 rounded-lg transition-all hover:scale-105 active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
+                                className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:scale-105 active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
                             >
-                                <AppIcon name={activePeriodMode.icon} size="sm" />
+                                <AppIcon name={activePeriodMode.icon} size="md" />
                             </span>
                         }
                     />

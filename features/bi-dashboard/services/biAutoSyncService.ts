@@ -9,9 +9,7 @@ import { detectUserscript } from '../utils/bonusBridge';
 
 export const getDetailedTimestamp = () => {
     const now = new Date();
-    const time = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
-    const date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
-    return `${time} ${date}`;
+    return now.toLocaleString('vi-VN');
 };
 
 export const EVT_BI_START_JOB = 'ycx-bi-automation:start-job';
@@ -146,6 +144,14 @@ export function onBiError(cb: (payload: { jobId: string; message: string }) => v
     };
 }
 
+function isBiContentValid(content: string | undefined | null): boolean {
+    if (!content || typeof content !== 'string') return false;
+    const trimmed = content.trim();
+    if (trimmed.length < 30) return false;
+    const lines = trimmed.split('\n').filter(l => l.trim().length > 0);
+    return lines.length >= 2;
+}
+
 /**
  * Áp dụng kết quả thu thập tự động vào hệ thống (IndexedDB, configStore, last updates)
  */
@@ -178,7 +184,7 @@ export async function applyBiSyncResults(
 
     if (mode === 'realtime') {
         // 1. Doanh thu hợp nhất Realtime
-        if (results.summary) {
+        if (results.summary && isBiContentValid(results.summary)) {
             await saveBiField('summary-realtime', results.summary, 'summary-realtime-ts');
         }
         // 2. Siêu thị ngành hàng Realtime: Lưu lần lượt cho từng siêu thị nếu có dữ liệu theo siêu thị
@@ -187,12 +193,16 @@ export async function applyBiSyncResults(
             for (const [stKey, indText] of Object.entries(results.industryByStore)) {
                 const stSafeName = shortenSupermarketName(stKey);
                 if (stSafeName && !savedSafeNames.has(stSafeName)) {
+                    if (!isBiContentValid(indText)) {
+                        console.warn(`[BI-Sync] Bỏ qua dữ liệu ngành hàng rỗng cho siêu thị ${stSafeName}`);
+                        continue;
+                    }
                     savedSafeNames.add(stSafeName);
                     const key = `config-${stSafeName}-industry-realtime`;
                     await saveBiField(key, indText, `${key}-ts`);
                 }
             }
-        } else if (results.industry && safeName) {
+        } else if (results.industry && safeName && isBiContentValid(results.industry)) {
             const key = `config-${safeName}-industry-realtime`;
             await saveBiField(key, results.industry, `${key}-ts`);
         }
@@ -202,17 +212,21 @@ export async function applyBiSyncResults(
             for (const [stKey, empText] of Object.entries(results.employeeByStore)) {
                 const stSafeName = shortenSupermarketName(stKey);
                 if (stSafeName && !savedSafeNames.has(stSafeName)) {
+                    if (!isBiContentValid(empText)) {
+                        console.warn(`[BI-Sync] Bỏ qua dữ liệu nhân viên rỗng cho siêu thị ${stSafeName}`);
+                        continue;
+                    }
                     savedSafeNames.add(stSafeName);
                     const key = `config-${stSafeName}-employee-realtime`;
                     await saveBiField(key, empText, `${key}-ts`);
                 }
             }
-        } else if (results.employee && safeName) {
+        } else if (results.employee && safeName && isBiContentValid(results.employee)) {
             const key = `config-${safeName}-employee-realtime`;
             await saveBiField(key, results.employee, `${key}-ts`);
         }
         // 4. Thi đua Realtime
-        if (results.competition) {
+        if (results.competition && isBiContentValid(results.competition)) {
             await saveBiField('competition-realtime', results.competition, 'competition-realtime-ts');
         }
     } else {
@@ -221,7 +235,7 @@ export async function applyBiSyncResults(
         // Đường UI cũ (không có *ByStore) giữ cách lưu cũ theo siêu thị đang chọn.
         const quaApi = Boolean(results.industryByStore || results.employeeByStore);
         // 1. Doanh thu hợp nhất Luỹ kế
-        if (results.summary) {
+        if (results.summary && isBiContentValid(results.summary)) {
             await saveBiField('summary-luy-ke', results.summary, 'summary-luy-ke-ts');
         }
         // 2. Siêu thị ngành hàng Luỹ kế
@@ -230,6 +244,10 @@ export async function applyBiSyncResults(
             for (const [stKey, indText] of Object.entries(results.industryByStore)) {
                 const stSafeName = shortenSupermarketName(stKey);
                 if (stSafeName && !daLuu.has(stSafeName)) {
+                    if (!isBiContentValid(indText)) {
+                        console.warn(`[BI-Sync] Bỏ qua dữ liệu ngành hàng luỹ kế rỗng cho siêu thị ${stSafeName}`);
+                        continue;
+                    }
                     daLuu.add(stSafeName);
                     const key = `config-${stSafeName}-industry-luyke`;
                     await saveBiField(key, indText, `${key}-ts`);
@@ -239,13 +257,37 @@ export async function applyBiSyncResults(
                     }
                 }
             }
-        } else if (results.industry && safeName) {
+        } else if (results.industry && safeName && isBiContentValid(results.industry)) {
             const key = `config-${safeName}-industry-luyke`;
             await saveBiField(key, results.industry, `${key}-ts`);
             const keyUpper = `config-${safeName.toUpperCase()}-industry-luyke`;
             if (keyUpper !== key) await saveBiField(keyUpper, results.industry, `${keyUpper}-ts`);
         }
         // 3. Doanh thu nhân viên Luỹ kế (danhSach)
+        if (results.employeeByStore && Object.keys(results.employeeByStore).length > 0) {
+            const daLuu = new Set<string>();
+            for (const [stKey, empText] of Object.entries(results.employeeByStore)) {
+                const stSafeName = shortenSupermarketName(stKey);
+                if (stSafeName && !daLuu.has(stSafeName)) {
+                    if (!isBiContentValid(empText)) {
+                        console.warn(`[BI-Sync] Bỏ qua dữ liệu nhân viên luỹ kế rỗng cho siêu thị ${stSafeName}`);
+                        continue;
+                    }
+                    daLuu.add(stSafeName);
+                    const key = `config-${stSafeName}-employee-luyke`;
+                    await saveBiField(key, empText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-employee-luyke`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, empText, `${keyUpper}-ts`);
+                    }
+                }
+            }
+        } else if (results.employee && safeName && isBiContentValid(results.employee)) {
+            const key = `config-${safeName}-employee-luyke`;
+            await saveBiField(key, results.employee, `${key}-ts`);
+            const keyUpper = `config-${safeName.toUpperCase()}-employee-luyke`;
+            if (keyUpper !== key) await saveBiField(keyUpper, results.employee, `${keyUpper}-ts`);
+        }
         if (results.employeeByStore && Object.keys(results.employeeByStore).length > 0) {
             const daLuu = new Set<string>();
             for (const [stKey, empText] of Object.entries(results.employeeByStore)) {

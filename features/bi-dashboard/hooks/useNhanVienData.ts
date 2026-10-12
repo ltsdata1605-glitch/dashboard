@@ -326,6 +326,7 @@ export function useNhanVienData(isActive?: boolean) {
                 || key.startsWith('bonus-current-period-label-')
                 || key.startsWith('hidden-employees-')
                 || key.startsWith('targethero-')
+                || key.startsWith('comptarget-')
                 || key === 'summary-luy-ke';
             if (isRelevant) {
                 setDataVersion(v => v + 1);

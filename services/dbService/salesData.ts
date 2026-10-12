@@ -4,6 +4,8 @@ import { biHubDbName } from '../../utils/localDbScope';
 import { storedSalesJsonWrap } from '../salesJsonChunks';
 import type { SalesJsonWriteRequest } from '../salesJsonWriter.worker';
 import { cleanYcxFileName } from '../ycxAutoSyncService';
+import { getRowValue } from '../../utils/dataUtils';
+import { COL } from '../../constants';
 
 // ── Đợt 6 (2026-09-30): ghi JSON dựng sẵn NGOÀI luồng chính ─────────────────────────────────────
 // `rawChunks` = các khúc JSON UTF-8 do Worker đọc tệp tạo ra (services/salesJsonChunks.ts). Worker ghi
@@ -967,7 +969,25 @@ export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistr
         let finalFileLastModified = 0;
         let isRealtime = false;
 
-        if (tempRealtime && tempRealtime.data.length > 0) {
+        // Kiểm tra tính lỗi thời của tempRealtime: nếu tệp lịch sử/lũy kế được lưu MỚI HƠN bản Realtime tạm,
+        // bản Realtime này là của phiên trước đó, không được phép gộp vào để tránh x2/cộng dồn sai lệch.
+        const realtimeSavedAt = tempRealtime?.savedAt ? new Date(tempRealtime.savedAt).getTime() : 0;
+        const isRealtimeStale = Boolean(
+            tempRealtime &&
+            historicalData.length > 0 &&
+            realtimeSavedAt > 0 &&
+            latestHistSavedAt > 0 &&
+            realtimeSavedAt < latestHistSavedAt
+        );
+
+        if (isRealtimeStale) {
+            // Tự dọn sạch bản Realtime cũ của phiên trước trong nền
+            clearTempRealtimeData().catch(() => {});
+        }
+
+        if (tempRealtime && tempRealtime.data.length > 0 && !isRealtimeStale) {
+            const realtimeOrderKeys = new Set<string>();
+
             for (let j = 0; j < tempRealtime.data.length; j++) {
                 const row = tempRealtime.data[j];
                 row._fileLastModified = tempRealtime.fileLastModified || (tempRealtime.savedAt ? new Date(tempRealtime.savedAt).getTime() : Date.now());
@@ -975,10 +995,24 @@ export async function getMergedSalesData(preloadedRegistry?: UploadedFileRegistr
                 row._sourceFileId = 'realtime';
                 row._sourceFilename = tempRealtime.filename;
                 combinedData.push(row);
+
+                const id = String(getRowValue(row, COL.ID) || '').trim();
+                const sp = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
+                if (id && sp) realtimeOrderKeys.add(`${id}__${sp}`);
+                else if (id) realtimeOrderKeys.add(id);
+                else if (row.__hash) realtimeOrderKeys.add(String(row.__hash));
             }
             if (historicalData.length > 0) {
                 for (let j = 0; j < historicalData.length; j++) {
-                    combinedData.push(historicalData[j]);
+                    const row = historicalData[j];
+                    const id = String(getRowValue(row, COL.ID) || '').trim();
+                    const sp = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
+                    const key = id && sp ? `${id}__${sp}` : (id || (row.__hash ? String(row.__hash) : ''));
+                    // Nếu đơn hàng / sản phẩm này đã có trong bản Realtime mới hơn, không cộng dồn từ lịch sử
+                    if (key && realtimeOrderKeys.has(key)) {
+                        continue;
+                    }
+                    combinedData.push(row);
                 }
 
                 // Filename gộp

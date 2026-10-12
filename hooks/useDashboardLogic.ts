@@ -73,7 +73,8 @@ export const useDashboardLogic = () => {
         handleIgnoreGroup,
         handleRestoreGroup,
         cloudSyncBanner,
-        handleDismissCloudSyncBanner
+        handleDismissCloudSyncBanner,
+        isSyncingCloud
     } = useDataManagement({ filterState, configUrl, setStatus, setAppState, appState });
 
     // 3. Warehouse Targets Management
@@ -319,7 +320,8 @@ export const useDashboardLogic = () => {
         editingTargetKho,
         setEditingTargetKho,
         cloudSyncBanner,
-        handleDismissCloudSyncBanner
+        handleDismissCloudSyncBanner,
+        isSyncingCloud
     }), [
         status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, productConfig, processedData, employeeAnalysisData,
@@ -345,7 +347,8 @@ export const useDashboardLogic = () => {
         hasRealtimeData, handleClearRealtimeData, handleViewReport,
         unconfiguredGroups, ignoredUnconfiguredGroups, handleIgnoreGroup, handleRestoreGroup,
         editingTargetKho,
-        cloudSyncBanner, handleDismissCloudSyncBanner
+        cloudSyncBanner, handleDismissCloudSyncBanner,
+        isSyncingCloud
     ]);
 };
 

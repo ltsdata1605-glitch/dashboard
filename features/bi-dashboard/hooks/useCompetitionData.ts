@@ -1,6 +1,7 @@
 import { useMemo, useCallback } from 'react';
 import { Criterion, CompetitionHeader, Employee } from '../types/nhanVienTypes';
 import { extractEmployeeId, standardizeEmployeeName, isIgnoredDept, type CompetitionEmployeeRow } from '../utils/nhanVienHelpers';
+import { resolveEmployeeTarget } from '../services/competitionSummaryCalc';
 
 interface UseCompetitionDataProps {
     groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: CompetitionEmployeeRow[] }>;
@@ -112,18 +113,16 @@ export const useCompetitionData = ({
         if (isActive === false) return [];
         if (selectedHeadersForNhom.length === 0) return [];
         return [...selectedHeadersForNhom].sort((a, b) => {
-            const targetsA = employeeCompetitionTargets.get(a.originalTitle);
             let totalTargetA = 0, totalActualA = 0;
             filteredEmployees.forEach((emp) => {
-                totalTargetA += targetsA?.get(emp.originalName) ?? 0;
+                totalTargetA += resolveEmployeeTarget(employeeCompetitionTargets, a.originalTitle, emp.originalName);
                 totalActualA += employeeDataMap.get(emp.name)?.values[a.title] ?? 0;
             });
             const completionA = totalTargetA > 0 ? (totalActualA / totalTargetA) : 0;
     
-            const targetsB = employeeCompetitionTargets.get(b.originalTitle);
             let totalTargetB = 0, totalActualB = 0;
             filteredEmployees.forEach((emp) => {
-                totalTargetB += targetsB?.get(emp.originalName) ?? 0;
+                totalTargetB += resolveEmployeeTarget(employeeCompetitionTargets, b.originalTitle, emp.originalName);
                 totalActualB += employeeDataMap.get(emp.name)?.values[b.title] ?? 0;
             });
             const completionB = totalTargetB > 0 ? (totalActualB / totalTargetB) : 0;

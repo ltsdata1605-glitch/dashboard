@@ -269,7 +269,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={handleCopyCommentary}
-                className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 transition-all rounded-lg flex items-center justify-center shrink-0 ${
+                className={`w-8 h-8 transition-all rounded-lg flex items-center justify-center shrink-0 ${
                     copiedCommentary
                         ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40'
                         : 'text-sky-600 hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-slate-800'
@@ -289,7 +289,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 transition-colors rounded-lg shrink-0 ${
+                className={`w-8 h-8 transition-colors rounded-lg shrink-0 ${
                     groupingMode === 'configured'
                         ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -310,7 +310,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className={`min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 relative h-7.5 w-7.5 sm:h-8 sm:w-8 transition-colors rounded-lg shrink-0 ${
+                    className={`relative w-8 h-8 transition-colors rounded-lg shrink-0 ${
                         isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
                             ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -448,7 +448,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 variant="ghost"
                 size="icon"
                 onClick={handleOpenTargetThiDua}
-                className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-lg shrink-0"
+                className="w-8 h-8 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-lg shrink-0"
                 title="Cấu hình Thi đua"
             >
                 <AppIcon name="settings" size="md" />

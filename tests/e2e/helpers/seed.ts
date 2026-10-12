@@ -54,7 +54,9 @@ export async function openReportBi(page: Page) {
     await sidebar.waitFor({ state: 'visible', timeout: 20_000 });
     await sidebar.locator('button:has(svg[data-icon="navReportBi"])').first().click();
 
-    await page.getByRole('button', { name: /Cập nhật/i }).first().waitFor({ state: 'visible', timeout: 20_000 });
+    // `exact`: từ 2026-10-11 phụ đề tiêu đề có nút "Cập nhật: <giờ>" / "Cập nhật dữ liệu" (BiWrapper) — bấm vào là CHẠY
+    // tự động MWG. Tìm /Cập nhật/i lấy .first() trúng nút đó (đứng trước trong DOM) → mở modal tự động, mọi test BI kẹt.
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().waitFor({ state: 'visible', timeout: 20_000 });
 }
 
 /** Thứ tự 4 ô dán ở màn "Cập nhật" — xem `pasteIntoTile()` để biết vì sao dùng chỉ số. */
@@ -100,7 +102,7 @@ export async function pasteIntoTile(page: Page, tileIndex: number, text: string)
 
 /** Nạp đủ dữ liệu để bảng Thi đua có nội dung. Gọi SAU `openReportBi()`. */
 export async function seedCompetitionData(page: Page, competitionLuyKe: string = COMPETITION_LUYKE) {
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.waitForTimeout(800);
     await pasteIntoTile(page, TILE.DOANH_THU_REALTIME, SUMMARY_REALTIME);
     await pasteIntoTile(page, TILE.DOANH_THU_LUYKE, SUMMARY_LUYKE);

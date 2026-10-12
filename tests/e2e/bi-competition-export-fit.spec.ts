@@ -16,7 +16,7 @@ const CT = { competitionData: NAMES.map((n, i) => ctRow(`910 - ${TEST_SUPERMARKE
  */
 test('xuất ảnh Thi đua: thẻ KPI rộng bằng bảng, cột vừa nội dung', async ({ page }) => {
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.waitForTimeout(800);
     await pasteIntoTile(page, TILE.DOANH_THU_REALTIME, SUMMARY_REALTIME);
     await pasteIntoTile(page, TILE.DOANH_THU_LUYKE, SUMMARY_LUYKE);

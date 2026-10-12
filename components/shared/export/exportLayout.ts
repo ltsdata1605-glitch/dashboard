@@ -24,10 +24,104 @@ function stripWidthClasses(el: Element) {
 }
 
 /**
+ * Rút gọn các tên quá dài (ngành hàng, tiêu đề) thành đuôi '...' khi xuất ảnh,
+ * tránh làm dãn cột quá mức và lấn các cột số liệu bên cạnh.
+ */
+export function truncateExportName(name: string, maxLength: number = 26): string {
+    const trimmed = name.trim();
+    if (trimmed.length <= maxLength) return trimmed;
+
+    let sliced = trimmed.slice(0, maxLength);
+
+    // Nếu trong đoạn cắt có dấu phẩy (vd danh sách đối tác / danh mục con), ưu tiên ngắt tại dấu phẩy
+    const lastComma = sliced.lastIndexOf(',');
+    if (lastComma >= 14) {
+        sliced = sliced.slice(0, lastComma);
+    } else {
+        // Ngắt tại từ trọn vẹn (khoảng trắng hoặc gạch nối) nếu có
+        const lastSpace = Math.max(sliced.lastIndexOf(' '), sliced.lastIndexOf(' - '));
+        if (lastSpace >= 14) {
+            sliced = sliced.slice(0, lastSpace);
+        }
+    }
+
+    // Bỏ các ký tự thừa ở cuối như dấu phẩy, gạch ngang, gạch chéo, dấu chấm, dấu cộng
+    const cleaned = sliced.trim().replace(/[, \-_/.:;+]+$/, '');
+    return `${cleaned}...`;
+}
+
+/**
+ * Quét toàn bộ DOM clone để tự động rút gọn các tên dài quá giới hạn thành '...'
+ */
+export function applyExportTextTruncation(root: HTMLElement, maxLength: number = 24): void {
+    // 1. Quét các phần tử có class 'truncate' hoặc đánh dấu ngành hàng / tên
+    root.querySelectorAll<HTMLElement>('.truncate, [data-category-name], [data-truncate-export]').forEach((el) => {
+        if (el.children.length === 0) {
+            const txt = el.textContent?.trim() || '';
+            if (txt.length > maxLength) {
+                el.textContent = truncateExportName(txt, maxLength);
+            }
+        } else {
+            Array.from(el.childNodes).forEach((node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    const txt = node.textContent?.trim() || '';
+                    if (txt.length > maxLength) {
+                        node.textContent = truncateExportName(txt, maxLength);
+                    }
+                }
+            });
+        }
+    });
+
+    // 2. Quét các bảng có cột NGÀNH HÀNG / TÊN / SẢN PHẨM / NHÓM
+    root.querySelectorAll('table').forEach((table) => {
+        const thead = table.querySelector('thead');
+        if (!thead) return;
+        const ths = Array.from(thead.querySelectorAll('tr:last-child th'));
+        const nameColIndices = new Set<number>();
+        ths.forEach((th, idx) => {
+            const hText = th.textContent?.trim().toUpperCase() || '';
+            if (hText.includes('NGÀNH HÀNG') || hText.includes('TÊN') || hText.includes('SẢN PHẨM')) {
+                nameColIndices.add(idx);
+            }
+        });
+
+        if (nameColIndices.size > 0) {
+            table.querySelectorAll('tbody tr').forEach((tr) => {
+                const tds = Array.from(tr.querySelectorAll('td'));
+                nameColIndices.forEach((colIdx) => {
+                    const td = tds[colIdx];
+                    if (!td) return;
+                    const targetEls = td.querySelectorAll<HTMLElement>('span, div, p, a');
+                    if (targetEls.length === 0) {
+                        const txt = td.textContent?.trim() || '';
+                        if (txt.length > maxLength) {
+                            td.textContent = truncateExportName(txt, maxLength);
+                        }
+                    } else {
+                        targetEls.forEach((target) => {
+                            if (target.children.length === 0) {
+                                const txt = target.textContent?.trim() || '';
+                                if (txt.length > maxLength) {
+                                    target.textContent = truncateExportName(txt, maxLength);
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        }
+    });
+}
+
+/**
  * Co mọi bảng trong `root` vừa nội dung. Trả về bề rộng (px) của bảng rộng nhất, đã cộng đệm/viền của
  * các khối bọc giữa bảng và `root` — để ép cả khối ảnh về đúng bề rộng đó. 0 = không có bảng.
  */
 export function fitTablesToContent(root: HTMLElement): number {
+    // Tự động rút gọn các tên quá dài thành '...' trước khi tính toán độ rộng cột
+    applyExportTextTruncation(root, 24);
+
     const tables = Array.from(root.querySelectorAll('table'));
     if (tables.length === 0) return 0;
 
@@ -73,7 +167,16 @@ export function fitTablesToContent(root: HTMLElement): number {
             if (isHeader) cell.style.setProperty('word-break', 'keep-all', 'important');
             cell.querySelectorAll<HTMLElement>('*').forEach((c) => {
                 if (c.classList.contains('export-wrap')) return;
-                if (c.classList.contains('truncate')) c.classList.remove('truncate');
+                const hadTruncate = c.classList.contains('truncate') || c.hasAttribute('data-category-name') || c.hasAttribute('data-truncate-export');
+                if (hadTruncate) {
+                    c.classList.remove('truncate');
+                    if (c.children.length === 0) {
+                        const txt = c.textContent?.trim() || '';
+                        if (txt.length > 24) {
+                            c.textContent = truncateExportName(txt, 24);
+                        }
+                    }
+                }
                 c.style.setProperty('white-space', ws, 'important');
                 c.style.setProperty('text-overflow', 'clip', 'important');
                 if (!isHeader) {
@@ -340,24 +443,116 @@ export function fitTablesToContent(root: HTMLElement): number {
         }
     });
 
-    // Đo bảng rộng nhất + đệm/viền các khối bọc nó
+    // Đo đệm và viền ngang của 1 phần tử
+    const getHorizPadBorder = (el: HTMLElement): number => {
+        const cs = getComputedStyle(el);
+        return (parseFloat(cs.paddingLeft || '0') || 0) + (parseFloat(cs.paddingRight || '0') || 0)
+            + (parseFloat(cs.borderLeftWidth || '0') || 0) + (parseFloat(cs.borderRightWidth || '0') || 0);
+    };
+
+    // Nhận diện số cột của container dạng grid
+    const detectGridCols = (gridEl: HTMLElement): number => {
+        const inline = gridEl.style.gridTemplateColumns;
+        if (inline) {
+            const rep = inline.match(/repeat\((\d+)/);
+            if (rep) return parseInt(rep[1], 10);
+            const parts = inline.trim().split(/\s+/).filter(p => p && !p.startsWith('minmax') && !p.startsWith('('));
+            if (parts.length > 1) return parts.length;
+        }
+        for (const cls of Array.from(gridEl.classList)) {
+            const m = cls.match(/(?:^|:)(?:grid-cols-)(\d+)/);
+            if (m) return parseInt(m[1], 10);
+        }
+        try {
+            const cs = getComputedStyle(gridEl);
+            if (cs.display === 'grid' && cs.gridTemplateColumns && cs.gridTemplateColumns !== 'none') {
+                const tracks = cs.gridTemplateColumns.split(' ').filter(Boolean);
+                if (tracks.length > 1) return tracks.length;
+            }
+        } catch {}
+        return 1;
+    };
+
+    // Lấy khoảng cách gap ngang của grid/flex
+    const getHorizGap = (el: HTMLElement): number => {
+        const cs = getComputedStyle(el);
+        const gap = parseFloat(cs.columnGap || cs.gap || '0');
+        if (!isNaN(gap) && gap > 0) return gap;
+        for (const cls of Array.from(el.classList)) {
+            const m = cls.match(/(?:^|:)gap-(?:x-)?(\d+(?:\.\d+)?)/);
+            if (m) return parseFloat(m[1]) * 4;
+        }
+        return 20; // fallback mặc định 20px
+    };
+
+    // 1. Đo bảng đơn lẻ rộng nhất + đệm/viền các khối bọc nó
     let widest = 0;
     tables.forEach((table) => {
-        const w = Math.ceil(table.getBoundingClientRect().width);
+        const w = Math.ceil(table.getBoundingClientRect().width) || parseFloat(table.style.width) || 0;
         if (w <= 0) return;
         let extra = 0;
         let node: HTMLElement | null = table.parentElement;
         while (node && node !== root) {
-            const cs = getComputedStyle(node);
-            extra += parseFloat(cs.paddingLeft || '0') + parseFloat(cs.paddingRight || '0')
-                + parseFloat(cs.borderLeftWidth || '0') + parseFloat(cs.borderRightWidth || '0');
+            extra += getHorizPadBorder(node);
             node = node.parentElement;
         }
         const csRoot = getComputedStyle(root);
-        extra += parseFloat(csRoot.paddingLeft || '0') + parseFloat(csRoot.paddingRight || '0');
+        extra += (parseFloat(csRoot.paddingLeft || '0') || 0) + (parseFloat(csRoot.paddingRight || '0') || 0);
         // +2px: bảng `border-collapse` có nửa viền ngoài nằm NGOÀI hộp đo được — thiếu là mất viền phải trong ảnh
         widest = Math.max(widest, Math.ceil(w + extra + 2));
     });
+
+    // 2. Đo các khối bố cục đa cột (Grid hoặc Flex ngang) chứa nhiều bảng cạnh nhau
+    const multiContainers = Array.from(root.querySelectorAll<HTMLElement>('.grid, [style*="grid"], .flex-row'));
+    multiContainers.forEach((container) => {
+        const childrenWithTables = Array.from(container.children).filter((child) =>
+            child instanceof HTMLElement && (child.querySelector('table') || child.tagName === 'TABLE')
+        ) as HTMLElement[];
+
+        if (childrenWithTables.length <= 1) return;
+
+        const isGrid = container.classList.contains('grid') ||
+            container.style.display === 'grid' ||
+            getComputedStyle(container).display === 'grid';
+
+        const cols = isGrid ? detectGridCols(container) : childrenWithTables.length;
+        const effectiveCols = Math.min(cols, childrenWithTables.length);
+        if (effectiveCols <= 1) return;
+
+        // Bề rộng lớn nhất của 1 card/cột trong container
+        let maxItemW = 0;
+        childrenWithTables.forEach((item) => {
+            const table = item.tagName === 'TABLE' ? item : item.querySelector('table');
+            if (!table) return;
+            const tableW = Math.ceil(table.getBoundingClientRect().width) || parseFloat(table.style.width) || 0;
+            let itemExtra = 0;
+            let curr: HTMLElement | null = table.parentElement;
+            while (curr && curr !== container) {
+                itemExtra += getHorizPadBorder(curr);
+                curr = curr.parentElement;
+            }
+            maxItemW = Math.max(maxItemW, tableW + itemExtra);
+        });
+
+        if (maxItemW <= 0) return;
+
+        const gap = getHorizGap(container);
+        const containerNeededW = effectiveCols * maxItemW + (effectiveCols - 1) * gap;
+
+        // Đệm và viền từ container lên đến root
+        let ancestorExtra = 0;
+        let anc: HTMLElement | null = container.parentElement;
+        while (anc && anc !== root) {
+            ancestorExtra += getHorizPadBorder(anc);
+            anc = anc.parentElement;
+        }
+        const csRoot = getComputedStyle(root);
+        ancestorExtra += (parseFloat(csRoot.paddingLeft || '0') || 0) + (parseFloat(csRoot.paddingRight || '0') || 0);
+
+        const totalNeededW = Math.ceil(containerNeededW + ancestorExtra + 2);
+        widest = Math.max(widest, totalNeededW);
+    });
+
     return widest;
 }
 

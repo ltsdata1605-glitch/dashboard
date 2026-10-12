@@ -52,17 +52,18 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                 className,
             )}
         >
-            <div className="flex items-center gap-2.5 lg:gap-3 min-w-0">
+            <div className="flex items-center gap-2.5 lg:gap-3 min-w-0 flex-1">
                 {icon && (
                     <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-control bg-sky-50 dark:bg-sky-500/15 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0">
                         <AppIcon name={resolveIconName(icon) ?? 'help'} size="md" />
                     </div>
                 )}
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                     <h2 className={titleClassName || "text-[17px] lg:text-base font-semibold text-slate-900 dark:text-slate-100 leading-[22px] truncate"}>{title}</h2>
-                    {/* Điện thoại: tối đa 2 dòng thay vì cắt 1 dòng — "Lọc theo kho: tất cả | T…" mất hẳn
-                        phần khoảng thời gian (iPhone, dữ liệu thật 2026-09-28). Desktop giữ 1 dòng. */}
-                    {subtitle && <div className="text-[13px] leading-[18px] font-normal text-slate-500 dark:text-slate-400 line-clamp-2 lg:truncate">{subtitle}</div>}
+                    {/* Phụ đề nhỏ gọn (chủ dự án 2026-10-11: "nhỏ gọn thanh thoát") nhưng không dưới thang chữ: footnote 12px,
+                        viết thường, xám. Điện thoại tối đa 2 dòng ("Lọc theo kho: tất cả | T…" từng mất phần khoảng thời
+                        gian, dữ liệu thật 2026-09-28); laptop 1 dòng. */}
+                    {subtitle && <div className="type-footnote font-normal text-slate-500 dark:text-slate-400 line-clamp-2 lg:truncate">{subtitle}</div>}
                 </div>
             </div>
             {kieuMoi ? (

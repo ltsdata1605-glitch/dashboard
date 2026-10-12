@@ -243,7 +243,7 @@ for (const m of CHI) {
                 await page.waitForTimeout(800);
             } else if (m.tab === 'employees') {
                 await page.goto('/?tab=employees'); await page.waitForTimeout(2500);
-                await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+                await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
                 await page.waitForTimeout(800);
                 await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
                 const dan = async (ten: RegExp, idx: number, text: string) => {

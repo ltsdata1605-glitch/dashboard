@@ -69,6 +69,37 @@ export const extractStoreCodeAndName = (rawStore: string): { storeCode: string; 
     return { storeCode, storeName };
 };
 
+export const formatCurrencyFull = (val: unknown): string => {
+    const num = parseNumber(val);
+    if (!num) return '0';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.round(num));
+};
+
+export const formatCurrency = (val: unknown): string => {
+    const num = parseNumber(val);
+    if (!num) return '0';
+    const rounded = Math.round(num);
+    const abs = Math.abs(rounded);
+    if (abs >= 1_000_000_000) return (rounded / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + ' tỷ';
+    if (abs >= 1_000_000) return (rounded / 1_000_000).toFixed(1).replace(/\.0$/, '') + ' tr';
+    if (abs >= 1_000) return (rounded / 1_000).toFixed(0) + ' k';
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(rounded);
+};
+
+export const formatPercent = (val: unknown): string => {
+    if (val === undefined || val === null || val === '') return '0%';
+    const num = parseNumber(val);
+    if (num === 0) return '0%';
+    const pct = num * 100;
+    return (pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1)) + '%';
+};
+
+export const formatNumber = (val: unknown): string => {
+    const num = parseNumber(val);
+    return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.round(num));
+};
+
+
 export const parseStoreSummaryFromData = (data: any[][]): CheckThuongStoreSummary[] => {
     if (!data || !Array.isArray(data) || data.length === 0) return [];
 
@@ -121,7 +152,7 @@ export const parseStoreSummaryFromData = (data: any[][]): CheckThuongStoreSummar
             totalCategories,
             achievedCount,
             achievedPercent,
-            totalBonus,
+            totalBonus: Math.round(totalBonus),
             rows: item.rows,
         });
     }

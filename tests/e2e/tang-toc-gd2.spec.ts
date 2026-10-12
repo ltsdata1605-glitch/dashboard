@@ -7,7 +7,7 @@ import { createSalesXlsx } from './helpers/salesFixture';
  *  1. Lịch doanh thu: `lunar-javascript` chỉ tải khi mở chế độ Lịch, lịch vẫn có ngày âm.
  *  2. Phông Google: lúc mở app chỉ có Roboto Condensed (hết thẻ CSS chặn hiển thị 7 họ); mở menu phông mới nạp phần còn lại.
  *  3. Dock Auto Sync (laptop) vẫn xuất hiện dù đã tách gói + gắn sau lần rảnh đầu.
- *  4. Tải trước tab chính khi rảnh: trang Check thưởng được prefetch.
+ *  4. Tải trước tab chính khi rảnh: chunk Check thưởng + Report BI (không còn tải trang iframe check-thuong.html).
  *  5. BusyBar: chỉ hiện khi bận > 300 ms, không chặn thao tác.
  * Chạy trên dev server: URL module là đường dẫn nguồn (/node_modules/.vite/deps/lunar-javascript.js…), nên đếm được
  * chính xác thư viện nào đã được tải.
@@ -63,12 +63,16 @@ test('Dock Auto Sync trên laptop vẫn xuất hiện (gói riêng, gắn sau l�
     await expect(page.getByTestId('ycx-auto-dock')).toBeVisible({ timeout: 15_000 });
 });
 
-test('Rảnh thì tải trước trang Check thưởng (chuyển tab nhanh)', async ({ page }) => {
+test('Rảnh thì tải trước 2 tab chính còn lại (chuyển tab nhanh), không tải trang Check thưởng cũ', async ({ page }) => {
     const urls: string[] = [];
     page.on('request', r => urls.push(r.url()));
     await page.goto('/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first().click({ timeout: 30_000 });
-    await expect.poll(() => urls.some(u => u.endsWith('/check-thuong.html')), { timeout: 20_000 }).toBe(true);
+    // Dev server: URL module là đường dẫn nguồn → thấy đúng chunk nào được tải trước.
+    await expect.poll(() => urls.some(u => u.includes('/components/views/CheckThuongView.tsx')), { timeout: 20_000 }).toBe(true);
+    await expect.poll(() => urls.some(u => u.includes('/features/bi-dashboard/components/BiWrapper.tsx')), { timeout: 20_000 }).toBe(true);
+    // Check thưởng là component React từ 2026-10-11 — trang HTML iframe cũ không còn được tải trước.
+    expect(urls.some(u => u.endsWith('/check-thuong.html'))).toBe(false);
 });
 
 test('BusyBar: bận ngắn không hiện, bận lâu hiện vạch mảnh và vẫn bấm được nút bên dưới', async ({ page }) => {

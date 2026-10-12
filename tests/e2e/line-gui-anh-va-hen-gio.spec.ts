@@ -285,7 +285,7 @@ test('hẹn giờ Report BI Luỹ kế + khu vực: đổ dữ liệu xong → R
     test.setTimeout(180_000);
     const { seedCompetitionData } = await import('./helpers/seed');
     await chuanBi(page, { url: '/?tab=employees' });
-    await page.getByRole('button', { name: /Cập nhật/i }).first().waitFor({ state: 'visible', timeout: 20_000 });
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().waitFor({ state: 'visible', timeout: 20_000 });
     await seedCompetitionData(page);
     // Đặt hẹn giờ ĐÚNG phút hiện tại bằng dịch vụ (giao diện chọn khu vực đã kiểm ở test trên)
     await page.evaluate(async (nhom) => {

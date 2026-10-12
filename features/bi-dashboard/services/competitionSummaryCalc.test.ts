@@ -42,7 +42,11 @@ const targets = (rows: Record<string, Record<string, number>>): CompetitionTarge
 const H = (title: string, originalTitle = title): CompetitionHeader => ({ title, originalTitle, metric: 'SLLK' });
 
 describe('resolveEmployeeTarget — dò target qua 3 tầng nới lỏng', () => {
-    const t = targets({ 'SIM MANGO': { 'A': 100 }, '  vay tiền mặt  ': { 'B': 50 } });
+    const t = targets({
+        'SIM MANGO': { 'A': 100 },
+        '  vay tiền mặt  ': { 'B': 50 },
+        'T10/GIA DỤNG HOT': { '12345 - Nguyễn Văn A': 80 },
+    });
 
     it('khớp chính xác cả chương trình lẫn nhân viên', () => {
         expect(resolveEmployeeTarget(t, 'SIM MANGO', 'A')).toBe(100);
@@ -54,6 +58,15 @@ describe('resolveEmployeeTarget — dò target qua 3 tầng nới lỏng', () =>
 
     it('khớp lỏng theo kiểu CHỨA NHAU', () => {
         expect(resolveEmployeeTarget(t, 'SIM', 'A'), 'tên ngắn nằm trong tên dài').toBe(100);
+    });
+
+    it('khớp khi một bên có tiền tố tháng (T10/, Tháng 10 -)', () => {
+        expect(resolveEmployeeTarget(t, 'GIA DỤNG HOT', '12345 - Nguyễn Văn A')).toBe(80);
+    });
+
+    it('khớp nhân viên đảo thứ tự Mã NV - Tên NV hoặc Tên NV', () => {
+        expect(resolveEmployeeTarget(t, 'T10/GIA DỤNG HOT', 'Nguyễn Văn A - 12345')).toBe(80);
+        expect(resolveEmployeeTarget(t, 'T10/GIA DỤNG HOT', 'Nguyễn Văn A')).toBe(80);
     });
 
     it('thiếu tham số hoặc không tìm thấy thì trả 0, KHÔNG ném lỗi', () => {

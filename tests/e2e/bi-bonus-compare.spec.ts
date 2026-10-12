@@ -75,7 +75,7 @@ async function openBonusTab(page: Page) {
 test.describe('Report BI › Thưởng — menu chế độ xem + So sánh cùng kỳ', () => {
     test.beforeEach(async ({ page }) => {
         await openReportBi(page);
-        await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+        await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
         await page.waitForTimeout(800);
         await pasteIntoTile(page, TILE.DOANH_THU_REALTIME, SUMMARY_REALTIME);
         await pasteIntoTile(page, TILE.DOANH_THU_LUYKE, SUMMARY_LUYKE);

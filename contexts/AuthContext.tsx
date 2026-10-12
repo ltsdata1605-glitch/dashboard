@@ -125,6 +125,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             clearTimeout(fallbackTimer);
             setUser(currentUser);
             if (currentUser) {
+                // Tự động tắt demo mode nếu user đã đăng nhập tài khoản thật
+                setDemoMode(false);
                 // Dữ liệu cục bộ thuộc về TRÌNH DUYỆT chứ không theo tài khoản: tài khoản khác
                 // đăng nhập trên cùng máy sẽ thấy dữ liệu của người trước (chủ dự án gặp thật
                 // 2026-09-23 — tài khoản mới vẫn thấy cụm siêu thị cũ ở Report BI). Dọn trước khi

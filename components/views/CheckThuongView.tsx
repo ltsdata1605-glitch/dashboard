@@ -3,134 +3,132 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { toast } from '../shared/ui/toast';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import { getGlobalFont, saveSettingOrThrow } from '../../services/dbService';
+import { useAuth } from '../../contexts/AuthContext';
+import { saveSettingOrThrow, saveSettingFromCloud } from '../../services/dbService';
 import { Button } from '../shared/ui/Button';
-import { laPhongGoogle, tenHoPhong, urlPhongGoogle } from '../shared/ui/googleFonts';
-import { offerShareRetry } from '../shared/ui/ShareRetryToast';
-import { downloadBlob } from '../../services/uiService';
 import { getUnifiedCheckThuongData } from '../../services/checkThuongIframeService';
-import { CheckThuongLeaderboardView } from '../../features/check-thuong';
-
+import { CheckThuongLeaderboardView, CheckThuongSearchView } from '../../features/check-thuong';
+import { db } from '../../services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { assembleChunkedHeavyValue, restoreNestedArraysFromFirestore } from '../../services/firestoreService';
+import { extractCloudTimeMs } from '../../services/heavySyncPolicy';
 
 export const CheckThuongView: React.FC = () => {
     const { activeTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
-    const [isIframeLoaded, setIsIframeLoaded] = useState(false);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
     const [hasData, setHasData] = useState(false);
     const [codes, setCodes] = useState({ code1: '910', code2: '' });
     const [activeSubTab, setActiveSubTab] = useState<'search' | 'leaderboard'>('search');
     const [competitionData, setCompetitionData] = useState<any[][]>([]);
     const [fileName, setFileName] = useState<string>('');
     const [uploadTime, setUploadTime] = useState<string>('');
-    // Đọc được activeTab MỚI NHẤT bên trong listener của effect deps [] bên dưới (không re-subscribe
-    // message/cloud-sync listener mỗi lần đổi tab) — dùng để chỉ hiện cảnh báo cập nhật Cloud khi
-    // người dùng ĐANG xem đúng tab Check Thưởng, tránh toast lạc ngữ cảnh ở tab khác.
+    const { user, isDemoMode } = useAuth();
+    const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+    const fileInputHiddenRef = useRef<HTMLInputElement>(null);
+
+    // Định dạng ngày giờ cập nhật chuẩn hh:mm:ss dd/MM/yyyy
+    const formattedUploadTime = React.useMemo(() => {
+        if (!uploadTime) return '';
+        try {
+            const d = new Date(uploadTime);
+            if (!isNaN(d.getTime())) {
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                const seconds = String(d.getSeconds()).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${hours}:${minutes}:${seconds} ${day}/${month}/${year}`;
+            }
+        } catch {}
+        return String(uploadTime).replace(' - ', ' ');
+    }, [uploadTime]);
+
     const activeTabRef = useRef(activeTab);
     useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
+
+    const handleManualCloudSync = useCallback(async () => {
+        if (!user || isDemoMode) {
+            toast.error('Vui lòng đăng nhập tài khoản đám mây (Google) trên cả Điện Thoại và Laptop để đồng bộ dữ liệu!', {
+                id: 'checkthuong-cloud-login-req',
+                duration: 5000,
+            });
+            return;
+        }
+
+        setIsSyncingCloud(true);
+        const toastId = toast.loading('Đang kiểm tra và đồng bộ dữ liệu Check Thưởng từ Đám Mây...', { id: 'checkthuong-cloud-syncing' });
+
+        try {
+            const docRef = doc(db, 'users', user.uid, 'configs', 'checkthuong_data');
+            const docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                toast.info('Chưa có dữ liệu Check Thưởng trên Đám Mây để đồng bộ.', { id: toastId, duration: 4000 });
+                setIsSyncingCloud(false);
+                return;
+            }
+
+            const data = docSnap.data();
+            let val: any;
+            if (data?.chunked) {
+                val = await assembleChunkedHeavyValue(docSnap.ref);
+            } else {
+                val = restoreNestedArraysFromFirestore(data?.value);
+            }
+
+            if (!val || !val.competitionData || !Array.isArray(val.competitionData) || val.competitionData.length === 0) {
+                toast.info('Dữ liệu Check Thưởng trên Đám Mây không hợp lệ hoặc đang trống.', { id: toastId, duration: 4000 });
+                setIsSyncingCloud(false);
+                return;
+            }
+
+            const cloudTime = extractCloudTimeMs(data) || Date.now();
+            await saveSettingFromCloud('checkthuong_data', val, cloudTime);
+
+            setHasData(true);
+            setCompetitionData(val.competitionData);
+            if (val.fileName) setFileName(val.fileName);
+            if (val.uploadTime) {
+                setUploadTime(val.uploadTime);
+            } else if (val.lastModified) {
+                setUploadTime(new Date(val.lastModified).toISOString());
+            } else {
+                setUploadTime(new Date(cloudTime).toISOString());
+            }
+            if (val.code1) setCodes(prev => ({ ...prev, code1: val.code1 }));
+            if (val.code2) setCodes(prev => ({ ...prev, code2: val.code2 }));
+
+            const timeStr = val.uploadTime ? new Date(val.uploadTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(val.uploadTime).toLocaleDateString('vi-VN') : '';
+            toast.success(`Đã đồng bộ thành công dữ liệu Check Thưởng từ Đám Mây${timeStr ? ` (${timeStr})` : ''}!`, { id: toastId, duration: 4000 });
+        } catch (err: any) {
+            console.error('[CheckThuong] Lỗi đồng bộ thủ công:', err);
+            toast.error(`Đồng bộ thất bại: ${err?.message || 'Lỗi mạng hoặc kết nối'}`, { id: toastId, duration: 5000 });
+        } finally {
+            setIsSyncingCloud(false);
+        }
+    }, [user, isDemoMode]);
 
     useEffect(() => {
         setMounted(true);
 
-        // Nạp trước dữ liệu đã lưu từ IndexedDB hợp nhất (cả keyval-store và BI_HUB_DATABASE_V2)
+        // Nạp trước dữ liệu đã lưu từ IndexedDB hợp nhất
         getUnifiedCheckThuongData().then((saved) => {
             if (saved && saved.competitionData && saved.competitionData.length > 0) {
                 setHasData(true);
                 setCompetitionData(saved.competitionData);
                 if (saved.fileName) setFileName(saved.fileName);
-                if (saved.uploadTime) setUploadTime(saved.uploadTime);
+                if (saved.uploadTime) {
+                    setUploadTime(saved.uploadTime);
+                } else if (saved.lastModified) {
+                    setUploadTime(new Date(saved.lastModified).toISOString());
+                }
                 if (saved.code1) setCodes(prev => ({ ...prev, code1: saved.code1 }));
                 if (saved.code2) setCodes(prev => ({ ...prev, code2: saved.code2 }));
-                // Gửi ngay cho iframe nếu iframe đã sẵn sàng
-                iframeRef.current?.contentWindow?.postMessage({
-                    type: 'CHECK_THUONG_INIT_DATA',
-                    payload: saved
-                }, window.location.origin);
             }
         });
 
-        const handleMessage = (e: MessageEvent) => {
-            // Audit 2026-10-07 (S11): MỌI loại tin chỉ nhận từ đúng iframe Check Thưởng của mình (cùng
-            // origin). Trước đây chỉ nhánh SHARE_RETRY kiểm — cửa sổ lạ giữ tham chiếu tới app (mở
-            // popup/khung) bơm được số thưởng giả và ghi đè 'checkthuong_data' đã lưu.
-            if (e.source !== iframeRef.current?.contentWindow || e.origin !== window.location.origin) return;
-            if (e.data?.type === 'CHECK_THUONG_FILE_LOADED') {
-                setHasData(true);
-                if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
-                if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
-                if (e.data.competitionData && Array.isArray(e.data.competitionData)) {
-                    setCompetitionData(e.data.competitionData);
-                }
-                if (e.data.fileName) setFileName(e.data.fileName);
-                if (e.data.uploadTime) setUploadTime(e.data.uploadTime);
-
-                if (e.data.competitionData && Array.isArray(e.data.competitionData) && e.data.competitionData.length > 0) {
-                    const filePayload = {
-                        schemaVersion: 1,
-                        source: 'check-thuong',
-                        competitionData: e.data.competitionData,
-                        fileName: e.data.fileName || 'file_cu.xlsx',
-                        uploadTime: e.data.uploadTime || null,
-                        code1: e.data.code1 || '910',
-                        code2: e.data.code2 || '',
-                        lastModified: Date.now()
-                    };
-                    saveSettingOrThrow('checkthuong_data', filePayload).catch(err => {
-                        console.error('[CheckThuong] Lưu dữ liệu từ file loaded thất bại:', err);
-                    });
-                }
-            } else if (e.data?.type === 'CHECK_THUONG_REQUEST_DATA_FROM_PARENT') {
-                getUnifiedCheckThuongData().then((saved) => {
-                    if (saved && saved.competitionData && saved.competitionData.length > 0) {
-                        iframeRef.current?.contentWindow?.postMessage({
-                            type: 'CHECK_THUONG_INIT_DATA',
-                            payload: saved
-                        }, window.location.origin);
-                    } else {
-                        // Báo "không có dữ liệu" để iframe hiện màn nạp file ngay — trước đây nó luôn chờ đủ 500 ms (GĐ2 tăng tốc).
-                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_NO_DATA' }, window.location.origin);
-                    }
-                });
-            } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED' || e.data?.type === 'CHECK_THUONG_DATA_RESPONSE') {
-                const payload = e.data.payload;
-                if (payload) {
-                    if (payload.competitionData && Array.isArray(payload.competitionData)) {
-                        setCompetitionData(payload.competitionData);
-                        setHasData(true);
-                    }
-                    if (payload.fileName) setFileName(payload.fileName);
-                    if (payload.uploadTime) setUploadTime(payload.uploadTime);
-                    if (payload.code1) setCodes(prev => ({ ...prev, code1: payload.code1 }));
-                    if (payload.code2) setCodes(prev => ({ ...prev, code2: payload.code2 }));
-                    if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED') {
-                        saveSettingOrThrow('checkthuong_data', payload).catch((err) => {
-                            console.error('[CheckThuong] Lưu dữ liệu thất bại:', err);
-                            toast.error('Không lưu được thay đổi Check Thưởng vào máy. Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-save-failed', duration: 6000 });
-                        });
-                    }
-                }
-            } else if (e.data?.type === 'CHECK_THUONG_SHARE_RETRY') {
-                // Chỉ nhận từ đúng iframe Check Thưởng của mình (cùng origin) — trang lạ không được
-                // tự bật bảng chia sẻ với file tuỳ ý.
-                if (e.source !== iframeRef.current?.contentWindow || e.origin !== window.location.origin) return;
-                if (!(e.data.blob instanceof Blob)) return;
-                const blob: Blob = e.data.blob;
-                const filename = String(e.data.filename || 'Check_thuong.png');
-                const ten = filename.replace(/\.png$/i, '').replace(/_/g, ' ');
-                offerShareRetry(
-                    { files: [new File([blob], filename, { type: 'image/png' })], title: ten, text: ten },
-                    () => downloadBlob(blob, filename, true),
-                );
-            } else if (e.data?.type === 'CHECK_THUONG_SAVE_ERROR') {
-                console.error('[CheckThuong] Lưu dữ liệu trong iframe thất bại:', e.data.message);
-                toast.error('Không lưu được thay đổi Check Thưởng (bộ nhớ tạm bảng tra cứu). Vui lòng thử lại hoặc tải lại trang.', { id: 'checkthuong-iframe-save-failed', duration: 6000 });
-            } else if (e.data?.type === 'CHECK_THUONG_LOAD_ERROR') {
-                console.error('[CheckThuong] Tải dữ liệu đã lưu trong iframe thất bại:', e.data.message);
-                toast.error('Không tải được dữ liệu Check Thưởng đã lưu trước đó. Vui lòng tải lại file Excel.', { id: 'checkthuong-iframe-load-failed', duration: 6000 });
-            }
-        };
-
-        // Tự động áp dụng bản Cloud mới vào iframe — người dùng không cần phải click xác nhận hay cập nhật thủ công
+        // Tự động lắng nghe cập nhật Cloud
         const handleCloudSync = (e?: any) => {
             const payload = e?.detail?.payload;
             if (payload && payload.competitionData && payload.competitionData.length > 0) {
@@ -140,19 +138,15 @@ export const CheckThuongView: React.FC = () => {
                 if (payload.uploadTime) setUploadTime(payload.uploadTime);
                 if (payload.code1) setCodes(prev => ({ ...prev, code1: payload.code1 }));
                 if (payload.code2) setCodes(prev => ({ ...prev, code2: payload.code2 }));
-                iframeRef.current?.contentWindow?.postMessage({
-                    type: 'CHECK_THUONG_INIT_DATA',
-                    payload
-                }, window.location.origin);
             } else {
                 getUnifiedCheckThuongData().then((saved) => {
                     if (saved && saved.competitionData && saved.competitionData.length > 0) {
-                        iframeRef.current?.contentWindow?.postMessage({
-                            type: 'CHECK_THUONG_INIT_DATA',
-                            payload: saved
-                        }, window.location.origin);
-                    } else {
-                        iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, window.location.origin);
+                        setHasData(true);
+                        setCompetitionData(saved.competitionData);
+                        if (saved.fileName) setFileName(saved.fileName);
+                        if (saved.uploadTime) setUploadTime(saved.uploadTime);
+                        if (saved.code1) setCodes(prev => ({ ...prev, code1: saved.code1 }));
+                        if (saved.code2) setCodes(prev => ({ ...prev, code2: saved.code2 }));
                     }
                 });
             }
@@ -169,151 +163,77 @@ export const CheckThuongView: React.FC = () => {
             }
         };
 
-        window.addEventListener('message', handleMessage);
         window.addEventListener('check-thuong-cloud-update-available', handleCloudUpdateAvailable);
         window.addEventListener('check-thuong-cloud-sync', handleCloudSync);
 
         return () => {
-            window.removeEventListener('message', handleMessage);
             window.removeEventListener('check-thuong-cloud-sync', handleCloudSync);
             window.removeEventListener('check-thuong-cloud-update-available', handleCloudUpdateAvailable);
         };
     }, []);
 
-    // Inject parent's custom font into the iframe document
-    const injectFontIntoIframe = useCallback((fontValue: string) => {
-        const iframeDoc = iframeRef.current?.contentDocument;
-        // iframe đang nạp dở: document tạm chưa có <head> → lần 'load' sau sẽ chèn lại.
-        if (!iframeDoc?.head) return;
+    const handleFileLoaded = useCallback((res: {
+        competitionData: any[][];
+        fileName: string;
+        uploadTime: string;
+        lastModified: number;
+    }) => {
+        setHasData(true);
+        setCompetitionData(res.competitionData);
+        setFileName(res.fileName);
+        setUploadTime(res.uploadTime);
 
-        let styleEl = iframeDoc.getElementById('injected-global-font');
-        if (!styleEl) {
-            styleEl = iframeDoc.createElement('style');
-            styleEl.id = 'injected-global-font';
-            iframeDoc.head.appendChild(styleEl);
-        }
-
-        const activeFont = fontValue || 'UTM Avo';
-        // Phông Google nay nạp theo nhu cầu (components/shared/ui/googleFonts.ts) — trang cha chưa chắc đã có sẵn thẻ <link>
-        // của phông này lúc iframe chép stylesheet → tự gắn link vào iframe (một lần mỗi họ).
-        if (laPhongGoogle(activeFont) && !iframeDoc.head.querySelector(`link[data-phong-google="${tenHoPhong(activeFont)}"]`)) {
-            const link = iframeDoc.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = urlPhongGoogle([activeFont]);
-            link.dataset.phongGoogle = tenHoPhong(activeFont);
-            iframeDoc.head.appendChild(link);
-        }
-        if (activeFont && activeFont !== 'UTM Avo') {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
-        } else {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'UTM Avo', sans-serif !important; }`;
-        }
-    }, []);
-
-    useEffect(() => {
-        const iframe = iframeRef.current;
-        if (!iframe) return;
-
-        const onLoad = () => {
-            setIsIframeLoaded(true);
-            // 1. Copy all parent styles (including Tailwind) to iframe so we don't need Tailwind CDN
-            try {
-                const iframeDoc = iframe.contentDocument;
-                // onLoad chạy 2 lần cho cùng 1 document (sự kiện 'load' + nhánh readyState bên dưới) →
-                // trước đây chép MỌI stylesheet 2 lần: CSS bị phân tích 2 lần, link phông tải 2 lần
-                // (đo 2026-09-30). Đánh dấu document đã chép.
-                // Bỏ qua document tạm `about:blank` (iframe chưa nạp xong trang thật) — chép vào đó là tải phí.
-                if (iframeDoc?.head && iframeDoc.URL.includes('check-thuong') && !iframeDoc.head.hasAttribute('data-parent-styles-copied')) {
-                    iframeDoc.head.setAttribute('data-parent-styles-copied', '');
-                    const parentStyles = document.querySelectorAll('style, link[rel="stylesheet"]');
-                    parentStyles.forEach(styleNode => {
-                        iframeDoc.head.appendChild(styleNode.cloneNode(true));
-                    });
-                }
-            } catch { /* non-critical */ }
-
-            // 2. Read saved font and inject into iframe
-            getGlobalFont().then(font => {
-                injectFontIntoIframe(font || 'UTM Avo');
-            });
-
-            // 3. Đẩy dữ liệu Check Thưởng ngay xuống iframe để render lập tức mà không phải chờ
-            getUnifiedCheckThuongData().then(saved => {
-                if (saved && saved.competitionData && saved.competitionData.length > 0) {
-                    iframe.contentWindow?.postMessage({
-                        type: 'CHECK_THUONG_INIT_DATA',
-                        payload: saved
-                    }, window.location.origin);
-                }
-            });
+        const filePayload = {
+            schemaVersion: 1,
+            source: 'check-thuong',
+            competitionData: res.competitionData,
+            fileName: res.fileName,
+            uploadTime: res.uploadTime,
+            code1: codes.code1 || '910',
+            code2: codes.code2 || '',
+            lastModified: res.lastModified
         };
-        iframe.addEventListener('load', onLoad);
-        if (iframe.contentDocument && (iframe.contentDocument.readyState === 'complete' || iframe.contentDocument.readyState === 'interactive')) {
-            onLoad();
-        }
 
-        // Also observe parent's dynamic font style changes (when user picks a new font)
-        const observer = new MutationObserver(() => {
-            const parentStyle = document.getElementById('dynamic-font-style');
-            if (parentStyle) {
-                // Extract font name from parent style
-                const match = parentStyle.innerHTML.match(/font-family:\s*'([^']+)'/);
-                if (match) injectFontIntoIframe(match[1]);
-            }
+        saveSettingOrThrow('checkthuong_data', filePayload).catch(err => {
+            console.error('[CheckThuong] Lưu dữ liệu thất bại:', err);
         });
-        observer.observe(document.head, { childList: true, subtree: true, characterData: true });
-
-        return () => {
-            iframe.removeEventListener('load', onLoad);
-            observer.disconnect();
-        };
-    }, [injectFontIntoIframe]);
-
-    const handleSearch = () => {
-        iframeRef.current?.contentWindow?.postMessage({
-            type: 'CHECK_THUONG_SEARCH',
-            code1: codes.code1,
-            code2: codes.code2
-        }, window.location.origin);
-    };
+    }, [codes]);
 
     const handleCodeChange = (field: 'code1' | 'code2', value: string) => {
         setCodes(prev => {
             const newCodes = { ...prev, [field]: value };
-            iframeRef.current?.contentWindow?.postMessage({
-                type: 'CHECK_THUONG_SEARCH',
-                code1: newCodes.code1,
-                code2: newCodes.code2
-            }, window.location.origin);
+            if (hasData && competitionData.length > 0) {
+                saveSettingOrThrow('checkthuong_data', {
+                    schemaVersion: 1,
+                    source: 'check-thuong',
+                    competitionData,
+                    fileName,
+                    uploadTime,
+                    code1: newCodes.code1,
+                    code2: newCodes.code2,
+                    lastModified: Date.now()
+                }).catch(err => {
+                    console.error('[CheckThuong] Lưu mã kho thất bại:', err);
+                });
+            }
             return newCodes;
         });
     };
 
-    const handleChangeFile = () => {
-        iframeRef.current?.contentWindow?.postMessage({
-            type: 'CHECK_THUONG_CHANGE_FILE'
-        }, window.location.origin);
-    };
-
     const handleSelectStoreFromLeaderboard = (storeCode: string) => {
         setCodes({ code1: storeCode, code2: '' });
-        iframeRef.current?.contentWindow?.postMessage({
-            type: 'CHECK_THUONG_SEARCH',
-            code1: storeCode,
-            code2: ''
-        }, window.location.origin);
         setActiveSubTab('search');
     };
 
     const renderSearchBar = (isMobile: boolean) => (
-        <div className={`flex items-center ${isMobile ? 'gap-1.5 w-full' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
+        <div className={`flex items-center ${isMobile ? 'gap-1 shrink-0' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
             {/* CỤM NÚT CHUYỂN TAB: TRA CỨU / TOP THƯỞNG */}
-            <div className="flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs shrink-0">
+            <div className={`flex items-center ${isMobile ? 'p-0.5 h-7' : 'p-0.5'} rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs shrink-0`}>
                 <Button
                     variant="unstyled"
                     size="none"
                     onClick={() => setActiveSubTab('search')}
-                    className={`flex items-center gap-1 px-2.5 py-1 ${isMobile ? 'min-h-11' : ''} rounded-full text-xs font-bold transition-all ${
+                    className={`flex items-center gap-1 ${isMobile ? 'h-6 px-1.5 text-[11px]' : 'px-2.5 py-1 text-xs'} rounded-full font-bold transition-all ${
                         activeSubTab === 'search'
                             ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
@@ -321,19 +241,14 @@ export const CheckThuongView: React.FC = () => {
                     title="Tra cứu & So sánh siêu thị"
                 >
                     <AppIcon name="search" size="xs" />
-                    <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Tra cứu</span>
+                    <span className={isMobile ? 'hidden min-[420px]:inline' : 'inline'}>Tra cứu</span>
                 </Button>
 
                 <Button
                     variant="unstyled"
                     size="none"
-                    onClick={() => {
-                        setActiveSubTab('leaderboard');
-                        if (competitionData.length === 0) {
-                            iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_REQUEST_DATA' }, window.location.origin);
-                        }
-                    }}
-                    className={`flex items-center gap-1 px-2.5 py-1 ${isMobile ? 'min-h-11' : ''} rounded-full text-xs font-bold transition-all ${
+                    onClick={() => setActiveSubTab('leaderboard')}
+                    className={`flex items-center gap-1 ${isMobile ? 'h-6 px-1.5 text-[11px]' : 'px-2.5 py-1 text-xs'} rounded-full font-bold transition-all ${
                         activeSubTab === 'leaderboard'
                             ? 'bg-gradient-to-r from-amber-500 to-amber-300 text-slate-950 shadow-xs font-black'
                             : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
@@ -341,64 +256,84 @@ export const CheckThuongView: React.FC = () => {
                     title="Xem Bảng Xếp Hạng TOP Siêu Thị Thưởng Cao"
                 >
                     <AppIcon name="trophy" size="xs" />
-                    <span>Top thưởng</span>
+                    <span>Top</span>
+                    <span className={isMobile ? 'hidden min-[420px]:inline' : 'inline'}> thưởng</span>
                 </Button>
             </div>
 
             {/* CỤM Ô NHẬP MÃ KHO (KHI Ở TAB TRA CỨU) */}
             {activeSubTab === 'search' && (
                 <>
-                    <div className={isMobile ? 'flex items-center gap-1 flex-1 min-w-0' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                    <div className={`flex items-center rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-xs shrink-0 ${isMobile ? 'h-7' : ''}`}>
                         <input
                             type="text"
                             placeholder="Kho 1"
-                            className={`${isMobile ? 'w-0 flex-1 min-w-0 h-11 px-2 text-sm text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full' : 'w-20 px-2.5 py-1 text-xs text-center'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                            className={`${isMobile ? 'w-11 sm:w-14 h-full px-1 text-[11px]' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-colors`}
                             value={codes.code1}
                             onChange={(e) => handleCodeChange('code1', e.target.value)}
                         />
+                        <div className="w-px h-3.5 bg-slate-300 dark:bg-slate-600 shrink-0" />
                         <input
                             type="text"
                             placeholder="Kho 2"
-                            className={`${isMobile ? 'w-0 flex-1 min-w-0 h-11 px-2 text-sm text-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full' : 'w-20 px-2.5 py-1 text-xs text-center border-l border-slate-100 dark:border-slate-700'} font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:bg-sky-50/50 dark:focus:bg-sky-900/20 transition-colors`}
+                            className={`${isMobile ? 'w-11 sm:w-14 h-full px-1 text-[11px]' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-colors`}
                             value={codes.code2}
                             onChange={(e) => handleCodeChange('code2', e.target.value)}
                         />
                     </div>
-                    <div className={isMobile ? 'flex items-center gap-1 shrink-0' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                    <div className={`flex items-center gap-1 shrink-0 ${isMobile ? '' : 'rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}`}>
+                        {codes.code2 && (
+                            <Button
+                                variant="unstyled" size="none"
+                                onClick={() => handleCodeChange('code2', '')}
+                                className={`${isMobile ? 'w-7 h-7 rounded-full border border-rose-200/60 dark:border-rose-800/60 shadow-xs' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
+                                title="Xoá mã kho đang so sánh"
+                            >
+                                <AppIcon name="reset" size="xs" />
+                            </Button>
+                        )}
                         <Button
                             variant="unstyled" size="none"
-                            onClick={() => {
-                                setCodes(prev => ({ ...prev, code2: '' }));
-                                iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, window.location.origin);
-                            }}
-                            className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5'} flex items-center justify-center bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-500 dark:text-rose-400 transition-colors`}
-                            title="Xoá mã kho đang so sánh"
-                        >
-                            <AppIcon name="reset" size="xs" />
-                        </Button>
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={handleChangeFile}
-                            className={`${isMobile ? 'w-10 h-11 rounded-full' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
+                            onClick={() => fileInputHiddenRef.current?.click()}
+                            className={`${isMobile ? 'w-7 h-7 rounded-full border border-slate-200 dark:border-slate-700 shadow-xs' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
                             title="Tải file khác"
                         >
                             <AppIcon name="upload" size="xs" />
+                        </Button>
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={handleManualCloudSync}
+                            disabled={isSyncingCloud}
+                            className={`${isMobile ? 'w-7 h-7 rounded-full border border-sky-200/70 dark:border-sky-800/70 shadow-xs' : 'p-1.5 border-l border-slate-100 dark:border-slate-700'} flex items-center justify-center bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 transition-colors ${isSyncingCloud ? 'opacity-70' : ''}`}
+                            title="Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)"
+                        >
+                            <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="xs" className={isSyncingCloud ? 'animate-spin' : ''} />
                         </Button>
                     </div>
                 </>
             )}
 
-            {/* KHI Ở TAB TOP THƯỞNG: NÚT ĐỔI FILE */}
+            {/* KHI Ở TAB TOP THƯỞNG: NÚT ĐỔI FILE & ĐỒNG BỘ CLOUD */}
             {activeSubTab === 'leaderboard' && (
-                <div className={isMobile ? 'flex items-center ml-auto' : 'flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm'}>
+                <div className="flex items-center gap-1.5 shrink-0">
                     <Button
                         variant="unstyled" size="none"
-                        onClick={handleChangeFile}
-                        className={`${isMobile ? 'min-h-11 px-3 rounded-full' : 'px-2.5 py-1'} flex items-center gap-1 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-xs font-bold`}
+                        onClick={() => fileInputHiddenRef.current?.click()}
+                        className={`${isMobile ? 'h-7 px-2 text-[11px] rounded-full border border-slate-200 dark:border-slate-700 shadow-xs' : 'px-2.5 py-1 text-xs rounded-full border border-slate-200 dark:border-slate-700 shadow-sm'} flex items-center gap-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors font-bold`}
                         title="Tải file khác"
                     >
                         <AppIcon name="upload" size="xs" />
-                        <span className={isMobile ? 'hidden sm:inline' : 'inline'}>Đổi file</span>
+                        <span>Đổi file</span>
+                    </Button>
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleManualCloudSync}
+                        disabled={isSyncingCloud}
+                        className={`${isMobile ? 'h-7 px-2 text-[11px] rounded-full border border-sky-200/70 dark:border-sky-800/70 shadow-xs' : 'px-2.5 py-1 text-xs rounded-full border border-sky-200 dark:border-sky-800 shadow-sm'} flex items-center gap-1 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-600 dark:text-sky-400 transition-colors font-bold ${isSyncingCloud ? 'opacity-70' : ''}`}
+                        title="Đồng bộ dữ liệu từ Đám Mây (từ điện thoại / máy khác)"
+                    >
+                        <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="xs" className={isSyncingCloud ? 'animate-spin' : ''} />
+                        <span>Đồng bộ Cloud</span>
                     </Button>
                 </div>
             )}
@@ -406,41 +341,87 @@ export const CheckThuongView: React.FC = () => {
     );
 
     return (
-        <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0">
+        <div className="w-full flex-1 flex flex-col bg-white dark:bg-slate-900 min-h-0">
+            {/* Input file ẩn cho nút "Đổi file / Tải file" trên toolbar */}
+            <input
+                ref={fileInputHiddenRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                className="hidden"
+                onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                        const { parseCheckThuongFile } = await import('../../features/check-thuong');
+                        const res = await parseCheckThuongFile(file);
+                        handleFileLoaded(res);
+                        toast.success(`Đã nạp file: ${file.name}`);
+                    } catch (err: any) {
+                        toast.error(`Lỗi nạp file: ${err?.message || 'Không thể đọc file'}`);
+                    }
+                }}
+            />
+
+            {/* Portal timestamp into mobile top bar subtitle */}
+            {mounted && activeTab === 'check-thuong' && document.getElementById('mobile-topbar-subtitle') && createPortal(
+                <button
+                    type="button"
+                    onClick={handleManualCloudSync}
+                    title="Chạm để kiểm tra & đồng bộ dữ liệu Check Thưởng mới nhất từ Đám Mây"
+                    className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer max-w-full truncate"
+                >
+                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                    <span className={`truncate ${isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}`}>
+                        {isSyncingCloud ? 'Đang đồng bộ...' : (formattedUploadTime ? `Cập nhật: ${formattedUploadTime}` : 'Cập nhật dữ liệu')}
+                    </span>
+                </button>,
+                document.getElementById('mobile-topbar-subtitle')!
+            )}
+
+            {/* Portal timestamp into desktop header subtitle */}
+            {mounted && activeTab === 'check-thuong' && document.getElementById('desktop-header-subtitle') && createPortal(
+                <button
+                    type="button"
+                    onClick={handleManualCloudSync}
+                    title="Bấm để kiểm tra & đồng bộ dữ liệu Check Thưởng mới nhất từ Đám Mây"
+                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                >
+                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
+                    <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                        {isSyncingCloud ? 'Đang đồng bộ từ Cloud...' : (formattedUploadTime ? `Cập nhật: ${formattedUploadTime}` : 'Đồng bộ đám mây')}
+                    </span>
+                </button>,
+                document.getElementById('desktop-header-subtitle')!
+            )}
+
+            {/* Portal search bar into desktop header */}
             {mounted && activeTab === 'check-thuong' && hasData && document.getElementById('global-header-actions') && createPortal(
                 renderSearchBar(false),
                 document.getElementById('global-header-actions')!
             )}
-            {/* Mobile: thanh công cụ nằm HÀNG RIÊNG dưới thanh trên cùng. Trước đây portal vào
-                #mobile-topbar-actions — ở iPhone (390px) cụm Tra cứu/Top thưởng + 2 ô Kho + 2 nút rộng
-                hơn chỗ trống nên đè lên logo, nút chỉ 24px, chữ ô nhập 11px. */}
-            {hasData && (
-                <div className="lg:hidden shrink-0 px-3 py-1 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-                    {renderSearchBar(true)}
-                </div>
+
+            {/* Portal search bar into mobile top bar */}
+            {mounted && activeTab === 'check-thuong' && hasData && document.getElementById('mobile-topbar-actions') && createPortal(
+                renderSearchBar(true),
+                document.getElementById('mobile-topbar-actions')!
             )}
 
-            {/* TAB 1: GIAO DIỆN TRA CỨU & SO SÁNH (IFRAME) */}
-            <div className={`w-full h-full flex-grow relative ${activeSubTab === 'search' ? 'flex flex-col' : 'hidden'}`}>
-                {!isIframeLoaded && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 z-10">
-                        <div className="w-8 h-8 border-3 border-slate-200 dark:border-slate-700 border-t-sky-500 rounded-full animate-spin" />
-                        <span className="mt-3 text-xs font-semibold text-slate-500 dark:text-slate-400">Đang tải bảng tra cứu thưởng...</span>
-                    </div>
-                )}
-                <iframe
-                    ref={iframeRef}
-                    src={`${import.meta.env?.BASE_URL || '/'}check-thuong.html`}
-                    title="Bảng Tra Cứu Thưởng Thi Đua"
-                    className={`w-full h-full border-none flex-grow transition-opacity duration-200 ${isIframeLoaded ? 'opacity-100' : 'opacity-0'}`}
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
+            {/* TAB 1: GIAO DIỆN TRA CỨU & SO SÁNH (NATIVE REACT - NO IFRAME) */}
+            {activeSubTab === 'search' && (
+                <CheckThuongSearchView
+                    competitionData={competitionData}
+                    code1={codes.code1}
+                    code2={codes.code2}
+                    formattedUploadTime={formattedUploadTime}
+                    onFileLoaded={handleFileLoaded}
+                    onManualCloudSync={handleManualCloudSync}
+                    isSyncingCloud={isSyncingCloud}
                 />
-            </div>
+            )}
 
             {/* TAB 2: GIAO DIỆN BẢNG XẾP HẠNG TOP SIÊU THỊ THƯỞNG CAO */}
             {activeSubTab === 'leaderboard' && (
-                <div className="w-full h-full flex-grow overflow-hidden">
+                <div className="w-full flex-grow">
                     <CheckThuongLeaderboardView
                         competitionData={competitionData}
                         uploadTime={uploadTime}

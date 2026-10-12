@@ -60,15 +60,16 @@ export function getCheckThuongDataFromIframeDb(): Promise<any> { // payload ifra
 export async function getUnifiedCheckThuongData(): Promise<any> {
     try {
         const iframeData = await getCheckThuongDataFromIframeDb();
-        const { getSetting, saveSetting } = await import('./dbService');
+        const { getSetting, saveSettingFromCloud } = await import('./dbService');
         const parentData = await getSetting<any>('checkthuong_data');
 
         const hasIframe = iframeData && Array.isArray(iframeData.competitionData) && iframeData.competitionData.length > 0;
         const hasParent = parentData && Array.isArray(parentData.competitionData) && parentData.competitionData.length > 0;
 
         if (hasIframe && !hasParent) {
-            // Đã có trong iframe nhưng chưa có trong DB chính -> tự động lưu vào DB chính để kích hoạt Cloud Sync
-            await saveSetting('checkthuong_data', iframeData);
+            // Đã có trong iframe nhưng chưa có trong DB chính -> tự động lưu vào DB chính với mốc thời gian gốc
+            const iframeTime = iframeData.lastModified || 0;
+            await saveSettingFromCloud('checkthuong_data', iframeData, iframeTime);
             return iframeData;
         }
 
@@ -76,7 +77,7 @@ export async function getUnifiedCheckThuongData(): Promise<any> {
             const iframeTime = iframeData.lastModified || 0;
             const parentTime = parentData.lastModified || 0;
             if (iframeTime > parentTime) {
-                await saveSetting('checkthuong_data', iframeData);
+                await saveSettingFromCloud('checkthuong_data', iframeData, iframeTime);
                 return iframeData;
             } else if (parentTime > iframeTime) {
                 saveCheckThuongDataToIframeDb(parentData).catch(err => {

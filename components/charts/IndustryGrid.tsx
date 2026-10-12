@@ -258,7 +258,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                 ))}
                             </nav>
                         </div>
-                        <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
+                        <span className="text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
                             {(filters.kho.length > 0 && !filters.kho.includes('all')) ? `KHO: ${filters.kho.join(', ')} | ` : ''} 
                             {(filters.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filters.xuat} | ` : ''}
                             {filters.dateRange !== 'all' ? `TỪ ${filters.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filters.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}

@@ -37,7 +37,7 @@ vi.mock('firebase/firestore', () => {
 const { fetchAllowedKhoData } = await import('../../services/khoDataService');
 
 describe('Tải dữ liệu Kho — giới hạn request đồng thời', () => {
-    it('24 tháng × 5 chunk: đủ 120 dòng, đỉnh đồng thời ≤ 12 (trước: 120)', async () => {
+    it('24 tháng × 5 chunk: đủ 120 dòng, đỉnh đồng thời ≤ 32 (HTTP/2 tối ưu, trước: 120)', async () => {
         for (let m = 1; m <= 24; m++) {
             const month = `20${25 + Math.floor((m - 1) / 12)}-${String(((m - 1) % 12) + 1).padStart(2, '0')}`;
             const id = `m_${month.replace('-', '')}_u1`;
@@ -49,7 +49,7 @@ describe('Tải dữ liệu Kho — giới hạn request đồng thời', () => 
         const { data } = await fetchAllowedKhoData('910');
         console.log(`[đo] 120 chunk — đỉnh request đồng thời: ${peak}`);
         expect(data).toHaveLength(120);
-        expect(peak).toBeLessThanOrEqual(12);
+        expect(peak).toBeLessThanOrEqual(32);
     });
 
     it('mapWithLimit giữ đúng thứ tự kết quả và không vượt giới hạn', async () => {

@@ -22,7 +22,7 @@ test('chạy Tự động Realtime xong → modal đóng ngay, có toast báo th
         });
     }, BAN_MOI_NHAT);
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.getByRole('button', { name: /Tự động Realtime/i }).click();
 
     const modal = page.getByRole('dialog', { name: /Tự động Cập nhật Realtime/i });
@@ -55,7 +55,7 @@ test('mở trang mà cầu nối phát lại kết quả CŨ → không toast, k
         });
     }, BAN_MOI_NHAT);
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     // Đúng như cầu nối ≤ 7.11 khi mở trang: phát lại lượt cũ qua cả 2 kênh, vài lần
     await page.evaluate(() => {
         const d = { source: 'ycx-bi-automation', type: 'done', jobId: 'bi-job-cu-tu-hom-qua', mode: 'luyke', results: { summary: 'Siêu thị\tSỐ LƯỢNG\nDỮ LIỆU CŨ\t1' } };

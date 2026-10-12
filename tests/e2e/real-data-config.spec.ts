@@ -94,7 +94,7 @@ test('Bộ lọc thi đua: popup mở được và có liệt kê cột để b�
 
 test('Cấu hình Target Thi đua: hết thanh trượt, có cột Nhóm tiêu chí, sửa tên tại chỗ', async ({ page }) => {
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.getByText('Cấu hình siêu thị chi tiết').first().waitFor({ timeout: 30_000 });
 
     // Chọn siêu thị đầu tiên rồi mở tab Target Thi đua
@@ -116,7 +116,7 @@ test('Cấu hình Target Thi đua: hết thanh trượt, có cột Nhóm tiêu c
 
 test('Cấu hình Target Thi đua: bấm vào tên tiêu chí để sửa tại chỗ, Enter là lưu', async ({ page }) => {
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.getByText('Cấu hình siêu thị chi tiết').first().waitFor({ timeout: 60_000 });
     await page.getByText('99 Hùng Vương', { exact: true }).first().click();
     await page.getByText('Target Thi đua', { exact: true }).first().click();

@@ -44,9 +44,59 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+export const isSafariBrowser = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const isChrome = /CriOS|Chrome|Chromium|Edg|OPR|Android/i.test(ua);
+    const isFirefox = /FxiOS|Firefox/i.test(ua);
+    return /Safari/i.test(ua) && !isChrome && !isFirefox;
+};
+
+export const isIOSDevice = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    const isIPadOS = navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1;
+    return /iPad|iPhone|iPod/.test(ua) || isIPadOS;
+};
+
+export const isAppleOrSafari = (): boolean => {
+    return isIOSDevice() || isSafariBrowser();
+};
+
+export const isStandaloneMode = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return Boolean((window.navigator as any).standalone) ||
+           Boolean(window.matchMedia?.('(display-mode: standalone)').matches);
+};
+
+export const isInAppBrowser = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return /FBAN|FBAV|Instagram|Zalo|Line|Twitter|Pinterest|Snapchat|GSA/i.test(ua);
+};
+
 export const loginWithGoogle = async () => {
+    // Trên Safari (macOS & iOS), PWA Standalone hoặc In-App browser (Zalo/FB):
+    // Apple WebKit mặc định chặn popup ("Block Pop-up Windows") và làm treo Promise vĩnh viễn (nút xoay mãi).
+    // Tự động dùng signInWithRedirect trực tiếp để chuyển hướng tức thì và an toàn 100%!
+    if (isAppleOrSafari() || isStandaloneMode() || isInAppBrowser()) {
+        console.info('[Auth] Phát hiện Safari / iOS / PWA. Tự động dùng signInWithRedirect trực tiếp.');
+        await loginWithGoogleRedirect();
+        return;
+    }
+
     try {
-        const result = await signInWithPopup(auth, googleProvider);
+        // Cho người dùng đủ thời gian (180s = 3 phút) để chọn tài khoản, nhập mật khẩu và hoàn tất xác thực 2 bước (2FA) trên thiết bị mới
+        const popupPromise = signInWithPopup(auth, googleProvider);
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => {
+                const err = new Error('Quá thời gian chờ đăng nhập Google (180s).');
+                (err as any).code = 'auth/popup-timeout';
+                reject(err);
+            }, 180000);
+        });
+
+        const result = await Promise.race([popupPromise, timeoutPromise]);
         const credential = GoogleAuthProvider.credentialFromResult(result);
         if (credential?.accessToken) {
             sessionStorage.setItem('googleOAuthToken', credential.accessToken);
@@ -54,6 +104,17 @@ export const loginWithGoogle = async () => {
         return result.user;
     } catch (error: any) {
         console.error("Lỗi đăng nhập Google popup:", error);
+        // Nếu người dùng chủ động tắt cửa sổ popup: ném lỗi ra để component reset spinner, không tự ép redirect
+        if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+            throw error;
+        }
+        if (error?.code === 'auth/popup-timeout' || 
+            error?.code === 'auth/popup-blocked' || 
+            error?.code === 'auth/operation-not-supported-in-this-environment') {
+            console.warn('[Auth] Popup không khả dụng hoặc bị chặn. Tự động chuyển hướng đăng nhập...');
+            await loginWithGoogleRedirect();
+            return;
+        }
         throw error;
     }
 };

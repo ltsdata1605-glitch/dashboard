@@ -24,43 +24,18 @@ async function activateDemoMode(page: import('@playwright/test').Page) {
 }
 
 
-/**
- * Chờ frame con điều hướng XONG, dù thành công hay bị chặn.
- *
- * Thẻ `<iframe>` gắn vào DOM và frame con tồn tại KHÔNG có nghĩa là nó đã đi tới đâu: ngay sau khi
- * gắn, `frame.url()` còn là chuỗi rỗng. Bản vá đầu của tôi chỉ chờ tới mức đó rồi đọc URL luôn nên
- * test đỏ ngay ở máy dev với `URLs: [..., ""]` — sửa hụt một nhịp.
- *
- * Chờ tới khi URL frame con mang dấu hiệu đã ngã ngũ: hoặc đúng đích, hoặc `chrome-error://` (dấu
- * hiệu bị CSP chặn — chính thứ 2 test này sinh ra để bắt). Cả hai đều cho phần `expect` bên dưới
- * chạy và báo lỗi đúng nghĩa.
- */
-async function waitForFrameToSettle(page: import('@playwright/test').Page, expectedUrlPart: string) {
-    await expect
-        .poll(() => page.frames().some(f => f.url().includes(expectedUrlPart) || f.url().startsWith('chrome-error')),
-            { message: `iframe ${expectedUrlPart} chưa điều hướng xong sau 30s`, timeout: 30_000 })
-        .toBe(true);
-}
-
 test.describe('Tab dùng iframe không bị CSP chặn', () => {
-    test('Check Thưởng nạp được iframe nội bộ /check-thuong.html', async ({ page }) => {
+    test('Check Thưởng chạy NGAY TRONG app (không còn iframe), không khung nào bị CSP chặn', async ({ page }) => {
+        // Chủ dự án chuyển Check Thưởng sang component React gốc (features/check-thuong, 2026-10-11) — tab không còn nhúng
+        // iframe /check-thuong.html. Test cũ chờ thẻ iframe đó nên đỏ từ khi đổi; kiểm đúng hiện trạng (như tab Tính thuế).
         await page.goto('/?tab=check-thuong');
         await activateDemoMode(page);
 
-        // `CheckThuongView` là React.lazy — chờ THẺ iframe gắn vào DOM, đừng ngủ một khoảng cố định.
-        await expect(page.locator('iframe[src*="check-thuong.html"]'),
-            'không render thẻ iframe check-thuong.html').toBeAttached({ timeout: 30_000 });
-        await waitForFrameToSettle(page, 'check-thuong.html');
-
+        // Chưa có dữ liệu → ô nạp file của màn trống (chỉ chọn file, không cần đăng nhập).
+        await expect(page.locator('input[type="file"][accept*=".xlsx"]').first()).toBeAttached({ timeout: 30_000 });
+        await expect(page.locator('iframe[src*="check-thuong"]')).toHaveCount(0);
         const urls = page.frames().map(f => f.url());
-        expect(urls.some(u => u.startsWith('chrome-error')), `iframe bị chặn — kiểm tra frame-src trong index.html. URLs: ${JSON.stringify(urls)}`).toBe(false);
-
-        const frame = page.frames().find(f => f.url().includes('check-thuong.html'));
-        expect(frame, 'không tìm thấy iframe check-thuong.html').toBeTruthy();
-        // Kiểm nội dung ỔN ĐỊNH của trang (tiêu đề + ô nhập dữ liệu), không bám câu chữ trang trí: dòng
-        // "Tra cứu thưởng." ở phần đầu trang đã bị bỏ (5ee5f4bc) làm test đỏ dù iframe vẫn nạp đúng.
-        await expect.poll(() => frame!.title(), { timeout: 15_000 }).toMatch(/Tra Cứu Thưởng/i);
-        await expect(frame!.locator('body')).toContainText(/Nhập dữ liệu Check Thưởng/i, { timeout: 15_000 });
+        expect(urls.some(u => u.startsWith('chrome-error')), `có khung bị chặn. URLs: ${JSON.stringify(urls)}`).toBe(false);
     });
 
     test('Tính thuế chạy NGAY TRONG app (không còn iframe Cloud Run), không khung nào bị CSP chặn', async ({ page }) => {

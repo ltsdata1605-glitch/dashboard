@@ -5,7 +5,7 @@ import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 import { Button } from '../../../../components/shared/ui/Button';
 import { Tabs } from '../../../../components/shared/ui/Tabs';
 import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelectDropdown';
-import { MOBILE_GUTTER, TOUCH_TARGET } from '../../utils/mobileUi';
+import { MOBILE_GUTTER } from '../../utils/mobileUi';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
 
@@ -169,10 +169,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
+                                variant="ghost" size="icon" className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
                                 title="Xuất tất cả ảnh"
                             >
-                                {isBatchExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportBatch" size="sm" />}
+                                {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                             </Button>
 
                             {/* Single export */}
@@ -180,10 +180,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="h-7.5 w-7.5 sm:h-8 sm:w-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
+                                    variant="ghost" size="icon" className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
                                     title="Xuất ảnh"
                                 >
-                                    {isExporting ? <AppIcon name="loading" size="sm" spin /> : <AppIcon name="exportImage" size="sm" />}
+                                    {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
                                 </Button>
                             )}
                         </div>

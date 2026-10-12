@@ -28,7 +28,6 @@ const TrendChart = React.lazy(() => import('../charts/TrendChart'));
 const IndustryGrid = React.lazy(() => import('../charts/IndustryGrid'));
 const EmployeeAnalysis = React.lazy(() => import('../employees/EmployeeAnalysis'));
 const SummaryTable = React.lazy(() => import('../tables/SummaryTable'));
-const PivotTable = React.lazy(() => import('../pivot/PivotTable'));
 
 // Modal/overlay hiếm khi mở — lazy để không kéo vào chunk chính của DashboardView
 // (sau khi tách các section ở trên + các modal này, chunk DashboardView còn ~60kB gzip,
@@ -64,7 +63,6 @@ const defaultVisibilityState: VisibilityState = {
     industryGrid: true,
     employeeAnalysis: true,
     summaryTable: true,
-    pivotTable: false,
 };
 
 const debugInitialData = {
@@ -76,7 +74,6 @@ const debugInitialData = {
     IndustryGrid: { name: "Lưới/Biểu đồ Tỷ trọng Ngành hàng (IndustryGrid.tsx)", description: "...", design: "..." },
     EmployeeAnalysis: { name: "Phân tích Hiệu suất Nhân viên (EmployeeAnalysis.tsx)", description: "...", design: "..." },
     SummaryTable: { name: "Bảng Chi tiết Ngành hàng (SummaryTable.tsx)", description: "...", design: "..." },
-    PivotTable: { name: "Bảng Phân tích động (PivotTable.tsx)", description: "...", design: "..." },
 };
 
 const DashboardView = React.memo(function DashboardView({ isActive }: { isActive?: boolean }) {
@@ -388,6 +385,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         hasDepartmentData={!!departmentMap}
                         showNewFileButton={appState === 'dashboard'}
                         fileInfo={fileInfo}
+                        isSyncingCloud={logic.isSyncingCloud}
                         onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
                         onSelectHistoryFile={handleFileProcessing}
                         onOpenHistory={() => setIsFileHistoryModalOpen(true)}
@@ -591,9 +589,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                                 <Button
                                                                     variant="unstyled" size="none"
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
-                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-700 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[11px]"
+                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center shrink-0 text-rose-700 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px]"
                                                                 >
-                                                                    <AppIcon name="restore" size="sm" />
                                                                     Chờ xuất: {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
                                                                 </Button>
                                                             )}
@@ -648,14 +645,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         <div data-debug-id="SummaryTable" data-debug-info={JSON.stringify(debugInitialData.SummaryTable)} id="summary-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                             <React.Suspense fallback={<TabbedTableSkeleton />}>
                                                 <SummaryTable />
-                                            </React.Suspense>
-                                        </div>
-                                    )}
-
-                                    {visibleComponents.pivotTable && (
-                                        <div data-debug-id="PivotTable" data-debug-info={JSON.stringify(debugInitialData.PivotTable)} id="pivot-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                            <React.Suspense fallback={<TableSkeleton />}>
-                                                <PivotTable />
                                             </React.Suspense>
                                         </div>
                                     )}

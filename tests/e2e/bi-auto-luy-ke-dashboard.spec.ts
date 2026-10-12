@@ -22,7 +22,7 @@ test('Tự động Luỹ kế xong → lưu đúng ô Luỹ kế theo từng si�
         });
     }, BAN_MOI_NHAT);
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     // Bấm "Tự động Luỹ kế" → hộp chọn tháng; chọn tháng 08/2026
     await page.getByRole('button', { name: /Tự động Luỹ kế/i }).click();
     const chon = page.getByRole('dialog', { name: /chọn tháng/i });
@@ -83,7 +83,7 @@ test('"Tháng hiện tại": ngày 1 lấy tháng trước, ngày khác lấy th
         });
     }, BAN_MOI_NHAT);
     await openReportBi(page);
-    await page.getByRole('button', { name: /Cập nhật/i }).first().click();
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.getByRole('button', { name: /Tự động Luỹ kế/i }).click();
     const mongDoi = await page.evaluate(() => {
         const n = new Date(); const d = new Date(n.getFullYear(), n.getMonth(), 1);

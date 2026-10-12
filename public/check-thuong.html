@@ -495,35 +495,60 @@
     <script>
         // ── Thư viện nặng nạp THEO NHU CẦU (GĐ2 tăng tốc 2026-10-11) ──────────────────────────────────────────────
         // napThuVien('xlsx' | 'htmlToImage') → Promise của đối tượng thư viện (window.XLSX / window.htmlToImage).
-        // Mỗi thư viện chỉ chèn thẻ <script> một lần; lỗi mạng thì lần gọi sau thử lại.
+        // Mỗi thư viện chỉ chèn thẻ <script> một lần; ưu tiên file cục bộ, lỗi mạng thì lần gọi sau thử lại fallback.
         const THU_VIEN = {
             xlsx: { src: 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js', bien: 'XLSX' },
-            htmlToImage: { src: 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js', bien: 'htmlToImage' },
+            htmlToImage: { 
+                src: './scripts/html-to-image.js', 
+                fallbackSrc: 'https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js',
+                bien: 'htmlToImage' 
+            },
         };
         const _dangNapThuVien = {};
         function napThuVien(ten) {
             const tv = THU_VIEN[ten];
+            if (!tv) return Promise.reject(new Error('Thư viện không xác định: ' + ten));
             if (window[tv.bien]) return Promise.resolve(window[tv.bien]);
             if (!_dangNapThuVien[ten]) {
                 _dangNapThuVien[ten] = new Promise((resolve, reject) => {
-                    const el = document.createElement('script');
-                    el.src = tv.src;
-                    el.async = true;
-                    el.onload = () => window[tv.bien] ? resolve(window[tv.bien]) : reject(new Error('Thư viện ' + ten + ' không khởi tạo được'));
-                    el.onerror = () => { el.remove(); reject(new Error('Không tải được thư viện ' + ten + ' — kiểm tra kết nối mạng rồi thử lại.')); };
-                    document.head.appendChild(el);
+                    const napTheScript = (duongDan, laFallback) => {
+                        const el = document.createElement('script');
+                        el.src = duongDan;
+                        el.async = true;
+                        el.onload = () => {
+                            if (window[tv.bien]) {
+                                resolve(window[tv.bien]);
+                            } else {
+                                reject(new Error('Thư viện ' + ten + ' không khởi tạo được'));
+                            }
+                        };
+                        el.onerror = () => {
+                            el.remove();
+                            if (!laFallback && tv.fallbackSrc) {
+                                console.warn(`Nạp ${ten} từ ${duongDan} không thành công, chuyển sang CDN dự phòng...`);
+                                napTheScript(tv.fallbackSrc, true);
+                            } else {
+                                reject(new Error('Không tải được thư viện ' + ten + ' — kiểm tra kết nối mạng rồi thử lại.'));
+                            }
+                        };
+                        document.head.appendChild(el);
+                    };
+                    napTheScript(tv.src, false);
                 }).catch((err) => { delete _dangNapThuVien[ten]; throw err; });
             }
             return _dangNapThuVien[ten];
         }
         /** Chụp ảnh phần tử: như htmlToImage.toPng nhưng tự nạp thư viện nếu chưa có. */
         const anhTuHtml = { toPng: (node, opts) => napThuVien('htmlToImage').then((lib) => lib.toPng(node, opts)) };
-        // Trang đã hiện + rảnh → HÂM bộ nhớ đệm HTTP cho 2 thư viện (chỉ tải byte, KHÔNG chạy): lúc bấm Nạp file / Xuất ảnh,
+        // Trang đã hiện + rảnh → HÂM bộ nhớ đệm HTTP cho các thư viện (chỉ tải byte, KHÔNG chạy): lúc bấm Nạp file / Xuất ảnh,
         // napThuVien() lấy từ bộ nhớ đệm, không chờ mạng. Không chạy ngay vì xlsx ~900 KB — chạy script là một tác vụ dài
         // khoá luồng chính (iframe dùng chung luồng với app) đúng lúc người dùng vừa mở tab (đo 2026-10-11).
         window.addEventListener('load', () => {
             const hamBoNhoDem = () => {
-                for (const tv of Object.values(THU_VIEN)) fetch(tv.src, { mode: 'no-cors', credentials: 'include' }).catch(() => {});
+                for (const tv of Object.values(THU_VIEN)) {
+                    if (tv.src) fetch(tv.src, { mode: 'no-cors', credentials: 'include' }).catch(() => {});
+                    if (tv.fallbackSrc) fetch(tv.fallbackSrc, { mode: 'no-cors', credentials: 'include' }).catch(() => {});
+                }
             };
             if ('requestIdleCallback' in window) requestIdleCallback(hamBoNhoDem, { timeout: 4000 }); else setTimeout(hamBoNhoDem, 1500);
         });
@@ -599,6 +624,7 @@
             let comparisonSortState = { key: 'bonusDiff', direction: 'desc' };
             let singleViewMode = 'list';
             let fileUploadTime = null;
+            let currentFileLastModified = 0;
 
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
@@ -613,7 +639,7 @@
                         code1: storeCodeInput1.value,
                         code2: storeCodeInput2.value,
                         singleViewMode: singleViewMode,
-                        lastModified: Date.now()
+                        lastModified: currentFileLastModified || Date.now()
                     };
                     idbKeyval.set('checkthuong_data', payload).then(() => {
                         if (window.parent) {
@@ -653,6 +679,7 @@
                     
                     competitionData = savedData.competitionData;
                     fileUploadTime = savedData.uploadTime;
+                    currentFileLastModified = savedData.lastModified || (savedData.uploadTime ? new Date(savedData.uploadTime).getTime() : 0);
                     fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
                     preProcessData(competitionData);
                     
@@ -670,6 +697,8 @@
                     if (window.parent) {
                         window.parent.postMessage({
                             type: 'CHECK_THUONG_FILE_LOADED',
+                            fromCache: true,
+                            lastModified: currentFileLastModified,
                             code1: storeCodeInput1.value,
                             code2: storeCodeInput2.value,
                             competitionData: competitionData,
@@ -786,7 +815,7 @@
             const formatCurrency = formatCurrencySimple;
             const formatCurrencyFull = (value) => {
                 const num = parseNumber(value);
-                return new Intl.NumberFormat('vi-VN').format(Math.floor(num));
+                return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.round(num));
             };
             const formatNumber = (value) => {
                 const num = parseNumber(value);
@@ -1165,8 +1194,11 @@
                         hideInitialLoader();
                         changeFileButton.classList.remove('hidden');
                         if (!storeCodeInput1.value) storeCodeInput1.value = '910';
+                        currentFileLastModified = Date.now();
                         window.parent.postMessage({
                             type: 'CHECK_THUONG_FILE_LOADED',
+                            fromCache: false,
+                            lastModified: currentFileLastModified,
                             code1: storeCodeInput1.value,
                             code2: storeCodeInput2.value,
                             competitionData: competitionData,
@@ -1313,16 +1345,16 @@
                             <p style="font-size:11px;opacity:0.75;margin:0;font-weight:700;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
                             <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:4px 0 0 0;letter-spacing:-0.02em;line-height:1.1;text-shadow:0 2px 10px rgba(0,0,0,0.2)">${formatCurrencyFull(totalBonus)}</p>
                         </div>
-                        <div style="background:linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);padding:10px 18px;border-radius:0;border:1.5px solid rgba(255,255,255,0.4);box-shadow:0 8px 24px rgba(2,132,199,0.35),0 2px 8px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.4);text-align:right">
-                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;margin-bottom:4px">
-                                <span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:0;background:rgba(255,255,255,0.25);color:#ffffff">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <div style="background:linear-gradient(135deg, rgba(14,165,233,0.28) 0%, rgba(2,132,199,0.16) 100%);padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);box-shadow:0 4px 16px rgba(0,0,0,0.12),inset 0 1px 0 rgba(255,255,255,0.3);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);text-align:right">
+                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-bottom:2px">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.22);color:#ffffff">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                 </span>
-                                <p style="font-size:11px;color:#ffffff;margin:0;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;text-shadow:0 1px 3px rgba(0,0,0,0.25)">% Nhóm Đạt ≥ 100%</p>
+                                <p style="font-size:10px;color:rgba(255,255,255,0.92);margin:0;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;text-shadow:0 1px 2px rgba(0,0,0,0.2)">% Nhóm Đạt ≥ 100%</p>
                             </div>
-                            <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:10px">
-                                <p class="banner-stat-val" style="font-size:32px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 2px 12px rgba(0,0,0,0.3)">${pctAchieved100Formatted}</p>
-                                <span style="font-size:12px;font-weight:800;background:rgba(255,255,255,0.25);color:#ffffff;padding:3px 8px;border-radius:0;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 6px rgba(0,0,0,0.12)">${countAchieved100}/${totalCategories}</span>
+                            <div style="display:flex;align-items:baseline;justify-content:flex-end;gap:6px">
+                                <p class="banner-stat-val" style="font-size:22px;font-weight:900;margin:0;letter-spacing:-0.02em;line-height:1;color:#ffffff;text-shadow:0 1px 8px rgba(0,0,0,0.25)">${pctAchieved100Formatted}</p>
+                                <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,0.2);color:#ffffff;padding:2px 6px;border-radius:6px;white-space:nowrap;letter-spacing:0.02em;border:1px solid rgba(255,255,255,0.25)">${countAchieved100}/${totalCategories}</span>
                             </div>
                         </div>
                     </div>
@@ -2501,15 +2533,21 @@
                     console.error('Phần tử không tồn tại!');
                     return;
                 }
-                if (typeof htmlToImage === 'undefined') {
-                    console.error('htmlToImage không được tải!');
-                    messageEl.textContent = 'Lỗi: htmlToImage không được tải.';
+                loadingText.textContent = options.loadingText || 'Đang chuẩn bị xuất ảnh...';
+                loadingOverlay.classList.remove('hidden');
+
+                try {
+                    await napThuVien('htmlToImage');
+                } catch (loadErr) {
+                    console.error('Không thể tải thư viện html-to-image:', loadErr);
+                    loadingOverlay.classList.add('hidden');
+                    messageEl.textContent = 'Lỗi: Không thể tải thư viện xuất ảnh. Vui lòng kiểm tra kết nối mạng!';
                     messageEl.classList.remove('hidden');
+                    setTimeout(() => messageEl.classList.add('hidden'), 5000);
                     return;
                 }
+
                 loadingText.textContent = options.loadingText || 'Đang xuất ảnh...';
-                loadingOverlay.classList.remove('hidden');
-                
                 const style = document.createElement('style');
                 style.innerHTML = '.no-print { display: none !important; }';
                 document.head.appendChild(style);
@@ -2520,7 +2558,7 @@
                 const gridOriginals = forceExportLayout(element);
 
                 await document.fonts.ready;
-                await new Promise(resolve => setTimeout(resolve, 500)); 
+                await new Promise(resolve => setTimeout(resolve, 400)); 
 
                 try {
                     if (!document.body.contains(element)) {
@@ -2549,7 +2587,7 @@
                 } finally {
                     restoreExportLayout(gridOriginals);
                     delete element.dataset.exportWidth;
-                    document.head.removeChild(style);
+                    if (style.parentNode) document.head.removeChild(style);
                     if (options.onAfterCapture) options.onAfterCapture();
                     loadingOverlay.classList.add('hidden');
                     loadingText.textContent = '';
@@ -2565,16 +2603,21 @@
                     console.error('Phần tử cần xuất ảnh không tồn tại!');
                     return;
                 }
-                if (typeof htmlToImage === 'undefined') {
-                    console.error('htmlToImage không được tải!');
-                    messageEl.textContent = 'Lỗi: htmlToImage không được tải.';
+                loadingText.textContent = options.loadingText || 'Đang chuẩn bị xuất ảnh...';
+                loadingOverlay.classList.remove('hidden');
+
+                try {
+                    await napThuVien('htmlToImage');
+                } catch (loadErr) {
+                    console.error('Không thể tải thư viện html-to-image:', loadErr);
+                    loadingOverlay.classList.add('hidden');
+                    messageEl.textContent = 'Lỗi: Không thể tải thư viện xuất ảnh. Vui lòng kiểm tra kết nối mạng!';
                     messageEl.classList.remove('hidden');
+                    setTimeout(() => messageEl.classList.add('hidden'), 5000);
                     return;
                 }
 
                 loadingText.textContent = options.loadingText || 'Đang xuất ảnh...';
-                loadingOverlay.classList.remove('hidden');
-
                 const style = document.createElement('style');
                 style.innerHTML = '.no-print { display: none !important; }';
                 document.head.appendChild(style);
@@ -2954,7 +2997,20 @@
                         let soAnhXuatDuoc = 0;
                         const anhLoi = [];
 
+                        loadingText.textContent = 'Đang chuẩn bị thư viện xuất ảnh...';
                         loadingOverlay.classList.remove('hidden');
+
+                        try {
+                            await napThuVien('htmlToImage');
+                        } catch (loadErr) {
+                            console.error('Không thể tải thư viện html-to-image:', loadErr);
+                            loadingOverlay.classList.add('hidden');
+                            messageEl.textContent = 'Lỗi: Không thể tải thư viện xuất ảnh. Vui lòng kiểm tra kết nối mạng!';
+                            messageEl.classList.remove('hidden');
+                            setTimeout(() => messageEl.classList.add('hidden'), 5000);
+                            return;
+                        }
+
                         const tempContainer = document.createElement('div');
                         tempContainer.style.position = 'absolute';
                         tempContainer.style.left = '-9999px';
@@ -3133,7 +3189,7 @@
                 closeRankingModal();
             });
             
-            rankingModal.addEventListener('click', (event) => { 
+            rankingModal.addEventListener('click', async (event) => { 
                 // Chặn click ma (ghost click) đóng modal ngay lập tức do touch synthesize trên mobile
                 if (Date.now() - modalOpenedAt < 400) return;
                 if (event.target === rankingModal) { 
@@ -3141,45 +3197,58 @@
                 }
                 const exportBtn = event.target.closest('#exportRankingImageButton');
                 if (exportBtn) {
-                    const currentStoreFullName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ] : '';
-                    let exportData = [...rankingDataForModal];
-                    const selectedStoreIndex = exportData.findIndex(row => row[COLS.SIÊU_THỊ] === currentStoreFullName);
-                    if (selectedStoreIndex !== -1) {
-                        // Rút gọn: lấy từ đầu bảng đến siêu thị được chọn + 5 siêu thị kế tiếp (giống như BXH Phân tích & Đề xuất)
-                        exportData = exportData.slice(0, selectedStoreIndex + 6);
-                    }
-                    
-                    const modalTitleText = document.getElementById('modalTitle').textContent || 'xep_hang';
-                    const filename = modalTitleText.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') + '.png';
+                    loadingText.textContent = 'Đang xuất ảnh bảng xếp hạng...';
+                    loadingOverlay.classList.remove('hidden');
 
                     const tempContainer = document.createElement('div');
                     tempContainer.style.position = 'absolute';
                     tempContainer.style.left = '-9999px';
                     tempContainer.style.top = '-9999px';
                     tempContainer.style.width = '800px';
-                    tempContainer.innerHTML = getRankingTableHtml(exportData, modalTitleText);
-                    document.body.appendChild(tempContainer);
 
-                    const fullWidth = Math.max(tempContainer.firstChild.scrollWidth, tempContainer.firstChild.offsetWidth, tempContainer.firstChild.clientWidth);
-                    const fullHeight = Math.max(tempContainer.firstChild.scrollHeight, tempContainer.firstChild.offsetHeight, tempContainer.firstChild.clientHeight);
+                    try {
+                        await napThuVien('htmlToImage');
+                        const currentStoreFullName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ] : '';
+                        let exportData = [...rankingDataForModal];
+                        const selectedStoreIndex = exportData.findIndex(row => row[COLS.SIÊU_THỊ] === currentStoreFullName);
+                        if (selectedStoreIndex !== -1) {
+                            // Rút gọn: lấy từ đầu bảng đến siêu thị được chọn + 5 siêu thị kế tiếp (giống như BXH Phân tích & Đề xuất)
+                            exportData = exportData.slice(0, selectedStoreIndex + 6);
+                        }
+                        
+                        const modalTitleText = document.getElementById('modalTitle').textContent || 'xep_hang';
+                        const filename = modalTitleText.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') + '.png';
 
-                    // Audit A10: trước đây luôn tải file (iPhone không mở được Lưu ảnh/LINE/Zalo) và lỗi
-                    // chụp bị bỏ qua lặng lẽ. Nay đi đường chia sẻ chung + báo lỗi.
-                    anhTuHtml.toPng(tempContainer.firstChild, { 
-                         pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
-                         backgroundColor: '#ffffff',
-                         width: fullWidth,
-                         height: fullHeight
-                    }).then(dataUrl => shareOrDownloadDataUrl(dataUrl, filename)).catch(err => {
-                         console.error('Lỗi xuất ảnh xếp hạng:', err);
-                         messageEl.textContent = 'Lỗi xuất ảnh: ' + ((err && err.message) || err);
-                         messageEl.classList.remove('hidden');
-                         setTimeout(() => messageEl.classList.add('hidden'), 5000);
-                    }).finally(() => {
-                         if (document.body.contains(tempContainer)) {
-                             document.body.removeChild(tempContainer);
-                         }
-                    });
+                        tempContainer.innerHTML = getRankingTableHtml(exportData, modalTitleText);
+                        document.body.appendChild(tempContainer);
+
+                        await document.fonts.ready;
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        const fullWidth = Math.max(tempContainer.firstChild.scrollWidth, tempContainer.firstChild.offsetWidth, tempContainer.firstChild.clientWidth);
+                        const fullHeight = Math.max(tempContainer.firstChild.scrollHeight, tempContainer.firstChild.offsetHeight, tempContainer.firstChild.clientHeight);
+
+                        // Audit A10: trước đây luôn tải file (iPhone không mở được Lưu ảnh/LINE/Zalo) và lỗi
+                        // chụp bị bỏ qua lặng lẽ. Nay đi đường chia sẻ chung + báo lỗi.
+                        const dataUrl = await anhTuHtml.toPng(tempContainer.firstChild, { 
+                             pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
+                             backgroundColor: '#ffffff',
+                             width: fullWidth,
+                             height: fullHeight
+                        });
+                        await shareOrDownloadDataUrl(dataUrl, filename);
+                    } catch (err) {
+                        console.error('Lỗi xuất ảnh xếp hạng:', err);
+                        messageEl.textContent = 'Lỗi xuất ảnh: ' + ((err && err.message) || err);
+                        messageEl.classList.remove('hidden');
+                        setTimeout(() => messageEl.classList.add('hidden'), 5000);
+                    } finally {
+                        if (document.body.contains(tempContainer)) {
+                            document.body.removeChild(tempContainer);
+                        }
+                        loadingOverlay.classList.add('hidden');
+                        loadingText.textContent = '';
+                    }
                 }
             });
             
@@ -3273,9 +3342,11 @@
                         const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_').replace(/^-_/, '') : 'bao_cao';
                         const filtersToExport = [...filterContainer.querySelectorAll('.filter-btn')].map(btn => btn.dataset.filter).filter(f => f && f !== 'all');
                         
+                        loadingText.textContent = 'Đang chuẩn bị xuất ảnh...';
                         loadingOverlay.classList.remove('hidden');
 
                         try {
+                            await napThuVien('htmlToImage');
                             for (let i = 0; i < filtersToExport.length; i++) {
                                  const filter = filtersToExport[i];
                                  const filterBtn = filterContainer.querySelector(`.filter-btn[data-filter="${filter}"]`);
