@@ -9,7 +9,9 @@ import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { startExportJob } from '../shared/export';
 import { Button } from '../shared/ui/Button';
+import { ActionMenu } from '../shared/ui/ActionMenu';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
+import { toast, toastViecDai } from '../shared/ui/toast';
 
 interface UncollectedOrdersModalProps {
     isOpen: boolean;
@@ -309,12 +311,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
         const text = `Danh sách nhân viên có đơn QUÁ HẠN CHƯA THU:\nSố lượng nhân viên: ${employeeIds.length}\nSố lượng đơn hàng: ${totalOrders}\n\n${employeeIds.join('\n')}`;
 
         navigator.clipboard.writeText(text).then(() => {
-            const toast = document.createElement('div');
-            toast.textContent = `Đã sao chép ${employeeIds.length} nhân viên, ${totalOrders} đơn hàng`;
-            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
-            document.body.appendChild(toast);
-            requestAnimationFrame(() => { toast.style.opacity = '1'; });
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 2000);
+            toast.success(`Đã sao chép ${employeeIds.length} nhân viên, ${totalOrders} đơn hàng`, { id: 'sao-chep' });
         });
     };
 
@@ -324,30 +321,22 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
         // đăng nhập lại Google OAuth thay vì báo lỗi thân thiện. Dùng đúng pattern toast cục bộ
         // đã có sẵn trong file này (CLAUDE.md cấm window.alert).
         if (salesData.length === 0) {
-            const toast = document.createElement('div');
-            toast.textContent = 'Không có đơn hàng chưa thu | chưa hủy nào để xuất.';
-            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
-            document.body.appendChild(toast);
-            requestAnimationFrame(() => { toast.style.opacity = '1'; });
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 3000);
+            toast.success('Không có đơn hàng chưa thu | chưa hủy nào để xuất.', { id: 'sao-chep' });
             return;
         }
         setIsExporting(true);
-        const toastEl = document.createElement('div');
-        toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
-        toastEl.textContent = 'Đang tạo Google Sheet...';
-        document.body.appendChild(toastEl);
+        const viec = toastViecDai('Đang tạo Google Sheet…');
 
         const attemptExport = async (retryCount = 0): Promise<void> => {
             // Always force fresh login with consent to guarantee spreadsheets scope
-            toastEl.textContent = 'Đang xác thực Google...';
+            viec.buoc('Đang xác thực Google…');
             sessionStorage.removeItem('googleOAuthToken');
             const { loginWithGoogleForceConsent } = await import('../../services/firebase');
             await loginWithGoogleForceConsent();
             let token = sessionStorage.getItem('googleOAuthToken');
             if (!token) throw new Error('Không thể lấy token xác thực.');
 
-            toastEl.textContent = 'Đang tạo Google Sheet...';
+            viec.buoc('Đang tạo Google Sheet…');
             const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
 
             const finalOrders = salesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
@@ -395,7 +384,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-            toastEl.textContent = `Đang ghi ${rows.length} đơn hàng...`;
+            viec.buoc(`Đang ghi ${rows.length} đơn hàng…`);
 
             try {
                 const url = await exportToGoogleSheet(token, {
@@ -420,38 +409,14 @@ Link: ${url}`;
 
                 await navigator.clipboard.writeText(clipboardMessage);
 
-                // Show success toast with link button (don't auto-open)
-                toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
-                toastEl.innerHTML = '';
-
-                const msgDiv = document.createElement('div');
-                msgDiv.textContent = 'Đã tạo Google Sheet & sao chép tin nhắn!';
-                msgDiv.style.fontWeight = '600';
-                toastEl.appendChild(msgDiv);
-
-                const btnRow = document.createElement('div');
-                btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
-
-                const openBtn = document.createElement('a');
-                openBtn.href = url;
-                openBtn.target = '_blank';
-                openBtn.textContent = 'Mở Sheet';
-                openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
-
-                const closeBtn = document.createElement('button');
-                closeBtn.textContent = 'Đóng';
-                closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
-                closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
-
-                btnRow.appendChild(openBtn);
-                btnRow.appendChild(closeBtn);
-                toastEl.appendChild(btnRow);
-
-                setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
+                viec.xong('Đã tạo Google Sheet và sao chép tin nhắn', {
+                    actions: [{ label: 'Mở Sheet', primary: true, onClick: () => { window.open(url, '_blank', 'noopener,noreferrer'); } }],
+                    duration: 15000,
+                });
             } catch (apiErr: unknown) {
                 // If AUTH_EXPIRED and haven't retried yet, re-login and try once more
                 if (getErrorMessage(apiErr) === 'AUTH_EXPIRED' && retryCount < 1) {
-                    toastEl.textContent = 'Token hết hạn, đang xác thực lại...';
+                    viec.buoc('Token hết hạn, đang xác thực lại…');
                     return attemptExport(retryCount + 1);
                 }
                 throw apiErr;
@@ -464,16 +429,14 @@ Link: ${url}`;
             console.error('Google Sheets export error:', err);
             const errMsg = getErrorMessage(err).toLowerCase();
             if (errMsg.includes('popup') || errMsg.includes('cancel')) {
-                toastEl.textContent = 'Đăng nhập bị huỷ.';
+                viec.loi('Đăng nhập bị huỷ.');
             } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
-                toastEl.textContent = 'Không có kết nối mạng.';
+                viec.loi('Không có kết nối mạng.');
             } else if (errMsg === 'auth_expired') {
-                toastEl.textContent = 'Phiên đăng nhập hết hạn. Vui lòng thử lại.';
+                viec.loi('Phiên đăng nhập hết hạn. Vui lòng thử lại.');
             } else {
-                toastEl.textContent = `Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
+                viec.loi(`Lỗi: ${getErrorMessage(err) || 'Không xác định'}`);
             }
-            toastEl.style.background = '#dc2626';
-            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
         } finally {
             setIsExporting(false);
         }
@@ -535,26 +498,26 @@ Link: ${url}`;
         }
     };
 
+    // Lỗi #23 (video v1:095): thanh công cụ 6 nút, mỗi nút một kiểu (vàng / viền / xanh lá / xanh dương). Nay 2 nút icon trung
+    // tính hay dùng nhất + "⋯" gom phần còn lại (sao chép DS nhân viên, xuất ảnh từng NV, Excel, Google Sheet).
     const controls = (
-        <div className="flex flex-wrap lg:flex-nowrap items-center gap-1 lg:gap-2 hide-on-export">
-            <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn chưa thu" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
-                <AppIcon name="checklist" size="md" />
-            </Button>
-            <Button onClick={toggleAllDetails} variant="secondary" size="icon" title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}>
+        <div className="flex items-center gap-2 hide-on-export">
+            <Button onClick={toggleAllDetails} variant="ghost" size="icon" title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} aria-label={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} className="ycx-hit text-slate-600">
                 <AppIcon name="collapseAll" size="md" />
             </Button>
-             <Button onClick={handleBatchExport} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh hàng loạt theo từng nhân viên">
-                 <AppIcon name="exportBatch" size="md" />
+            <Button onClick={handleExportAll} disabled={isExporting} variant="ghost" size="icon" title="Xuất ảnh toàn bộ danh sách" aria-label="Xuất ảnh toàn bộ danh sách" className="ycx-hit text-slate-600">
+                <AppIcon name="exportImage" size="md" />
             </Button>
-            <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
-                 <AppIcon name="exportImage" size="md" />
-            </Button>
-            <Button onClick={handleExportLocalExcel} disabled={isExporting} variant="outline" title="Xuất File Excel" leftIcon={<AppIcon name="spreadsheet" size="md" />} className="border border-emerald-300 dark:border-emerald-600 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 shadow-sm font-bold text-xs lg:text-sm">
-                 Excel
-            </Button>
-            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="outline" title="Xuất lên Google Sheet" leftIcon={<AppIcon name="spreadsheet" size="md" />} className="border border-sky-300 dark:border-sky-600 text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shadow-sm font-bold text-xs lg:text-sm">
-                 Sheet
-            </Button>
+            <ActionMenu
+                label="Thêm thao tác"
+                title="Đơn hàng"
+                items={[
+                    { id: 'copy-nv', label: 'Sao chép danh sách NV có đơn quá hạn chưa thu', icon: 'checklist', onSelect: handleCopyOverdueEmployees },
+                    { id: 'xuat-tung-nv', label: 'Xuất ảnh từng nhân viên', icon: 'exportBatch', disabled: isExporting, onSelect: () => { void handleBatchExport(); } },
+                    { id: 'excel', label: 'Xuất file Excel', icon: 'spreadsheet', disabled: isExporting, onSelect: () => { void handleExportLocalExcel(); } },
+                    { id: 'sheet', label: 'Xuất lên Google Sheet', icon: 'spreadsheet', disabled: isExporting, onSelect: () => { void handleExportGoogleSheet(); } },
+                ]}
+            />
         </div>
     );
     
@@ -562,18 +525,17 @@ Link: ${url}`;
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="ĐƠN HÀNG CHƯA THU | CHƯA HỦY"
-            subTitle={`DTQĐ: ${formatCurrency(totalUncollectedRevenueQD)}`}
-            titleColorClass="text-rose-700 dark:text-rose-400"
+            title="Đơn hàng chưa thu, chưa huỷ"
+            subTitle={`DTQĐ ${formatCurrency(totalUncollectedRevenueQD)}`}
             controls={controls}
             maxWidth="xl"
             noRounded
         >
-            <div className="-m-5 p-4 sm:p-8 bg-white dark:bg-slate-900" ref={modalBodyRef}>
+            <div className="modal-bleed p-4 sm:p-8 bg-white dark:bg-slate-900" ref={modalBodyRef}>
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
                         <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
-                            <h4 className="font-black text-base sm:text-2xl text-sky-800 dark:text-sky-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA THU</h4>
+                            <h4 className="type-headline font-semibold text-slate-900 dark:text-slate-100 mb-3 sm:mb-4 text-center">Tỷ trọng ngành hàng chưa thu</h4>
                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{/* tối đa 4 cột — xem UnshippedOrdersModal (2026-09-28) */}
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUncollectedRevenue > 0 ? (item.revenue / totalUncollectedRevenue * 100) : 0;
@@ -630,13 +592,18 @@ Link: ${url}`;
                                                 }
                                             }}
                                         >
-                                            <summary className="py-2 cursor-pointer flex justify-between items-center list-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors pr-2">
-                                                <p className="font-semibold text-slate-700 dark:text-slate-300">{customer.name.toUpperCase()}</p>
-                                                <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
+                                            <summary className="py-2 cursor-pointer flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-2 list-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors pr-2">
+                                                {/* Lỗi #14 (video v1:095–098): tên khách IN HOA 16px to gấp rưỡi xung quanh → 13/14px, giữ chữ như dữ liệu; iPhone xếp tên
+                                                    một dòng riêng (bên phải còn 3 số + mũi tên — chen chung hàng thì tên bị bóp thành cột chữ dọc). */}
+                                                <div className="flex items-start justify-between gap-2 min-w-0 sm:contents">
+                                                    <p className="min-w-0 text-[13px] sm:text-sm leading-snug font-semibold text-slate-800 dark:text-slate-200 break-words">{customer.name}</p>
+                                                    <AppIcon name="chevronDown" size="md" className="sm:hidden shrink-0 text-slate-400 hide-on-export" />
+                                                </div>
+                                                <div className="flex items-center gap-x-3 gap-y-1 flex-wrap sm:justify-end sm:shrink-0 text-xs font-semibold">
                                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
                                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-amber-700 dark:text-amber-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
                                                     <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${customer.hieuQuaQD < 40 ? 'text-rose-500' : 'text-emerald-500'}`}>{customer.hieuQuaQD.toFixed(0)}%</span></span>
-                                                    <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
+                                                    <div className="accordion-icon hidden sm:block text-slate-400 transition-transform duration-300 hide-on-export ml-2">
                                                         <AppIcon name="chevronDown" size="md" />
                                                     </div>
                                                 </div>
@@ -668,12 +635,7 @@ Link: ${url}`;
                                                                         onClick={() => {
                                                                             if (orderId) {
                                                                                 navigator.clipboard.writeText(orderId).then(() => {
-                                                                                    const toast = document.createElement('div');
-                                                                                    toast.textContent = `Đã sao chép: ${orderId}`;
-                                                                                    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
-                                                                                    document.body.appendChild(toast);
-                                                                                    requestAnimationFrame(() => { toast.style.opacity = '1'; });
-                                                                                    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 1500);
+                                                                                    toast.success(`Đã sao chép: ${orderId}`, { id: 'sao-chep' });
                                                                                 });
                                                                             }
                                                                         }}

@@ -7920,3 +7920,39 @@ dự án) nên "mất mạng" phải chặn cả `firestore.googleapis.com`, kh�
 `launchPersistentContext` tự tạo thư mục rỗng nếu chưa có → mọi `test.skip(!hasRealDataProfile())` ở spec khác thành vô hiệu (thư mục
 "có" nhưng chưa đăng nhập) → cả loạt đỏ ở màn đăng nhập trên máy cloud thay vì bỏ qua. Profile thật vẫn do chủ dự án tự tạo bằng
 Chrome thường (mục "Test E2E trên DỮ LIỆU THẬT").
+
+## GĐ5 — Phân tích YCX (2026-10-13) — LOẠT B XONG
+
+Test khoá: `tests/e2e/phan-tich-gd5b.spec.ts` (5 ca, iPhone SE 375×812) + 3 test đơn vị chặn tái phạm.
+
+- **Gốc chung của #5 / #6 / #21 (nội dung modal bị cắt mép trên iPhone):** thân `<Modal>` đệm 12px trên iPhone / 20px từ sm, nhưng
+  32 modal tự bù đệm bằng `-m-5` (20px) → lấn 8px mỗi bên, bị `overflow-x-hidden` xén ("gành Hàng", "Xóa the", cột MÃ NV). Sửa ở MỘT
+  chỗ: thân Modal đặt biến `--modal-pad`, khối tràn mép dùng `modal-bleed` / `modal-bleed-x|t|b` (styles.css). Đã chuyển cả 32 nơi
+  (kể cả `features/*`). Chặn tái phạm: `components/shared/ui/modalBleed.test.ts`.
+- **#5 "Dãy thẻ KPI"** (`KpiCardConfigModal.tsx`): iPhone = danh sách một cột (công tắc ẩn/hiện + "⋯" Đưa lên/Đưa xuống/Xoá — kéo-thả
+  HTML5 không chạy trên iOS) ⇄ màn chi tiết đẩy sang có "‹ Danh sách thẻ"; Lưu ở đầu sheet (`primaryAction`). Laptop giữ 2 cột kéo-thả.
+  Kiểu thẻ = segmented, mục tiêu tháng = `Switch` trong `ListGroup`, công thức xếp dọc trên iPhone.
+- **#6 Mục tiêu GTĐH**: tiêu đề trung tính (trước đỏ), nút "Lưu mục tiêu" primary (trước hồng `danger`), `Input` dùng chung, `EmptyState`.
+- **#21 Danh sách nhân viên**: ô tìm kiếm trọn hàng trên iPhone (placeholder đúng trường tìm: mã NV, tên, bộ phận), bảng cuộn ngang.
+- **#13 tiêu đề khối viết như câu, dòng phụ 12px**: Tổng quan doanh thu, Chi tiết theo kho, Phân tích nhân viên, Tỷ trọng ngành hàng
+  (`getTitle` viết như câu). Dòng phụ "đang lọc gì" gom về MỘT hàm `utils/moTaBoLoc.ts` (trước 3 bản ghép tay IN HOA 8px). Tên vùng
+  xuất ảnh / khoá cài đặt gửi LINE ("Chi Tiết Theo Kho") và tên tệp ảnh GIỮ NGUYÊN — chỉ đổi chữ hiển thị.
+  Thẻ KPI: tiêu đề 9.5px → 11px; điện thoại giữ chữ như cấu hình ("Trả Chậm"), từ sm IN HOA như cũ (IN HOA 11px bị cắt ở 4 thẻ/hàng).
+- **#14 / #23 Chi tiết đơn hàng (chờ xuất / chưa thu)**: 6 nút 4 kiểu → [Thu gọn] [Xuất ảnh] [⋯ Sao chép DS NV · Xuất ảnh từng NV ·
+  Excel · Google Sheet]; tiêu đề trung tính; tên khách 13/14px không ép IN HOA, iPhone xếp tên một dòng + số liệu dòng dưới.
+- **#15**: nút "Xem báo cáo" ĐEN và "Xem báo cáo gộp" tự tô → `Button variant="primary"`.
+- **#18 (sót ở GĐ4)**: thông báo Super Admin ở `DashboardView` vẫn là dải đỏ chữ CHẠY → `Banner` tĩnh; xoá keyframes `marquee` không
+  còn ai dùng.
+- **#20 / #25 màn chào**: "Local Processing • Instant Speed • Smart UI" → "Xử lý trên máy · Tức thì · Gọn gàng"; bỏ câu SAI "…không lưu
+  trữ dữ liệu" (dữ liệu bán hàng CÓ đồng bộ `users/{uid}/salesData` để nhân viên cùng Kho xem); khối chờ dữ liệu → `EmptyState`.
+- **#22 Khai thác (DCNB)**: `getRankStyle` tô hồng mọi ô dưới trung bình — kể cả ô 0 (hiện "-") → cột thưa hồng khắp bảng. Ô trống không
+  tô màu nữa; `getHeatmapClass` coi `undefined` là ô trống (trước lọt nhánh "đạt", tô viên xanh). Luật định dạng người dùng tự đặt
+  (ContestTable, 7 ngày) giữ nguyên — có thể chủ ý tô cả số 0.
+- **Toast sót sau GĐ1 (14 khung tự dựng bằng DOM)**: `position:fixed; bottom:24px` trong Chi tiết đơn hàng, PerformanceModal,
+  `useExportLogic`, xuất Google Sheet của Phân ca — ESLint không thấy vì dựng bằng `document.createElement`. Đổi sang `toast.success` và
+  helper mới `toastViecDai()` (một việc nhiều bước cập nhật CÙNG một toast, kết thúc bằng nút "Mở Sheet" hoặc lỗi). Phân ca bỏ emoji
+  trong chữ toast. Chặn tái phạm: `components/shared/ui/toast/khongToastTuVe.test.ts`.
+- **Toast bị modal phủ (lỗi mới tìm ra):** `#root` là `relative z-10` → toast (z 1000000 nhưng nằm TRONG #root) luôn dưới lớp nền mờ
+  của mọi modal/sheet (portal ra body). `AppToaster` nay portal ra `<body>`. Test: `elementFromPoint` giữa toast trỏ vào chính toast.
+- Sau khi gộp main: sửa `UploadConflictModal` (582cfca đặt `useState` sau `return null` → ESLint rules-of-hooks LỖI, `npm run check` đỏ;
+  đã thử: React 19 không sập ở đúng ca này nhưng là bẫy). Cập nhật `ios-pwa-dang-nhap` theo hành vi mới của chủ dự án.

@@ -160,7 +160,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                 </div>
             }
         >
-                <div className="-m-5 p-4">
+                <div className="modal-bleed p-4">
                     {isLoading ? (
                         <div className="flex flex-col items-center justify-center py-12">
                             <AppIcon name="loading" size="state" spin className="text-sky-600 mb-4" />

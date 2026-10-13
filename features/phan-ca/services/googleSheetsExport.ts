@@ -3,6 +3,7 @@ import { calculateSpecialHours, calculateNormalHours, calculateTotalHours } from
 import { loginWithGoogleForceConsent } from './firebase';
 import type { GoogleSheetsRequest, RgbColor } from './googleSheetsService';
 import type { StaffMember } from '../types';
+import { toastViecDai } from '../../../components/shared/ui/toast';
 
 interface ExportScheduleToGoogleSheetParams {
     nams: unknown[];
@@ -19,17 +20,14 @@ export async function exportScheduleToGoogleSheet({
     nams, nus, monthYear, duration, startDay, includeTnInSbh, getSortedStaffForExport, showToast,
 }: ExportScheduleToGoogleSheetParams): Promise<void> {
     if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
-    const toastEl = document.createElement('div');
-    toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
-    toastEl.textContent = '📊 Đang tạo Google Sheet...';
-    document.body.appendChild(toastEl);
+    const viec = toastViecDai('Đang tạo Google Sheet…');
     const attemptExport = async (retryCount = 0): Promise<void> => {
-        toastEl.textContent = '🔑 Đang xác thực Google...';
+        viec.buoc('Đang xác thực Google…');
         sessionStorage.removeItem('googleOAuthToken');
         await loginWithGoogleForceConsent();
         let token = sessionStorage.getItem('googleOAuthToken');
         if (!token) throw new Error('Không thể lấy token xác thực.');
-        toastEl.textContent = '📊 Đang tạo Google Sheet...';
+        viec.buoc('Đang tạo Google Sheet…');
         const { exportToGoogleSheet } = await import('./googleSheetsService');
         const sortedList = getSortedStaffForExport();
         const [yearVal, monthVal] = monthYear.split('-').map(Number);
@@ -256,7 +254,7 @@ export async function exportScheduleToGoogleSheet({
             }
             return reqs;
         };
-        toastEl.textContent = `📊 Đang ghi ${sortedList.length} nhân viên...`;
+        viec.buoc(`Đang ghi ${sortedList.length} nhân viên…`);
         try {
             const url = await exportToGoogleSheet(token, {
                 title: `Lịch Phân Ca - Tháng ${monthVal}/${yearVal}`,
@@ -264,30 +262,13 @@ export async function exportScheduleToGoogleSheet({
                 sheetName: 'LichPhanCa',
                 formattingRequests
             });
-            toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
-            toastEl.innerHTML = '';
-            const msgDiv = document.createElement('div');
-            msgDiv.textContent = '✅ Đã tạo Google Sheet thành công!';
-            msgDiv.style.fontWeight = '600';
-            toastEl.appendChild(msgDiv);
-            const btnRow = document.createElement('div');
-            btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
-            const openBtn = document.createElement('a');
-            openBtn.href = url;
-            openBtn.target = '_blank';
-            openBtn.textContent = '📄 Mở Sheet';
-            openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
-            const closeBtn = document.createElement('button');
-            closeBtn.textContent = 'Đóng';
-            closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
-            closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
-            btnRow.appendChild(openBtn);
-            btnRow.appendChild(closeBtn);
-            toastEl.appendChild(btnRow);
-            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
+            viec.xong('Đã tạo Google Sheet', {
+                actions: [{ label: 'Mở Sheet', primary: true, onClick: () => { window.open(url, '_blank', 'noopener,noreferrer'); } }],
+                duration: 15000,
+            });
         } catch (apiErr: unknown) {
             if (getErrorMessage(apiErr) === 'AUTH_EXPIRED' && retryCount < 1) {
-                toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
+                viec.buoc('Token hết hạn, đang xác thực lại…');
                 return attemptExport(retryCount + 1);
             }
             throw apiErr;
@@ -299,15 +280,13 @@ export async function exportScheduleToGoogleSheet({
         console.error('Google Sheets export error:', err);
         const errMsg = getErrorMessage(err).toLowerCase();
         if (errMsg.includes('popup') || errMsg.includes('cancel')) {
-            toastEl.textContent = '❌ Đăng nhập bị huỷ.';
+            viec.loi('Đăng nhập bị huỷ.');
         } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
-            toastEl.textContent = '🌐 Không có kết nối mạng.';
+            viec.loi('Không có kết nối mạng.');
         } else if (errMsg === 'auth_expired') {
-            toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
+            viec.loi('Phiên đăng nhập hết hạn. Vui lòng thử lại.');
         } else {
-            toastEl.textContent = `⚠️ Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
+            viec.loi(`Lỗi: ${getErrorMessage(err) || 'Không xác định'}`);
         }
-        toastEl.style.background = '#dc2626';
-        setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
     }
 }

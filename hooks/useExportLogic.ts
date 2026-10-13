@@ -9,7 +9,7 @@ import { startExportJob, type ExportJob } from '../components/shared/export';
 import type { ExportMode } from '../services/uiService';
 import { COL, CATEGORY_TABLE_CLASS, getCategoryExportWidth } from '../constants';
 import { getRowValue, getErrorMessage, sanitizeFilename } from '../utils/dataUtils';
-import { toast } from '../components/shared/ui/toast';
+import { toast, toastViecDai } from '../components/shared/ui/toast';
 import { useAuth } from '../contexts/AuthContext';
 import { describeBatchOutcome } from '../services/batchExportResult';
 import type { BatchItemOutcome } from '../services/batchExportResult';
@@ -204,20 +204,17 @@ export const useExportLogic = ({
             return;
         }
 
-        const toastEl = document.createElement('div');
-        toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
-        toastEl.textContent = 'Đang tạo Google Sheet...';
-        document.body.appendChild(toastEl);
+        const viec = toastViecDai('Đang tạo Google Sheet…');
 
         try {
-            toastEl.textContent = 'Đang xác thực Google...';
+            viec.buoc('Đang xác thực Google…');
             sessionStorage.removeItem('googleOAuthToken');
             const { loginWithGoogleForceConsent } = await import('../services/firebase');
             await loginWithGoogleForceConsent();
             let token = sessionStorage.getItem('googleOAuthToken');
             if (!token) throw new Error('Không thể lấy token xác thực.');
 
-            toastEl.textContent = 'Đang tạo Google Sheet...';
+            viec.buoc('Đang tạo Google Sheet…');
             const { exportToGoogleSheet } = await import('../services/googleSheetsService');
 
             const headers = [
@@ -262,7 +259,7 @@ export const useExportLogic = ({
             const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
 
-            toastEl.textContent = `Đang ghi ${rows.length} đơn hàng...`;
+            viec.buoc(`Đang ghi ${rows.length} đơn hàng…`);
 
             const url = await exportToGoogleSheet(token, {
                 title: `Đơn Hàng Chưa Thu Chưa Hủy - ${dateStr} ${timeStr}`,
@@ -293,48 +290,14 @@ Link: ${url}`;
 
             await navigator.clipboard.writeText(clipboardMessage);
 
-            // Show success toast with link button
-            toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
-            toastEl.innerHTML = '';
-
-            const msgDiv = document.createElement('div');
-            msgDiv.textContent = 'Đã tạo Google Sheet & sao chép tin nhắn!';
-            msgDiv.style.fontWeight = '600';
-            toastEl.appendChild(msgDiv);
-
-            const btnRow = document.createElement('div');
-            btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
-
-            const openBtn = document.createElement('a');
-            openBtn.href = url;
-            openBtn.target = '_blank';
-            openBtn.textContent = 'Mở Sheet';
-            openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
-
-            const closeBtn = document.createElement('button');
-            closeBtn.textContent = 'Đóng';
-            closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
-            closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
-
-            btnRow.appendChild(openBtn);
-            btnRow.appendChild(closeBtn);
-            toastEl.appendChild(btnRow);
-
-            setTimeout(() => {
-                if (toastEl.parentNode) {
-                    toastEl.style.opacity = '0';
-                    setTimeout(() => toastEl.remove(), 200);
-                }
-            }, 10000); // 10s auto close
+            viec.xong('Đã tạo Google Sheet và sao chép tin nhắn', {
+                actions: [{ label: 'Mở Sheet', primary: true, onClick: () => { window.open(url, '_blank', 'noopener,noreferrer'); } }],
+                duration: 10000,
+            });
 
         } catch (error: unknown) {
             console.error("Lỗi khi xuất google sheet:", error);
-            toastEl.style.backgroundColor = '#dc2626';
-            toastEl.textContent = `Lỗi: ${getErrorMessage(error) || 'Không thể xuất file'}`;
-            setTimeout(() => {
-                toastEl.style.opacity = '0';
-                setTimeout(() => toastEl.remove(), 200);
-            }, 4000);
+            viec.loi(`Lỗi: ${getErrorMessage(error) || 'Không thể xuất file'}`);
         }
     }, [processedData, setStatus]);
 

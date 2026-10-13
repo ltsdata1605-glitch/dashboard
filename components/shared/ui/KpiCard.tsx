@@ -190,7 +190,9 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                     <div className={`w-3.5 h-3.5 rounded-[4px] flex items-center justify-center shrink-0 ${style.iconBg} ${style.iconText}`}>
                         <AppIcon name={resolveIconName(icon) ?? 'help'} px={9.5} />
                     </div>
-                    <h3 className="kpi-overview-title text-[9.5px] xs:text-[10px] sm:text-[11px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-tight truncate min-w-0" title={title}>
+                    {/* 11px là sàn chữ (trước 9.5px trên iPhone). Thẻ hẹp (4 thẻ/hàng ở iPhone SE) thì IN HOA 11px bị cắt "TRẢ CH…" →
+                        điện thoại giữ chữ như cấu hình ("Trả Chậm"), từ sm trở lên IN HOA như cũ. */}
+                    <h3 className="kpi-overview-title text-[11px] font-bold sm:uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-tight truncate min-w-0" title={title}>
                         {title}
                     </h3>
                 </div>
@@ -204,7 +206,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 {/* Lỗi #19 (video v2:003): số phụ ngắt giữa số và đơn vị ("806 / Tr"). Không cho ngắt TRONG một con số; chip chênh
                     lệch được phép xuống dòng nguyên khối khi thẻ hẹp. */}
                 {trendValue ? (
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center [&_span]:whitespace-nowrap [&>span]:flex-wrap [&>span]:justify-center [&>span]:gap-y-0.5">
+                    <div data-kpi-phu="" className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center [&_span]:whitespace-nowrap [&>span]:flex-wrap [&>span]:justify-center [&>span]:gap-y-0.5">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (

@@ -8,6 +8,7 @@ import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } fr
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { COL } from '../../constants';
 import { SectionHeader } from '../shared/ui/SectionHeader';
+import { moTaBoLoc } from '../../utils/moTaBoLoc';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -437,13 +438,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                         <span aria-hidden="true" className="text-slate-300">·</span>
                     </>
                 )}
-                <span className="truncate">
-                    {khoDangLoc.length > 0 && !khoDangLoc.includes('all') ? `Kho ${khoDangLoc.join(', ')} · ` : ''}
-                    {filterState.xuat !== 'all' ? `Xuất: ${filterState.xuat} · ` : ''}
-                    {filterState.dateRange !== 'all'
-                        ? `${filterState.startDate.split('T')[0].split('-').reverse().join('/')} – ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}`
-                        : 'Tất cả thời gian'}
-                </span>
+                <span className="truncate">{moTaBoLoc({ ...filterState, kho: khoDangLoc })}</span>
             </span>
         )}
       >

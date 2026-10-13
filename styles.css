@@ -40,18 +40,7 @@
   --color-warning: var(--color-amber-500);
   --color-danger: var(--color-rose-500);
 
-  --animate-marquee: marquee 25s linear infinite;
   --animate-wiggle: wiggle 1.2s ease-in-out infinite;
-
-  @keyframes marquee {
-    0% {
-      transform: translateX(100%);
-    }
-
-    100% {
-      transform: translateX(-100%);
-    }
-  }
 
   @keyframes wiggle {
 
@@ -936,5 +925,13 @@ summary,
 @utility type-subhead { font-size: var(--type-subhead); line-height: var(--type-subhead-lh); }
 @utility type-footnote { font-size: var(--type-footnote); line-height: var(--type-footnote-lh); }
 @utility type-caption { font-size: var(--type-caption); line-height: var(--type-caption-lh); }
+
+/* TRÀN SÁT MÉP THÂN MODAL (GĐ5, lỗi #5/#6/#21): khối nền màu / bảng / thanh công cụ muốn chạm mép modal thì bù đúng đệm thân
+   modal qua biến `--modal-pad` do `Modal.tsx` đặt (12px iPhone, 20px từ sm). CẤM tự viết `-m-5`/`-m-3 sm:-m-5` nữa — lệch đệm là
+   chữ bị cắt mép trên iPhone. Ngoài Modal (không có biến) thì lùi về 20px như `-m-5` cũ. */
+@utility modal-bleed { margin: calc(var(--modal-pad, 1.25rem) * -1); }
+@utility modal-bleed-x { margin-inline: calc(var(--modal-pad, 1.25rem) * -1); }
+@utility modal-bleed-t { margin-top: calc(var(--modal-pad, 1.25rem) * -1); }
+@utility modal-bleed-b { margin-bottom: calc(var(--modal-pad, 1.25rem) * -1); }
 @utility type-kpi { font-size: var(--type-kpi); line-height: var(--type-kpi-lh); font-variant-numeric: tabular-nums; }
 @utility type-kpi-lg { font-size: var(--type-kpi-lg); line-height: var(--type-kpi-lg-lh); font-variant-numeric: tabular-nums; }

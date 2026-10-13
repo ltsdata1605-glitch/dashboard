@@ -7,6 +7,7 @@ import { useEmployeeAnalysisLogic } from '../../hooks/useEmployeeAnalysisLogic';
 import { useEmployeeAnalysisData } from '../../hooks/useEmployeeAnalysisData';
 import { useEmployeeAnalysisTabs } from '../../hooks/useEmployeeAnalysisTabs';
 import { SectionHeader } from '../shared/ui/SectionHeader';
+import { moTaBoLoc } from '../../utils/moTaBoLoc';
 import { SectionCard } from '../shared/ui/SectionCard';
 import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
 import EmployeeAnalysisModals from './EmployeeAnalysisModals';
@@ -188,19 +189,10 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         <SectionCard className="mb-8 flex flex-col flex-grow lg:rounded-none">
             {/* BEGIN: Header Section */}
             <SectionHeader
-                title={(
-                    <div className="flex flex-col">
-                        <span>Phân tích nhân viên</span>
-                        <span className="text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
-                            {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
-                            {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
-                            {(filterState.department && filterState.department.length > 0) ? `BỘ PHẬN: ${filterState.department.join(', ')} | ` : ''}
-                            {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
-                        </span>
-                    </div>
-                )}
+                title="Phân tích nhân viên"
+                subtitle={moTaBoLoc(filterState, { boPhan: true })}
             >
-                <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
+                <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export">
                     <EmployeeAnalysisFilters 
                         hideZeroRevenue={hideZeroRevenue}
                         setHideZeroRevenue={setHideZeroRevenue}
@@ -210,7 +202,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             variant="unstyled" size="none"
                             onClick={() => setIsSettingsOpen(prev => !prev)} 
                             title="Tùy chọn hiển thị" 
-                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                         >
                             <AppIcon name="settings" size="md" />
                         </Button>

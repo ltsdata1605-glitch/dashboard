@@ -110,7 +110,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({
             }
         >
             {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
-            <div className="-m-3 sm:-m-5">
+            <div className="modal-bleed">
 
                 {/* Sub-bar / Tabs & Filters */}
                 <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-50/30 dark:bg-slate-800/20">

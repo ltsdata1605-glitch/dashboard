@@ -24,7 +24,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                 </div>
             }
         >
-            <div className="-m-5">
+            <div className="modal-bleed">
             {/* Header */}
             <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
                 <div className="flex items-center gap-2 sm:gap-3">

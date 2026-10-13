@@ -71,7 +71,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
             hideHeader
             ariaLabel="Trùng lặp dữ liệu"
         >
-            <div className="-m-5 flex flex-col p-6 space-y-5">
+            <div className="modal-bleed flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">

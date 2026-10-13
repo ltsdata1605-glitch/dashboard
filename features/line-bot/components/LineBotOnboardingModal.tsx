@@ -189,7 +189,7 @@ export const LineBotOnboardingModal: React.FC<LineBotOnboardingModalProps> = ({
             }
         >
                 {/* Progress Bar */}
-                <div className="-mx-3 sm:-mx-5 -mt-3 sm:-mt-5 mb-4 bg-slate-100 h-1.5 flex">
+                <div className="modal-bleed-x modal-bleed-t mb-4 bg-slate-100 h-1.5 flex">
                     {steps.map(s => (
                         <div
                             key={s.step}

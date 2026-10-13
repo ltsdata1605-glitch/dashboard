@@ -92,6 +92,9 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     };
     const getRankStyle = (employeesInGroup: Record<string, unknown>[] | undefined, field: string, val: number): React.CSSProperties => {
         if (!employeesInGroup || employeesInGroup.length === 0) return {};
+        // Lỗi #22 (video v2:047–052): ô TRỐNG (0 → hiện "-") nhỏ hơn trung bình nên bị tô nền hồng — cột thưa như DCNB thì hồng
+        // khắp bảng, rối mắt. Ô không có số thì không tô màu.
+        if (!(val > 0)) return {};
         const { average, sortedVals } = getGroupFieldStats(employeesInGroup, field);
         const rank = sortedVals.indexOf(val) + 1;
         if (val > 0 && rank <= 3) return { backgroundColor: DATA_STATUS_COLORS.positive.bg, color: DATA_STATUS_COLORS.positive.text, fontWeight: 'bold' };
@@ -320,11 +323,11 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                             </Button>
                         </div>
                         <div className="h-4 lg:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1 shrink-0"></div>
-                        <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
+                        <Button variant="unstyled" size="none" onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0">
                             <AppIcon name="exportBatch" size="md" />
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 disabled:opacity-40">
+                            <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 disabled:opacity-40">
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>

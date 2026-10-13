@@ -273,17 +273,17 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">7 ngày gần nhất</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-1.5 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
+                        <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors">
                             <AppIcon name="add" size="md" />
                         </Button>
                         {activeTable && (
                             <>
-                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
+                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors">
                                     <AppIcon name="edit" size="md" />
                                 </Button>
-                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
+                                <Button variant="unstyled" size="none" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors">
                                     <AppIcon name="delete" size="md" />
                                 </Button>
                             </>
@@ -297,7 +297,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             type="button"
                             variant="unstyled" size="none"
                             onClick={() => setIncludeToday(p => !p)}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                 includeToday
                                 ? 'text-sky-700 bg-sky-50 dark:bg-sky-900/30 dark:text-sky-400 font-bold'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -310,14 +310,14 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                             variant="unstyled" size="none"
                             onClick={handleBatchExport}
                             disabled={isBatchExporting || tables.length === 0}
-                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
                             {isBatchExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportBatch" size="md" className="lg:hidden" />}
                             {isBatchExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportBatch" size="md" className="hidden lg:block" />}
                         </Button>
                         {onExport && (
-                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
+                            <Button variant="unstyled" size="none" onClick={onExport} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors disabled:opacity-40" title="Xuất ảnh bảng hiện tại">
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                 {isExporting ? <AppIcon name="loading" size="md" spin className="hidden lg:block" /> : <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                             </Button>

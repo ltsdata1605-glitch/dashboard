@@ -215,6 +215,13 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   import `react-hot-toast` ở mọi nơi khác; không tự vẽ khung toast/thẻ nổi `fixed bottom-*` (đè thanh tab iPhone). `AppToaster` (gắn
   một lần ở `App.tsx`) vẽ viên nang vật liệu mờ ở TRÊN GIỮA màn hình (iPhone dưới tai thỏ, laptop cách mép trên 12px), tối đa 3
   cái, vuốt để tắt. Không dùng emoji làm icon toast (emoji cũ tự quy đổi). Test: `tests/e2e/toast-thong-nhat.spec.ts`.
+  *(GĐ5 2026-10-13)* Việc nhiều bước (vd xuất Google Sheet) dùng `toastViecDai('Đang…')` → `.buoc()` / `.xong(title, { actions })` /
+  `.loi()` — cùng MỘT toast. CẤM dựng toast bằng DOM (`createElement` + `cssText 'position:fixed;bottom…'`) — test
+  `components/shared/ui/toast/khongToastTuVe.test.ts` đỏ. `AppToaster` portal ra `<body>` (#root là `relative z-10`: để trong #root thì
+  toast nằm DƯỚI lớp nền mờ của modal).
+- **Modal tràn sát mép (GĐ5 2026-10-13):** khối muốn chạm mép thân `<Modal>` dùng class `modal-bleed` / `modal-bleed-x|t|b` (lấy đúng
+  đệm thân qua biến `--modal-pad`: 12px iPhone, 20px từ sm). CẤM tự viết `-m-5` / `-m-3 sm:-m-5` — lệch đệm là chữ bị cắt mép trên
+  iPhone (lỗi #5/#6/#21). Test `components/shared/ui/modalBleed.test.ts`.
 - **Lớp Apple (2026-10-11, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ3 — `DESIGN_SYSTEM.md` mục 7):** chữ theo thang 9 bậc `type-*`
   (token `--type-*`, ratchet `offScaleText` chỉ được giảm), tiêu đề viết thường như câu (IN HOA chỉ nhãn cột). Dùng component
   dùng chung thay vì tự vẽ: `Switch` (công tắc), `Tabs variant="segment"` (segmented), `Banner` (thông báo tĩnh, cấm chữ chạy),

@@ -168,7 +168,7 @@ export const SelectInteractedUserModal: React.FC<SelectInteractedUserModalProps>
             }
         >
             {/* Thân giữ nguyên bố cục cũ (thanh công cụ + danh sách); bù lề của Modal để không đổi giao diện. */}
-            <div className="-m-3 sm:-m-5">
+            <div className="modal-bleed">
                 {/* Toolbar: Search & Filter Tabs */}
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800/80 space-y-3 bg-white dark:bg-slate-900">
                     {/* Search input */}

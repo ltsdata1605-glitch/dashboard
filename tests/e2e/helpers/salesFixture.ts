@@ -38,8 +38,9 @@ const ROWS: Row[] = [
     { order: 'SO005', product: 'Loa Bluetooth Alpha Works Sonik 120 Đen', customer: 'TRẦN NAM LÀO', qty: 1, price: 3_000_000, industry: 'Phụ kiện', group: '1031', code: 'SP006' },
 ];
 
-/** Tạo file Excel dữ liệu bán hàng tối thiểu cho module Phân Tích, trả về đường dẫn file tạm. */
-export function createSalesXlsx(): string {
+/** Tạo file Excel dữ liệu bán hàng tối thiểu cho module Phân Tích, trả về đường dẫn file tạm.
+ *  `chuaXuat`: mã đơn để "Chưa xuất" (đơn chờ xuất — mở được hộp Chi tiết đơn hàng); mặc định mọi đơn "Đã xuất". */
+export function createSalesXlsx(opts: { chuaXuat?: string[] } = {}): string {
     const rows = ROWS.map(r => ({
         'Mã Đơn Hàng': r.order,
         'Tên Sản Phẩm': r.product,
@@ -50,7 +51,7 @@ export function createSalesXlsx(): string {
         'Mã kho tạo': TEST_KHO,
         'Kho tạo': `Kho ${TEST_KHO}`,
         'Người tạo': TEST_EMPLOYEE,
-        'Trạng thái xuất': 'Đã xuất',
+        'Trạng thái xuất': opts.chuaXuat?.includes(r.order) ? 'Chưa xuất' : 'Đã xuất',
         'Ngày tạo': d(today),
         'Thời gian hẹn giao': d(today),
         'Hình thức xuất': 'Xuất bán hàng tại siêu thị',

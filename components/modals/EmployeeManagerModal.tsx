@@ -216,18 +216,20 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 </div>
             }
         >
-            <div className="-m-5 flex flex-col max-h-[70vh]">
+            <div className="modal-bleed flex flex-col max-h-[70vh]">
                 {/* Toolbar */}
-                <div className="p-2.5 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-                    <div className="relative w-48 sm:w-64">
-                        <Input 
-                            type="text" 
-                            placeholder="Tìm mã NV, tên, siêu thị..." 
+                {/* Lỗi #21 (video v1:034–037): ô tìm kiếm 192px chật trên iPhone → chiếm trọn hàng; bảng không còn bị cắt cột MÃ NV ở
+                    mép trái (lề âm 20px cũ lấn đệm 12px của sheet — nay modal-bleed) và cuộn ngang được khi hẹp. */}
+                <div className="px-3 py-2.5 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900/50">
+                    <div className="w-full sm:w-72">
+                        <Input
+                            type="search"
+                            leftIcon="search"
+                            aria-label="Tìm nhân viên"
+                            placeholder="Tìm mã NV, tên, bộ phận…"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-8 sm:pl-9 pr-3 text-xs sm:text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                         />
-                        <AppIcon name="search" size="md" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     </div>
                     <div className="hidden sm:flex gap-2 text-xs text-slate-400 dark:text-slate-500">
                         <span>Lưu ý: Dữ liệu được lưu tự động và an toàn (IndexedDB).</span>
@@ -235,8 +237,8 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 </div>
 
                 {/* Table */}
-                <div className="flex-grow overflow-y-auto custom-scrollbar">
-                    <table className="min-w-full text-[11px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
+                <div className="flex-grow overflow-auto custom-scrollbar">
+                    <table className="w-full min-w-[480px] text-[12px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
                         <thead className="bg-sky-50 dark:bg-sky-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
                             <tr className="text-[11px] sm:text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
                                 <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[13%] sm:w-20">

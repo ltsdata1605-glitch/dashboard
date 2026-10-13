@@ -219,18 +219,18 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
     }, [productConfig]);
 
     const getTitle = (activeTab: 'card' | 'chart') => {
-        if (activeTab === 'chart') return "BIỂU ĐỒ TỶ TRỌNG";
+        if (activeTab === 'chart') return "Biểu đồ tỷ trọng";
         const level = drilldownPath.length;
-        if (level === 0) return "Tỷ Trọng Ngành Hàng";
+        if (level === 0) return "Tỷ trọng ngành hàng";
         
         const [parent, child] = drilldownPath;
-        if (level === 1) return `CHI TIẾT: ${parent}`;
+        if (level === 1) return `Chi tiết: ${parent}`;
 
         if (level === 2) {
             if (specialGroups.has(parent)) {
-                return `${child.toUpperCase()} TRONG ${parent}`;
+                return `${child} trong ${parent}`;
             }
-            return `HÃNG SẢN XUẤT TRONG ${child}`;
+            return `Hãng sản xuất trong ${child}`;
         }
         return "";
     };

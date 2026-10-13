@@ -21,7 +21,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
       }
     >
       {/* Banner header — kéo lề âm để tràn hết chiều rộng body (Modal mặc định có padding p-5) */}
-      <div className="-mx-5 -mt-5 mb-5 bg-sky-600 dark:bg-sky-700 p-4 flex justify-between items-center text-white">
+      <div className="modal-bleed-x modal-bleed-t mb-5 bg-sky-600 dark:bg-sky-700 p-4 flex justify-between items-center text-white">
           <h2 className="text-xl font-bold uppercase flex items-center gap-2">
               <AppIcon name="guide" size="xl" />
               Hướng dẫn sử dụng phần mềm phân ca tự động

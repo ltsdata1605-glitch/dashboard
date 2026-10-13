@@ -350,8 +350,11 @@ export function Modal({
           </div>
         )}
 
-        {/* Body — chỉ cuộn DỌC; con trực tiếp được co (min-w-0) thay vì đẩy khung rộng ra (lỗi #5/#6/#21). */}
-        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-5 custom-scrollbar [&>*]:min-w-0">
+        {/* Body — chỉ cuộn DỌC; con trực tiếp được co (min-w-0) thay vì đẩy khung rộng ra (lỗi #5/#6/#21).
+            Đệm thân = biến `--modal-pad` (12px iPhone / 20px từ sm) — khối muốn tràn sát mép dùng class `modal-bleed*` (styles.css)
+            để lấy ĐÚNG đệm này. Trước GĐ5 mỗi nơi tự viết `-m-5` (20px) trong khi đệm iPhone chỉ 12px → lấn 8px mỗi bên, chữ bị
+            cắt mép trái/phải ("gành Hàng", "Xóa the", cột MÃ NV). */}
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain [--modal-pad:0.75rem] sm:[--modal-pad:1.25rem] p-(--modal-pad) custom-scrollbar [&>*]:min-w-0">
           {children}
         </div>
 

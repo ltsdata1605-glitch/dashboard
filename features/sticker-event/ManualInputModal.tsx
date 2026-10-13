@@ -258,7 +258,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                 </div>
             }
         >
-            <div className="-m-5">
+            <div className="modal-bleed">
                 {/* Form */}
                     <form id="manual-form-top" onSubmit={editingId ? handleSaveEdit : handleAddProduct} className="p-5 space-y-3 bg-slate-50 border-b border-slate-200">
                         {editingId && (

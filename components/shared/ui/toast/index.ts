@@ -3,6 +3,6 @@
  *   import { toast } from '<…>/components/shared/ui/toast';
  *   toast.success('Đã lưu'); toast.warning('…', { description: '…' }); toast.action({ title, actions: [...] });
  */
-export { toast, default, TOAST_DURATION, getToastMeta, normalizeIcon, isIconName } from './toast';
+export { toast, default, TOAST_DURATION, getToastMeta, normalizeIcon, isIconName, toastViecDai } from './toast';
 export type { ToastKind, ToastAction, ToastMeta, ToastOptions, ActionToastOptions, ToastMessage } from './toast';
 export { AppToaster } from './AppToaster';

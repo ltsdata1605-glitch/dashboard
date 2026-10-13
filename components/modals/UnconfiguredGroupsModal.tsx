@@ -63,7 +63,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             ariaLabel="Nhóm hàng chưa cấu hình"
             maxWidth="lg"
         >
-            <div className="-m-5">
+            <div className="modal-bleed">
             {/* Header */}
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-2xl">
                 <div className="flex items-center gap-3">

@@ -384,7 +384,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 </div>
             ) : undefined}
         >
-            <div className="-m-5 flex flex-col h-[75vh] sm:h-auto min-h-0 bg-white dark:bg-slate-900">
+            <div className="modal-bleed flex flex-col h-[75vh] sm:h-auto min-h-0 bg-white dark:bg-slate-900">
                 {view === 'picker' && (
                     <div className="flex-grow overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-6 min-h-0">
                         {renderPickerView()}

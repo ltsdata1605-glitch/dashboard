@@ -103,7 +103,7 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
     test('#19 số phụ thẻ KPI không ngắt giữa số và đơn vị', async ({ page }) => {
         await napDuLieuMau(page);
         const ws = await page.locator('.kpi-overview-card').first().evaluate(el => {
-            const o = el.querySelector('.lg\\:hidden .text-\\[11px\\]');
+            const o = el.querySelector('[data-kpi-phu]');
             return o ? Array.from(o.querySelectorAll('span')).map(s => getComputedStyle(s).whiteSpace) : [];
         });
         expect(ws.length, 'không thấy số phụ của thẻ KPI').toBeGreaterThan(0);

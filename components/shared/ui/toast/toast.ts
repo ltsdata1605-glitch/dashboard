@@ -177,4 +177,25 @@ export const toast: ToastApi = Object.assign(base, {
     removeAll: () => rht.remove(),
 });
 
+/**
+ * MỘT việc dài nhiều bước (vd xuất Google Sheet: xác thực → tạo → ghi): mọi bước cập nhật CÙNG một toast (không chồng nhiều
+ * cái), kết thúc bằng `xong` (có thể kèm nút, vd "Mở Sheet") hoặc `loi`. Thay các khung toast tự vẽ bằng DOM
+ * (`position:fixed; bottom:24px` — đè thanh tab iPhone, lệch giao diện chung) còn sót sau GĐ1 (GĐ5, 2026-10-13).
+ */
+export function toastViecDai(buocDau: string) {
+    const id = toast.loading(buocDau);
+    return {
+        id,
+        buoc: (msg: string) => { toast.loading(msg, { id }); },
+        xong: (title: string, opts: { description?: Renderable; actions?: ToastAction[]; duration?: number } = {}) => {
+            if (opts.actions && opts.actions.length) {
+                toast.action({ id, kind: 'success', title, description: opts.description, actions: opts.actions, duration: opts.duration });
+            } else {
+                toast.success(title, { id, description: opts.description, duration: opts.duration });
+            }
+        },
+        loi: (msg: string, description?: Renderable) => { toast.error(msg, { id, description }); },
+    };
+}
+
 export default toast;

@@ -66,7 +66,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
             ariaLabel="Danh sách YCX luỹ kế"
             maxWidth="lg"
         >
-            <div className="-m-5">
+            <div className="modal-bleed">
             {/* Header */}
             <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-2xl">
                 <div className="flex items-center gap-2.5">
@@ -175,15 +175,15 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                         </>
                     ) : <span />}
 
+                    {/* Lỗi #15 (video v1:008): nút chính màu ĐEN — lệch hệ màu (nút chính duy nhất là sky). */}
                     <Button
-                        variant="unstyled" size="none"
+                        variant="primary"
                         onClick={() => {
                             if (onViewReport) onViewReport();
                             onClose();
                         }}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-md text-xs transition-all shadow-none active:scale-95"
                     >
-                        Xem Báo Cáo
+                        Xem báo cáo
                     </Button>
                 </div>
             </div>

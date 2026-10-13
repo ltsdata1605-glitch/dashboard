@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { resolveValue, useToaster, type Toast as RhtToast } from 'react-hot-toast';
 import { toast, getToastMeta, TOAST_DURATION, type ToastAction, type ToastKind } from './toast';
 import { AppIcon } from '../icon/AppIcon';
@@ -255,7 +256,9 @@ export const AppToaster: React.FC = () => {
     const shownIds = new Set(toasts.filter(t => t.visible).slice(0, MAX_VISIBLE).map(t => t.id));
     const shown = toasts.filter(t => shownIds.has(t.id) || (!t.visible && t.height));
 
-    return (
+    // Portal ra <body>: #root là `relative z-10` (một ngữ cảnh xếp lớp riêng) nên z-[1000000] bên trong #root vẫn THẤP hơn mọi
+    // modal/sheet (portal ra <body>, z-50+) — toast hiện lúc đang mở modal bị lớp nền mờ phủ lên (GĐ5, 2026-10-13).
+    return createPortal(
         <div
             data-ycx-toaster=""
             className="fixed inset-x-0 top-0 z-[1000000] pointer-events-none flex justify-center"
@@ -275,7 +278,8 @@ export const AppToaster: React.FC = () => {
                     />
                 ))}
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 };
 

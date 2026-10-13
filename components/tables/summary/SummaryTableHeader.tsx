@@ -84,12 +84,12 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-1 lg:gap-1.5 flex-wrap sm:flex-nowrap">
+                    <div className="flex items-center gap-2 lg:gap-1.5 flex-wrap sm:flex-nowrap">
                         <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export">
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setTableMode('standard')}
-                                className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'standard'
                                     ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -101,7 +101,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                             <Button
                                 variant="unstyled" size="none"
                                 onClick={() => setTableMode('comparison')}
-                                className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                                     tableMode === 'comparison'
                                     ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                                     : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -121,18 +121,18 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     onClick={handleExport}
                                     disabled={isExporting}
                                     title="Xuất Ảnh"
-                                    className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                                    className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                 >
                                     {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                     {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}
                                 </Button>
                             ) : (
                                 <>
-                                    <div className="flex items-center gap-1 lg:gap-1.5">
+                                    <div className="flex items-center gap-2 lg:gap-1.5">
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
                                             <AppIcon name="settings" size="md" />
@@ -142,7 +142,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                             onClick={handleExport}
                                             disabled={isExporting}
                                             title="Xuất Ảnh"
-                                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                                         >
                                             {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                                             {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}

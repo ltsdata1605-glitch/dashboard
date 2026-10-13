@@ -98,7 +98,7 @@ export const ApiKeyConfigModal: React.FC<ApiKeyConfigModalProps> = ({
             }
         >
             {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
-            <div className="-m-3 sm:-m-5">
+            <div className="modal-bleed">
 
                 {/* Body */}
                 <div className="p-4 space-y-3.5 text-xs">

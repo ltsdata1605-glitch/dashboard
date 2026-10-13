@@ -9,6 +9,7 @@ import { DashboardContext } from '../../contexts/DashboardContext';
 import { Button } from '../shared/ui/Button';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import EmployeeCategoryTable, { useCategoryColumns } from './EmployeeCategoryTable';
+import { toast } from '../shared/ui/toast';
 
 
 
@@ -461,12 +462,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                  onClick={() => {
                                                                      if (orderId && orderId !== '-') {
                                                                          navigator.clipboard.writeText(orderId).then(() => {
-                                                                             const toast = document.createElement('div');
-                                                                             toast.textContent = `Đã sao chép: ${orderId}`;
-                                                                             toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
-                                                                             document.body.appendChild(toast);
-                                                                             requestAnimationFrame(() => { toast.style.opacity = '1'; });
-                                                                             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 1500);
+                                                                             toast.success(`Đã sao chép: ${orderId}`, { id: 'sao-chep' });
                                                                          });
                                                                      }
                                                                  }}
@@ -546,7 +542,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             controls={controls}
             maxWidth="xl"
         >
-            <div className="-m-5 p-3 sm:p-6 bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
+            <div className="modal-bleed p-3 sm:p-6 bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
                 {modalContent}
             </div>
         </Modal>

@@ -50,6 +50,7 @@ import ExportLoader from '../common/ExportLoader';
 import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Button } from '../shared/ui/Button';
+import { Banner } from '../shared/ui/Banner';
 import { getExportFilenamePrefix, formatCurrency, getRowValue } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
@@ -406,20 +407,11 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         salesClearTitle={salesClearTitle}
                     />
 
-                    {/* Super Admin Announcement Marquee — Luôn hiển thị cho toàn bộ người dùng với độ rộng khớp nội dung trang */}
+                    {/* Thông báo của Super Admin — luôn hiện cho mọi người dùng. Lỗi #18 (video v2:003–012): trước là dải đỏ chữ CHẠY liên
+                        tục (khó đọc, gây phân tâm) → Banner dùng chung: chữ đứng yên, tối đa 2 dòng + "Xem thêm". */}
                     {announcement && announcement.active && announcement.content && !isAnnouncementExpired(announcement) && (
                         <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 w-full mb-2 no-print z-20">
-                            <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-[11px] sm:text-xs font-bold py-1.5 sm:py-2 px-3 sm:px-4 flex items-center overflow-hidden relative rounded-none shadow-md border border-rose-500/30">
-                                <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-none z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
-                                    <AppIcon name="announcement" size="md" className="animate-bounce" />
-                                    <span className="uppercase tracking-wider text-[11px] font-black">Thông báo</span>
-                                </div>
-                                <div className="flex-1 overflow-hidden relative h-5 flex items-center">
-                                    <div className="absolute whitespace-nowrap animate-marquee will-change-transform text-rose-50 dark:text-rose-100">
-                                        {announcement.content}
-                                    </div>
-                                </div>
-                            </div>
+                            <Banner tone="danger" title="Thông báo" data-testid="thong-bao-he-thong">{announcement.content}</Banner>
                         </div>
                     )}
 
@@ -591,7 +583,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                                             <div className="relative z-10 pt-1 lg:pt-2">
                                                 <SectionHeader
-                                                    title="TỔNG QUAN DOANH THU"
+                                                    title="Tổng quan doanh thu"
                                                     subtitle={<>
                                                         <span className="hidden md:inline">{processedData.reportSubTitle}</span>
                                                         {/* Mobile: truncated subtitle + inline Chờ Xuất */}
@@ -601,19 +593,19 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                                 <Button
                                                                     variant="unstyled" size="none"
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
-                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center shrink-0 text-rose-700 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px]"
+                                                                    className="ycx-hit inline-flex items-center shrink-0 text-rose-700 dark:text-rose-400 font-semibold whitespace-nowrap tabular-nums active:opacity-60"
                                                                 >
-                                                                    Chờ xuất: {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
+                                                                    Chờ xuất {formatCurrency(processedData.kpis.doanhThuThucChoXuat)}
                                                                 </Button>
                                                             )}
                                                         </span>
                                                     </>}
                                                 >
-                                                    <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
-                                                        <Button variant="unstyled" size="none" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                    <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export">
+                                                        <Button variant="unstyled" size="none" onClick={() => setIsKpiConfigModalOpen(true)} title="Tuỳ chỉnh dãy thẻ KPI" aria-label="Tuỳ chỉnh dãy thẻ KPI" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                             <AppIcon name="settings" size="md" />
                                                         </Button>
-                                                        <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
+                                                        <Button variant="unstyled" size="none" onClick={() => handleBusinessOverviewExport()} disabled={isExporting} title="Xuất ảnh toàn báo cáo" aria-label="Xuất ảnh toàn báo cáo" className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-control hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40">
                                                             <AppIcon name="exportImage" size="md" />
                                                         </Button>
                                                     </div>

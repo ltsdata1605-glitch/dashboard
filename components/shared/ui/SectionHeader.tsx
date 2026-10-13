@@ -59,7 +59,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subti
                     </div>
                 )}
                 <div className="min-w-0 flex-1">
-                    <h2 className={titleClassName || "text-[17px] lg:text-base font-semibold text-slate-900 dark:text-slate-100 leading-[22px] truncate"}>{title}</h2>
+                    <h2 className={titleClassName || "type-headline font-semibold text-slate-900 dark:text-slate-100 truncate"}>{title}</h2>
                     {/* Phụ đề nhỏ gọn (chủ dự án 2026-10-11: "nhỏ gọn thanh thoát") nhưng không dưới thang chữ: footnote 12px,
                         viết thường, xám. Điện thoại tối đa 2 dòng ("Lọc theo kho: tất cả | T…" từng mất phần khoảng thời
                         gian, dữ liệu thật 2026-09-28); laptop 1 dòng. */}

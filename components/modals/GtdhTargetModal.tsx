@@ -5,6 +5,8 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import SearchableSelect from '../common/SearchableSelect';
 import { formatCurrency } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
+import { Input } from '../shared/ui/Input';
+import { EmptyState } from '../shared/ui/EmptyState';
 
 interface GtdhTargetModalProps {
     isOpen: boolean;
@@ -61,108 +63,104 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
 
     const gtdhList = Object.entries(gtdhTargets).sort((a, b) => a[0].localeCompare(b[0]));
 
+    // Lỗi #6 (video v1:048–059): tiêu đề ĐỎ + nút Lưu HỒNG (màu của lỗi/xoá) cho một việc bình thường; nội dung bị cắt mép trái
+    // trên iPhone (lề âm 20px cũ lấn đệm 12px của sheet — nay `modal-bleed`). Nay: tiêu đề trung tính, nút chính sky, nhãn viết như
+    // câu, ô nhập dùng chung (cao 44px trên cảm ứng), danh sách mục tiêu dạng hàng nhóm kiểu iOS.
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Cấu hình Mục Tiêu GTĐH (AOV)"
-            subTitle="Thiết lập chỉ tiêu cảnh báo màu đỏ"
-            titleColorClass="text-rose-700 dark:text-rose-400"
+            title="Mục tiêu GTĐH (AOV)"
+            subTitle="Nhóm hàng có GTĐH dưới mục tiêu sẽ tô đỏ ở bảng Chi tiết ngành hàng"
             maxWidth="lg"
         >
-            <div className="-m-5 h-full flex flex-col bg-slate-50 dark:bg-slate-900">
-                
-                {/* CONFIGURATION FORM */}
-                <div className="p-3 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 flex-shrink-0">
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight mb-3 sm:mb-4 flex items-center gap-2">
-                        <AppIcon name="addCircle" size="md" className="text-rose-500" />
-                        Thêm / Chỉnh Sửa Mục Tiêu
-                    </h4>
-                    
+            <div className="modal-bleed h-full flex flex-col bg-slate-50 dark:bg-slate-900">
+
+                {/* Thêm / sửa mục tiêu */}
+                <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 flex-shrink-0">
+                    <h4 className="type-subhead font-semibold text-slate-800 dark:text-slate-200 mb-3">Thêm hoặc sửa mục tiêu</h4>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
-                        <div className="w-full">
+                        <div className="w-full min-w-0">
                             <SearchableSelect
-                                label="Ngành Hàng"
+                                label="Ngành hàng"
                                 options={nganhHangOptions}
                                 value={selectedNganhHang}
                                 onChange={handleNganhHangChange}
-                                placeholder="Chọn Ngành Hàng..."
+                                placeholder="Chọn ngành hàng…"
                             />
                         </div>
-                        <div className="w-full">
+                        <div className="w-full min-w-0">
                             <SearchableSelect
-                                label="Nhóm Hàng"
+                                label="Nhóm hàng"
                                 options={nhomHangOptions}
                                 value={selectedNhomHang}
                                 onChange={setSelectedNhomHang}
-                                placeholder={selectedNganhHang ? "Chọn Nhóm Hàng..." : "Chọn Ngành Hàng trước"}
+                                placeholder={selectedNganhHang ? 'Chọn nhóm hàng…' : 'Chọn ngành hàng trước'}
                             />
                         </div>
-                        <div className="w-full">
-                            <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu GTĐH (Đvt: Triệu VNĐ)</label>
-                            <input 
+                        <div className="w-full min-w-0">
+                            <label htmlFor="gtdh-muc-tieu" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">Mục tiêu GTĐH (triệu đồng)</label>
+                            <Input
+                                id="gtdh-muc-tieu"
                                 type="text"
                                 inputMode="decimal"
                                 value={targetValue}
                                 onChange={(e) => {
-                                    // Allow numbers and dot for decimal
+                                    // Chỉ nhận số và dấu chấm thập phân
                                     const raw = e.target.value.replace(/[^0-9.]/g, '');
                                     setTargetValue(raw);
                                 }}
+                                onKeyDown={(e) => { if (e.key === 'Enter') handleSave(); }}
                                 placeholder="Ví dụ: 9.5"
-                                className="w-full h-9 sm:h-11 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-sky-500 focus:ring-sky-500 text-xs sm:text-sm font-bold text-rose-700 dark:text-rose-400"
+                                className="tabular-nums font-semibold"
                             />
                         </div>
                         <div className="w-full">
                             <Button
                                 onClick={handleSave}
                                 disabled={!selectedNhomHang || !targetValue}
-                                variant="danger"
-                                leftIcon={<AppIcon name="save" size="md" />}
+                                variant="primary"
+                                icon="save"
                                 className="w-full"
                             >
-                                LƯU MỤC TIÊU
+                                Lưu mục tiêu
                             </Button>
                         </div>
                     </div>
                 </div>
 
-                {/* CURRENT TARGETS LIST */}
-                <div className="p-3 sm:p-6 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex-1 custom-scrollbar">
-                    <div className="flex justify-between items-center mb-3 sm:mb-4">
-                        <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight flex items-center gap-2">
-                            <AppIcon name="viewList" size="md" className="text-sky-500" />
-                            Mục Tiêu Đang Áp Dụng
-                        </h4>
-                        <span className="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
-                            {gtdhList.length} Nhóm Hàng
-                        </span>
+                {/* Mục tiêu đang áp dụng */}
+                <div className="p-4 sm:p-6 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex-1 custom-scrollbar">
+                    <div className="flex justify-between items-center mb-2 px-1">
+                        <h4 className="type-subhead font-semibold text-slate-800 dark:text-slate-200">Mục tiêu đang áp dụng</h4>
+                        <span className="text-[12px] font-medium tabular-nums text-slate-500">{gtdhList.length} nhóm hàng</span>
                     </div>
 
                     {gtdhList.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500">
-                            <AppIcon name="target" size="hero" className="mb-3 opacity-20" />
-                            <p className="text-sm">Chưa có mục tiêu GTĐH nào được thiết lập.</p>
-                            <p className="text-xs mt-1">Hệ thống sẽ không bôi đỏ cảnh báo trong bảng Chi Tiết Ngành Hàng.</p>
-                        </div>
+                        <EmptyState
+                            icon="target"
+                            title="Chưa có mục tiêu GTĐH"
+                            description="Khi chưa có mục tiêu, bảng Chi tiết ngành hàng không tô đỏ cảnh báo."
+                        />
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
                             {gtdhList.map(([nhom, value]) => (
-                                <div key={nhom} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-3 rounded-lg shadow-sm hover:border-sky-300 dark:hover:border-sky-500 transition-colors group">
-                                    <div className="flex flex-col overflow-hidden pr-2">
-                                        <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={nhom}>
+                                <div key={nhom} className="flex justify-between items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 pl-3 pr-1 py-1.5 rounded-control">
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-[13px] font-medium text-slate-800 dark:text-slate-200 truncate" title={nhom}>
                                             {nhom}
                                         </span>
-                                        <span className="text-[11px] sm:text-[11px] font-semibold text-rose-700 dark:text-rose-400 mt-0.5">
-                                            GTĐH: {formatCurrency(value / 1000000)} T
+                                        <span className="text-[12px] text-slate-500 dark:text-slate-400 tabular-nums">
+                                            GTĐH {formatCurrency(value / 1000000)} triệu
                                         </span>
                                     </div>
-                                    <Button 
+                                    <Button
                                         onClick={() => deleteGtdhTarget(nhom)}
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400"
-                                        title="Xoá mục tiêu này"
+                                        variant="unstyled" size="none"
+                                        className="shrink-0 w-9 h-9 pointer-coarse:w-11 pointer-coarse:h-11 flex items-center justify-center rounded-control text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:text-rose-400"
+                                        title={`Xoá mục tiêu ${nhom}`}
+                                        aria-label={`Xoá mục tiêu ${nhom}`}
                                     >
                                         <AppIcon name="delete" size="md" />
                                     </Button>

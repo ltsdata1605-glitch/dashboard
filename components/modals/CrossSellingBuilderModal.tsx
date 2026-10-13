@@ -233,7 +233,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                 </div>
             }
         >
-            <div className="-m-5">
+            <div className="modal-bleed">
                 <div className="flex flex-wrap justify-between items-center p-2.5 sm:p-4 bg-slate-100/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700 gap-2">
                     <Button
                         variant="unstyled" size="none"

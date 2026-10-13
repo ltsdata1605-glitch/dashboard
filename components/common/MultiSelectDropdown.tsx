@@ -132,7 +132,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     type="button"
                     variant="unstyled" size="none"
                     onClick={() => setIsOpen(!isOpen)}
-                    className={`relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${
+                    className={`ycx-hit relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${
                         isOpen || isFiltered
                             ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold'
                             : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

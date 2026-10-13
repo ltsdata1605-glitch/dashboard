@@ -40,7 +40,7 @@ export const YcxLuyKePickerModal: React.FC<YcxLuyKePickerModalProps> = ({
             ariaLabel="Tự động YCX Luỹ kế"
             maxWidth="sm"
         >
-            <div className="-m-5 p-5 space-y-4">
+            <div className="modal-bleed p-5 space-y-4">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center justify-center border border-emerald-100/50 dark:border-emerald-900/30 shrink-0">

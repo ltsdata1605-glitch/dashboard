@@ -687,15 +687,15 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                 {/* BEGIN: Header Section */}
                 <SectionHeader 
-                    title="Chi Tiết Theo Kho" 
-                    subtitle="Phân tích hiệu suất từng siêu thị"
+                    title="Chi tiết theo kho" 
+                    subtitle="Hiệu suất từng siêu thị"
                 >
-                    <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
+                    <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export">
                         {/* Lũy kế button */}
                         <Button
                             variant="unstyled" size="none"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${isLuyKe ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <AppIcon name="layers" size="sm" className="lg:hidden" />
@@ -706,7 +706,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <Button
                             variant="unstyled" size="none"
                             onClick={toggleViewMode}
-                            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors shrink-0 ${viewMode === 'vertical' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-500/10 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={viewMode === 'horizontal' ? 'Chuyển sang bảng dọc' : 'Chuyển sang bảng ngang'}
                         >
                             <AppIcon name={resolveIconName(viewMode === 'horizontal' ? 'layout-list' : 'table-2') ?? 'help'} size="sm" className="lg:hidden" />
@@ -732,12 +732,12 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         <div className="hidden lg:block w-px h-4 lg:h-5 bg-slate-200 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
 
                         {userRole !== 'employee' && (
-                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                            <Button variant="unstyled" size="none" onClick={() => setIsSettingsModalOpen(true)} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                                 <AppIcon name="settings" size="md" />
                             </Button>
                         )}
 
-                        <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
+                        <Button variant="unstyled" size="none" onClick={() => handleSingleExport()} disabled={isExporting} className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40" title="Chụp ảnh">
                             {isExporting ? <><AppIcon name="loading" size="md" spin /></> : <><AppIcon name="exportImage" size="md" /></>}
                         </Button>
                     </div>

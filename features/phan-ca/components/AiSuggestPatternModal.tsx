@@ -324,7 +324,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                 </div>
             }
         >
-            <div className="-m-5 p-5 bg-slate-50 dark:bg-slate-900/40">
+            <div className="modal-bleed p-5 bg-slate-50 dark:bg-slate-900/40">
                 <p className="text-xs text-slate-500 dark:text-slate-400 italic mb-3">
                     AI chỉ tạo <strong>mẫu ca xoay</strong> (chuỗi mã ca) — sau khi bấm "Áp Dụng" và "Lưu Thay Đổi", việc gán cụ thể ai làm Giao Hàng/Kho/Thu Ngân ngày nào vẫn do thuật toán phân ca tự động xử lý khi tạo lại lịch, không phải AI.
                 </p>

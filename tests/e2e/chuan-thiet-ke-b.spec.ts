@@ -23,8 +23,8 @@ test('bo góc theo thang chuẩn: nút 8px, thẻ KPI 16px, modal 16px', async (
     await page.screenshot({ path: 'test-results/chuan-b/phan-tich.png' });
 
     // Khung KHỐI DỮ LIỆU lớn trên laptop cố ý VUÔNG (giữ quy ước hiện tại — DESIGN_SYSTEM.md mục 3).
-    // Mở modal dùng chung "Tùy chỉnh KPI".
-    await page.getByRole('button', { name: 'Tùy chỉnh KPI' }).first().click();
+    // Mở modal dùng chung "Dãy thẻ KPI" (nút "Tuỳ chỉnh dãy thẻ KPI").
+    await page.getByRole('button', { name: 'Tuỳ chỉnh dãy thẻ KPI' }).first().click();
     const dialog = page.locator('[role="dialog"][aria-modal="true"]').first();
     await expect(dialog).toBeVisible({ timeout: 10_000 });
     const modal = await dialog.evaluate(el => getComputedStyle(el).borderTopLeftRadius);

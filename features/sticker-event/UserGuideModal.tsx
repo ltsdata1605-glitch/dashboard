@@ -37,7 +37,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
         </div>
       }
     >
-        <div className="-m-5 p-6 space-y-8">
+        <div className="modal-bleed p-6 space-y-8">
           {/* Nguyên lý hoạt động */}
           <section>
             <div className="flex items-center gap-2 mb-4">

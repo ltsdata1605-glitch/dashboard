@@ -351,7 +351,7 @@ export const KeywordEditModal: React.FC<KeywordEditModalProps> = ({
                         )}
                     </div>
 
-                    <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/50 -mx-5 -mb-5 mt-4">
+                    <div className="px-5 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 bg-slate-50/50 dark:bg-slate-800/50 modal-bleed-x modal-bleed-b mt-4">
                         <Button variant="ghost" type="button" onClick={onClose} className="px-4 py-2 text-xs font-semibold text-slate-600 rounded-lg">
                             Huỷ
                         </Button>

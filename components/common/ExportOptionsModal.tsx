@@ -28,7 +28,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
             maxWidth="md"
             noRounded
         >
-            <div className="-m-5 relative overflow-hidden flex flex-col items-center">
+            <div className="modal-bleed relative overflow-hidden flex flex-col items-center">
                 {/* Glowing Accent Top */}
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600 opacity-80" />
 

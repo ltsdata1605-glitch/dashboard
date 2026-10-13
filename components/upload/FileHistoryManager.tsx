@@ -72,13 +72,13 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                 </div>
                 {!compact && onViewReport && activeCount > 0 && (
                     <Button
-                        variant="unstyled" size="none"
+                        variant="primary"
+                        size="sm"
+                        icon="play"
                         onClick={onViewReport}
                         id="btn-view-historical-report"
-                        className="px-4 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
-                        <AppIcon name="play" size="sm" />
-                        <span>Xem Báo Cáo Gộp</span>
+                        Xem báo cáo gộp
                     </Button>
                 )}
             </div>

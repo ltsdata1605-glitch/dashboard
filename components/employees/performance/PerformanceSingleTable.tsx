@@ -220,7 +220,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             }}
                             disabled={isExporting}
                             variant="unstyled" size="none"
-                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
                             <AppIcon name="exportBatch" size="md" />
@@ -229,7 +229,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
                             disabled={isExporting}
                             variant="unstyled" size="none"
-                            className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+                            className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
                             {isExporting ? <AppIcon name="loading" size="md" spin className="lg:hidden" /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}

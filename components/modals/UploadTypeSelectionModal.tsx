@@ -2,6 +2,7 @@ import React from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
+import { ListGroup, ListRow } from '../shared/ui/ListGroup';
 
 interface UploadTypeSelectionModalProps {
     isOpen: boolean;
@@ -25,66 +26,36 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
             hideHeader
             ariaLabel="Chọn loại tệp doanh số"
         >
-            <div className="-m-5 p-4">
-                <div className="flex flex-col items-center text-center mb-4">
-                    <div className="w-9 h-9 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-2">
-                        <AppIcon name="upload" size="md" />
-                    </div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+            {/* Hai lựa chọn dạng danh sách nhóm kiểu iOS (GĐ5): tiêu đề viết như câu, mỗi hàng ≥ 48px trên cảm ứng, nút Huỷ dùng chung. */}
+            <div className="space-y-4">
+                <div className="flex flex-col items-center text-center pt-1">
+                    <span className="w-10 h-10 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center mb-2">
+                        <AppIcon name="upload" size="lg" />
+                    </span>
+                    <h3 className="type-headline font-semibold text-slate-900 dark:text-white">
                         Tải lên {fileCount} tệp doanh số
                     </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Vui lòng lựa chọn chế độ phân tích cho tệp vừa tải lên
+                    <p className="text-[13px] leading-[18px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Chọn cách phân tích cho tệp vừa tải lên
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <Button
-                        variant="unstyled" size="none"
+                <ListGroup>
+                    <ListRow
+                        icon="quick" iconTone="emerald"
+                        label="Tệp Realtime (Xem nhanh)"
+                        description="Phân tích ngay để xem nhanh số liệu. Không lưu vào kho dữ liệu lịch sử."
                         onClick={() => onSelect(false)}
-                        className="justify-start w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-emerald-500/30 dark:border-slate-800 dark:hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/10 transition-all flex items-start gap-2.5 group"
-                    >
-                        <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-500/20 group-hover:scale-105 transition-transform">
-                            <AppIcon name="quick" size="sm" />
-                        </div>
-                        <div className="flex-1">
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
-                                Tệp Realtime (Xem nhanh)
-                            </h4>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                Phân tích nhanh tức thời, hữu ích để xem nhanh số liệu. Không lưu vào cơ sở dữ liệu lịch sử.
-                            </p>
-                        </div>
-                    </Button>
-
-                    <Button
-                        variant="unstyled" size="none"
+                    />
+                    <ListRow
+                        icon="database" iconTone="sky"
+                        label="Lũy kế / Quá khứ"
+                        description="Đặt tên gợi nhớ, lưu dài hạn vào kho dữ liệu để tự gộp báo cáo lũy kế."
                         onClick={() => onSelect(true)}
-                        className="justify-start w-full text-left p-2.5 rounded-xl border border-slate-100 hover:border-sky-500/30 dark:border-slate-800 dark:hover:border-sky-500/30 hover:bg-sky-50/10 dark:hover:bg-sky-950/10 transition-all flex items-start gap-2.5 group"
-                    >
-                        <div className="w-7 h-7 rounded-lg bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100/50 dark:border-sky-500/20 group-hover:scale-105 transition-transform">
-                            <AppIcon name="database" size="sm" />
-                        </div>
-                        <div className="flex-1">
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-white transition-colors group-hover:text-sky-700 dark:group-hover:text-sky-400">
-                                Lũy kế / Quá khứ
-                            </h4>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                Đặt tên gợi nhớ và lưu trữ dài hạn vào kho dữ liệu để tự động gộp báo cáo lũy kế.
-                            </p>
-                        </div>
-                    </Button>
-                </div>
+                    />
+                </ListGroup>
 
-                <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                    <Button
-                        variant="unstyled" size="none"
-                        onClick={onClose}
-                        className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold rounded-xl text-xs transition-all"
-                    >
-                        Hủy bỏ
-                    </Button>
-                </div>
+                <Button variant="secondary" onClick={onClose} className="w-full">Huỷ</Button>
             </div>
         </Modal>
     );

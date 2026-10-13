@@ -7,6 +7,7 @@ import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import type { DataRow, IndustryData, ProductConfig, FilterState } from '../../types';
 import { SectionHeader } from '../shared/ui/SectionHeader';
+import { moTaBoLoc } from '../../utils/moTaBoLoc';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { EmptyState } from '../shared/ui/EmptyState';
 import { exportElementAsImage } from '../../services/uiService';
@@ -229,11 +230,10 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
                 title={(
-                    <div className="flex flex-col">
-                        <div className="flex items-center gap-3">
-                            <span>{getTitle('card')}</span>
-                            {drilldownPath.length > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>}
-                            <nav className="flex items-center text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
+                    <div className="flex min-w-0 items-center gap-2">
+                            <span className="truncate">{getTitle('card')}</span>
+                            {drilldownPath.length > 0 && <div className="h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-700"></div>}
+                            <nav className="flex min-w-0 items-center text-[12px] font-medium text-slate-400 dark:text-slate-500 gap-0.5">
                                 {drilldownPath.length > 0 && (
                                     <Button
                                         variant="unstyled" size="none"
@@ -257,20 +257,15 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     </React.Fragment>
                                 ))}
                             </nav>
-                        </div>
-                        <span className="text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
-                            {(filters.kho.length > 0 && !filters.kho.includes('all')) ? `KHO: ${filters.kho.join(', ')} | ` : ''} 
-                            {(filters.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filters.xuat} | ` : ''}
-                            {filters.dateRange !== 'all' ? `TỪ ${filters.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filters.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
-                        </span>
                     </div>
                 )}
+                subtitle={moTaBoLoc(filters)}
             >
-                <div className="flex items-center gap-1 lg:gap-1.5 hide-on-export">
+                <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export">
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('quantity')}
-                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'quantity' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${metricToDisplay === 'quantity' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Số lượng"
                     >
                         <AppIcon name="product" size="md" />
@@ -278,7 +273,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     <Button
                         variant="unstyled" size="none"
                         onClick={() => setMetricToDisplay('revenue')}
-                        className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${metricToDisplay === 'revenue' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control transition-colors ${metricToDisplay === 'revenue' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Doanh thu"
                     >
                         <AppIcon name="money" size="md" />
@@ -287,8 +282,8 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         variant="unstyled" size="none"
                         onClick={handleExport}
                         disabled={isExporting}
-                        className="flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                        title="Xuất ảnh Tỷ Trọng Ngành Hàng"
+                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-control text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        title="Xuất ảnh tỷ trọng ngành hàng"
                     >
                         {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" className="lg:hidden" />}
                         {!isExporting && <AppIcon name="exportImage" size="md" className="hidden lg:block" />}

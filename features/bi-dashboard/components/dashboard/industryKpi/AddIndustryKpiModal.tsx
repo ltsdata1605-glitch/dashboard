@@ -79,7 +79,7 @@ export const AddIndustryKpiModal: React.FC<AddIndustryKpiModalProps> = ({
             }
         >
             {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
-            <div className="-m-3 sm:-m-5">
+            <div className="modal-bleed">
 
                 {/* Search & Tabs */}
                 <div className="p-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 flex flex-col gap-2.5">

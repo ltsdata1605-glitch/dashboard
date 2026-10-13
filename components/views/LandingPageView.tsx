@@ -1,5 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import { EmptyState } from '../shared/ui/EmptyState';
 import UploadSection from '../upload/UploadSection';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
 import type { UploadedFileRegistryItem } from '../../types';
@@ -49,9 +50,11 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                         Dữ liệu phức tạp.<br/>
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-rose-600 to-sky-600 dark:from-sky-400 dark:via-rose-400 dark:to-sky-400">Phân tích siêu tốc.</span>
                     </h1>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed tracking-tight">
-                        Chuyển đổi tức thì hàng chục ngàn dòng Excel thành báo cáo quản trị toàn diện.<br className="hidden sm:block"/>
-                        Xử lý cục bộ trực tiếp trên trình duyệt, không lưu trữ dữ liệu.
+                    {/* Câu cũ "…không lưu trữ dữ liệu" KHÔNG đúng: dữ liệu bán hàng có đồng bộ lên tài khoản (users/{uid}/salesData)
+                        để nhân viên cùng Kho xem được — bỏ lời hứa sai, chỉ nói điều đúng. */}
+                    <p className="text-[13px] sm:text-[15px] leading-5 text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                        Chuyển hàng chục nghìn dòng Excel thành báo cáo quản trị đầy đủ.<br className="hidden sm:block"/>
+                        {' '}Xử lý ngay trên trình duyệt, có kết quả sau vài giây.
                     </p>
                 </div>
 
@@ -79,37 +82,33 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({
                                         )}
                                     </>
                                 ) : (
-                                    <div className="flex flex-col items-center text-center py-10 px-4">
-                                        <div className="w-12 h-12 rounded-full bg-sky-50 dark:bg-sky-500/10 text-sky-700 dark:text-sky-400 flex items-center justify-center mb-3">
-                                            <AppIcon name="clock" size="xl" />
-                                        </div>
-                                        <h3 className="text-sm font-bold text-slate-800 dark:text-white">Đang chờ dữ liệu từ Quản lý Kho</h3>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
-                                            Dữ liệu doanh số của Kho sẽ tự động hiển thị ngay khi Quản lý cập nhật. Bạn không cần tự tải tệp lên.
-                                        </p>
-                                    </div>
+                                    <EmptyState
+                                        icon="clock"
+                                        title="Đang chờ dữ liệu từ quản lý Kho"
+                                        description="Doanh số của Kho tự hiện ngay khi quản lý cập nhật. Bạn không cần tự tải tệp lên."
+                                    />
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Footer / Trust Indicators */}
-                <div className="mt-6 flex items-center justify-center gap-6 text-center">
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                        <AppIcon name="securityOk" size="sm" />
-                        <span className="text-[11px] font-semibold text-slate-500">Local Processing</span>
-                    </div>
-                    <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                        <AppIcon name="quick" size="sm" />
-                        <span className="text-[11px] font-semibold text-slate-500">Instant Speed</span>
-                    </div>
-                    <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
-                    <div className="flex items-center gap-1.5 text-slate-400">
-                        <AppIcon name="sparkles" size="sm" />
-                        <span className="text-[11px] font-semibold text-slate-500">Smart UI</span>
-                    </div>
+                {/* Dòng cam kết — lỗi #25 (video v1:013): trước là tiếng Anh "Local Processing • Instant Speed • Smart UI". */}
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center text-slate-500">
+                    <span className="flex items-center gap-1.5">
+                        <AppIcon name="securityOk" size="sm" className="text-slate-400" />
+                        <span className="text-[12px] font-medium">Xử lý trên máy</span>
+                    </span>
+                    <span aria-hidden="true" className="w-1 h-1 rounded-full bg-slate-300" />
+                    <span className="flex items-center gap-1.5">
+                        <AppIcon name="quick" size="sm" className="text-slate-400" />
+                        <span className="text-[12px] font-medium">Tức thì</span>
+                    </span>
+                    <span aria-hidden="true" className="w-1 h-1 rounded-full bg-slate-300" />
+                    <span className="flex items-center gap-1.5">
+                        <AppIcon name="sparkles" size="sm" className="text-slate-400" />
+                        <span className="text-[12px] font-medium">Gọn gàng</span>
+                    </span>
                 </div>
 
             </div>

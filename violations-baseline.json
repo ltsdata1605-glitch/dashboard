@@ -13,20 +13,6 @@
     "offScaleRadius": 0,
     "offScaleText": 2
   },
-  "components/charts/IndustryGrid.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 3,
-    "offScaleRadius": 0,
-    "offScaleText": 0
-  },
   "components/charts/RevenueCalendar.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -121,20 +107,6 @@
     "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 1
-  },
-  "components/employees/EmployeeAnalysis.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 3,
-    "offScaleRadius": 0,
-    "offScaleText": 0
   },
   "components/employees/EmployeeAnalysisContent.tsx": {
     "nonSemanticColor": 0,
@@ -236,20 +208,6 @@
     "offScaleRadius": 0,
     "offScaleText": 21
   },
-  "components/kpis/modals/KpiCardConfigModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
   "components/layout/Sidebar.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -302,35 +260,7 @@
     "iconRawSvg": 0,
     "offScaleText": 1
   },
-  "components/modals/UncollectedOrdersModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
   "components/modals/UnconfiguredGroupsModal.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
-  "components/modals/UnshippedOrdersModal.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
     "missingMobileToolbar": 0,
@@ -380,7 +310,7 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0,
-    "tinyText": 2,
+    "tinyText": 0,
     "offScaleRadius": 1
   },
   "components/shared/ui/Modal.tsx": {
@@ -480,20 +410,6 @@
     "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 4
-  },
-  "components/views/DashboardView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 3,
-    "offScaleRadius": 0,
-    "offScaleText": 0
   },
   "components/views/LandingPageView.tsx": {
     "nonSemanticColor": 0,

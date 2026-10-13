@@ -151,7 +151,7 @@ export const TaxHistoryModal: React.FC<TaxHistoryModalProps> = ({
             }
         >
             {/* Thân giữ nguyên bố cục cũ; bù lề của Modal để không đổi giao diện. */}
-            <div className="-m-3 sm:-m-5">
+            <div className="modal-bleed">
 
                 {/* Month filter tabs */}
                 {monthGroups.length > 1 && (
