@@ -76,12 +76,13 @@ export const isInAppBrowser = (): boolean => {
 };
 
 export const loginWithGoogle = async () => {
-    // Trên Safari (macOS & iOS), PWA Standalone hoặc In-App browser (Zalo/FB):
-    // Apple WebKit mặc định chặn popup ("Block Pop-up Windows") và làm treo Promise vĩnh viễn (nút xoay mãi).
-    // Tự động dùng signInWithRedirect trực tiếp để chuyển hướng tức thì và an toàn 100%!
-    if (isAppleOrSafari() || isStandaloneMode() || isInAppBrowser()) {
-        console.info('[Auth] Phát hiện Safari / iOS / PWA. Tự động dùng signInWithRedirect trực tiếp.');
-        await loginWithGoogleRedirect();
+    // Trên iOS (iPhone/iPad dù là Safari, Chrome hay PWA Màn hình chính) hoặc In-App browser:
+    // Apple WebKit chặn cookie chéo miền ở redirect, đồng thời chặn popup trong PWA.
+    // Tự động dùng quy trình Handoff an toàn qua auth.dashboard.pro.vn!
+    if (isIOSDevice() || isStandaloneMode() || isInAppBrowser()) {
+        console.info('[Auth] Phát hiện iOS / PWA / In-App Browser. Dùng quy trình Handoff an toàn.');
+        const prepared = await preparePwaHandoff();
+        startPwaHandoffLogin(prepared);
         return;
     }
 
@@ -111,8 +112,9 @@ export const loginWithGoogle = async () => {
         if (error?.code === 'auth/popup-timeout' || 
             error?.code === 'auth/popup-blocked' || 
             error?.code === 'auth/operation-not-supported-in-this-environment') {
-            console.warn('[Auth] Popup không khả dụng hoặc bị chặn. Tự động chuyển hướng đăng nhập...');
-            await loginWithGoogleRedirect();
+            console.warn('[Auth] Popup không khả dụng hoặc bị chặn. Chuyển sang quy trình Handoff an toàn...');
+            const prepared = await preparePwaHandoff();
+            startPwaHandoffLogin(prepared);
             return;
         }
         throw error;
@@ -172,9 +174,14 @@ export const preparePwaHandoff = async (): Promise<PreparedPwaHandoff> => {
 export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff): void => {
     try {
         localStorage.setItem(PWA_HANDOFF_KEY, JSON.stringify({ v: prepared.verifier, at: Date.now() }));
-    } catch { /* bộ nhớ bị chặn: vẫn mở được, chỉ là không tự nhận phiên sau khi app bị tải lại */ }
-    const win = window.open(prepared.url, '_blank');
-    if (!win) window.location.assign(prepared.url);
+    } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
+    if (isStandaloneMode()) {
+        const win = window.open(prepared.url, '_blank');
+        if (!win) window.location.assign(prepared.url);
+    } else {
+        // Trong trình duyệt thông thường (Safari/Chrome trên iPhone): chuyển hướng mượt mà trong cùng tab
+        window.location.assign(prepared.url);
+    }
 };
 
 const readPendingHandoff = (): string | null => {
@@ -195,17 +202,29 @@ export const clearPendingPwaHandoff = (): void => {
 };
 
 /** Hỏi máy chủ xem trang đăng nhập đã gửi phiên về chưa; có thì đăng nhập luôn. Trả về true khi đã vào. */
-export const claimPwaHandoff = async (): Promise<boolean> => {
+export const claimPwaHandoff = async (retries = 3): Promise<boolean> => {
     const verifier = readPendingHandoff();
     if (!verifier) return false;
-    const res = await httpsCallable<{ verifier: string }, { ready: boolean; idToken?: string; accessToken?: string | null }>(
-        functions, 'pwaHandoffClaim')({ verifier });
-    const { ready, idToken, accessToken } = res.data;
-    if (!ready || !idToken) return false;
-    clearPendingPwaHandoff();
-    await signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken ?? undefined));
-    if (accessToken) sessionStorage.setItem('googleOAuthToken', accessToken);
-    return true;
+    
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const res = await httpsCallable<{ verifier: string }, { ready: boolean; idToken?: string; accessToken?: string | null }>(
+                functions, 'pwaHandoffClaim')({ verifier });
+            const { ready, idToken, accessToken } = res.data;
+            if (ready && idToken) {
+                clearPendingPwaHandoff();
+                await signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken ?? undefined));
+                if (accessToken) sessionStorage.setItem('googleOAuthToken', accessToken);
+                return true;
+            }
+        } catch (err) {
+            console.warn(`[claimPwaHandoff] Lần thử ${attempt + 1}/${retries} không thành công:`, err);
+        }
+        if (attempt < retries - 1) {
+            await new Promise(r => setTimeout(r, 600));
+        }
+    }
+    return false;
 };
 
 export const loginWithGoogleForceConsent = async () => {

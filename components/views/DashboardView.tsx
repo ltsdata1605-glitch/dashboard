@@ -166,22 +166,34 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         if (pendingFile) {
             const laLuyKe = (window as any).__pendingYcxAutoSyncMode === 'luyke';
             const autoFilename = (window as any).__pendingYcxAutoFilename;
+            const autoResolveConflict = (window as any).__pendingYcxAutoResolveConflict || 'overwrite_deactivate';
             delete (window as any).__pendingYcxAutoSyncFile;
             delete (window as any).__pendingYcxAutoSyncMode;
             delete (window as any).__pendingYcxAutoFilename;
+            delete (window as any).__pendingYcxAutoResolveConflict;
             delete (window as any).__pendingYcxAutoSend;
-            handleFileProcessing([pendingFile], false, laLuyKe, { autoFilename });
+            handleFileProcessing([pendingFile], false, laLuyKe, { 
+                autoFilename, 
+                autoResolveConflict, 
+                isAuto: true 
+            });
         }
 
         const handleAutoSyncFile = (e: any) => {
             const file = e.detail?.file;
             if (file) {
                 const autoFilename = e.detail?.autoFilename || (window as any).__pendingYcxAutoFilename;
+                const autoResolveConflict = e.detail?.autoResolveConflict || (window as any).__pendingYcxAutoResolveConflict || 'overwrite_deactivate';
                 delete (window as any).__pendingYcxAutoSyncFile;
                 delete (window as any).__pendingYcxAutoSyncMode;
                 delete (window as any).__pendingYcxAutoFilename;
+                delete (window as any).__pendingYcxAutoResolveConflict;
                 delete (window as any).__pendingYcxAutoSend;
-                handleFileProcessing([file], false, e.detail?.mode === 'luyke', { autoFilename });
+                handleFileProcessing([file], false, e.detail?.mode === 'luyke', { 
+                    autoFilename, 
+                    autoResolveConflict, 
+                    isAuto: true 
+                });
             }
         };
         window.addEventListener('ycx-auto-sync-file', handleAutoSyncFile);

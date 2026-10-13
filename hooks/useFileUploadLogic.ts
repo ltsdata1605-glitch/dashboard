@@ -172,7 +172,11 @@ export const useFileUploadLogic = ({
         files: File[],
         isCloudSync: boolean = false,
         isHistorical: boolean = false,
-        options?: { autoFilename?: string }
+        options?: { 
+            autoFilename?: string;
+            autoResolveConflict?: 'overwrite_deactivate' | 'merge_all' | 'cancel';
+            isAuto?: boolean;
+        }
     ) => {
         if (!files || files.length === 0) return;
         setAppState('loading');
@@ -452,14 +456,34 @@ export const useFileUploadLogic = ({
                         ? `${toLocalISOString(fileDates[0])} đến ${toLocalISOString(fileDates[fileDates.length - 1])}`
                         : 'Không xác định';
 
-                    const action = await new Promise<'overwrite_deactivate' | 'merge_all' | 'cancel'>((resolve) => {
-                        setPendingConflict({
-                            newFilename: file.name,
-                            newDateRangeStr: rangeStr,
-                            conflicts,
-                            resolve
+                    // Tự động ghi đè không cần hỏi nếu:
+                    // 1. Có cấu hình autoResolveConflict được truyền vào
+                    // 2. Tệp nạp từ tiến trình chạy tự động (options.isAuto hoặc options.autoFilename)
+                    // 3. Có cờ tạm __pendingYcxAutoResolveConflict trên window
+                    // 4. Người dùng đã cấu hình "Luôn tự động ghi đè" trong localStorage
+                    const isAutoFlow = Boolean(
+                        options?.autoResolveConflict || 
+                        options?.autoFilename || 
+                        options?.isAuto ||
+                        (typeof window !== 'undefined' && (window as any).__pendingYcxAutoResolveConflict)
+                    );
+                    const userPrefAutoOverwrite = typeof window !== 'undefined' && localStorage.getItem('ycx_auto_overwrite_conflicts') === 'true';
+
+                    let action: 'overwrite_deactivate' | 'merge_all' | 'cancel';
+
+                    if (isAutoFlow || userPrefAutoOverwrite) {
+                        action = options?.autoResolveConflict || 'overwrite_deactivate';
+                        console.info(`[useFileUploadLogic] Tự động xử lý trùng lặp lịch sử: "${action}" cho tệp "${file.name}" mà không cần hỏi (đang chạy tự động).`);
+                    } else {
+                        action = await new Promise<'overwrite_deactivate' | 'merge_all' | 'cancel'>((resolve) => {
+                            setPendingConflict({
+                                newFilename: file.name,
+                                newDateRangeStr: rangeStr,
+                                conflicts,
+                                resolve
+                            });
                         });
-                    });
+                    }
 
                     if (action === 'cancel') {
                         shouldSkipFile = true;

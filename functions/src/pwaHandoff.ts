@@ -1,7 +1,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { createHash } from 'node:crypto';
 import { Timestamp } from 'firebase-admin/firestore';
-import { db } from './firebaseAdmin';
+import { db, auth as adminAuth } from './firebaseAdmin';
 
 /**
  * Chuyển phiên đăng nhập Google vào app ở MÀN HÌNH CHÍNH iPhone (PWA standalone) — 2026-10-12.
@@ -29,12 +29,21 @@ const hashVerifier = (verifier: string): string =>
   createHash('sha256').update(verifier).digest('base64url');
 
 export const pwaHandoffStore = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError('unauthenticated', 'Cần đăng nhập Google trước.');
-  }
   const { code, idToken, accessToken } = (request.data ?? {}) as {
     code?: string; idToken?: string; accessToken?: string;
   };
+  let uid = request.auth?.uid;
+  if (!uid && typeof idToken === 'string' && idToken.length >= 20) {
+    try {
+      const decoded = await adminAuth.verifyIdToken(idToken);
+      uid = decoded.uid;
+    } catch (err) {
+      console.warn('[pwaHandoffStore] verifyIdToken fallback failed:', err);
+    }
+  }
+  if (!uid) {
+    throw new HttpsError('unauthenticated', 'Cần đăng nhập Google trước.');
+  }
   if (typeof code !== 'string' || !B64URL.test(code)) {
     throw new HttpsError('invalid-argument', 'Mã chuyển phiên không hợp lệ.');
   }

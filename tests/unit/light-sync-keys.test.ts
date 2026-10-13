@@ -12,6 +12,7 @@ describe('isLightSyncKey', () => {
         'productConfig', 'customTabs', 'customExploitationTabs', 'analysis-employees-list', 'checkthuong_data',
         'bi_config-Tân Hiệp-thidua', 'bi_bonus-data-Tân Hiệp', 'bi_nhanvien-active-tab', 'active-tab-x',
         'summary-realtime', 'salesFilesRegistry', 'stickerSavedLists',
+        'warehouseViewMode', 'warehouseVerticalKhoFilter',
     ])('%s → KHÔNG', k => {
         expect(isLightSyncKey(k)).toBe(false);
     });

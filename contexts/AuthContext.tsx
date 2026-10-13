@@ -3,7 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
 import { clearAllLocalAppData, ensureLocalDataBelongsTo, setLocalDataOwner } from '../services/localDataOwner';
-import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, logoutUser as logoutProvider } from '../services/firebase';
+import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
 import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
@@ -44,6 +44,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         cleanupGarbageKeys().catch(console.error);
         checkRedirectLoginResult().catch(console.error);
+        if (hasPendingPwaHandoff()) {
+            claimPwaHandoff().catch(console.error);
+        }
         Promise.all([
             getSetting<'admin' | 'manager' | 'employee' | 'pending'>('cached_user_role'),
             getSetting<string>('cached_dept_id'),

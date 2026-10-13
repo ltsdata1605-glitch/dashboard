@@ -220,10 +220,20 @@ export default function GlobalAutoSyncDock() {
                 (window as any).__pendingYcxAutoSyncFile = file;
                 (window as any).__pendingYcxAutoSyncMode = mode;
                 (window as any).__pendingYcxAutoFilename = autoFilename;
+                (window as any).__pendingYcxAutoResolveConflict = 'overwrite_deactivate';
                 // Lượt hẹn giờ có khu vực tự gửi LINE riêng → Phân tích xuất đúng các khu vực đó sau khi nạp xong
                 const autoSend = ycxAutoSendRef.current;
                 (window as any).__pendingYcxAutoSend = autoSend;
-                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { detail: { file, mode, autoFilename, autoSend } }));
+                window.dispatchEvent(new CustomEvent('ycx-auto-sync-file', { 
+                    detail: { 
+                        file, 
+                        mode, 
+                        autoFilename, 
+                        autoSend,
+                        isAuto: true,
+                        autoResolveConflict: 'overwrite_deactivate'
+                    } 
+                }));
 
                 toast.success(`Đã tự động tải và nạp file ${autoFilename || TEN_YCX[mode]}!`);
                 // Tự động mở tab Phân tích khi chạy xong (?tab=analysis)

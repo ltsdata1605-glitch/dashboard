@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { renderIcon, type IconProp } from '../../../components/shared/ui/icon/renderIcon';
 import { Button, cn } from '../../../components/shared/ui/Button';
@@ -34,27 +35,50 @@ const ExportButton: React.FC<ExportButtonProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; right: number } | null>(null);
   const isProcessingRef = React.useRef(false);
 
   const hasOptions = Array.isArray(options) && options.length > 0;
 
+  const updateCoords = useCallback(() => {
+    if (dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const right = Math.max(8, window.innerWidth - rect.right);
+      const spaceBelow = window.innerHeight - rect.bottom;
+      // Nếu phía dưới còn ít hơn 180px và phía trên rộng hơn thì mở ngược lên trên
+      const openUpwards = spaceBelow < 180 && rect.top > 180;
+      const top = openUpwards ? Math.max(8, rect.top - 165) : rect.bottom + 6;
+      setCoords({ top, right });
+    }
+  }, []);
+
   useEffect(() => {
     if (!isOpen) return;
+    updateCoords();
     const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(target) &&
+        menuRef.current && !menuRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setIsOpen(false);
     };
+    window.addEventListener('resize', updateCoords);
+    window.addEventListener('scroll', updateCoords, true);
     document.addEventListener('mousedown', handleClickOutside);
     document.addEventListener('keydown', handleKeyDown);
     return () => {
+      window.removeEventListener('resize', updateCoords);
+      window.removeEventListener('scroll', updateCoords, true);
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, updateCoords]);
 
   const handleSingleExport = async () => {
     if (disabled || isLoading || isProcessingRef.current || !onExportPNG) return;
@@ -118,8 +142,17 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         )}
       </Button>
 
-      {hasOptions && isOpen && (
-        <div className="absolute right-0 top-full mt-1.5 w-64 sm:w-72 bg-white dark:bg-slate-850 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700/80 p-1.5 z-[200] animate-in fade-in zoom-in-95 duration-150">
+      {hasOptions && isOpen && typeof document !== 'undefined' && createPortal(
+        <div 
+          ref={menuRef}
+          style={coords ? {
+            position: 'fixed',
+            top: coords.top,
+            right: coords.right,
+            zIndex: 999999
+          } : undefined}
+          className="w-64 sm:w-72 bg-white dark:bg-slate-850 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700/80 p-1.5 animate-in fade-in zoom-in-95 duration-150"
+        >
           <div className="px-2.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 border-b border-slate-100 dark:border-slate-800 mb-1">
             Tuỳ chọn xuất ảnh
           </div>
@@ -147,7 +180,8 @@ const ExportButton: React.FC<ExportButtonProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

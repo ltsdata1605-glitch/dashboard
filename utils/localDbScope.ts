@@ -367,6 +367,8 @@ export const isLocalOnlyKey = (key: string): boolean => {
         k === 'nhanvien-active-depts-multi' ||
         k === 'global-selected-competitions' ||
         k === 'nhanvien-active-version' ||
+        k === 'warehouseViewMode' ||
+        k === 'warehouseVerticalKhoFilter' ||
         k.startsWith('active-')
     );
 };

@@ -4,29 +4,31 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../shared/ui/Button';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 import {
-    isStandaloneMode, isInAppBrowser, isAppleOrSafari, isIOSStandalonePwa,
+    isStandaloneMode, isInAppBrowser, isIOSDevice,
     preparePwaHandoff, startPwaHandoffLogin, claimPwaHandoff, hasPendingPwaHandoff, clearPendingPwaHandoff,
     type PreparedPwaHandoff,
 } from '../../services/firebase';
 
 const LoginView: React.FC = () => {
-    const { loginWithGoogle, loginWithGoogleRedirect, setDemoMode, isLoading } = useAuth();
+    const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [isInAppWebView] = useState(() => isInAppBrowser());
     const [isStandalone] = useState(() => isStandaloneMode());
-    const [isSafari] = useState(() => isAppleOrSafari());
-    const [isIOSPwa] = useState(() => isIOSStandalonePwa());
+    const [isIOS] = useState(() => isIOSDevice());
 
-    // ── App ở Màn hình chính iPhone: đăng nhập ở trang auth.dashboard.pro.vn rồi nhận phiên về
-    // (redirect thường không chạy được — xem services/firebase.ts → claimPwaHandoff).
+    // Trên toàn bộ thiết bị iOS (iPhone/iPad dù là Safari, Chrome iOS hay PWA Màn hình chính)
+    // hoặc In-App Webview (Zalo/FB): dùng cơ chế Handoff an toàn qua auth.dashboard.pro.vn
+    // để không bao giờ bị Safari ITP chặn cookie chéo miền ở redirect!
+    const useHandoff = isIOS || isStandalone || isInAppWebView;
+
     const preparedRef = useRef<PreparedPwaHandoff | null>(null);
-    const [waitingHandoff, setWaitingHandoff] = useState(() => isIOSPwa && hasPendingPwaHandoff());
+    const [waitingHandoff, setWaitingHandoff] = useState(() => useHandoff && hasPendingPwaHandoff());
     useEffect(() => {
-        if (!isIOSPwa) return;
+        if (!useHandoff) return;
         preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
-    }, [isIOSPwa]);
+    }, [useHandoff]);
     useEffect(() => {
         if (!waitingHandoff) return;
         let stopped = false;
@@ -53,7 +55,7 @@ const LoginView: React.FC = () => {
             }
         };
         tick();
-        const timer = setInterval(tick, 2500);
+        const timer = setInterval(tick, 2000);
         document.addEventListener('visibilitychange', tick);
         window.addEventListener('focus', tick);
         return () => {
@@ -64,11 +66,16 @@ const LoginView: React.FC = () => {
         };
     }, [waitingHandoff]);
 
-    const handlePwaLogin = () => {
-        const prepared = preparedRef.current;
+    const handlePwaLogin = async () => {
+        let prepared = preparedRef.current;
         if (!prepared) {
-            setError('Đang chuẩn bị đăng nhập, vui lòng bấm lại sau giây lát.');
-            return;
+            try {
+                prepared = await preparePwaHandoff();
+                preparedRef.current = prepared;
+            } catch {
+                setError('Đang chuẩn bị kết nối đăng nhập, vui lòng bấm lại sau giây lát.');
+                return;
+            }
         }
         setError(null);
         setIsLoggingIn(true);
@@ -86,7 +93,7 @@ const LoginView: React.FC = () => {
     };
 
     const handleLogin = async () => {
-        if (isIOSPwa) {
+        if (useHandoff) {
             handlePwaLogin();
             return;
         }
@@ -97,16 +104,11 @@ const LoginView: React.FC = () => {
             // Bảo hiểm 180s: Cho người dùng thoải mái thời gian chọn tài khoản, nhập mật khẩu và 2FA trên thiết bị mới
             const failsafeTimer = setTimeout(() => {
                 setIsLoggingIn(false);
-                setError('Quá trình kết nối Google mất nhiều thời gian hơn dự kiến.\nNếu trang chưa tự chuyển, vui lòng bấm "Đăng nhập chuyển hướng" hoặc mở bằng Safari/Chrome.');
+                setError('Quá trình kết nối Google mất nhiều thời gian hơn dự kiến.\nNếu trang chưa tự chuyển, vui lòng thử lại hoặc mở bằng Safari/Chrome.');
             }, 180000);
 
             try {
-                // Safari (macOS & iOS) mặc định chặn popup và treo promise -> dùng redirect trực tiếp 100% tin cậy
-                if (isStandalone || isInAppWebView || isSafari) {
-                    await loginWithGoogleRedirect();
-                } else {
-                    await loginWithGoogle();
-                }
+                await loginWithGoogle();
             } finally {
                 clearTimeout(failsafeTimer);
             }
@@ -143,18 +145,16 @@ const LoginView: React.FC = () => {
     };
 
     const handleRedirectLogin = async () => {
+        if (useHandoff) {
+            handlePwaLogin();
+            return;
+        }
         try {
             setError(null);
             setIsLoggingIn(true);
-            const failsafeTimer = setTimeout(() => {
-                setIsLoggingIn(false);
-                setError('Trình duyệt chưa hoàn tất chuyển hướng. Vui lòng thử lại hoặc mở bằng trình duyệt Safari/Chrome.');
-            }, 60000);
-            try {
-                await loginWithGoogleRedirect();
-            } finally {
-                clearTimeout(failsafeTimer);
-            }
+            const prepared = await preparePwaHandoff();
+            startPwaHandoffLogin(prepared);
+            setWaitingHandoff(true);
         } catch (err: unknown) {
             console.error(err);
             setError(getErrorMessage(err) || 'Không thể chuyển hướng đăng nhập');
@@ -240,12 +240,12 @@ const LoginView: React.FC = () => {
                         <div className="mt-2.5 pt-2 border-t border-rose-200/60 dark:border-rose-800/50 flex items-center justify-end">
                             <button
                                 type="button"
-                                onClick={isIOSPwa ? handlePwaLogin : handleRedirectLogin}
+                                onClick={useHandoff ? handlePwaLogin : handleRedirectLogin}
                                 disabled={isLoggingIn}
                                 className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
                             >
                                 <AppIcon name="refresh" size="sm" />
-                                {isIOSPwa ? 'Thử đăng nhập lại →' : 'Đăng nhập chuyển hướng →'}
+                                {useHandoff ? 'Thử đăng nhập lại →' : 'Đăng nhập chuyển hướng →'}
                             </button>
                         </div>
                     </div>
@@ -275,7 +275,7 @@ const LoginView: React.FC = () => {
                             <span>Tiếp tục với Cổng Google</span>
                         </Button>
 
-                        {isIOSPwa ? (
+                        {useHandoff ? (
                             <div className="text-center pt-2 text-[11px] text-slate-500 leading-relaxed">
                                 {waitingHandoff ? (
                                     <>
@@ -289,7 +289,7 @@ const LoginView: React.FC = () => {
                                             Huỷ
                                         </Button>
                                     </>
-                                ) : 'Mở cửa sổ đăng nhập Google an toàn rồi tự quay về ứng dụng.'}
+                                ) : 'Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.'}
                             </div>
                         ) : (
                         <div className="text-center pt-2">

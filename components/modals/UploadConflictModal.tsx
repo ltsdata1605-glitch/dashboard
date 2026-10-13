@@ -32,6 +32,14 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
 
     const hasExactDuplicate = conflicts.some(c => c.type === 'exact_duplicate');
     const overlapConflicts = conflicts.filter(c => c.type === 'overlap_dates');
+    const [rememberChoice, setRememberChoice] = React.useState(true);
+
+    const handleSelect = (action: 'overwrite_deactivate' | 'merge_all') => {
+        if (rememberChoice && typeof window !== 'undefined') {
+            localStorage.setItem('ycx_auto_overwrite_conflicts', 'true');
+        }
+        onResolve(action);
+    };
 
     // Format a list of overlapping dates for clean UI display
     const formatOverlappingDates = (dates: string[]) => {
@@ -144,7 +152,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         <Button
                             type="button"
                             variant="unstyled" size="none"
-                            onClick={() => onResolve('overwrite_deactivate')}
+                            onClick={() => handleSelect('overwrite_deactivate')}
                             className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-amber-50/40 dark:bg-slate-800/40 dark:hover:bg-amber-950/10 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-amber-500 transition-colors">
@@ -164,7 +172,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                         <Button
                             type="button"
                             variant="unstyled" size="none"
-                            onClick={() => onResolve('merge_all')}
+                            onClick={() => handleSelect('merge_all')}
                             className="justify-start w-full text-left p-3 bg-slate-50 hover:bg-rose-50/20 dark:bg-slate-800/40 dark:hover:bg-rose-950/5 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-slate-200 transition-all flex items-start gap-3 active:scale-[0.99] group"
                         >
                             <div className="w-5 h-5 rounded-full bg-slate-400 dark:bg-slate-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold group-hover:bg-rose-500 transition-colors">
@@ -180,6 +188,19 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                             </div>
                         </Button>
                     </div>
+
+                    {/* Remember choice checkbox */}
+                    <label className="flex items-center gap-2 pt-2 px-1 cursor-pointer select-none text-xs text-slate-600 dark:text-slate-400">
+                        <input
+                            type="checkbox"
+                            checked={rememberChoice}
+                            onChange={(e) => setRememberChoice(e.target.checked)}
+                            className="rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer"
+                        />
+                        <span className="font-medium text-[11px] sm:text-xs">
+                            Luôn tự động ghi đè tệp cũ khi trùng lặp mà không cần hỏi lại
+                        </span>
+                    </label>
                 </div>
 
                 {/* Footer / Cancel */}
