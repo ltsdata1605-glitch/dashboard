@@ -21,7 +21,7 @@ export interface TabsProps {
   activeId: string;
   onChange: (id: string) => void;
   /** Visual variant */
-  variant?: 'underline' | 'pills' | 'segment';
+  variant?: 'underline' | 'pills' | 'segment' | 'chips';
   /** Size */
   size?: 'sm' | 'md';
   /** Full width tabs */
@@ -144,6 +144,54 @@ export const Tabs = React.memo<TabsProps>(({
                   isActive
                     ? 'bg-white/20 text-white'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                )}>
+                  {item.badge}
+                </span>
+              )}
+            </Button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (variant === 'chips') {
+    return (
+      <div
+        ref={containerRef}
+        className={cn(
+          'flex items-center gap-1.5 overflow-x-auto no-scrollbar snap-x snap-proximity py-0.5',
+          fullWidth && 'w-full',
+          className
+        )}
+      >
+        {items.map(item => {
+          const isActive = item.id === activeId;
+          return (
+            <Button
+              variant="unstyled" size="none" type="button"
+              key={item.id}
+              aria-pressed={isActive}
+              data-active={isActive ? 'true' : undefined}
+              onClick={() => handleClick(item.id)}
+              disabled={item.disabled}
+              className={cn(
+                'flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-9 sm:h-8.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 snap-center select-none active:scale-95',
+                fullWidth && 'flex-1',
+                isActive
+                  ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs'
+                  : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs',
+                item.disabled && 'opacity-40 cursor-not-allowed'
+              )}
+            >
+              {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, size)}</span>}
+              {item.label}
+              {item.badge !== undefined && (
+                <span className={cn(
+                  'min-w-[18px] h-[18px] rounded-full px-1 text-[11px] font-bold flex items-center justify-center leading-none',
+                  isActive
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                 )}>
                   {item.badge}
                 </span>

@@ -91,26 +91,20 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         {title}
                     </h2>
                 </div>
-                <div className="flex flex-1 lg:flex-none items-center justify-end gap-2 hide-on-export min-w-0 lg:ml-auto">
-                    {/* Realtime / Luỹ kế: trước là NÚT GẠT chỉ hiện chế độ ĐANG chọn ("ⓘ Realtime" — bấm mới biết là đổi được). Nay
-                        segmented control hiện cả 2 lựa chọn. Nút vẫn tên "Realtime"/"Luỹ kế" (role button) cho luồng tự động/test. */}
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-2 hide-on-export min-w-0 w-full lg:w-auto lg:ml-auto">
+                    {/* Realtime / Luỹ kế: thiết kế dạng Chip Pills độc lập chuẩn iOS / Zalo (Hình 1 & 2) */}
                     <Tabs
-                        variant="segment"
+                        variant="chips"
                         size="sm"
                         activeId={activeMainTab}
                         onChange={(id) => setActiveMainTab(id as MainTab)}
                         items={[{ id: 'realtime', label: 'Realtime' }, { id: 'cumulative', label: 'Luỹ kế' }]}
-                        className="flex-1 lg:flex-none"
-                        fullWidth
+                        className="shrink-0"
                     />
-                    {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên).
-                        BUG FIX: KHÔNG overflow-hidden — panel của MultiSelectDropdown (supermarket
-                        selector bên dưới) định vị absolute, xổ ra NGOÀI khung pill; overflow-hidden
-                        sẽ cắt mất panel dù dropdown vẫn "mở" trong state (không bấm chọn được gì) —
-                        xem giải thích đầy đủ ở NhanVien.tsx, nơi bug này được user báo cáo trước. */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-11 sm:h-8.5">
+                    {/* Pill chọn siêu thị: con nhộng bo tròn đồng bộ với các chip tabs */}
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-9 sm:h-8.5">
                         <MultiSelectDropdown
-                            triggerClassName="rounded-full whitespace-nowrap min-h-0 h-11 sm:h-8.5 px-3 py-1 text-xs sm:text-xs font-bold"
+                            triggerClassName="rounded-full whitespace-nowrap min-h-0 h-9 sm:h-8.5 px-3.5 py-1 text-xs sm:text-xs font-semibold text-slate-700 dark:text-slate-300"
                             icon={<AppIcon name="store" size="sm" className="text-sky-500" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
