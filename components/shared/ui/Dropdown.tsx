@@ -114,7 +114,8 @@ export const Dropdown: React.FC<DropdownProps> = ({
         aria-expanded={isOpen}
         onClick={toggle}
         onKeyDown={handleTriggerKeyDown}
-        className="cursor-pointer"
+        // ycx-hit: trigger chỉ có icon (vd "Chế độ xem" 32px ở Report BI › Thưởng) vẫn đủ vùng chạm 44 trên màn hẹp/cảm ứng (GĐ9).
+        className="ycx-hit cursor-pointer"
       >
         {trigger}
       </div>

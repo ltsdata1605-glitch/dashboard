@@ -8176,3 +8176,27 @@ không đổi nghiệp vụ.
   là motion nay đã gỡ; phần còn lại là việc vẽ của chính Report BI → cần một đợt tối ưu riêng khu vực đó, chưa đo trace lại), lượt LẠNH nội dung Phân tích 5,0 s (tải firebase + dữ liệu trên 4G giả lập). "JS tải" trong số đo (~530 KB) gồm cả
   phần tải trước 3 tab lúc rảnh — không phải gói khởi động.
 - **Checklist iPhone thật** cho chủ dự án (10 mục, ~10 phút — những gì máy ảo không kiểm được): `KE_HOACH_GIAO_DIEN_APPLE.md` mục 9.
+- **Lượt quét e2e TOÀN BỘ** (Chromium, 431 test, 1 worker, 1,5 giờ): **332 qua · 17 đỏ · 82 bỏ qua** (phép đo / cần profile thật / chạy tay).
+  Phân loại 17 đỏ:
+  - *Do GĐ0–GĐ8 (đã sửa)*: `offline-app-shell` ×2 (chờ chữ "DASHBOARD REPORT" — màn đăng nhập đã đổi tên "Dashboard YCX" ở GĐ7);
+    vùng chạm 44 vô hình chỉ bật với `pointer: coarse` → bài đo 390/393px không giả lập cảm ứng thấy nút 16–36px (`mobile-iphone-6-module`,
+    `icon-audit-*`) — nay "màn hẹp < 640px HOẶC cảm ứng" đúng chuẩn c02fe16; `Tabs segment` vẽ icon `sm` (thang icon: nút có chữ = `md`);
+    `Banner` nút chữ 24px; nút tăng/giảm cỡ chữ In Sticker 36px; `ListRow` icon `sm`. **Lỗi nặng hơn tự phát hiện khi soi ảnh**:
+    công thức `ycx-tranh-dock` (GĐ7) thiếu `max(0px, …)` → màn hẹp hơn `--trang-max` bị cộng lề ÂM: Phân ca ở 1280px đệm 256/244px,
+    nội dung ép còn ~780px → đã sửa; Tính thuế (tràn ngang khi mở cột Lịch sử) bị 2 dock đè ở 1280px → gắn `ycx-tranh-dock`.
+  - *Do thay đổi của chủ dự án sau khi test được viết (đã xử lý)*: `f0a5558` bỏ min-44 của `Button size="icon"` (nút gọn 32px) →
+    giữ 32px nhìn thấy + `ycx-hit`; `eaf71b2` thay cả chuỗi class các nút màn Cập nhật Report BI nên mất `TOUCH_TARGET` /
+    `after:-inset-[13px]` → khôi phục bằng `ycx-hit` (DataUpdater, SupermarketConfig), `Dropdown` trigger chỉ-icon cũng `ycx-hit`;
+    dòng phụ thanh trên "↻ Cập nhật: <giờ>" (4e9dfbf, chú thích 12px) → audit miễn như liên kết trong câu; 3 chỗ chủ dự án CHỦ ĐỘNG hạ
+    icon md→sm ở `f0a5558` (bộ lọc Siêu thị/Bộ phận Report BI, dải chế độ In Sticker laptop) → ghi vào `CHU_DU_AN_CHON_ICON_NHO`
+    (tests/e2e/helpers/iconAudit.ts, khai hẹp theo icon + nhãn); Check thưởng bản React → `ios-report-bi-check-thuong` chuyển phần
+    Check thưởng sang bản React (nạp Excel → xuất ảnh tổng hợp → chia sẻ dưới quy tắc 1 giây của Safari).
+  - *Không phải lỗi app*: `tax-paste-hrm` "tiêu đề thẻ mở trang HRM" — container chặn mạng tới `newinsite.thegioididong.com` nên Chromium
+    không tạo được tab (đã thử: cùng thẻ `<a>` tới example.com mở tab bình thường, sự kiện click không bị `preventDefault`);
+    `auth-fresh-login-no-flash` (cache admin) — chạy riêng xanh, đỏ khi cả bộ chạy lâu (dev server chậm, mẫu đầu là trang trắng).
+  - *Cần chủ dự án quyết*: `bi-nhan-vien-theo-sieu-thi` (chờ "2 NV", app hiện "4 NV" — nghiệp vụ, có từ trước GĐ0);
+    `click-plus-auto-toggle` ×5 — userscript 7.26 (chủ dự án) nay chờ trang tải xong tới 20 giây (`acpWaitForLoadingComplete(20000…)`)
+    mới hiện hộp trạng thái, test (viết 2026-10-07) chỉ chờ 10 giây.
+- **CI WebKit chập chờn ở toast-thong-nhat** (run 358, 359): máy CI chạy khung hình rất chậm — `hover` chờ phần tử ổn định 3,1 s, hiệu
+  ứng hiện (thu phóng 0,96 → 1) chưa xong sau 500 ms (đo nút 42,24 = 44 × 0,96), cú vuốt bắt đầu lúc toast còn trượt vào. Sửa: toast
+  cần đo sống 20 s; chờ HIỆU ỨNG VÀO XONG (transform về gốc) thay cho chờ cứng 500 ms.

@@ -70,17 +70,18 @@ export const Banner: React.FC<BannerProps> = ({
             {children}
           </div>
         )}
+        {/* Nút chữ trong dải: cao 24px nhìn thấy, vùng chạm 44 vô hình (`ycx-hit`, styles.css) — "Đăng nhập Google" ở Bot LINE từng chỉ 24px. */}
         {(biCat || moRong || action) && (
           <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
             {(biCat || moRong) && (
               <Button variant="unstyled" size="none" onClick={() => setMoRong(v => !v)}
-                className="text-[13px] font-semibold text-sky-700 hover:underline min-h-6 pointer-coarse:min-h-8">
+                className="ycx-hit text-[13px] font-semibold text-sky-700 hover:underline min-h-6">
                 {moRong ? 'Thu gọn' : 'Xem thêm'}
               </Button>
             )}
             {action && (
               <Button variant="unstyled" size="none" onClick={action.onClick}
-                className="text-[13px] font-semibold text-sky-700 hover:underline min-h-6 pointer-coarse:min-h-8">
+                className="ycx-hit text-[13px] font-semibold text-sky-700 hover:underline min-h-6">
                 {action.label}
               </Button>
             )}

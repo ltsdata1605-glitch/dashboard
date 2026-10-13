@@ -226,7 +226,8 @@ const SegmentTrack: React.FC<{
               item.disabled && 'opacity-40 cursor-not-allowed'
             )}
           >
-            {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, 'sm')}</span>}
+            {/* md: thang icon của dự án — nút có chữ dùng md (iconTokens.ts); sm từng làm icon dải chọn Bot LINE nhỏ hơn chữ (audit GĐ9). */}
+            {item.icon && <span className="shrink-0 inline-flex">{renderIcon(item.icon, 'md')}</span>}
             {item.label}
             {item.badge !== undefined && (
               <span className={cn(

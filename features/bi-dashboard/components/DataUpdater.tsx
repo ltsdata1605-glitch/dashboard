@@ -284,7 +284,7 @@ const StatusTile: React.FC<{
                                         e.stopPropagation();
                                         onOpenLinkModal();
                                     }}
-                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-sky-600 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg transition-all border border-slate-200/80 dark:border-slate-700 shadow-2xs active:scale-95 shrink-0"
                                     title="Chỉnh sửa liên kết"
                                     aria-label="Chỉnh sửa liên kết"
                                 >
@@ -304,7 +304,7 @@ const StatusTile: React.FC<{
                                             onOpenLinkModal?.();
                                         }
                                     }}
-                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 rounded-lg transition-all border border-sky-200/90 hover:border-sky-300 dark:border-sky-800/80 dark:hover:border-sky-700 shadow-2xs active:scale-95 shrink-0"
                                     title={effectiveLink ? `Mở liên kết: ${effectiveLink}` : 'Mở liên kết báo cáo'}
                                     aria-label="Mở liên kết báo cáo"
                                 >
@@ -320,7 +320,7 @@ const StatusTile: React.FC<{
                                         e.stopPropagation();
                                         onClear(title);
                                     }}
-                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
+                                    className="ycx-hit w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 rounded-lg transition-all border border-rose-200/90 hover:border-rose-300 dark:border-rose-800/80 dark:hover:border-rose-700 shadow-2xs active:scale-95 shrink-0"
                                     title="Xoá"
                                     aria-label="Xoá dữ liệu"
                                 >
@@ -1042,7 +1042,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                                                 handleDeleteSupermarket(sm);
                                                             }
                                                         }}
-                                                        className="relative text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors"
+                                                        className="ycx-hit relative text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 p-0.5 rounded cursor-pointer transition-colors"
                                                         title={`Xoá siêu thị tuỳ chỉnh "${shortName}"`}
                                                     >
                                                         <AppIcon name="close" size="sm" />
