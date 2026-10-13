@@ -89,4 +89,16 @@ describe('YCX Realtime & Luỹ kế Isolation Tests', () => {
         expect(content).toContain('updatedRegistry[k].isActive = false');
         expect(content).toContain('await dbService.saveSalesFilesRegistry(updatedRegistry)');
     });
+
+    it('useFileUploadLogic skips prompting and automatically overwrites conflicts in auto mode', () => {
+        const fileUploadLogicPath = path.resolve(__dirname, '../../hooks/useFileUploadLogic.ts');
+        const content = fs.readFileSync(fileUploadLogicPath, 'utf8');
+
+        // Check that isAutoFlow or userPrefAutoOverwrite skips setPendingConflict
+        expect(content).toContain('options?.autoResolveConflict');
+        expect(content).toContain('options?.autoFilename');
+        expect(content).toContain('options?.isAuto');
+        expect(content).toContain('ycx_auto_overwrite_conflicts');
+        expect(content).toContain("action = options?.autoResolveConflict || 'overwrite_deactivate'");
+    });
 });
