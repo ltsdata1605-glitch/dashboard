@@ -248,7 +248,10 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   trạng thái, tiêu đề 2 màu IN HOA). Test: `tests/e2e/khung-app-gd4.spec.ts`.
 - **Khung app không được chồng/tràn (2026-10-10):** `tests/e2e/apple-tuong-thich.spec.ts` quét mọi tab ở 6 khung màn hình (iPhone
   SE/16/16 Pro Max, iPad, laptop, màn lớn): trang không tràn ngang, nút trên thanh trên/thanh tab không đè nhau, vùng chạm ≥ 44px.
-  Lỗi đã biết nằm trong `DA_BIET` của spec — chỉ được GỠ dần (như lint-ratchet), không thêm.
+  Lỗi đã biết nằm trong `DA_BIET` của spec — chỉ được GỠ dần (như lint-ratchet), không thêm. *(GĐ9 2026-10-13: `DA_BIET` đã TRỐNG;
+  CI chạy spec này trên cả Chromium lẫn WebKit — engine của Safari — đỏ là chặn.)* Với DỮ LIỆU THẬT (tài khoản test, chỉ đọc):
+  `ANH=1 ANH_NHAN=<nhãn> npx playwright test tests/e2e/anh-truoc-sau-apple.spec.ts --project=chromium` → ảnh mọi tab iPhone 440 +
+  laptop 1440/1280 và số đo (tràn ngang, chữ < 11px, bị dock nổi che, lỗi runtime) ở `.anh-apple/<nhãn>/` — gitignore, KHÔNG commit.
 - **Icon** *(chuẩn hoá 2026-10-02)*: mọi icon gọi qua `<AppIcon name="<chức năng>" size="<token>" />` hoặc
   `<Button icon="…">` (`components/shared/ui/icon/` — thuộc `components/shared/ui/*` nên cả 5 khu vực dùng hợp lệ).
   CẤM import `lucide-react` ngoài `iconRegistry.ts`, cấm `size={số}` trên icon, cấm vẽ `<svg>` icon trong JSX
