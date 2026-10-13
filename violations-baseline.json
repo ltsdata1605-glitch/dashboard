@@ -743,20 +743,6 @@
     "offScaleRadius": 0,
     "offScaleText": 1
   },
-  "features/check-thuong/components/CheckThuongCategoryTable.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 5,
-    "offScaleRadius": 0,
-    "offScaleText": 0
-  },
   "features/check-thuong/components/CheckThuongChannelTopGrid.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 19,
@@ -790,7 +776,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 3,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 5
   },
@@ -818,7 +804,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 2,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 2
   },

@@ -146,7 +146,8 @@ const TabContent = React.memo(() => {
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
-        { id: 'tools-price-compare', className: 'w-full h-full', component: <PriceComparisonView /> },
+        // So giá: max-w 1600 nhưng laptop 1280–1440 tràn bề ngang → dock trái đè tiêu đề/ô nhập (tour GĐ9) → chừa lề dock.
+        { id: 'tools-price-compare', className: 'w-full h-full ycx-tranh-dock', component: <PriceComparisonView /> },
         { id: 'tools-line-bot', className: 'w-full h-full bg-slate-50 dark:bg-slate-900', component: <LineBotView /> },
         { id: 'reports', className: 'w-full bg-slate-50', component: <KhaiThacView /> },
     ], []);
