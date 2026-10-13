@@ -29,9 +29,12 @@ const hashVerifier = (verifier: string): string =>
   createHash('sha256').update(verifier).digest('base64url');
 
 export const pwaHandoffStore = onCall(async (request) => {
-  const { code, idToken, accessToken } = (request.data ?? {}) as {
-    code?: string; idToken?: string; accessToken?: string;
+  const { code, idToken, accessToken, warmup } = (request.data ?? {}) as {
+    code?: string; idToken?: string; accessToken?: string; warmup?: boolean;
   };
+  // Gọi "hâm nóng" (2026-10-13): app/trang đăng nhập gọi trước trong lúc người dùng còn ở trang Google, để lượt
+  // gửi phiên thật không phải chờ khởi động nguội (~6 s trong video chủ dự án quay). Không đọc/ghi gì.
+  if (warmup === true) return { ok: true, warm: true };
   let uid = request.auth?.uid;
   if (!uid && typeof idToken === 'string' && idToken.length >= 20) {
     try {
@@ -55,12 +58,14 @@ export const pwaHandoffStore = onCall(async (request) => {
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(ref);
     // Không cho ghi đè mã của người khác còn hạn.
-    if (snap.exists && snap.get('uid') !== request.auth!.uid
+    // Dùng `uid` (đã xác minh ở trên) chứ không phải request.auth!.uid: khi yêu cầu không kèm phiên Firebase
+    // (đi nhánh verifyIdToken dự phòng) thì request.auth là undefined → trước đây văng TypeError = lỗi "internal".
+    if (snap.exists && snap.get('uid') !== uid
         && (snap.get('expiresAt') as Timestamp).toMillis() > now) {
       throw new HttpsError('already-exists', 'Mã chuyển phiên đã được dùng.');
     }
     tx.set(ref, {
-      uid: request.auth!.uid,
+      uid,
       idToken,
       accessToken: typeof accessToken === 'string' ? accessToken.slice(0, 4000) : null,
       createdAt: Timestamp.fromMillis(now),

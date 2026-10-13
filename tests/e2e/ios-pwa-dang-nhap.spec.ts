@@ -17,6 +17,11 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
         claims.push(route.request().postDataJSON()?.data?.verifier);
         await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(claimReply) });
     });
+    const warmups: unknown[] = [];
+    await context.route('**/pwaHandoffStore', async route => {
+        warmups.push(route.request().postDataJSON()?.data);
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: { ok: true, warm: true } }) });
+    });
     // Không ra mạng thật tới trang đăng nhập: chỉ cần biết app mở đúng URL.
     await context.route('https://auth.dashboard.pro.vn/**', route => route.fulfill({ status: 200, body: 'stub' }));
 
@@ -32,7 +37,11 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     const popup = await popupP;
     const url = popup.url();
     expect(url).toMatch(/^https:\/\/auth\.dashboard\.pro\.vn\/pwa-login\.html#c=[A-Za-z0-9_-]{43}$/);
-    await expect(page.getByText(/Chọn tài khoản trong cửa sổ Google vừa mở/)).toBeVisible();
+    // Trong lúc chờ: màn "Đang hoàn tất đăng nhập…" thay hẳn form (2026-10-13 — form hiện lại làm người dùng tưởng lỗi).
+    const waiting = page.getByTestId('login-handoff-waiting');
+    await expect(waiting).toBeVisible();
+    await expect(page.getByText('Đang hoàn tất đăng nhập…')).toBeVisible();
+    await expect(btn).toBeHidden();
 
     await expect.poll(() => claims.length, { timeout: 10_000 }).toBeGreaterThan(0);
     const verifier = claims[0];
@@ -43,11 +52,16 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
         return btoa(String.fromCharCode(...d)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }, verifier);
     expect(url.endsWith('#c=' + code)).toBe(true);
+    // Bấm nút là đánh thức trước Cloud Function nhận phiên (đỡ khởi động nguội khi trang Google xong).
+    expect(warmups).toContainEqual({ warmup: true });
 
-    // Máy chủ trả token giả → signInWithCredential lỗi. Từ d70baad/5a1a95f `claimPwaHandoff` tự thử lại 3 lần rồi trả false
-    // (không ném lỗi) → app THÔI CHỜ, quay về nút đăng nhập (không treo spinner) — nhưng không còn dòng báo lỗi.
+    await page.screenshot({ path: 'test-results/ios-pwa-dang-cho.png' });
+
+    // Máy chủ trả token giả → signInWithCredential lỗi. Từ 2026-10-13: app THÔI CHỜ, quay về nút đăng nhập VÀ
+    // báo lỗi rõ (trước đó lỗi bị nuốt, người dùng lặng lẽ bị đẩy về form như chưa từng đăng nhập).
     claimReply = { result: { ready: true, idToken: 'fake', accessToken: null } };
-    await expect(page.getByText(/Chọn tài khoản trong cửa sổ Google vừa mở/)).toBeHidden({ timeout: 15_000 });
+    await expect(waiting).toBeHidden({ timeout: 15_000 });
+    await expect(page.getByText(/Chưa vào được ứng dụng/)).toBeVisible();
     await expect(btn).toBeEnabled();
     await expect(page.getByText('Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.')).toBeVisible();
     await page.screenshot({ path: 'test-results/ios-pwa-dang-nhap.png' });

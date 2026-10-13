@@ -90,28 +90,38 @@
   provider.addScope('https://www.googleapis.com/auth/drive.file');
   provider.setCustomParameters({ prompt: 'select_account' });
 
-  // Xử lý khi người dùng CHỦ ĐỘNG bấm nút (User Gesture đích thực -> Không bao giờ bị Safari chặn)
-  $('go').addEventListener('click', async () => {
+  // Đánh thức trước Cloud Function nhận phiên (khởi động nguội ~5 s) — chạy song song, lỗi thì kệ.
+  const warmUp = () => httpsCallable(getFunctions(app), 'pwaHandoffStore')({ warmup: true }).catch(() => {});
+
+  // Mở trang Google. Trước 2026-10-13 bước này BẮT người dùng bấm thêm 1 nút "Tiếp tục với Google" (bấm 2 lần mới tới
+  // Google — chủ dự án quay video). signInWithRedirect là chuyển trang cấp cao nhất (không phải popup) nên Safari không
+  // chặn khi tự gọi; nút vẫn giữ làm đường lùi nếu vì lý do gì trang chưa chuyển đi.
+  let failsafe = 0;
+  function showButton(text, kind = '') {
+    clearTimeout(failsafe);
+    show('busy', false);
+    show('go', true);
+    $('go').disabled = false;
+    if (text) say(text, kind);
+  }
+  async function goGoogle() {
     $('go').disabled = true;
+    show('go', false);
     show('busy', true);
     sessionStorage.setItem(KEY + ':returning', '1');
-    say('Đang chuyển hướng sang trang đăng nhập Google…');
-
-    // Failsafe timer: Nếu sau 10s trình duyệt chưa chuyển hướng, mở lại nút
-    const failsafe = setTimeout(() => {
-      show('busy', false);
-      $('go').disabled = false;
-      say('Nếu trình duyệt chưa chuyển sang Google, vui lòng bấm nút một lần nữa.', 'err');
-    }, 10000);
-
+    say('Đang mở trang đăng nhập Google…');
+    failsafe = setTimeout(() => showButton('Trang Google chưa mở? Bấm nút bên dưới.', 'err'), 6000);
     try {
       await signInWithRedirect(auth, provider);
     } catch (e) {
-      clearTimeout(failsafe);
-      show('busy', false);
-      $('go').disabled = false;
-      say('Không thể mở trang Google (' + (e.code || e.message) + '). Vui lòng thử lại.', 'err');
+      showButton('Không thể mở trang Google (' + (e.code || e.message) + '). Vui lòng bấm thử lại.', 'err');
     }
+  }
+  $('go').addEventListener('click', goGoogle);
+
+  // Người dùng bấm "Quay lại" từ trang Google: Safari khôi phục trang từ bộ đệm với vòng xoay cũ → hiện nút.
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) showButton('Bấm nút bên dưới để đăng nhập Google.');
   });
 
   async function main() {
@@ -122,19 +132,18 @@
       return;
     }
 
-    // 1. Lần đầu mở từ App sang (có #c=... trong URL và chưa từng qua Google redirect):
-    // HIỂN THỊ NÚT ĐĂNG NHẬP NGAY LẬP TỨC. Tuyệt đối không tự động click ngầm gây treo trình duyệt iOS.
+    // 1. Lần đầu mở từ app (#c=… và chưa qua Google): đi thẳng sang Google, không bắt bấm thêm.
     if (fromHash && !sessionStorage.getItem(KEY + ':returning')) {
-      show('busy', false);
-      show('go', true);
+      goGoogle();
       return;
     }
 
-    // 2. Bước quay lại sau khi đã xác thực tài khoản Google:
+    // 2. Quay lại sau Google.
     show('busy', true);
     show('go', false);
     $('lead').textContent = 'Đang nhận diện tài khoản Google…';
-    say('Vui lòng đợi giây lát trong khi hoàn tất phiên đăng nhập.');
+    say('Vui lòng đợi giây lát.');
+    warmUp();
 
     let result = null;
     try {
@@ -145,52 +154,47 @@
     } catch (e) {
       console.error('[PWA-Auth] getRedirectResult error:', e);
       if (e.message !== 'timeout') {
-        say('Đăng nhập Google không thành công (' + (e.code || e.message) + '). Thử lại nhé.', 'err');
+        $('lead').textContent = 'Đăng nhập Google cho ứng dụng Dashboard YCX.';
+        showButton('Đăng nhập Google không thành công (' + (e.code || e.message) + '). Bấm để thử lại.', 'err');
+        return;
       }
     }
 
     if (!result) {
-      // Không có kết quả redirect -> Hiển thị nút cho người dùng bấm lại
-      show('busy', false);
-      show('go', true);
-      $('lead').textContent = 'Đăng nhập Google cho ứng dụng trên Màn hình chính.';
-      say('Vui lòng bấm nút bên dưới để đăng nhập vào tài khoản Google.');
+      // Không có kết quả (bấm Huỷ ở Google / hết giờ): KHÔNG tự chuyển lại để khỏi lặp — cho bấm.
+      $('lead').textContent = 'Đăng nhập Google cho ứng dụng Dashboard YCX.';
+      showButton('Bấm nút bên dưới để đăng nhập Google.');
       return;
     }
 
     const cred = GoogleAuthProvider.credentialFromResult(result);
     if (!cred?.idToken) {
-      show('busy', false);
-      show('go', true);
-      say('Google không trả về thông tin đăng nhập. Vui lòng bấm thử lại.', 'err');
+      showButton('Google không trả về thông tin đăng nhập. Vui lòng bấm thử lại.', 'err');
       return;
     }
 
-    say('Đang đồng bộ phiên về ứng dụng…');
+    $('lead').textContent = 'Đã nhận tài khoản ' + (result.user.email || '');
+    say('Đang chuyển về ứng dụng…');
     try {
       await httpsCallable(getFunctions(app), 'pwaHandoffStore')({
         code,
         idToken: cred.idToken,
         accessToken: cred.accessToken || null
       });
-      sessionStorage.removeItem(KEY);
-      sessionStorage.removeItem(KEY + ':returning');
-      await auth.signOut().catch(() => {});
-      history.replaceState(null, '', location.pathname);
-
-      show('busy', false);
-      show('go', false);
-      $('lead').textContent = 'Đã đăng nhập: ' + (result.user.email || '');
-      say('✅ Đăng nhập thành công!\nĐang chuyển về ứng dụng...', 'ok');
-      show('back', true);
-      setTimeout(() => {
-        window.location.href = 'https://dashboard.pro.vn/';
-      }, 1000);
     } catch (e) {
-      show('busy', false);
-      show('go', true);
-      say('Không gửi được phiên về ứng dụng (' + (e.code || e.message) + '). Thử lại nhé.', 'err');
+      showButton('Không gửi được phiên về ứng dụng (' + (e.code || e.message) + '). Bấm để thử lại.', 'err');
+      return;
     }
+    sessionStorage.removeItem(KEY);
+    sessionStorage.removeItem(KEY + ':returning');
+    auth.signOut().catch(() => {}); // phiên ở trang này không cần giữ; không chờ
+
+    // Về app NGAY (trước đây chờ thêm 1 s). Nút "Quay lại ứng dụng" để sẵn phòng khi trình duyệt không tự chuyển.
+    show('busy', false);
+    show('go', false);
+    show('back', true);
+    say('✅ Đăng nhập thành công! Đang về ứng dụng…', 'ok');
+    location.replace('https://dashboard.pro.vn/');
   }
 
   main();

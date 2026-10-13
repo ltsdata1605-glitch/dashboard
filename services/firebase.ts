@@ -175,6 +175,7 @@ export const startPwaHandoffLogin = (prepared: PreparedPwaHandoff): void => {
     try {
         localStorage.setItem(PWA_HANDOFF_KEY, JSON.stringify({ v: prepared.verifier, at: Date.now() }));
     } catch { /* bộ nhớ bị chặn: vẫn mở được */ }
+    warmUpPwaHandoff();
     if (isStandaloneMode()) {
         const win = window.open(prepared.url, '_blank');
         if (!win) window.location.assign(prepared.url);
@@ -201,30 +202,85 @@ export const clearPendingPwaHandoff = (): void => {
     try { localStorage.removeItem(PWA_HANDOFF_KEY); } catch { /* bỏ qua */ }
 };
 
-/** Hỏi máy chủ xem trang đăng nhập đã gửi phiên về chưa; có thì đăng nhập luôn. Trả về true khi đã vào. */
-export const claimPwaHandoff = async (retries = 3): Promise<boolean> => {
+/** Lỗi khi ĐÃ nhận được phiên từ trang đăng nhập nhưng không vào được (token hỏng/hết hạn) — khác với "chưa xong". */
+export class PwaHandoffSignInError extends Error {
+    constructor(public readonly cause: unknown) {
+        super('Đã nhận phiên đăng nhập nhưng không vào được ứng dụng.');
+        this.name = 'PwaHandoffSignInError';
+    }
+}
+
+let claimInFlight: Promise<boolean> | null = null;
+let lastHandoffError: PwaHandoffSignInError | null = null;
+
+/** Đang có lượt nhận phiên chạy dở (vd AuthContext gọi lúc mở app, trước khi LoginView kịp hiện)? */
+export const isPwaHandoffClaiming = (): boolean => claimInFlight !== null;
+
+/** Lấy (và xoá) lỗi nhận phiên xảy ra khi LoginView chưa có mặt để hiện — vd lượt gọi lúc mở app của AuthContext. */
+export const takePwaHandoffError = (): PwaHandoffSignInError | null => {
+    const e = lastHandoffError;
+    lastHandoffError = null;
+    return e;
+};
+
+/**
+ * Hỏi máy chủ xem trang đăng nhập đã gửi phiên về chưa; có thì đăng nhập luôn. Trả về true khi đã vào,
+ * false khi trang kia chưa xong (hỏi lại sau). Ném `PwaHandoffSignInError` khi ĐÃ nhận phiên mà không vào được —
+ * trước 2026-10-13 lỗi này bị nuốt rồi trả false, app lặng lẽ quay về màn đăng nhập như chưa có gì xảy ra.
+ *
+ * Gộp lượt gọi đồng thời (AuthContext lúc mở app + vòng hỏi của LoginView cùng chạy): mỗi lúc chỉ 1 yêu cầu.
+ */
+export const claimPwaHandoff = (retries = 3): Promise<boolean> => {
+    if (!claimInFlight) {
+        claimInFlight = claimPwaHandoffOnce(retries)
+            .catch((err: unknown) => {
+                if (err instanceof PwaHandoffSignInError) lastHandoffError = err;
+                throw err;
+            })
+            .finally(() => { claimInFlight = null; });
+    }
+    return claimInFlight;
+};
+
+const claimPwaHandoffOnce = async (retries: number): Promise<boolean> => {
     const verifier = readPendingHandoff();
     if (!verifier) return false;
-    
+
     for (let attempt = 0; attempt < retries; attempt++) {
+        let data: { ready: boolean; idToken?: string; accessToken?: string | null } | null = null;
         try {
             const res = await httpsCallable<{ verifier: string }, { ready: boolean; idToken?: string; accessToken?: string | null }>(
                 functions, 'pwaHandoffClaim')({ verifier });
-            const { ready, idToken, accessToken } = res.data;
-            if (ready && idToken) {
-                clearPendingPwaHandoff();
-                await signInWithCredential(auth, GoogleAuthProvider.credential(idToken, accessToken ?? undefined));
-                if (accessToken) sessionStorage.setItem('googleOAuthToken', accessToken);
-                return true;
-            }
+            data = res.data;
         } catch (err) {
+            // Phiên đã quá 5 phút trên máy chủ: thử lại vô ích, báo để người dùng bấm lại.
+            if ((err as { code?: string })?.code === 'functions/deadline-exceeded') {
+                clearPendingPwaHandoff();
+                throw new PwaHandoffSignInError(err);
+            }
+            // Lỗi mạng / máy chủ khởi động: thử lại. Phiên (nếu có) vẫn nằm nguyên trên máy chủ.
             console.warn(`[claimPwaHandoff] Lần thử ${attempt + 1}/${retries} không thành công:`, err);
         }
-        if (attempt < retries - 1) {
-            await new Promise(r => setTimeout(r, 600));
+        if (data?.ready && data.idToken) {
+            // Máy chủ đã xoá phiên khi trả về (dùng 1 lần) → không thử lại được nữa, phải báo lỗi rõ.
+            clearPendingPwaHandoff();
+            try {
+                await signInWithCredential(auth, GoogleAuthProvider.credential(data.idToken, data.accessToken ?? undefined));
+            } catch (err) {
+                throw new PwaHandoffSignInError(err);
+            }
+            if (data.accessToken) sessionStorage.setItem('googleOAuthToken', data.accessToken);
+            return true;
         }
+        if (data && !data.ready) return false; // trang kia chưa xong — không cần thử lại ngay
+        if (attempt < retries - 1) await new Promise(r => setTimeout(r, 600));
     }
     return false;
+};
+
+/** Đánh thức trước Cloud Function nhận phiên trong lúc người dùng còn ở trang Google (đỡ ~5 s khởi động nguội). */
+export const warmUpPwaHandoff = (): void => {
+    httpsCallable(functions, 'pwaHandoffStore')({ warmup: true }).catch(() => { /* chỉ là hâm nóng */ });
 };
 
 export const loginWithGoogleForceConsent = async () => {
