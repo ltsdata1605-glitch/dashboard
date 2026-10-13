@@ -7,22 +7,26 @@ import { expect, test, type Page } from '@playwright/test';
 
 type KichBan = 'bon-loai' | 'vuot' | 'nut' | 'laptop';
 /** Kịch bản viết sẵn trong trang (CSP của app chặn dựng hàm từ chuỗi nên không truyền mã dạng chuỗi được). */
-const banToast = (page: Page, kichBan: KichBan) => page.evaluate(async (k) => {
+// Thời gian sống DÀI cho mọi toast cần đo: spec kiểm vị trí / xếp chồng / vai trò / nút đóng, không kiểm thời lượng. Để mặc định
+// (success 2,5 s, info 3 s) thì máy CI chậm thua cuộc đua: run 358 WebKit — `hover` chờ ổn định mất 3,1 s, toast success đã hết giờ
+// trước khi chuột tới → nút "Đóng thông báo" biến mất giữa chừng, `click` chờ 60 s rồi đỏ.
+const LAU = 20000;
+const banToast = (page: Page, kichBan: KichBan) => page.evaluate(async ({ k, lau }) => {
     const { toast } = await import('/components/shared/ui/toast/toast.ts' as string);
     const w = window as unknown as { __bam?: number };
     if (k === 'bon-loai') {
-        toast.success('Đã lưu cấu hình');
-        toast.error('Không kết nối được máy chủ', { description: 'Dữ liệu vẫn an toàn trên máy.' });
-        toast.warning('Sắp hết hạn mức');
-        toast.info('Đang kiểm tra dữ liệu đám mây…', { icon: '☁️' });
+        toast.success('Đã lưu cấu hình', { duration: lau });
+        toast.error('Không kết nối được máy chủ', { description: 'Dữ liệu vẫn an toàn trên máy.', duration: lau });
+        toast.warning('Sắp hết hạn mức', { duration: lau });
+        toast.info('Đang kiểm tra dữ liệu đám mây…', { icon: '☁️', duration: lau });
     } else if (k === 'vuot') {
-        toast.info('Vuốt lên để tắt', { duration: 20000 });
+        toast.info('Vuốt lên để tắt', { duration: lau });
     } else if (k === 'nut') {
         toast.action({ title: 'Ảnh đã sẵn sàng.', kind: 'success', actions: [{ label: 'Chia sẻ / Lưu ảnh', primary: true, onClick: () => { w.__bam = (w.__bam || 0) + 1; } }] });
     } else {
-        toast.success('Đã đồng bộ dữ liệu lên đám mây!');
+        toast.success('Đã đồng bộ dữ liệu lên đám mây!', { duration: lau });
     }
-}, kichBan);
+}, { k: kichBan, lau: LAU });
 
 const hien = (page: Page) => page.locator('[data-app-toast]').filter({ visible: true });
 
