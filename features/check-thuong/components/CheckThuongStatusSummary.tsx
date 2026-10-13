@@ -55,14 +55,14 @@ export const CheckThuongStatusSummary: React.FC<CheckThuongStatusSummaryProps> =
                                 isSelected ? 'ring-2 ring-sky-500 shadow-sm' : ''
                             }`}
                         >
-                            <p className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate mb-0.5 sm:mb-1">
+                            <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate mb-0.5 sm:mb-1">
                                 {group.shortTitle || group.title}
                             </p>
                             <div className="flex items-baseline justify-between mt-auto">
                                 <span className="text-lg sm:text-2xl font-black text-slate-800 dark:text-slate-100 tabular-nums leading-none">
                                     {group.data.length}
                                 </span>
-                                <span className={`text-[10px] sm:text-[11px] font-bold ${styling.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                                <span className={`text-[11px] font-bold ${styling.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
                                     {group.data.length > 0 && totalCount > 0 ? `${Math.round((group.data.length / totalCount) * 100)}%` : ''}
                                 </span>
                             </div>

@@ -194,7 +194,7 @@ export const CheckThuongCategoryTable: React.FC<CheckThuongCategoryTableProps> =
                         <div className="w-full overflow-hidden">
                             <table className="w-full table-fixed text-left border-collapse tabular-nums text-xs">
                                 <thead>
-                                    <tr className="bg-slate-50/80 dark:bg-slate-800/50 text-[10px] sm:text-[11px] uppercase tracking-wider font-bold border-b border-slate-200 dark:border-slate-800 select-none">
+                                    <tr className="bg-slate-50/80 dark:bg-slate-800/50 text-[11px] uppercase tracking-wider font-bold border-b border-slate-200 dark:border-slate-800 select-none">
                                         {renderSortTh('category', 'Ngành Hàng', 'Ngành Hàng', 'w-[33%] sm:w-auto', 'left')}
                                         {renderSortTh('percent', '% D.Kiến', '% D.K', 'w-[16%] sm:w-24', 'center')}
                                         {renderSortTh('duKienVuot', 'D.K Vượt', 'Vượt', 'w-[14%] sm:w-20', 'center')}
@@ -246,7 +246,7 @@ export const CheckThuongCategoryTable: React.FC<CheckThuongCategoryTableProps> =
                                                 {/* Ngành hàng & Rank */}
                                                 <td className="px-1 sm:px-2.5 py-1.5 sm:py-2 text-slate-800 dark:text-slate-200 font-medium truncate">
                                                     <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-                                                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0">
+                                                        <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 shrink-0">
                                                             #{index + 1}
                                                         </span>
                                                         <span
@@ -267,7 +267,7 @@ export const CheckThuongCategoryTable: React.FC<CheckThuongCategoryTableProps> =
                                                 {/* % Dự kiến */}
                                                 <td className="px-0.5 sm:px-2 py-1.5 sm:py-2 text-center whitespace-nowrap">
                                                     <div className="flex items-center justify-center gap-1 sm:gap-1.5">
-                                                        <span className={`font-bold text-[10px] sm:text-[11px] ${pctTextColor}`}>
+                                                        <span className={`font-bold text-[11px] ${pctTextColor}`}>
                                                             {formatPercent(percent)}
                                                         </span>
                                                         <div className="w-8 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden hidden sm:block">
@@ -280,12 +280,12 @@ export const CheckThuongCategoryTable: React.FC<CheckThuongCategoryTableProps> =
                                                 </td>
 
                                                 {/* Dự kiến vượt */}
-                                                <td className="px-0.5 sm:px-2 py-1.5 sm:py-2 text-center font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap text-[10px] sm:text-[11px]">
+                                                <td className="px-0.5 sm:px-2 py-1.5 sm:py-2 text-center font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap text-[11px]">
                                                     {formatNumber(row[CHECK_THUONG_COLS.DU_KIEN_VUOT])}
                                                 </td>
 
                                                 {/* Hạng */}
-                                                <td className="px-0.5 sm:px-2 py-1.5 sm:py-2 text-center text-slate-600 dark:text-slate-400 whitespace-nowrap text-[10px] sm:text-[11px]">
+                                                <td className="px-0.5 sm:px-2 py-1.5 sm:py-2 text-center text-slate-600 dark:text-slate-400 whitespace-nowrap text-[11px]">
                                                     {hangVuot}<span className="opacity-40">/</span>{hangPercent}
                                                 </td>
 

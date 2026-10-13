@@ -122,6 +122,6 @@ test('Check thưởng trên iPhone (bản React): nạp Excel, gọn màn, xuấ
     await expect.poll(async () => (await soLanShare(page)) > 0 || await nutLai.isVisible(), { timeout: 60_000 }).toBe(true);
     if (await soLanShare(page) === 0) await nutLai.tap();
     await expect.poll(() => soLanShare(page)).toBe(1);
-    expect(await page.evaluate(() => (window as unknown as { __share: string[] }).__share[0])).toMatch(/^Tong_Hop_Thuong_.+\.png$/);
+    expect(await page.evaluate(() => (window as unknown as { __share: string[] }).__share[0])).toMatch(/^Tong[ _]Hop[ _]Thuong[ _].+\.png$/); // bộ xuất ảnh chung đổi "_" thành dấu cách trong tên giao ra
     expect(loi, 'lỗi JS').toEqual([]);
 });

@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 /**
  * TOAST THỐNG NHẤT (KE_HOACH_GIAO_DIEN_APPLE.md GĐ1): một API + một giao diện, vị trí TRÊN GIỮA, không bao giờ đè thanh tab
@@ -29,6 +29,17 @@ const banToast = (page: Page, kichBan: KichBan) => page.evaluate(async ({ k, lau
 }, { k: kichBan, lau: LAU });
 
 const hien = (page: Page) => page.locator('[data-app-toast]').filter({ visible: true });
+
+/** Chờ toast VÀO HẲN: hết trượt (−24px → 0), hết thu phóng (0,96 → 1), rõ hẳn. Chờ cứng 500 ms không đủ trên máy CI WebKit (khung
+ *  hình chạy rất chậm — run 359: nút đo được 42,24 = 44 × 0,96; cú vuốt bắt đầu lúc toast còn đang trượt vào). Chỉ dùng cho toast
+ *  ĐẦU TIÊN (offset 0) — toast xếp chồng bên dưới có transform dịch xuống theo vị trí. */
+const choVaoHan = (t: Locator) => expect.poll(() => t.evaluate(el => {
+    const cs = getComputedStyle(el);
+    if (Number(cs.opacity) < 0.99) return false;
+    if (cs.transform === 'none') return true;
+    const m = new DOMMatrixReadOnly(cs.transform);
+    return Math.abs(m.a - 1) < 0.001 && Math.abs(m.d - 1) < 0.001 && Math.abs(m.e) < 0.5 && Math.abs(m.f) < 0.5;
+}), { timeout: 10_000, message: 'toast chưa vào hẳn (hiệu ứng hiện chưa chạy xong)' }).toBe(true);
 
 async function moApp(page: Page) {
     await page.goto('/?tab=analysis');
@@ -74,7 +85,7 @@ test.describe('iPhone 16 Pro Max', () => {
         const t = hien(page).first();
         await expect(t).toBeVisible();
         // Chờ hiệu ứng trượt vào (bắt đầu từ −24px) chạy xong — đo giữa chừng thì điểm chạm rơi ra ngoài mép toast.
-        await page.waitForTimeout(500);
+        await choVaoHan(t);
         const b = (await t.boundingBox())!;
         await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
         await page.mouse.down();
@@ -89,7 +100,7 @@ test.describe('iPhone 16 Pro Max', () => {
         await banToast(page, 'nut');
         const nut = page.getByRole('button', { name: 'Chia sẻ / Lưu ảnh' });
         await expect(nut).toBeVisible();
-        await page.waitForTimeout(500); // chờ hiệu ứng hiện (thu phóng 0.96 → 1) chạy xong rồi mới đo
+        await choVaoHan(hien(page).first()); // chờ hiệu ứng hiện (thu phóng 0.96 → 1) chạy xong rồi mới đo
         const h = await nut.boundingBox();
         expect(h!.height, 'nút trong toast đủ 44px trên điện thoại').toBeGreaterThanOrEqual(43.5);
         await page.screenshot({ path: 'test-results/toast-thong-nhat/iphone-action.png' });
@@ -106,6 +117,7 @@ test.describe('laptop', () => {
         await banToast(page, 'laptop');
         const t = hien(page).first();
         await expect(t).toBeVisible();
+        await choVaoHan(t);
         const b = (await t.boundingBox())!;
         expect(b.y).toBeLessThan(40);
         expect(Math.abs(b.x + b.width / 2 - 720)).toBeLessThan(3);
