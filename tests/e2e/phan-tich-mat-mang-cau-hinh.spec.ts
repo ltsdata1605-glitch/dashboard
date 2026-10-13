@@ -6,6 +6,8 @@ import { createSalesXlsx } from './helpers/salesFixture';
  * xoá dữ liệu web sau 7 ngày không mở app → mất cấu hình đã lưu; lúc đó mạng 4G/Wi-Fi siêu thị
  * chập chờn thì tải lại cũng hỏng. Lỗi cũ: màn hình TREO MÃI ở 95% "Đang gộp và phân tích…".
  * Nay phải báo lỗi rõ ràng và quay về màn tải tệp.
+ * (2026-10-13: cấu hình ngành hàng nay đọc từ Firestore `cloud://global_product_config` — commit 8b528cd của chủ dự án —
+ * nên "mất mạng" phải chặn CẢ Firestore, không chỉ Google Sheet như trước.)
  */
 test.use({
     viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true,
@@ -15,6 +17,7 @@ test.use({
 test('mất mạng khi tải cấu hình: báo lỗi rõ ràng, không treo ở 95%', async ({ page }) => {
     test.setTimeout(120_000);
     await page.route('**://docs.google.com/**', r => r.abort('internetdisconnected'));
+    await page.route('**://firestore.googleapis.com/**', r => r.abort('internetdisconnected'));
     await page.goto('/?tab=analysis');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first().tap({ timeout: 20_000 });
     await page.locator('input[type="file"]').first().setInputFiles(createSalesXlsx());

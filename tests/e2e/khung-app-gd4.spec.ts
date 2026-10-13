@@ -58,9 +58,10 @@ test.describe('iPhone SE 375×667 (cảm ứng)', () => {
         await sheet.getByRole('button', { name: 'Huỷ' }).click();
         await expect(sheet).toHaveCount(0);
 
-        // Bộ lọc nâng cao mở được (bảng "Tuỳ chỉnh" toàn màn của Phân tích — làm lại ở GĐ5)
+        // Bộ lọc nâng cao mở bảng "Tuỳ chỉnh" của Phân tích (làm lại ở GĐ5: nhóm "Khoảng thời gian")
         await bar.getByRole('button', { name: 'Bộ lọc nâng cao' }).click();
-        await expect(page.getByText(/Khoảng thời gian nhanh/i).first()).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'Tuỳ chỉnh' })).toBeVisible();
+        await expect(page.getByText('Khoảng thời gian', { exact: true }).first()).toBeVisible();
         await page.screenshot({ path: test.info().outputPath('iphone-se-phan-tich.png') });
     });
 

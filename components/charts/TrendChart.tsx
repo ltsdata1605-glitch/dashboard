@@ -20,7 +20,8 @@ import { saveCustomCalendars, getCustomCalendars } from '../../services/dbServic
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
-import { Overlay } from '../shared/ui/Overlay';
+import { Tabs } from '../shared/ui/Tabs';
+import { ActionMenu } from '../shared/ui/ActionMenu';
 
 const CustomTooltip = ({ active, payload, metricName }: { active?: boolean; payload?: { payload: RechartsTrendData }[]; metricName: string }) => {
     if (!active || !payload?.length) return null;
@@ -395,162 +396,93 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
     );
   };
 
+  // Kho đang lọc (bộ lọc có thể là mảng hoặc chuỗi cũ) — dùng cho dòng phụ tiêu đề.
+  const khoDangLoc: string[] = Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : []);
+  const NHAN_KY: Record<typeof trendState.view, string> = { shift: 'Ca', daily: 'Ngày', weekly: 'Tuần', monthly: 'Tháng' };
+
   return (
     <SectionCard
       ref={chartCardRef}
       className="mb-3 lg:mb-8 relative z-0 lg:rounded-none"
     >
+      {/* GĐ5 (lỗi #13, #28): tiêu đề viết như câu (bỏ IN HOA ép), dòng phụ 12px (trước 8px — dưới sàn 11px); bộ lọc của chế độ Lịch
+          xuống hàng riêng trong thân thẻ (4 ô 70px chen trên tiêu đề từng đẩy nút xuất ảnh rớt dòng ở iPhone). */}
       <SectionHeader
-        title={(
-            <div className="flex flex-col">
-                <div className="flex items-center gap-3">
-                    <span className="text-slate-800 dark:text-slate-100 uppercase">XU HƯỚNG DOANH THU</span>
-                </div>
-                <span className="text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5 flex items-center gap-1.5 flex-wrap">
-                    {displayMode !== 'calendar' && (
-                        <>
-                            <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800/90 border border-slate-200/90 dark:border-slate-700/80 text-[8px] xs:text-[8.5px] sm:text-[9.5px] lg:text-[10px] font-bold shadow-2xs">
-                                <button
-                                    type="button"
-                                    onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
-                                    className={`px-1.5 py-0.5 rounded-md transition-all duration-200 cursor-pointer uppercase tracking-tight select-none active:scale-95 ${
-                                        trendState.metric === 'thuc'
-                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs font-black'
-                                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 font-bold'
+        title="Xu hướng doanh thu"
+        subtitle={(
+            <span className="flex items-center gap-x-1.5 gap-y-1 flex-wrap">
+                {displayMode !== 'calendar' && (
+                    <>
+                        <span className="inline-flex items-center p-0.5 rounded-full bg-slate-100 dark:bg-slate-800/90 hide-on-export" role="group" aria-label="Chỉ số biểu đồ">
+                            {([['thuc', 'DT thực', 'Xem biểu đồ theo doanh thu thực'], ['qd', 'DTQĐ', 'Xem biểu đồ theo doanh thu quy đổi']] as const).map(([v, nhan, goiY]) => (
+                                <Button
+                                    key={v}
+                                    variant="unstyled" size="none"
+                                    onClick={() => setTrendState(prev => ({ ...prev, metric: v }))}
+                                    aria-pressed={trendState.metric === v}
+                                    title={goiY}
+                                    className={`ycx-hit px-2 py-0.5 rounded-full text-[11px] leading-4 transition-colors ${
+                                        trendState.metric === v
+                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs font-semibold'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 font-medium'
                                     }`}
-                                    title="Xem Biểu đồ theo Doanh Thu Thực"
                                 >
-                                    DT THỰC
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
-                                    className={`px-1.5 py-0.5 rounded-md transition-all duration-200 cursor-pointer uppercase tracking-tight select-none active:scale-95 ${
-                                        trendState.metric === 'qd'
-                                            ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs font-black'
-                                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 font-bold'
-                                    }`}
-                                    title="Xem Biểu đồ theo Doanh Thu Quy Đổi"
-                                >
-                                    DTQĐ
-                                </button>
-                            </div>
-                            {totalValue > 0 && (
-                                <span className="text-slate-500 dark:text-slate-400 font-medium">TỔNG: <span className="text-slate-700 dark:text-slate-200 font-bold">{formatCurrency(totalValue)}</span></span>
-                            )}
-                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
-                        </>
-                    )}
-                    {(Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : [])).length > 0 && !(Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : [])).includes('all') ? `KHO: ${(Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : [])).join(', ')} | ` : ''} 
-                    {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
-                    {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
+                                    {nhan}
+                                </Button>
+                            ))}
+                        </span>
+                        {totalValue > 0 && (
+                            <span>Tổng <span className="text-slate-800 dark:text-slate-200 font-semibold tabular-nums">{formatCurrency(totalValue)}</span></span>
+                        )}
+                        <span aria-hidden="true" className="text-slate-300">·</span>
+                    </>
+                )}
+                <span className="truncate">
+                    {khoDangLoc.length > 0 && !khoDangLoc.includes('all') ? `Kho ${khoDangLoc.join(', ')} · ` : ''}
+                    {filterState.xuat !== 'all' ? `Xuất: ${filterState.xuat} · ` : ''}
+                    {filterState.dateRange !== 'all'
+                        ? `${filterState.startDate.split('T')[0].split('-').reverse().join('/')} – ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}`
+                        : 'Tất cả thời gian'}
                 </span>
-            </div>
+            </span>
         )}
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
-          {displayMode === 'calendar' ? (
-              <div className="flex flex-row items-center gap-1 sm:gap-1.5 flex-nowrap sm:flex-wrap">
-                  <Select
-                      fullWidth={false}
-                      className="text-[11px] font-bold text-sky-700 dark:text-sky-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[70px] sm:w-[95px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
-                      value={calendarFilters.month}
-                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
-                  >
-                      {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
-                  </Select>
-                  <div className="w-[70px] sm:w-[105px] shrink-0">
-                      <MultiSelectDropdown
-                          label="Ngành"
-                          options={uniqueParentGroups}
-                          selected={calendarFilters.parentGroup}
-                          onChange={(val) => setCalendarFilters(prev => ({ ...prev, parentGroup: val, childGroup: [] }))}
-                          variant="compact"
-                      />
-                  </div>
-                  <div className="w-[70px] sm:w-[105px] shrink-0">
-                      <MultiSelectDropdown
-                          label="Nhóm"
-                          options={uniqueChildGroups}
-                          selected={calendarFilters.childGroup}
-                          onChange={(val) => setCalendarFilters(prev => ({ ...prev, childGroup: val }))}
-                          variant="compact"
-                      />
-                  </div>
-                  <Select
-                      fullWidth={false}
-                      className="text-[11px] font-bold text-rose-700 dark:text-rose-400 py-1 px-1 sm:px-2 h-8 uppercase tracking-wider w-[82px] sm:w-[120px] pr-5 sm:pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
-                      value={calendarFilters.metric}
-                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
-                  >
-                      <option value="revenue">D.Thu</option>
-                      <option value="revenueQD">DT QĐ</option>
-                      <option value="quantity">S.Lượng</option>
-                      <option value="traChamPercent">Tr.Chậm</option>
-                  </Select>
-              </div>
-          ) : (
+          {displayMode !== 'calendar' && (
               <>
-          <div className="lg:hidden relative">
-              <Button
-                  variant="unstyled" size="none"
-                  onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen }))}
-                  className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-md transition-colors relative flex items-center gap-1 ${
-                      trendState._filterOpen
-                      ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
-                      : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
-                  title="Chọn khoảng thời gian"
-              >
-                  <AppIcon name="clock" size="md" />
-                  {/* Nhãn NẰM CẠNH icon, ghi đủ chữ. Bản cũ là nhãn "absolute" đè góc icon — ở sàn chữ 11px
-                      nó che nửa đồng hồ, và "N/T/Th" không ai đoán được (iPhone, dữ liệu thật 2026-09-28). */}
-                  <span className="text-[11px] font-black text-sky-700 dark:text-sky-400 leading-none uppercase whitespace-nowrap">
-                      {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'Ngày' : trendState.view === 'weekly' ? 'Tuần' : 'Tháng'}
-                  </span>
-              </Button>
-              {trendState._filterOpen && (
-                  <>
-                      <Overlay kind="scrim" className="z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false }))} />
-                      <div className="absolute right-0 top-full mt-1 z-[99] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[100px]">
-                          {([
-                              { value: 'shift', label: 'Ca' },
-                              { value: 'daily', label: 'Ngày' },
-                              { value: 'weekly', label: 'Tuần' },
-                              { value: 'monthly', label: 'Tháng' },
-                          ] as const).map((item) => (
+                  {/* Chu kỳ biểu đồ — iPhone: nút có chữ mở action sheet; laptop: segmented control. */}
+                  <div className="lg:hidden">
+                      <ActionMenu
+                          label="Chọn chu kỳ biểu đồ"
+                          title="Chu kỳ biểu đồ"
+                          items={(['shift', 'daily', 'weekly', 'monthly'] as const).map(v => ({
+                              id: v,
+                              label: `Theo ${NHAN_KY[v].toLowerCase()}`,
+                              icon: trendState.view === v ? 'check' as const : 'clock' as const,
+                              onSelect: () => setTrendState(prev => ({ ...prev, view: v, _filterOpen: false })),
+                          }))}
+                          renderTrigger={(props) => (
                               <Button
+                                  {...props}
                                   variant="unstyled" size="none"
-                                  key={item.value}
-                                  onClick={() => setTrendState(prev => ({ ...prev, view: item.value, _filterOpen: false }))}
-                                  className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                                      trendState.view === item.value
-                                      ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
-                                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
-                                  }`}
+                                  title="Chọn khoảng thời gian"
+                                  className="ycx-hit h-8 px-2.5 rounded-full bg-slate-100 text-slate-700 text-[13px] font-medium flex items-center gap-1 active:bg-slate-200"
                               >
-                                  {item.label}
+                                  <AppIcon name="clock" size="sm" className="text-slate-500" />
+                                  {NHAN_KY[trendState.view]}
+                                  <AppIcon name="chevronDown" size="xs" className="text-slate-400" />
                               </Button>
-                          ))}
-                      </div>
-                  </>
-              )}
-          </div>
-          <div className="hidden lg:inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                    {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
-                      <Button
-                        variant="unstyled" size="none"
-                        key={v}
-                        onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                        className={`py-0.5 px-1.5 lg:px-2 text-[11px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
-                          trendState.view === v
-                          ? 'bg-gradient-to-br from-sky-500 to-sky-600 text-white shadow-sm shadow-sky-300/20'
-                          : 'text-slate-500 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                        }`}
-                      >
-                        {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
-                      </Button>
-                    ))}
+                          )}
+                      />
+                  </div>
+                  <div className="hidden lg:block">
+                      <Tabs
+                          variant="segment"
+                          size="sm"
+                          activeId={trendState.view}
+                          onChange={(id) => setTrendState(prev => ({ ...prev, view: id as typeof prev.view }))}
+                          items={(['shift', 'daily', 'weekly', 'monthly'] as const).map(v => ({ id: v, label: NHAN_KY[v] }))}
+                      />
                   </div>
               </>
           )}
@@ -558,7 +490,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           <Button
               variant="unstyled" size="none"
               onClick={() => setDisplayMode(prev => prev === 'chart' ? 'calendar' : 'chart')}
-              className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+              className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                   displayMode === 'calendar'
                       ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
                       : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -572,7 +504,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
             variant="unstyled" size="none"
             onClick={handleExportClick}
             disabled={isExporting}
-            className={`flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
+            className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
               isExporting
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'
               : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -589,6 +521,48 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
         <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[220px] lg:h-[320px]'}`}>
            {displayMode === 'calendar' ? (
                 <div className="flex flex-col gap-4">
+                    {/* Bộ lọc lịch (lỗi #28): hàng riêng, 2 cột trên iPhone, ô cao 44px trên màn cảm ứng; laptop xếp một hàng. */}
+                    <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 hide-on-export [&>*]:min-w-0 pointer-coarse:[&_button]:min-h-11">
+                        <Select
+                            aria-label="Tháng"
+                            fullWidth={false}
+                            className="w-full sm:w-[110px] text-[15px] sm:text-xs font-semibold text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700"
+                            value={calendarFilters.month}
+                            onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
+                        >
+                            {availableMonths.map(m => <option key={m} value={m}>Tháng {m.split('-')[1]}/{m.split('-')[0]}</option>)}
+                        </Select>
+                        <Select
+                            aria-label="Chỉ số"
+                            fullWidth={false}
+                            className="w-full sm:w-[130px] text-[15px] sm:text-xs font-semibold text-slate-800 dark:text-slate-100 border-slate-200 dark:border-slate-700"
+                            value={calendarFilters.metric}
+                            onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
+                        >
+                            <option value="revenue">Doanh thu</option>
+                            <option value="revenueQD">DT quy đổi</option>
+                            <option value="quantity">Số lượng</option>
+                            <option value="traChamPercent">Trả chậm</option>
+                        </Select>
+                        <div className="sm:w-[140px]">
+                            <MultiSelectDropdown
+                                label="Ngành"
+                                options={uniqueParentGroups}
+                                selected={calendarFilters.parentGroup}
+                                onChange={(val) => setCalendarFilters(prev => ({ ...prev, parentGroup: val, childGroup: [] }))}
+                                variant="compact"
+                            />
+                        </div>
+                        <div className="sm:w-[140px]">
+                            <MultiSelectDropdown
+                                label="Nhóm"
+                                options={uniqueChildGroups}
+                                selected={calendarFilters.childGroup}
+                                onChange={(val) => setCalendarFilters(prev => ({ ...prev, childGroup: val }))}
+                                variant="compact"
+                            />
+                        </div>
+                    </div>
                     {savedCalendars.length > 0 && (
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar hide-on-export">
                             <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
@@ -657,8 +631,9 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                         <Button
                                             variant="unstyled" size="none"
                                             onClick={handleAddCalendar}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-sm transition-colors"
+                                            className="ycx-hit w-8 h-8 shrink-0 flex items-center justify-center rounded-control bg-sky-600 hover:bg-sky-700 text-white shadow-sm transition-colors"
                                             title="Lưu bảng nháp thành bảng mới"
+                                            aria-label="Lưu bảng nháp thành bảng mới"
                                         >
                                             <AppIcon name="add" size="md" />
                                         </Button>
@@ -666,8 +641,9 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             variant="unstyled" size="none"
                                             onClick={handleExportDraft}
                                             disabled={isExporting}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shadow-sm"
+                                            className="ycx-hit w-8 h-8 shrink-0 flex items-center justify-center rounded-control bg-white border border-slate-200 text-slate-500 hover:text-sky-700 transition-colors shadow-sm"
                                             title="Xuất ảnh"
+                                            aria-label="Xuất ảnh bảng nháp"
                                         >
                                             <AppIcon name="exportImage" size="md" />
                                         </Button>

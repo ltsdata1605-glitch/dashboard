@@ -201,8 +201,10 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                 </div>
                 
                 {/* Hàng 4: Label / Giá trị phụ */}
+                {/* Lỗi #19 (video v2:003): số phụ ngắt giữa số và đơn vị ("806 / Tr"). Không cho ngắt TRONG một con số; chip chênh
+                    lệch được phép xuống dòng nguyên khối khi thẻ hẹp. */}
                 {trendValue ? (
-                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center">
+                    <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-tight mt-0.5 w-full flex flex-col items-center justify-center [&_span]:whitespace-nowrap [&>span]:flex-wrap [&>span]:justify-center [&>span]:gap-y-0.5">
                         {trendValue}
                     </div>
                 ) : trendLabel ? (

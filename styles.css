@@ -143,6 +143,23 @@
     }
   }
 
+  /* VÙNG CHẠM 44 cho nút nhỏ (32px — chuẩn thanh công cụ gọn của chủ dự án) ở bất cứ đâu trên màn cảm ứng (GĐ5): ::after vô
+     hình nới đều quanh tâm, cỡ nhìn thấy giữ nguyên. Dùng class `ycx-hit` trên nút; nút đã ≥ 44 thì không đổi (min(0px, …)).
+     Đặt các nút `ycx-hit` cách nhau ≥ 12px (gap-3) nếu muốn vùng chạm không chồng nhau. */
+  @media (pointer: coarse) {
+    .ycx-hit {
+      position: relative;
+    }
+    .ycx-hit::after {
+      content: '';
+      position: absolute;
+      top: min(0px, calc((100% - 44px) / 2));
+      bottom: min(0px, calc((100% - 44px) / 2));
+      left: min(0px, calc((100% - 44px) / 2));
+      right: min(0px, calc((100% - 44px) / 2));
+    }
+  }
+
   /* Dòng phụ thanh trên: nút "Cập nhật: <giờ>" các màn gửi vào KHÔNG được rộng hơn khe (trước đây hộp nút dài hơn khe, chữ bị cắt
      nhưng HỘP vẫn chồng lên nút bên phải) — co hộp về bề rộng khe, phần chữ tự "…". Không đặt overflow:hidden trên chính nút:
      sẽ xén mất vùng chạm ::after bên dưới. */
@@ -868,6 +885,14 @@ summary,
 [data-xcue-right]:not(.clone-no-scrollbar):not(.clone-no-scrollbar *) {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), rgba(0, 0, 0, 0.18));
   mask-image: linear-gradient(to right, #000 calc(100% - 32px), rgba(0, 0, 0, 0.18));
+}
+
+/* Ô GHIM CỘT TRÁI trong bảng `border-collapse` (lỗi #4, video v1:099): đường kẻ trái do BẢNG vẽ, không đi theo ô sticky →
+   cuộn ngang thì chữ các cột cuộn qua lộ ra ở dải 1–2px mép trái. Bảng bỏ viền trái (border-y border-r), ô ghim tự vẽ đường
+   kẻ trái bằng bóng trong (đi theo ô) + bóng mờ phía phải báo "còn cột phía sau". Áp MỌI cỡ màn: laptop cũng cần đường kẻ trái
+   thay cho viền bảng đã bỏ (và giữ bóng mờ cột ghim như trước). */
+.ycx-pin-left {
+  box-shadow: inset 1px 0 0 rgb(226 232 240), 4px 0 6px -4px rgb(0 0 0 / 0.08);
 }
 
 /* GHIM CỘT ĐẦU trên màn hẹp (Đợt C, kế hoạch iPhone; DESIGN_SYSTEM.md mục 5) — bảng nào có cột đầu là TÊN

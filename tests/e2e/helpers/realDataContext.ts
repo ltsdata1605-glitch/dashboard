@@ -23,7 +23,11 @@ function cleanStaleSingletonLocks(dir: string) {
 }
 
 export const test = base.extend<{ context: BrowserContext; page: Page }>({
-    context: async ({}, use) => {
+    context: async ({}, use, testInfo) => {
+        // Không có profile thật thì BỎ QUA ngay tại đây: `launchPersistentContext` tự TẠO thư mục rỗng nếu chưa có, và
+        // thư mục rỗng đó làm `hasRealDataProfile()` của mọi spec khác thành true dù chưa đăng nhập → cả loạt đỏ ở màn
+        // đăng nhập thay vì bỏ qua (gặp thật 2026-10-13 trên máy cloud). Profile thật do chủ dự án tự tạo bằng Chrome thường.
+        testInfo.skip(!hasRealDataProfile(), 'Cần profile dữ liệu thật .e2e-chrome-profile');
         cleanStaleSingletonLocks(PROFILE_DIR);
         const context = await chromium.launchPersistentContext(PROFILE_DIR, {
             channel: 'chrome',

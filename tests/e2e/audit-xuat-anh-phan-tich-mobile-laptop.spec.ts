@@ -1,7 +1,9 @@
-import { test, expect } from './helpers/realDataContext';
+import { test, expect, hasRealDataProfile } from './helpers/realDataContext';
 import type { Page } from '@playwright/test';
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+
+test.skip(!hasRealDataProfile(), 'Cần profile dữ liệu thật .e2e-chrome-profile');
 
 type ExportMod = typeof import('../../components/shared/export');
 const EXPORT_MODULE_PATH = '/components/shared/export/index.ts';

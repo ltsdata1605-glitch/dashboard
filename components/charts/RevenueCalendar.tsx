@@ -172,15 +172,17 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
             <div className={`w-full flex flex-col ${compact ? 'gap-1 md:gap-2' : 'gap-2 md:gap-4'}`}>
                 {/* Header Title Section */}
                 <div className="mb-1">
-                    <div className="flex items-center justify-between">
-                        <h2 className={`font-black uppercase tracking-tight text-slate-800 dark:text-slate-100 ${titleSize} flex items-center gap-2`}>
-                            {title}
+                    {/* Lỗi #7 (video v2:013): tiêu đề dài không co (thiếu min-w-0) ép cụm nút tràn/chồng nhau trên iPhone. Tiêu đề co lại
+                        và tự "…", cụm nút giữ nguyên chỗ, cách nhau 8px. */}
+                    <div className="flex items-center justify-between gap-2">
+                        <h2 className={`min-w-0 flex-1 font-black uppercase tracking-tight text-slate-800 dark:text-slate-100 ${titleSize} flex items-center gap-2`}>
+                            <span className="truncate">{title}</span>
                             {isDraft && (
-                                <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500 text-[11px] font-bold rounded border border-amber-200 dark:border-amber-700/50 hide-on-export leading-none">NHÁP</span>
+                                <span className="shrink-0 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500 text-[11px] font-bold rounded border border-amber-200 dark:border-amber-700/50 hide-on-export leading-none">NHÁP</span>
                             )}
                         </h2>
                         {actionButtons && (
-                            <div className="flex items-center gap-1 flex-shrink-0 hide-on-export">
+                            <div className="flex items-center gap-2 flex-shrink-0 hide-on-export">
                                 {actionButtons}
                             </div>
                         )}
@@ -277,8 +279,9 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
                                 key={dayData.dateStr} 
                                 className={`${bgClass} border ${borderClass} rounded-xl aspect-square w-full h-auto ${cellMinH} flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 relative group cursor-default overflow-hidden p-1 md:p-1.5`}
                             >
-                                {/* Top Row: Solar & Lunar Date */}
-                                <div className="flex justify-between items-start w-full">
+                                {/* Top Row: Solar & Lunar Date — ô hẹp (iPhone, chế độ gọn) thì ngày âm tự xuống dòng thay vì dính vào số
+                                    ngày ("1910/9"). */}
+                                <div className="flex flex-wrap justify-between items-start gap-x-1 w-full">
                                     <span className={`font-black ${isToday ? 'text-sky-700 dark:text-sky-400' : dayNumClass} ${dayNumSize} leading-none`}>
                                         {dayData.day}
                                     </span>

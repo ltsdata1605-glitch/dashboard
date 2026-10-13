@@ -7887,3 +7887,36 @@ sheet "Khác" (nhóm, hàng ≥ 48px, chọn Phân ca → chuyển tab + nút �
 GĐ7). Cập nhật theo thiết kế mới: `icon-dieu-huong` (thanh tab 24px, dock 24px của chủ dự án, sheet Khác), 8 spec giả lập đăng nhập
 thiếu `signInWithCredential` sau bản đăng nhập iOS PWA (trang trắng), 3 spec Phân quyền tìm nút ảnh đại diện theo tiêu đề mới của
 dock, `super-admin-kho-dung-chung` (dòng "chưa gắn" chủ dự án đã bỏ), `bi-du-lieu-khong-lan…` (nút "Cập nhật" chính xác).
+
+## GĐ5 — Phân tích YCX (2026-10-13) — LOẠT A XONG
+
+Sửa đúng các lỗi sếp thấy trong video ở màn Phân tích (`KE_HOACH_GIAO_DIEN_APPLE.md` mục 1). Mỗi lỗi có test khoá ở
+`tests/e2e/phan-tich-gd5.spec.ts` (6 ca: iPhone SE 375×812 cảm ứng + laptop 1366×800).
+
+- **#4 cột MÃ KHO ghim lộ chữ khi cuộn ngang** (`WarehouseSummary.tsx`, cả bảng ngang lẫn bảng dọc). Hai nguyên nhân chồng nhau:
+  (1) ô `sticky left-0` dính ở mép NỘI DUNG của khung cuộn → khung có `p-1.5` thì chữ các cột cuộn qua lộ trong dải đệm trái;
+  (2) bảng `border-collapse` có viền trái do BẢNG vẽ, không đi theo ô sticky. Sửa: khung cuộn chỉ đệm dọc (`py-*`), đệm ngang chuyển
+  vào lớp bọc `inline-block min-w-full` cuộn theo bảng; bảng `border-y border-r` (bỏ viền trái); ô ghim gắn `.ycx-pin-left`
+  (styles.css, mọi cỡ màn) tự vẽ đường kẻ trái bằng bóng trong + bóng mờ phải như cũ. Đo: cuộn 160px, mọi ô ghim dính đúng 0px mép khung.
+- **#7 nút "+" đè nút chụp ảnh ở Lịch** (`RevenueCalendar.tsx`): tiêu đề `min-w-0 flex-1` + "…", cụm nút không co, cách 8px; ô
+  ngày hẹp thì ngày âm xuống dòng thay vì dính số ("1910/9").
+- **#8 chọn Từ 17/10 → Đến 16/10 rồi trang trống không lời giải thích** (`FilterSection.tsx → handleDateChange`): dời đầu kia theo
+  + `toast.info` nói rõ đã dời gì (id cố định, không chồng toast); ô ngày có `min`/`max` lẫn nhau; ô ngày 16px trên điện thoại
+  (Safari iOS không tự phóng to khi chạm).
+- **#13 tiêu đề khối IN HOA, cụm nút rớt dòng** (`TrendChart.tsx`): "Xu hướng doanh thu" viết như câu qua `SectionHeader`, dòng phụ
+  12px (trước 8px — dưới sàn 11px); chu kỳ biểu đồ: iPhone là nút có chữ mở action sheet, laptop là segmented; bộ lọc chế độ Lịch
+  xuống hàng riêng trong thân thẻ (2 cột trên iPhone, ô 44px trên cảm ứng — **#28**). `tinyText` của TrendChart 7 → 0.
+- **#16 công tắc "Hiển thị các khu vực" mỗi cái một màu**: bảng "Tuỳ chỉnh" làm lại kiểu Cài đặt iOS — nền xám nhóm, nhóm trắng bo
+  góc (`ListGroup`/`ListRow`), `Switch` dùng chung một kiểu; nhóm "Nhân viên & phân ca" (quản lý) giữ đủ 4 thao tác cũ (Quản lý ca
+  kíp, Nhập file Excel phân ca, Lấy danh sách phân ca — mở ERP, Xoá dữ liệu phân ca) với cùng điều kiện quyền.
+- **#19 số phụ thẻ KPI ngắt "806 / Tr"** (`KpiCard.tsx`): không cho ngắt trong một con số; chip chênh lệch xuống dòng nguyên khối.
+- **Vùng chạm 44 dùng chung** `.ycx-hit` (styles.css, `@media (pointer: coarse)`): `::after` vô hình nới đều quanh nút 32px, cỡ nhìn
+  thấy giữ nguyên — dùng cho nút nhỏ ngoài thanh trên (vd cụm nút bảng nháp của Lịch).
+
+**Test cũ cập nhật:** `khung-app-gd4` (nhóm "Khoảng thời gian nhanh" → "Khoảng thời gian" trong bảng "Tuỳ chỉnh");
+`phan-tich-mat-mang-cau-hinh` — cấu hình ngành hàng nay đọc từ Firestore (`cloud://global_product_config`, commit 8b528cd của chủ
+dự án) nên "mất mạng" phải chặn cả `firestore.googleapis.com`, không chỉ Google Sheet (spec đỏ từ sau commit đó).
+**Lá chắn test dữ liệu thật:** `tests/e2e/helpers/realDataContext.ts` nay tự BỎ QUA khi chưa có `.e2e-chrome-profile`. Trước đây
+`launchPersistentContext` tự tạo thư mục rỗng nếu chưa có → mọi `test.skip(!hasRealDataProfile())` ở spec khác thành vô hiệu (thư mục
+"có" nhưng chưa đăng nhập) → cả loạt đỏ ở màn đăng nhập trên máy cloud thay vì bỏ qua. Profile thật vẫn do chủ dự án tự tạo bằng
+Chrome thường (mục "Test E2E trên DỮ LIỆU THẬT").

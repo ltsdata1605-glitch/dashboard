@@ -38,20 +38,6 @@
     "iconEmoji": 10,
     "offScaleText": 8
   },
-  "components/charts/TrendChart.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 7,
-    "offScaleRadius": 0,
-    "offScaleText": 0
-  },
   "components/common/DebugPanel.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,

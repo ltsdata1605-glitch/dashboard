@@ -766,12 +766,15 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 )}
 
                 {columnsLoaded && viewMode === 'horizontal' && (
-                <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
-                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap tabular-nums">
+                <section className="overflow-x-auto custom-scrollbar py-1.5 sm:py-2 lg:py-6 touch-auto -webkit-overflow-scrolling-touch relative">
+                    {/* Lỗi #4 (video v1:099): khung cuộn CÓ đệm ngang thì cột ghim (sticky left-0) dừng ở mép NỘI DUNG, chữ các cột cuộn
+                        qua lộ ra trong dải đệm bên trái ("A", "IE", "2"). Khung cuộn không đệm ngang — đệm ở lớp bọc này (cuộn theo bảng). */}
+                    <div className="inline-block min-w-full align-top px-1.5 sm:px-2 lg:px-6">
+                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border-y border-r border-slate-200 dark:border-slate-700 whitespace-nowrap tabular-nums">
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-rose-400 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider ycx-pin-left">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
@@ -829,7 +832,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             {currentData.map((row) => (
                                 <tr key={row.khoName} className="group hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <td 
-                                        className={`px-1 sm:px-2 py-1.5 sm:py-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
+                                        className={`px-1 sm:px-2 py-1.5 sm:py-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center ycx-pin-left ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
                                         onClick={() => handleTargetClick(row.khoName)}
                                     >
                                         {row.khoName}
@@ -947,7 +950,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[11px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
+                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[11px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center ycx-pin-left">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value: number | undefined;
                                     if (col.isCustom) {
@@ -1009,16 +1012,20 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             </tr>
                         </tfoot>
                     </table>
+                    </div>
                 </section>
                 )}
 
                 {/* === VERTICAL TABLE VIEW (transpose) === */}
                 {columnsLoaded && viewMode === 'vertical' && (
-                <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
-                    <table className="w-full text-[11px] sm:text-sm border-collapse border border-slate-200 dark:border-slate-700 tabular-nums">
+                <section className="overflow-x-auto custom-scrollbar py-1.5 sm:py-2 lg:py-6 touch-auto -webkit-overflow-scrolling-touch relative">
+                    {/* Lỗi #4 (video v1:099): khung cuộn CÓ đệm ngang thì cột ghim (sticky left-0) dừng ở mép NỘI DUNG, chữ các cột cuộn
+                        qua lộ ra trong dải đệm bên trái ("A", "IE", "2"). Khung cuộn không đệm ngang — đệm ở lớp bọc này (cuộn theo bảng). */}
+                    <div className="inline-block min-w-full align-top px-1.5 sm:px-2 lg:px-6">
+                    <table className="w-full text-[11px] sm:text-sm border-collapse border-y border-r border-slate-200 dark:border-slate-700 tabular-nums">
                         <thead>
                             <tr className="text-[11px] sm:text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[11px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] align-middle">
+                                <th rowSpan={2} className="px-2 sm:px-4 py-1.5 sm:py-3 text-left text-[11px] sm:text-[12px] font-bold text-slate-600 bg-slate-50 border-b border-slate-200 border-r border-slate-200 sticky left-0 z-20 min-w-[100px] sm:min-w-[140px] ycx-pin-left align-middle">
                                     Nhóm / Chỉ Số
                                 </th>
                                 {displayedVerticalData.map(row => (
@@ -1071,7 +1078,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                         const icon: IconName = GROUP_ICONS[col.mainHeader.toUpperCase()] || 'checklist';
                                         rows.push(
                                             <tr key={`group-${col.mainHeader}-${colIdx}`} className={styles.sub}>
-                                                <td colSpan={groupDividerColSpan} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[11px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ${styles.sub}`}>
+                                                <td colSpan={groupDividerColSpan} className={`px-2 sm:px-4 py-1.5 sm:py-2.5 font-black text-[11px] sm:text-[12px] uppercase tracking-wider ${styles.text} sticky left-0 z-10 ycx-pin-left ${styles.sub}`}>
                                                     <span className="inline-flex items-center gap-1.5">
                                                         <AppIcon name={icon} size="xs" />
                                                         {col.mainHeader}
@@ -1094,7 +1101,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                                         rows.push(
                                             <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 transition-colors">
-                                                <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[11px] sm:text-[12px] text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                                <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[11px] sm:text-[12px] text-slate-700 sticky left-0 z-10 bg-white group-hover:bg-slate-50 border-r border-slate-200 uppercase tracking-wide ycx-pin-left">
                                                     {col.subHeader}
                                                 </td>
                                                 {displayedVerticalData.map(row => {
@@ -1208,7 +1215,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                                     rows.push(
                                         <tr key={`vrow-${col.id}`} className="group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                             {/* Metric name (sticky left) */}
-                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[11px] sm:text-[12px] text-slate-700 dark:text-slate-300 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 uppercase tracking-wide shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 font-bold text-[11px] sm:text-[12px] text-slate-700 dark:text-slate-300 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-700 uppercase tracking-wide ycx-pin-left">
                                                 {col.subHeader}
                                             </td>
                                             {/* Values for each kho */}
@@ -1312,6 +1319,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                             })()}
                         </tbody>
                     </table>
+                    </div>
                 </section>
                 )}
                 </div>
