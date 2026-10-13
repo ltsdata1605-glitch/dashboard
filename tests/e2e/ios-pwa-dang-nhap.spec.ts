@@ -23,7 +23,8 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     await page.goto('/');
     const btn = page.getByRole('button', { name: /Tiếp tục với Cổng Google/ });
     await expect(btn).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByText('Mở cửa sổ đăng nhập Google an toàn')).toBeVisible();
+    // Dòng gợi ý dưới nút (chữ đổi ở d70baad: mọi thiết bị iOS dùng chung cơ chế handoff).
+    await expect(page.getByText('Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.')).toBeVisible();
     await page.waitForTimeout(500); // chờ băm mã sẵn
 
     const popupP = context.waitForEvent('page');
@@ -43,8 +44,11 @@ test('iOS PWA: mở trang đăng nhập riêng và hỏi nhận phiên', async (
     }, verifier);
     expect(url.endsWith('#c=' + code)).toBe(true);
 
-    // Máy chủ trả token giả → signInWithCredential lỗi → app báo lỗi, thôi chờ.
+    // Máy chủ trả token giả → signInWithCredential lỗi. Từ d70baad/5a1a95f `claimPwaHandoff` tự thử lại 3 lần rồi trả false
+    // (không ném lỗi) → app THÔI CHỜ, quay về nút đăng nhập (không treo spinner) — nhưng không còn dòng báo lỗi.
     claimReply = { result: { ready: true, idToken: 'fake', accessToken: null } };
-    await expect(page.getByText(/Chưa nhận được phiên đăng nhập/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/Chọn tài khoản trong cửa sổ Google vừa mở/)).toBeHidden({ timeout: 15_000 });
+    await expect(btn).toBeEnabled();
+    await expect(page.getByText('Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.')).toBeVisible();
     await page.screenshot({ path: 'test-results/ios-pwa-dang-nhap.png' });
 });

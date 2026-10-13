@@ -28,11 +28,14 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
     newDateRangeStr,
     onResolve
 }) => {
+    // Hook đặt TRƯỚC lệnh return sớm (rules-of-hooks — 582cfca đặt sau làm ESLint báo lỗi, `npm run check` đỏ). Đã thử: React 19
+    // không sập ở đúng ca này (return trước MỌI hook → 0 ↔ 1 hook thì React dựng lại state), nhưng thêm một hook phía trên là hỏng.
+    const [rememberChoice, setRememberChoice] = React.useState(true);
+
     if (!isOpen || conflicts.length === 0) return null;
 
     const hasExactDuplicate = conflicts.some(c => c.type === 'exact_duplicate');
     const overlapConflicts = conflicts.filter(c => c.type === 'overlap_dates');
-    const [rememberChoice, setRememberChoice] = React.useState(true);
 
     const handleSelect = (action: 'overwrite_deactivate' | 'merge_all') => {
         if (rememberChoice && typeof window !== 'undefined') {

@@ -21,6 +21,8 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
     test.use({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
 
     test('#4 bảng Chi tiết theo kho: khung cuộn không đệm ngang, bảng không viền trái, ô ghim tự vẽ đường kẻ', async ({ page }) => {
+        // Bảng NGANG — đúng cảnh trong video. (Từ d70baad chủ dự án cho iPhone mặc định bảng DỌC: vừa màn, không cuộn.)
+        await page.addInitScript(() => { try { localStorage.setItem('warehouseViewMode', 'horizontal'); } catch { /* bỏ qua */ } });
         await napDuLieuMau(page);
         const khung = page.locator('section.overflow-x-auto').first();
         await khung.evaluate(el => { el.scrollLeft = 160; });
