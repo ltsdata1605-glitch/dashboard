@@ -29,9 +29,8 @@ export const CheckThuongHeroBanner: React.FC<CheckThuongHeroBannerProps> = ({
             ref={bannerRef}
             className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-sky-900 via-sky-800 to-slate-900 dark:from-slate-900 dark:via-sky-950 dark:to-slate-800 text-white p-3.5 sm:p-5 md:p-6 shadow-xl shadow-sky-950/20 border border-sky-500/20"
         >
-            {/* Background ambient blur circles */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-white/10 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-sky-500/20 blur-3xl pointer-events-none" />
+            {/* GĐ7: bỏ 2 quầng sáng blur 256px trang trí (quyết định A22 — tốn GPU/pin trên máy siêu thị & iPhone; nằm tràn ra ngoài
+                thẻ nên còn làm test "không cắt ngang" báo nhầm). Nền chuyển màu của thẻ giữ nguyên. */}
 
             {/* Top row: subtitle + export action button */}
             <div className="flex items-center justify-between mb-1 sm:mb-2">

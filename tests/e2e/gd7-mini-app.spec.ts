@@ -1,4 +1,22 @@
 import { expect, test, type Page } from '@playwright/test';
+import * as fs from 'node:fs';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import * as XLSX from 'xlsx';
+
+if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs);
+
+/** File thưởng thi đua giả: 2 siêu thị × 6 ngành hàng (đủ để Check thưởng hiện màn tra cứu + thanh công cụ). */
+const taoFileThuong = () => {
+    const rows: (string | number)[][] = [['STT', 'Vùng', 'Miền', 'Kênh', 'Siêu thị', 'Ngành hàng', '% dự kiến', 'Dự kiến vượt', 'Lấy top 10', 'Hạng vượt ưu', 'Hạng % target', 'Thưởng vượt ưu', 'Thưởng top %', 'Tổng thưởng']];
+    let stt = 1;
+    for (const st of ['910 - ĐML Hùng Vương', '911 - ĐML Tân Hiệp']) {
+        ['ICT', 'Phụ kiện', 'Gia dụng', 'Điện lạnh', 'Điện tử', 'Sim số'].forEach((ng, j) => rows.push([stt++, 'V1', 'M1', 'DML', st, ng, 0.85 + j * 0.08, 0, '', (j % 4) + 1, (j % 5) + 1, 100_000 * (j + 1), 50_000, 300_000 * (j + 1)]));
+    }
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Sheet1');
+    const f = join(mkdtempSync(join(tmpdir(), 'gd7-ct-')), 'luy-ke-thi-dua.xlsx'); XLSX.writeFile(wb, f); return f;
+};
 
 /**
  * GĐ7 — các mini-app còn lại (KE_HOACH_GIAO_DIEN_APPLE.md mục GĐ7). Khoá các sửa theo từng khu vực, chạy ở Chế độ Dùng Thử.
@@ -10,6 +28,8 @@ import { expect, test, type Page } from '@playwright/test';
  *              bộ lọc trạng thái là segmented chung; "Xoá tất cả mã" vào menu "⋯" chữ đỏ cuối (trước: thùng rác sát nút Xuất Excel).
  *  Loạt 3:    Giới thiệu bỏ lời hứa sai ("Bảo mật tuyệt đối… không đẩy lên máy chủ"); Tính thuế: nút lên thanh trên iPhone; Rút gọn
  *              coupon: khung Kết quả trên iPhone không xẹp thành vạch; Check thưởng: icon tải lên không nhảy liên tục; tiêu đề trang.
+ *  Check thưởng có dữ liệu: thanh công cụ GIỮ trên thanh trên (chủ dự án chốt "1 thanh bar duy nhất", a4168bd) nhưng dưới 540px chữ
+ *              tiêu đề nhường chỗ — trước bị cắt còn "C" + dòng phụ vài chữ.
  *  (Phân quyền #11 — "Xoá tất cả dữ liệu" xuống "Vùng nguy hiểm" cuối trang: tests/e2e/mobile-settings-compact.spec.ts)
  */
 
@@ -161,6 +181,49 @@ test.describe('iPhone 16 Pro Max (cảm ứng)', () => {
         await expect(page.getByRole('heading', { name: 'Tải file thưởng thi đua' })).toBeVisible({ timeout: 20_000 });
         expect(await page.locator('.animate-bounce').count()).toBe(0);
         expect(await page.title()).toBe('Dashboard YCX');
+    });
+
+    test('Check thưởng có dữ liệu: thanh công cụ trên thanh trên, không còn tiêu đề bị cắt còn "C"', async ({ page }) => {
+        await moDungThu(page, '/?tab=check-thuong');
+        const tieuDe = page.locator('[data-app-chrome="topbar"] [data-navbar-title]');
+        await expect(page.getByRole('heading', { name: 'Tải file thưởng thi đua' })).toBeVisible({ timeout: 20_000 });
+        await expect(tieuDe, 'chưa có dữ liệu: tiêu đề vẫn hiện').toBeVisible();
+
+        await page.locator('input[type="file"][accept*=".xlsx"]').first().setInputFiles(taoFileThuong());
+        const kho1 = page.locator('#mobile-topbar-actions input[placeholder="Kho 1"]');
+        await expect(kho1).toBeVisible({ timeout: 20_000 });
+        await expect(tieuDe, 'có thanh công cụ: chữ tiêu đề nhường chỗ').toBeHidden();
+        // Cả thanh công cụ + chuông nằm gọn trong màn, không chồng nhau
+        const hop = await page.locator('[data-app-chrome="topbar"]').evaluate((bar) => {
+            const els = Array.from(bar.querySelectorAll('button, input')).filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; });
+            return els.map(e => { const r = e.getBoundingClientRect(); return { l: r.left, r: r.right, t: r.top, b: r.bottom, ten: e.getAttribute('title') || e.getAttribute('placeholder') || e.textContent?.trim() || '' }; });
+        });
+        for (const h of hop) expect(h.r, `${h.ten} lọt màn`).toBeLessThanOrEqual(440 + 0.5);
+        for (let i = 0; i < hop.length; i++) for (let j = i + 1; j < hop.length; j++) {
+            const a = hop[i], b = hop[j];
+            const giao = Math.max(0, Math.min(a.r, b.r) - Math.max(a.l, b.l)) * Math.max(0, Math.min(a.b, b.b) - Math.max(a.t, b.t));
+            const chua = (a.l <= b.l && a.r >= b.r && a.t <= b.t && a.b >= b.b) || (b.l <= a.l && b.r >= a.r && b.t <= a.t && b.b >= a.b);
+            if (!chua) expect(giao, `"${a.ten}" đè "${b.ten}"`).toBeLessThan(1);
+        }
+        // Ô mã kho đủ đọc (13px), không còn 11px
+        expect(parseFloat(await kho1.evaluate(e => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(13);
+        await page.screenshot({ path: test.info().outputPath('check-thuong-co-du-lieu.png') });
+    });
+
+    test('In Sticker: dải chế độ đã xuống hàng 2 → thanh trên hiện lại tiêu đề "In Sticker"', async ({ page }) => {
+        await moDungThu(page, '/?tab=tools-print-sticker&sub=draw');
+        await expect(page.getByTestId('sticker-mode-bar')).toBeVisible({ timeout: 20_000 });
+        await expect(page.locator('[data-app-chrome="topbar"]').getByRole('heading', { name: 'In Sticker' })).toBeVisible();
+    });
+
+    test('In Sticker › Sticker: đăng nhập dùng segmented vai trò — bấm vai trò KHÔNG gửi form (nút type="button")', async ({ page }) => {
+        await moDungThu(page, '/?tab=tools-print-sticker&sub=event');
+        await expect(page.getByRole('heading', { name: 'Đăng nhập' })).toBeVisible({ timeout: 30_000 });
+        const admin = page.getByRole('button', { name: 'Admin (Quản lý)' });
+        await expect(admin).toHaveAttribute('type', 'button'); // trước: nút segmented mặc định "submit" → bấm là gửi form trống
+        await admin.click();
+        await expect(page.getByPlaceholder('Nhập mật khẩu…')).toBeVisible();
+        await expect(admin).toHaveAttribute('aria-pressed', 'true');
     });
 });
 

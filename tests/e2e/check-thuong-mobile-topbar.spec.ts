@@ -1,82 +1,45 @@
 import { test, expect } from '@playwright/test';
-import * as fs from 'node:fs';
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import * as XLSX from 'xlsx';
+import { moCheckThuong, napFileThuong, taoFileThuong } from './helpers/checkThuongNative';
 
-if (typeof (XLSX as { set_fs?: unknown }).set_fs === 'function') XLSX.set_fs(fs);
-
-const IDB_KEYVAL_GIA = `(function(){function s(){return new Promise(function(res,rej){var r=indexedDB.open('keyval-store');
-r.onupgradeneeded=function(){r.result.createObjectStore('keyval')};r.onsuccess=function(){res(r.result)};r.onerror=function(){rej(r.error)}})}
-function q(m,f){return s().then(function(db){return new Promise(function(res,rej){var t=db.transaction('keyval',m);var o=f(t.objectStore('keyval'));
-t.oncomplete=function(){res(o&&o.result)};t.onerror=function(){rej(t.error)}})})}
-window.idbKeyval={get:function(k){return q('readonly',function(st){return st.get(k)})},set:function(k,v){return q('readwrite',function(st){st.put(v,k)})}};})();`;
-
-const taoFile = () => {
-    const rows: (string | number)[][] = [['STT', 'Vùng', 'Miền', 'Kênh', 'Siêu thị', 'Ngành hàng', '% dự kiến', 'Dự kiến vượt', 'Lấy top 10', 'Hạng vượt ưu', 'Hạng % target', 'Thưởng vượt ưu', 'Thưởng top %', 'Tổng thưởng']];
-    ['ICT', 'Phụ kiện', 'Gia dụng', 'Điện lạnh', 'Điện tử'].forEach((ng, j) => rows.push([j + 1, 'V1', 'M1', 'DML', '910 - ĐML Hùng Vương', ng, 1.1, 0, '', 1, 1, 100_000, 0, 300_000 * (j + 1)]));
-    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), 'Sheet1');
-    const f = join(mkdtempSync(join(tmpdir(), 'ct-')), 'luy-ke-thi-dua.xlsx'); XLSX.writeFile(wb, f); return f;
-};
-
+/**
+ * Check thưởng trên iPhone: thanh công cụ (Tra cứu / Top thưởng, Kho 1 / Kho 2, đổi file, đồng bộ cloud) nằm GỌN trên thanh trên,
+ * không thêm hàng riêng — chủ dự án chốt "1 thanh bar duy nhất" (a4168bd, 2026-10-11).
+ * GĐ7 (2026-10-13): chuyển sang bản React (bản cũ chờ iframe `check-thuong.html` đã bỏ nên đỏ sẵn) và thêm: dưới 540px chữ tiêu đề
+ * nhường chỗ cho thanh công cụ (trước bị cắt còn chữ "C").
+ */
 test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
 test('Check thưởng mobile topbar: các nút nhỏ gọn nằm trên thanh Bar, không còn hàng riêng', async ({ page }) => {
-    await page.route('https://cdn.sheetjs.com/**', r => r.fulfill({ path: 'node_modules/xlsx/dist/xlsx.full.min.js', contentType: 'application/javascript' }));
-    await page.route('https://cdn.jsdelivr.net/npm/html-to-image**', r => r.fulfill({ path: 'node_modules/html-to-image/dist/html-to-image.js', contentType: 'application/javascript' }));
-    await page.route('https://cdn.jsdelivr.net/npm/idb-keyval**', r => r.fulfill({ body: IDB_KEYVAL_GIA, contentType: 'application/javascript' }));
+    await moCheckThuong(page);
+    await napFileThuong(page, taoFileThuong(['910 - ĐML Hùng Vương', '911 - ĐML Tân Hiệp']));
 
-    await page.goto('/?tab=check-thuong');
-    const demo = page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).first();
-    const iframe = page.locator('iframe[src*="check-thuong"]');
-    await expect(demo.or(iframe)).toBeVisible({ timeout: 30_000 });
-    if (await demo.isVisible()) {
-        await demo.click();
-        await expect(iframe).toBeAttached({ timeout: 30_000 });
-    }
-
-    const f = page.frameLocator('iframe[src*="check-thuong"]');
-    await expect(f.getByText('Chưa có file nào được chọn')).toBeVisible({ timeout: 30_000 });
-    await page.waitForTimeout(1000);
-    await f.locator('#fileInput').setInputFiles(taoFile());
-    await expect(f.getByText('Kết quả tra cứu').first()).toBeVisible({ timeout: 20_000 });
-    await page.waitForTimeout(1000);
-
-    // 1. Kiểm tra không còn hàng riêng phụ phía dưới thanh Top bar
-    const hangPhu = page.locator('.lg\\:hidden.shrink-0.px-3.py-1.border-b');
-    await expect(hangPhu).toHaveCount(0);
-
-    // 2. Kiểm tra thanh công cụ nhỏ gọn đã được portal vào #mobile-topbar-actions
     const topbarActions = page.locator('#mobile-topbar-actions');
-    await expect(topbarActions).toBeVisible();
-
-    // 3. Kiểm tra các nút và ô nhập con bên trong thanh Bar
-    const searchBtn = topbarActions.getByRole('button', { name: /tra cứu/i });
-    const topBtn = topbarActions.getByRole('button', { name: /top/i });
     const kho1Input = topbarActions.locator('input[placeholder="Kho 1"]');
     const kho2Input = topbarActions.locator('input[placeholder="Kho 2"]');
-    const resetBtn = topbarActions.getByTitle(/xoá mã kho/i);
-    const uploadBtn = topbarActions.getByTitle(/tải file khác/i);
-
-    await expect(searchBtn).toBeVisible();
-    await expect(topBtn).toBeVisible();
     await expect(kho1Input).toBeVisible();
     await expect(kho2Input).toBeVisible();
-    await expect(resetBtn).toBeVisible();
-    await expect(uploadBtn).toBeVisible();
+    // 1. Không có hàng công cụ riêng: ô mã kho chỉ có MỘT bộ, nằm trên thanh trên
+    await expect(page.locator('input[placeholder="Kho 1"]:visible')).toHaveCount(1);
 
-    // 4. Đo kích thước: các nút nhỏ gọn h-7 (khoảng 28px)
-    const boxKho1 = await kho1Input.boundingBox();
-    expect(boxKho1).toBeTruthy();
-    expect(boxKho1!.height).toBeLessThanOrEqual(30);
+    // 2. Đủ nút trên thanh
+    await expect(topbarActions.getByRole('button', { name: /tra cứu/i })).toBeVisible();
+    await expect(topbarActions.getByRole('button', { name: /top/i })).toBeVisible();
+    await expect(topbarActions.getByTitle(/tải file khác/i)).toBeVisible();
+    await expect(topbarActions.getByTitle(/Đồng bộ dữ liệu từ Đám Mây/i)).toBeVisible();
+    // Nút xoá mã kho so sánh chỉ hiện khi đang so sánh 2 kho
+    await expect(topbarActions.getByTitle(/xoá mã kho/i)).toHaveCount(0);
+    await kho2Input.fill('911');
+    await expect(topbarActions.getByTitle(/xoá mã kho/i)).toBeVisible();
 
-    // 5. Kiểm tra chuông thông báo không bị đẩy ra ngoài mép màn hình
-    const bell = page.locator('.mobile-chrome button:has(svg[data-icon="notification"])');
-    const boxBell = await bell.boundingBox();
-    expect(boxBell).toBeTruthy();
-    expect(boxBell!.x + boxBell!.width).toBeLessThanOrEqual(390);
+    // 3. Gọn: ô nhập cao ≤ 30px (cỡ chủ dự án chọn) nhưng chữ đọc được (≥ 13px)
+    const boxKho1 = (await kho1Input.boundingBox())!;
+    expect(boxKho1.height).toBeLessThanOrEqual(30);
+    expect(parseFloat(await kho1Input.evaluate(e => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(13);
 
-    // 6. Chụp ảnh màn hình để nghiệm thu trực quan
-    await page.screenshot({ path: join(process.cwd(), 'scratch/check-thuong-mobile-topbar.png') });
+    // 4. Chuông không bị đẩy ra ngoài mép màn hình; chữ tiêu đề nhường chỗ (không còn "C" bị cắt)
+    const boxBell = (await page.locator('[data-app-chrome="topbar"]').getByRole('button', { name: /Thông báo/ }).boundingBox())!;
+    expect(boxBell.x + boxBell.width).toBeLessThanOrEqual(390);
+    await expect(page.locator('[data-app-chrome="topbar"] [data-navbar-title]')).toBeHidden();
+
+    await page.screenshot({ path: test.info().outputPath('check-thuong-mobile-topbar.png') });
 });

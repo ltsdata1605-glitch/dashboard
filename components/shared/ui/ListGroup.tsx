@@ -84,7 +84,7 @@ export const ListRow: React.FC<ListRowProps> = ({
   );
   if (onClick) {
     return (
-      <Button variant="unstyled" size="none" onClick={onClick} disabled={disabled}
+      <Button variant="unstyled" size="none" type="button" onClick={onClick} disabled={disabled}
         className={cn(lop, 'transition-colors hover:bg-slate-50 active:bg-slate-100')} {...rest}>
         {noiDung}
       </Button>

@@ -8087,3 +8087,27 @@ Test khoá: `tests/e2e/gd7-mini-app.spec.ts` thêm 4 ca (ca coupon đã thử: b
   2 nút về kiểu chuẩn (primary / secondary, `isLoading`).
 - **Báo cáo khai thác**: bộ đếm −/+ chính đã có vùng chạm 44px vô hình (bố cục 2 cột chủ dự án chốt); 2 nút −/+ của dòng "mục khác"
   còn 32px → `ycx-hit`.
+
+## GĐ7 — LOẠT 4: Check thưởng có dữ liệu, spec Check thưởng cũ, đăng nhập chế độ Sticker (2026-10-13) — GĐ7 XONG
+
+- **Check thưởng có dữ liệu trên iPhone — tiêu đề bị cắt còn "C"**: thanh công cụ (Tra cứu/Top thưởng, Kho 1/Kho 2, đổi file, đồng bộ)
+  GIỮ trên thanh trên đúng quyết định MỚI của chủ dự án ("1 thanh bar duy nhất", a4168bd 11/10 — test `check-thuong-mobile-topbar`
+  "không còn hàng riêng"). Sửa: gốc thanh công cụ gắn `data-thay-tieu-de`; khung app (`MobileNavBar` + styles.css, quy tắc `:has`
+  NGOÀI @layer vì lớp `flex` của tiện ích thắng mọi quy tắc trong @layer components) ẩn chữ tiêu đề dưới 540px, cụm nút dạt phải;
+  ô mã kho chữ 11 → 13px (giữ cao 28px như chủ dự án đo). Bỏ cờ `hideTitleOnNarrow` của In Sticker (dải chế độ đã xuống hàng 2 →
+  thanh trên In Sticker hiện lại tiêu đề). Test `gd7-mini-app` "Check thưởng có dữ liệu…" (đã thử: gỡ quy tắc CSS thì đỏ).
+- **4 spec Check thưởng đỏ SẴN** (chờ iframe `check-thuong.html` mà bản React của chủ dự án đã bỏ): `check-thuong-mobile-topbar`,
+  `check-thuong-iphone-khong-cat`, `check-thuong-luu-du-lieu` (2 kịch bản) chuyển sang bản React qua helper mới
+  `tests/e2e/helpers/checkThuongNative.ts`, giữ nguyên ý định (thanh gọn trên thanh trên; không phần tử nào bị cắt ngang ở 390px +
+  modal vừa màn; lưu được + tải lại còn, kể cả khi `keyval-store` cũ đã bị tạo rỗng — bản React vẫn đọc kho này qua
+  `getUnifiedCheckThuongData`). Phát hiện khi chuyển: 2 quầng sáng blur 256px trang trí ở thẻ đầu Check thưởng tràn ra ngoài thẻ →
+  bỏ (cùng quyết định A22). Kết quả: 7 spec Check thưởng xanh (1 bỏ qua — cần dữ liệu thật).
+- **Đăng nhập chế độ "Sticker"** (`features/sticker-event/Login.tsx`): radio → segmented "Nhân viên | Admin (Quản lý)" (giữ nhãn —
+  `sticker-firestore-write-rate` tìm theo chữ), ô nhập tự vẽ → `Input` (có autocomplete), nút gửi ghost tự tô → primary `isLoading`,
+  tiêu đề viết như câu.
+- **Lỗi component dùng chung phát hiện nhờ màn này**: nút của `Tabs` (cả 3 kiểu) và hàng bấm được của `ListRow` không khai
+  `type="button"` → nằm trong `<form>` là thành nút GỬI (bấm "Admin (Quản lý)" bật bong bóng "Please fill out this field"). Đã thêm
+  `type="button"` (Switch đã có sẵn). Test: `gd7-mini-app` "In Sticker › Sticker…".
+- **GĐ7 tổng kết**: 10 khu vực (Phân quyền, In Sticker, Phân ca, Bot LINE, Giới thiệu, Đăng nhập, Tính thuế, Rút gọn coupon, So sánh
+  giá, Check thưởng, Khai thác); `apple-tuong-thich` 0 vi phạm cả 6 khung, DA_BIET trống. Còn để chủ dự án quyết: danh sách mã
+  coupon dạng thẻ trên iPhone (trái "Bảng luôn là bảng"); dock nổi laptop che cột đầu trang tràn ngang khác (đo ở GĐ9).

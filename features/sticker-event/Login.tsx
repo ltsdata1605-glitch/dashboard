@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithCustomToken, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { Button } from '../../components/shared/ui/Button';
+import { Input } from '../../components/shared/ui/Input';
+import { Tabs } from '../../components/shared/ui/Tabs';
 import { StickerEventUserData } from './types';
 import { stickerRegister, stickerResolveSession, stickerStaffAuth } from './services/sessionService';
 import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
@@ -381,10 +383,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-dvh flex items-center justify-center bg-slate-100 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
-        <div className="flex flex-col items-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">
-            {isLogin ? 'Đăng Nhập' : 'Đăng Ký'}
+      {/* GĐ7: thẻ + điều khiển theo bộ chung (segmented vai trò, Input, nút chính) — trước là radio nhỏ, ô nhập tự vẽ, nút ghost tự tô */}
+      <div className="bg-white p-6 sm:p-8 rounded-card shadow-xl w-full max-w-md">
+        <div className="flex flex-col items-center mb-5">
+            <h2 className="type-title font-bold text-slate-900">
+            {isLogin ? 'Đăng nhập' : 'Đăng ký'}
             </h2>
         </div>
         
@@ -405,42 +408,31 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           
-          {/* Role Selection */}
+          {/* Vai trò — segmented (nhãn giữ nguyên "Admin (Quản lý)" vì luồng test đăng nhập tìm theo chữ này) */}
           <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Vai trò</label>
-              <div className="flex gap-4">
-              <label className="flex items-center cursor-pointer text-sm font-medium min-h-11 sm:min-h-0">
-                  <input
-                  type="radio"
-                  value="staff"
-                  checked={role === 'staff'}
-                  onChange={() => setRole('staff')}
-                  className="mr-2 text-sky-600 focus:ring-sky-500"
-                  />
-                  Nhân viên
-              </label>
-              <label className="flex items-center cursor-pointer text-sm font-medium min-h-11 sm:min-h-0">
-                  <input
-                  type="radio"
-                  value="admin"
-                  checked={role === 'admin'}
-                  onChange={() => setRole('admin')}
-                  className="mr-2 text-sky-600 focus:ring-sky-500"
-                  />
-                  Admin (Quản lý)
-              </label>
-              </div>
+              <span className="block text-sm font-medium text-slate-700 mb-1.5">Vai trò</span>
+              <Tabs
+                  variant="segment"
+                  size="sm"
+                  fullWidth
+                  activeId={role}
+                  onChange={(id) => setRole(id as 'staff' | 'admin')}
+                  items={[
+                      { id: 'staff', label: 'Nhân viên' },
+                      { id: 'admin', label: 'Admin (Quản lý)' },
+                  ]}
+              />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Tên đăng nhập (User)</label>
-            <input
+            <Input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
               required
-              placeholder="Nhập tên đăng nhập..."
+              autoComplete="username"
+              placeholder="Nhập tên đăng nhập…"
             />
           </div>
 
@@ -450,13 +442,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Mật khẩu
               </label>
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 required={role === 'admin'}
-                placeholder="Nhập mật khẩu..."
+                autoComplete="current-password"
+                placeholder="Nhập mật khẩu…"
               />
             </div>
           )}
@@ -465,29 +457,24 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           {!isLogin && (
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Mã kho siêu thị</label>
-              <input
+              <Input
                 type="text"
+                inputMode="numeric"
                 value={storeId}
                 onChange={(e) => setStoreId(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
                 required={!isLogin}
-                placeholder="Nhập mã kho..."
+                placeholder="Nhập mã kho…"
               />
             </div>
           )}
 
           <Button
             type="submit"
-            variant="ghost"
-            disabled={loading}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full bg-sky-600 text-white py-2.5 px-4 rounded-md hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 transition-all font-bold shadow-sm disabled:opacity-50 mt-2"
+            variant="primary"
+            isLoading={loading}
+            className="w-full mt-2"
           >
-            {loading ? (
-                <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Đang xử lý...</span>
-                </div>
-            ) : (isLogin ? 'Đăng Nhập' : 'Đăng Ký')}
+            {loading ? 'Đang xử lý…' : (isLogin ? 'Đăng nhập' : 'Đăng ký')}
           </Button>
         </form>
 
@@ -499,7 +486,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               setError(null);
               setPassword('');
             }}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-sm text-sky-600 hover:text-sky-800 font-semibold"
+            className="text-sm text-sky-700 font-semibold"
           >
             {isLogin ? 'Chưa có tài khoản? Đăng ký ngay' : 'Đã có tài khoản? Đăng nhập'}
           </Button>

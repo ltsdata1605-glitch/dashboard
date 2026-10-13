@@ -12,8 +12,6 @@ interface MobileNavBarProps {
     tabIcon: IconName;
     /** Mini-app toàn màn (In Sticker, Phân ca — không có thanh tab dưới): hiện nút ‹ quay về Phân tích. */
     onBack?: () => void;
-    /** In Sticker nhét dải chế độ + cỡ chữ lên thanh này (~470px): dưới 540px ẩn chữ tiêu đề để dải vừa khít. */
-    hideTitleOnNarrow?: boolean;
 }
 
 /**
@@ -24,8 +22,10 @@ interface MobileNavBarProps {
  * thưởng gửi nút "Cập nhật: …" vào đây) và `#mobile-topbar-actions` (portal nút riêng của màn). Màn mới khai báo nút bằng
  * `usePageActions()` → `PageActionsBar` tự xếp (tối đa 1 nút chính + 1 nút nhanh + "⋯"), hết cảnh 7 nút đè nhau (lỗi #1).
  * Vùng chạm 44px cho nút nhỏ trong 2 khe cũ: CSS `.ycx-navbar` trong styles.css (giữ kích cỡ nhìn thấy chủ dự án đã chọn).
+ * Màn đưa CẢ thanh công cụ lên khe cũ (Check thưởng có dữ liệu — chủ dự án chốt "1 thanh bar duy nhất") đánh dấu gốc thanh bằng
+ * `data-thay-tieu-de`: dưới 540px chữ tiêu đề nhường chỗ (CSS `:has` trong styles.css) — trước đó tiêu đề bị cắt còn chữ "C".
  */
-export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBack, hideTitleOnNarrow }) => (
+export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBack }) => (
     <div
         data-app-chrome="topbar"
         className="ycx-navbar mobile-chrome ycx-material lg:hidden sticky top-0 z-[100] border-b border-[color:var(--hairline)] pt-[env(safe-area-inset-top,0px)]"
@@ -49,14 +49,13 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBa
             </span>
             {/* truncate + leading-[22px]: tiêu đề dài ("Phân quyền & duyệt yêu cầu") không chèn sang nút bên phải; dòng cao đủ
                 cho dấu tiếng Việt (khung quá thấp + overflow hidden từng xén dấu ở iPhone SE). */}
-            <div className={cn('min-w-0 flex-1 flex flex-col justify-center pl-1.5 pr-1', hideTitleOnNarrow && 'hidden min-[540px]:flex')}>
+            <div data-navbar-title="" className="min-w-0 flex-1 flex flex-col justify-center pl-1.5 pr-1">
                 <h1 className="text-[17px] leading-[22px] font-semibold tracking-[-0.01em] text-slate-900 truncate">{title}</h1>
                 <div id="mobile-topbar-subtitle" className="type-footnote text-slate-500 truncate max-w-full empty:hidden" />
             </div>
-            {hideTitleOnNarrow && <div className="flex-1 min-[540px]:hidden" />}
-            {/* min-w-0 + shrink (không shrink-0): khe portal của In Sticker rộng ~470px phải co lại và tự cuộn ngang bên trong,
-                không đẩy trang tràn ngang; nút khung app + chuông thì giữ nguyên cỡ. */}
-            <div className="flex items-center min-w-0 shrink">
+            {/* min-w-0 + shrink (không shrink-0): khe portal rộng phải co lại và tự cuộn ngang bên trong, không đẩy trang tràn
+                ngang; nút khung app + chuông thì giữ nguyên cỡ. */}
+            <div data-navbar-actions="" className="flex items-center min-w-0 shrink">
                 <div id="mobile-topbar-actions" className="flex items-center min-w-0" />
                 <PageActionsBar variant="mobile" />
                 <NotificationDropdown buttonClassName="relative flex items-center justify-center w-11 h-11 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0" />

@@ -69,7 +69,7 @@ export const Tabs = React.memo<TabsProps>(({
           const isActive = item.id === activeId;
           return (
             <Button
-              variant="unstyled" size="none"
+              variant="unstyled" size="none" type="button"
               key={item.id}
               data-active={isActive ? 'true' : undefined}
               onClick={() => handleClick(item.id)}
@@ -121,7 +121,7 @@ export const Tabs = React.memo<TabsProps>(({
           const isActive = item.id === activeId;
           return (
             <Button
-              variant="unstyled" size="none"
+              variant="unstyled" size="none" type="button"
               key={item.id}
               data-active={isActive ? 'true' : undefined}
               onClick={() => handleClick(item.id)}
@@ -210,7 +210,7 @@ const SegmentTrack: React.FC<{
         const isActive = item.id === activeId;
         return (
           <Button
-            variant="unstyled" size="none"
+            variant="unstyled" size="none" type="button"
             key={item.id}
             // Nút bật/tắt (aria-pressed) chứ không role="tab": segmented control là nhóm nút chọn một — giữ vai trò `button`
             // để luồng tự động/test đang tìm nút theo tên (vd "Cập nhật" ở Report BI) không phải đổi.

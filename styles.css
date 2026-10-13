@@ -953,3 +953,16 @@ summary,
 @utility modal-bleed-b { margin-bottom: calc(var(--modal-pad, 1.25rem) * -1); }
 @utility type-kpi { font-size: var(--type-kpi); line-height: var(--type-kpi-lh); font-variant-numeric: tabular-nums; }
 @utility type-kpi-lg { font-size: var(--type-kpi-lg); line-height: var(--type-kpi-lg-lh); font-variant-numeric: tabular-nums; }
+
+/* Màn đưa CẢ thanh công cụ lên khe nút cũ (Check thưởng có dữ liệu — chủ dự án chốt "1 thanh bar duy nhất", a4168bd) đánh dấu
+   gốc thanh bằng [data-thay-tieu-de]: dưới 540px chữ tiêu đề nhường chỗ, cụm nút dạt phải (trước: tiêu đề bị cắt còn "C" và
+   dòng phụ còn vài chữ). Ô icon nhận diện bên trái vẫn còn. (GĐ7)
+   NGOÀI @layer có chủ đích: lớp tiện ích `flex` của khối tiêu đề (layer utilities) thắng mọi quy tắc trong @layer components. */
+@media (max-width: 539px) {
+  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
+    display: none;
+  }
+  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-actions] {
+    margin-left: auto;
+  }
+}

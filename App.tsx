@@ -325,7 +325,6 @@ function AppContent() {
                     title={TAB_NAV_TITLES[activeTab] || `${titleData.main} ${titleData.highlight ?? ''}`.trim()}
                     tabIcon={navTabIcon(activeTab)}
                     onBack={isFullscreenMobileTool ? () => setActiveTab('analysis') : undefined}
-                    hideTitleOnNarrow={activeTab === 'tools-print-sticker'}
                 />
 
                 <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">

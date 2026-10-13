@@ -226,7 +226,8 @@ export const CheckThuongView: React.FC = () => {
     };
 
     const renderSearchBar = (isMobile: boolean) => (
-        <div className={`flex items-center ${isMobile ? 'gap-1 shrink-0' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
+        // data-thay-tieu-de (iPhone): cả thanh công cụ nằm trên thanh trên → khung app ẩn chữ tiêu đề dưới 540px (styles.css)
+        <div data-thay-tieu-de={isMobile ? '' : undefined} className={`flex items-center ${isMobile ? 'gap-1 shrink-0' : 'hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300'}`}>
             {/* CỤM NÚT CHUYỂN TAB: TRA CỨU / TOP THƯỞNG */}
             <div className={`flex items-center ${isMobile ? 'p-0.5 h-7' : 'p-0.5'} rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 shadow-xs shrink-0`}>
                 <Button
@@ -268,7 +269,7 @@ export const CheckThuongView: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Kho 1"
-                            className={`${isMobile ? 'w-11 sm:w-14 h-full px-1 text-[11px]' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-colors`}
+                            className={`${isMobile ? 'w-11 sm:w-14 h-full px-1 text-[13px]' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-colors`}
                             value={codes.code1}
                             onChange={(e) => handleCodeChange('code1', e.target.value)}
                         />
@@ -276,7 +277,7 @@ export const CheckThuongView: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Kho 2"
-                            className={`${isMobile ? 'w-11 sm:w-14 h-full px-1 text-[11px]' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-colors`}
+                            className={`${isMobile ? 'w-11 sm:w-14 h-full px-1 text-[13px]' : 'w-20 px-2.5 py-1 text-xs'} font-bold text-center text-slate-800 dark:text-slate-100 bg-transparent focus:bg-white dark:focus:bg-slate-700 focus:outline-none transition-colors`}
                             value={codes.code2}
                             onChange={(e) => handleCodeChange('code2', e.target.value)}
                         />
