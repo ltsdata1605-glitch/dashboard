@@ -8060,3 +8060,30 @@ Test khoá: `tests/e2e/gd7-mini-app.spec.ts` thêm 4 ca (Phân ca iPhone + lapto
   trải ngang); "Hướng dẫn tạo Bot" / "Kiểm tra kết nối" → secondary / tinted (một nút chính mỗi màn).
 - **Phát hiện, CHƯA sửa — cần chủ dự án quyết**: danh sách mã coupon trên iPhone (`CouponManagerTab`, nhánh `md:hidden`) đang là
   DANH SÁCH THẺ, trái quy tắc "Bảng luôn là bảng" (CLAUDE.md mục 2, chốt 2026-10-02). Đổi sang bảng ghim cột đầu là việc riêng.
+
+## GĐ7 — LOẠT 3: Giới thiệu, Đăng nhập, Tính thuế, Rút gọn coupon, So sánh giá, Check thưởng, Khai thác (2026-10-13)
+
+Test khoá: `tests/e2e/gd7-mini-app.spec.ts` thêm 4 ca (ca coupon đã thử: bỏ sửa thì khung kết quả chỉ cao 27,5px → đỏ).
+
+- **Giới thiệu** (`AboutView.tsx`) — viết lại kiểu trang "Giới thiệu" của iOS (biểu tượng app, tên, phiên bản; `ListGroup` "Phân hệ"
+  — mỗi hàng bấm để mở phân hệ; "Dữ liệu và quyền riêng tư"). Bỏ 2 lời hứa SAI: "Bảo mật tuyệt đối… hoàn toàn không đẩy lên máy
+  chủ" (dữ liệu bán hàng CÓ đồng bộ lên tài khoản để người cùng Kho xem) và "Trợ lý AI phân tích chuyên sâu" (AI Gemini thực tế chỉ
+  có ở Phân ca — gợi ý ca xoay, và Tính thuế — đọc ảnh phiếu lương). Câu "đăng xuất là dọn dữ liệu của bạn trên máy (trừ Báo cáo
+  khai thác)" đã đối chiếu `clearAllLocalAppData` (mặc định xoá kho riêng của người đăng xuất, giữ kho khai thác).
+- **Tiêu đề trang** (`index.html`): "Dashboard YCX - Bảo mật tuyệt đối" → "Dashboard YCX" (cùng lời hứa sai, hiện ở tab trình duyệt).
+- **Đăng nhập** (`LoginView.tsx`): "DASHBOARD REPORT" IN HOA → "Dashboard YCX" (cùng tên manifest / biểu tượng Màn hình chính); bỏ
+  chấm nhấp nháy vô hạn. GIỮ nhãn "Tiếp tục với Cổng Google" (10 test dùng, vài test kiểm `toHaveCount(0)` — đổi nhãn sẽ làm chúng
+  qua RỖNG mà không ai biết). `login-view-redesign` tìm tiêu đề theo vai trò heading.
+- **Tính thuế** (`TaxCalculatorView.tsx`): iPhone/iPad tiêu đề đã ở thanh trên → ẩn tiêu đề trùng; Lịch sử (nút nhanh), Biểu thuế,
+  API Key (trong "⋯") lên thanh trên qua `usePageActions`; nút bookmarklet "Chụp ảnh" (kéo thả lên thanh dấu trang — vô nghĩa trên
+  iPhone) chỉ còn ở laptop. Laptop giữ nguyên thanh nút.
+- **Rút gọn coupon** (`CouponConverterView.tsx`): tiêu đề chữ chuyển màu xanh→đỏ 36px → tiêu đề thường (chỉ laptop); 3 nút icon
+  (dán xanh + 2 thùng rác vàng/đỏ KHÁC nghĩa nhưng cùng hình) → "Dán" có chữ + "⋯" ("Xoá nội dung, giữ tiêu đề", "Xoá toàn bộ" đỏ);
+  nút sao chép có chữ. **Lỗi có sẵn trên iPhone**: khung "Kết quả" xẹp thành vạch 27px (lớp `absolute inset-0` trong khung không có
+  chiều cao khi xếp 1 cột) — người dùng không thấy kết quả → `min-h-[260px]` trên điện thoại.
+- **So sánh giá** (`PriceComparisonView.tsx`): trạng thái "Server Online/Offline" → "Đã kết nối/Chưa kết nối"; khối lệnh terminal to
+  cho MỌI người dùng → `Banner` cảnh báo, lệnh chỉ là ghi chú nhỏ cho người quản trị; báo "chỉ dùng trên máy tính" → `Banner`.
+- **Check thưởng** (`CheckThuongEmptyDropzone.tsx`): icon tải lên NHẢY liên tục (`animate-bounce`) → đứng yên; tiêu đề viết như câu;
+  2 nút về kiểu chuẩn (primary / secondary, `isLoading`).
+- **Báo cáo khai thác**: bộ đếm −/+ chính đã có vùng chạm 44px vô hình (bố cục 2 cột chủ dự án chốt); 2 nút −/+ của dòng "mục khác"
+  còn 32px → `ycx-hit`.

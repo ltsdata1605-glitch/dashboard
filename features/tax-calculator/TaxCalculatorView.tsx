@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../components/shared/ui/toast';
+import { usePageActions } from '../../components/shared/ui/PageActions';
+import { useActiveTab } from '../../contexts/LayoutContext';
 import { auth } from '../../services/firebase';
 import { TaxCalculationInput, SavedTaxRecord } from './types/tax.types';
 import {
@@ -93,6 +95,18 @@ export const TaxCalculatorView: React.FC = () => {
       // ignore
     }
   }, [showHistorySidebar]);
+
+  // iPhone / iPad (GĐ7): tiêu đề đã có ở thanh trên → 3 nút lên thanh trên của khung app (Lịch sử nhanh; Biểu thuế, API Key
+  // trong "⋯"). Nút bookmarklet "Chụp ảnh" (kéo thả lên thanh dấu trang) chỉ có nghĩa trên trình duyệt máy tính → chỉ laptop.
+  const { activeTab } = useActiveTab();
+  usePageActions(activeTab === 'tools-tax' ? {
+    scope: 'mobile',
+    quick: [{ id: 'lich-su', label: showHistorySidebar ? 'Ẩn lịch sử' : 'Lịch sử tính thuế', icon: 'history', onSelect: () => setShowHistorySidebar(prev => !prev) }],
+    items: [
+      { id: 'bieu-thue', label: 'Biểu thuế', icon: 'info', onSelect: () => setShowBracketModal(true) },
+      { id: 'api-key', label: 'API Key Gemini dự phòng', icon: 'apiKey', onSelect: () => setShowApiKeyModal(true) },
+    ],
+  } : null);
 
   // Nút bookmarklet "Chụp ảnh": href là javascript: nên phải gắn bằng DOM, React chặn trong JSX
   const bookmarkletRef = useRef<HTMLAnchorElement>(null);
@@ -308,13 +322,13 @@ export const TaxCalculatorView: React.FC = () => {
       <div className="bg-white dark:bg-slate-800/90 border-b sm:border border-slate-200 dark:border-slate-700/60 sm:rounded-2xl p-3.5 sm:p-4 mb-3 sm:mb-4 shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white flex items-center justify-center shadow-sm">
+            <div className="hidden lg:flex w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-sky-600 text-white items-center justify-center shadow-sm">
               <AppIcon name="calculator" size="md" />
             </div>
             <div>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h1 className="text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
-                  Tính Thuế
+                <h1 className="hidden lg:block text-lg font-bold text-slate-800 dark:text-slate-100">
+                  Tính thuế
                 </h1>
                 <span className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/50 border border-sky-200 dark:border-sky-800 px-1.5 py-0.5 rounded-md">
                   <AppIcon name="sparkles" size="xs" className="text-sky-500" />
@@ -334,14 +348,14 @@ export const TaxCalculatorView: React.FC = () => {
                   <span>{isCloudUser ? 'Cloud' : 'Local'}</span>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-400">
+              <p className="text-[12px] lg:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 lg:mt-0">
                 Thuế TNCN 2 đợt & bóc tách nhận thay chuẩn MWG
               </p>
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-1.5 shrink-0">
+          {/* Action buttons — laptop; iPhone/iPad dùng thanh trên (usePageActions ở trên) */}
+          <div className="hidden lg:flex items-center gap-1.5 shrink-0">
             {/* Kéo thả lên thanh dấu trang -> có nút "Chụp ảnh" dùng được ở mọi trang web */}
             <div className="relative group">
               <a

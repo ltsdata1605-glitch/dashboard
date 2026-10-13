@@ -6,7 +6,8 @@ test('Verify redesigned LoginView appearance in Normal and Error states', async 
     await page.waitForLoadState('networkidle');
 
     // Make sure we are on login view
-    const card = page.locator('text=Dashboard Report').locator('..').locator('..');
+    // GĐ7 (2026-10-13): tiêu đề đổi "DASHBOARD REPORT" → "Dashboard YCX" (cùng tên manifest / biểu tượng Màn hình chính)
+    const card = page.getByRole('heading', { name: 'Dashboard YCX' }).locator('..').locator('..');
     await expect(card).toBeVisible({ timeout: 10_000 });
 
     // 1. Verify Google button & Trial button

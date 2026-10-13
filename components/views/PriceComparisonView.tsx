@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Button } from '../shared/ui/Button';
+import { Banner } from '../shared/ui/Banner';
 import * as XLSX from 'xlsx';
 
 // ─── Types ───────────────────────────────────────────────
@@ -301,7 +302,7 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       if (abort.signal.aborted) return; // view đã bị gỡ — không cập nhật gì nữa
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-        setError('Không thể kết nối tới server scraping. Hãy chạy: cd price-scraper-server && npm start');
+        setError('Không kết nối được máy chủ so giá trên máy tính này (người quản trị bật bằng: cd price-scraper-server && npm start).');
       } else {
         setError('Lỗi: ' + msg);
       }
@@ -397,11 +398,11 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="hidden lg:flex text-2xl font-bold text-slate-900 dark:text-white items-center gap-2">
             <AppIcon name="sort" size="xl" className="text-sky-700" />
             So sánh giá đối thủ
           </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[13px] lg:text-sm text-slate-500 dark:text-slate-400 lg:mt-1">
             Tự động tìm kiếm và so sánh giá sản phẩm trên các trang TMĐT
           </p>
         </div>
@@ -429,42 +430,26 @@ export default function PriceComparisonView({ isActive }: { isActive?: boolean }
               : serverStatus === 'mobile' ? 'bg-amber-500'
               : 'bg-amber-500 animate-pulse'
             }`} />
-            {serverStatus === 'online' ? 'Server Online' : serverStatus === 'offline' ? 'Server Offline' : serverStatus === 'mobile' ? 'Chỉ dùng trên máy tính' : 'Đang kiểm tra...'}
+            {serverStatus === 'online' ? 'Đã kết nối' : serverStatus === 'offline' ? 'Chưa kết nối' : serverStatus === 'mobile' ? 'Chỉ dùng trên máy tính' : 'Đang kiểm tra…'}
           </div>
         </div>
       </div>
 
+      {/* GĐ7: 2 thông báo trạng thái → Banner dùng chung. Trước, máy chưa chạy server hiện nguyên khối lệnh terminal to cho mọi
+          người dùng — nay là một dòng ghi chú nhỏ dành cho người quản trị máy. */}
       {serverStatus === 'mobile' && (
-        <div data-testid="so-gia-chi-may-tinh" className="bg-amber-50 border border-amber-200 rounded p-4">
-          <div className="flex items-start gap-3">
-            <AppIcon name="alert" size="lg" className="text-amber-700 mt-0.5" />
-            <div>
-              <p className="font-medium text-amber-800">Công cụ So giá chỉ chạy trên máy tính</p>
-              <p className="text-sm text-amber-700 mt-1">
-                Việc lấy giá do một chương trình chạy trên máy tính của bạn thực hiện (server so giá). Điện thoại
-                không kết nối được tới chương trình đó. Hãy mở trang này trên máy tính đang chạy server so giá.
-              </p>
-            </div>
-          </div>
-        </div>
+        <Banner tone="info" title="Công cụ so giá chỉ chạy trên máy tính" data-testid="so-gia-chi-may-tinh">
+          Việc lấy giá do một chương trình chạy trên máy tính thực hiện (máy chủ so giá); điện thoại không kết nối được tới chương
+          trình đó. Hãy mở trang này trên máy tính đang chạy máy chủ so giá.
+        </Banner>
       )}
 
-      {/* Server offline warning */}
       {serverStatus === 'offline' && (
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <AppIcon name="alert" size="lg" className="text-amber-700 mt-0.5" />
-            <div>
-              <p className="font-medium text-amber-800 dark:text-amber-300">Server scraping chưa chạy</p>
-              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
-                Mở terminal và chạy lệnh sau:
-              </p>
-              <code className="block mt-2 px-3 py-2 bg-amber-100 dark:bg-amber-900/40 rounded-lg text-sm text-amber-900 dark:text-amber-200 font-mono">
-                cd price-scraper-server && npm start
-              </code>
-            </div>
-          </div>
-        </div>
+        <Banner tone="warning" title="Chưa kết nối được máy chủ so giá" maxLines={3}>
+          Công cụ cần chương trình so giá chạy trên chính máy tính này. Người quản trị bật bằng lệnh{' '}
+          <code className="px-1 py-0.5 rounded bg-amber-100 font-mono text-[12px]">cd price-scraper-server &amp;&amp; npm start</code>
+          {' '}rồi bấm nút làm mới bên cạnh trạng thái.
+        </Banner>
       )}
 
       {/* Config Section */}

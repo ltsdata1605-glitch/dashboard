@@ -108,10 +108,10 @@ export const GroupSection: React.FC<GroupSectionProps> = ({ group, draft, fields
                     className="h-8 lg:h-6 rounded px-2 text-[13px]" />
                 <div className="flex items-center gap-1 shrink-0">
                     <Button variant="secondary" size="icon" onClick={() => onOther(group, { count: Math.max(0, other.count - 1) })} aria-label="Giảm mục khác"
-                        className="h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="minus" size="sm" /></Button>
+                        className="ycx-hit h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="minus" size="sm" /></Button>
                     <span className={`w-6 text-center text-[13px] tabular-nums font-semibold ${other.count > 0 ? 'text-sky-700' : 'text-slate-400'}`}>{other.count}</span>
                     <Button variant="secondary" size="icon" onClick={() => onOther(group, { count: other.count + 1 })} aria-label="Tăng mục khác"
-                        className="h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="add" size="sm" /></Button>
+                        className="ycx-hit h-8 w-8 lg:h-6 lg:w-6 rounded"><AppIcon name="add" size="sm" /></Button>
                 </div>
             </div>
             )}

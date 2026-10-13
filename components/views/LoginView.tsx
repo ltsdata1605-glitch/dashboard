@@ -186,12 +186,13 @@ const LoginView: React.FC = () => {
                         </div>
                     </div>
 
-                    <h1 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">
-                        Dashboard Report
+                    {/* GĐ7: cùng tên với biểu tượng Màn hình chính / tab trình duyệt (manifest: "Dashboard YCX"), không IN HOA */}
+                    <h1 className="type-title font-bold text-slate-900 dark:text-white tracking-tight">
+                        Dashboard YCX
                     </h1>
                     
                     <div className="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 border border-sky-100 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 text-[11px] font-semibold tracking-wide">
-                        <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-sky-500" />
                         Công cụ phân tích dữ liệu
                     </div>
 

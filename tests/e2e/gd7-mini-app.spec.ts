@@ -8,6 +8,8 @@ import { expect, test, type Page } from '@playwright/test';
  *              nhóm, "Xoá danh sách" đỏ ở cuối; chưa có nhân viên thì có dải hướng dẫn + nút. Laptop 1366: dock nổi không che form.
  *  Bot LINE:  thẻ đầu trang chỉ còn tên + trạng thái (iPhone: Hướng dẫn lên thanh trên, đăng nhập thành Banner); 8 phân hệ và
  *              bộ lọc trạng thái là segmented chung; "Xoá tất cả mã" vào menu "⋯" chữ đỏ cuối (trước: thùng rác sát nút Xuất Excel).
+ *  Loạt 3:    Giới thiệu bỏ lời hứa sai ("Bảo mật tuyệt đối… không đẩy lên máy chủ"); Tính thuế: nút lên thanh trên iPhone; Rút gọn
+ *              coupon: khung Kết quả trên iPhone không xẹp thành vạch; Check thưởng: icon tải lên không nhảy liên tục; tiêu đề trang.
  *  (Phân quyền #11 — "Xoá tất cả dữ liệu" xuống "Vùng nguy hiểm" cuối trang: tests/e2e/mobile-settings-compact.spec.ts)
  */
 
@@ -120,6 +122,45 @@ test.describe('iPhone 16 Pro Max (cảm ứng)', () => {
         await expect(page.getByRole('menu').getByRole('menuitem', { name: /Xoá tất cả mã/ })).toBeDisabled();
         await page.keyboard.press('Escape');
         await page.screenshot({ path: test.info().outputPath('bot-line-iphone.png') });
+    });
+
+    test('Giới thiệu: không còn lời hứa sai; mỗi phân hệ là hàng bấm được để mở', async ({ page }) => {
+        await moDungThu(page, '/?tab=help');
+        await expect(page.getByRole('heading', { name: 'Dashboard YCX' })).toBeVisible({ timeout: 20_000 });
+        await expect(page.getByText(/tuyệt đối/i)).toHaveCount(0);
+        await expect(page.getByText(/không đẩy lên máy chủ/)).toHaveCount(0);
+        await expect(page.getByText('Kết quả đồng bộ theo tài khoản')).toBeVisible();
+        await page.getByRole('button', { name: /^Phân ca/ }).click();
+        await expect(page).toHaveURL(/tab=tools-phanca/);
+    });
+
+    test('Tính thuế: Lịch sử / Biểu thuế / API Key lên thanh trên; nút kéo-thả dấu trang không hiện trên iPhone', async ({ page }) => {
+        await moDungThu(page, '/?tab=tools-tax');
+        const thanhTren = page.locator('[data-app-chrome="topbar"]');
+        await expect(thanhTren.getByRole('button', { name: /Lịch sử tính thuế|Ẩn lịch sử/ })).toBeVisible({ timeout: 20_000 });
+        await expect(page.getByRole('link', { name: /Nút Chụp ảnh/ })).toBeHidden();
+        await thanhTren.getByRole('button', { name: 'Thêm thao tác' }).click();
+        await page.getByRole('menuitem', { name: 'Biểu thuế' }).click();
+        await expect(page.getByRole('dialog', { name: 'Biểu thuế thu nhập cá nhân' })).toBeVisible();
+    });
+
+    test('Rút gọn coupon: khung Kết quả đủ cao trên iPhone; "Dán" có chữ, 2 lệnh xoá trong "⋯" (xoá toàn bộ đỏ cuối)', async ({ page }) => {
+        await moDungThu(page, '/?tab=tools-coupon');
+        const ketQua = page.locator('pre').first();
+        await expect(ketQua).toBeAttached({ timeout: 20_000 });
+        const cao = await ketQua.evaluate((el: HTMLElement) => el.parentElement!.parentElement!.getBoundingClientRect().height);
+        expect(cao, 'khung kết quả xẹp').toBeGreaterThanOrEqual(200);
+        await expect(page.getByRole('button', { name: 'Dán' })).toBeVisible();
+        await page.getByTestId('coupon-xoa-menu').click();
+        const muc = await page.getByRole('menu').getByRole('menuitem').allTextContents();
+        expect(muc).toEqual(['Xoá nội dung, giữ tiêu đề', 'Xoá toàn bộ']);
+    });
+
+    test('Check thưởng: màn chưa có dữ liệu không còn icon nhảy liên tục; tiêu đề trang không còn "Bảo mật tuyệt đối"', async ({ page }) => {
+        await moDungThu(page, '/?tab=check-thuong');
+        await expect(page.getByRole('heading', { name: 'Tải file thưởng thi đua' })).toBeVisible({ timeout: 20_000 });
+        expect(await page.locator('.animate-bounce').count()).toBe(0);
+        expect(await page.title()).toBe('Dashboard YCX');
     });
 });
 

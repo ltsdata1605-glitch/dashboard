@@ -71,12 +71,13 @@ export const CheckThuongEmptyDropzone: React.FC<CheckThuongEmptyDropzoneProps> =
                     onChange={handleInputChange}
                 />
 
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-sky-500 to-sky-600 flex items-center justify-center text-white shadow-lg shadow-sky-500/20 mb-4 animate-bounce">
-                    <AppIcon name="upload" size="lg" />
+                {/* GĐ7: bỏ icon NHẢY liên tục (animate-bounce — gây phân tâm, tốn pin) → icon đứng yên; tiêu đề viết như câu */}
+                <div className="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mb-4">
+                    <AppIcon name="upload" size="xl" />
                 </div>
 
-                <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100 mb-2">
-                    Tải File Thưởng Thi Đua
+                <h3 className="type-headline font-semibold text-slate-900 dark:text-slate-100 mb-1.5">
+                    Tải file thưởng thi đua
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
                     Kéo thả file Excel (.xlsx, .xls) hoặc CSV kết quả thi đua vào đây để tra cứu và so sánh siêu thị.
@@ -84,23 +85,24 @@ export const CheckThuongEmptyDropzone: React.FC<CheckThuongEmptyDropzoneProps> =
 
                 <div className="flex flex-wrap items-center justify-center gap-3">
                     <Button
+                        variant="primary"
+                        icon="upload"
                         onClick={() => fileInputRef.current?.click()}
-                        disabled={isLoading}
-                        className="bg-sky-600 hover:bg-sky-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md flex items-center gap-2"
+                        isLoading={isLoading}
+                        className="px-5"
                     >
-                        <AppIcon name={isLoading ? 'refresh' : 'upload'} size="sm" className={isLoading ? 'animate-spin' : ''} />
-                        <span>{isLoading ? 'Đang phân tích...' : 'Chọn file từ máy'}</span>
+                        {isLoading ? 'Đang phân tích…' : 'Chọn file từ máy'}
                     </Button>
 
                     {onManualCloudSync && (
                         <Button
                             variant="secondary"
+                            icon="cloudDownload"
                             onClick={onManualCloudSync}
-                            disabled={isSyncingCloud}
-                            className="font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 border border-slate-200 dark:border-slate-700"
+                            isLoading={isSyncingCloud}
+                            className="px-4"
                         >
-                            <AppIcon name={isSyncingCloud ? 'refresh' : 'cloudDownload'} size="sm" className={isSyncingCloud ? 'animate-spin' : ''} />
-                            <span>{isSyncingCloud ? 'Đang tải đám mây...' : 'Lấy từ Đám Mây'}</span>
+                            {isSyncingCloud ? 'Đang tải đám mây…' : 'Lấy từ đám mây'}
                         </Button>
                     )}
                 </div>

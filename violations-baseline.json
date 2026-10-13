@@ -383,20 +383,6 @@
     "offScaleRadius": 0,
     "offScaleText": 1
   },
-  "components/views/AboutView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 6
-  },
   "components/views/CouponConverterView.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -409,7 +395,7 @@
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "offScaleText": 4
+    "offScaleText": 2
   },
   "components/views/LoginView.tsx": {
     "nonSemanticColor": 2,
@@ -420,7 +406,7 @@
     "iconLegacyCall": 0,
     "iconRawSvg": 1,
     "iconEmoji": 0,
-    "offScaleText": 1,
+    "offScaleText": 0,
     "tinyText": 1,
     "offScaleRadius": 1
   },
@@ -809,20 +795,6 @@
     "iconEmoji": 0
   },
   "features/check-thuong/components/CheckThuongComparisonView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
-  "features/check-thuong/components/CheckThuongEmptyDropzone.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
     "missingMobileToolbar": 0,

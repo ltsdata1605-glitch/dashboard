@@ -43,7 +43,7 @@ test('máy tính: gỡ view giữa lúc so giá → huỷ request và đóng lu�
     page.on('requestfailed', r => { if (r.url().includes('scrape-prices')) huy.push(r.failure()?.errorText || ''); });
     await page.goto('/');
     await page.evaluate(async (p) => (await import(p)).mountPrice(), HARNESS);
-    await expect(page.getByText('Server Online')).toBeVisible();
+    await expect(page.getByText('Đã kết nối')).toBeVisible(); // GĐ7: trước là "Server Online"
     await page.getByPlaceholder(/Paste danh sách sản phẩm/).fill('Tivi Samsung 55 inch');
     await page.getByRole('button', { name: /Thêm vào danh sách/ }).click();
     await page.getByRole('button', { name: /Bắt đầu so sánh giá/ }).click();

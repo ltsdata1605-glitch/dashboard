@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { transformCouponText } from '../../utils/couponFormatter';
 import { SAMPLE_TITLE, SAMPLE_OUTPUT } from '../../utils/couponSampleData';
-import { Button, Input } from '../shared/ui';
+import { Button, Input, ActionMenu } from '../shared/ui';
 
 export default function CouponConverterView() {
     const [title, setTitle] = useState<string>('');
@@ -142,21 +142,23 @@ export default function CouponConverterView() {
     return (
         <main className="h-full w-full flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-y-auto">
             <div className="w-full max-w-[960px] mx-auto relative z-10 flex flex-col h-full min-h-[600px]">
-                <header className="text-center mb-10 shrink-0">
-                    <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-sky-600 to-rose-600 dark:from-sky-400 dark:to-rose-400 bg-clip-text text-transparent mb-4 tracking-tight py-2 leading-tight">
-                        Rút gọn Coupon GVGS, EVENT
+                {/* GĐ7: bỏ tiêu đề chữ chuyển màu xanh→đỏ 36px (trang trí, lặp tên ở thanh trên iPhone) → tiêu đề thường, chỉ laptop */}
+                <header className="text-center mb-6 lg:mb-8 shrink-0">
+                    <h1 className="hidden lg:block type-title font-bold text-slate-900 dark:text-white mb-2">
+                        Rút gọn coupon GVGS, Event
                     </h1>
-                    <div className="text-sm text-slate-500 dark:text-slate-400 max-w-3xl mx-auto font-medium space-y-1">
+                    <div className="type-footnote lg:text-sm text-slate-500 dark:text-slate-400 max-w-3xl mx-auto space-y-1">
                         <p>Hỗ trợ rút gọn COUPON từ báo cáo Anh 3169 - Phạm Nguyên Vũ gửi Event, GVGS:</p>
                         <p>Mã COUPON Áp Dụng Cho Máy lọc nước Giờ vàng giá sốc ngày 1/5 - 3/5/2026</p>
                         <p>Mã COUPON Áp Dụng Cho Tivi - Loa Karaoke Giờ vàng giá sốc ngày 1/5 - 3/5/2026</p>
                     </div>
 
-                    <Button 
-                        variant="secondary"
+                    <Button
+                        variant="tinted"
+                        size="sm"
+                        icon={showGuide ? 'chevronUp' : 'help'}
                         onClick={() => setShowGuide(!showGuide)}
-                        leftIcon={<AppIcon name={showGuide ? 'chevronUp' : 'help'} size="md" />}
-                        className="mt-6 rounded-full font-semibold border-sky-100 dark:border-sky-800/50 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/50"
+                        className="mt-4 rounded-full"
                     >
                         {showGuide ? "Ẩn hướng dẫn sử dụng" : "Xem hướng dẫn sử dụng"}
                     </Button>
@@ -197,39 +199,29 @@ export default function CouponConverterView() {
                           <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                   <div className="w-2.5 h-2.5 bg-sky-500 rounded-full" />
-                                  Nguồn Dữ Liệu
+                                  Nguồn dữ liệu
                               </h2>
+                              {/* GĐ7: 3 nút icon (dán xanh + 2 thùng rác vàng/đỏ khác nghĩa nhưng cùng hình) → "Dán" có chữ + menu "⋯" có
+                                  2 lệnh xoá ghi rõ nghĩa, "Xoá toàn bộ" chữ đỏ ở cuối */}
                               <div className="flex items-center gap-1.5">
-                                  <Button
-                                      variant="unstyled" size="none"
-                                      onClick={handlePasteClick}
-                                      className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 text-sky-700 dark:text-sky-400 border border-sky-100 dark:border-sky-800/50 rounded-lg"
-                                      title="Làm mới và chuẩn bị dán"
-                                  >
-                                      <AppIcon name="paste" size="md" />
+                                  <Button variant="tinted" size="sm" icon="paste" onClick={handlePasteClick} title="Làm mới và chuẩn bị dán">
+                                      Dán
                                   </Button>
-                                  <Button
-                                      variant="unstyled" size="none"
-                                      onClick={handleClearContent}
-                                      className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50 rounded-lg"
-                                      title="Xóa nội dung, giữ tiêu đề"
-                                  >
-                                      <AppIcon name="delete" size="md" />
-                                  </Button>
-                                  <Button
-                                      variant="unstyled" size="none"
-                                      onClick={handleClearAll}
-                                      className="h-8 min-h-11 sm:min-h-0 min-w-11 sm:min-w-0 px-2.5 flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-400 border border-rose-100 dark:border-rose-800/50 rounded-lg"
-                                      title="Xóa toàn bộ"
-                                  >
-                                      <AppIcon name="delete" size="md" />
-                                  </Button>
+                                  <ActionMenu
+                                      label="Xoá dữ liệu nhập"
+                                      title="Nguồn dữ liệu"
+                                      data-testid="coupon-xoa-menu"
+                                      items={[
+                                          { id: 'xoa-noi-dung', label: 'Xoá nội dung, giữ tiêu đề', icon: 'delete', onSelect: handleClearContent },
+                                          { id: 'xoa-tat-ca', label: 'Xoá toàn bộ', icon: 'delete', destructive: true, onSelect: handleClearAll },
+                                      ]}
+                                  />
                               </div>
                          </div>
                          <div className="p-5 flex-grow flex flex-col gap-4">
                               <div>
                                   <label htmlFor="title-input" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                                      Tiêu đề (Tùy chọn)
+                                      Tiêu đề (tuỳ chọn)
                                   </label>
                                   <Input
                                       id="title-input"
@@ -265,7 +257,7 @@ export default function CouponConverterView() {
                             <div className="flex items-center gap-4">
                                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                     <div className="w-2.5 h-2.5 bg-emerald-500" />
-                                    Kết Quả
+                                    Kết quả
                                 </h2>
                                 {lastUpdated && (
                                     <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md">
@@ -276,19 +268,17 @@ export default function CouponConverterView() {
                             <Button
                                 onClick={handleManualCopyClick}
                                 disabled={!outputText}
-                                title={isCopied ? "Đã lưu!" : "Sao chép"}
                                 size="sm"
-                                variant={isCopied ? "secondary" : "primary"}
-                                className={`h-8 px-3 rounded-lg hover:scale-105 active:scale-95 transition-all duration-300 font-bold ${
-                                    isCopied
-                                        ? '!bg-emerald-50 dark:!bg-emerald-900/30 !text-emerald-700 dark:!text-emerald-400 !border-emerald-200 dark:!border-emerald-800/60'
-                                        : '!bg-sky-600 hover:!bg-sky-500 !text-white !border-sky-600'
-                                }`}
-                                leftIcon={isCopied ? <AppIcon name="success" size="md" /> : <AppIcon name="copy" size="md" />}
-                            />
+                                variant={isCopied ? 'tinted' : 'primary'}
+                                icon={isCopied ? 'success' : 'copy'}
+                            >
+                                {isCopied ? 'Đã chép' : 'Sao chép'}
+                            </Button>
                         </div>
                         
-                        <div className="relative flex-grow m-6 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden z-10 rounded-lg">
+                        {/* min-h trên điện thoại (GĐ7): khung xếp 1 cột không có chiều cao từ lưới → lớp kết quả `absolute inset-0` xẹp
+                            thành một vạch mỏng, người dùng iPhone không thấy kết quả. Laptop chiều cao theo cột Nguồn dữ liệu. */}
+                        <div className="relative flex-grow min-h-[260px] lg:min-h-0 m-4 sm:m-6 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden z-10 rounded-lg">
                             <div className="absolute inset-0 overflow-auto p-5 custom-scrollbar">
                                 <pre className="text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
                                     {outputText ? (
