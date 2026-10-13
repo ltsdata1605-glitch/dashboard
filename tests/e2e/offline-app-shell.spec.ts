@@ -37,12 +37,13 @@ test('mất mạng: tải lại trang vẫn dựng được app từ bản lưu 
 
   await context.setOffline(true);
   await page.reload();
-  // Màn đăng nhập thật (không phải màn chờ trắng): chữ "DASHBOARD REPORT" chỉ có khi app đã dựng xong.
-  await expect(page.locator('body')).toContainText(/dashboard report/i, { timeout: 30_000 });
+  // Màn đăng nhập thật (không phải màn chờ trắng): chữ "Dashboard YCX" chỉ có khi app đã dựng xong (GĐ7 2026-10-13 đổi tên từ
+  // "DASHBOARD REPORT" — chữ cũ không còn ở đâu trong app).
+  await expect(page.locator('body')).toContainText(/dashboard ycx/i, { timeout: 30_000 });
 
   // đường dẫn SPA khác cũng mở được (dùng chung app shell)
   await page.goto(`${BASE}/?tab=tools-line-bot`);
-  await expect(page.locator('body')).toContainText(/dashboard report/i, { timeout: 30_000 });
+  await expect(page.locator('body')).toContainText(/dashboard ycx/i, { timeout: 30_000 });
   expect(swErrors).toEqual([]);
 });
 
@@ -52,5 +53,5 @@ test('có mạng lại: trang mới vẫn lấy từ mạng (không kẹt bản 
   await context.setOffline(false);
   const res = await page.reload();
   expect(res?.ok()).toBeTruthy();
-  await expect(page.locator('body')).toContainText(/dashboard report/i, { timeout: 30_000 });
+  await expect(page.locator('body')).toContainText(/dashboard ycx/i, { timeout: 30_000 });
 });
