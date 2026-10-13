@@ -8195,8 +8195,10 @@ không đổi nghiệp vụ.
     không tạo được tab (đã thử: cùng thẻ `<a>` tới example.com mở tab bình thường, sự kiện click không bị `preventDefault`);
     `auth-fresh-login-no-flash` (cache admin) — chạy riêng xanh, đỏ khi cả bộ chạy lâu (dev server chậm, mẫu đầu là trang trắng).
   - *Cần chủ dự án quyết*: `bi-nhan-vien-theo-sieu-thi` (chờ "2 NV", app hiện "4 NV" — nghiệp vụ, có từ trước GĐ0);
-    `click-plus-auto-toggle` ×5 — userscript 7.26 (chủ dự án) nay chờ trang tải xong tới 20 giây (`acpWaitForLoadingComplete(20000…)`)
-    mới hiện hộp trạng thái, test (viết 2026-10-07) chỉ chờ 10 giây.
+    `click-plus-auto-toggle` ×5 — với userscript 7.26 (chủ dự án sửa nhiều từ 2026-10-10), bấm nút nổi "⚡ Copy All" trên trang mẫu
+    KHÔNG chạy chu trình Click+ (nhãn không đổi sang "⏳ Đang mở...", không tạo `#acp-status-box`) — đã thử chờ 40 giây vẫn vậy, nên
+    không phải chuyện chờ thiếu. Cần xem lại luồng 7.26 (cờ `acpRunning`, chạy tự động lúc tải trang) hoặc cập nhật test — ngoài phạm vi
+    giao diện, đề xuất thành việc riêng.
 - **CI WebKit chập chờn ở toast-thong-nhat** (run 358, 359): máy CI chạy khung hình rất chậm — `hover` chờ phần tử ổn định 3,1 s, hiệu
   ứng hiện (thu phóng 0,96 → 1) chưa xong sau 500 ms (đo nút 42,24 = 44 × 0,96), cú vuốt bắt đầu lúc toast còn trượt vào. Sửa: toast
   cần đo sống 20 s; chờ HIỆU ỨNG VÀO XONG (transform về gốc) thay cho chờ cứng 500 ms.
