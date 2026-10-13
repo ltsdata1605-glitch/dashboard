@@ -73,8 +73,9 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
         await sheet.getByRole('button', { name: 'Danh sách thẻ' }).click();
         await expect(sheet.getByRole('button', { name: /^DTQĐ tháng/ })).toBeVisible();
 
-        // Lưu ở đầu sheet (kiểu iOS: [Huỷ] Tiêu đề [Lưu]) → sheet đóng, thẻ KPI đổi tên
-        await sheet.getByRole('button', { name: 'Lưu', exact: true }).click();
+        // Nút chính ở đầu sheet (kiểu iOS: [Huỷ] Tiêu đề [Hoàn tất] — chủ dự án chuyển sang TỰ LƯU mỗi thay đổi ở d2d24bc) → sheet
+        // đóng, thẻ KPI đổi tên
+        await sheet.getByRole('button', { name: 'Hoàn tất', exact: true }).click();
         await expect(sheet).toBeHidden();
         // (thẻ KPI có 2 bản tiêu đề: iPhone và laptop — lấy bản đang hiện)
         await expect(page.locator('.kpi-overview-card').getByText('DTQĐ tháng').filter({ visible: true }).first()).toBeVisible();

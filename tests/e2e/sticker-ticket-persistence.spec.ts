@@ -23,7 +23,7 @@ test('sticker: chỉnh sửa phiếu rút thăm, khởi động lại không b�
     // Sửa tiêu đề thành tiêu đề riêng của người dùng
     const customTitle = 'PHIẾU BỐC THĂM ĐẶC BIỆT 20/10';
     await titleElement.click();
-    await page.keyboard.press('Meta+A');
+    await page.keyboard.press('ControlOrMeta+A'); // ⌘A trên Mac, Ctrl+A trên Linux/Windows (CI)
     await page.keyboard.type(customTitle);
     await page.waitForTimeout(600); // Đợi debounce saveSetting lưu vào IndexedDB
 
