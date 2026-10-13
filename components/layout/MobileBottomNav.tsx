@@ -68,7 +68,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                 'flex-1 min-w-0 flex flex-col items-center justify-center h-[45px] py-0.5 px-0.5 rounded-full transition-all duration-200 select-none active:scale-95',
                 opts.active 
                     ? 'bg-sky-600 text-white shadow-xs shadow-sky-600/30' 
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/40',
+                    : 'text-slate-800 hover:text-slate-950 hover:bg-white/20',
                 isPending && 'opacity-70'
             )}
         >
@@ -78,13 +78,13 @@ const MobileBottomNav: React.FC = React.memo(() => {
                     size="md" 
                     className={cn(
                         'transition-transform duration-200',
-                        opts.active ? 'text-white scale-105' : 'text-slate-600'
+                        opts.active ? 'text-white scale-105' : 'text-slate-700'
                     )} 
                 />
             </span>
             <span className={cn(
                 'max-w-full truncate px-0.5 text-[11px] leading-[13px] tracking-tight mt-0.5',
-                opts.active ? 'font-bold text-white' : 'font-semibold text-slate-700'
+                opts.active ? 'font-bold text-white' : 'font-bold text-slate-800'
             )}>
                 {opts.label}
             </span>
@@ -167,11 +167,11 @@ const MobileBottomNav: React.FC = React.memo(() => {
                 </div>
             </Modal>
 
-            {/* Thanh tab dưới nổi kiểu Apple Floating Dock (Hướng 3) — bản thu nhỏ gọn, kính mờ xuyên thấu */}
+            {/* Thanh tab dưới nổi kiểu Apple Floating Dock (Hướng 3) — bản thu nhỏ gọn, kính siêu mờ xuyên thấu */}
             <nav
                 data-app-chrome="tabbar"
                 aria-label="Điều hướng chính"
-                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.6rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-[360px] z-[190] rounded-full p-1 border border-white/50 ring-1 ring-black/5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12),0_4px_10px_-2px_rgba(0,0,0,0.04)]"
+                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.6rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-[360px] z-[190] rounded-full p-1 border border-white/35 ring-1 ring-black/5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12),0_4px_10px_-2px_rgba(0,0,0,0.04)]"
             >
                 <div className="flex items-center justify-between gap-0.5 w-full">
                     {mainTabs.map(tab => oTab({

@@ -106,15 +106,15 @@
   }
 
   /* VẬT LIỆU MỜ XUYÊN THẤU CHO FLOATING DOCK (Chuẩn Apple iOS Floating Capsule)
-     Độ mờ xuyên thấu (55% trắng) cho phép nhìn mờ mờ nội dung cuộn bên dưới */
+     Độ mờ xuyên thấu cao (25% trắng, 75% trong suốt) cho phép nhìn rõ mờ mờ nội dung cuộn bên dưới */
   .ycx-floating-dock {
-    background-color: rgb(255 255 255 / 0.55);
-    -webkit-backdrop-filter: saturate(180%) blur(16px);
-    backdrop-filter: saturate(180%) blur(16px);
+    background-color: rgb(255 255 255 / 0.25);
+    -webkit-backdrop-filter: saturate(190%) blur(10px);
+    backdrop-filter: saturate(190%) blur(10px);
   }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .ycx-floating-dock {
-      background-color: rgb(255 255 255 / 0.90);
+      background-color: rgb(255 255 255 / 0.88);
     }
   }
 
