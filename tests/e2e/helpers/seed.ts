@@ -115,8 +115,7 @@ export async function seedCompetitionData(page: Page, competitionLuyKe: string =
  * SỬA 2026-09-18 — đường điều hướng cũ (`Tổng quan` → `Thi đua` → `Luỹ kế`) không còn đúng:
  * thanh trên cùng giờ là "Siêu thị | Nhân viên | Cập nhật", bảng Thi đua nằm trong "Siêu thị".
  *
- * ⚠️ Nút chế độ là NÚT GẠT, không phải menu: bấm 1 lần là chuyển Realtime → Luỹ kế. Bấm thêm vào
- * chữ "Luỹ kế" sẽ gạt NGƯỢC về Realtime — đúng cái bẫy đã làm mất thời gian dò lỗi.
+ * (Trước GĐ6 chế độ là NÚT GẠT chỉ hiện chế độ đang chọn — bấm "Realtime" mới sang Luỹ kế. Nay là segmented: bấm đúng tên.)
  */
 export async function openCompetitionTable(page: Page) {
     await page.getByRole('button', { name: /Siêu thị/i }).first().click();
@@ -135,8 +134,9 @@ export async function openCompetitionTable(page: Page) {
         await page.waitForTimeout(400);
     }
 
-    // exact: từ 2026-10-01 trang có thêm nút nổi "Tự động Realtime" (khung AUTO SYNC) — /Realtime/ bấm nhầm nút đó
-    await page.getByRole('button', { name: 'Realtime', exact: true }).first().click();
+    // GĐ6 (2026-10-13): Realtime/Luỹ kế nay là SEGMENTED control (2 nút cùng hiện) chứ không còn nút gạt — bấm thẳng "Luỹ kế".
+    // exact: trang còn nút nổi "Tự động Realtime" (khung AUTO SYNC) — tìm mờ dễ bấm nhầm.
+    await page.getByRole('button', { name: 'Luỹ kế', exact: true }).first().click();
     await page.getByText('NHÓM THI ĐUA').waitFor({ timeout: 20_000 });
     await page.waitForTimeout(800);
 }

@@ -68,9 +68,12 @@ export interface IndividualCompetitionViewHandle {
 }
 
 // ─── Competition Stat Pill ───
-const StatPill: React.FC<{ count: number; label: string; color: string }> = ({ count, label, color }) => (
-    <div className={`flex items-center justify-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[10px] sm:text-[11px] font-bold min-w-[44px] sm:min-w-[52px] ${color}`}>
-        <span className="font-black">{count}</span>
+// GĐ6 (lỗi #29, video v2:091–098): 4 viên màu ĐẶC (xanh lá / vàng / xám / hồng) trên nền xanh đặc — lệch hẳn ngôn ngữ chung.
+// Nay viên xám nhạt + CHẤM màu theo nghĩa (đạt / gần đạt / chưa đạt / không bán), số đậm.
+const StatPill: React.FC<{ count: number; label: string; dot: string }> = ({ count, label, dot }) => (
+    <div className="flex items-center justify-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600 min-w-[44px]">
+        <span aria-hidden="true" className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+        <span className="font-bold text-slate-900 tabular-nums">{count}</span>
         <span>{label}</span>
     </div>
 );
@@ -99,11 +102,11 @@ const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtCh
                     </Pie>
                 </PieChart>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[13px] sm:text-[15px] font-black text-white leading-none drop-shadow-md">{datPct}%</span>
+                    <span className="text-[13px] sm:text-[15px] font-black text-slate-900 leading-none tabular-nums">{datPct}%</span>
                 </div>
             </div>
-            <p className="text-[9.5px] sm:text-[11px] text-white/80 font-bold uppercase leading-tight mt-0.5">Đạt 100%</p>
-            <p className="text-[9.5px] sm:text-[11px] text-white/70 font-bold">{stats.total} nhóm</p>
+            <p className="text-[11px] text-slate-500 font-semibold leading-tight mt-0.5">Đạt 100%</p>
+            <p className="text-[11px] text-slate-500 tabular-nums">{stats.total} nhóm</p>
         </div>
     );
 };
@@ -279,12 +282,11 @@ const EmployeeProfileCard: React.FC<{
 
     return (
         <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-            {/* Header gradient */}
-            <div className="bg-sky-500 px-2.5 sm:px-4 py-2 sm:py-3 relative overflow-hidden border-b border-sky-600/30 dark:border-slate-700">
-                <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            {/* Đầu thẻ (GĐ6, lỗi #29): nền trắng + đường kẻ mảnh như mọi thẻ khác — trước là nền xanh đặc + hoạ tiết chấm. */}
+            <div className="bg-white px-3 sm:px-4 py-2.5 sm:py-3 relative overflow-hidden border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2.5 sm:gap-4 relative z-10">
                     <div 
-                        className="relative group w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 sm:border-[3px] border-white/40 overflow-hidden flex-shrink-0 cursor-pointer hover:border-white transition-all preserve-rounded"
+                        className="relative group w-14 h-14 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-full border-2 border-slate-200 overflow-hidden flex-shrink-0 cursor-pointer hover:border-sky-300 transition-colors preserve-rounded"
                         style={{
                             borderRadius: '50%',
                             clipPath: 'circle(50% at 50% 50%)',
@@ -332,11 +334,11 @@ const EmployeeProfileCard: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)}
-                                className="group/name inline-flex items-center gap-1 sm:gap-2 text-left text-base sm:text-lg lg:text-xl font-black text-white uppercase truncate leading-tight drop-shadow-sm hover:bg-white/20 px-1.5 sm:px-2 py-0.5 sm:py-1 -ml-1.5 sm:-ml-2 rounded-sm transition-all cursor-pointer ring-0 hover:ring-1 hover:ring-white/40"
+                                className="group/name inline-flex items-center gap-1 sm:gap-2 text-left type-headline sm:text-lg lg:text-xl font-bold text-slate-900 truncate hover:bg-slate-100 px-1.5 sm:px-2 py-0.5 sm:py-1 -ml-1.5 sm:-ml-2 rounded-sm transition-colors cursor-pointer"
                                 title="Bấm vào tên để chọn nhân viên khác"
                             >
                                 <span className="truncate">{selectedEmployee.name}</span>
-                                <AppIcon name="chevronDown" size="sm" className={`text-white/80 group-hover/name:text-white transition-transform ${isEmployeeSelectorOpen ? 'rotate-180' : ''}`} />
+                                <AppIcon name="chevronDown" size="sm" className={`text-slate-400 group-hover/name:text-slate-600 transition-transform ${isEmployeeSelectorOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isEmployeeSelectorOpen && createPortal(
@@ -388,20 +390,20 @@ const EmployeeProfileCard: React.FC<{
                             )}
                         </div>
 
-                        <p className="text-[10px] sm:text-[11px] text-white/80 font-medium mt-0.5 flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                        <p className="text-[12px] text-slate-500 font-medium mt-0.5 flex items-center gap-1 sm:gap-1.5 flex-wrap">
                             <span>{selectedEmployee.department}</span>
-                            <span className="text-white/40">·</span>
+                            <span className="text-slate-300">·</span>
                             <span className="font-semibold">Thi đua đến {getYesterdayDateString()}</span>
                         </p>
                         <div className="flex items-center gap-1 sm:gap-1.5 mt-1.5 sm:mt-2 flex-wrap">
-                            <StatPill count={compStats.dkhtDat} label="≥100%" color="bg-emerald-400 text-white border border-white/50" />
-                            <StatPill count={compStats.dkhtGanDat} label="Gần đạt" color="bg-amber-400 text-white border border-white/50" />
-                            <StatPill count={compStats.dkhtChuaDat} label="<80%" color="bg-slate-400 text-white border border-white/50" />
-                            {compStats.noSale > 0 && <StatPill count={compStats.noSale} label="No Sale" color="bg-rose-400 text-white border border-white/50" />}
+                            <StatPill count={compStats.dkhtDat} label="≥100%" dot="bg-emerald-500" />
+                            <StatPill count={compStats.dkhtGanDat} label="Gần đạt" dot="bg-amber-500" />
+                            <StatPill count={compStats.dkhtChuaDat} label="<80%" dot="bg-slate-400" />
+                            {compStats.noSale > 0 && <StatPill count={compStats.noSale} label="No Sale" dot="bg-rose-500" />}
                         </div>
                     </div>
                     {/* Recharts Donut — tỷ lệ nhóm đạt DKHT */}
-                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5 bg-black/20 rounded-md p-1 sm:p-1.5 backdrop-blur-sm">
+                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-md p-1 sm:p-1.5">
                         <DkhtDonut stats={compStats} />
                     </div>
                 </div>
@@ -410,7 +412,7 @@ const EmployeeProfileCard: React.FC<{
             {/* Rank Strip */}
             {rankings.dt.total > 0 && (
                 <div className="flex items-center gap-2 sm:gap-4 px-2.5 sm:px-4 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
                     <div className="flex-1 grid grid-cols-2 gap-2 sm:gap-4 max-w-md">
                         <RankBadge rank={rankings.dt.rank} total={rankings.dt.total} label="DTQĐ" />
                         <RankBadge rank={rankings.tg.rank} total={rankings.tg.total} label="Trả chậm" />
@@ -421,30 +423,30 @@ const EmployeeProfileCard: React.FC<{
             {/* KPI Grid with Micro Progress Bars */}
             <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.2fr 0.9fr 1.3fr' }}>
                 <div className="js-kpi-cell min-w-0 p-1.5 sm:p-2.5 space-y-0.5">
-                    <p className="js-kpi-label inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="money" size="xs" />DTQĐ</p>
+                    <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="money" size="xs" />DTQĐ</p>
                     <span className="js-kpi-value text-base sm:text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
-                    <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DTLK: <strong className="text-sky-700">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
                         <span>HQQĐ: <strong className={((empRevenue?.hieuQuaQD || 0) * 100) >= targetQuyDoi ? "text-emerald-700 dark:text-emerald-400 font-bold" : "text-rose-700 dark:text-rose-400 font-bold"} title={`Target Hiệu quả quy đổi: ${targetQuyDoi}%`}>{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-1.5 sm:p-2.5 space-y-0.5">
-                    <p className="js-kpi-label inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="card" size="xs" />Trả Chậm</p>
+                    <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="card" size="xs" />Trả Chậm</p>
                     <span className={`js-kpi-value text-base sm:text-lg font-black block ${(empInstallment?.totalPercent || 0) >= targetTraGop ? "text-slate-800 dark:text-white" : "text-rose-700 dark:text-rose-400"}`} title={`Target Trả chậm: ${targetTraGop}%`}>{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
-                    <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[11px] text-slate-500 mt-1">
                         <span>DT: <strong className="text-sky-700">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
                     </div>
                 </div>
                 <div className="js-kpi-cell min-w-0 p-1.5 sm:p-2.5 space-y-0.5">
-                    <p className="js-kpi-label inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="trophy" size="xs" />Thưởng</p>
+                    <p className="js-kpi-label inline-flex items-center gap-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider"><AppIcon name="trophy" size="xs" />Thưởng</p>
                     <span className="js-kpi-value text-base sm:text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
-                    <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-1.5 sm:gap-2 text-[11px] text-slate-500 mt-1">
                         <span>ERP: <strong className="text-sky-700">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
                         <span>T.Nóng: <strong className="text-emerald-700">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
                     </div>
-                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[10px] sm:text-[11px] text-slate-500 mt-0.5">%T.Nóng: <strong className="text-amber-700">{pct(empBonus.pNong)}</strong></div>}
+                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[11px] text-slate-500 mt-0.5">%T.Nóng: <strong className="text-amber-700">{pct(empBonus.pNong)}</strong></div>}
                 </div>
             </div>
         </div>

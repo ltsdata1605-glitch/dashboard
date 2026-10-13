@@ -438,7 +438,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 (BiWrapper.tsx), nhưng hàng tiêu đề ăn theo thì chữ "NHÂN VIÊN" dính sát mép máy,
                 trên iPhone trông như bị cắt. Hàng này là chữ + nút nên phải có lề riêng. */}
             <div className={`relative z-50 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2">
                             <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
@@ -453,12 +453,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         absolute và xổ xuống NGOÀI khung pill (top-[calc(100%+8px)]), nên overflow-hidden của pill
                         (dù chỉ để bo tròn góc 2 nút) sẽ cắt mất panel, làm dropdown "mở" trong state nhưng không
                         hiện gì để bấm chọn được (user báo cáo thật). */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-8 sm:h-8.5">
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-11 sm:h-8.5">
                         {/* `w-auto`: mặc định `w-full` trên điện thoại khiến 2 nút chia ĐỀU khung (~95px mỗi nút)
                             → "Tân Hiệp" bị cắt "Tân…" trong khi nút "All" thừa chỗ (iPhone, 2026-09-28). */}
                         <MultiSelectDropdown
                             className="w-auto border-r border-slate-200 dark:border-slate-700"
-                            triggerClassName="rounded-l-full whitespace-nowrap min-h-0 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
+                            triggerClassName="rounded-l-full whitespace-nowrap min-h-0 h-11 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
                             icon={<AppIcon name="store" size="sm" className="text-sky-500" />}
                             triggerLabel={activeSupermarkets.length === supermarkets.length ? 'All' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}
                             count={Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}
@@ -474,7 +474,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         />
                         <MultiSelectDropdown
                             className="w-auto"
-                            triggerClassName="rounded-r-full whitespace-nowrap min-h-0 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
+                            triggerClassName="rounded-r-full whitespace-nowrap min-h-0 h-11 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
                             icon={<AppIcon name="restore" size="sm" className="text-sky-500" />}
                             triggerLabel={activeDepartments.includes('all') ? 'All' : activeDepartments.join(', ')}
                             count={activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}

@@ -20,9 +20,9 @@ test('Siêu thị: gạt Realtime ↔ Luỹ kế, mở Thi đua — không sập
     await khongSap(page);
     await expect(page).toHaveURL(/mode=cumulative/);
     await expect(page).toHaveURL(/sub=competition/);
-    await page.getByRole('button', { name: 'Luỹ kế', exact: true }).first().click().catch(async () => {
-        await page.getByRole('button', { name: /Lu[ỹỹ] kế/, exact: false }).first().click();
-    });
+    // Gạt NGƯỢC về Realtime (segmented từ GĐ6: bấm đúng tên chế độ muốn sang) — đổi chế độ không được gây vòng lặp cập nhật.
+    await page.getByRole('button', { name: 'Realtime', exact: true }).first().click();
+    await expect(page).toHaveURL(/mode=realtime/);
     await page.waitForTimeout(800);
     await khongSap(page);
     expect(loi.filter((m) => /Maximum update depth/.test(m))).toEqual([]);

@@ -59,7 +59,9 @@ test('hai siêu thị có số nhân viên khác nhau theo đúng báo cáo lu�
     await page.waitForTimeout(4000);
 
     // Mở màn "Cập nhật dữ liệu" — nơi có khu CẤU HÌNH SIÊU THỊ & NHÂN VIÊN
-    await page.getByRole('button', { name: /Cập nhật dữ liệu|Cập nhật/i }).first().click();
+    // exact: từ 2026-10-11 dòng phụ tiêu đề có nút "Cập nhật dữ liệu" (bấm là CHẠY tự động MWG) đứng trước trong DOM —
+    // /Cập nhật/ lấy .first() trúng nút đó, mở modal tự động thay vì màn Cập nhật.
+    await page.getByRole('button', { name: 'Cập nhật', exact: true }).first().click();
     await page.waitForTimeout(2500);
     await expect(page.getByText(/CẤU HÌNH SIÊU THỊ & NHÂN VIÊN/i)).toBeVisible({ timeout: 20_000 });
 

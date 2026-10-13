@@ -24,6 +24,7 @@ import { useRevenueData } from '../../hooks/useRevenueData';
 import { Button } from '../../../../components/shared/ui/Button';
 import { EmptyState } from '../../../../components/shared/ui/EmptyState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
+import { TieuDeBaoCao } from './shared/TieuDeBaoCao';
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
@@ -411,14 +412,7 @@ const RevenueView: React.FC<{
     return (
         <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
             {/* 1. Tiêu đề lên TRÊN CÙNG */}
-            <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
-                    {cardTitle}
-                </h2>
-                <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-1">
-                    {cardSubtitle}
-                </div>
-            </div>
+            <TieuDeBaoCao title={cardTitle} subtitle={cardSubtitle} />
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
             <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full relative z-20">
@@ -435,7 +429,7 @@ const RevenueView: React.FC<{
                                 }
                             }}
                             title={!prevMonthRaw ? 'Nhập dữ liệu cùng kỳ' : (isShowPrevMonth ? 'Bấm để tắt so sánh cùng kỳ' : 'Bấm để bật so sánh cùng kỳ')}
-                            className={`h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                                 prevMonthRaw
                                     ? isShowPrevMonth
                                         ? 'bg-emerald-50 border-emerald-300 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-300 shadow-2xs'
@@ -475,7 +469,7 @@ const RevenueView: React.FC<{
                             variant="unstyled"
                             size="none"
                             onClick={() => setIsShowRemaining(p => !p)}
-                            className={`h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                            className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-semibold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                                 isShowRemaining 
                                     ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-300 shadow-2xs' 
                                     : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
@@ -490,7 +484,7 @@ const RevenueView: React.FC<{
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsRealtimeMode(p => !p)}
-                        className={`h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
+                        className={`ycx-hit h-8 min-h-0 gap-1.5 px-2.5 text-[11px] sm:text-xs font-bold rounded-lg border transition-all inline-flex items-center justify-center shrink-0 ${
                             isRealtimeMode
                                 ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-600 shadow-xs ring-2 ring-amber-400/40'
                                 : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 shadow-2xs'
@@ -508,7 +502,7 @@ const RevenueView: React.FC<{
                         size="icon"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="ycx-hit w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
                         <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="md" />
                     </Button>
@@ -519,7 +513,7 @@ const RevenueView: React.FC<{
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="w-8 h-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="ycx-hit w-8 h-8 text-slate-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
                     >
                         {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>

@@ -203,7 +203,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                 <KpiCard
                     icon="dollar-sign"
                     iconColor="emerald"
-                    title="DT THỰC"
+                    title="DT Thực"
                     trendLabel="Dự kiến"
                     trendValue={
                         <span className="cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-1.5 leading-none">
@@ -294,7 +294,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                 <KpiCard
                     icon="credit-card"
                     iconColor="amber"
-                    title="TRẢ CHẬM"
+                    title="Trả chậm"
                     isGood={traGopIsGood}
                     trendLabel="Mục tiêu"
                     progressPercent={currentTraGopTarget > 0 ? (tyTrongTraGop / currentTraGopTarget) * 100 : undefined}
@@ -327,7 +327,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
 
             {/* ROW 2: CHỈ SỐ PHỤ */}
             <div className="kpi-overview-grid grid grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4">
-                <KpiCard icon="users" iconColor="sky" title="L.KHÁCH" trendValue={renderGrowth(kpiData.luotKhachChange)}>
+                <KpiCard icon="users" iconColor="sky" title="L.Khách" trendValue={renderGrowth(kpiData.luotKhachChange)}>
                     <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-sky-700 dark:text-sky-400 text-center w-full">
                         {roundUp(parseNumber(kpiData.lkhach)).toLocaleString('vi-VN')}
                     </div>
@@ -343,7 +343,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     </div>
                 </KpiCard>
 
-                <KpiCard icon="receipt" iconColor="emerald" title="BILL BÁN">
+                <KpiCard icon="receipt" iconColor="emerald" title="Bill bán">
                     <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-emerald-700 dark:text-emerald-400 text-center w-full">
                         {kpiData.lbillBH && kpiData.lbillBH !== 'N/A'
                             ? roundUp(parseNumber(kpiData.lbillBH)).toLocaleString('vi-VN')
@@ -353,7 +353,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({
                     </div>
                 </KpiCard>
 
-                <KpiCard icon="wallet" iconColor="rose" title="BILL T.HỘ">
+                <KpiCard icon="wallet" iconColor="rose" title="Bill T.hộ">
                     <div className="text-[20px] xs:text-[22px] sm:text-[26px] md:text-[30px] lg:text-[34px] xl:text-[38px] font-black leading-tight tracking-tight tabular-nums text-rose-700 dark:text-rose-400 text-center w-full">
                         {kpiData.lbillTH ? roundUp(parseNumber(kpiData.lbillTH)).toLocaleString('vi-VN') : '0'}
                     </div>

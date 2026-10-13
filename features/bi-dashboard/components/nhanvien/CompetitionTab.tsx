@@ -27,6 +27,7 @@ import { MultiSelectDropdown } from '../../../../components/shared/ui/MultiSelec
 import TimeProgressBar from './shared/TimeProgressBar';
 import { useCompetitionData } from '../../hooks/useCompetitionData';
 import { useProgressiveCount } from '../../hooks/useProgressiveCount';
+import { TieuDeBaoCao } from './shared/TieuDeBaoCao';
 
 interface CompetitionTabProps {
     groupedData: Record<Criterion, { headers: CompetitionHeader[]; employees: { name: string; originalName: string; department: string; values: (number | null)[] }[] }>;
@@ -606,14 +607,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     return (
         <div className="space-y-0 bg-white dark:bg-slate-900">
             {/* 1. Tiêu đề lên TRÊN CÙNG */}
-            <div className="px-3 sm:px-4 pt-2 sm:pt-3 pb-1.5 sm:pb-2 border-b border-slate-100 dark:border-slate-800">
-                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
-                    {cardTitle}
-                </h2>
-                <div className="text-[8.5px] sm:text-[9.5px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-0.5 sm:mt-1">
-                    {cardSubtitle}
-                </div>
-            </div>
+            <TieuDeBaoCao title={cardTitle} subtitle={cardSubtitle} />
 
             {/* 2. Thanh Tab chuyển đổi các góc nhìn thi đua chuẩn như tab trên */}
             <div className="flex flex-wrap justify-between items-center px-2 sm:px-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700/60 no-print gap-1 sm:gap-2">
@@ -743,7 +737,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             <AppIcon name="users" size="sm" />
                                             <span className="hidden sm:inline">Highlight</span>
                                             {highlightedEmployees.size > 0 && (
-                                                <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[10px] sm:text-[11px] font-black rounded">
+                                                <span className="px-1.5 py-0.5 bg-sky-600 text-white text-[11px] font-black rounded">
                                                     {highlightedEmployees.size}
                                                 </span>
                                             )}
@@ -790,7 +784,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         variant="unstyled"
                                         size="none"
                                         onClick={() => setCanhanGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                                        className={`h-7 sm:h-8 min-h-0 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 text-[10.5px] sm:text-xs font-semibold border rounded-lg shadow-2xs transition-all cursor-pointer shrink-0 ${
+                                        className={`h-7 sm:h-8 min-h-0 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 text-[11px] sm:text-xs font-semibold border rounded-lg shadow-2xs transition-all cursor-pointer shrink-0 ${
                                             canhanGroupingMode === 'configured'
                                                 ? 'border-sky-300 bg-sky-50 text-sky-700 dark:bg-sky-950/40 dark:border-sky-700 dark:text-sky-300'
                                                 : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
@@ -809,7 +803,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Lọc nhóm — MultiSelectDropdown */}
                                     <MultiSelectDropdown
                                         className="w-auto shrink-0"
-                                        triggerClassName="h-7 sm:h-8 min-h-0 py-0 px-1.5 sm:px-2.5 text-[10.5px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg shadow-2xs inline-flex items-center"
+                                        triggerClassName="h-7 sm:h-8 min-h-0 py-0 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg shadow-2xs inline-flex items-center"
                                         icon={<AppIcon name="filter" size="sm" className="text-sky-500" />}
                                         triggerLabel="Lọc nhóm"
                                         count={isFiltered ? activeFilterCount : undefined}

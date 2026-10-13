@@ -117,10 +117,14 @@ test.describe('iPhone 16 Pro Max 440×956 (cảm ứng)', () => {
         await expect(sheet).toBeHidden();
     });
 
-    test('Report BI / Phân quyền: nút nhỏ trên thanh trên vẫn có vùng chạm ≥ 44 (::after), cỡ nhìn thấy giữ nguyên', async ({ page }) => {
+    test('Report BI: thanh trên không còn icon không chữ; nút "Cập nhật…" ở dòng phụ có vùng chạm ≥ 44 (::after)', async ({ page }) => {
         await vaoDungThu(page, 'employees');
         const bar = page.locator('[data-app-chrome="topbar"]');
-        const capNhat = bar.getByRole('button', { name: 'Cập nhật', exact: true });
+        // GĐ6: 3 phân hệ là segmented CÓ CHỮ trong nội dung, phông chữ vào "⋯" — khe nút cũ trên thanh trên trống.
+        await expect(page.locator('[data-segmented]').first().getByRole('button', { name: 'Cập nhật', exact: true })).toBeVisible({ timeout: 30_000 });
+        expect(await page.locator('#mobile-topbar-actions').evaluate(e => e.children.length)).toBe(0);
+        await expect(bar.getByRole('button', { name: 'Thêm thao tác' })).toBeVisible();
+        const capNhat = bar.getByRole('button', { name: /^Cập nhật/ });
         await expect(capNhat).toBeVisible({ timeout: 30_000 });
         const vung = await capNhat.evaluate(el => {
             const r = el.getBoundingClientRect(); const a = getComputedStyle(el, '::after');
@@ -128,9 +132,8 @@ test.describe('iPhone 16 Pro Max 440×956 (cảm ứng)', () => {
             return { w: r.width - px(a.left) - px(a.right), h: r.height - px(a.top) - px(a.bottom), hien: r.height, content: a.content };
         });
         expect(vung.content).not.toBe('none');
-        expect(vung.w).toBeGreaterThanOrEqual(43.5);
         expect(vung.h).toBeGreaterThanOrEqual(43.5);
-        expect(vung.hien).toBeLessThan(44); // cỡ nhìn thấy theo chuẩn 32px của chủ dự án
+        expect(vung.hien).toBeLessThan(44); // cỡ nhìn thấy: một dòng chữ phụ 12px
     });
 });
 

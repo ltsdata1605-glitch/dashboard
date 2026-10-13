@@ -22,6 +22,7 @@ import { BonusDailyTable } from './bonus/BonusDailyTable';
 import { BonusGroupListTable } from './bonus/BonusGroupListTable';
 import { BonusCompareTable } from './bonus/BonusCompareTable';
 import { formatShortRange } from '../../utils/bonusDateRange';
+import { TieuDeBaoCao } from './shared/TieuDeBaoCao';
 
 export { BonusDataModal } from './bonus/BonusDataModal';
 export type { BonusDisplayRow } from './bonus/BonusDisplayRow';
@@ -119,14 +120,7 @@ export const BonusView: React.FC<{
     return (
         <div ref={cardRef} className="space-y-0 bg-white dark:bg-slate-900">
             {/* 1. Tiêu đề lên TRÊN CÙNG */}
-            <div className="px-4 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <h2 className="text-sm lg:text-lg font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide leading-tight">
-                    {cardTitle}
-                </h2>
-                <div className="text-[8.5px] sm:text-[9.5px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider leading-snug mt-0.5 sm:mt-1">
-                    {cardSubtitle}
-                </div>
-            </div>
+            <TieuDeBaoCao title={cardTitle} subtitle={cardSubtitle} />
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
             <div className="flex flex-wrap justify-between items-center px-3 sm:px-4 py-1 sm:py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-2">

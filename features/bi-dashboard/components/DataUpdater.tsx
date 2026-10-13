@@ -250,7 +250,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="h-6 px-2 self-end hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
+                        <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="h-6 px-2 self-end hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-[11px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <>
@@ -262,13 +262,13 @@ const StatusTile: React.FC<{
                                 <h4 className={`text-xs sm:text-[13px] font-bold uppercase tracking-wide truncate transition-colors duration-200 leading-tight ${hasData ? currentTheme.text : 'text-slate-600 dark:text-slate-400 group-hover/tile:text-slate-800'}`}>{title}</h4>
                                 {hasData ? (
                                     lastUpdated && (
-                                        <span className={`text-[10px] sm:text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 ${currentTheme.text}`}>
+                                        <span className={`text-[11px] font-medium uppercase flex items-center gap-1 opacity-80 shrink-0 leading-tight mt-0.5 ${currentTheme.text}`}>
                                             <AppIcon name="clock" size="xs" /> {lastUpdated}
                                         </span>
                                     )
                                 ) : (
-                                    <span className="text-[10px] sm:text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5">
-                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin') : 'Click tự dán'}
+                                    <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate text-left leading-tight mt-0.5">
+                                        {readOnly ? (readOnlyHint || 'Chỉ quản lý/admin') : 'Bấm để dán'}
                                     </span>
                                 )}
                             </div>
@@ -794,7 +794,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         <div className="space-y-4 sm:space-y-6 relative pb-20">
             {/* Title + Action Toolbar — matches DashboardHeader and NhanVien */}
             <div className={`relative z-20 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full ${MOBILE_GUTTER}`}>
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
                     <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         CẬP NHẬT DỮ LIỆU
                     </h2>

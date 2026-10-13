@@ -411,20 +411,6 @@
     "offScaleRadius": 0,
     "offScaleText": 4
   },
-  "components/views/LandingPageView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 2
-  },
   "components/views/LoginView.tsx": {
     "nonSemanticColor": 2,
     "indigoAlias": 1,
@@ -593,7 +579,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 10,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 3
   },
@@ -607,7 +593,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 5,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 1
   },
@@ -645,7 +631,7 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 3,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 2
   },
@@ -719,20 +705,6 @@
     "offScaleRadius": 0,
     "offScaleText": 2
   },
-  "features/bi-dashboard/components/nhanvien/BonusTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 2,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
   "features/bi-dashboard/components/nhanvien/CompetitionCompareView.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -743,53 +715,11 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 27,
+    "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 11
   },
-  "features/bi-dashboard/components/nhanvien/CompetitionSummaryView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 2,
-    "offScaleRadius": 0,
-    "offScaleText": 0
-  },
   "features/bi-dashboard/components/nhanvien/CompetitionTab.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 5,
-    "offScaleRadius": 0,
-    "offScaleText": 2
-  },
-  "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 12,
-    "offScaleRadius": 0,
-    "offScaleText": 5
-  },
-  "features/bi-dashboard/components/nhanvien/InstallmentTab.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
     "missingMobileToolbar": 0,
@@ -802,6 +732,20 @@
     "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 1
+  },
+  "features/bi-dashboard/components/nhanvien/IndividualCompetitionView.tsx": {
+    "nonSemanticColor": 0,
+    "indigoAlias": 0,
+    "missingMobileToolbar": 0,
+    "iconDirectImport": 0,
+    "iconNumericSize": 0,
+    "iconLegacyCall": 0,
+    "iconRawSvg": 0,
+    "iconEmoji": 0,
+    "rawOverlay": 0,
+    "tinyText": 0,
+    "offScaleRadius": 0,
+    "offScaleText": 5
   },
   "features/bi-dashboard/components/nhanvien/revenue/RevenueDesktopRow.tsx": {
     "nonSemanticColor": 0,
@@ -829,7 +773,7 @@
     "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
-    "offScaleText": 2
+    "offScaleText": 1
   },
   "features/bi-dashboard/components/SupermarketConfig.tsx": {
     "nonSemanticColor": 0,
@@ -839,7 +783,7 @@
     "iconNumericSize": 0,
     "iconLegacyCall": 0,
     "iconEmoji": 0,
-    "tinyText": 3
+    "tinyText": 0
   },
   "features/check-thuong/components/CheckThuongAnalysisCard.tsx": {
     "nonSemanticColor": 0,

@@ -7959,3 +7959,40 @@ Test khoá: `tests/e2e/phan-tich-gd5b.spec.ts` (5 ca, iPhone SE 375×812) + 3 te
 - **#20 (bổ sung):** 5 trạng thái trống tự vẽ còn lại ở Phân tích (Hiệu suất, Top nhân viên, biểu đồ Tỷ trọng, Quản lý tệp đã lưu,
   bảng xu hướng tháng) → `EmptyState` dùng chung. Test `phan-tich-gd5b` #20.
 
+
+## GĐ6 — Report BI (2026-10-13) — LOẠT A XONG
+
+Chỉ đổi phần TRÌNH BÀY trên iPhone (laptop giữ cụm nút viên + bộ chọn phông của chủ dự án); giữ nguyên tên nút mà luồng
+tự động/test đọc ("Cập nhật", "Realtime", "Luỹ kế" vẫn là `button`). Test khoá: `tests/e2e/report-bi-gd6.spec.ts` (4 ca, iPhone SE).
+
+- **#12 thanh trên 4 icon không chữ** (`BiWrapper.tsx`): iPhone bỏ portal vào `#mobile-topbar-actions`; 3 phân hệ là segmented
+  CÓ CHỮ "Siêu thị | Nhân viên | Cập nhật" ở đầu nội dung (44px trên cảm ứng); phông chữ vào "⋯" (`usePageActions`, scope mobile)
+  → `FontPickerSheet` mới (components/layout/FontSelector.tsx — sheet danh sách nhóm, mỗi dòng viết bằng chính phông, ✓ phông đang
+  dùng). Logic áp phông gom về một hàm `apDungPhong()` dùng chung cho menu laptop và sheet. Tiêu đề IN HOA "SIÊU THỊ / NHÂN VIÊN /
+  CẬP NHẬT DỮ LIỆU" ẩn trên iPhone (trùng tên segmented), laptop giữ.
+- **Segmented trong Report BI bị vuông**: CSS module ép `border-radius:0` cho mọi `[class*="rounded-"]` → loại trừ `[data-segmented]`.
+- **#15 nút gạt "ⓘ Realtime"** (`DashboardHeader.tsx`): chỉ hiện chế độ ĐANG chọn (bấm mới biết đổi được) → segmented
+  "Realtime | Luỹ kế" (cả laptop). Helper test `openCompetitionTable` bấm thẳng "Luỹ kế"; `bi-deep-link…` gạt ngược bằng "Realtime".
+- **#24 khẩu hiệu IN HOA**: Siêu thị — dòng quote iPhone viết như câu 12px tối đa 2 dòng; 4 tab Nhân viên (Doanh thu, Trả chậm,
+  Thưởng, Thi đua) gom đầu báo cáo về MỘT component `nhanvien/shared/TieuDeBaoCao.tsx` (2 bản để khẩu hiệu 8.5px): iPhone 12px viết
+  như câu, laptop IN HOA 11px như cũ. Tiêu đề báo cáo (vào ảnh xuất) giữ nguyên chữ.
+- **#29 thẻ thi đua cá nhân** (`IndividualCompetitionView.tsx`): nền xanh đặc + hoạ tiết + 4 viên màu đặc → nền trắng đường kẻ mảnh,
+  tên viết như dữ liệu (17px đậm), viên xám có CHẤM màu theo nghĩa, ô donut nền xám nhạt.
+- **Sàn chữ 11px**: 65 chỗ 7.5–10.5px trong Report BI (KPI ngành hàng, thi đua So sánh/Cá nhân/Tổng hợp, Thưởng, Cập nhật) → 11px.
+  Thẻ KPI Siêu thị: tiêu đề viết hoa cứng ("TRẢ CHẬM") → viết thường, điện thoại hiện như chữ (vừa 4 thẻ/hàng ở iPhone SE, trước bị
+  cắt "TRẢ CH…"), từ sm vẫn IN HOA. Chip "Quỹ thời gian" ở thanh Thi đua: iPhone chỉ icon (chữ + "30/31" + "%" không vừa 130px,
+  số chồng lên nhau "39/31"). "Click tự dán" → "Bấm để dán".
+- **#25 lần 2 — màn chào dùng chung** (`components/shared/ui/FeatureLandingLayout.tsx`, Report BI dùng): còn "Local Processing…",
+  câu sai "không lưu trữ dữ liệu", 3 quầng sáng blur nhấp nháy + khung kính mờ (A22 chủ dự án đã duyệt bỏ ở Phân tích). Sửa ở khung
+  dùng chung + `LandingPageView` của Phân tích nay DÙNG LẠI khung này (trước là 2 bản chép tay lệch nhau).
+- Test cập nhật theo giao diện mới (giữ ý định): `bi-mobile-iphone` (3 nút điều hướng đo trong segmented), `khung-app-gd4` (Report
+  BI: khe nút trống, có "⋯", nút "Cập nhật…" dòng phụ vùng chạm 44), helper `seed.ts`, `bi-deep-link-khong-vong-lap`.
+- **Vùng chạm Report BI**: 13 nút 32px trên iPhone (đo trước GĐ6) → 0: segmented thay icon, pill bộ lọc đầu màn 44px trên điện
+  thoại, nút thanh công cụ tab Nhân viên + `ExportButton` có `ycx-hit` (cỡ nhìn thấy 32px giữ nguyên). `.ycx-hit` (styles.css) nay
+  nâng nút LỒNG bên trong lên trên lớp ::after — trước đó chạm "×" (xoá dữ liệu cùng kỳ) nằm trong viên "Cùng kỳ" sẽ trúng nút cha.
+  Test `report-bi-gd6` "nút lồng…" (đã thử: bỏ quy tắc CSS thì test đỏ).
+- **2 test đỏ CÓ SẴN trước GĐ6** (đã chạy lại trên mã trước khi sửa để xác nhận): `bi-mobile-iphone` (13 nút < 44px, 3 nút điều
+  hướng icon 32px) — nay xanh, đo vùng chạm THẬT gồm ::after và giả lập cảm ứng; `bi-nhan-vien-theo-sieu-thi` — bộ chọn `/Cập
+  nhật/` trúng nút "Cập nhật dữ liệu" (chạy tự động MWG, có từ 2026-10-11) đã sửa thành tên chính xác; test chạy tiếp tới phép
+  so NGHIỆP VỤ và đỏ ở đó: Tân Hiệp đếm **4 NV** (mong đợi 2 — bỏ người không có trong danh sách Phân Tích). Logic đếm
+  (TargetHero/SupermarketConfig) không thuộc phần giao diện GĐ6 → để chủ dự án quyết định quy tắc đúng.

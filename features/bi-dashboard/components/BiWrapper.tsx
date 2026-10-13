@@ -5,7 +5,9 @@ import { readPendingAutoSync } from '../services/biAutoSyncService';
 import '../biDensity.css';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
-import FontSelector from '../../../components/layout/FontSelector';
+import FontSelector, { FontPickerSheet } from '../../../components/layout/FontSelector';
+import { usePageActions } from '../../../components/shared/ui/PageActions';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
 import { Button } from '../../../components/shared/ui/Button';
@@ -233,6 +235,15 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         { id: 'updater', icon: 'upload-cloud', label: 'Cập nhật', color: 'amber' },
     ];
 
+    // iPhone (GĐ6, lỗi #12 — video v2:066–098): thanh trên từng có 4 icon không chữ (biểu đồ tròn / người / đám mây / "T") —
+    // không ai đoán được. Nay 3 phân hệ là segmented control CÓ CHỮ ở đầu nội dung; phông chữ vào "⋯" (sheet danh sách).
+    // Laptop giữ cụm nút viên của chủ dự án ở #global-header-actions.
+    const [moPhongChu, setMoPhongChu] = useState(false);
+    usePageActions(isTabActive && isMobile ? {
+        scope: 'mobile',
+        items: [{ id: 'phong-chu', label: 'Phông chữ', icon: 'font', onSelect: () => setMoPhongChu(true) }],
+    } : null);
+
     return (
         <div data-density="compact" className="flex flex-col w-full min-h-dvh bi-report-module">
             <style>{`
@@ -240,7 +251,8 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                    Lịch sử thang chữ: bản cũ ép chữ xuống 8–9px ("High-Density Typography"), phá quy tắc
                    sàn 11px của CLAUDE.md đúng trên điện thoại (đo iPhone 15 2026-09-26: 71 chỗ < 11px). */
 
-                /* KHÔNG BO GÓC cho tất cả bảng, viền trong toàn bộ phân hệ Report BI (ngoại trừ thẻ KPI .kpi-overview-card, avatar tròn & floating dock) */
+                /* KHÔNG BO GÓC cho tất cả bảng, viền trong toàn bộ phân hệ Report BI (ngoại trừ thẻ KPI .kpi-overview-card, avatar tròn & floating dock)
+                   — và segmented control dùng chung ([data-segmented], GĐ6): vuông thì không còn là segmented kiểu iOS. */
                 .bi-report-module table,
                 .bi-report-module thead,
                 .bi-report-module tbody,
@@ -250,63 +262,34 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 .bi-report-module td,
                 .bi-report-module .card:not(.kpi-overview-card),
                 .bi-report-module .rounded:not(.kpi-overview-card),
-                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.preserve-rounded):not(.preserve-rounded *) {
+                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.preserve-rounded):not(.preserve-rounded *):not([data-segmented]):not([data-segmented] *) {
                     border-radius: 0px !important;
                 }
             `}</style>
-            {mounted && isTabActive && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
-                isMobile ? (
-                    <div className="flex items-center gap-0.5 animate-in fade-in zoom-in duration-300">
-                        {navigationLinks.map(tab => {
-                            const isActive = activeView === tab.id;
-                            return (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    key={tab.id}
-                                    onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center w-8 h-8 rounded-lg font-medium text-[11px] transition-all hover:scale-105 active:scale-95 shrink-0 focus:outline-none ${
-                                        isActive
-                                            ? 'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold'
-                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                    }`}
-                                    title={tab.label || tab.id}
-                                >
-                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
-                                </Button>
-                            );
-                        })}
-                        <div className="flex shrink-0 items-center">
-                            <FontSelector 
-                                containerClassName="relative flex items-center"
-                                buttonClassName="flex items-center justify-center w-8 h-8 rounded-lg text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-800 dark:hover:text-emerald-300 transition-all hover:scale-105 active:scale-95 shrink-0" 
-                            />
-                        </div>
-                    </div>
-                ) : (
-                    // Chuẩn pill bo tròn rounded-full thống nhất với Header.tsx (hình 2)
-                    <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
-                        {navigationLinks.map((tab, idx) => {
-                            const isActive = activeView === tab.id;
-                            return (
-                                <Button
-                                    variant="unstyled" size="none"
-                                    key={tab.id}
-                                    onClick={() => handleTabChange(tab.id)}
-                                    className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
-                                    title={tab.label}
-                                >
-                                    <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
-                                    <span>{tab.label}</span>
-                                </Button>
-                            );
-                        })}
+            {mounted && isTabActive && !isMobile && document.getElementById('global-header-actions') && createPortal(
+                // Chuẩn pill bo tròn rounded-full thống nhất với Header.tsx (hình 2)
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">
+                    {navigationLinks.map((tab, idx) => {
+                        const isActive = activeView === tab.id;
+                        return (
+                            <Button
+                                variant="unstyled" size="none"
+                                key={tab.id}
+                                onClick={() => handleTabChange(tab.id)}
+                                className={`flex items-center justify-center gap-2 px-4 py-2 text-base font-medium transition-colors whitespace-nowrap shrink-0 focus:outline-none ${idx > 0 ? 'border-l border-slate-100 dark:border-slate-700' : ''} ${getTabColorClasses(tab.color, isActive)}`}
+                                title={tab.label}
+                            >
+                                <AppIcon name={resolveIconName(tab.icon) ?? 'help'} size="md" />
+                                <span>{tab.label}</span>
+                            </Button>
+                        );
+                    })}
 
-                        <div className="border-l border-slate-100 dark:border-slate-700">
-                            <FontSelector />
-                        </div>
+                    <div className="border-l border-slate-100 dark:border-slate-700">
+                        <FontSelector />
                     </div>
-                ),
-                document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
+                </div>,
+                document.getElementById('global-header-actions')!
             )}
 
             {/* Portal timestamp into mobile top bar subtitle */}
@@ -355,6 +338,20 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 960px căn giữa, đệm ngang 32px ở desktop, KHÔNG đệm trên (bản cũ `lg:p-8` để 32px trống
                 giữa thanh tiêu đề app và tiêu đề "SIÊU THỊ" — chủ dự án yêu cầu bỏ 2026-09-21). Từng view
                 con đã có `pt-2` ở hàng tiêu đề riêng. Đổi khung này thì đổi cả 2 nơi kia cho khớp. */}
+            {isMobile && (
+                <div className="px-4 pt-3 pb-1 hide-on-export">
+                    <Tabs
+                        variant="segment"
+                        size="sm"
+                        fullWidth
+                        activeId={activeView}
+                        onChange={(id) => handleTabChange(id)}
+                        items={navigationLinks.map(t => ({ id: t.id, label: t.label }))}
+                    />
+                </div>
+            )}
+            <FontPickerSheet isOpen={moPhongChu} onClose={() => setMoPhongChu(false)} />
+
             <main data-bi-view={activeView} className="p-0 sm:px-4 sm:pb-4 lg:px-8 lg:pb-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
                 <ErrorBoundary name="Báo cáo BI">
                     <Suspense fallback={<TabSpinner />}>

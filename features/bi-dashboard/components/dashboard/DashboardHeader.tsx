@@ -85,29 +85,32 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <div className="space-y-0">
             {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
             <div className={`relative z-50 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export ${MOBILE_GUTTER}`}>
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                {/* iPhone: tên phân hệ đã nằm trên segmented "Siêu thị | Nhân viên | Cập nhật" (BiWrapper) → không lặp lại tiêu đề IN HOA. */}
+                <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
                     <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         {title}
                     </h2>
                 </div>
-                <div className="flex flex-none justify-end hide-on-export shrink-0 ml-auto">
+                <div className="flex flex-1 lg:flex-none items-center justify-end gap-2 hide-on-export min-w-0 lg:ml-auto">
+                    {/* Realtime / Luỹ kế: trước là NÚT GẠT chỉ hiện chế độ ĐANG chọn ("ⓘ Realtime" — bấm mới biết là đổi được). Nay
+                        segmented control hiện cả 2 lựa chọn. Nút vẫn tên "Realtime"/"Luỹ kế" (role button) cho luồng tự động/test. */}
+                    <Tabs
+                        variant="segment"
+                        size="sm"
+                        activeId={activeMainTab}
+                        onChange={(id) => setActiveMainTab(id as MainTab)}
+                        items={[{ id: 'realtime', label: 'Realtime' }, { id: 'cumulative', label: 'Luỹ kế' }]}
+                        className="flex-1 lg:flex-none"
+                        fullWidth
+                    />
                     {/* Nhóm 2 bộ lọc trong 1 pill viền chung — đúng chuẩn hình số 2 (Tab Nhân viên).
                         BUG FIX: KHÔNG overflow-hidden — panel của MultiSelectDropdown (supermarket
                         selector bên dưới) định vị absolute, xổ ra NGOÀI khung pill; overflow-hidden
                         sẽ cắt mất panel dù dropdown vẫn "mở" trong state (không bấm chọn được gì) —
                         xem giải thích đầy đủ ở NhanVien.tsx, nơi bug này được user báo cáo trước. */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-8 sm:h-8.5">
-                        <Button
-                            variant="unstyled" size="none"
-                            onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
-                            className="h-full min-h-0 flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1 rounded-l-full border-r border-slate-200 dark:border-slate-700 text-xs sm:text-xs font-bold text-sky-700 dark:text-sky-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 active:scale-98 transition-all select-none cursor-pointer whitespace-nowrap shrink-0"
-                            title="Bấm để chuyển đổi giữa Realtime và Luỹ kế"
-                        >
-                            <AppIcon name="info" size="xs" className="text-sky-500 animate-pulse" />
-                            <span className="whitespace-nowrap">{activeMainTab === 'realtime' ? 'Realtime' : 'Luỹ kế'}</span>
-                        </Button>
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-11 sm:h-8.5">
                         <MultiSelectDropdown
-                            triggerClassName="rounded-r-full whitespace-nowrap min-h-0 h-8 sm:h-8.5 px-2.5 sm:px-3 py-1 text-xs sm:text-xs font-bold"
+                            triggerClassName="rounded-full whitespace-nowrap min-h-0 h-11 sm:h-8.5 px-3 py-1 text-xs sm:text-xs font-bold"
                             icon={<AppIcon name="store" size="sm" className="text-sky-500" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
@@ -169,7 +172,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
+                                variant="ghost" size="icon" className="ycx-hit w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
                                 title="Xuất tất cả ảnh"
                             >
                                 {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
@@ -180,7 +183,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
+                                    variant="ghost" size="icon" className="ycx-hit w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
                                     title="Xuất ảnh"
                                 >
                                     {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
@@ -190,9 +193,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     </div>
 
                     {/* Dòng quote trên mobile. Trước ép 1 dòng ở cỡ 8.5px; lên sàn 11px thì 1 dòng không
-                        chứa nổi → bị cắt "…NỖ L…". Cho xuống dòng để đọc trọn câu. */}
+                        chứa nổi → bị cắt "…NỖ L…". Cho xuống dòng để đọc trọn câu.
+                        GĐ6 (lỗi #24, video v2:066): khẩu hiệu IN HOA 2 dòng → dòng phụ viết như câu, 12px, xám, tối đa 2 dòng. */}
                     <p
-                        className="sm:hidden text-[11px] uppercase text-slate-400 dark:text-slate-500 mt-1 font-normal leading-snug tracking-tight"
+                        className="sm:hidden type-footnote text-slate-500 dark:text-slate-400 mt-1 font-normal line-clamp-2"
                         title={QUOTES[activeSubTab]}
                     >
                         {QUOTES[activeSubTab]}

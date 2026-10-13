@@ -131,10 +131,10 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
             {/* Header bar of KPI Section */}
             <div className="industry-kpi-header flex items-center justify-between gap-1 sm:gap-1.5 mb-2 pb-2 border-b border-slate-100 dark:border-slate-800 flex-wrap hide-on-export no-print">
                 <div className="flex items-center gap-1 sm:gap-1.5">
-                    <span className="text-[10.5px] sm:text-[11.5px] font-extrabold uppercase text-slate-700 dark:text-slate-300 tracking-wider">
+                    <span className="text-[11px] sm:text-[11.5px] font-extrabold uppercase text-slate-700 dark:text-slate-300 tracking-wider">
                         CHỈ SỐ KPI NGÀNH HÀNG
                     </span>
-                    <span className="text-[10px] sm:text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60">
+                    <span className="text-[11px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/60">
                         {metricList.length} thẻ
                     </span>
                 </div>
@@ -145,7 +145,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         <button
                             type="button"
                             onClick={() => setFocusMetric('revenue')}
-                            className={`h-full px-2 sm:px-2.5 text-[10px] sm:text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
+                            className={`h-full px-2 sm:px-2.5 text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
                                 focusMetric === 'revenue'
                                     ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -157,7 +157,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         <button
                             type="button"
                             onClick={() => setFocusMetric('quantity')}
-                            className={`h-full px-2 sm:px-2.5 text-[10px] sm:text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
+                            className={`h-full px-2 sm:px-2.5 text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
                                 focusMetric === 'quantity'
                                     ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -183,7 +183,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsAddModalOpen(true)}
-                        className="h-6.5 sm:h-7 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 rounded-lg text-[10px] sm:text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all cursor-pointer shadow-2xs active:scale-95"
+                        className="h-6.5 sm:h-7 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 rounded-lg text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all cursor-pointer shadow-2xs active:scale-95"
                         title="Tạo / Thêm thẻ KPI"
                     >
                         <AppIcon name="add" size="sm" />

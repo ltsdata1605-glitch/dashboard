@@ -84,10 +84,12 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({
         <div className={`w-full ${className}`}>
             <div className="flex items-center justify-between mb-1 sm:mb-1.5 gap-1 sm:gap-2">
                 <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                    <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40 rounded-md shrink-0 whitespace-nowrap">
+                    {/* Điện thoại (GĐ6): chỉ còn icon đồng hồ — chữ "THỜI GIAN" + "30/31" + "97%" không vừa ô 130px ở thanh công cụ
+                        Thi đua, số bị chồng lên nhau ("39/31"). Từ sm hiện đủ "Quỹ thời gian". */}
+                    <div role="img" aria-label="Quỹ thời gian" title="Quỹ thời gian" className="flex items-center gap-1 sm:gap-1.5 px-1 sm:px-2 py-0.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40 rounded-md shrink-0 whitespace-nowrap">
                         <AppIcon name="clock" size="sm" className="text-sky-600" />
-                        <span className="text-[11px] font-bold text-sky-900 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
-                            <span className="hidden sm:inline">Quỹ </span>thời gian
+                        <span className="hidden sm:inline text-[11px] font-bold text-sky-900 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
+                            Quỹ thời gian
                         </span>
                     </div>
                     <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 tabular-nums whitespace-nowrap shrink-0">

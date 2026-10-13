@@ -3,6 +3,8 @@ import { AppIcon } from '../shared/ui/icon';
 import { saveGlobalFont, getGlobalFont } from '../../services/dbService';
 import { createPortal } from 'react-dom';
 import { Button } from '../shared/ui/Button';
+import { Modal } from '../shared/ui/Modal';
+import { ListGroup, ListRow } from '../shared/ui/ListGroup';
 import { napPhongGoogle, PHONG_GOOGLE } from '../shared/ui/googleFonts';
 
 interface FontOption {
@@ -31,6 +33,27 @@ const FONTS: FontOption[] = [
     { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } }
 ];
 
+/** Áp phông cho toàn app NGAY (style !important đè tiện ích Tailwind) — dùng chung cho menu laptop và sheet iPhone. */
+function apDungPhong(font: string) {
+    const activeFont = font || 'UTM Avo';
+    napPhongGoogle(activeFont);
+    let styleEl = document.getElementById('dynamic-font-style');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamic-font-style';
+        document.head.appendChild(styleEl);
+    }
+    document.documentElement.style.setProperty('--font-sans', `'${activeFont}', sans-serif`);
+    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
+}
+
+/** "Mặc định" đứng đầu, còn lại theo bảng chữ cái. */
+const FONTS_SAP_XEP = [...FONTS].sort((a, b) => {
+    if (a.label.includes('Mặc định')) return -1;
+    if (b.label.includes('Mặc định')) return 1;
+    return a.label.localeCompare(b.label);
+});
+
 interface FontSelectorProps {
     containerClassName?: string;
     buttonClassName?: string;
@@ -47,22 +70,7 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
         getGlobalFont().then(font => {
             const activeFont = font || 'UTM Avo';
             setCurrentFont(activeFont);
-            napPhongGoogle(activeFont);
-
-            // Apply on mount
-            let styleEl = document.getElementById('dynamic-font-style');
-            if (!styleEl) {
-                styleEl = document.createElement('style');
-                styleEl.id = 'dynamic-font-style';
-                document.head.appendChild(styleEl);
-            }
-            if (activeFont !== 'UTM Avo') {
-                document.documentElement.style.setProperty('--font-sans', `'${activeFont}', sans-serif`);
-                styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
-            } else {
-                document.documentElement.style.setProperty('--font-sans', `'UTM Avo', sans-serif`);
-                styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'UTM Avo', sans-serif !important; }`;
-            }
+            apDungPhong(activeFont);
         });
     }, []);
 
@@ -121,25 +129,8 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
     const handleSelectFont = async (fontValue: string) => {
         const activeFont = fontValue || 'UTM Avo';
         setCurrentFont(activeFont);
-        napPhongGoogle(activeFont);
+        apDungPhong(activeFont);
         await saveGlobalFont(activeFont);
-
-        let styleEl = document.getElementById('dynamic-font-style');
-        if (!styleEl) {
-            styleEl = document.createElement('style');
-            styleEl.id = 'dynamic-font-style';
-            document.head.appendChild(styleEl);
-        }
-
-        // Apply instantly using a style block with !important to override tailwind utilities
-        if (activeFont && activeFont !== 'UTM Avo') {
-            document.documentElement.style.setProperty('--font-sans', `'${activeFont}', sans-serif`);
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
-        } else {
-            document.documentElement.style.setProperty('--font-sans', `'UTM Avo', sans-serif`);
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'UTM Avo', sans-serif !important; }`;
-        }
-
         setIsOpen(false);
     };
 
@@ -173,11 +164,7 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tùy chọn Font</span>
                     </div>
                     <div className="flex flex-col p-1 max-h-60 overflow-y-auto custom-scrollbar">
-                        {[...FONTS].sort((a, b) => {
-                            if (a.label.includes('Mặc định')) return -1;
-                            if (b.label.includes('Mặc định')) return 1;
-                            return a.label.localeCompare(b.label);
-                        }).map(font => {
+                        {FONTS_SAP_XEP.map(font => {
                             const isSelected = currentFont === font.value;
                             return (
                                 <Button
@@ -202,6 +189,40 @@ const FontSelector: React.FC<FontSelectorProps> = ({ containerClassName, buttonC
                 document.body
             )}
         </div>
+    );
+};
+
+/**
+ * Chọn phông trên iPhone (GĐ6, lỗi #12): sheet danh sách nhóm kiểu iOS — thay nút "T" xanh lá chen trên thanh trên. Mỗi dòng viết
+ * bằng chính phông đó, dấu ✓ ở phông đang dùng; chạm là áp ngay và lưu.
+ */
+export const FontPickerSheet: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+    const [currentFont, setCurrentFont] = useState<string>('UTM Avo');
+    useEffect(() => {
+        if (!isOpen) return;
+        napPhongGoogle(PHONG_GOOGLE); // xem trước bằng chính phông
+        getGlobalFont().then(f => setCurrentFont(f || 'UTM Avo'));
+    }, [isOpen]);
+    const chon = async (font: string) => {
+        setCurrentFont(font);
+        apDungPhong(font);
+        await saveGlobalFont(font);
+        onClose();
+    };
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} position="bottom" maxWidth="sm" title="Phông chữ" subTitle="Áp dụng cho toàn bộ ứng dụng">
+            <ListGroup>
+                {FONTS_SAP_XEP.map(font => (
+                    <ListRow
+                        key={font.value}
+                        label={<span style={font.style}>{font.label}</span>}
+                        selected={currentFont === font.value}
+                        chevron={false}
+                        onClick={() => { void chon(font.value); }}
+                    />
+                ))}
+            </ListGroup>
+        </Modal>
     );
 };
 

@@ -147,6 +147,12 @@
       left: min(0px, calc((100% - 44px) / 2));
       right: min(0px, calc((100% - 44px) / 2));
     }
+    /* Nút LỒNG bên trong (vd "×" xoá dữ liệu cùng kỳ nằm trong viên "Cùng kỳ" của Report BI) phải nằm TRÊN lớp ::after —
+       không thì chạm "×" lại trúng nút cha (lớp vô hình phủ cả khung nút cha). */
+    .ycx-hit :where(button, a[href], [role='button'], input, select) {
+      position: relative;
+      z-index: 1;
+    }
   }
 
   /* Dòng phụ thanh trên: nút "Cập nhật: <giờ>" các màn gửi vào KHÔNG được rộng hơn khe (trước đây hộp nút dài hơn khe, chữ bị cắt

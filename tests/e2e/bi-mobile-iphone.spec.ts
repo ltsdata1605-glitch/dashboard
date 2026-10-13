@@ -27,6 +27,9 @@ const LUYKE = [
     '103 - Lê Văn C\t75,000,000\t60',
 ].join('\n');
 
+// Màn cảm ứng như iPhone thật (vùng chạm ::after chỉ bật với `pointer: coarse`).
+test.use({ isMobile: true, hasTouch: true });
+
 async function moBI(page: Page) {
     await page.goto('/?tab=employees');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
@@ -59,10 +62,18 @@ async function doViPham(page: Page) {
             .filter(el => nhin(el) && el.children.length === 0 && !!el.textContent?.trim()
                 && parseFloat(getComputedStyle(el).fontSize) < 11)
             .map(el => `${Math.round(parseFloat(getComputedStyle(el).fontSize))}px:${(el.textContent || '').trim().slice(0, 20)}`);
+        // Vùng chạm THẬT = khung nút + lớp ::after vô hình nới ra (ycx-hit / thanh trên — chỉ có trên màn cảm ứng): nút nhìn
+        // 32px nhưng chạm được 44px là đạt chuẩn Apple, giữ cỡ nhìn thấy của chủ dự án (GĐ5–GĐ6).
+        const cao = (el: Element) => {
+            const r = el.getBoundingClientRect(); const a = getComputedStyle(el, '::after');
+            if (a.content === 'none' || a.position !== 'absolute') return r.height;
+            const px = (v: string) => parseFloat(v) || 0;
+            return r.height + Math.max(0, -px(a.top)) + Math.max(0, -px(a.bottom));
+        };
         const nutQuaNho = Array.from(document.querySelectorAll('button')).filter(el => {
             const r = el.getBoundingClientRect();
-            return r.width > 0 && r.height > 0 && r.height < 44;
-        }).map(el => `${(el.textContent || '').trim().slice(0, 14) || el.getAttribute('title') || '[icon]'}:${Math.round(el.getBoundingClientRect().height)}px`);
+            return r.width > 0 && r.height > 0 && cao(el) < 43.5;
+        }).map(el => `${(el.textContent || '').trim().slice(0, 14) || el.getAttribute('title') || '[icon]'}:${Math.round(cao(el))}px`);
         return {
             chuQuaNho, nutQuaNho,
             tranNgang: document.documentElement.scrollWidth > document.documentElement.clientWidth,
@@ -97,10 +108,13 @@ test('3 nút điều hướng chính của Report BI đủ vùng chạm 44px', a
     await page.setViewportSize({ width: 375, height: 667 }); // iPhone SE — máy nhỏ nhất còn dùng
     await moBI(page);
 
-    // Siêu thị / Nhân viên / Cập nhật nằm ở thanh trên cùng, dạng icon
+    // Siêu thị / Nhân viên / Cập nhật: từ GĐ6 (2026-10-13) là segmented control CÓ CHỮ ở đầu nội dung (trước là 3 icon không chữ
+    // trên thanh trên — lỗi #12 trong video của chủ dự án).
     const nhan = ['Siêu thị', 'Nhân viên', 'Cập nhật'];
+    const seg = page.locator('[data-segmented]').first();
+    await expect(seg).toBeVisible();
     for (const ten of nhan) {
-        const nut = page.getByTitle(ten, { exact: true }).first();
+        const nut = seg.getByRole('button', { name: ten, exact: true });
         const hop = await nut.boundingBox();
         expect(hop, `không thấy nút "${ten}"`).toBeTruthy();
         console.log(`NÚT "${ten}": ${Math.round(hop!.width)}x${Math.round(hop!.height)}`);
