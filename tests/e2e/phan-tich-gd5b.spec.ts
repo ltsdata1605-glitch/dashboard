@@ -132,6 +132,19 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
         await page.screenshot({ path: test.info().outputPath('kpi-11px.png') });
     });
 
+    test('#20 trạng thái trống dùng chung: Quản lý tệp đã lưu (chưa có tệp lịch sử) hiện EmptyState', async ({ page }) => {
+        await napDuLieu(page);
+        await page.locator('[data-app-chrome="topbar"]').getByRole('button', { name: 'Thêm thao tác' }).click();
+        await page.getByRole('menuitem', { name: /Quản lý tệp đã lưu/ }).click();
+        const hop = page.getByRole('dialog').filter({ hasText: 'Chưa có dữ liệu lịch sử' });
+        await expect(hop).toBeVisible();
+        // EmptyState: tiêu đề 14px đậm vừa + mô tả xám — không còn chữ 11px tự vẽ
+        const tieuDe = hop.getByRole('heading', { name: 'Chưa có dữ liệu lịch sử' });
+        await expect(tieuDe).toBeVisible();
+        expect(parseFloat(await tieuDe.evaluate(e => getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(13);
+        expect((await doTranMep(page, 'Danh sách YCX luỹ kế')).cuonNgang).toBeLessThanOrEqual(0);
+    });
+
     test('#14/#23 Chi tiết đơn hàng: 2 nút + ⋯, tên khách không IN HOA 16px; sao chép mã đơn dùng toast chung ở TRÊN', async ({ page }) => {
         await napDuLieu(page, ['SO002', 'SO003']);
         await page.getByRole('button', { name: /^Chờ xuất/ }).first().click();

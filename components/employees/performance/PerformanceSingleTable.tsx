@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
+import { EmptyState } from '../../shared/ui/EmptyState';
 import type { Employee } from '../../../types';
 import { abbreviateName, formatCurrency, formatQuantity, getBorderAccentFromColorClass } from '../../../utils/dataUtils';
 import {
@@ -171,9 +172,8 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
 
     if (!dataToRender || Object.keys(dataToRender).length === 0) {
         return (
-            <div ref={tableRef} className="flex flex-col items-center justify-center py-20 text-center">
-                <AppIcon name="empty" size="state" className="text-slate-300 mb-3" />
-                <p className="text-sm font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest">Không có dữ liệu hiển thị</p>
+            <div ref={tableRef}>
+                <EmptyState icon="empty" title="Không có dữ liệu hiển thị" description="Thử đổi bộ lọc kho, bộ phận hoặc khoảng thời gian." />
             </div>
         );
     }

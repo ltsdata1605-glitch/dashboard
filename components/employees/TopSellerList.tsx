@@ -1,6 +1,7 @@
 
 import React, { useState, forwardRef, useMemo, useEffect } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import { EmptyState } from '../shared/ui/EmptyState';
 import type { Employee } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { saveTopSellerAnalysis } from '../../services/dbService';
@@ -130,7 +131,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
             </div>
             <div className="space-y-2 sm:space-y-4">
                 {sortedDepartments.length === 0 ? (
-                    <p className="text-center text-slate-500 dark:text-slate-400 py-8">Không có dữ liệu nhân viên cho bộ phận đã chọn.</p>
+                    <EmptyState compact icon="users" title="Không có nhân viên" description="Bộ phận đã chọn chưa có dữ liệu bán hàng." />
                 ) : (
                     sortedDepartments.map(dept => {
                         const showHeader = sortedDepartments.length > 1 || dept !== 'Không Phân Ca';

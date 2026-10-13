@@ -1,5 +1,6 @@
 import React, { useRef, useMemo, useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
+import { EmptyState } from '../shared/ui/EmptyState';
 import { Modal } from '../shared/ui/Modal';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
 import { KhoFileManager } from '../upload/KhoFileManager';
@@ -93,13 +94,12 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                 </div>
 
                 {registry.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-6 text-center text-slate-400 dark:text-slate-500">
-                        <div className="w-10 h-10 mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600">
-                            <AppIcon name="database" size="lg" />
-                        </div>
-                        <p className="text-[13px] font-medium text-slate-600 dark:text-slate-400">Chưa có dữ liệu lịch sử nào được tải lên</p>
-                        <p className="text-[11px] mt-0.5">Vui lòng tải lên tệp Excel doanh số cũ để tạo báo cáo tích lũy gộp dài hạn.</p>
-                    </div>
+                    <EmptyState
+                        compact
+                        icon="database"
+                        title="Chưa có dữ liệu lịch sử"
+                        description="Tải lên tệp Excel doanh số cũ để tạo báo cáo luỹ kế gộp dài hạn."
+                    />
                 ) : (
                     <div>
                         {onDeleteAll && canManageFiles && (

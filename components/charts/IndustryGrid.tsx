@@ -484,8 +484,8 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex-grow flex items-center justify-center text-xs text-slate-400 dark:text-slate-600">
-                                    Không có dữ liệu biểu đồ
+                                <div className="flex-grow flex items-center justify-center">
+                                    <EmptyState compact icon="chartPie" title="Không có dữ liệu biểu đồ" />
                                 </div>
                             )}
                         </div>

@@ -3,6 +3,7 @@ import type { SummaryTableNode, GrandTotal } from '../../types';
 import { HEADER_CONFIG } from './summary/SummaryTableUtils';
 import { MonthlyTrendTableRow } from './MonthlyTrendTableRow';
 import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
+import { EmptyState } from '../shared/ui/EmptyState';
 
 interface MonthlyTrendTableProps {
     trendData: {
@@ -96,8 +97,8 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                     })
                 ) : (
                     <tr>
-                        <td colSpan={1 + pivotColumns.length * trendData.months.length} className="text-center p-8 text-slate-500">
-                            Không có dữ liệu để hiển thị.
+                        <td colSpan={1 + pivotColumns.length * trendData.months.length}>
+                            <EmptyState compact icon="table" title="Không có dữ liệu để hiển thị" />
                         </td>
                     </tr>
                 )}

@@ -7956,3 +7956,6 @@ Test khoá: `tests/e2e/phan-tich-gd5b.spec.ts` (5 ca, iPhone SE 375×812) + 3 te
   của mọi modal/sheet (portal ra body). `AppToaster` nay portal ra `<body>`. Test: `elementFromPoint` giữa toast trỏ vào chính toast.
 - Sau khi gộp main: sửa `UploadConflictModal` (582cfca đặt `useState` sau `return null` → ESLint rules-of-hooks LỖI, `npm run check` đỏ;
   đã thử: React 19 không sập ở đúng ca này nhưng là bẫy). Cập nhật `ios-pwa-dang-nhap` theo hành vi mới của chủ dự án.
+- **#20 (bổ sung):** 5 trạng thái trống tự vẽ còn lại ở Phân tích (Hiệu suất, Top nhân viên, biểu đồ Tỷ trọng, Quản lý tệp đã lưu,
+  bảng xu hướng tháng) → `EmptyState` dùng chung. Test `phan-tich-gd5b` #20.
+
