@@ -68,3 +68,42 @@ test('laptop: hover vào User Profile avatar và rê chuột sang flyout card kh
     await page.waitForTimeout(300);
     await expect(phanQuyenBtn).toBeVisible();
 });
+
+test('laptop: bấm vào nút Công cụ chỉ mở menu phụ, không chuyển sang trang trống', async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 800 });
+    await page.goto('/?tab=analysis');
+    await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
+    await page.waitForTimeout(2000);
+
+    // Xác nhận đang ở trang Phân tích
+    const headerTitle = page.locator('[data-app-chrome="header"] h1');
+    await expect(headerTitle).toBeVisible();
+    await expect(headerTitle).toContainText('Phân');
+
+    // Tìm nút Công cụ
+    const toolsBtn = page.locator('aside button[title="Công cụ"], aside button[aria-label="Công cụ"]');
+    await expect(toolsBtn).toBeVisible();
+
+    // Bấm trực tiếp vào nút Công cụ
+    await toolsBtn.click();
+    await page.waitForTimeout(300);
+
+    // Menu phụ PHẢI hiển thị
+    const stickerItem = page.locator('button:has-text("In Sticker")');
+    await expect(stickerItem).toBeVisible();
+
+    // KHÔNG ĐƯỢC xuất hiện thông báo trang rỗng / "Tính năng đang được phát triển"
+    const emptyNotice = page.locator('text=Tính năng đang được phát triển');
+    await expect(emptyNotice).toHaveCount(0);
+
+    // Tiêu đề trang vẫn phải giữ nguyên là Phân tích (không bị biến mất hay chuyển trang trắng)
+    await expect(headerTitle).toContainText('Phân');
+
+    // Bấm ra ngoài màn hình -> menu phụ đóng lại
+    await page.mouse.click(500, 300);
+    await page.waitForTimeout(400);
+
+    // Khi đã click ra ngoài, menu phụ đóng lại
+    await expect(stickerItem).toHaveCount(0);
+});
+

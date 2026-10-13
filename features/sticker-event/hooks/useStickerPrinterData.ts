@@ -71,6 +71,15 @@ export const DEFAULT_DRAW_HISTORY_ENTRY: PrintHistoryEntry = {
     footerTextContent: '',
     showBarcode: false,
     manualPages: [],
+    drawTickets: [
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
+        { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
+    ],
+    drawStartNumber: 1,
+    drawTotalTickets: 4000,
+    drawAutoIncrement: true,
     drawContentTopLeftSize: 4.5,
     drawContentTopRightSize: 8,
     drawContentBottomLeftSize: 2.9,
@@ -579,15 +588,11 @@ export function useStickerPrinterData() {
                     if (savedState.newPriceTextSize != null) setNewPriceTextSize(savedState.newPriceTextSize);
                     if (savedState.footerTextSize != null) setFooterTextSize(savedState.footerTextSize);
 
-                    if (savedState.drawTickets) {
-                        // Tự động nâng cấp nếu dữ liệu cũ chưa có style font-size hoặc là mẫu cũ
-                        if (
-                            savedState.drawTickets[0]?.title?.includes('12/9') ||
-                            savedState.drawTickets[0]?.contentTop?.includes('420') ||
-                            savedState.drawTickets[0]?.contentTop?.includes('40 SUẤT') ||
-                            !savedState.drawTickets[0]?.contentTop?.includes('4.5cqw') ||
-                            savedState.drawTickets[0]?.contentBottomRight?.includes('8kg')
-                        ) {
+                    if (savedState.drawTickets && Array.isArray(savedState.drawTickets) && savedState.drawTickets.length > 0) {
+                        // Tự động nâng cấp CHỈ KHI dữ liệu cũ là mẫu thử nghiệm 12/9 của bản sơ khai
+                        const isOldSample12_9 = savedState.drawTickets[0]?.title?.includes('12/9') ||
+                                                savedState.drawTickets[0]?.contentTop?.includes('420 SUẤT');
+                        if (isOldSample12_9) {
                             setDrawTickets([
                                 { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
                                 { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
@@ -601,45 +606,13 @@ export function useStickerPrinterData() {
                             setDrawContentBottomRightSubSize(3.0);
                             setDrawTitleSize(4.3);
                         } else {
-                            // Ensure existing tickets have updated defaults: 2.9cqw for contentBottom, size 8 for contentTopRight, size 7.6 for contentBottomRight, size 3 for contentBottomRightSub
-                            setDrawTickets(savedState.drawTickets.map((t: TicketDrawData) => ({
-                                ...t,
-                                contentTopRight: (t.contentTopRight && t.contentTopRight.trim())
-                                    ? t.contentTopRight.replace(/7\.6cqw/g, '8cqw')
-                                    : '<div style="font-size: 8cqw; line-height: 1.5; font-weight: normal;">MIỄN PHÍ</div>',
-                                contentBottom: t.contentBottom?.replace(/2\.6cqw/g, '2.9cqw') || t.contentBottom,
-                                contentBottomRight: (t.contentBottomRight && t.contentBottomRight.trim())
-                                    ? t.contentBottomRight.replace(/8(\.0)?cqw/g, '7.6cqw')
-                                    : '<div style="font-size: 7.6cqw; line-height: 1.2;"><b>2 MÁY GIẶT</b></div>',
-                                contentBottomRightSub: (t.contentBottomRightSub && t.contentBottomRightSub.trim())
-                                    ? t.contentBottomRightSub.replace(/2(\.0)?cqw/g, '3cqw')
-                                    : '<div style="font-size: 3cqw; line-height: 1.4;">(1 suất/ ngày)</div>'
-                            })));
+                            // Giữ nguyên 100% dữ liệu phiếu đã lưu của người dùng
+                            setDrawTickets(savedState.drawTickets);
                             if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
-                            if (savedState.drawContentTopRightSize != null) {
-                                setDrawContentTopRightSize(savedState.drawContentTopRightSize === 7.6 ? 8 : savedState.drawContentTopRightSize);
-                            } else {
-                                setDrawContentTopRightSize(8);
-                            }
-                            if (savedState.drawContentBottomLeftSize != null) {
-                                setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize === 2.6 ? 2.9 : savedState.drawContentBottomLeftSize);
-                            } else {
-                                setDrawContentBottomLeftSize(2.9);
-                            }
-                            if (savedState.drawContentBottomRightSize != null) {
-                                setDrawContentBottomRightSize(
-                                    (savedState.drawContentBottomRightSize === 8 || savedState.drawContentBottomRightSize === 8.5)
-                                        ? 7.6
-                                        : savedState.drawContentBottomRightSize
-                                );
-                            } else {
-                                setDrawContentBottomRightSize(7.6);
-                            }
-                            if (savedState.drawContentBottomRightSubSize != null) {
-                                setDrawContentBottomRightSubSize(savedState.drawContentBottomRightSubSize === 2.0 ? 3.0 : savedState.drawContentBottomRightSubSize);
-                            } else {
-                                setDrawContentBottomRightSubSize(3.0);
-                            }
+                            if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
+                            if (savedState.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize);
+                            if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
+                            if (savedState.drawContentBottomRightSubSize != null) setDrawContentBottomRightSubSize(savedState.drawContentBottomRightSubSize);
                             if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
                         }
                     }
@@ -683,11 +656,29 @@ export function useStickerPrinterData() {
     // thích vòng lặp ở skipNextSavedListsSaveRef).
     useEffect(() => {
         const handleDbChange = (event: Event) => {
-            if ((event as CustomEvent<{ key?: string }>).detail?.key === STICKER_SAVED_LISTS_KEY) {
+            const detailKey = (event as CustomEvent<{ key?: string; source?: string }>).detail?.key;
+            if (detailKey === STICKER_SAVED_LISTS_KEY) {
                 getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY).then(data => {
                     if (data) {
                         skipNextSavedListsSaveRef.current = true;
                         setSavedLists(data);
+                    }
+                });
+            } else if (detailKey === STICKER_HISTORY_KEY) {
+                getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY).then(data => {
+                    if (data) {
+                        setPrintHistory(data);
+                    }
+                });
+            } else if (detailKey === STICKER_DB_KEY) {
+                getSetting<any>(STICKER_DB_KEY).then(savedState => {
+                    if (savedState) {
+                        if (Array.isArray(savedState.drawTickets) && savedState.drawTickets.length > 0) {
+                            setDrawTickets(savedState.drawTickets);
+                        }
+                        if (savedState.drawStartNumber != null) setDrawStartNumber(savedState.drawStartNumber);
+                        if (savedState.drawTotalTickets != null) setDrawTotalTickets(savedState.drawTotalTickets);
+                        if (savedState.drawAutoIncrement != null) setDrawAutoIncrement(savedState.drawAutoIncrement);
                     }
                 });
             }
@@ -1306,26 +1297,35 @@ export function useStickerPrinterData() {
         setShowHistory(false);
         setActiveQueuePageId(null);
 
-        // Khôi phục drawTickets & draw font sizes khi restore entry mặc định
-        if (entry.id === DEFAULT_HISTORY_ID) {
-            setDrawTickets([
-                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
-                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
-                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
-                { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
-            ]);
-            setDrawStartNumber(1);
-            setDrawTotalTickets(4000);
-            setDrawAutoIncrement(true);
-            setDrawContentTopLeftSize(4.5);
-            setDrawContentTopRightSize(8);
-            setDrawContentBottomLeftSize(2.9);
-            setDrawContentBottomRightSize(7.6);
-            setDrawContentBottomRightSubSize(3.0);
-            setDrawTitleSize(4.3);
-            setDrawCodeSize(3.8);
-            setDrawFooterSize(3.8);
-            toast.success('Đã khôi phục phiếu mẫu mặc định!');
+        // Khôi phục theo từng loại sticker
+        if (entry.stickerType === 'draw') {
+            if (entry.drawTickets && entry.drawTickets.length > 0) {
+                setDrawTickets(JSON.parse(JSON.stringify(entry.drawTickets)));
+            } else if (entry.id === DEFAULT_HISTORY_ID) {
+                setDrawTickets([
+                    { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '1', code: '1' },
+                    { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '2', code: '2' },
+                    { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '3', code: '3' },
+                    { ...DEFAULT_DRAW_TICKET_TEMPLATE, id: '4', code: '4' },
+                ]);
+            }
+            if (entry.drawStartNumber != null) setDrawStartNumber(entry.drawStartNumber);
+            if (entry.drawTotalTickets != null) setDrawTotalTickets(entry.drawTotalTickets);
+            if (entry.drawAutoIncrement != null) setDrawAutoIncrement(entry.drawAutoIncrement);
+            if (entry.drawContentTopLeftSize != null) setDrawContentTopLeftSize(entry.drawContentTopLeftSize);
+            if (entry.drawContentTopRightSize != null) setDrawContentTopRightSize(entry.drawContentTopRightSize);
+            if (entry.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(entry.drawContentBottomLeftSize);
+            if (entry.drawContentBottomRightSize != null) setDrawContentBottomRightSize(entry.drawContentBottomRightSize);
+            if (entry.drawContentBottomRightSubSize != null) setDrawContentBottomRightSubSize(entry.drawContentBottomRightSubSize);
+            if (entry.drawTitleSize != null) setDrawTitleSize(entry.drawTitleSize);
+            if (entry.drawCodeSize != null) setDrawCodeSize(entry.drawCodeSize);
+            if (entry.drawFooterSize != null) setDrawFooterSize(entry.drawFooterSize);
+
+            toast.success(`Đã khôi phục: ${entry.label}`);
+        } else {
+            setBatchItems(entry.batchItems || []);
+            setManualPages(entry.manualPages || []);
+            toast.success(`Đã khôi phục: ${entry.label}`);
         }
     };
 
@@ -1427,10 +1427,11 @@ export function useStickerPrinterData() {
             const root = document.getElementById('root');
             if (root) root.style.display = 'none';
 
+            const drawTitleClean = drawTickets[0]?.title?.replace(/<[^>]*>/g, '').trim() || 'Phiếu Rút Thăm';
             const historyEntry: PrintHistoryEntry = {
                 id: `history_${Date.now()}`,
                 timestamp: Date.now(),
-                label: 'Phiếu Rút Thăm',
+                label: drawTitleClean.length > 50 ? drawTitleClean.slice(0, 50) + '...' : drawTitleClean,
                 pageCount: totalPages,
                 stickerType,
                 bgImage: effectiveBg,
@@ -1448,22 +1449,78 @@ export function useStickerPrinterData() {
                 showBarcode,
                 manualPages: [],
                 discountDisplayMode,
+                drawTickets: JSON.parse(JSON.stringify(drawTickets)),
+                drawStartNumber,
+                drawTotalTickets,
+                drawAutoIncrement,
+                drawContentTopLeftSize,
+                drawContentTopRightSize,
+                drawContentBottomLeftSize,
+                drawContentBottomRightSize,
+                drawContentBottomRightSubSize,
+                drawTitleSize,
+                drawCodeSize,
+                drawFooterSize,
             };
 
             setPrintHistory(prev => {
                 const dupIdx = prev.findIndex(entry => isHistoryDuplicate(entry, historyEntry));
                 let next;
                 if (dupIdx !== -1) {
-                    const matched = { ...prev[dupIdx], timestamp: Date.now() };
+                    const matched = { ...prev[dupIdx], ...historyEntry, timestamp: Date.now() };
                     const filtered = prev.filter((_, idx) => idx !== dupIdx);
                     next = [matched, ...filtered];
                 } else {
                     next = [historyEntry, ...prev];
                 }
-                const sliced = next.slice(0, 20);
+                const sliced = next.slice(0, 30);
                 saveSetting(STICKER_HISTORY_KEY, sliced).catch(() => {});
                 return sliced;
             });
+
+            // Lưu tức thì trạng thái phiếu vào IndexedDB và kích hoạt đồng bộ Firebase
+            const stateToSave = {
+                stickerMode,
+                stickerType,
+                bgImage,
+                headerTextContent,
+                subHeaderTextContent,
+                footerTextContent,
+                showBarcode,
+                previewName,
+                previewOldPrice,
+                previewNewPrice,
+                discountDisplayMode,
+                headerTextSize,
+                subHeaderTextSize,
+                percentTextSize,
+                oldPriceTextSize,
+                nameTextSize,
+                newPriceTextSize,
+                footerTextSize,
+                barcodeImei,
+                discountThreshold,
+                searchTerm,
+                activeQueuePageId,
+                activeSubTab,
+                manualPages,
+                batchItems,
+                priceSource,
+                drawTickets,
+                drawStartNumber,
+                drawTotalTickets,
+                drawAutoIncrement,
+                drawContentTopLeftSize,
+                drawContentTopRightSize,
+                drawContentBottomLeftSize,
+                drawContentBottomRightSize,
+                drawContentBottomRightSubSize,
+                drawTitleSize,
+                drawCodeSize,
+                drawFooterSize,
+                updatedAt: new Date().toISOString()
+            };
+            saveSetting(STICKER_DB_KEY, stateToSave).catch(() => {});
 
             setTimeout(() => {
                 window.print();

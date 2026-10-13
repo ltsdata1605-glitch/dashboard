@@ -21,6 +21,11 @@ interface SettingsModalProps {
 
 const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, columns, onSave, allIndustries, allGroups, allManufacturers }) => {
     const [internalColumns, setInternalColumns] = useState<WarehouseColumnConfig[]>([]);
+    const internalColumnsRef = useRef<WarehouseColumnConfig[]>(internalColumns);
+    useEffect(() => {
+        internalColumnsRef.current = internalColumns;
+    }, [internalColumns]);
+
     const [view, setView] = useState<'picker' | 'form'>('picker');
     
     // Form state
@@ -35,14 +40,24 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     
     const mainHeaderInputRef = useRef<HTMLInputElement>(null);
 
+    const prevIsOpenRef = useRef(false);
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !prevIsOpenRef.current) {
             const sortedColumns = [...columns].sort((a, b) => a.order - b.order);
             setInternalColumns(sortedColumns);
+            internalColumnsRef.current = sortedColumns;
             setView('picker');
             resetForm(false);
         }
+        prevIsOpenRef.current = isOpen;
     }, [isOpen, columns]);
+
+    const updateColumnsAndSave = (updater: (prev: WarehouseColumnConfig[]) => WarehouseColumnConfig[]) => {
+        const next = updater(internalColumnsRef.current);
+        internalColumnsRef.current = next;
+        setInternalColumns(next);
+        onSave(next);
+    };
     
     useEffect(() => {
         if (view === 'form' && editingColumn === null) {
@@ -86,12 +101,12 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
 
         const newColumns: WarehouseColumnConfig[] = [];
         groups.forEach(group => {
-            const colsInGroup = internalColumns.filter(c => (c.mainHeader || 'Khác') === group);
+            const colsInGroup = internalColumnsRef.current.filter(c => (c.mainHeader || 'Khác') === group);
             newColumns.push(...colsInGroup);
         });
 
         const reorderedColumns = newColumns.map((c, i) => ({ ...c, order: i }));
-        setInternalColumns(reorderedColumns);
+        updateColumnsAndSave(() => reorderedColumns);
     };
 
     const handleSwapGroups = (source: string, target: string) => {
@@ -106,12 +121,12 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
 
         const newColumns: WarehouseColumnConfig[] = [];
         groups.forEach(group => {
-            const colsInGroup = internalColumns.filter(c => (c.mainHeader || 'Khác') === group);
+            const colsInGroup = internalColumnsRef.current.filter(c => (c.mainHeader || 'Khác') === group);
             newColumns.push(...colsInGroup);
         });
 
         const reorderedColumns = newColumns.map((c, i) => ({ ...c, order: i }));
-        setInternalColumns(reorderedColumns);
+        updateColumnsAndSave(() => reorderedColumns);
     };
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, groupName: string) => {
@@ -175,29 +190,29 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         const groups = [...groupOrder];
         const newColumns: WarehouseColumnConfig[] = [];
         groups.forEach(group => {
-            const colsInGroup = internalColumns.filter(c => (c.mainHeader || 'Khác') === group);
+            const colsInGroup = internalColumnsRef.current.filter(c => (c.mainHeader || 'Khác') === group);
             newColumns.push(...colsInGroup);
         });
 
         const reorderedColumns = newColumns.map((c, i) => ({ ...c, order: i }));
-        onSave(reorderedColumns);
+        updateColumnsAndSave(() => reorderedColumns);
         onClose();
     };
 
     const handleToggleVisibility = (id: string) => {
-        setInternalColumns(prev => prev.map(c => c.id === id ? { ...c, isVisible: !c.isVisible } : c));
+        updateColumnsAndSave(prev => prev.map(c => c.id === id ? { ...c, isVisible: !c.isVisible } : c));
     };
 
     const handleDelete = (id: string) => {
-        setInternalColumns(prev => prev.filter(c => c.id !== id));
+        updateColumnsAndSave(prev => prev.filter(c => c.id !== id));
     };
     
     const handleDeleteGroup = (groupName: string) => {
-        setInternalColumns(prev => prev.filter(c => c.mainHeader !== groupName));
+        updateColumnsAndSave(prev => prev.filter(c => c.mainHeader !== groupName));
     };
 
     const handleToggleGroupVisibility = (mainHeader: string, shouldBeVisible: boolean) => {
-        setInternalColumns(prev => prev.map(c => c.mainHeader === mainHeader ? { ...c, isVisible: shouldBeVisible } : c));
+        updateColumnsAndSave(prev => prev.map(c => c.mainHeader === mainHeader ? { ...c, isVisible: shouldBeVisible } : c));
     };
     
     const handleSaveColumn = (e: React.FormEvent) => {
@@ -219,24 +234,25 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         };
 
         if (editingColumn) {
-            setInternalColumns(prev => prev.map(col => col.id === editingColumn.id ? { ...col, ...newColumnData } : col));
+            updateColumnsAndSave(prev => prev.map(col => col.id === editingColumn.id ? { ...col, ...newColumnData } : col));
         } else {
             const newColumn: WarehouseColumnConfig = {
                 id: `custom_${Date.now()}`,
-                order: internalColumns.length, isVisible: true, isCustom: true,
+                order: internalColumnsRef.current.length, isVisible: true, isCustom: true,
                 ...newColumnData
             };
-            setInternalColumns(prev => [...prev, newColumn]);
+            updateColumnsAndSave(prev => [...prev, newColumn]);
         }
         resetForm();
     };
     
     const handleSelectAll = (select: boolean) => {
-        setInternalColumns(prev => prev.map(c => ({...c, isVisible: select})));
+        updateColumnsAndSave(prev => prev.map(c => ({...c, isVisible: select})));
     };
 
     const handleRestoreDefaults = () => {
-        setInternalColumns([...DEFAULT_WAREHOUSE_COLUMNS]);
+        const next = [...DEFAULT_WAREHOUSE_COLUMNS];
+        updateColumnsAndSave(() => next);
         resetForm();
     };
 
@@ -370,7 +386,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             position="bottom"
             onClose={onClose}
             title="Cấu Hình Cột Báo Cáo"
-            subTitle="Tùy chỉnh hiển thị dữ liệu kho"
+            subTitle="Tùy chỉnh hiển thị dữ liệu kho • Tự động lưu Firebase"
             titleColorClass="text-slate-800 dark:text-white"
             maxWidth="xl"
             footer={view === 'picker' ? (
@@ -425,7 +441,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                         onSave={(newColumn) => {
                             const mappedColumn: WarehouseColumnConfig = {
                                 id: newColumn.id,
-                                order: editingColumn ? editingColumn.order : internalColumns.length,
+                                order: editingColumn ? editingColumn.order : internalColumnsRef.current.length,
                                 isVisible: true,
                                 isCustom: true,
                                 mainHeader: newColumn.mainHeader,
@@ -444,9 +460,9 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             };
                             
                             if (editingColumn) {
-                                setInternalColumns(prev => prev.map(col => col.id === editingColumn.id ? mappedColumn : col));
+                                updateColumnsAndSave(prev => prev.map(col => col.id === editingColumn.id ? mappedColumn : col));
                             } else {
-                                setInternalColumns(prev => [...prev, mappedColumn]);
+                                updateColumnsAndSave(prev => [...prev, mappedColumn]);
                             }
                             setView('picker');
                             setEditingColumn(null);

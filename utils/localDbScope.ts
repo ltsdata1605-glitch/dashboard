@@ -324,7 +324,10 @@ export const HEAVY_SYNC_KEYS = new Set([
     'competition-luy-ke',
     'competition-realtime',
     'summary-luy-ke',
-    'summary-realtime'
+    'summary-realtime',
+    'stickerPrinterState',
+    'stickerPrintHistory',
+    'stickerSavedLists'
 ]);
 
 export const isHeavySyncKey = (key: string): boolean => {
@@ -346,7 +349,8 @@ export const isHeavySyncKey = (key: string): boolean => {
         unprefixed.startsWith('avatar-') ||
         unprefixed === 'last-updates-list' ||
         unprefixed === 'nhanvien-summary-tables-v1' ||
-        unprefixed === 'ai-assistant-history'
+        unprefixed === 'ai-assistant-history' ||
+        unprefixed === 'tile-custom-links'
     ) {
         return true;
     }

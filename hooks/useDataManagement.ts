@@ -406,6 +406,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                             ? dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error)
                                             : undefined));
                                     if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
+                                    if (backup.warehouseDTThucTargets) setWarehouseDTThucTargets(backup.warehouseDTThucTargets as Record<string, number>);
                                     if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
                                     if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
                                     if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
@@ -943,6 +944,41 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             window.removeEventListener('ycx-product-config-changed', handleGlobalConfigChanged);
         };
     }, [setProductConfig]);
+
+    useEffect(() => {
+        const handleSettingUpdate = async (e: Event) => {
+            const detail = (e as CustomEvent)?.detail;
+            const key = detail?.key;
+            if (!key) return;
+
+            if (key === 'kpiCardConfig') {
+                const updated = await dbService.getKpiCardConfig();
+                if (updated && updated.length > 0) setKpiCardsConfig(updated);
+            } else if (key === 'kpiTargets') {
+                const updated = await dbService.getKpiTargets();
+                if (updated) setKpiTargets(updated);
+            } else if (key === 'warehouseTargets') {
+                const updated = await dbService.getWarehouseTargets();
+                if (updated) setWarehouseTargets(updated);
+            } else if (key === 'warehouseDTThucTargets') {
+                const updated = await dbService.getSetting<Record<string, number>>('warehouseDTThucTargets');
+                if (updated) setWarehouseDTThucTargets(updated);
+            } else if (key === 'gtdhTargets') {
+                const updated = await dbService.getGtdhTargets();
+                if (updated) setGtdhTargets(updated);
+            } else if (key === 'departmentMap') {
+                const updated = await dbService.getDepartmentMap();
+                if (updated) setDepartmentMap(updated);
+            }
+        };
+
+        window.addEventListener('indexeddb-change', handleSettingUpdate);
+        window.addEventListener('ycx-setting-changed', handleSettingUpdate);
+        return () => {
+            window.removeEventListener('indexeddb-change', handleSettingUpdate);
+            window.removeEventListener('ycx-setting-changed', handleSettingUpdate);
+        };
+    }, []);
 
     const refreshRegistry = useCallback(async () => {
         try {

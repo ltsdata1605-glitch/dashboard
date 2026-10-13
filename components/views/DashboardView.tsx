@@ -6,6 +6,7 @@ import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSync } from '../../contexts/SyncContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 import { getSetting, saveSetting } from '../../services/dbService';
@@ -101,6 +102,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         handleRestoreGroup
     } = logic;
     const { userRole } = useAuth();
+    const { forceSync } = useSync();
     const { totalVisits, onlineUsers } = useSystemTraffic();
     const pendingRequestsCount = usePendingApprovalCount();
 
@@ -405,6 +407,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         hasSalesData={hasSalesData}
                         onClearSalesData={handleSalesDataClear}
                         salesClearTitle={salesClearTitle}
+                        totalVisits={totalVisits}
+                        onlineUsers={onlineUsers}
                     />
 
                     {/* Thông báo của Super Admin — luôn hiện cho mọi người dùng. Lỗi #18 (video v2:003–012): trước là dải đỏ chữ CHẠY liên
@@ -421,7 +425,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                         <React.Suspense fallback={null}>
                             <KpiCardConfigModal
                                 isOpen={isKpiConfigModalOpen}
-                                onClose={() => setIsKpiConfigModalOpen(false)}
+                                onClose={() => {
+                                    setIsKpiConfigModalOpen(false);
+                                    forceSync().catch(console.error);
+                                }}
                                 configs={logic.kpiCardsConfig}
                                 onSave={logic.updateKpiCardsConfig}
                             />
@@ -484,35 +491,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     {/* Cloud Data Sync Banner — Hiển thị trên 1 dòng nhỏ gọn, nằm ngay dưới thông báo đỏ */}
 
 
-                                    {/* Data Coverage Indicator */}
-                                    <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex -space-x-1">
-                                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                                <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
-                                            </div>
-                                            <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
-                                                <AppIcon name="users" size="xs" className="text-sky-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-3">
-                                            {logic.fileInfo && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
-                                                    }}
-                                                    title="Bấm để kiểm tra & đồng bộ dữ liệu đám mây"
-                                                    className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 hover:bg-sky-50 dark:hover:bg-sky-950/30 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50 active:scale-95 transition-all cursor-pointer group"
-                                                >
-                                                    <AppIcon name="refresh" size="xs" className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                                                    <span className="text-[11px] font-bold uppercase tracking-widest">
-                                                        Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-black">{logic.fileInfo.savedAt}</span>
-                                                    </span>
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
 
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-3 lg:space-y-6">
                                         {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (

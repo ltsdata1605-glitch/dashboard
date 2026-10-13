@@ -180,7 +180,7 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Fallback for any tab not handled above */}
-            {!persistentViews.some(v => v.id === activeTab) && !['tools-coupon', 'tools-tax', 'tools-price-compare'].includes(activeTab) && (
+            {!persistentViews.some(v => v.id === activeTab) && !['tools-coupon', 'tools-tax', 'tools-price-compare', 'tools'].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>

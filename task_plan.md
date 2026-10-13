@@ -1,50 +1,42 @@
-# Task Plan: Chuyển đổi tính năng Check Thưởng sang Native React (Bỏ hoàn toàn iframe)
+# Task Plan: Toàn diện kiểm tra & khắc phục Lưu trữ 2 nơi (IndexedDB + Firebase) cho toàn bộ dự án
 
-## 1. Goal
-Chuyển đổi hoàn toàn tính năng **Check Thưởng Thi Đua** từ `public/check-thuong.html` (chạy qua thẻ `<iframe>` trong `CheckThuongView.tsx`) sang **Native React Components** 100% trong `features/check-thuong/`. Xoá bỏ hoàn toàn iframe, xoá cầu nối `postMessage` và đồng bộ 2 tầng IndexedDB, giúp màn hình hiển thị tức thì, hỗ trợ Dark Mode hoàn hảo, mượt mà trên mobile và nhất quán với kiến trúc toàn dự án.
+## Mục tiêu
+Đảm bảo **tất cả** thao tác người dùng (cấu hình, ẩn/hiện, sắp xếp, target, bộ lọc, dữ liệu nhập, danh sách, mẫu in...) trên toàn bộ các phân hệ/modal/module của ứng dụng đều được tự động lưu trữ đầy đủ vào **2 nơi**:
+1. **IndexedDB** (cục bộ theo tài khoản, tức thì, bảo toàn offline).
+2. **Firebase** (Firestore Cloud theo tài khoản `users/{uid}`, đồng bộ xuyên thiết bị, không mất khi reload/đổi máy).
 
-## 2. Architecture & Design
-- **Mô hình**: Feature-Sliced Design chuẩn mực tại `features/check-thuong/`.
-- **Tầng dịch vụ & thuật toán**:
-  - `features/check-thuong/services/checkThuongParser.ts`: Đọc file Excel (.xlsx) / CSV theo nhu cầu (`import('xlsx')` dynamic), tiền xử lý `preProcessData`, phân loại 6 nhóm thi đua.
-  - `features/check-thuong/services/checkThuongSearch.ts`: So khớp mã kho (`createStoreMatcher`), tính toán tra cứu đơn kho và so sánh 2 kho (Store Comparison).
-- **Tầng giao diện (Components chia nhỏ < 300 dòng)**:
-  1. `CheckThuongHeroBanner.tsx`: Hiển thị tên siêu thị, tổng tiền thưởng, tỷ lệ % nhóm đạt ≥ 100%, nút xuất ảnh banner.
-  2. `CheckThuongStatusSummary.tsx`: Cụm 6 thẻ mini trạng thái (Đạt thưởng, Sắp có, Đạt ≥ 100%, < 100%, Không quỹ, No Sale) kèm thanh bộ lọc pill filter và nút chuyển đổi chế độ xem (Bảng / Thẻ).
-  3. `CheckThuongCategoryTable.tsx`: Bảng danh sách ngành hàng (chế độ List view) với thanh tiến độ %DK, hạng VT/%, thưởng và badge sấm sét cho ngành hàng "Sắp có".
-  4. `CheckThuongCategoryCards.tsx`: Lưới thẻ ngành hàng (chế độ Card view) với màu pastel phong phú, chi tiết thưởng vượt trội và thưởng top target.
-  5. `CheckThuongAnalysisCard.tsx`: Phân tích tự động & Đề xuất hành động (Cơ hội vàng, Môn mấp mé rớt hạng, Môn chưa phát sinh số).
-  6. `CheckThuongComparisonView.tsx`: Màn hình So Sánh Trực Diện giữa 2 kho (Thẻ so sánh Winner, Top 3 thế mạnh, Bảng chi tiết so sánh +/- từng ngành hàng).
-  7. `CheckThuongRankingModal.tsx`: Hộp thoại xem Bảng Xếp Hạng toàn hệ thống cho từng môn thi khi click vào ngành hàng.
-  8. `CheckThuongEmptyDropzone.tsx`: Giao diện kéo-thả hoặc chọn file Excel khi chưa có dữ liệu.
-- **Tích hợp chính**:
-  - Cập nhật [`CheckThuongView.tsx`](file:///Users/ltson/dashboardycx/components/views/CheckThuongView.tsx) để render trực tiếp React components thay vì iframe.
-  - Giữ nguyên các chức năng Header Subtitle Portal, TopBar Search Bar Portal, và chuyển tab "Tra cứu" / "Top thưởng".
-- **Xuất ảnh**:
-  - Tái sử dụng `html-to-image` từ các tiện ích có sẵn của dự án, tuân thủ Image Export Standard (mở rộng đầy đủ cột, fit content).
+---
 
-## 3. Implementation Phases
-- [x] **Phase 1: Service Engine & Data Models**
-  - Xây dựng kiểu dữ liệu TypeScript cho ngành hàng, nhóm trạng thái, so sánh và ranking trong `features/check-thuong/types/`.
-  - Viết `checkThuongParser.ts` và `checkThuongSearch.ts` với đầy đủ unit test đảm bảo tính toán khớp 100% logic gốc.
-- [x] **Phase 2: Xây dựng UI Components (Tra cứu đơn kho)**
-  - Xây dựng `CheckThuongEmptyDropzone.tsx`.
-  - Xây dựng `CheckThuongHeroBanner.tsx`.
-  - Xây dựng `CheckThuongStatusSummary.tsx`.
-  - Xây dựng `CheckThuongCategoryTable.tsx` & `CheckThuongCategoryCards.tsx`.
-  - Xây dựng `CheckThuongAnalysisCard.tsx`.
-  - Xây dựng `CheckThuongRankingModal.tsx` (dùng Modal chuẩn hệ thống).
-- [x] **Phase 3: Xây dựng UI Component So Sánh 2 Kho**
-  - Xây dựng `CheckThuongComparisonView.tsx` (Thẻ đối đầu Sky/Amber, Top 3 thế mạnh, Bảng chi tiết chênh lệch).
-- [x] **Phase 4: Thay thế iframe trong CheckThuongView.tsx & Kiểm thử**
-  - Thay thế toàn bộ khối `<iframe>` bằng Native React View (`<CheckThuongSearchView />`).
-  - Đồng bộ state giữa Portal thanh Header và View.
-  - Chuẩn hoá design system token (loại bỏ hoàn toàn vi phạm `indigo`, `tinyText`, `rawOverlay`, `iconEmoji`).
-  - Chạy `npm run typecheck` (0 errors), Vitest targeted test (4/4 PASS), và Playwright E2E silent verification test (100% PASS, 2.7s).
+## Các giai đoạn thực hiện
 
-## 4. Status Tracking
-- Phase 1: Completed
-- Phase 2: Completed
-- Phase 3: Completed
-- Phase 4: Completed
-- **Overall Status**: Hoàn tất 100% chuyển đổi Check Thưởng sang Native React!
+- [x] **Giai đoạn 1: Khảo sát & Kiểm kê toàn bộ Modal, Module, Thao tác người dùng**
+  - Rà soát tất cả các modal cấu hình (KPI, Bảng kho, Bảng đối đầu, Tab khai thác, Nhân viên, Sticker, Phân ca, Thi đua, Ngành hàng, v.v.).
+  - Rà soát các thao tác chỉnh sửa trực tiếp trên giao diện (nhập target, lọc kho, chế độ xem, v.v.).
+  - Đối chiếu danh mục khóa lưu trữ với `isLightSyncKey`, `HEAVY_SYNC_KEYS`, và cơ chế sync Firebase.
+  - Ghi nhận chi tiết vào `findings.md`.
+
+- [x] **Giai đoạn 2: Thiết kế giải pháp chuẩn hóa cơ chế Auto-Save & Cloud-Sync**
+  - Đảm bảo mọi modal đều áp dụng cơ chế:
+    - Lưu tức thì khi thao tác (không phụ thuộc vào nút "Hoàn tất" hay đóng modal).
+    - Cập nhật IndexedDB ngay lập tức.
+    - Kích hoạt sự kiện đồng bộ `ycx-setting-changed` / Firebase sync.
+    - Khi đóng modal (`onClose`), tự động flush sync lên Firebase.
+  - Kiểm tra và bổ sung các khóa còn thiếu trong hệ thống đồng bộ Cloud (`HEAVY_SYNC_KEYS` hoặc `isLightSyncKey`).
+
+- [x] **Giai đoạn 3: Thực hiện khắc phục theo từng Module**
+  - Nhóm 1: Các Modal cấu hình trong Phân Tích (`KpiCardConfigModal`, `HeadToHeadConfigModal`, `CustomExploitationTabModal`, `EfficiencyExploitationTabModal`, `EmployeeManagerModal`, `ColumnConfigModal`, v.v.).
+  - Nhóm 2: Các thao tác Target & Bộ lọc trực tiếp (`warehouseColumnTargets`, `storeOpenCloseHours`, `industryVisibleGroups`, v.v.).
+  - Nhóm 3: Module Report BI (`features/bi-dashboard`).
+  - Nhóm 4: Module In Sticker & Sự kiện (`features/sticker-event`).
+  - Nhóm 5: Module Phân ca (`features/phan-ca`).
+
+- [x] **Giai đoạn 4: Kiểm chứng & Đo lường thực tế**
+  - Chạy `npm run typecheck` đảm bảo 0 lỗi TypeScript (PASS).
+  - Chạy các targeted unit tests liên quan đến storage & sync (`tests/unit/light-sync-keys.test.ts` 43/43 PASS).
+  - Chạy Silent Headless Verification (Playwright: `test-warehouse-auto-save.spec.ts` & `test-kpi-auto-save.spec.ts` PASS 100%).
+
+---
+
+## Quyết định kỹ thuật
+- Mọi thao tác người dùng đều được ghi nhận qua hàm lưu chuẩn phát event `ycx-setting-changed`.
+- Đồng bộ đa thiết bị: khi Cloud cập nhật, các view lắng nghe `indexeddb-change` để tự động render lại không cần F5.

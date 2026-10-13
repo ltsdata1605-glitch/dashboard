@@ -35,7 +35,9 @@ const NavItem = React.memo(({
 }) => {
     const isActive = activeTab === item.id || (item.subItems?.some((sub) => activeTab === sub.id));
     const [isHovered, setIsHovered] = useState(false);
+    const [isOpenByClick, setIsOpenByClick] = useState(false);
     const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const hasSubItems = Boolean(item.subItems && item.subItems.length > 0);
 
     const handleMouseEnter = () => {
@@ -63,22 +65,52 @@ const NavItem = React.memo(({
         };
     }, []);
 
+    // Đóng menu phụ khi click ra ngoài hoặc bấm phím Escape
+    useEffect(() => {
+        if (!isOpenByClick) return;
+        const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpenByClick(false);
+            }
+        };
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setIsOpenByClick(false);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        document.addEventListener('touchstart', handleOutsideClick);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handleOutsideClick);
+            document.removeEventListener('touchstart', handleOutsideClick);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpenByClick]);
+
     const handleClick = () => {
         if (item.externalUrl) {
             window.open(item.externalUrl, '_blank');
+        } else if (hasSubItems) {
+            // Khi mục có menu phụ (như 'Công cụ'): Bấm vào chỉ để mở/đóng hoặc giữ menu phụ hiển thị,
+            // TUYỆT ĐỐI không chuyển tab sang trang rỗng ('tools')
+            setIsOpenByClick((prev) => !prev);
         } else {
             if (item.path === '/analysis') setActiveTab('analysis');
             else if (item.path === '/') setActiveTab('check-thuong');
             else if (item.path === '/employees') setActiveTab('employees');
             else if (item.path === '/reports') setActiveTab('reports');
             else if (item.path === '/line-bot') setActiveTab('tools-line-bot');
-            else if (item.path === '/tools') setActiveTab('tools');
             else if (item.id) setActiveTab(item.id);
         }
     };
 
+    const isButtonHighlighted = isActive || isOpenByClick;
+    const showSubmenu = hasSubItems && (isHovered || isOpenByClick);
+
     return (
         <div 
+            ref={containerRef}
             className="relative w-full flex items-center justify-center my-0.5"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
@@ -90,7 +122,7 @@ const NavItem = React.memo(({
                 aria-label={item.label}
                 className={`
                     relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 group cursor-pointer
-                    ${isActive
+                    ${isButtonHighlighted
                         ? 'bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 font-semibold shadow-xs'
                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100/80 dark:hover:bg-slate-800 hover:text-sky-600 dark:hover:text-sky-400'
                     }
@@ -104,7 +136,7 @@ const NavItem = React.memo(({
                 <AppIcon 
                     name={item.icon} 
                     size="xl" 
-                    className={`transition-transform duration-200 ${isActive ? 'scale-105 text-sky-600 dark:text-sky-400' : 'group-hover:scale-110'}`} 
+                    className={`transition-transform duration-200 ${isButtonHighlighted ? 'scale-105 text-sky-600 dark:text-sky-400' : 'group-hover:scale-110'}`} 
                 />
 
                 {item.id === 'pending-approval' && (
@@ -116,7 +148,7 @@ const NavItem = React.memo(({
             </Button>
 
             {/* Flyout Submenu for tools with seamless hover bridge */}
-            {hasSubItems && isHovered && (
+            {showSubmenu && (
                 <div 
                     className="absolute left-full top-0 pl-2.5 z-[220]"
                     onMouseEnter={handleMouseEnter}
@@ -136,6 +168,7 @@ const NavItem = React.memo(({
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setIsHovered(false);
+                                    setIsOpenByClick(false);
                                     if (sub.externalUrl) {
                                         window.open(sub.externalUrl, '_blank');
                                     } else {

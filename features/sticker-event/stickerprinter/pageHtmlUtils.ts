@@ -219,6 +219,29 @@ export const isHistoryDuplicate = (a: PrintHistoryEntry, b: PrintHistoryEntry): 
     if (a.discountDisplayMode !== b.discountDisplayMode) return false;
     if (a.pageCount !== b.pageCount) return false;
 
+    if (a.stickerType === 'draw') {
+        if (a.drawStartNumber !== b.drawStartNumber) return false;
+        if (a.drawTotalTickets !== b.drawTotalTickets) return false;
+        if (a.drawAutoIncrement !== b.drawAutoIncrement) return false;
+        const ticketsA = a.drawTickets || [];
+        const ticketsB = b.drawTickets || [];
+        if (ticketsA.length !== ticketsB.length) return false;
+        for (let i = 0; i < ticketsA.length; i++) {
+            const tA = ticketsA[i];
+            const tB = ticketsB[i];
+            if (tA.title !== tB.title ||
+                tA.contentTop !== tB.contentTop ||
+                tA.contentTopRight !== tB.contentTopRight ||
+                tA.contentBottom !== tB.contentBottom ||
+                tA.contentBottomRight !== tB.contentBottomRight ||
+                tA.contentBottomRightSub !== tB.contentBottomRightSub ||
+                tA.footer !== tB.footer) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Compare batchItems (exact content fields)
     if (a.batchItems.length !== b.batchItems.length) return false;
     for (let i = 0; i < a.batchItems.length; i++) {

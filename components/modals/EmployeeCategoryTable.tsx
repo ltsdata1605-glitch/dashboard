@@ -46,17 +46,34 @@ export const useCategoryColumns = (): WarehouseColumnConfig[] => {
 
     useEffect(() => {
         let cancelled = false;
-        Promise.all([
-            getSetting<string>('warehouseColumnConfigVersion'),
-            getWarehouseColumnConfig(),
-        ])
-            .then(([version, saved]) => {
-                if (cancelled) return;
-                const isUsable = version === WAREHOUSE_COLUMN_CONFIG_VERSION && !!saved && saved.length > 0;
-                setColumns(pickCategoryColumns(isUsable ? saved! : DEFAULT_WAREHOUSE_COLUMNS));
-            })
-            .catch(() => { /* giữ cấu hình mặc định */ });
-        return () => { cancelled = true; };
+        const load = () => {
+            Promise.all([
+                getSetting<string>('warehouseColumnConfigVersion'),
+                getWarehouseColumnConfig(),
+            ])
+                .then(([version, saved]) => {
+                    if (cancelled) return;
+                    const isUsable = version === WAREHOUSE_COLUMN_CONFIG_VERSION && !!saved && saved.length > 0;
+                    setColumns(pickCategoryColumns(isUsable ? saved! : DEFAULT_WAREHOUSE_COLUMNS));
+                })
+                .catch(() => { /* giữ cấu hình mặc định */ });
+        };
+        load();
+
+        const handleChange = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            if (detail?.key === 'warehouseColumnConfig') {
+                load();
+            }
+        };
+
+        window.addEventListener('ycx-setting-changed', handleChange as EventListener);
+        window.addEventListener('indexeddb-change', handleChange as EventListener);
+        return () => {
+            cancelled = true;
+            window.removeEventListener('ycx-setting-changed', handleChange as EventListener);
+            window.removeEventListener('indexeddb-change', handleChange as EventListener);
+        };
     }, []);
 
     return columns;
