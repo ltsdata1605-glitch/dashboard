@@ -158,11 +158,41 @@ export const useDashboardLogic = (isActive?: boolean) => {
     }, [localCompetitionLuyKe, isActive]);
 
     // Gộp theo tên siêu thị: shared trước, local đè lên (local luôn mới nhất trên thiết bị
-    // đang dán) — bù đúng phần siêu thị nhân viên/quản lý CHƯA dán trên thiết bị này.
-    const competitionLuyKeBySupermarket = useMemo(
-        () => ({ ...sharedCompetitionLuyKeBySupermarket, ...localCompetitionLuyKeBySupermarket }),
-        [sharedCompetitionLuyKeBySupermarket, localCompetitionLuyKeBySupermarket]
-    );
+    // đang chạy/dán) — bù đúng phần siêu thị nhân viên/quản lý CHƯA dán trên thiết bị này.
+    // Tự động xoá khoá shared trùng/tương đương (vd "Hùng Vương" vs "ĐML_STR_STR - 99 Hùng Vương")
+    // và chuẩn hoá về tên hiển thị đồng nhất với dropdown activeSupermarket.
+    const competitionLuyKeBySupermarket = useMemo(() => {
+        const merged: Record<string, SupermarketCompetitionData> = { ...sharedCompetitionLuyKeBySupermarket };
+
+        Object.entries(localCompetitionLuyKeBySupermarket).forEach(([localKey, localData]) => {
+            const matchingSharedKeys = Object.keys(merged).filter(sharedKey => {
+                if (sharedKey === 'Tổng' && localKey === 'Tổng') return true;
+                if (sharedKey === 'Tổng' || localKey === 'Tổng') return false;
+                return (
+                    sharedKey === localKey ||
+                    isSupermarketMatch(localKey, sharedKey, supermarketMap) ||
+                    shortenSupermarketName(localKey) === shortenSupermarketName(sharedKey)
+                );
+            });
+
+            // Tìm tên chuẩn hoá theo sharedKey đã biết hoặc danh sách siêu thị dropdown
+            const matchingSupermarket = supermarkets.find(s =>
+                s !== 'Tổng' && (
+                    isSupermarketMatch(localKey, s, supermarketMap) ||
+                    shortenSupermarketName(localKey) === shortenSupermarketName(s)
+                )
+            );
+
+            const canonicalKey = matchingSharedKeys[0] || matchingSupermarket || localKey;
+
+            // Xoá triệt để các khoá cũ/trùng trong shared để không bị bóng ma (shadowing)
+            matchingSharedKeys.forEach(k => delete merged[k]);
+
+            merged[canonicalKey] = localData;
+        });
+
+        return merged;
+    }, [sharedCompetitionLuyKeBySupermarket, localCompetitionLuyKeBySupermarket, supermarketMap, supermarkets]);
 
     const [industryRealtimeParsed, setIndustryRealtimeParsed] = useState<ReturnType<typeof parseIndustryRealtimeData> | null>(null);
     const [industryLuyKeParsed, setIndustryLuyKeParsed] = useState<ReturnType<typeof parseIndustryLuyKeData> | null>(null);

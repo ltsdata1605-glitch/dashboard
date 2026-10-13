@@ -54,8 +54,26 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
     }
 
     // 1. QUY TẮC CỐT LÕI: Luôn luôn và duy nhất lấy danh sách nhân viên từ chức năng Phân tích (departmentMap / analysis-employees-list)
+    let analysisPayload: any = null;
     try {
-        const analysisPayload = await getAnalysisEmployees();
+        analysisPayload = await getAnalysisEmployees();
+    } catch (e) {
+        console.warn('[GlobalBonusService] Lỗi đọc nhân viên từ Phân tích:', e);
+    }
+
+    // Fallback tìm siêu thị từ Phân tích nếu activeSupermarkets vẫn rỗng (máy mới, chưa dán báo cáo)
+    if (activeSupermarkets.length === 0 && analysisPayload) {
+        if (analysisPayload.supermarket) {
+            activeSupermarkets = [analysisPayload.supermarket];
+        } else if (analysisPayload.employees && analysisPayload.employees.length > 0) {
+            const smList = Array.from(new Set(analysisPayload.employees.map((e: any) => e.supermarket).filter(Boolean))) as string[];
+            if (smList.length > 0) {
+                activeSupermarkets = smList;
+            }
+        }
+    }
+
+    try {
         if (analysisPayload?.employees && analysisPayload.employees.length > 0) {
             for (const emp of analysisPayload.employees) {
                 if (hiddenEmployeesSet.has(emp.originalName) || hiddenEmployeesSet.has(standardizeEmployeeName(emp.originalName))) {
@@ -72,20 +90,15 @@ export async function getGlobalBonusEmployees(): Promise<GlobalBonusEmployeesRes
                         originalName: emp.originalName,
                         department: dept,
                     });
-                    if (emp.supermarket) {
-                        employeeSupermarketMap[emp.originalName] = emp.supermarket;
-                        employeeSupermarketMap[canonical] = emp.supermarket;
-                        if (emp.id) employeeSupermarketMap[emp.id] = emp.supermarket;
-                    } else if (activeSupermarkets.length > 0) {
-                        employeeSupermarketMap[emp.originalName] = activeSupermarkets[0];
-                        employeeSupermarketMap[canonical] = activeSupermarkets[0];
-                        if (emp.id) employeeSupermarketMap[emp.id] = activeSupermarkets[0];
-                    }
+                    const targetSm = emp.supermarket || (activeSupermarkets.length > 0 ? activeSupermarkets[0] : 'Tổng');
+                    employeeSupermarketMap[emp.originalName] = targetSm;
+                    employeeSupermarketMap[canonical] = targetSm;
+                    if (emp.id) employeeSupermarketMap[emp.id] = targetSm;
                 }
             }
         }
     } catch (e) {
-        console.warn('[GlobalBonusService] Lỗi đọc nhân viên từ Phân tích:', e);
+        console.warn('[GlobalBonusService] Lỗi xử lý nhân viên từ Phân tích:', e);
     }
 
     // 2. Quét config-${safeName}-danhsach của các siêu thị active CHỈ ĐỂ ánh xạ siêu thị (employeeSupermarketMap)

@@ -9,6 +9,8 @@ import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem, isSystemOrIgnoredEmployee } from '../services/analysisEmployeeSyncService';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
+import { fetchAllowedSummaryLuyKeText } from '../services/biDataService';
+import { useReportBiAuth } from './useReportBiAuth';
 import { auth } from '../../../services/firebase';
 
 /** Dựng lại dòng 'total' từ các dòng nhân viên (cùng công thức nhóm bộ phận ở InstallmentTab). */
@@ -29,6 +31,8 @@ export function recomputeInstallmentTotal(rows: InstallmentRow[]): InstallmentRo
 }
 
 export function useNhanVienData(isActive?: boolean) {
+    const { allowedKhos } = useReportBiAuth();
+    const [sharedSummaryLuyKeText, setSharedSummaryLuyKeText] = useState('');
     const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
     const [summaryRealtime] = useIndexedDBState<string>('summary-realtime', '');
     const [competitionLuyKe] = useIndexedDBState<string>('competition-luy-ke', '');
@@ -38,6 +42,15 @@ export function useNhanVienData(isActive?: boolean) {
     const [hiddenEmployees, setHiddenEmployees] = useState<string[]>([]);
     const [analysisEmployeesPayload, setAnalysisEmployeesPayload] = useState<AnalysisEmployeesPayload | null>(null);
     const [supermarketMap, setSupermarketMap] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (isActive === false || allowedKhos.length === 0) return;
+        let isMounted = true;
+        fetchAllowedSummaryLuyKeText(allowedKhos).then(text => {
+            if (isMounted && text) setSharedSummaryLuyKeText(text);
+        }).catch(() => {});
+        return () => { isMounted = false; };
+    }, [allowedKhos.join(','), isActive]);
 
     useEffect(() => {
         const uid = auth.currentUser?.uid;
@@ -51,22 +64,41 @@ export function useNhanVienData(isActive?: boolean) {
         return () => window.removeEventListener('bi-supermarket-map-changed', handleMapChange as EventListener);
     }, []);
     
+    const effectiveSummaryLuyKe = summaryLuyKe || sharedSummaryLuyKeText;
     const supermarkets = useMemo(() => {
-        return extractAllSupermarketList({
-            summaryLuyKe,
+        const list = extractAllSupermarketList({
+            summaryLuyKe: effectiveSummaryLuyKe,
             summaryRealtime,
             competitionLuyKe,
             competitionRealtime,
             customSupermarkets,
             supermarketMap
         });
-    }, [summaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets, supermarketMap]);
+        // Bổ sung siêu thị từ Phân tích (analysisEmployeesPayload) nếu các nguồn trên rỗng hoặc chưa dán ở thiết bị này
+        if (analysisEmployeesPayload) {
+            if (analysisEmployeesPayload.supermarket && !list.includes(analysisEmployeesPayload.supermarket)) {
+                list.push(analysisEmployeesPayload.supermarket);
+            }
+            if (analysisEmployeesPayload.employees && analysisEmployeesPayload.employees.length > 0) {
+                analysisEmployeesPayload.employees.forEach(e => {
+                    if (e.supermarket && !list.includes(e.supermarket)) {
+                        list.push(e.supermarket);
+                    }
+                });
+            }
+        }
+        return list;
+    }, [effectiveSummaryLuyKe, summaryRealtime, competitionLuyKe, competitionRealtime, customSupermarkets, supermarketMap, analysisEmployeesPayload]);
+
     const activeSupermarkets = useMemo(() => {
         if (!Array.isArray(activeSupermarketsRaw)) return [];
-        if (supermarkets.length === 0) return activeSupermarketsRaw;
+        if (supermarkets.length === 0) {
+            if (analysisEmployeesPayload?.supermarket) return [analysisEmployeesPayload.supermarket];
+            return activeSupermarketsRaw;
+        }
         const filtered = activeSupermarketsRaw.filter(sm => supermarkets.includes(sm));
-        return filtered.length > 0 ? filtered : (supermarkets.length > 0 ? [supermarkets[0]] : activeSupermarketsRaw);
-    }, [activeSupermarketsRaw, supermarkets]);
+        return filtered.length > 0 ? filtered : [supermarkets[0]];
+    }, [activeSupermarketsRaw, supermarkets, analysisEmployeesPayload]);
 
     const [aggregatedData, setAggregatedData] = useState({
         danhSach: '',
@@ -92,10 +124,10 @@ export function useNhanVienData(isActive?: boolean) {
     const [employeeSupermarketMap, setEmployeeSupermarketMap] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        if (isActiveSupermarketsLoaded && activeSupermarkets.length === 0 && supermarkets.length > 0) {
-            setActiveSupermarkets([supermarkets[0]]);
+        if (isActiveSupermarketsLoaded && activeSupermarketsRaw.length === 0 && activeSupermarkets.length > 0) {
+            setActiveSupermarkets(activeSupermarkets);
         }
-    }, [supermarkets, isActiveSupermarketsLoaded, activeSupermarkets, setActiveSupermarkets]);
+    }, [activeSupermarkets, isActiveSupermarketsLoaded, activeSupermarketsRaw, setActiveSupermarkets]);
 
     useEffect(() => {
         if (!isActiveSupermarketsLoaded || isActive === false) return;
@@ -104,6 +136,9 @@ export function useNhanVienData(isActive?: boolean) {
             if (activeSupermarkets.length === 0) {
                 if (supermarkets.length === 0 && Array.isArray(activeSupermarketsRaw) && activeSupermarketsRaw.length > 0) {
                     // Đang chờ danh sách siêu thị khởi tạo từ summaryLuyKe, không wipe trắng dữ liệu đã có
+                    return;
+                }
+                if (analysisEmployeesPayload?.supermarket) {
                     return;
                 }
                 setAggregatedData({
@@ -186,6 +221,19 @@ export function useNhanVienData(isActive?: boolean) {
                     });
                 }
             });
+
+            // Tự động khôi phục dữ liệu thưởng mồ côi (nếu bonusData đang rỗng do phiên trước bị gán nhầm key vô danh "")
+            if (Object.keys(combinedBonus).length === 0) {
+                const orphanUndef = await db.get<Record<string, BonusMetrics>>('bonus-data-undefined');
+                const orphanEmpty = await db.get<Record<string, BonusMetrics>>('bonus-data-');
+                const orphan = (orphanUndef && Object.keys(orphanUndef).length > 0) ? orphanUndef : orphanEmpty;
+                if (orphan && Object.keys(orphan).length > 0) {
+                    Object.assign(combinedBonus, orphan);
+                    if (uniqueSafeNames.length > 0) {
+                        void db.set(`bonus-data-${uniqueSafeNames[0]}`, orphan);
+                    }
+                }
+            }
 
             // Chuẩn hóa và đồng bộ các biến thể tên cho combinedBonus:
             // Với mỗi nhân viên (cùng extractEmployeeId), nếu tồn tại nhiều key (VD "Mã - Tên" và "Tên - Mã")
@@ -784,13 +832,25 @@ export function useNhanVienData(isActive?: boolean) {
 
     // Siêu thị GỐC (chưa rút gọn) của 1 nhân viên — dùng employeeSupermarketMap khi có (chỉ
     // xây dựng lúc ≥2 siêu thị active); fallback về activeSupermarkets[0] khi chỉ 1 siêu thị
-    // active hoặc nhân viên chưa xác định được (giữ đúng hành vi cũ, không regressions).
+    // active hoặc nhân viên chưa xác định được; fallback tiếp về analysisEmployeesPayload nếu máy mới chưa có siêu thị active.
     const resolveEmployeeSupermarket = useCallback((originalName: string): string => {
-        return employeeSupermarketMap[originalName] || activeSupermarkets[0];
-    }, [employeeSupermarketMap, activeSupermarkets]);
+        if (employeeSupermarketMap[originalName]) return employeeSupermarketMap[originalName];
+        if (activeSupermarkets.length > 0 && activeSupermarkets[0]) return activeSupermarkets[0];
+        const empFromAnalysis = analysisEmployeesPayload?.employees?.find(e =>
+            e.originalName === originalName ||
+            standardizeEmployeeName(e.originalName) === standardizeEmployeeName(originalName) ||
+            (e.id && extractEmployeeId(originalName) === e.id)
+        );
+        if (empFromAnalysis?.supermarket) return empFromAnalysis.supermarket;
+        if (analysisEmployeesPayload?.supermarket) return analysisEmployeesPayload.supermarket;
+        if (supermarkets.length > 0) return supermarkets[0];
+        return 'Tổng';
+    }, [employeeSupermarketMap, activeSupermarkets, analysisEmployeesPayload, supermarkets]);
 
     const handleSaveBonus = useCallback(async (originalName: string, metrics: BonusMetrics) => {
-        const safeName = shortenSupermarketName(resolveEmployeeSupermarket(originalName));
+        const resolvedSm = resolveEmployeeSupermarket(originalName);
+        const safeName = shortenSupermarketName(resolvedSm) || (activeSupermarkets[0] ? shortenSupermarketName(activeSupermarkets[0]) : '') || 'Tổng';
+        if (!safeName || safeName === 'undefined') return;
         const canonical = standardizeEmployeeName(originalName);
         const empId = extractEmployeeId(originalName);
         let swapped = '';
@@ -819,7 +879,7 @@ export function useNhanVienData(isActive?: boolean) {
             });
         }
         await db.set(`bonus-data-${safeName}`, nextDbData);
-    }, [resolveEmployeeSupermarket]);
+    }, [resolveEmployeeSupermarket, activeSupermarkets]);
 
     // Ghi hàng loạt cho chế độ Tự động — gom nhóm theo ĐÚNG siêu thị của từng nhân viên (trước
     // đây đổ hết vào activeSupermarkets[0], sai dữ liệu khi 2+ siêu thị active cùng lúc — xem
@@ -850,12 +910,14 @@ export function useNhanVienData(isActive?: boolean) {
 
         const groups = new Map<string, { originalName: string; metrics: BonusMetrics }[]>();
         entries.forEach(entry => {
-            const safeName = shortenSupermarketName(resolveEmployeeSupermarket(entry.originalName));
+            const resolvedSm = resolveEmployeeSupermarket(entry.originalName);
+            const safeName = shortenSupermarketName(resolvedSm) || (activeSupermarkets[0] ? shortenSupermarketName(activeSupermarkets[0]) : '') || 'Tổng';
             if (!groups.has(safeName)) groups.set(safeName, []);
             groups.get(safeName)!.push(entry);
         });
 
         await Promise.all(Array.from(groups.entries()).map(async ([safeName, groupEntries]) => {
+            if (!safeName || safeName === 'undefined') return;
             const currentDbData = await db.get<Record<string, BonusMetrics>>(`bonus-data-${safeName}`) || {};
             const mergedDbData = { ...currentDbData };
             groupEntries.forEach(({ originalName, metrics }) => {
@@ -881,7 +943,7 @@ export function useNhanVienData(isActive?: boolean) {
         await Promise.all(entries.map(({ originalName, metrics }) =>
             appendBonusHistory(resolveEmployeeSupermarket(originalName), originalName, metrics)
         ));
-    }, [resolveEmployeeSupermarket]);
+    }, [resolveEmployeeSupermarket, activeSupermarkets]);
 
     // Ghi kho lưu trữ theo THÁNG (phục vụ "Xem theo tháng") — 1 key/(siêu thị, tháng),
     // ghi đè toàn bộ mỗi lần chạy lại cùng tháng (dữ liệu mới nhất thắng, không cộng dồn).

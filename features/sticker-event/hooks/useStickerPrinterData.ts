@@ -622,7 +622,11 @@ export function useStickerPrinterData() {
                     } else {
                         setDrawTotalTickets(4000);
                     }
-                    if (savedState.drawAutoIncrement != null) setDrawAutoIncrement(savedState.drawAutoIncrement);
+                    if (savedState.drawAutoIncrement != null) {
+                        setDrawAutoIncrement(Boolean(savedState.drawAutoIncrement));
+                    } else {
+                        setDrawAutoIncrement(true);
+                    }
                     if (savedState.drawCodeSize != null) setDrawCodeSize(savedState.drawCodeSize);
                     if (savedState.drawFooterSize != null) setDrawFooterSize(savedState.drawFooterSize);
                 }
@@ -678,7 +682,11 @@ export function useStickerPrinterData() {
                         }
                         if (savedState.drawStartNumber != null) setDrawStartNumber(savedState.drawStartNumber);
                         if (savedState.drawTotalTickets != null) setDrawTotalTickets(savedState.drawTotalTickets);
-                        if (savedState.drawAutoIncrement != null) setDrawAutoIncrement(savedState.drawAutoIncrement);
+                        if (savedState.drawAutoIncrement != null) {
+                            setDrawAutoIncrement(Boolean(savedState.drawAutoIncrement));
+                        } else {
+                            setDrawAutoIncrement(true);
+                        }
                     }
                 });
             }
@@ -1311,7 +1319,11 @@ export function useStickerPrinterData() {
             }
             if (entry.drawStartNumber != null) setDrawStartNumber(entry.drawStartNumber);
             if (entry.drawTotalTickets != null) setDrawTotalTickets(entry.drawTotalTickets);
-            if (entry.drawAutoIncrement != null) setDrawAutoIncrement(entry.drawAutoIncrement);
+            if (entry.drawAutoIncrement != null) {
+                setDrawAutoIncrement(Boolean(entry.drawAutoIncrement));
+            } else {
+                setDrawAutoIncrement(true);
+            }
             if (entry.drawContentTopLeftSize != null) setDrawContentTopLeftSize(entry.drawContentTopLeftSize);
             if (entry.drawContentTopRightSize != null) setDrawContentTopRightSize(entry.drawContentTopRightSize);
             if (entry.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(entry.drawContentBottomLeftSize);

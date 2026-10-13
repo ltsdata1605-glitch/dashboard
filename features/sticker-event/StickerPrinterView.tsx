@@ -202,6 +202,7 @@ export default function StickerPrinterView() {
                         setPreviewName={setPreviewName}
                         drawTickets={drawTickets}
                         setDrawTickets={setDrawTickets}
+                        drawStartNumber={drawStartNumber}
                         drawAutoIncrement={drawAutoIncrement}
                         drawContentTopLeftSize={drawContentTopLeftSize}
                         drawContentTopRightSize={drawContentTopRightSize}

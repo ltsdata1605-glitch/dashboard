@@ -52,6 +52,7 @@ interface StickerPrintPreviewProps {
     drawTitleSize?: number;
     drawCodeSize?: number;
     drawFooterSize?: number;
+    drawStartNumber?: number;
     drawAutoIncrement?: boolean;
 }
 
@@ -95,6 +96,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     drawTitleSize,
     drawCodeSize,
     drawFooterSize,
+    drawStartNumber = 1,
     drawAutoIncrement,
 }) => {
     const [activeDrawPage, setActiveDrawPage] = React.useState(0);
@@ -242,7 +244,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             return drawTickets[totalIndex] || {
                                 id: (totalIndex + 1).toString(),
                                 title: firstTicket?.title || '',
-                                code: drawAutoIncrement ? (totalIndex + 1).toString() : (firstTicket?.code || '1'),
+                                code: (drawAutoIncrement ?? true) ? (drawStartNumber + totalIndex).toString() : (firstTicket?.code || '1'),
                                 footer: firstTicket?.footer || '',
                                 contentTop: firstTicket?.contentTop || '',
                                 contentTopRight: firstTicket?.contentTopRight || '',
