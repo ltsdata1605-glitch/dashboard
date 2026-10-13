@@ -9,7 +9,7 @@ import { chanGhiCloud, dangNhapBangToken, hasCustomToken } from './helpers/custo
  * xoá sạch thư mục đó ở mỗi lượt chạy — mất ảnh "trước" đúng lúc cần so.
  *
  *   ANH=1 ANH_NHAN=sau-gd1 npx playwright test tests/e2e/anh-truoc-sau-apple.spec.ts --project=chromium
- * → .anh-apple/<ANH_NHAN>/{m,d}-<tab>.png
+ * → .anh-apple/<ANH_NHAN>/{m,d,d1280}-<tab>.png
  *
  * GĐ9 (2026-10-13): kèm số đo VỚI DỮ LIỆU THẬT (bộ quét `apple-tuong-thich` chỉ có dữ liệu giả) → `.anh-apple/<ANH_NHAN>/do-*.json`:
  * lỗi runtime từng tab (pageerror + console.error), tràn ngang, chữ < 11px, và trên laptop: chữ/nút nằm DƯỚI 2 dock nổi (menu trái
@@ -44,6 +44,20 @@ const doMan = (page: Page) => page.evaluate(() => {
         return r.width && r.height ? [{ id, r }] : [];
     });
     const giao = (a: DOMRect, b: DOMRect) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    /** Phần NHÌN THẤY của khung r: cắt theo mọi khung cuộn tổ tiên (bảng cuộn ngang trong thẻ) — cột đã cuộn khuất trong thẻ
+     *  thì dock không "che" nó (lượt đo đầu GĐ9 báo nhầm 6 ô bảng Phân tích đúng vì vậy). */
+    const nhinThay = (batDau: Element | null, r: DOMRect) => {
+        let x1 = r.left, y1 = r.top, x2 = r.right, y2 = r.bottom;
+        for (let a = batDau; a && a !== document.body; a = a.parentElement) {
+            const cs = getComputedStyle(a);
+            if (cs.overflowX === 'visible' && cs.overflowY === 'visible') continue;
+            const k = a.getBoundingClientRect();
+            if (cs.overflowX !== 'visible') { x1 = Math.max(x1, k.left); x2 = Math.min(x2, k.right); }
+            if (cs.overflowY !== 'visible') { y1 = Math.max(y1, k.top); y2 = Math.min(y2, k.bottom); }
+            if (x2 - x1 <= 1 || y2 - y1 <= 1) return null;
+        }
+        return new DOMRect(x1, y1, x2 - x1, y2 - y1);
+    };
     const biChe: { dock: string; chu: string; x: number; y: number }[] = [];
     const chuNho: { chu: string; px: number }[] = [];
     const main = document.querySelector('main');
@@ -55,7 +69,8 @@ const doMan = (page: Page) => page.evaluate(() => {
         if (!chu || !cha || cha.closest('[data-testid="desktop-nav-menu"],[data-testid="ycx-auto-dock"],[data-app-chrome],[aria-hidden="true"]')) continue;
         if (!hien(cha)) continue;
         range.selectNodeContents(n);
-        const rects = [...range.getClientRects()].filter(r => r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight);
+        // Chữ: cắt theo cả chính phần tử chứa nó (vd `truncate`), không chỉ tổ tiên.
+        const rects = [...range.getClientRects()].map(r => nhinThay(cha, r)).filter((r): r is DOMRect => !!r && r.bottom > 0 && r.top < innerHeight);
         if (!rects.length) continue;
         const px = parseFloat(getComputedStyle(cha).fontSize);
         if (px < 11 && chuNho.length < 30) chuNho.push({ chu: chu.slice(0, 40), px });
@@ -66,8 +81,8 @@ const doMan = (page: Page) => page.evaluate(() => {
     }
     const nutBiChe = main ? [...main.querySelectorAll('button,a[href],input,select,textarea,[role="button"]')].filter(el => {
         if (el.closest('[data-testid="desktop-nav-menu"],[data-testid="ycx-auto-dock"],[data-app-chrome]') || !hien(el)) return false;
-        const r = el.getBoundingClientRect();
-        return r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight && docks.some(d => giao(r, d.r) > 16);
+        const r = nhinThay(el.parentElement, el.getBoundingClientRect());
+        return !!r && r.bottom > 0 && r.top < innerHeight && docks.some(d => giao(r, d.r) > 16);
     }).slice(0, 20).map(el => ({ nut: (el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 40), x: Math.round(el.getBoundingClientRect().left) })) : [];
     return {
         rong: innerWidth,
@@ -115,23 +130,27 @@ test.describe('iPhone 16 Pro Max', () => {
     });
 });
 
-test.describe('laptop', () => {
-    test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
-    test('các tab chính', async ({ page }) => {
-        test.setTimeout(420_000);
-        const { loi, datTab } = ghiLoi(page);
-        const biChan = await chanGhiCloud(page);
-        await dangNhapBangToken(page);
-        await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
-        const soDo: Record<string, unknown> = {};
-        for (const tab of TAB_LAPTOP) {
-            datTab(tab);
-            await page.goto(`/?tab=${tab}`);
-            await page.waitForTimeout(10_000);
-            await page.screenshot({ path: `${OUT}/d-${tab}.png` });
-            soDo[tab] = await doMan(page);
-        }
-        mkdirSync(OUT, { recursive: true });
-        writeFileSync(`${OUT}/do-laptop.json`, JSON.stringify({ soDo, loi, biChan }, null, 2));
+// 1440×900: bộ ảnh trước/sau (`d-<tab>.png`). 1280×720: laptop cũ ở siêu thị — dock nổi sát nội dung nhất (`d1280-<tab>.png`).
+for (const [rong, cao] of [[1440, 900], [1280, 720]] as const) {
+    const tienTo = rong === 1440 ? 'd' : `d${rong}`;
+    test.describe(`laptop ${rong}`, () => {
+        test.use({ viewport: { width: rong, height: cao }, deviceScaleFactor: 1 });
+        test('các tab chính', async ({ page }) => {
+            test.setTimeout(420_000);
+            const { loi, datTab } = ghiLoi(page);
+            const biChan = await chanGhiCloud(page);
+            await dangNhapBangToken(page);
+            await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+            const soDo: Record<string, unknown> = {};
+            for (const tab of TAB_LAPTOP) {
+                datTab(tab);
+                await page.goto(`/?tab=${tab}`);
+                await page.waitForTimeout(10_000);
+                await page.screenshot({ path: `${OUT}/${tienTo}-${tab}.png` });
+                soDo[tab] = await doMan(page);
+            }
+            mkdirSync(OUT, { recursive: true });
+            writeFileSync(`${OUT}/do-laptop${rong === 1440 ? '' : `-${rong}`}.json`, JSON.stringify({ soDo, loi, biChan }, null, 2));
+        });
     });
-});
+}

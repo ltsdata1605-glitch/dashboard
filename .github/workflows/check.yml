@@ -360,18 +360,13 @@ jobs:
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/menu-khac-xoay-ngang.spec.ts --project=webkit --output=test-results/wk-menu-khac
       # GĐ9 giao diện chuẩn Apple (2026-10-13): quét khung app 6 cỡ màn + toast một hệ trên CHÍNH engine của Safari — container của
-      # agent chỉ có Chromium giả lập iPhone; `:has()`, vật liệu mờ, safe-area… phải kiểm ở WebKit thật.
+      # agent chỉ có Chromium giả lập iPhone; `:has()`, vật liệu mờ, safe-area… phải kiểm ở WebKit thật. Lượt quan sát đầu (run 356)
+      # xanh: 0 vi phạm cả cảm ứng lẫn laptop, toast 4/4 → đã bỏ continue-on-error, nay đỏ là chặn.
       - name: 'WebKit: apple-tuong-thich'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
-        # Lượt quan sát đầu (2026-10-13): agent không chạy được WebKit trong container → chưa biết khác biệt giả lập cảm ứng
-        # (pointer: coarse) của WebKit. Gỡ dòng này khi lượt chạy đầu xanh.
-        continue-on-error: true
         run: npx playwright test tests/e2e/apple-tuong-thich.spec.ts --project=webkit --output=test-results/wk-apple-tuong-thich
       - name: 'WebKit: toast-thong-nhat'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
-        # Lượt quan sát đầu (2026-10-13): agent không chạy được WebKit trong container → chưa biết khác biệt giả lập cảm ứng
-        # (pointer: coarse) của WebKit. Gỡ dòng này khi lượt chạy đầu xanh.
-        continue-on-error: true
         run: npx playwright test tests/e2e/toast-thong-nhat.spec.ts --project=webkit --output=test-results/wk-toast-thong-nhat
       - name: Lưu báo cáo khi đỏ
         if: failure()

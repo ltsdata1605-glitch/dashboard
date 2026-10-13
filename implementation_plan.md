@@ -8137,3 +8137,42 @@ không đổi nghiệp vụ.
 - **Không làm, có lý do**: 3 file chuyển tiếp `services/uiService.ts`, `features/{phan-ca,sticker-event}/services/uiService.ts` (chỉ
   re-export bộ xuất ảnh chung) GIỮ — xoá phải sửa ~20 file mà chủ dự án đang sửa song song (vừa có commit mới trên main), lợi ích
   nhỏ; bản của Report BI gắn preset `bi` nên không phải chuyển tiếp thuần.
+
+## GĐ9 — Kiểm thử tương thích, đo lại tốc độ, bàn giao (2026-10-13)
+
+- **CI** (`.github/workflows/check.yml`): job Chromium chạy thêm 6 spec — `apple-tuong-thich` (11 tab × 6 khung, `DA_BIET` trống: vi
+  phạm mới là đỏ), `toast-thong-nhat`, `khung-app-gd4`, `lop-apple-gd3`, `gd7-mini-app`, `gd8-cong-tac-chung`. Job WebKit (engine của
+  Safari — container của agent chỉ có Chromium giả lập iPhone) chạy `apple-tuong-thich` + `toast-thong-nhat`: lượt quan sát đầu (run
+  356) xanh — **0 vi phạm** cả cảm ứng (375/393/440/820) lẫn laptop, toast 4/4 → đã bỏ `continue-on-error`, nay đỏ là chặn.
+- **Test chập chờn** `gd8-cong-tac-chung` (đỏ khi chạy sau các spec nặng): đọc trạng thái công tắc lúc `hooks/useEmployeeAnalysisTabs`
+  CHƯA nạp xong danh sách tab hiện từ IndexedDB — mọi công tắc tạm "tắt", lượt nạp đầu bật hết, nuốt mất cú bấm → chờ có ≥ 1 công tắc
+  bật rồi mới đọc. 4/4 lượt lặp xanh. *Ghi nhận (có từ trước, chưa sửa)*: người dùng mở bánh răng "Hiển thị màn hình thi đua" trong
+  ~1 s đầu sau khi dữ liệu hiện cũng thấy nháy "tắt hết" này.
+- **Tour tài khoản test thật (chỉ đọc)** — `anh-truoc-sau-apple.spec.ts` nay kèm số đo ghi ra `.anh-apple/<nhãn>/do-*.json`
+  (gitignore, có dữ liệu thật): iPhone 16 Pro Max 440×956 (11 tab + menu Khác), laptop 1440×900 và **1280×720** (laptop cũ ở siêu thị,
+  8 tab). Kết quả: tràn ngang **0**, chữ < 11px **0**, chữ/nút bị 2 dock nổi laptop che **0**. Đo phần NHÌN THẤY (cắt theo khung cuộn):
+  lượt đo đầu báo nhầm 6 ô bảng "Chi tiết theo kho" — thật ra là cột đã cuộn khuất BÊN TRONG thẻ.
+  → **Không cần** thêm `ycx-tranh-dock` cho Phân tích / Report BI: hai trang có max-width giữa màn (960px, của chủ dự án), dock nằm ở
+  lề. Lớp này chỉ cần cho trang tràn ngang (Phân ca — đã có từ GĐ7).
+- **Lỗi runtime trong tour**: chỉ có (1) lượt ghi/hàm do bộ chặn của test huỷ — `Firestore/Write`, `lineBotFindWarehouseBot`,
+  `getApprovalSettings` → "Failed to load resource"; (2) "Lỗi lấy thông tin người dùng: FirebaseError: internal" ở 6/28 lượt tải trang
+  (`contexts/AuthContext.tsx`, quanh `resolveSession`). Log server `resolveSession` cùng khung giờ (Firebase CLI) không có lỗi nào →
+  lỗi mạng phía trình duyệt trong container; app giữ quyền đã cache nên không ảnh hưởng hiển thị. Chưa thấy trên máy thật — theo dõi.
+- **Đo tốc độ** (`perf-apple.spec.ts`, bản build `vite preview`, Dùng thử, 440×956, 4G 9 Mbps/60 ms, CPU ×4, xoá cache + gỡ SW mỗi
+  lượt; Check thưởng nay đo như tab thường vì chủ dự án đã viết lại bằng React):
+
+  | Phép đo | Trước (10/10) | Sau GĐ2 (11/10) | **Sau GĐ9 (13/10, TB 5 lượt)** |
+  |---|---:|---:|---:|
+  | JS+CSS phải tải lúc mở (gzip) | ~465 KB | 386 KB | **344 KB** |
+  | Khung app hiện | 2007 ms | ~1310–1500 | **1442** (nóng 1210–1244 · lạnh 2310) |
+  | FCP | 1625 | ~1240 | **1246** (nóng 1100–1168 · lạnh 1728) |
+  | Nội dung Phân tích (nóng / lạnh) | 2105–2212 / 5877 | 1834–2195 / ~4800 | **2029–2304 / 5000** |
+  | Chuyển sang Report BI | 733 | ~557 | **597** |
+  | Chuyển sang Check thưởng | 2839 (iframe) | ~1374 (iframe) | **497** |
+  | Về Phân tích | 367 | ~270 | **220** |
+
+  Gói lúc mở 344 KB = index 66 · firebase 145 · react 59 · icons 18 · shared-utils 8 · CSS 47 (motion 42 KB đã gỡ ở GĐ4). **Chưa đạt**
+  mục tiêu GĐ2: gói ≤ 330 KB (còn 14 KB), Report BI ≤ 0,3 s (0,6 s — trace ở GĐ2: luồng chính bận ~540 ms khi sang Report BI, ~75 ms
+  là motion nay đã gỡ; phần còn lại là việc vẽ của chính Report BI → cần một đợt tối ưu riêng khu vực đó, chưa đo trace lại), lượt LẠNH nội dung Phân tích 5,0 s (tải firebase + dữ liệu trên 4G giả lập). "JS tải" trong số đo (~530 KB) gồm cả
+  phần tải trước 3 tab lúc rảnh — không phải gói khởi động.
+- **Checklist iPhone thật** cho chủ dự án (10 mục, ~10 phút — những gì máy ảo không kiểm được): `KE_HOACH_GIAO_DIEN_APPLE.md` mục 9.

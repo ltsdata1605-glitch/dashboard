@@ -278,6 +278,10 @@ Công cụ đo: `tests/e2e/perf-apple.spec.ts` (GĐ0) — chạy lại sau mỗi
 **Sau GĐ2 (2026-10-11)**: gói lúc mở 465 → 386 KB gzip · khung app ~1,3–1,5 s · FCP ~1,24 s · Report BI ~0,56 s · Check thưởng
 ~1,37 s · về Phân tích ~0,27 s. Bảng đầy đủ + phần chưa đạt: `implementation_plan.md` mục "GĐ2".
 
+**Sau GĐ9 (2026-10-13, TB 5 lượt)**: gói lúc mở **344 KB** gzip · khung app 1,44 s (lượt nóng ~1,22 s) · FCP 1,25 s · nội dung Phân
+tích nóng ~2,2 s / lạnh 5,0 s · Report BI 0,60 s · Check thưởng 0,50 s (bản React) · về Phân tích 0,22 s. Bảng đủ: `implementation_plan.md`
+mục "GĐ9".
+
 ### 4.3 Việc tăng tốc (GĐ2) và lợi ích ước tính
 
 | # | Việc | Lợi ích ước tính |
@@ -475,3 +479,22 @@ cập nhật `CLAUDE.md` / `RULES.md` / `DESIGN_SYSTEM.md`.
 5. Công tắc bật màu xanh lá (chuẩn iOS) thay vì mỗi cái một màu.
 6. Laptop: tiêu đề trang 26px viết thường thay 36px in hoa. *(Không áp dụng: chủ dự án GIỮ khung laptop của mình — logo bật/tắt dock nổi, tiêu đề 2 màu
    IN HOA — xem CLAUDE.md mục 2 "Khung app". Lớp Apple chỉ áp cho thanh trên iPhone/iPad.)*
+
+## 9. Checklist trên iPhone thật — chủ dự án tự kiểm (GĐ9, ~10 phút)
+
+Máy của agent chỉ có Chromium giả lập iPhone (WebKit chạy ở CI). Những việc dưới đây chỉ iPhone thật mới kiểm được. Mở
+`https://dashboard.pro.vn` bằng Safari (mục 5–6, 9 dùng bản cài ở Màn hình chính). Mục nào hỏng: **quay màn hình** như 2 video ban
+đầu, gửi kèm số mục. Không mục nào ghi dữ liệu (mục 4 bấm **Hủy**).
+
+| # | Việc | Cách làm | Đạt khi |
+|---|---|---|---|
+| 1 | Toast không bị Dynamic Island che | Check thưởng → biểu tượng đám mây trên thanh trên (khi chưa có file: nút *Đồng bộ đám mây*) — chỉ tải về | Viên thông báo hiện ở trên giữa, nằm DƯỚI Dynamic Island / tai thỏ, không đè giờ/pin, chữ không bị cắt |
+| 2 | Vuốt tắt toast | Làm lại mục 1; khi toast hiện: vuốt LÊN; lần sau thử chạm GIỮ | Vuốt lên → tắt ngay. Chạm giữ → toast đứng yên tới khi thả tay |
+| 3 | Vuốt tắt sheet | Thanh tab dưới → **Khác** → kéo thanh nắm xuống | Sheet trượt xuống đóng; trang phía sau không cuộn theo |
+| 4 | Bàn phím ảo trong sheet | Phân tích YCX → khối *Phân tích nhân viên* → nút **+** (Tạo tab thi đua mới) → chạm ô *Tên Tab*, gõ thử → **Hủy** | Ô đang gõ vẫn nhìn thấy (không bị bàn phím che), nút Hủy/Tạo Tab vẫn bấm được, trang sau không nhảy; ẩn bàn phím → sheet về đúng chỗ |
+| 5 | Cài lên Màn hình chính | Safari → Chia sẻ → *Thêm vào MH chính* → mở từ biểu tượng → đăng nhập Google | Đăng nhập xong vào thẳng app; thanh trên không chồng giờ/pin; thanh tab dưới nằm trên vạch Home |
+| 6 | Mở lại app đã cài | Vuốt tắt hẳn app (đa nhiệm) → mở lại từ biểu tượng | Vẫn đăng nhập, vào thẳng tab đang dùng, không hiện màn đăng nhập |
+| 7 | Xoay ngang bảng nhiều cột | Report BI (bảng nhân viên) hoặc Phân tích → *Chi tiết ngành hàng* → xoay ngang, cuộn ngang/dọc | Cột đầu ghim, đầu bảng dính trên, không có dải trắng bên phải, chữ không chui vào tai thỏ, thanh tab không che dòng cuối; xoay dọc lại → bình thường |
+| 8 | Kéo xuống ở đỉnh trang | Ở đầu trang Phân tích, kéo mạnh xuống | Trang KHÔNG tải lại; cuộn mượt, không giật |
+| 9 | Xuất ảnh → Chia sẻ | Phân tích → nút xuất ảnh → *Chia sẻ trực tiếp* → chọn LINE/Zalo | Bảng chia sẻ iOS hiện; ảnh đủ nội dung, có chân "Dashboard YCX · xuất HH:mm dd/mm" |
+| 10 | Không có mạng | Bật Chế độ máy bay → mở app từ Màn hình chính | App vẫn mở với dữ liệu đã lưu; việc cần mạng (đồng bộ, gửi LINE) báo rõ là cần mạng |
