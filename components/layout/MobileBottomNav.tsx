@@ -28,7 +28,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
     // Icon theo TÊN CHỨC NĂNG (chuẩn hoá icon 2026-10-02) — cùng tên với Sidebar nên 2 thanh luôn cùng hình.
     const mainTabs: TabItem[] = [
-        { id: 'analysis', label: 'Phân tích YCX', icon: NAV_TAB_ICONS['analysis'] },
+        { id: 'analysis', label: 'Phân tích', icon: NAV_TAB_ICONS['analysis'] },
         { id: 'employees', label: 'Report BI', icon: NAV_TAB_ICONS['employees'] },
         { id: 'check-thuong', label: 'Check thưởng', icon: NAV_TAB_ICONS['check-thuong'] },
     ];
@@ -64,15 +64,28 @@ const MobileBottomNav: React.FC = React.memo(() => {
             key={opts.key}
             onClick={opts.onClick}
             aria-current={opts.active ? 'page' : undefined}
-            className={cn('flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 select-none', isPending && 'opacity-70')}
+            className={cn(
+                'flex-1 min-w-0 flex flex-col items-center justify-center h-[45px] py-0.5 px-0.5 rounded-full transition-all duration-200 select-none active:scale-95',
+                opts.active 
+                    ? 'bg-sky-600 text-white shadow-xs shadow-sky-600/30' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/40',
+                isPending && 'opacity-70'
+            )}
         >
-            <span className={cn(
-                'flex items-center justify-center h-7 w-14 rounded-full transition-colors duration-200 motion-reduce:transition-none',
-                opts.active ? 'bg-sky-500/12 text-sky-600' : 'text-slate-500',
-            )}>
-                <AppIcon name={opts.icon} size="xl" />
+            <span className="flex items-center justify-center">
+                <AppIcon 
+                    name={opts.icon} 
+                    size="md" 
+                    className={cn(
+                        'transition-transform duration-200',
+                        opts.active ? 'text-white scale-105' : 'text-slate-600'
+                    )} 
+                />
             </span>
-            <span className={cn('max-w-full truncate px-1 text-[11px] leading-[13px]', opts.active ? 'font-semibold text-sky-600' : 'font-medium text-slate-500')}>
+            <span className={cn(
+                'max-w-full truncate px-0.5 text-[11px] leading-[13px] tracking-tight mt-0.5',
+                opts.active ? 'font-bold text-white' : 'font-semibold text-slate-700'
+            )}>
                 {opts.label}
             </span>
         </Button>
@@ -154,13 +167,13 @@ const MobileBottomNav: React.FC = React.memo(() => {
                 </div>
             </Modal>
 
-            {/* Thanh tab dưới */}
+            {/* Thanh tab dưới nổi kiểu Apple Floating Dock (Hướng 3) — bản thu nhỏ gọn, kính mờ xuyên thấu */}
             <nav
                 data-app-chrome="tabbar"
                 aria-label="Điều hướng chính"
-                className="mobile-chrome ycx-material lg:hidden fixed bottom-0 left-0 right-0 z-[190] border-t border-[color:var(--hairline)] pb-[env(safe-area-inset-bottom,0px)]"
+                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.6rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-20px)] max-w-[360px] z-[190] rounded-full p-1 border border-white/50 ring-1 ring-black/5 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.12),0_4px_10px_-2px_rgba(0,0,0,0.04)]"
             >
-                <div className="flex items-stretch h-[56px]">
+                <div className="flex items-center justify-between gap-0.5 w-full">
                     {mainTabs.map(tab => oTab({
                         key: tab.id, label: tab.label, icon: tab.icon,
                         active: activeTab === tab.id && !isMoreOpen,
