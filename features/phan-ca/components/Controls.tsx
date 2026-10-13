@@ -24,6 +24,9 @@ interface ControlsProps {
   onDateControlClick: () => void;
 }
 
+/** Nhãn ô nhập viết như câu 12px (GĐ7 — trước IN HOA 11px xám nhạt, mỗi nhãn một màu). */
+const NHAN = 'text-[12px] font-medium text-slate-500 mb-1';
+
 const Controls: React.FC<ControlsProps> = ({
   monthYear,
   setMonthYear,
@@ -60,19 +63,19 @@ const Controls: React.FC<ControlsProps> = ({
     <div className={`flex flex-col lg:flex-row lg:flex-wrap items-stretch lg:items-end gap-3 lg:gap-4 ${isDisabled ? 'opacity-40 pointer-events-none' : ''}`}>
       {/* Date group — compact horizontal row */}
       <div
-        className={`flex flex-wrap items-end gap-3 relative ${controlHighlightClass(3)}`}
+        className={`grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] lg:flex lg:flex-wrap items-end gap-3 relative ${controlHighlightClass(3)}`}
         onClick={onDateControlClick}
       >
           {tooltip(3, 'Bước 3: Thời gian', 'Chọn Tháng/Năm, ngày bắt đầu và số ngày.')}
 
           <div className="flex flex-col">
-            <label htmlFor="cfgMonth" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
-              Tháng / Năm
+            <label htmlFor="cfgMonth" className={NHAN}>
+              Tháng / năm
             </label>
             <Input
               type="month"
               id="cfgMonth"
-              className="h-9 w-full sm:w-44 text-sm"
+              className="h-9 w-full lg:w-44 text-sm"
               value={monthYear}
               onChange={(e) => setMonthYear(e.target.value)}
               disabled={isDisabled}
@@ -80,13 +83,13 @@ const Controls: React.FC<ControlsProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="cfgStartDay" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgStartDay" className={NHAN}>
               Bắt đầu
             </label>
             <Input
               type="number" inputMode="decimal"
               id="cfgStartDay"
-              className="h-9 w-16 text-sm text-center"
+              className="h-9 w-full lg:w-16 text-sm text-center"
               value={startDay}
               onChange={(e) => setStartDay(parseInt(e.target.value))}
               min="1"
@@ -96,13 +99,13 @@ const Controls: React.FC<ControlsProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="cfgDuration" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgDuration" className={NHAN}>
               Số ngày
             </label>
             <Input
               type="number" inputMode="decimal"
               id="cfgDuration"
-              className="h-9 w-16 text-sm text-center"
+              className="h-9 w-full lg:w-16 text-sm text-center"
               value={duration}
               onChange={(e) => setDuration(parseInt(e.target.value))}
               min="1"
@@ -116,14 +119,14 @@ const Controls: React.FC<ControlsProps> = ({
       <div className="hidden lg:block w-px h-9 bg-slate-200 self-end"></div>
 
       {/* Store & Department selectors */}
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col">
-          <label htmlFor="cfgSupermarket" className="text-[11px] font-bold text-sky-500 mb-1 uppercase tracking-wider">
+      <div className="grid grid-cols-2 lg:flex lg:flex-wrap items-end gap-3">
+        <div className="flex flex-col min-w-0">
+          <label htmlFor="cfgSupermarket" className={NHAN}>
             Siêu thị
           </label>
           <Select
               id="cfgSupermarket"
-              className="h-9 w-full sm:w-44 text-sm font-semibold text-sky-700 bg-sky-50/50 border-sky-200 focus-visible:border-sky-400"
+              className="h-9 w-full lg:w-44 text-sm font-semibold"
               value={currentSupermarket}
               onChange={(e) => setSupermarket(e.target.value)}
               disabled={supermarkets.length <= 1 && isDisabled}
@@ -137,13 +140,13 @@ const Controls: React.FC<ControlsProps> = ({
           </Select>
         </div>
 
-        <div className="flex flex-col">
-            <label htmlFor="cfgDepartment" className="text-[11px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+        <div className="flex flex-col min-w-0">
+            <label htmlFor="cfgDepartment" className={NHAN}>
               Bộ phận
             </label>
             <Select
                 id="cfgDepartment"
-                className="h-9 w-full sm:w-48 text-sm"
+                className="h-9 w-full lg:w-48 text-sm"
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 disabled={isDisabled}
@@ -162,14 +165,15 @@ const Controls: React.FC<ControlsProps> = ({
       <div className="relative lg:ml-auto">
         {tooltip(6, 'Bước 6: Hoàn tất!', 'Bấm vào đây để tạo lịch tự động!')}
         <Button
-          variant="ghost"
+          variant="primary"
+          size="md"
+          icon="sparkles"
           onClick={onGenerate}
-          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 h-11 lg:h-9 w-full lg:w-auto px-6 bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
+          className={`w-full lg:w-auto px-6 ${controlHighlightClass(6)}`}
           disabled={isGenerateDisabled}
           title={isGenerateDisabled ? "Vui lòng nhập danh sách nhân viên và tạo Ca Xoay trước." : "Tạo lịch làm việc mới"}
         >
-          <AppIcon name="sparkles" size="md" />
-          Tạo Lịch
+          Tạo lịch
         </Button>
       </div>
     </div>

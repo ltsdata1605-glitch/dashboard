@@ -8029,3 +8029,34 @@ Khảo sát trước: 20 ảnh (10 tab × iPhone 16 Pro Max 440×956 + laptop 13
   Button chung; ô tick "Tự động nhảy số" → `Switch`; "Nền in ĐMX/TGĐ" → segmented. "CHỌN HẾT / BỎ CHỌN / XÓA" và "H.DẪN IN" IN HOA →
   viết như câu.
 - **Chưa làm ở In Sticker**: giao diện riêng của chế độ "Sticker" (StickerEventApp — đăng nhập, quét mã) và tab "D.Sách" → loạt sau.
+
+## GĐ7 — LOẠT 2: Phân ca + Bot LINE (2026-10-13)
+
+Test khoá: `tests/e2e/gd7-mini-app.spec.ts` thêm 4 ca (Phân ca iPhone + laptop, Bot LINE iPhone + laptop).
+
+- **Phân ca — dải 9 nút cuộn ngang dính đầu nội dung trên iPhone** (`PhanCaToolbar.tsx`): bỏ hẳn; dùng `usePageActions` (scope
+  mobile) → thanh trên có nút chính "+" (Nhập nhân viên) và "⋯" chia nhóm *Xuất* (ảnh tất cả / theo tuần / từng NV, Excel, Google
+  Sheet — tắt khi chưa có NV) · *Nhân viên* (Ca xoay, Lấy danh sách NV từ hệ thống) · "Xoá danh sách nhân viên" chữ đỏ nhóm cuối.
+  Laptop giữ thanh của chủ dự án trên thanh tiêu đề.
+- **Phân ca — form**: nhãn IN HOA 11px xám nhạt (mỗi nhãn một màu) → viết như câu 12px; iPhone xếp lưới (Tháng/năm + Bắt đầu +
+  Số ngày một hàng; Siêu thị + Bộ phận một hàng); "Tạo lịch" là Button primary chuẩn (trước nút ghost tự tô). Chưa có nhân viên:
+  dải `Banner` "Bắt đầu bằng danh sách nhân viên" + nút "Nhập nhân viên" (mở chọn file Excel như nút cũ) thay cho form mờ 40% không
+  lời giải thích; khối "DỮ LIỆU ĐANG TRỐNG" IN HOA mờ 25% → `EmptyState`.
+- **Dock nổi laptop che nội dung trang tràn ngang** (đo 1366px ở Phân ca: dock trái che ô "Tháng / Năm", dock phải che "Tạo lịch" và
+  chú thích "Xin nghỉ"): KHÔNG đổi khung của chủ dự án (dock vẫn nổi, logo vẫn bật/tắt). Khung (`App.tsx`) đặt `--dock-left` (96px
+  khi dock trái mở, 0 khi đóng) và `--dock-right` (84px) trên vùng nội dung; lớp mới `ycx-tranh-dock` (styles.css) cho trang tràn
+  ngang tự chừa lề (trang có max-width đặt `--trang-max` để chỉ đệm phần còn thiếu). Phân ca dùng lớp này. Test laptop đã thử: bỏ
+  lớp thì đỏ. *Phân tích / Report BI cũng tràn ngang — dock có che cột đầu không sẽ đo ở GĐ9.*
+- **Bot LINE — đầu trang** (`LineBotView.tsx`): iPhone thẻ đầu trang chỉ còn tên + trạng thái (mô tả 1 dòng); "Hướng dẫn tạo Bot"
+  lên thanh trên (`usePageActions`), "Đổi tài khoản Google" vào "⋯"; chưa đăng nhập → `Banner` "Đăng nhập để dùng Bot của kho" (nút
+  "Đăng nhập Google"). Laptop giữ 2 nút trong thẻ. Dải 8 phân hệ tự vẽ → `Tabs variant="segment"` dùng chung (tự đưa mục đang chọn
+  vào giữa dải — bỏ hiệu ứng scrollIntoView riêng). 2 nút `<button>` thô đổi phạm vi Bot → Button chung.
+- **Bot LINE — tab Coupon** (`CouponManagerTab.tsx`): nhãn thẻ số viết như câu; lọc trạng thái 4 nút tự vẽ (mỗi nút một màu đặc) →
+  segmented chung có huy hiệu số; 3 nút icon (thùng rác "Xoá tất cả" đỏ nằm sát "Xuất Excel") → menu "⋯": Xuất Excel, Phân loại lại
+  theo thương hiệu, **"Xoá tất cả mã (n)" chữ đỏ nhóm cuối** (vẫn qua hộp xác nhận cũ); "Làm mới" cạnh "⋯" (trước nằm trơ một hàng
+  riêng trên iPhone). Laptop: ô tìm kiếm hẹp lại để lọc trạng thái hiện đủ 4 mục (trước cắt "Thu hồi").
+- **Bot LINE — tab Cấu hình Bot** (`LineBotSettingsTab.tsx`, `LineBotStatusCard.tsx`): 3 công tắc tự vẽ + 1 ô tick → `Switch` chung
+  (có `aria-labelledby`); tiêu đề IN HOA/Title Case → viết như câu; nút "Lưu cấu hình Bot" xanh lá tự tô → primary chuẩn (iPhone
+  trải ngang); "Hướng dẫn tạo Bot" / "Kiểm tra kết nối" → secondary / tinted (một nút chính mỗi màn).
+- **Phát hiện, CHƯA sửa — cần chủ dự án quyết**: danh sách mã coupon trên iPhone (`CouponManagerTab`, nhánh `md:hidden`) đang là
+  DANH SÁCH THẺ, trái quy tắc "Bảng luôn là bảng" (CLAUDE.md mục 2, chốt 2026-10-02). Đổi sang bảng ghim cột đầu là việc riêng.

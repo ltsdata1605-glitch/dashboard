@@ -27,6 +27,8 @@ import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../components/shared/ui/Button';
 import { SectionCard } from '../../components/shared/ui/SectionCard';
 import { SectionHeader } from '../../components/shared/ui/SectionHeader';
+import { Banner } from '../../components/shared/ui/Banner';
+import { EmptyState } from '../../components/shared/ui/EmptyState';
 import { exportScheduleToGoogleSheet } from './services/googleSheetsExport';
 import { usePhanCaData } from './hooks/usePhanCaData';
 import {
@@ -604,7 +606,19 @@ const App: React.FC = () => {
           onExportExcel={handleExportExcel}
           onExportGoogleSheet={handleExportGoogleSheet}
       />
-      <main className="max-w-[1600px] mx-auto px-0 lg:px-6 mt-3 lg:mt-6">
+      <main className="max-w-[1600px] [--trang-max:1600px] mx-auto ycx-tranh-dock mt-3 lg:mt-6">
+        {/* Chưa có nhân viên: nói rõ bước tiếp theo (trước chỉ thấy form mờ 40% và khối "DỮ LIỆU ĐANG TRỐNG" ở cuối trang). */}
+        {!hasStaff && !isExportingImage && (
+          <Banner
+            tone="info"
+            title="Bắt đầu bằng danh sách nhân viên"
+            action={{ label: 'Nhập nhân viên', onClick: handleImportClick }}
+            className="mb-3 lg:mb-4 mx-3 lg:mx-0"
+            data-testid="phanca-chua-co-nv"
+          >
+            Chọn file Excel danh sách nhân viên (tải ở trang Quản lý phân ca của hệ thống), tạo ca xoay rồi bấm “Tạo lịch”.
+          </Banner>
+        )}
         <SectionCard className={`p-3 lg:p-6 mb-3 lg:mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
           <Controls
             monthYear={monthYear} setMonthYear={setMonthYear} startDay={startDay} setStartDay={setStartDay} duration={duration} setDuration={setDuration}
@@ -683,10 +697,7 @@ const App: React.FC = () => {
                   <p className="mt-4 font-semibold text-slate-400 text-sm">Đang khởi tạo mục tiêu...</p>
                 </div>
               ) : (
-                <div className="py-32 flex flex-col items-center justify-center opacity-25">
-                  <AppIcon name="checklist" size="hero" className="mb-4 text-slate-300" />
-                  <p className="font-bold text-lg uppercase tracking-[0.15em] text-slate-400">Dữ liệu đang trống</p>
-                </div>
+                <EmptyState icon="calendar" title="Chưa có lịch" description="Lịch hiện ở đây sau khi nhập nhân viên và bấm “Tạo lịch”." />
               )}
             </div>
             

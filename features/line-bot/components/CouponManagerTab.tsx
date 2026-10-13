@@ -4,6 +4,8 @@ import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Tabs } from '../../../components/shared/ui/Tabs';
+import { ActionMenu } from '../../../components/shared/ui/ActionMenu';
 import { Coupon, CouponStatus, StockSummaryItem, ParsedImportItem } from '../types/lineBot.types';
 import { CouponImportModal } from './CouponImportModal';
 import { formatDisplayDate, getVietnamTodayString, getCouponCategoryMeta } from '../services/couponParser';
@@ -347,7 +349,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400 truncate pr-1">Tổng Mã Trong Kho</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-slate-500 dark:text-slate-400 truncate pr-1">Tổng mã trong kho</span>
                         <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 rounded-lg shrink-0">
                             <AppIcon name="coupon" size="sm" />
                         </div>
@@ -368,7 +370,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400 truncate pr-1">Chưa Dùng (Khả dụng)</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-emerald-600 dark:text-emerald-400 truncate pr-1">Chưa dùng (khả dụng)</span>
                         <div className="p-1 sm:p-1.5 bg-emerald-100/80 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-lg shrink-0">
                             <AppIcon name="success" size="sm" />
                         </div>
@@ -391,7 +393,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400 truncate pr-1">Đã Phát Thành Công</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-sky-600 dark:text-sky-400 truncate pr-1">Đã phát thành công</span>
                         <div className="p-1 sm:p-1.5 bg-sky-100/80 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400 rounded-lg shrink-0">
                             <AppIcon name="clock" size="sm" />
                         </div>
@@ -414,7 +416,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     }`}
                 >
                     <div className="flex items-center justify-between">
-                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400 truncate pr-1">Đã Thu Hồi Về Kho</span>
+                        <span className="text-[11px] sm:text-xs font-semibold leading-tight text-amber-600 dark:text-amber-400 truncate pr-1">Đã thu hồi về kho</span>
                         <div className="p-1 sm:p-1.5 bg-amber-100/80 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 rounded-lg shrink-0">
                             <AppIcon name="reset" size="sm" />
                         </div>
@@ -480,7 +482,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
             <div className="p-2 sm:p-2.5 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-wrap lg:flex-nowrap items-center justify-between gap-2">
                 {/* Nhóm bộ lọc & tìm kiếm bên trái */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap min-w-0 w-full lg:w-auto">
-                    <div className="relative w-full sm:w-[180px] lg:w-[260px] xl:w-[300px] shrink-0">
+                    <div className="relative w-full sm:w-[180px] lg:w-[200px] xl:w-[240px] shrink-0">
                         <AppIcon name="search" size="sm" className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
@@ -500,56 +502,20 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         )}
                     </div>
 
-                    {/* Quick Segmented Tabs Lọc Trạng Thái Nhanh (Vuốt ngang mượt mà trên iPhone, không dùng select xấu) */}
-                    <div className="flex items-center gap-0.5 overflow-x-auto p-0.5 bg-slate-100/90 dark:bg-slate-900/80 rounded-lg border border-slate-200/70 dark:border-slate-700/70 min-w-0 max-w-full [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]">
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('ALL')}
-                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap active:scale-95 cursor-pointer ${
-                                statusFilter === 'ALL'
-                                    ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xs font-bold'
-                                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-                            }`}
-                        >
-                            Tất cả ({stockSummary.total})
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('UNUSED')}
-                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
-                                statusFilter === 'UNUSED'
-                                    ? 'bg-emerald-600 text-white shadow-2xs font-bold'
-                                    : 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
-                            }`}
-                        >
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                            Chưa dùng ({stockSummary.unused})
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('SENT')}
-                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
-                                statusFilter === 'SENT'
-                                    ? 'bg-sky-600 text-white shadow-2xs font-bold'
-                                    : 'text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/40'
-                            }`}
-                        >
-                            <span className="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
-                            Đã phát ({stockSummary.sent})
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setStatusFilter('REVOKED')}
-                            className={`min-h-11 sm:min-h-0 px-2 py-1 rounded-md text-[11px] font-semibold transition-all whitespace-nowrap flex items-center gap-1 active:scale-95 cursor-pointer ${
-                                statusFilter === 'REVOKED'
-                                    ? 'bg-amber-600 text-white shadow-2xs font-bold'
-                                    : 'text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40'
-                            }`}
-                        >
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                            Thu hồi ({stockSummary.revoked})
-                        </button>
-                    </div>
+                    {/* Lọc trạng thái — segmented dùng chung (GĐ7): cùng một kiểu với cả app, số đếm là huy hiệu; cuộn ngang trên iPhone */}
+                    <Tabs
+                        variant="segment"
+                        size="sm"
+                        activeId={statusFilter}
+                        onChange={(id) => setStatusFilter(id as typeof statusFilter)}
+                        items={[
+                            { id: 'ALL', label: 'Tất cả', badge: stockSummary.total },
+                            { id: 'UNUSED', label: 'Chưa dùng', badge: stockSummary.unused },
+                            { id: 'SENT', label: 'Đã phát', badge: stockSummary.sent },
+                            { id: 'REVOKED', label: 'Thu hồi', badge: stockSummary.revoked },
+                        ]}
+                        className="min-w-0 max-w-full lg:shrink-0 lg:max-w-none"
+                    />
 
                     {availableTypes.length > 0 && (
                         <select
@@ -564,6 +530,11 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                         </select>
                     )}
 
+                </div>
+
+                {/* Nhóm thao tác bên phải (GĐ7): 1 nút chính "Nạp mã mới" + menu "⋯" (Xuất Excel, Phân loại lại, và "Xoá tất cả mã" chữ
+                    đỏ ở nhóm cuối — trước là thùng rác đỏ nằm sát nút Xuất Excel, dễ bấm nhầm). Xoá vẫn qua hộp xác nhận như cũ. */}
+                <div className="flex items-center gap-1.5 shrink-0 flex-nowrap ml-auto lg:ml-0">
                     <Button
                         variant="ghost"
                         onClick={onRefresh}
@@ -572,47 +543,25 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     >
                         <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
                     </Button>
-                </div>
-
-                {/* Nhóm các nút thao tác bên phải */}
-                <div className="flex items-center gap-1.5 shrink-0 flex-nowrap ml-auto lg:ml-0">
-                    <Button
-                        variant="ghost"
-                        onClick={() => setIsConfirmDeleteAllOpen(true)}
-                        disabled={coupons.length === 0 || isDeletingAll}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/80 dark:border-rose-900/60 rounded-lg transition-colors disabled:opacity-40 shrink-0 cursor-pointer active:scale-95"
-                        title={`Xoá tất cả (${coupons.length}) mã trong kho`}
-                    >
-                        <AppIcon name="delete" size="sm" className={isDeletingAll ? 'animate-spin' : ''} />
-                    </Button>
-
-                    {onReclassifyCoupons && (
-                        <Button
-                            variant="ghost"
-                            onClick={onReclassifyCoupons}
-                            className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-sky-600 dark:text-sky-400 bg-sky-50/80 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800/60 rounded-lg transition-colors shrink-0 cursor-pointer active:scale-95"
-                            title="Tự động phân loại tách biệt thương hiệu chuẩn (VIVO, HONOR, SAMSUNG, EVENT...)"
-                        >
-                            <AppIcon name="reset" size="sm" />
-                        </Button>
-                    )}
-
-                    <Button
-                        variant="ghost"
-                        onClick={onExportExcel}
-                        className="min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 h-8 w-8 p-0 flex items-center justify-center text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700/80 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors shrink-0 cursor-pointer active:scale-95"
-                        title="Xuất danh sách ra file Excel"
-                    >
-                        <AppIcon name="download" size="sm" />
-                    </Button>
+                    <ActionMenu
+                        label="Thao tác khác với kho mã"
+                        title="Kho mã coupon"
+                        data-testid="coupon-thao-tac-khac"
+                        items={[
+                            { id: 'xuat-excel', label: 'Xuất danh sách ra Excel', icon: 'download', onSelect: onExportExcel },
+                            ...(onReclassifyCoupons ? [{ id: 'phan-loai', label: 'Phân loại lại theo thương hiệu', description: 'VIVO, HONOR, SAMSUNG, EVENT…', icon: 'reset' as const, onSelect: onReclassifyCoupons }] : []),
+                            { id: 'xoa-tat-ca', label: `Xoá tất cả mã (${coupons.length})`, icon: 'delete', destructive: true, disabled: coupons.length === 0 || isDeletingAll, onSelect: () => setIsConfirmDeleteAllOpen(true) },
+                        ]}
+                    />
 
                     <Button
                         variant="primary"
+                        size="sm"
+                        icon="add"
                         onClick={() => setIsImportModalOpen(true)}
-                        className="h-8 px-3 flex items-center gap-1.5 text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white rounded-lg shadow-2xs transition-colors whitespace-nowrap active:scale-95 cursor-pointer"
+                        className="whitespace-nowrap"
                     >
-                        <AppIcon name="add" size="md" />
-                        <span>Nạp mã mới</span>
+                        Nạp mã mới
                     </Button>
                 </div>
             </div>

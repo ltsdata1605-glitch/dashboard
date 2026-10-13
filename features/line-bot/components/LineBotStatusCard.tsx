@@ -61,22 +61,19 @@ export const LineBotStatusCard: React.FC<LineBotStatusCardProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <Button
-                        variant="ghost"
-                        onClick={onOpenGuide}
-                        className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 rounded-xl transition-colors border border-sky-200 dark:border-sky-800 flex-1 sm:flex-initial"
-                    >
-                        <AppIcon name="help" size="md" />
-                        <span>Hướng dẫn tạo Bot</span>
+                    {/* GĐ7: một nút chính mỗi màn ("Lưu cấu hình Bot" cuối tab) → 2 nút ở đây là nút phụ chuẩn, không tự tô xanh lá */}
+                    <Button variant="secondary" icon="help" onClick={onOpenGuide} className="flex-1 sm:flex-initial text-xs">
+                        Hướng dẫn tạo Bot
                     </Button>
                     <Button
-                        variant="primary"
+                        variant="tinted"
+                        icon="refresh"
                         onClick={() => onVerifyToken(token)}
-                        disabled={isVerifying || (!token.trim() && !hasSavedToken)}
-                        className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm transition-colors disabled:opacity-50 flex-1 sm:flex-initial"
+                        disabled={!token.trim() && !hasSavedToken}
+                        isLoading={isVerifying}
+                        className="flex-1 sm:flex-initial text-xs"
                     >
-                        <AppIcon name="refresh" size="sm" className={isVerifying ? 'animate-spin' : ''} />
-                        <span>{isVerifying ? 'Đang kiểm tra...' : 'Kiểm tra kết nối'}</span>
+                        {isVerifying ? 'Đang kiểm tra…' : 'Kiểm tra kết nối'}
                     </Button>
                 </div>
             </div>

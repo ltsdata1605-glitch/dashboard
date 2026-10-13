@@ -199,6 +199,18 @@
     }
   }
 
+  /* TRÁNH DOCK NỔI LAPTOP (GĐ7, 2026-10-13): dock trái (menu, bật/tắt bằng logo) và dock phải (Auto Sync) NỔI trên nội dung —
+     thiết kế khung của chủ dự án, giữ nguyên. Trang TRÀN BỀ NGANG (vd Phân ca: ô "Tháng/Năm" nằm dưới dock trái, nút "Tạo lịch"
+     dưới dock phải ở 1366px) gắn `ycx-tranh-dock` để chừa lề đúng bằng dock đang hiện. Khung app (App.tsx) đặt
+     --dock-left (0 khi dock trái đóng) và --dock-right. Trang căn giữa có bề ngang giới hạn không cần lớp này. */
+  @media (min-width: 1024px) {
+    /* Trang có max-width (đặt --trang-max, vd 1600px) mà màn rộng hơn: lề ngoài đã chừa phần nào → chỉ đệm phần còn thiếu. */
+    .ycx-tranh-dock {
+      padding-left: max(1.5rem, calc(var(--dock-left, 0px) - (100vw - var(--trang-max, 100vw)) / 2));
+      padding-right: max(1.5rem, calc(var(--dock-right, 0px) - (100vw - var(--trang-max, 100vw)) / 2));
+    }
+  }
+
   /* Danh sách nhóm (components/shared/ui/ListGroup.tsx): đường kẻ mảnh GIỮA các hàng, thụt lề theo nhãn như iOS
      (16px khi không icon, 16 + 28 + 12 = 56px khi có ô icon). Màn retina: 0,5px. */
   .ycx-list-row + .ycx-list-row::before {

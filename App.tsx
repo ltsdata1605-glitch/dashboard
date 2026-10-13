@@ -383,7 +383,12 @@ function AppContent() {
                         SỬA 2026-09-27: 80px cố định KHÔNG đủ trên iPhone có Face ID — thanh cao 56px
                         + vùng thanh Home (safe-area 34px) = 90px, nên 10px cuối mọi màn bị che.
                         Chừa đúng 56px + safe-area + 8px thở. */}
-                    <div className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-[calc(64px+env(safe-area-inset-bottom,0px))] lg:pb-0'} flex flex-col`}>
+                    {/* --dock-left / --dock-right: bề rộng 2 dock nổi laptop (left-8 + 56px + khe 8px; right-7 + 48px thu gọn) — trang tràn
+                        ngang dùng qua lớp `ycx-tranh-dock` (styles.css) để không bị dock che. */}
+                    <div
+                        className={`w-full relative flex-grow min-h-0 ${isFullscreenMobileTool ? 'pb-0' : 'pb-[calc(64px+env(safe-area-inset-bottom,0px))] lg:pb-0'} flex flex-col`}
+                        style={{ '--dock-left': isDesktopMenuOpen ? '96px' : '0px', '--dock-right': '84px' } as React.CSSProperties}
+                    >
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">

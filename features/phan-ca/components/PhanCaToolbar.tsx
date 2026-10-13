@@ -3,6 +3,9 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
+import { usePageActions } from '../../../components/shared/ui/PageActions';
+
+const LINK_DS_NV = 'https://office.thegioididong.com/quan-ly-phan-ca';
 
 interface PhanCaToolbarProps {
     hasStaff: boolean;
@@ -24,6 +27,24 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
+    // iPhone / iPad (GĐ7): thay dải 9 nút cuộn ngang dính đầu nội dung bằng thanh trên của khung app — nút chính "+" (Nhập NV)
+    // + menu "⋯" chia nhóm Xuất / Nhân viên; "Xoá danh sách" chữ đỏ ở nhóm cuối. Laptop giữ thanh của chủ dự án (portal dưới).
+    const chuaCoNV = !hasStaff;
+    usePageActions(activeTab === 'tools-phanca' ? {
+        scope: 'mobile',
+        primary: { id: 'nhap-nv', label: 'Nhập nhân viên', icon: 'add', onClick: onImportClick },
+        items: [
+            { id: 'xuat-tat-ca', label: 'Ảnh lịch tất cả', icon: 'exportImage', section: 'Xuất', disabled: chuaCoNV, onSelect: onExportAll },
+            { id: 'xuat-tuan', label: 'Ảnh lịch theo tuần', icon: 'dateRange', section: 'Xuất', disabled: chuaCoNV, onSelect: onExportWeekly },
+            { id: 'xuat-tung-nv', label: 'Ảnh lịch từng nhân viên', icon: 'exportBatch', section: 'Xuất', disabled: chuaCoNV, onSelect: onExportIndividual },
+            { id: 'xuat-excel', label: 'Excel', icon: 'spreadsheet', section: 'Xuất', disabled: chuaCoNV, onSelect: onExportExcel },
+            { id: 'xuat-sheet', label: 'Google Sheet', icon: 'share', section: 'Xuất', disabled: chuaCoNV, onSelect: onExportGoogleSheet },
+            { id: 'ca-xoay', label: 'Ca xoay', icon: 'repeat', section: 'Nhân viên', onSelect: onOpenEditPattern },
+            { id: 'lay-ds-nv', label: 'Lấy danh sách NV từ hệ thống', icon: 'externalLink', section: 'Nhân viên', onSelect: () => { window.open(LINK_DS_NV, '_blank', 'noopener,noreferrer'); } },
+            { id: 'xoa-ds-nv', label: 'Xoá danh sách nhân viên', icon: 'delete', destructive: true, onSelect: onDeleteStaffList },
+        ],
+    } : null);
+
     return (
         <>
             {/* GLOBAL HEADER ACTIONS PORTAL */}
@@ -35,7 +56,7 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                         <AppIcon name="add" size="md" />
                         <span>Nhập NV</span>
                     </Button>
-                    <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
+                    <a href={LINK_DS_NV} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
                         <AppIcon name="externalLink" size="md" />
                     </a>
                     <Button variant="ghost" onClick={onDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 border-l border-slate-100 dark:border-slate-700 transition-colors" title="Xóa danh sách">
@@ -67,40 +88,6 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                 </div>,
                 document.getElementById('global-header-actions')!
             )}
-            {/* Mobile action bar — lg:hidden */}
-            <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
-                <Button variant="ghost" onClick={onImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-3 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
-                    <AppIcon name="add" size="md" />
-                    Nhập NV
-                </Button>
-                <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="h-11 min-w-11 px-2.5 text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors flex items-center justify-center shrink-0" title="Lấy DS NV">
-                    <AppIcon name="externalLink" size="md" />
-                </a>
-                <Button variant="ghost" onClick={onDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-rose-50 hover:text-rose-600 rounded-md transition-colors flex items-center gap-1.5 shrink-0" title="Xóa danh sách">
-                    <AppIcon name="delete" size="md" />
-                    Xoá
-                </Button>
-                <Button variant="ghost" onClick={onOpenEditPattern} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-3 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
-                    <AppIcon name="repeat" size="md" />
-                    Ca Xoay
-                </Button>
-                <div className="w-px h-5 bg-slate-200 shrink-0"></div>
-                <Button variant="ghost" onClick={onExportAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-                    Tất cả
-                </Button>
-                <Button variant="ghost" onClick={onExportWeekly} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-semibold text-slate-600 bg-white border border-slate-200 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-                    Tuần
-                </Button>
-                <Button variant="ghost" onClick={onExportIndividual} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-slate-800 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-                    Từng NV
-                </Button>
-                <Button variant="ghost" onClick={onExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-white bg-emerald-600 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
-                    Excel
-                </Button>
-                <Button variant="ghost" onClick={onExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-11 w-auto p-0 text-inherit px-2.5 text-xs font-bold text-sky-700 bg-sky-50 rounded-md transition-colors shrink-0" disabled={!hasStaff} title="Xuất ra Google Sheet">
-                    Sheet
-                </Button>
-            </div>
         </>
     );
 };

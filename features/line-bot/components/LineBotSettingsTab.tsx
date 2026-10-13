@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Switch } from '../../../components/shared/ui/Switch';
 import { LineBotConfig, LineGroup, botHasToken } from '../types/lineBot.types';
 import { LineBotInfo } from '../services/lineMessagingService';
 import { LineBotStatusCard } from './LineBotStatusCard';
@@ -111,7 +112,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         <div>
                             <div className="flex items-center gap-2">
                                 <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-white">
-                                    Liên Kết Tài Khoản Google & Mã Kho
+                                    Liên kết tài khoản Google & mã kho
                                 </h4>
                                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sky-100 text-sky-700 dark:bg-sky-900/60 dark:text-sky-300">
                                     Multi-Tenant
@@ -138,15 +139,12 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 </div>
 
                 <div className="pt-2 border-t border-sky-100 dark:border-sky-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                    <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        <input
-                            type="checkbox"
-                            checked={isWarehouseShared}
-                            onChange={e => setIsWarehouseShared(e.target.checked)}
-                            className="min-h-11 sm:min-h-0 w-4 h-4 rounded text-sky-600 focus:ring-sky-500 cursor-pointer"
-                        />
-                        <span>Cho phép các Quản lý cùng mã kho <strong>{deptId || 'này'}</strong> kế thừa và dùng chung Bot</span>
-                    </label>
+                    <div className="flex items-center justify-between gap-3 w-full sm:w-auto">
+                        <span id="bot-dung-chung-kho" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            Cho phép các quản lý cùng mã kho <strong>{deptId || 'này'}</strong> kế thừa và dùng chung Bot
+                        </span>
+                        <Switch checked={isWarehouseShared} onChange={setIsWarehouseShared} aria-labelledby="bot-dung-chung-kho" />
+                    </div>
                     <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 italic">
                         {isWarehouseShared
                             ? <><AppIcon name="check" size="xs" className="text-emerald-600" />Tài khoản cùng kho sẽ được dùng chung kho coupon & bot</>
@@ -162,10 +160,10 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                         href="https://manager.line.biz/account/@428gkuok/setting/messaging-api"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="min-h-11 sm:min-h-0 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1.5 transition-colors group"
+                        className="min-h-11 sm:min-h-0 text-[13px] font-semibold text-sky-700 dark:text-sky-300 hover:text-sky-900 dark:hover:text-sky-100 hover:underline inline-flex items-center gap-1.5 transition-colors group"
                         title="Mở cài đặt Messaging API trên LINE Official Account Manager (@428gkuok)"
                     >
-                        <span>Webhook URL Cá Nhân Hoá (Dán vào LINE Developers Console)</span>
+                        <span>Webhook URL cá nhân hoá (dán vào LINE Developers Console)</span>
                         <AppIcon name="externalLink" size="sm" className="text-sky-600 group-hover:translate-x-0.5 transition-transform" />
                     </a>
                 </div>
@@ -179,8 +177,9 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     <div className="font-mono text-xs text-slate-700 dark:text-slate-300 break-all select-all">
                         {personalWebhookUrl}
                     </div>
-                    <button
-                        type="button"
+                    <Button
+                        variant="unstyled"
+                        size="none"
                         onClick={(e) => {
                             e.stopPropagation();
                             handleCopyWebhook();
@@ -194,7 +193,7 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     >
                         {copiedUrl ? <AppIcon name="check" size="sm" /> : <AppIcon name="copy" size="sm" />}
                         <span>{copiedUrl ? 'Đã chép' : 'Sao chép'}</span>
-                    </button>
+                    </Button>
                 </div>
 
                 <p className="flex items-start gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
@@ -406,20 +405,12 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
 
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     <div>
-                        <span className="text-xs font-bold text-slate-800 dark:text-white block">Tự động duyệt đơn (Auto-Approve)</span>
+                        <span id="bot-tu-duyet" className="text-xs font-bold text-slate-800 dark:text-white block">Tự động duyệt đơn (Auto-Approve)</span>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400">
                             Khi nhân viên gửi đúng cú pháp form xin mã PMH, Bot sẽ tự động kiểm tra kho và phát mã ngay mà không cần Quản lý gõ lệnh duyệt.
                         </span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer ml-4 py-2.5 -my-2.5 sm:py-0 sm:my-0">
-                        <input
-                            type="checkbox"
-                            checked={autoApprove}
-                            onChange={e => setAutoApprove(e.target.checked)}
-                            className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
+                    <Switch checked={autoApprove} onChange={setAutoApprove} aria-labelledby="bot-tu-duyet" className="ml-4 shrink-0" />
                 </div>
 
                 <div>
@@ -445,10 +436,10 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 <div className="flex items-center justify-between">
                     <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <AppIcon name="clock" size="md" className="text-amber-500" />
-                        <span>Thông Báo & Báo Cáo Định Kỳ (6h00 & 22h00)</span>
+                        <span>Thông báo & báo cáo định kỳ (6h00 & 22h00)</span>
                     </h4>
                     <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                        Chỉ gửi vào Nhóm
+                        Chỉ gửi vào nhóm
                     </span>
                 </div>
 
@@ -487,57 +478,41 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-amber-600" />06h00 Sáng: Báo cáo tồn kho ("tk")</span>
+                            <span id="bot-bao-cao-sang" className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-amber-600" />06h00 sáng: báo cáo tồn kho ("tk")</span>
                             <span className="text-[11px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded font-mono">Tự ngắt nếu 0 mã</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                             Chỉ gửi khi trong kho còn tồn coupon (UNUSED). Nếu kho hết sạch mã, Bot tự động giữ im lặng để không làm phiền nhóm.
                         </span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer ml-4 py-2.5 -my-2.5 sm:py-0 sm:my-0">
-                        <input
-                            type="checkbox"
-                            checked={morningReport}
-                            onChange={e => setMorningReport(e.target.checked)}
-                            className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
+                    <Switch checked={morningReport} onChange={setMorningReport} aria-labelledby="bot-bao-cao-sang" className="ml-4 shrink-0" />
                 </div>
 
                 {/* Tùy chọn 22h00 tối */}
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     <div>
                         <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-sky-600" />22h00 Tối: Tổng kết coupon đã dùng hôm nay</span>
-                            <span className="text-[11px] font-semibold bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded font-mono">Dạng Thẻ Flex</span>
+                            <span id="bot-bao-cao-toi" className="inline-flex items-center gap-1 text-xs font-bold text-slate-800 dark:text-white"><AppIcon name="clock" size="sm" className="text-sky-600" />22h00 tối: tổng kết coupon đã dùng hôm nay</span>
+                            <span className="text-[11px] font-semibold bg-sky-100 text-sky-700 px-1.5 py-0.2 rounded font-mono">Dạng thẻ Flex</span>
                         </div>
                         <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
                             Gửi Thẻ Flex tổng kết: Tổng số lượng phiếu PMH đã dùng hôm nay kèm danh sách chi tiết các bạn đã sử dụng.
                         </span>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer ml-4 py-2.5 -my-2.5 sm:py-0 sm:my-0">
-                        <input
-                            type="checkbox"
-                            checked={eveningReport}
-                            onChange={e => setEveningReport(e.target.checked)}
-                            className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
+                    <Switch checked={eveningReport} onChange={setEveningReport} aria-labelledby="bot-bao-cao-toi" className="ml-4 shrink-0" />
                 </div>
             </div>
 
-            {/* Save Button */}
+            {/* Nút lưu — nút chính chuẩn (GĐ7: trước tự tô xanh lá); iPhone trải hết bề ngang cho dễ bấm */}
             <div className="flex justify-end pt-2">
                 <Button
                     variant="primary"
+                    icon="save"
                     onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all disabled:opacity-50"
+                    isLoading={isSaving}
+                    className="w-full sm:w-auto px-6"
                 >
-                    <AppIcon name="save" size="md" />
-                    <span>{isSaving ? 'Đang lưu...' : 'Lưu cấu hình Bot'}</span>
+                    {isSaving ? 'Đang lưu…' : 'Lưu cấu hình Bot'}
                 </Button>
             </div>
         </div>

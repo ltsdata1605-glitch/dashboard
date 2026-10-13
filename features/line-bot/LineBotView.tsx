@@ -1,9 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import type { IconName } from '../../components/shared/ui/icon/iconRegistry';
 import { toast } from '../../components/shared/ui/toast';
 import { useAuth } from '../../contexts/AuthContext';
 import { Button } from '../../components/shared/ui/Button';
+import { Tabs } from '../../components/shared/ui/Tabs';
+import { Banner } from '../../components/shared/ui/Banner';
+import { usePageActions } from '../../components/shared/ui/PageActions';
+import { useActiveTab } from '../../contexts/LayoutContext';
 import { useBotScope } from './hooks/useBotScope';
 import { useLineBotConfig } from './hooks/useLineBotConfig';
 import { useCouponManager } from './hooks/useCouponManager';
@@ -31,7 +35,7 @@ export default function LineBotView() {
     const [activeSubTab, setActiveSubTab] = useState<LineBotTab>('coupons');
     const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(false);
     const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
-    const tabBarRef = useRef<HTMLDivElement>(null);
+    const { activeTab } = useActiveTab();
 
     // Quản lý phạm vi Bot: Kế thừa Bot Kho hoặc Dùng Bot cá nhân riêng biệt
     const botScopeHook = useBotScope();
@@ -63,11 +67,14 @@ export default function LineBotView() {
         }
     };
 
-    // Mobile: 9 tab không vừa 1 màn — cuộn tab đang chọn vào tầm nhìn để người dùng luôn thấy mình đang ở đâu.
-    useEffect(() => {
-        const el = tabBarRef.current?.querySelector<HTMLElement>(`[data-tab-id="${activeSubTab}"]`);
-        el?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-    }, [activeSubTab]);
+    // iPhone (GĐ7): "Hướng dẫn tạo Bot" + "Đổi tài khoản" lên thanh trên của khung app (thẻ đầu trang chỉ còn tên + trạng thái);
+    // laptop giữ 2 nút trong thẻ. Đăng nhập (dùng thử / chưa đăng nhập) là dải Banner riêng ngay dưới thẻ trên iPhone.
+    const daDangNhap = !!user && !isDemoMode;
+    usePageActions(activeTab === 'tools-line-bot' && isManagerOrAdmin ? {
+        scope: 'mobile',
+        quick: [{ id: 'huong-dan-bot', label: 'Hướng dẫn tạo Bot', icon: 'help', onSelect: () => setIsOnboardingOpen(true) }],
+        items: daDangNhap ? [{ id: 'doi-tai-khoan', label: 'Đổi tài khoản Google', icon: 'login', onSelect: () => { void handleGoogleAuth(); } }] : [],
+    } : null);
 
     // Hooks - được truyền effectiveBotId (tự động chuyển sang Bot kho hoặc Bot riêng)
     const botConfigHook = useLineBotConfig(effectiveBotId);
@@ -99,13 +106,13 @@ export default function LineBotView() {
 
     const tabs: Array<{ id: LineBotTab; label: string; icon: IconName }> = [
         { id: 'coupons', label: 'Coupon Event', icon: 'coupon' },
-        { id: 'filtered', label: 'Coupon Lọc', icon: 'filter' },
+        { id: 'filtered', label: 'Coupon lọc', icon: 'filter' },
         { id: 'schedules', label: 'Gửi Notify', icon: 'schedule' },
         { id: 'keywords', label: 'Chat BOT', icon: 'sparkles' },
         { id: 'admins', label: 'Admin', icon: 'securityOk' },
-        { id: 'group-features', label: 'Cấu hình Nhóm', icon: 'users' },
+        { id: 'group-features', label: 'Cấu hình nhóm', icon: 'users' },
         { id: 'syntax', label: 'Cú pháp & Lọc', icon: 'command' },
-        { id: 'settings', label: 'Cấu Hình Bot', icon: 'settings' }
+        { id: 'settings', label: 'Cấu hình Bot', icon: 'settings' }
     ];
 
     return (
@@ -159,7 +166,7 @@ export default function LineBotView() {
                                     </span>
                                 )}
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug sm:truncate">
+                            <p className="text-[12px] sm:text-[11px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-1 sm:truncate">
                                 {botConfigHook.botInfo?.basicId
                                     ? `ID: ${botConfigHook.botInfo.basicId} • Cấp phát mã & Tự động hoá`
                                     : 'Hệ thống cấp phát mã PMH tự động và trợ lý thông báo qua LINE'}
@@ -167,8 +174,8 @@ export default function LineBotView() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 shrink-0">
-                        {/* Nút Đăng nhập / Chuyển tài khoản Google để thừa kế BOT LINE */}
+                    <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                        {/* Nút Đăng nhập / Chuyển tài khoản Google để thừa kế BOT LINE (iPhone: Banner dưới thẻ + thanh trên) */}
                         {!user || isDemoMode ? (
                             <Button
                                 variant="primary"
@@ -211,6 +218,19 @@ export default function LineBotView() {
                         </Button>
                     </div>
                 </div>
+
+                {/* iPhone: đăng nhập để thừa kế Bot kho — dải riêng thay nút nhét trong thẻ đầu trang */}
+                {!daDangNhap && (
+                    <Banner
+                        tone="info"
+                        title="Đăng nhập để dùng Bot của kho"
+                        action={{ label: isLoggingIn ? 'Đang kết nối…' : 'Đăng nhập Google', onClick: () => { void handleGoogleAuth(); } }}
+                        className="sm:hidden"
+                        data-testid="line-bot-dang-nhap"
+                    >
+                        Tài khoản quản lý cùng mã kho sẽ tự kế thừa Bot và kho mã đã cấu hình.
+                    </Banner>
+                )}
 
                 {/* Warehouse Inheritance Banner / Scope Switcher */}
                 {currentDept && (
@@ -259,57 +279,38 @@ export default function LineBotView() {
                         {hasWarehouseBot && (
                             <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
                                 {isInheriting ? (
-                                    <button
-                                        type="button"
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
                                         onClick={() => switchScope('personal')}
-                                        className="min-h-11 sm:min-h-0 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-700 text-sky-700 dark:text-sky-300 text-[11px] font-semibold hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-colors cursor-pointer"
                                         title="Chuyển sang cấu hình Bot riêng biệt cho tài khoản này"
                                     >
-                                        Tạo / Dùng Bot riêng
-                                    </button>
+                                        Tạo / dùng Bot riêng
+                                    </Button>
                                 ) : scopeMode === 'personal' ? (
-                                    <button
-                                        type="button"
+                                    <Button
+                                        variant="primary"
+                                        size="sm"
                                         onClick={() => switchScope('warehouse')}
-                                        className="min-h-11 sm:min-h-0 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition-colors cursor-pointer shadow-xs"
                                         title="Kế thừa và dùng chung Bot của kho"
                                     >
-                                        Kế thừa Bot Kho {currentDept}
-                                    </button>
+                                        Kế thừa Bot kho {currentDept}
+                                    </Button>
                                 ) : null}
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Navigation Tabs — Phong cách Report BI, Sky palette, siêu mượt cho iPhone */}
-                <div className="relative">
-                    <div
-                        ref={tabBarRef}
-                        className="flex items-center gap-1 overflow-x-auto p-1 bg-slate-100/90 dark:bg-slate-800/70 rounded-xl border border-slate-200/70 dark:border-slate-700/60 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [-webkit-overflow-scrolling:touch]"
-                    >
-                    {tabs.map(tab => {
-                        const isActive = activeSubTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                data-tab-id={tab.id}
-                                onClick={() => setActiveSubTab(tab.id)}
-                                className={`min-h-11 sm:min-h-0 flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-semibold transition-all shrink-0 snap-start active:scale-95 cursor-pointer ${
-                                    isActive
-                                        ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-2xs font-bold ring-1 ring-slate-200/60 dark:ring-slate-600'
-                                        : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/40'
-                                }`}
-                            >
-                                <AppIcon name={tab.icon} size="md" className={isActive ? 'text-sky-600' : 'text-slate-400'} />
-                                <span>{tab.label}</span>
-                            </button>
-                        );
-                    })}
-                    </div>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 w-6 rounded-r-xl bg-gradient-to-l from-slate-100 dark:from-slate-800 to-transparent sm:hidden" aria-hidden="true" />
-                </div>
+                {/* 8 phân hệ — segmented dùng chung (GĐ7): cuộn ngang trên iPhone, mục đang chọn tự nằm giữa dải (useCenterActiveInStrip) */}
+                <Tabs
+                    variant="segment"
+                    size="sm"
+                    activeId={activeSubTab}
+                    onChange={(id) => setActiveSubTab(id as LineBotTab)}
+                    items={tabs}
+                    className="w-full"
+                />
 
                 {/* Tab Contents */}
                 <div className="min-h-[400px]">
