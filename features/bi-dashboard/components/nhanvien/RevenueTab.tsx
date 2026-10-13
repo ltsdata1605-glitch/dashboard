@@ -421,8 +421,8 @@ const RevenueView: React.FC<{
             </div>
 
             {/* 2. Thanh nút gôm gọn lại ngay dưới tiêu đề */}
-            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full overflow-x-auto scrollbar-hide">
-                <div className="flex gap-1 sm:gap-1.5 items-center shrink-0">
+            <div className="flex flex-nowrap justify-between items-center px-2.5 sm:px-4 py-1.5 bg-slate-50/70 dark:bg-slate-800/40 no-print border-b border-slate-200 dark:border-slate-700 gap-1 sm:gap-2 w-full relative z-20">
+                <div className="flex gap-1 sm:gap-1.5 items-center shrink-0 min-w-0 overflow-x-auto scrollbar-hide py-0.5">
                     {!isRealtimeMode && (
                         <Button
                             variant="unstyled"
