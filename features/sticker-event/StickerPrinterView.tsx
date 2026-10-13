@@ -104,7 +104,7 @@ export default function StickerPrinterView() {
     } = useStickerPrinterData();
 
     return (
-        <div className="print-wrapper w-full h-[calc(100dvh-64px)] bg-slate-100 dark:bg-slate-900 relative overflow-hidden">
+        <div className="print-wrapper w-full h-[calc(100dvh-64px)] bg-slate-100 dark:bg-slate-900 relative overflow-hidden flex flex-col">
             <StickerModeToolbar
                 stickerMode={stickerMode}
                 stickerType={stickerType}
@@ -150,6 +150,8 @@ export default function StickerPrinterView() {
                 }}
             />
 
+            {/* Vùng nội dung: chiếm phần còn lại dưới hàng chế độ (iPhone/iPad) — 2 lớp Sticker / tem chồng nhau như cũ */}
+            <div className="relative flex-1 min-h-0">
             {eventEverOpened && (
                 <div className={`absolute inset-0 z-10 w-full h-full overflow-y-auto transition-opacity duration-200 ${stickerMode === 'event' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
                     <ErrorBoundary name="Sticker">
@@ -264,6 +266,7 @@ export default function StickerPrinterView() {
                     bgImage={bgImage}
                     setBgImage={setBgImage}
                 />
+            </div>
             </div>
 
             {isSaveListModalOpen && (

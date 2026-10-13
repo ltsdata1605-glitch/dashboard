@@ -7,6 +7,9 @@ import { useActiveTab } from '../../../contexts/LayoutContext';
 import { toast } from '../../shared/ui/toast';
 import { Button } from '../../shared/ui/Button';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
+import { Banner } from '../../shared/ui/Banner';
+import { ListGroup, ListRow } from '../../shared/ui/ListGroup';
+import { usePageActions } from '../../shared/ui/PageActions';
 import UserManagementView from '../UserManagementView';
 import { ProductConfigManagerTab } from '../../../features/product-config';
 import { formatCleanDisplayName, parseKhoList } from '../../../utils/dataUtils';
@@ -20,6 +23,14 @@ export const SettingsAccountTab: React.FC = () => {
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Chế độ Dùng Thử: "đăng xuất" thực chất là THOÁT chế độ dùng thử (AuthContext.logout tắt demo) — gọi đúng tên.
+    const nhanDangXuat = !user || isDemoMode ? 'Thoát chế độ dùng thử' : 'Đăng xuất';
+    // iPhone: nút đăng xuất trên thanh trên qua khung app (GĐ7 — vùng chạm 44px, cùng chỗ với nút của các màn khác).
+    // Laptop giữ nút có chữ ở thanh tiêu đề của chủ dự án (portal bên dưới).
+    usePageActions(activeTab === 'settings'
+        ? { scope: 'mobile', quick: [{ id: 'dang-xuat', label: nhanDangXuat, icon: 'logout', onSelect: logout }] }
+        : null);
 
     // Super Admin mang nhãn "ALL (Super Admin)" kèm các Kho thật gắn thêm (vd "ALL (Super Admin),910",
     // xem functions/src/superAdminDept.ts). Ô sửa chỉ hiện/nhận các Kho thật — nhãn giữ tự động.
@@ -150,43 +161,24 @@ export const SettingsAccountTab: React.FC = () => {
 
     return (
         <div className="space-y-8">
-            {/* Tài Khoản Section */}
+            {/* Hồ sơ — GĐ7 (#11): việc nguy hiểm "Xoá tất cả dữ liệu" KHÔNG còn nằm cạnh tiêu đề đầu trang, đã xuống nhóm
+                "Vùng nguy hiểm" cuối trang (kiểu Cài đặt iOS). */}
             <div>
-                <div className="flex items-center justify-between gap-2 mb-3 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2.5">
-                    <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white whitespace-nowrap">Hồ Sơ Định Danh</h3>
-                    <Button
-                        variant="unstyled"
-                        size="none"
-                        onClick={() => setIsResetModalOpen(true)}
-                        className="w-8 h-8 min-w-8 min-h-8 sm:w-auto sm:h-8 p-0 sm:px-3 text-xs font-bold flex items-center justify-center sm:gap-1.5 transition-all rounded-lg border border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 hover:border-rose-300 shadow-2xs cursor-pointer active:scale-95 shrink-0"
-                        title="Xoá tất cả dữ liệu (Người dùng mới)"
-                    >
-                        <AppIcon name="delete" size="sm" />
-                        <span className="hidden sm:inline">Xoá tất cả dữ liệu (Người dùng mới)</span>
-                    </Button>
-                </div>
+                <h3 className="type-headline font-semibold text-slate-900 mb-3 sm:mb-4 px-1 sm:px-0">Hồ sơ định danh</h3>
 
                 {(!user || isDemoMode) && (
-                    <div className="mb-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
-                        <div className="flex items-center gap-3">
-                            <AppIcon name="warning" size="md" className="text-amber-500 shrink-0" />
-                            <div>
-                                <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Đang ở Chế độ Dùng Thử (Offline)</h4>
-                                <p className="text-xs text-amber-700 dark:text-amber-400">Đăng nhập tài khoản Google để tự động đồng bộ dữ liệu giữa laptop và điện thoại.</p>
-                            </div>
-                        </div>
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={loginWithGoogle}
-                            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-bold text-xs rounded-lg shadow-xs transition-all shrink-0 cursor-pointer"
-                        >
-                            Đăng Nhập Google Ngay
-                        </Button>
-                    </div>
+                    <Banner
+                        tone="warning"
+                        title="Đang ở chế độ dùng thử"
+                        action={{ label: 'Đăng nhập Google', onClick: loginWithGoogle }}
+                        className="mb-4"
+                        data-testid="banner-dung-thu"
+                    >
+                        Đăng nhập để tự đồng bộ dữ liệu giữa laptop và điện thoại.
+                    </Banner>
                 )}
 
-                <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-5 border border-slate-200 dark:border-slate-700 shadow-sm rounded-xl">
+                <div className="bg-white sm:bg-slate-50 p-3 sm:p-5 border border-slate-200 shadow-sm rounded-card">
                     {/* Header: Avatar + Name/Email/Role + Action Button */}
                     <div className={`flex flex-col sm:flex-row items-stretch sm:items-start justify-between gap-3 sm:gap-6 ${isEditingProfile ? 'mb-4' : 'mb-0'}`}>
                         <div className="flex items-start gap-3 sm:gap-5 flex-1 min-w-0">
@@ -205,13 +197,13 @@ export const SettingsAccountTab: React.FC = () => {
                                     <h4 className="text-base sm:text-xl font-black text-slate-800 dark:text-white leading-snug">
                                         {formatCleanDisplayName(user?.displayName)}
                                     </h4>
-                                    <span className={`px-2 py-0.5 text-[10px] sm:text-xs font-bold uppercase tracking-wide inline-flex items-center gap-1 rounded-md ${
+                                    <span className={`px-2 py-0.5 text-[11px] sm:text-xs font-semibold inline-flex items-center gap-1 rounded-full ${
                                         userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                         userRole === 'manager' ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400' :
                                         'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
                                     }`}>
                                         <AppIcon name={resolveIconName(userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users') ?? 'help'} size="xs" />
-                                        {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
+                                        {userRole === 'admin' ? 'Quản trị hệ thống' : userRole === 'manager' ? 'Quản lý kho' : 'Nhân viên'}
                                     </span>
                                 </div>
                                 <p className="text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-2">{user?.email}</p>
@@ -224,7 +216,7 @@ export const SettingsAccountTab: React.FC = () => {
                                             <div className="flex items-center gap-1 shrink-0">
                                                 <AppIcon name="location" size="xs" className="text-rose-500 shrink-0" />
                                                 <span className="font-medium text-slate-500 dark:text-slate-400"><span className="hidden sm:inline">Mã </span>Kho:</span>
-                                                <span className="font-bold text-slate-800 dark:text-white font-mono">{isSuperAdmin ? 'ALL' : (departmentId || 'Chưa đăng ký')}</span>
+                                                <span className={`font-bold text-slate-800 ${departmentId || isSuperAdmin ? 'font-mono' : ''}`}>{isSuperAdmin ? 'ALL' : (departmentId || 'Chưa đăng ký')}</span>
                                                 {isSuperAdmin && parseKhoList(departmentId).length > 0 && (
                                                     <span className="font-medium text-slate-500 dark:text-slate-400">
                                                         · <span className="hidden sm:inline">Kho dùng chung: </span><strong className="font-mono text-sky-700 dark:text-sky-400">{parseKhoList(departmentId).join(',')}</strong>
@@ -278,23 +270,20 @@ export const SettingsAccountTab: React.FC = () => {
                                         setStagedEmployee(employeeName || '');
                                         setDeptError('');
                                     }}
-                                    className="h-8 px-2.5 sm:px-3 text-xs font-semibold"
+                                    className="h-8 px-3 text-xs font-semibold"
                                 >
-                                    Hủy
+                                    Huỷ
                                 </Button>
                             )}
                             <Button
-                                variant="unstyled" size="none"
+                                variant={isEditingProfile ? 'primary' : 'secondary'}
+                                size="sm"
+                                icon={isEditingProfile ? 'save' : 'edit'}
                                 onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                className={`w-8 h-8 min-w-8 min-h-8 sm:w-auto sm:h-8 p-0 sm:px-3 text-xs font-bold flex items-center justify-center sm:gap-1.5 transition-all shadow-2xs rounded-lg flex-shrink-0 ${
-                                    isEditingProfile
-                                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                        : 'bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-800/40 text-slate-700 dark:text-slate-300 hover:border-rose-400 hover:text-rose-600 active:scale-95'
-                                }`}
+                                className="h-8 px-3 text-xs font-semibold shrink-0"
                                 title={isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
                             >
-                                <AppIcon name={isEditingProfile ? 'save' : 'edit'} size="sm" />
-                                <span className="hidden sm:inline">{isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}</span>
+                                {isEditingProfile ? 'Lưu' : (isSuperAdmin ? 'Gắn kho dùng chung' : 'Đổi mã kho')}
                             </Button>
                         </div>
                     </div>
@@ -381,31 +370,35 @@ export const SettingsAccountTab: React.FC = () => {
                 </div>
             )}
 
-            {/* Portaled Logout Button to Top Header Bar - CHỈ xuất hiện khi đang ở tab 'settings' (Phân Quyền & Duyệt Yêu Cầu) */}
+            {/* Cuối trang kiểu Cài đặt iOS (GĐ7, #11): đăng xuất + VÙNG NGUY HIỂM — việc không hoàn tác được nằm cuối cùng, xa
+                các thao tác hằng ngày, chữ đỏ, bấm vẫn phải xác nhận. */}
+            <div className="space-y-6 pt-2">
+                <ListGroup title="Tài khoản">
+                    <ListRow icon="logout" iconTone="slate" label={nhanDangXuat} onClick={logout} data-testid="dang-xuat-cuoi-trang" />
+                </ListGroup>
+                <ListGroup
+                    title="Vùng nguy hiểm"
+                    footer="Xoá sạch dữ liệu đã lưu trên máy này và dữ liệu riêng của bạn trên cloud. Tài khoản đăng nhập vẫn giữ nguyên."
+                    data-testid="vung-nguy-hiem"
+                >
+                    <ListRow icon="delete" destructive label="Xoá tất cả dữ liệu (Người dùng mới)" onClick={() => setIsResetModalOpen(true)} />
+                </ListGroup>
+            </div>
+
+            {/* Laptop: nút đăng xuất có chữ ở thanh tiêu đề (khung của chủ dự án) — CHỈ khi đang ở tab 'settings'.
+                iPhone dùng usePageActions ở trên (thanh trên của khung app). */}
             {mounted && activeTab === 'settings' && typeof document !== 'undefined' && document.getElementById('global-header-actions') && createPortal(
                 <Button
-                    variant="unstyled"
-                    size="none"
+                    variant="secondary"
+                    size="sm"
+                    icon="logout"
                     onClick={logout}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 font-bold text-sm rounded-xl border border-slate-200 dark:border-slate-700 hover:border-rose-300 dark:hover:border-rose-800 shadow-sm transition-all group"
-                    title="Đăng xuất tài khoản"
+                    className="h-9 px-4 text-sm"
+                    title={nhanDangXuat}
                 >
-                    <AppIcon name="logout" size="md" className="text-rose-500 group-hover:translate-x-0.5 transition-transform" />
-                    <span>Đăng Xuất Tài Khoản</span>
+                    {nhanDangXuat}
                 </Button>,
                 document.getElementById('global-header-actions')!
-            )}
-            {mounted && activeTab === 'settings' && typeof document !== 'undefined' && document.getElementById('mobile-topbar-actions') && createPortal(
-                <Button
-                    variant="unstyled"
-                    size="none"
-                    onClick={logout}
-                    className="w-8 h-8 min-w-8 min-h-8 p-0 shrink-0 flex items-center justify-center text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 rounded-lg border border-rose-200/80 dark:border-rose-800 transition-colors mr-1 shadow-2xs active:scale-95"
-                    title="Đăng xuất tài khoản"
-                >
-                    <AppIcon name="logout" size="sm" />
-                </Button>,
-                document.getElementById('mobile-topbar-actions')!
             )}
 
             <ConfirmDialog
@@ -439,9 +432,9 @@ export const SettingsAccountTab: React.FC = () => {
                 isLoading={isResetting}
                 variant="danger"
                 zIndex="z-[9999]"
-                title="Xoá Tất Cả Dữ Liệu"
+                title="Xoá tất cả dữ liệu?"
                 confirmText="Xác nhận xoá sạch"
-                cancelText="Hủy bỏ"
+                cancelText="Huỷ"
                 message={
                     <div className="text-xs text-slate-600 space-y-2 leading-relaxed text-left">
                             <p>

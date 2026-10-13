@@ -7999,3 +7999,33 @@ tự động/test đọc ("Cập nhật", "Realtime", "Luỹ kế" vẫn là `bu
 - **Công tắc Report BI**: bản `Switch` tự vẽ của BI (`dashboard/DashboardWidgets.tsx`, 28×16 màu sky — 9 nơi dùng: popover "Tuỳ chỉnh
   hiển thị cột", Bộ lọc thi đua…) nay bọc công tắc DÙNG CHUNG (`size="sm"`, một kiểu cho cả app; vùng chạm 44 trên cảm ứng). Giữ chữ
   ký cũ; bản chung đã chặn nổi bọt như bản cũ cần.
+
+## GĐ7 — Mini-app còn lại (2026-10-13) — LOẠT 1: Phân quyền + In Sticker
+
+Khảo sát trước: 20 ảnh (10 tab × iPhone 16 Pro Max 440×956 + laptop 1366) ở Chế độ Dùng Thử. Test khoá:
+`tests/e2e/gd7-mini-app.spec.ts` (In Sticker, 3 ca) + `mobile-settings-compact.spec.ts` (Phân quyền, viết lại theo chuẩn mới).
+
+- **#11 Phân quyền — việc nguy hiểm nhất nằm đầu trang** (`settings/SettingsAccountTab.tsx`): nút thùng rác đỏ cạnh tiêu đề "Hồ Sơ
+  Định Danh" → nhóm **"Vùng nguy hiểm"** ở CUỐI trang (ListGroup/ListRow chữ đỏ + chú thích hậu quả; vẫn qua ConfirmDialog như cũ).
+  Trên nó là nhóm "Tài khoản" › "Đăng xuất" (kiểu Cài đặt iOS). Chế độ Dùng Thử gọi đúng tên: "Thoát chế độ dùng thử" (logout của
+  AuthContext tắt demo). iPhone: nút đăng xuất trên thanh trên qua `usePageActions` (scope mobile, vùng chạm 44) thay portal tự vẽ
+  32px; laptop giữ nút có chữ ở thanh tiêu đề (Button secondary). Dải "Dùng thử" → `Banner` cảnh báo; nút sửa hồ sơ có CHỮ "Đổi mã
+  kho" (trước icon bút chì trơn); nhãn vai trò viết như câu.
+- **Phân quyền — khung trang**: iPhone bỏ thẻ trắng bọc ngoài (thẻ trong thẻ trong thẻ, mép lệch 21px) — các nhóm nằm thẳng trên nền
+  xám, lề 16px; laptop giữ thẻ lớn. 2 dải nút tự vẽ (chữ 12px, cao 28px) → 2 segmented dùng chung: "Phân quyền | Ngành hàng | Duyệt"
+  (laptop: "Khai báo ngành hàng", "Cài đặt duyệt") và "Chờ duyệt | Hoạt động | Hết hạn" + nút Làm mới (chỉ ở nhánh Phân quyền — nó
+  tải lại danh sách người dùng). Thẻ người dùng: iPhone xếp lưới 2 cột (trước dồn hàng lộn xộn), ảnh đại diện trống → chữ cái đầu;
+  trạng thái trống → `EmptyState`; toast lỗi tải danh sách có `id` (trước 2 viên giống hệt chồng nhau). Modal "Gia hạn": tiêu đề viết
+  như câu, nút chính chuẩn (bỏ màu xanh lá tự đè), "Huỷ" secondary.
+- **In Sticker — dải chế độ nhét vào thanh trên** (`stickerprinter/StickerModeToolbar.tsx`; `apple-tuong-thich` DA_BIET): thanh
+  470px nhét khe 250px, phải vuốt ngang mới thấy "Sticker" và ô cỡ chữ (nút 24px). iPhone/iPad (< 1024px) → HÀNG THỨ HAI dưới thanh
+  trên: segmented "Giá sốc | Giờ vàng | Phiếu | Sticker" chia đều (iPad giới hạn 512px) + hàng "Cỡ chữ <ô đang chọn>" với nút −/+
+  44px. Nhãn ô của Phiếu có sẵn "Cỡ chữ …" còn của tem thì không → bỏ tiền tố rồi ghép một lần (trước hiện "Cỡ chữ Cỡ chữ …").
+  `StickerPrinterView` thành cột: hàng chế độ + vùng nội dung `flex-1` (2 lớp Sticker/tem chồng nhau như cũ). Laptop GIỮ dải trên
+  thanh tiêu đề (đủ chỗ, mỗi chế độ một màu nhận diện). **DA_BIET của apple-tuong-thich nay trống** (0 vi phạm cả 6 khung).
+- **In Sticker — bảng điều khiển** (`StickerPrintControls.tsx`): nút In GIỮ màu vàng (màu nút in của chủ dự án) nhưng chữ viết như câu
+  "Bấm để in (n)". Tab Dữ liệu: 5 nút 5 màu đặc (xanh dương, xanh lá, đỏ, cam) → một nút nhấn chính (File giá ĐSD) + nút phụ xám
+  theo nhóm có tiêu đề nhỏ ("Nhập từ file mẫu", "Nhập file in giá từ ERP"); "Reset" → "Đặt lại". Phiếu: `<button>` thô "Mặc định" →
+  Button chung; ô tick "Tự động nhảy số" → `Switch`; "Nền in ĐMX/TGĐ" → segmented. "CHỌN HẾT / BỎ CHỌN / XÓA" và "H.DẪN IN" IN HOA →
+  viết như câu.
+- **Chưa làm ở In Sticker**: giao diện riêng của chế độ "Sticker" (StickerEventApp — đăng nhập, quét mã) và tab "D.Sách" → loạt sau.

@@ -3,7 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
 import { DEFAULT_HISTORY_ID, DEFAULT_DRAW_HISTORY_ENTRY } from '../hooks/useStickerPrinterData';
 import { StickerManualQueue } from './StickerManualQueue';
-import { Button, Input, Tabs, EmptyState, SectionCard } from '../../../components/shared/ui';
+import { Button, Input, Tabs, EmptyState, SectionCard, Switch } from '../../../components/shared/ui';
 import type { TabItem } from '../../../components/shared/ui';
 
 interface StickerPrintControlsProps {
@@ -163,10 +163,11 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             <div className="flex gap-2 mb-3 shrink-0">
                 <Button 
                     onClick={handlePrint}
-                    className="flex-1 !bg-amber-400 hover:!bg-amber-500 !text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-amber-500/10 border-transparent"
+                    className="flex-1 !bg-amber-400 hover:!bg-amber-500 !text-slate-950 font-bold text-sm py-2 rounded-control flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-sm border-transparent"
                     leftIcon={<AppIcon name="print" size="md" />}
                 >
-                    BẤM ĐỂ IN ({stickerType === 'draw' ? Math.ceil(drawTotalTickets / 4) : (batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1))})
+                    {/* Vàng = màu nút IN của chủ dự án (giữ); chữ viết như câu thay IN HOA (GĐ7) */}
+                    Bấm để in ({stickerType === 'draw' ? Math.ceil(drawTotalTickets / 4) : (batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1))})
                 </Button>
                 <Button 
                     onClick={addCurrentPage}
@@ -199,21 +200,22 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 <div className="flex items-center justify-between border-b border-rose-200/40 dark:border-rose-800/40 pb-2">
                                     <p className="text-[11px] lg:text-xs font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1.5">
                                         <AppIcon name="settings" size="sm" />
-                                        Cấu hình in Phiếu Rút Thăm
+                                        Cấu hình in phiếu rút thăm
                                     </p>
-                                    <button
-                                        type="button"
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        icon="reset"
                                         onClick={() => {
                                             setLocalStartNumber(1);
                                             setLocalTotalTickets(4000);
                                             restoreHistory(DEFAULT_DRAW_HISTORY_ENTRY);
                                         }}
-                                        className="min-h-11 sm:min-h-0 inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-semibold text-rose-700 dark:text-rose-300 bg-white dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 rounded-lg hover:bg-rose-100/70 dark:hover:bg-rose-900/50 hover:text-rose-800 dark:hover:text-rose-200 transition-all shadow-xs active:scale-95 cursor-pointer"
+                                        className="bg-white hover:bg-rose-100/70 text-rose-700"
                                         title="Khôi phục toàn bộ phiếu và cấu hình về mẫu mặc định"
                                     >
-                                        <AppIcon name="reset" size="md" />
                                         Mặc định
-                                    </button>
+                                    </Button>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-3">
@@ -243,51 +245,27 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     </div>
                                 </div>
 
-                                <label className="flex items-center gap-2 cursor-pointer select-none py-1 min-h-11 sm:min-h-0">
-                                    <input 
-                                        type="checkbox"
-                                        checked={drawAutoIncrement}
-                                        onChange={(e) => setDrawAutoIncrement(e.target.checked)}
-                                        className="w-4 h-4 rounded text-rose-600 border-slate-300 dark:border-slate-700 focus:ring-rose-500 bg-white dark:bg-slate-900"
-                                    />
-                                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                                        Tự động nhảy số liên tục
-                                    </span>
-                                </label>
+                                <div className="flex items-center justify-between gap-3 min-h-11 sm:min-h-0 py-1">
+                                    <span id="phieu-tu-nhay-so" className="text-[13px] font-medium text-slate-700">Tự động nhảy số liên tục</span>
+                                    <Switch checked={drawAutoIncrement} onChange={setDrawAutoIncrement} aria-labelledby="phieu-tu-nhay-so" />
+                                </div>
 
                                 {/* Chọn nền in */}
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                         Nền in
                                     </label>
-                                    <div className="flex gap-2">
-                                        <Button
-                                            type="button"
-                                            variant="unstyled"
-                                            size="none"
-                                            onClick={() => setBgImage('/frame/bg_phieu.png')}
-                                            className={`flex-1 min-h-11 sm:min-h-0 py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all border-2 ${
-                                                bgImage === '/frame/bg_phieu.png'
-                                                    ? 'bg-sky-600 text-white border-sky-600 shadow-md'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300'
-                                            }`}
-                                        >
-                                            ĐMX
-                                        </Button>
-                                        <Button
-                                            type="button"
-                                            variant="unstyled"
-                                            size="none"
-                                            onClick={() => setBgImage('/frame/bg_phieutgd.png')}
-                                            className={`flex-1 min-h-11 sm:min-h-0 py-1.5 px-3 rounded-lg text-[11px] font-bold transition-all border-2 ${
-                                                bgImage === '/frame/bg_phieutgd.png'
-                                                    ? 'bg-sky-600 text-white border-sky-600 shadow-md'
-                                                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-sky-300'
-                                            }`}
-                                        >
-                                            TGĐ
-                                        </Button>
-                                    </div>
+                                    <Tabs
+                                        variant="segment"
+                                        size="sm"
+                                        fullWidth
+                                        activeId={bgImage}
+                                        onChange={setBgImage}
+                                        items={[
+                                            { id: '/frame/bg_phieu.png', label: 'ĐMX' },
+                                            { id: '/frame/bg_phieutgd.png', label: 'TGĐ' },
+                                        ]}
+                                    />
                                 </div>
 
                                 <div className="bg-white/80 dark:bg-slate-900/40 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800/40 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -296,60 +274,50 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             </div>
                         ) : (
                             <>
-                                {/* File upload actions */}
-                                <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/30">
-                                    <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-[11px] lg:text-xs">
-                                        <AppIcon name="upload" size="sm" />
+                                {/* Nhập dữ liệu — GĐ7: một kiểu nút (trước 5 nút 5 màu: xanh, xanh lá, đỏ, cam…). Nút nhấn chính duy nhất là file
+                                    giá ĐSD; các nguồn khác là nút phụ xám, gom theo nhóm có tiêu đề nhỏ. */}
+                                <div className="flex gap-2">
+                                    <label className="flex-1 inline-flex items-center justify-center gap-1.5 h-9 max-sm:min-h-11 pointer-coarse:min-h-11 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-control font-semibold cursor-pointer transition-colors text-xs">
+                                        <AppIcon name="upload" size="md" />
                                         File giá ĐSD - TBBM
                                         <input type="file" accept=".xlsx, .xls, .csv" onChange={handleExcelUpload} className="hidden" />
                                     </label>
-                                    <Button 
-                                        onClick={handleReset}
-                                        variant="secondary"
-                                        className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition-colors shadow-sm text-[11px] lg:text-xs h-auto py-1.5 border-slate-200 dark:border-slate-600"
-                                    >
-                                        Reset
+                                    <Button onClick={handleReset} variant="secondary" size="md" className="text-xs px-3" title="Xoá danh sách đã nhập, về mẫu ban đầu">
+                                        Đặt lại
                                     </Button>
                                 </div>
 
-                                {/* Import from template */}
-                                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
-                                    <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
-                                        <AppIcon name="spreadsheet" size="xs" />
-                                        Nhập từ File Mẫu
+                                <div className="space-y-1.5">
+                                    <p className="text-[12px] font-medium text-slate-500 flex items-center gap-1.5 px-0.5">
+                                        <AppIcon name="spreadsheet" size="sm" />
+                                        Nhập từ file mẫu
                                     </p>
-                                    <div className="flex gap-1.5">
-                                        <Button
-                                            variant="ghost"
-                                            onClick={downloadTemplate}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm"
-                                        >
-                                            <AppIcon name="download" size="xs" />
-                                            Tải File Mẫu
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button variant="secondary" size="md" icon="download" onClick={downloadTemplate} className="text-xs px-2">
+                                            Tải file mẫu
                                         </Button>
-                                        <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm">
-                                            <AppIcon name="upload" size="xs" />
-                                            Nhập File Mẫu
+                                        <label className="inline-flex items-center justify-center gap-1.5 h-9 max-sm:min-h-11 pointer-coarse:min-h-11 px-2 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-control font-semibold text-xs cursor-pointer transition-colors">
+                                            <AppIcon name="upload" size="md" />
+                                            Nhập file mẫu
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
                                         </label>
                                     </div>
                                 </div>
 
-                                {/* Import price file from ERP */}
-                                <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
-                                    <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
-                                        <AppIcon name="product" size="xs" />
+                                <div className="space-y-1.5">
+                                    <p className="text-[12px] font-medium text-slate-500 flex items-center gap-1.5 px-0.5">
+                                        <AppIcon name="product" size="sm" />
                                         Nhập file in giá từ ERP
                                     </p>
                                     <div className="grid grid-cols-1 gap-2">
-                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm text-center">
-                                            <AppIcon name="upload" size="xs" />
-                                            Máy Lọc Nước (Mẫu in 99)
+                                        <label className="inline-flex items-center justify-center gap-1.5 h-9 max-sm:min-h-11 pointer-coarse:min-h-11 px-3 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-control font-semibold text-xs cursor-pointer transition-colors text-center">
+                                            <AppIcon name="upload" size="md" />
+                                            Máy lọc nước (mẫu in 99)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
                                         </label>
-                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm text-center">
-                                            <AppIcon name="upload" size="xs" />
-                                            Điện Tử/Lạnh (Mẫu in 97)
+                                        <label className="inline-flex items-center justify-center gap-1.5 h-9 max-sm:min-h-11 pointer-coarse:min-h-11 px-3 bg-slate-100 hover:bg-slate-200/80 text-slate-800 rounded-control font-semibold text-xs cursor-pointer transition-colors text-center">
+                                            <AppIcon name="upload" size="md" />
+                                            Điện tử/Lạnh (mẫu in 97)
                                             <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'appliance')} className="hidden" />
                                         </label>
                                     </div>
@@ -363,9 +331,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                 Danh sách in ({selectedCount}/{batchItems.length})
                                             </h4>
                                             <div className="flex gap-2">
-                                                <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] text-sky-600 hover:text-sky-700 font-bold uppercase">Chọn hết</Button>
-                                                <Button variant="ghost" onClick={() => toggleAllSelection(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</Button>
-                                                <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[11px] text-rose-500 hover:text-rose-600 font-bold uppercase">Xóa</Button>
+                                                <Button variant="unstyled" size="none" onClick={() => toggleAllSelection(true)} className="ycx-hit text-[12px] text-sky-600 hover:text-sky-700 font-semibold">Chọn hết</Button>
+                                                <Button variant="unstyled" size="none" onClick={() => toggleAllSelection(false)} className="ycx-hit text-[12px] text-slate-500 hover:text-slate-600 font-semibold">Bỏ chọn</Button>
+                                                <Button variant="unstyled" size="none" onClick={clearBatchItems} className="ycx-hit text-[12px] text-rose-600 hover:text-rose-700 font-semibold">Xoá</Button>
                                             </div>
                                         </div>
                                         <Input 
@@ -404,12 +372,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         <div className="mt-4 border-t border-slate-100 dark:border-slate-700/60 pt-4 space-y-2.5">
                             <div className="flex items-center gap-1.5">
                                 <AppIcon name="settings" size="sm" className="text-sky-500" />
-                                <span className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">H.Dẫn in & Sử dụng</span>
+                                <span className="text-[13px] font-semibold text-slate-800">Hướng dẫn in & sử dụng</span>
                             </div>
                             
                             <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-3">
                                 <div className="space-y-1.5">
-                                    <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">CẤU HÌNH IN CHROME (CTRL + P):</p>
+                                    <p className="text-[12px] font-semibold text-slate-600">Cấu hình in Chrome (Ctrl + P)</p>
                                     <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
                                         <li className="flex items-center gap-1.5">
                                             <span className="w-1 h-1 rounded-full bg-sky-500 shrink-0" />
@@ -516,7 +484,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <Button
                                             variant="ghost"
                                             onClick={() => restoreHistory(entry)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
+                                            className="ycx-hit bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
                                             title="Khôi phục"
                                         >
                                             <AppIcon name="reset" size="md" />

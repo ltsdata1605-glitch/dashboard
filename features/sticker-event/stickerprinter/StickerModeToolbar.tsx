@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Button } from '../../../components/shared/ui/Button';
+import { Tabs } from '../../../components/shared/ui/Tabs';
 
 interface StickerModeToolbarProps {
     stickerMode: 'sticker' | 'event';
@@ -39,12 +40,63 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    const portalTarget = document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions');
-    if (!mounted || activeTab !== 'tools-print-sticker' || !portalTarget) return null;
+    if (!mounted || activeTab !== 'tools-print-sticker') return null;
 
-    // Lớp cuộn ngang TRONG SUỐT (iPhone): thanh 4 chế độ + chỉnh cỡ chữ rộng ~470px, thanh trên
-    // chỉ còn ~250px → phần dư vuốt ngang trong lớp này thay vì đẩy cả trang tràn ngang 140px.
-    // Các nút là <Button> dùng chung nên đã tự cao 44px trên mobile (min-h-11), không cần nới thêm.
+    // iPhone / iPad (GĐ7, KE_HOACH_GIAO_DIEN_APPLE.md): KHÔNG nhét dải chế độ vào thanh trên nữa (trước: thanh 470px nhét vào
+    // khe ~250px, phải vuốt ngang mới thấy "Sticker" và ô cỡ chữ — apple-tuong-thich đỏ ở mọi khung cảm ứng). Nay là HÀNG
+    // THỨ HAI ngay dưới thanh trên: segmented 4 chế độ chia đều + hàng cỡ chữ (chỉ ở chế độ tem) với nút −/+ 44px.
+    if (isMobile) {
+        const activeId = stickerMode === 'event' ? 'event' : stickerType;
+        const chon: Record<string, () => void> = { gia_soc: onSelectGiaSoc, gio_vang: onSelectGioVang, draw: onSelectDraw, event: onSelectEvent };
+        const oDangChon = (stickerType === 'draw' ? getDrawActiveFieldLabel() : getActiveFieldLabel()).replace(/^Cỡ chữ\s*/, '');
+        return (
+            <div data-testid="sticker-mode-bar" className="no-print shrink-0 bg-slate-50/95 border-b border-slate-200 px-3 sm:px-4 pt-2 pb-2">
+                <div className="space-y-1.5 sm:max-w-lg sm:mx-auto">
+                <Tabs
+                    variant="segment"
+                    size="sm"
+                    fullWidth
+                    activeId={activeId}
+                    onChange={id => chon[id]?.()}
+                    items={[
+                        { id: 'gia_soc', label: 'Giá sốc' },
+                        { id: 'gio_vang', label: 'Giờ vàng' },
+                        { id: 'draw', label: 'Phiếu' },
+                        { id: 'event', label: 'Sticker' },
+                    ]}
+                />
+                {stickerMode === 'sticker' && (
+                    <div className="flex items-center justify-between gap-3 pl-1">
+                        {/* Ô đang chọn trên bản xem trước. Nhãn Phiếu đã có sẵn "Cỡ chữ …", nhãn tem thì không → bỏ tiền tố rồi
+                            ghép một lần, tránh "Cỡ chữ Cỡ chữ Thông tin trái". */}
+                        <span className="type-footnote text-slate-500 truncate min-w-0">
+                            Cỡ chữ{oDangChon && <> <span className="font-semibold text-slate-800">{oDangChon}</span></>}
+                        </span>
+                        <div className="flex items-center shrink-0 rounded-control bg-white border border-slate-200">
+                            <Button variant="unstyled" size="none" onMouseDown={e => e.preventDefault()} onClick={onDecreaseFontSize}
+                                className="h-9 w-11 flex items-center justify-center text-slate-700 active:bg-slate-100 rounded-l-control"
+                                title="Giảm size" aria-label="Giảm cỡ chữ">
+                                <AppIcon name="minus" size="md" />
+                            </Button>
+                            <span className="min-w-10 text-center type-subhead font-semibold tabular-nums text-slate-900 border-x border-slate-200 leading-9">
+                                {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
+                            </span>
+                            <Button variant="unstyled" size="none" onMouseDown={e => e.preventDefault()} onClick={onIncreaseFontSize}
+                                className="h-9 w-11 flex items-center justify-center text-slate-700 active:bg-slate-100 rounded-r-control"
+                                title="Tăng size" aria-label="Tăng cỡ chữ">
+                                <AppIcon name="add" size="md" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                </div>
+            </div>
+        );
+    }
+
+    const portalTarget = document.getElementById('global-header-actions');
+    if (!portalTarget) return null;
+
     return createPortal(
         <div className="max-w-[calc(100vw-110px)] min-[540px]:max-w-[calc(100vw-180px)] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:max-w-none lg:overflow-visible py-0.5">
         <div className="flex items-center gap-0.5 lg:gap-1 bg-white/70 dark:bg-slate-900/70 p-0.5 lg:p-1 rounded-full w-max lg:w-auto border border-slate-200/60 dark:border-slate-700/60 backdrop-blur-xl shadow-xs animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">

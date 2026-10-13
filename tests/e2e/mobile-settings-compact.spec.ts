@@ -36,61 +36,46 @@ test('Xác thực giao diện mobile gọn gàng và resize chuẩn trên tab Ph
     await page.goto('/?tab=settings');
     await page.waitForLoadState('domcontentloaded');
 
-    // Chờ tiêu đề Hồ Sơ Định Danh hiển thị
-    const heading = page.locator('text=Hồ Sơ Định Danh').first();
+    // Chờ tiêu đề hồ sơ hiển thị
+    const heading = page.getByText('Hồ sơ định danh').first();
     await expect(heading).toBeVisible({ timeout: 15000 });
 
-    // 1. Kiểm tra nút Đăng Xuất trên topbar mobile (icon-only: 32x32px)
-    const logoutBtn = page.locator('#mobile-topbar-actions button').first();
+    // GĐ7 (KE_HOACH_GIAO_DIEN_APPLE.md, lỗi #11): bản cũ của test này khoá nút 32×32 (icon trơn) — nay chuẩn Apple là vùng chạm
+    // ≥ 44px, và việc nguy hiểm nhất ("Xoá tất cả dữ liệu") KHÔNG được nằm đầu trang.
+    const cao = async (loc: import('@playwright/test').Locator) => (await loc.boundingBox())!.height;
+
+    // 1. Đăng xuất: nút trên thanh trên của khung app (usePageActions), vùng chạm 44×44
+    const logoutBtn = page.locator('[data-app-chrome="topbar"]').getByRole('button', { name: 'Đăng xuất' });
     await expect(logoutBtn).toBeVisible();
-    const logoutBox = await logoutBtn.boundingBox();
-    expect(logoutBox).not.toBeNull();
-    console.log('Logout button size:', logoutBox?.width, 'x', logoutBox?.height);
-    expect(logoutBox!.height).toBeLessThanOrEqual(36);
-    expect(logoutBox!.height).toBeGreaterThanOrEqual(28);
-    expect(logoutBox!.width).toBeLessThanOrEqual(36);
-    expect(logoutBox!.width).toBeGreaterThanOrEqual(28);
+    const logoutBox = (await logoutBtn.boundingBox())!;
+    expect(logoutBox.height).toBeGreaterThanOrEqual(43.5);
+    expect(logoutBox.width).toBeGreaterThanOrEqual(43.5);
 
-    // 2. Kiểm tra nút Xoá dữ liệu (icon-only trên mobile: 32x32px)
-    const resetBtn = page.locator('button[title*="Xoá tất cả dữ liệu"]').first();
+    // 2. "Xoá tất cả dữ liệu" nằm trong nhóm "Vùng nguy hiểm" ở CUỐI trang — dưới danh sách duyệt, cả hàng là vùng chạm
+    const vungNguyHiem = page.getByTestId('vung-nguy-hiem');
+    const resetBtn = vungNguyHiem.getByRole('button', { name: /Xoá tất cả dữ liệu/ });
+    await resetBtn.scrollIntoViewIfNeeded();
     await expect(resetBtn).toBeVisible();
-    const resetBox = await resetBtn.boundingBox();
-    expect(resetBox).not.toBeNull();
-    console.log('Reset button size:', resetBox?.width, 'x', resetBox?.height);
-    expect(resetBox!.height).toBeLessThanOrEqual(36);
-    expect(resetBox!.height).toBeGreaterThanOrEqual(28);
-    expect(resetBox!.width).toBeLessThanOrEqual(36);
-    expect(resetBox!.width).toBeGreaterThanOrEqual(28);
+    expect(await cao(resetBtn)).toBeGreaterThanOrEqual(43.5);
+    const yReset = (await resetBtn.boundingBox())!.y + (await page.evaluate(() => window.scrollY));
+    const choDuyet = page.getByRole('button', { name: 'Chờ duyệt', exact: true }).first();
+    const yChoDuyet = (await choDuyet.boundingBox())!.y + (await page.evaluate(() => window.scrollY));
+    expect(yReset, '"Xoá tất cả dữ liệu" phải nằm dưới danh sách duyệt').toBeGreaterThan(yChoDuyet);
+    // Đầu trang (cạnh tiêu đề hồ sơ) không còn nút xoá nào
+    expect(await page.locator('button[title*="Xoá tất cả dữ liệu"]').count()).toBe(0);
 
-    // 3. Kiểm tra nút Gắn kho dùng chung / Đổi mã kho (icon-only trên mobile: 32x32px)
-    const actionProfileBtn = page.locator('button[title*="Gắn kho dùng chung"], button[title*="Đổi mã kho"]').first();
+    // 3. Gắn kho dùng chung / Đổi mã kho: có chữ (không còn icon bút chì trơn), cao ≥ 44
+    const actionProfileBtn = page.getByRole('button', { name: /Gắn kho dùng chung|Đổi mã kho/ }).first();
     await expect(actionProfileBtn).toBeVisible();
-    const actionProfileBox = await actionProfileBtn.boundingBox();
-    expect(actionProfileBox).not.toBeNull();
-    console.log('Action profile button size:', actionProfileBox?.width, 'x', actionProfileBox?.height);
-    expect(actionProfileBox!.height).toBeLessThanOrEqual(36);
-    expect(actionProfileBox!.height).toBeGreaterThanOrEqual(28);
-    expect(actionProfileBox!.width).toBeLessThanOrEqual(36);
-    expect(actionProfileBox!.width).toBeGreaterThanOrEqual(28);
+    expect(await cao(actionProfileBtn)).toBeGreaterThanOrEqual(43.5);
 
-    // 4. Kiểm tra nút Làm Mới
-    const refreshBtn = page.locator('button:has-text("Làm Mới")').first();
-    if (await refreshBtn.isVisible()) {
-        const refreshBox = await refreshBtn.boundingBox();
-        expect(refreshBox).not.toBeNull();
-        console.log('Refresh button height:', refreshBox?.height);
-        expect(refreshBox!.height).toBeLessThanOrEqual(36);
-        expect(refreshBox!.height).toBeGreaterThanOrEqual(28);
-    }
+    // 4. Làm mới + sắp xếp đảo chiều: ≥ 44
+    expect(await cao(page.getByRole('button', { name: 'Làm mới danh sách' }))).toBeGreaterThanOrEqual(43.5);
+    expect(await cao(page.locator('button[title*="Tăng dần"], button[title*="Giảm dần"]').first())).toBeGreaterThanOrEqual(43.5);
 
-    // 5. Kiểm tra nút Sắp xếp đảo chiều
-    const sortBtn = page.locator('button[title*="Tăng dần"], button[title*="Giảm dần"]').first();
-    if (await sortBtn.isVisible()) {
-        const sortBox = await sortBtn.boundingBox();
-        expect(sortBox).not.toBeNull();
-        console.log('Sort button height:', sortBox?.height);
-        expect(sortBox!.height).toBeLessThanOrEqual(30);
-        expect(sortBox!.height).toBeGreaterThanOrEqual(26);
+    // 5. Hai segmented control (3 phân hệ + 3 trạng thái) — mỗi mục cao ≥ 44 trên iPhone
+    for (const ten of ['Phân quyền', 'Ngành hàng', 'Duyệt', 'Chờ duyệt', 'Hoạt động', 'Hết hạn']) {
+        expect(await cao(page.locator('[data-segmented]').getByRole('button', { name: ten, exact: true })), ten).toBeGreaterThanOrEqual(43.5);
     }
 
     // 6. Chụp ảnh màn hình mobile để kiểm chứng

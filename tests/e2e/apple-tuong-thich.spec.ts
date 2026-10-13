@@ -36,7 +36,7 @@ const KHUNG_LAPTOP = [
 const DA_BIET: { mau: RegExp; lyDo: string }[] = [
     // GĐ4 (2026-10-12) đã gỡ: chuông 32px (lỗi #1), 7 nút Phân tích đè nhau/tràn ngang/"Khác" lọt màn (lỗi #1), icon 32px Report BI
     // (vùng chạm 44 nhờ ::after ở thanh trên), nút Đăng xuất Phân quyền.
-    { mau: /^tools-print-sticker@\d+:topbar:/, lyDo: 'In Sticker: dải chế độ + cỡ chữ nhét vào thanh trên — GĐ7' },
+    // GĐ7 (2026-10-13) đã gỡ: In Sticker — dải chế độ + cỡ chữ nhét vào thanh trên (nay là hàng thứ hai dưới thanh trên).
 ];
 
 const KHAO_SAT = !!process.env.KHAO_SAT; // KHAO_SAT=1 → chỉ in vi phạm, không so DA_BIET (dùng khi cập nhật danh sách)

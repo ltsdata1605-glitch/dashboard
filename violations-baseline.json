@@ -476,20 +476,6 @@
     "iconRawSvg": 0,
     "iconEmoji": 0,
     "rawOverlay": 0,
-    "tinyText": 1,
-    "offScaleRadius": 0,
-    "offScaleText": 2
-  },
-  "components/views/UserManagementView.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
     "tinyText": 0,
     "offScaleRadius": 0,
     "offScaleText": 1

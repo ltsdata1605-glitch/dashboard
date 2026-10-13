@@ -7,7 +7,9 @@ import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
-import { Modal } from '../shared/ui/Modal';
+import { Modal, useIsSheetWidth } from '../shared/ui/Modal';
+import { Tabs } from '../shared/ui/Tabs';
+import { EmptyState } from '../shared/ui/EmptyState';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { toast } from '../shared/ui/toast';
 import { adminUpdateUser, listManagedUsers, AdminRole, AdminStatus, ManagedUserDoc } from '../../services/adminUserService';
@@ -117,6 +119,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [listMode, setListMode] = useState<'pending' | 'active' | 'expired' | 'config' | 'approval_settings'>('pending');
     const [lastPermissionTab, setLastPermissionTab] = useState<'pending' | 'active' | 'expired'>('pending');
     const isPermissionsMode = listMode !== 'config' && listMode !== 'approval_settings';
+    const laDienThoai = useIsSheetWidth();
     const [searchQuery, setSearchQuery] = useState('');
     const [editRoles, setEditRoles] = useState<Record<string, string>>({});
     const [sortBy, setSortBy] = useState<'name' | 'role' | 'dept' | 'date' | 'logins'>('date');
@@ -498,10 +501,11 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             };
         } catch (error: unknown) {
             console.warn("Lỗi lấy danh sách yêu cầu:", error);
+            // Cùng một `id`: lỗi lặp lại (tải lại / 2 lượt gọi cùng hỏng) chỉ hiện MỘT toast, không chồng 2 viên giống hệt nhau.
             if (getErrorCode(error) === 'permission-denied') {
-                toast.error('Firestore: Quyền truy cập bị từ chối. Vui lòng kiểm tra Security Rules.');
+                toast.error('Firestore: Quyền truy cập bị từ chối. Vui lòng kiểm tra Security Rules.', { id: 'tai-ds-yeu-cau-loi' });
             } else {
-                toast.error(`Không thể tải danh sách yêu cầu. (${getErrorCode(error) || getErrorMessage(error) || 'Unknown'})`);
+                toast.error(`Không thể tải danh sách yêu cầu. (${getErrorCode(error) || getErrorMessage(error) || 'Unknown'})`, { id: 'tai-ds-yeu-cau-loi' });
             }
         } finally {
             setIsLoading(false);
@@ -722,128 +726,75 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             <div className={isEmbedded ? 'w-full space-y-4' : 'max-w-5xl mx-auto space-y-4'}>
                 {/* Khu vực điều hướng & Lọc nhỏ gọn */}
                 <h1 className="sr-only">Phân quyền</h1>
-                <div className="bg-white dark:bg-slate-800 p-2 sm:p-2.5 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-lg space-y-2">
-                    {/* Hàng 1: Tabs chính & nút Làm Mới (Cùng 1 hàng) */}
-                    <div className="flex items-center justify-between gap-1.5">
-                        <div className="inline-flex items-center p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900/60 rounded-lg border border-slate-200/80 dark:border-slate-700/50 overflow-x-auto min-w-0">
-                            <button
-                                type="button"
-                                onClick={() => setListMode(lastPermissionTab)}
-                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
-                                    isPermissionsMode
-                                        ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 shadow-2xs font-bold'
-                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                            >
-                                <AppIcon name="users" size="xs" className={isPermissionsMode ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
-                                <span>Phân quyền</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setListMode('config')}
-                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
-                                    listMode === 'config'
-                                        ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-300 shadow-2xs font-bold'
-                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                            >
-                                <AppIcon name="settings" size="xs" className={listMode === 'config' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
-                                <span className="sm:hidden">Ngành hàng</span>
-                                <span className="hidden sm:inline">Khai báo ngành hàng</span>
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setListMode('approval_settings')}
-                                className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
-                                    listMode === 'approval_settings'
-                                        ? 'bg-white dark:bg-slate-800 text-sky-700 dark:text-sky-400 shadow-2xs font-bold'
-                                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                                }`}
-                            >
-                                <AppIcon name="security" size="xs" className={listMode === 'approval_settings' ? 'text-sky-600 dark:text-sky-400' : 'text-slate-400'} />
-                                <span className="sm:hidden">Duyệt</span>
-                                <span className="hidden sm:inline">Cài đặt duyệt</span>
-                            </button>
-                        </div>
+                {/* GĐ7: 2 segmented control kiểu iOS thay 2 dải nút tự vẽ (chữ 12px, cao 28px trên iPhone). Nút "Làm mới" chỉ ở
+                    nhánh Phân quyền — nó tải lại danh sách người dùng, vô nghĩa ở Ngành hàng / Cài đặt duyệt. */}
+                <div className="bg-white p-2 sm:p-2.5 shadow-sm border border-slate-200 rounded-card space-y-2">
+                    <Tabs
+                        variant="segment"
+                        size="sm"
+                        fullWidth={laDienThoai}
+                        activeId={isPermissionsMode ? 'phan-quyen' : listMode}
+                        onChange={id => (id === 'phan-quyen' ? setListMode(lastPermissionTab) : setListMode(id as 'config' | 'approval_settings'))}
+                        items={[
+                            { id: 'phan-quyen', label: 'Phân quyền' },
+                            { id: 'config', label: laDienThoai ? 'Ngành hàng' : 'Khai báo ngành hàng' },
+                            { id: 'approval_settings', label: laDienThoai ? 'Duyệt' : 'Cài đặt duyệt' },
+                        ]}
+                    />
 
-                        <Button
-                            variant="unstyled"
-                            size="none"
-                            onClick={() => fetchRequests(true)}
-                            disabled={isLoading}
-                            className="w-7 h-7 min-w-7 min-h-7 sm:w-auto sm:h-8 p-0 sm:px-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-700 transition-colors flex items-center justify-center sm:gap-1.5 rounded-lg shadow-2xs shrink-0 active:scale-95"
-                            title="Làm mới danh sách"
-                        >
-                            <AppIcon name="refresh" size="sm" className={isLoading ? 'animate-spin' : ''} />
-                            <span className="hidden sm:inline">Làm Mới</span>
-                        </Button>
-                    </div>
-
-                    {/* Hàng 2 & 3: Bộ lọc con + Sắp xếp & Tìm kiếm (chỉ hiện khi ở tab Phân quyền) */}
+                    {/* Bộ lọc trạng thái + làm mới, rồi sắp xếp + tìm kiếm (chỉ ở nhánh Phân quyền) */}
                     {isPermissionsMode && (
-                        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-700/50 space-y-1.5">
-                            {/* Hàng 2: Trạng thái 3 tab chia đều toàn chiều ngang */}
-                            <div className="grid grid-cols-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs w-full">
-                                <button
-                                    type="button"
-                                    onClick={() => { setListMode('pending'); setLastPermissionTab('pending'); }}
-                                    className={`h-7 px-1 text-xs font-semibold transition-colors flex items-center justify-center gap-1 border-r border-slate-200 dark:border-slate-700 ${
-                                        listMode === 'pending'
-                                            ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 font-bold'
-                                            : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'
-                                    }`}
+                        <div className="pt-2 border-t border-slate-100 space-y-2">
+                            <div className="flex items-center gap-2">
+                                <Tabs
+                                    variant="segment"
+                                    size="sm"
+                                    fullWidth
+                                    className="flex-1 min-w-0"
+                                    activeId={listMode}
+                                    onChange={id => { const m = id as 'pending' | 'active' | 'expired'; setListMode(m); setLastPermissionTab(m); }}
+                                    items={[
+                                        { id: 'pending', label: 'Chờ duyệt' },
+                                        { id: 'active', label: 'Hoạt động' },
+                                        { id: 'expired', label: 'Hết hạn' },
+                                    ]}
+                                />
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => fetchRequests(true)}
+                                    disabled={isLoading}
+                                    className="shrink-0 max-sm:w-11 max-sm:px-0 gap-1.5"
+                                    title="Làm mới danh sách"
+                                    aria-label="Làm mới danh sách"
                                 >
-                                    <AppIcon name="clock" size="xs" />
-                                    <span className="truncate">Chờ duyệt</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setListMode('active'); setLastPermissionTab('active'); }}
-                                    className={`h-7 px-1 text-xs font-semibold transition-colors flex items-center justify-center gap-1 border-r border-slate-200 dark:border-slate-700 ${
-                                        listMode === 'active'
-                                            ? 'bg-sky-50 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400 font-bold'
-                                            : 'text-slate-600 dark:text-slate-400 hover:bg-sky-50 hover:text-sky-700'
-                                    }`}
-                                >
-                                    <AppIcon name="users" size="xs" />
-                                    <span className="truncate">Hoạt động</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => { setListMode('expired'); setLastPermissionTab('expired'); }}
-                                    className={`h-7 px-1 text-xs font-semibold transition-colors flex items-center justify-center gap-1 ${
-                                        listMode === 'expired'
-                                            ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400 font-bold'
-                                            : 'text-slate-600 dark:text-slate-400 hover:bg-rose-50 hover:text-rose-700'
-                                    }`}
-                                >
-                                    <AppIcon name="schedule" size="xs" />
-                                    <span className="truncate">Hết hạn</span>
-                                </button>
+                                    <AppIcon name="refresh" size="md" spin={isLoading} />
+                                    <span className="hidden sm:inline">Làm mới</span>
+                                </Button>
                             </div>
 
-                            {/* Hàng 3: Sắp xếp + Ô tìm kiếm nằm chung 1 hàng */}
-                            <div className="flex items-center gap-1.5 w-full">
-                                <div className="flex items-center shrink-0 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-md overflow-hidden shadow-2xs">
-                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} className="h-7 text-xs rounded-none border-0 bg-transparent pr-6 shadow-none focus-visible:ring-0 py-0">
+                            <div className="flex items-center gap-2 w-full">
+                                <div className="flex items-center shrink-0 border border-slate-200 bg-slate-50 rounded-control overflow-hidden">
+                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} aria-label="Sắp xếp theo" className="h-8 text-xs rounded-none border-0 bg-transparent pr-6 shadow-none focus-visible:ring-0 py-0">
                                         <option value="date">Ngày ĐK</option>
                                         <option value="name">Tên</option>
                                         <option value="role">Vai trò</option>
                                         <option value="dept">Mã Kho</option>
                                         <option value="logins">Truy cập</option>
                                     </Select>
-                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-7 w-7 min-h-0 min-w-0 p-0 flex items-center justify-center text-slate-400 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
-                                        <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="sm" />
+                                    <Button variant="unstyled" size="none" onClick={() => setSortAsc(p => !p)} className="h-8 w-8 max-sm:min-h-11 max-sm:w-11 pointer-coarse:min-h-11 flex items-center justify-center text-slate-500 hover:bg-sky-50 hover:text-sky-700 transition-colors border-l border-slate-200" title={sortAsc ? 'Tăng dần' : 'Giảm dần'} aria-label={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                        <AppIcon name={sortAsc ? 'sortAsc' : 'sortDesc'} size="md" />
                                     </Button>
                                 </div>
 
                                 <div className="relative flex-1 min-w-0">
-                                    <Input 
+                                    <Input
+                                        type="search"
                                         leftIcon="search"
-                                        placeholder="Tìm kiếm Email, Mã Kho..." 
-                                        value={searchQuery} 
-                                        onChange={e => setSearchQuery(e.target.value)} 
-                                        className="h-7 text-xs rounded-md py-0 w-full"
+                                        placeholder="Tìm email, mã kho…"
+                                        value={searchQuery}
+                                        onChange={e => setSearchQuery(e.target.value)}
+                                        className="h-8 text-xs w-full"
                                     />
                                 </div>
                             </div>
@@ -862,14 +813,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <p className="text-slate-500 font-medium">Đang tải danh sách...</p>
                             </div>
                         ) : requests.length === 0 ? (
-                            <div className="animate-in fade-in duration-200 flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
-                                <div className="w-16 h-16 bg-sky-50 dark:bg-sky-900/20 rounded-full flex items-center justify-center mb-4"><AppIcon name="success" size="state" className="text-sky-400" /></div>
-                                <p className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                                    {listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : listMode === 'expired' ? 'Không có người dùng hết hạn' : 'Chưa có người dùng hoạt động'}
-                                </p>
-                                <p className="text-slate-500 mt-1 text-sm">
-                                    {listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : listMode === 'expired' ? 'Tất cả tài khoản đều đang trong thời hạn hợp lệ.' : 'Danh sách trống hoặc chưa cập nhật.'}
-                                </p>
+                            <div className="bg-white border border-slate-200 rounded-card">
+                                <EmptyState
+                                    icon={listMode === 'pending' ? 'success' : listMode === 'expired' ? 'clock' : 'users'}
+                                    title={listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : listMode === 'expired' ? 'Không có người dùng hết hạn' : 'Chưa có người dùng hoạt động'}
+                                    description={listMode === 'pending' ? 'Đã xử lý xong mọi đơn đăng ký.' : listMode === 'expired' ? 'Mọi tài khoản đều còn hạn.' : 'Danh sách trống hoặc chưa cập nhật.'}
+                                />
                             </div>
                         ) : (
                             <div className="flex flex-col gap-2">
@@ -891,7 +840,13 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         {/* Row 1: Avatar + Name + Role + Actions */}
                                         <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/30">
                                             <div className="relative shrink-0">
-                                                <img src={req.photoURL} alt="" className="w-8 h-8 rounded-md object-cover" />
+                                                {req.photoURL ? (
+                                                    <img src={req.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+                                                ) : (
+                                                    <span className="w-8 h-8 rounded-full bg-slate-200 text-slate-600 text-xs font-semibold flex items-center justify-center">
+                                                        {(formatCleanDisplayName(req.displayName) || req.email || '?').charAt(0).toUpperCase()}
+                                                    </span>
+                                                )}
                                                 <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${listMode === 'expired' || req.status === 'expired' ? 'bg-rose-500' : req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
                                             </div>
                                             <div className="min-w-0 flex-1">
@@ -1026,7 +981,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             </div>
                                         </div>
                                         {/* Row 2: Fields */}
-                                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50/50 dark:bg-slate-900/20 flex-wrap sm:flex-nowrap">
+                                        <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 px-4 py-2.5 bg-slate-50/50 sm:flex sm:items-center sm:gap-3 sm:py-2 sm:flex-nowrap">
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {userRole === 'admin' ? (
                                                     <div className="flex flex-col gap-1 w-[100px]">
@@ -1055,9 +1010,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 )}
                                             </div>
                                             <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex flex-col gap-1 shrink-0">
+                                            <div className="col-span-2 flex flex-col gap-1 shrink-0">
                                                 <div className="flex items-center justify-between gap-2">
-                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">NGÀY HẾT HẠN</span>
+                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">NGÀY HẾT HẠN</span>
                                                     {expiryDates[req.id] ? (
                                                         <span className={`text-[11px] font-bold ${
                                                             new Date(expiryDates[req.id]).getTime() < Date.now() 
@@ -1112,7 +1067,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString('vi-VN') : '—'}</span>
                                             </div>
                                             <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
+                                            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-1.5 shrink-0">
                                                 <span className="text-[11px] uppercase font-bold text-slate-400 whitespace-nowrap">Truy cập:</span>
                                                 <span className="text-xs font-bold text-sky-700 dark:text-sky-400">{req.loginCount ?? 0} lần</span>
                                             </div>
@@ -1129,8 +1084,8 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             <Modal
                 isOpen={!!extendingUser}
                 onClose={() => setExtendingUser(null)}
-                title="Gia Hạn Quyền Truy Cập"
-                subTitle="Cập nhật thời hạn sử dụng hệ thống cho tài khoản"
+                title="Gia hạn quyền truy cập"
+                subTitle="Đổi thời hạn dùng hệ thống của tài khoản"
                 maxWidth="md"
             >
                 {extendingUser && (
@@ -1195,7 +1150,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                     }`}
                                 >
                                     <AppIcon name="security" size="sm" />
-                                    Cấp quyền Vô Thời Hạn (Không bao giờ hết hạn)
+                                    Cấp quyền vô thời hạn
                                 </Button>
                             </div>
                         </div>
@@ -1269,20 +1224,19 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         {/* Actions */}
                         <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <Button
-                                variant="outline"
+                                variant="secondary"
                                 onClick={() => setExtendingUser(null)}
                                 disabled={isSubmittingExtend}
                             >
-                                Hủy
+                                Huỷ
                             </Button>
                             <Button
                                 variant="primary"
+                                icon="check"
                                 onClick={handleConfirmExtend}
                                 isLoading={isSubmittingExtend}
-                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center gap-1.5"
                             >
-                                <AppIcon name="check" size="md" />
-                                Xác Nhận Gia Hạn
+                                Gia hạn
                             </Button>
                         </div>
                     </div>
@@ -1303,7 +1257,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         console.error(e);
                     }
                 }}
-                title="Thu Hồi Quyền Truy Cập"
+                title="Thu hồi quyền truy cập?"
                 message={
                     <div className="space-y-2 text-sm text-slate-600 dark:text-slate-300">
                         <p>Bạn có chắc chắn muốn thu hồi quyền truy cập của tài khoản:</p>
@@ -1319,7 +1273,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                         <p className="text-xs text-rose-600 dark:text-rose-400 font-medium">Tài khoản này sẽ bị ngừng cấp phép sử dụng ngay lập tức.</p>
                     </div>
                 }
-                confirmText="Thu Hồi"
+                confirmText="Thu hồi"
                 variant="danger"
                 isLoading={actionLoadingId === confirmRevokeUser?.id}
             />
