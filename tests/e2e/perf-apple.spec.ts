@@ -56,7 +56,7 @@ test('tốc độ tải + chuyển tab (bản build, iPhone, 4G, CPU x4)', async
 
         // Check thưởng: chủ dự án viết lại bằng React (2026-10-11, bỏ iframe /check-thuong.html) → đo như 2 tab kia. Chưa có file
         // thưởng thì màn là ô "Tải file thưởng thi đua"; có rồi là "Kết quả tra cứu".
-        for (const [nhan, cho] of [['Report BI', 'Nhập dữ liệu Báo cáo BI|SIÊU THỊ'], ['Check thưởng', 'Tải file thưởng thi đua|Kết quả tra cứu'], ['Phân tích YCX', 'Nhập dữ liệu Realtime|Tổng quan doanh thu']] as const) {
+        for (const [nhan, cho] of [['Report BI', 'Nhập dữ liệu Báo cáo BI|SIÊU THỊ'], ['Check thưởng', 'Tải file thưởng thi đua|Kết quả tra cứu'], ['Phân tích', 'Nhập dữ liệu Realtime|Tổng quan doanh thu']] as const) {
             await page.waitForTimeout(1500);
             const t1 = Date.now();
             await page.locator('nav.mobile-chrome').getByRole('button', { name: nhan }).click();

@@ -81,7 +81,7 @@ test.describe('iPhone 16 Pro Max 440×956 (cảm ứng)', () => {
     test('thanh tab: vật liệu mờ, mục đang chọn aria-current; "Khác" là sheet danh sách nhóm, chọn mục thì chuyển tab + đóng', async ({ page }) => {
         await vaoDungThu(page);
         const nav = page.locator('nav[data-app-chrome="tabbar"]');
-        await expect(nav.getByRole('button', { name: 'Phân tích YCX' })).toHaveAttribute('aria-current', 'page');
+        await expect(nav.getByRole('button', { name: /^Phân tích/ })).toHaveAttribute('aria-current', 'page');
         expect(await nav.evaluate(el => getComputedStyle(el).backdropFilter || getComputedStyle(el).getPropertyValue('-webkit-backdrop-filter'))).toContain('blur');
         for (const b of await nav.getByRole('button').all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 
