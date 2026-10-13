@@ -8203,6 +8203,14 @@ không đổi nghiệp vụ.
   ứng hiện (thu phóng 0,96 → 1) chưa xong sau 500 ms (đo nút 42,24 = 44 × 0,96), cú vuốt bắt đầu lúc toast còn trượt vào. Sửa: toast
   cần đo sống 20 s; chờ HIỆU ỨNG VÀO XONG (transform về gốc) thay cho chờ cứng 500 ms.
 
+- **Tour dữ liệu thật mở rộng** (laptop 1440 + 1280, cả 12 tab): sau các bản sửa trên, **0 chỗ bị dock che** ở mọi tab; So sánh giá
+  (max-w 1600, tràn ngang ở 1280–1440) từng bị dock trái che tiêu đề/ô nhập → khung bọc gắn `ycx-tranh-dock`. Chữ < 11px còn lại chỉ ở
+  bản XEM TRƯỚC tem In Sticker (thu nhỏ theo khổ giấy thật — nội dung in, không phải chữ giao diện). Lỗi console còn lại: lượt ghi bị bộ
+  chặn của test huỷ, `resolveSession` "internal" (mạng container), và CSP chặn ping chẩn đoán `googletagmanager.com/td` của Google Tag ở
+  tab Coupon (lượt gửi số liệu GA chính đi `google-analytics.com`, không ảnh hưởng) — ghi nhận, chưa sửa.
+- **Gộp main** (6 commit mới: dock nổi kiểu iOS cho thanh tab iPhone + đổi tên "Phân tích", đăng nhập thiết bị mới): xung đột duy nhất ở
+  file này (giữ cả 2 mục). Trên bản gộp: 52/52 spec liên quan xanh, `npm run check` xanh (unit 1190), icon-audit modal 6/6.
+- **Deploy**: `index-DgMzLiIo.js`, service worker `427eb175bb93` (đã curl xác nhận trên dashboard.pro.vn).
 ## Đăng nhập trên thiết bị mới — gọn & không "tưởng lỗi" (2026-10-13)
 
 Video chủ dự án (iPhone, app Màn hình chính): luồng handoff VẪN vào được (log Cloud Functions 11:24:50–11:25:59 UTC khớp video)
