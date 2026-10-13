@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { chanGhiCloud, dangNhapBangToken, hasCustomToken } from './helpers/customTokenLogin';
 
 /**
@@ -9,12 +10,72 @@ import { chanGhiCloud, dangNhapBangToken, hasCustomToken } from './helpers/custo
  *
  *   ANH=1 ANH_NHAN=sau-gd1 npx playwright test tests/e2e/anh-truoc-sau-apple.spec.ts --project=chromium
  * → .anh-apple/<ANH_NHAN>/{m,d}-<tab>.png
+ *
+ * GĐ9 (2026-10-13): kèm số đo VỚI DỮ LIỆU THẬT (bộ quét `apple-tuong-thich` chỉ có dữ liệu giả) → `.anh-apple/<ANH_NHAN>/do-*.json`:
+ * lỗi runtime từng tab (pageerror + console.error), tràn ngang, chữ < 11px, và trên laptop: chữ/nút nằm DƯỚI 2 dock nổi (menu trái
+ * `desktop-nav-menu`, Auto Sync phải `ycx-auto-dock`) — đo bằng khung chữ thật (Range), không phải khung phần tử.
  */
 test.skip(!process.env.ANH || !hasCustomToken(), 'Chụp ảnh thủ công — đặt ANH=1 (cần tài khoản test)');
 
 const OUT = `.anh-apple/${process.env.ANH_NHAN || 'hien-tai'}`;
 const TAB_DT = ['analysis', 'employees', 'check-thuong', 'reports', 'tools-print-sticker', 'tools-phanca', 'tools-line-bot', 'tools-tax', 'tools-coupon', 'settings', 'help'];
-const TAB_LAPTOP = ['analysis', 'employees', 'check-thuong', 'reports', 'settings'];
+const TAB_LAPTOP = ['analysis', 'employees', 'check-thuong', 'reports', 'tools-print-sticker', 'tools-phanca', 'tools-line-bot', 'settings'];
+
+/** Gom lỗi runtime theo tab đang mở (tab đổi bằng `datTab`). */
+const ghiLoi = (page: Page) => {
+    const loi: Record<string, string[]> = {};
+    let tab = 'dang-nhap';
+    const them = (m: string) => { (loi[tab] ||= []).push(m.slice(0, 300)); };
+    page.on('pageerror', e => them(`pageerror: ${e.message}`));
+    page.on('console', m => { if (m.type() === 'error') them(`console: ${m.text()}`); });
+    return { loi, datTab: (t: string) => { tab = t; } };
+};
+
+/** Số đo một màn: tràn ngang, chữ < 11px, chữ/nút bị dock nổi che (laptop). Bỏ qua chính dock và khung app. */
+const doMan = (page: Page) => page.evaluate(() => {
+    const hien = (el: Element) => {
+        const cs = getComputedStyle(el);
+        return cs.visibility !== 'hidden' && cs.display !== 'none' && Number(cs.opacity) > 0.05;
+    };
+    const docks = ['desktop-nav-menu', 'ycx-auto-dock'].flatMap(id => {
+        const el = document.querySelector(`[data-testid="${id}"]`);
+        if (!el || !hien(el)) return [];
+        const r = el.getBoundingClientRect();
+        return r.width && r.height ? [{ id, r }] : [];
+    });
+    const giao = (a: DOMRect, b: DOMRect) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
+    const biChe: { dock: string; chu: string; x: number; y: number }[] = [];
+    const chuNho: { chu: string; px: number }[] = [];
+    const main = document.querySelector('main');
+    const walker = main ? document.createTreeWalker(main, NodeFilter.SHOW_TEXT) : null;
+    const range = document.createRange();
+    for (let n = walker?.nextNode(); n; n = walker!.nextNode()) {
+        const chu = (n.textContent || '').trim();
+        const cha = n.parentElement;
+        if (!chu || !cha || cha.closest('[data-testid="desktop-nav-menu"],[data-testid="ycx-auto-dock"],[data-app-chrome],[aria-hidden="true"]')) continue;
+        if (!hien(cha)) continue;
+        range.selectNodeContents(n);
+        const rects = [...range.getClientRects()].filter(r => r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight);
+        if (!rects.length) continue;
+        const px = parseFloat(getComputedStyle(cha).fontSize);
+        if (px < 11 && chuNho.length < 30) chuNho.push({ chu: chu.slice(0, 40), px });
+        for (const d of docks) {
+            const r = rects.find(x => giao(x, d.r) > 6);
+            if (r && biChe.length < 40) biChe.push({ dock: d.id, chu: chu.slice(0, 40), x: Math.round(r.left), y: Math.round(r.top) });
+        }
+    }
+    const nutBiChe = main ? [...main.querySelectorAll('button,a[href],input,select,textarea,[role="button"]')].filter(el => {
+        if (el.closest('[data-testid="desktop-nav-menu"],[data-testid="ycx-auto-dock"],[data-app-chrome]') || !hien(el)) return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 1 && r.height > 1 && r.bottom > 0 && r.top < innerHeight && docks.some(d => giao(r, d.r) > 16);
+    }).slice(0, 20).map(el => ({ nut: (el.getAttribute('aria-label') || el.textContent || el.tagName).trim().slice(0, 40), x: Math.round(el.getBoundingClientRect().left) })) : [];
+    return {
+        rong: innerWidth,
+        tranNgang: document.documentElement.scrollWidth - innerWidth,
+        docks: docks.map(d => ({ id: d.id, trai: Math.round(d.r.left), phai: Math.round(d.r.right), tren: Math.round(d.r.top), duoi: Math.round(d.r.bottom) })),
+        biChe, nutBiChe, chuNho,
+    };
+});
 
 test.use({
     launchOptions: {
@@ -30,34 +91,47 @@ test.describe('iPhone 16 Pro Max', () => {
     });
     test('mọi tab + menu Khác', async ({ page }) => {
         test.setTimeout(600_000);
-        await chanGhiCloud(page);
+        const { loi, datTab } = ghiLoi(page);
+        const biChan = await chanGhiCloud(page);
         await dangNhapBangToken(page);
         await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+        const soDo: Record<string, unknown> = {};
         for (const tab of TAB_DT) {
+            datTab(tab);
             await page.goto(`/?tab=${tab}`);
             await page.waitForTimeout(tab === 'analysis' ? 12_000 : 8_000);
             await page.screenshot({ path: `${OUT}/m-${tab}.png` });
             if (tab === 'analysis') await page.screenshot({ path: `${OUT}/m-analysis-full.png`, fullPage: true });
+            soDo[tab] = await doMan(page);
         }
+        datTab('menu-khac');
         await page.goto('/?tab=analysis');
         await page.waitForTimeout(8_000);
         await page.locator('[data-app-chrome="tabbar"]').getByRole('button', { name: 'Khác' }).click();
         await page.waitForTimeout(800);
         await page.screenshot({ path: `${OUT}/m-menu-khac.png` });
+        mkdirSync(OUT, { recursive: true });
+        writeFileSync(`${OUT}/do-iphone.json`, JSON.stringify({ soDo, loi, biChan }, null, 2));
     });
 });
 
 test.describe('laptop', () => {
     test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
     test('các tab chính', async ({ page }) => {
-        test.setTimeout(300_000);
-        await chanGhiCloud(page);
+        test.setTimeout(420_000);
+        const { loi, datTab } = ghiLoi(page);
+        const biChan = await chanGhiCloud(page);
         await dangNhapBangToken(page);
         await expect(page.getByRole('button', { name: /Tiếp tục với Cổng Google/i })).toHaveCount(0, { timeout: 60_000 });
+        const soDo: Record<string, unknown> = {};
         for (const tab of TAB_LAPTOP) {
+            datTab(tab);
             await page.goto(`/?tab=${tab}`);
             await page.waitForTimeout(10_000);
             await page.screenshot({ path: `${OUT}/d-${tab}.png` });
+            soDo[tab] = await doMan(page);
         }
+        mkdirSync(OUT, { recursive: true });
+        writeFileSync(`${OUT}/do-laptop.json`, JSON.stringify({ soDo, loi, biChan }, null, 2));
     });
 });

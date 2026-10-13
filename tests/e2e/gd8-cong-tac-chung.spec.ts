@@ -22,6 +22,9 @@ test('công tắc dùng chung trong 2 popover Phân tích', async ({ page }) => 
   const pop = page.getByText('Hiển thị màn hình thi đua').locator('..');
   const sw = pop.getByRole('switch').first();
   await expect(sw).toBeVisible();
+  // Chờ danh sách tab hiện nạp xong từ IndexedDB (hooks/useEmployeeAnalysisTabs): trước đó mọi công tắc tạm "tắt", rồi lượt nạp đầu bật
+  // hết — đọc `truoc` lúc đó là đọc trạng thái tạm (CI GĐ9 đỏ đúng vì vậy). Nạp xong luôn có ≥ 1 tab hiện (không cho ẩn tab cuối).
+  await expect(pop.getByRole('switch', { checked: true }).first()).toBeVisible({ timeout: 15_000 });
   const truoc = await sw.getAttribute('aria-checked');
   const ten = (await sw.getAttribute('aria-label'))!;
   await pop.locator('label').filter({ hasText: ten }).locator('span').first().click(); // bấm CHỮ

@@ -473,4 +473,5 @@ cập nhật `CLAUDE.md` / `RULES.md` / `DESIGN_SYSTEM.md`.
 3. Bỏ pháo giấy khi tải file thành công.
 4. Nút phụ kiểu tinted xám, không viền.
 5. Công tắc bật màu xanh lá (chuẩn iOS) thay vì mỗi cái một màu.
-6. Laptop: tiêu đề trang 26px viết thường thay 36px in hoa.
+6. Laptop: tiêu đề trang 26px viết thường thay 36px in hoa. *(Không áp dụng: chủ dự án GIỮ khung laptop của mình — logo bật/tắt dock nổi, tiêu đề 2 màu
+   IN HOA — xem CLAUDE.md mục 2 "Khung app". Lớp Apple chỉ áp cho thanh trên iPhone/iPad.)*

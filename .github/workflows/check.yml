@@ -253,6 +253,27 @@ jobs:
       - name: 'E2E: xss-header-sanitization'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/xss-header-sanitization.spec.ts --output=test-results/xss-header-sanitization
+      # Giao diện chuẩn Apple (KE_HOACH_GIAO_DIEN_APPLE.md GĐ9, 2026-10-13): lưới an toàn của các giai đoạn GĐ0–GĐ8. Quét khung app 6 cỡ
+      # màn (không tràn ngang, không đè nhau, vùng chạm ≥ 44px, chữ ≥ 11px — DA_BIET nay trống: vi phạm MỚI là đỏ), toast một hệ,
+      # thanh trên/thanh tab, component lớp Apple, các màn mini-app đã làm lại, công tắc dùng chung.
+      - name: 'E2E: apple-tuong-thich'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/apple-tuong-thich.spec.ts --output=test-results/apple-tuong-thich
+      - name: 'E2E: toast-thong-nhat'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/toast-thong-nhat.spec.ts --output=test-results/toast-thong-nhat
+      - name: 'E2E: khung-app-gd4'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/khung-app-gd4.spec.ts --output=test-results/khung-app-gd4
+      - name: 'E2E: lop-apple-gd3'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/lop-apple-gd3.spec.ts --output=test-results/lop-apple-gd3
+      - name: 'E2E: gd7-mini-app'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/gd7-mini-app.spec.ts --output=test-results/gd7-mini-app
+      - name: 'E2E: gd8-cong-tac-chung'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/gd8-cong-tac-chung.spec.ts --output=test-results/gd8-cong-tac-chung
 
       # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
       # Kèm cả log dev server: nếu Vite chết giữa chừng thì mọi spec sau đó đỏ vì lý do CHUNG, và
@@ -338,6 +359,20 @@ jobs:
       - name: 'WebKit: menu Khác xoay ngang'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/menu-khac-xoay-ngang.spec.ts --project=webkit --output=test-results/wk-menu-khac
+      # GĐ9 giao diện chuẩn Apple (2026-10-13): quét khung app 6 cỡ màn + toast một hệ trên CHÍNH engine của Safari — container của
+      # agent chỉ có Chromium giả lập iPhone; `:has()`, vật liệu mờ, safe-area… phải kiểm ở WebKit thật.
+      - name: 'WebKit: apple-tuong-thich'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        # Lượt quan sát đầu (2026-10-13): agent không chạy được WebKit trong container → chưa biết khác biệt giả lập cảm ứng
+        # (pointer: coarse) của WebKit. Gỡ dòng này khi lượt chạy đầu xanh.
+        continue-on-error: true
+        run: npx playwright test tests/e2e/apple-tuong-thich.spec.ts --project=webkit --output=test-results/wk-apple-tuong-thich
+      - name: 'WebKit: toast-thong-nhat'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        # Lượt quan sát đầu (2026-10-13): agent không chạy được WebKit trong container → chưa biết khác biệt giả lập cảm ứng
+        # (pointer: coarse) của WebKit. Gỡ dòng này khi lượt chạy đầu xanh.
+        continue-on-error: true
+        run: npx playwright test tests/e2e/toast-thong-nhat.spec.ts --project=webkit --output=test-results/wk-toast-thong-nhat
       - name: Lưu báo cáo khi đỏ
         if: failure()
         uses: actions/upload-artifact@v4

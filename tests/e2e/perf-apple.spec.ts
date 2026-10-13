@@ -54,16 +54,12 @@ test('tốc độ tải + chuyển tab (bản build, iPhone, 4G, CPU x4)', async
         });
         ghi('FCP (ms)', p.fcp); ghi('JS tải (KB)', p.js / 1024); ghi('CSS tải (KB)', p.css / 1024); ghi('số request', p.n);
 
-        for (const [nhan, cho] of [['Report BI', 'Nhập dữ liệu Báo cáo BI|SIÊU THỊ'], ['Check thưởng', 'Nhập dữ liệu Check Thưởng|Check Thưởng'], ['Phân tích YCX', 'Nhập dữ liệu Realtime|Tổng quan doanh thu']] as const) {
+        // Check thưởng: chủ dự án viết lại bằng React (2026-10-11, bỏ iframe /check-thuong.html) → đo như 2 tab kia. Chưa có file
+        // thưởng thì màn là ô "Tải file thưởng thi đua"; có rồi là "Kết quả tra cứu".
+        for (const [nhan, cho] of [['Report BI', 'Nhập dữ liệu Báo cáo BI|SIÊU THỊ'], ['Check thưởng', 'Tải file thưởng thi đua|Kết quả tra cứu'], ['Phân tích YCX', 'Nhập dữ liệu Realtime|Tổng quan doanh thu']] as const) {
             await page.waitForTimeout(1500);
             const t1 = Date.now();
             await page.locator('nav.mobile-chrome').getByRole('button', { name: nhan }).click();
-            if (nhan === 'Check thưởng') {
-                // Check thưởng chạy trong iframe nội bộ (/check-thuong.html).
-                await page.frameLocator('main iframe').first().getByText(/Nhập dữ liệu Check Thưởng|Top thưởng|Tra cứu/i).first().waitFor({ timeout: 120_000 });
-                ghi(`chuyển sang ${nhan} (ms)`, Date.now() - t1);
-                continue;
-            }
             // Chỉ tính khi nội dung nằm trong view ĐANG HIỆN (view ẩn có thuộc tính inert và bị đẩy ra ngoài màn).
             await page.waitForFunction((re) => {
                 const r = new RegExp(re, 'i');
