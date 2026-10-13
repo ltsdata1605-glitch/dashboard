@@ -7996,3 +7996,6 @@ tự động/test đọc ("Cập nhật", "Realtime", "Luỹ kế" vẫn là `bu
   nhật/` trúng nút "Cập nhật dữ liệu" (chạy tự động MWG, có từ 2026-10-11) đã sửa thành tên chính xác; test chạy tiếp tới phép
   so NGHIỆP VỤ và đỏ ở đó: Tân Hiệp đếm **4 NV** (mong đợi 2 — bỏ người không có trong danh sách Phân Tích). Logic đếm
   (TargetHero/SupermarketConfig) không thuộc phần giao diện GĐ6 → để chủ dự án quyết định quy tắc đúng.
+- **Công tắc Report BI**: bản `Switch` tự vẽ của BI (`dashboard/DashboardWidgets.tsx`, 28×16 màu sky — 9 nơi dùng: popover "Tuỳ chỉnh
+  hiển thị cột", Bộ lọc thi đua…) nay bọc công tắc DÙNG CHUNG (`size="sm"`, một kiểu cho cả app; vùng chạm 44 trên cảm ứng). Giữ chữ
+  ký cũ; bản chung đã chặn nổi bọt như bản cũ cần.

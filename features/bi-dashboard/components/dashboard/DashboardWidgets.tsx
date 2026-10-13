@@ -1,31 +1,13 @@
 
 import React from 'react';
-import { Button } from '../../../../components/shared/ui/Button';
+import { Switch as SwitchChung } from '../../../../components/shared/ui/Switch';
 
+// Công tắc của Report BI = công tắc DÙNG CHUNG (GĐ6, 2026-10-13 — trước là bản tự vẽ 28×16 màu sky, lệch kiểu với phần còn lại
+// của app; KE_HOACH_GIAO_DIEN_APPLE.md lỗi #16). Giữ chữ ký cũ `onChange: () => void` cho 9 nơi gọi. Bản dùng chung đã tự chặn
+// nổi bọt (cần cho Bộ lọc bảng Thi đua: công tắc nằm TRONG một <div onClick> bật/tắt cả dòng).
 export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: string }> = ({ checked, onChange, id }) => (
-    <Button
-      variant="unstyled" size="none"
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      id={id}
-      // Chặn nổi bọt: ở Bộ lọc bảng Thi đua, Switch nằm TRONG một <div onClick> bật/tắt cả dòng —
-      // để sự kiện nổi lên thì 1 cú bấm chạy onChange rồi chạy tiếp handler của dòng, đảo trạng
-      // thái 2 lần và trông như nút không phản ứng. Các nơi khác đặt nhãn là phần tử anh em nên
-      // không phụ thuộc việc nổi bọt này.
-      onClick={(e) => { e.stopPropagation(); onChange(); }}
-      className={`justify-start ${
-        checked ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-600'
-      } relative inline-flex h-4 w-7 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
-    >
-      <span
-        aria-hidden="true"
-        className={`${
-          checked ? 'translate-x-3' : 'translate-x-0'
-        } pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
-      />
-    </Button>
-  );
+    <SwitchChung checked={checked} onChange={() => onChange()} id={id} size="sm" />
+);
 
 export const ProgressBar: React.FC<{ value: number; customColorClass?: string }> = ({ value, customColorClass }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
