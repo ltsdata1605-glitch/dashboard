@@ -6,13 +6,15 @@ import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 import {
     isStandaloneMode, isInAppBrowser, isIOSDevice,
     preparePwaHandoff, startPwaHandoffLogin, claimPwaHandoff, hasPendingPwaHandoff, clearPendingPwaHandoff,
+    isPwaHandoffClaiming, takePwaHandoffError, PwaHandoffSignInError,
     type PreparedPwaHandoff,
 } from '../../services/firebase';
 
 const LoginView: React.FC = () => {
     const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
     const [isLoggingIn, setIsLoggingIn] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(() =>
+        takePwaHandoffError() ? 'Chưa vào được ứng dụng sau khi đăng nhập Google. Vui lòng bấm "Tiếp tục với Cổng Google" lại.' : null);
 
     const [isInAppWebView] = useState(() => isInAppBrowser());
     const [isStandalone] = useState(() => isStandaloneMode());
@@ -24,7 +26,9 @@ const LoginView: React.FC = () => {
     const useHandoff = isIOS || isStandalone || isInAppWebView;
 
     const preparedRef = useRef<PreparedPwaHandoff | null>(null);
-    const [waitingHandoff, setWaitingHandoff] = useState(() => useHandoff && hasPendingPwaHandoff());
+    // Vừa quay về từ trang đăng nhập (còn mã chờ, hoặc AuthContext đang nhận phiên): hiện màn "Đang hoàn tất",
+    // KHÔNG hiện lại form đăng nhập — trước 2026-10-13 form hiện lại vài giây khiến người dùng tưởng bị lỗi.
+    const [waitingHandoff, setWaitingHandoff] = useState(() => useHandoff && (hasPendingPwaHandoff() || isPwaHandoffClaiming()));
     useEffect(() => {
         if (!useHandoff) return;
         preparePwaHandoff().then(p => { preparedRef.current = p; }).catch(console.error);
@@ -35,7 +39,7 @@ const LoginView: React.FC = () => {
         let busy = false;
         const tick = async () => {
             if (stopped || busy || document.visibilityState !== 'visible') return;
-            if (!hasPendingPwaHandoff()) {
+            if (!hasPendingPwaHandoff() && !isPwaHandoffClaiming()) {
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
                 return;
@@ -43,19 +47,21 @@ const LoginView: React.FC = () => {
             busy = true;
             try {
                 // Vào được thì onAuthStateChanged ở AuthContext tự chuyển màn hình.
-                if (await claimPwaHandoff()) stopped = true;
+                if (await claimPwaHandoff(1)) stopped = true;
             } catch (err: unknown) {
                 console.error('[Auth] Nhận phiên đăng nhập từ trang Google lỗi:', err);
+                takePwaHandoffError();
                 clearPendingPwaHandoff();
                 setWaitingHandoff(false);
                 setIsLoggingIn(false);
-                setError(`Chưa nhận được phiên đăng nhập (${getErrorCode(err) || getErrorMessage(err)}). Vui lòng bấm "Tiếp tục với Cổng Google" lại.`);
+                const goc = err instanceof PwaHandoffSignInError ? err.cause : err;
+                setError(`Chưa vào được ứng dụng (${getErrorCode(goc) || getErrorMessage(goc)}). Vui lòng bấm "Tiếp tục với Cổng Google" lại.`);
             } finally {
                 busy = false;
             }
         };
         tick();
-        const timer = setInterval(tick, 2000);
+        const timer = setInterval(tick, 1500);
         document.addEventListener('visibilitychange', tick);
         window.addEventListener('focus', tick);
         return () => {
@@ -252,7 +258,26 @@ const LoginView: React.FC = () => {
                     </div>
                 )}
                 
-                {/* Action Buttons */}
+                {/* Đang chờ phiên từ trang Google (2026-10-13): thay hẳn form — người dùng không phải làm gì thêm. */}
+                {waitingHandoff ? (
+                    <div data-testid="login-handoff-waiting" className="flex flex-col items-center text-center gap-3 py-2">
+                        <div className="w-9 h-9 border-[3px] border-sky-600 border-t-transparent rounded-full animate-spin" />
+                        <div>
+                            <p className="text-sm font-bold text-slate-800">Đang hoàn tất đăng nhập…</p>
+                            <p className="mt-1 text-xs text-slate-500 leading-relaxed">
+                                Đăng nhập Google xong là ứng dụng tự vào, không cần bấm gì thêm.
+                            </p>
+                        </div>
+                        <div className="w-full flex flex-col gap-2 pt-1">
+                            <Button variant="secondary" size="md" icon="refresh" onClick={handlePwaLogin} className="w-full">
+                                Mở lại trang đăng nhập Google
+                            </Button>
+                            <Button variant="ghost" size="md" onClick={handleCancelPwaLogin} className="w-full">
+                                Huỷ
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
                 <div className="space-y-3">
                     {/* Primary Google Login Button */}
                     <div>
@@ -278,19 +303,7 @@ const LoginView: React.FC = () => {
 
                         {useHandoff ? (
                             <div className="text-center pt-2 text-[11px] text-slate-500 leading-relaxed">
-                                {waitingHandoff ? (
-                                    <>
-                                        Chọn tài khoản trong cửa sổ Google vừa mở, xong bấm “Quay lại ứng dụng”.{' '}
-                                        <Button
-                                            variant="unstyled"
-                                            size="none"
-                                            onClick={handleCancelPwaLogin}
-                                            className="inline font-bold text-sky-700 hover:underline cursor-pointer"
-                                        >
-                                            Huỷ
-                                        </Button>
-                                    </>
-                                ) : 'Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.'}
+                                Đăng nhập Google an toàn được tối ưu riêng cho iPhone & iPad.
                             </div>
                         ) : (
                         <div className="text-center pt-2">
@@ -332,6 +345,7 @@ const LoginView: React.FC = () => {
                         Chế độ Dùng Thử lưu trữ dữ liệu tại máy này và không yêu cầu đăng nhập.
                     </p>
                 </div>
+                )}
             </div>
         </div>
     );

@@ -8176,3 +8176,18 @@ không đổi nghiệp vụ.
   là motion nay đã gỡ; phần còn lại là việc vẽ của chính Report BI → cần một đợt tối ưu riêng khu vực đó, chưa đo trace lại), lượt LẠNH nội dung Phân tích 5,0 s (tải firebase + dữ liệu trên 4G giả lập). "JS tải" trong số đo (~530 KB) gồm cả
   phần tải trước 3 tab lúc rảnh — không phải gói khởi động.
 - **Checklist iPhone thật** cho chủ dự án (10 mục, ~10 phút — những gì máy ảo không kiểm được): `KE_HOACH_GIAO_DIEN_APPLE.md` mục 9.
+
+## Đăng nhập trên thiết bị mới — gọn & không "tưởng lỗi" (2026-10-13)
+
+Video chủ dự án (iPhone, app Màn hình chính): luồng handoff VẪN vào được (log Cloud Functions 11:24:50–11:25:59 UTC khớp video)
+nhưng mất ~55 s, bấm 2 lần, chờ ~10 s ở "Đang đồng bộ phiên", rồi về app thấy LẠI form đăng nhập vài giây → người dùng tưởng hỏng.
+
+| File | Sửa |
+|---|---|
+| `auth-hosting/pwa-login.html` | Mở từ app (`#c=`) là TỰ sang Google (bỏ lần bấm thứ 2; nút giữ làm đường lùi sau 6 s / khi bấm Quay lại từ Google). Quay về: hâm nóng `pwaHandoffStore` song song `getRedirectResult`; xong là `location.replace` ngay (bỏ chờ 1 s, không chờ signOut). |
+| `functions/src/pwaHandoff.ts` | `{ warmup: true }` trả ngay (đánh thức trước, đỡ khởi động nguội). Sửa `request.auth!.uid` → `uid` (nhánh không kèm phiên văng TypeError = lỗi "internal"). |
+| `services/firebase.ts` | `claimPwaHandoff` gộp lượt gọi đồng thời (AuthContext + LoginView từng gọi song song, 3 lần thử mỗi bên); ĐÃ nhận phiên mà `signInWithCredential` lỗi → ném `PwaHandoffSignInError` (trước bị nuốt, app lặng lẽ về form); phiên quá 5 phút → báo luôn. `warmUpPwaHandoff()` gọi lúc bấm nút. |
+| `components/views/LoginView.tsx` | Khi đang chờ phiên: màn "Đang hoàn tất đăng nhập…" THAY form (nút "Mở lại trang đăng nhập Google" + "Huỷ"); hỏi 1 lần/1,5 s; lỗi hiện rõ. |
+
+Test: `tests/e2e/dang-nhap-thiet-bi-moi.spec.ts` (mới), `tests/e2e/ios-pwa-dang-nhap.spec.ts` (cập nhật). Phần Google tự hỏi mã khoá/QR
+trên máy mới là của Google, app không điều khiển được.
