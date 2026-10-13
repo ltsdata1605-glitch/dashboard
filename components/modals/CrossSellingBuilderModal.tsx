@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { Modal } from '../shared/ui/Modal';
-import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import StringMultiSelect from '../shared/ui/StringMultiSelect';
 import { CrossSellingConfig, CrossSellingDynamicSection, CrossSellingDynamicRow, CrossSellingDynamicColumn, CrossSellingColumnType } from '../../types';
 import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { Button } from '../shared/ui/Button';
@@ -293,14 +293,14 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                         <option value="revenueQD">Doanh Thu QĐ</option>
                                                     </Select>
                                                     <div className="flex-1 grid grid-cols-2 gap-2">
-                                                        <MultiSelectDropdown
+                                                        <StringMultiSelect
                                                             label="Lọc Ngành Hàng (Cha)"
                                                             options={nganhHangOptions}
                                                             selected={col.subgroupsNhomCha || []}
                                                             onChange={selected => updateColumn(col.id, 'subgroupsNhomCha', selected)}
                                                             variant="compact"
                                                         />
-                                                        <MultiSelectDropdown
+                                                        <StringMultiSelect
                                                             label="Lọc Nhóm Hàng (Con)"
                                                             options={nhomHangOptions}
                                                             selected={col.subgroupsNhomCon || []}
@@ -404,21 +404,21 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                         placeholder="Tên dòng hiển thị..."
                                                     />
                                                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
-                                                        <MultiSelectDropdown
+                                                        <StringMultiSelect
                                                             label="Lọc Ngành Hàng"
                                                             options={nganhHangOptions}
                                                             selected={row.subgroupsNhomCha || []}
                                                             onChange={selected => updateRow(section.id, row.id, 'subgroupsNhomCha', selected)}
                                                             variant="compact"
                                                         />
-                                                        <MultiSelectDropdown
+                                                        <StringMultiSelect
                                                             label="Lọc Nhóm Hàng"
                                                             options={nhomHangOptions}
                                                             selected={row.subgroupsNhomCon || []}
                                                             onChange={selected => updateRow(section.id, row.id, 'subgroupsNhomCon', selected)}
                                                             variant="compact"
                                                         />
-                                                        <MultiSelectDropdown
+                                                        <StringMultiSelect
                                                             label="Hãng Sản Xuất"
                                                             options={uniqueFilterOptions?.hangSX || []}
                                                             selected={row.manufacturers || []}

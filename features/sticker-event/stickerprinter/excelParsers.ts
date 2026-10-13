@@ -1,4 +1,4 @@
-import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
+import { generateBarcodeDataUrl } from './BarcodeCanvas';
 import { StickerPage, BatchItem } from './types';
 import { cleanWaterPurifierName, generatePageHtml } from './pageHtmlUtils';
 import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';

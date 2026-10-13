@@ -81,6 +81,12 @@ export type { DropdownProps, DropdownItem, DropdownButtonProps } from './Dropdow
 
 export { MultiSelectDropdown } from './MultiSelectDropdown';
 export type { MultiSelectDropdownProps, MultiSelectDropdownOption } from './MultiSelectDropdown';
+// GĐ8 (2026-10-13): gom từ components/common — chọn nhiều trong DANH SÁCH CHUỖI (lọc kho, ngành hàng…: có ô tìm, "Tất cả",
+// đếm). MultiSelectDropdown ở trên là bản tuỳ chọn có key/nhóm (Report BI). Chọn một có ô tìm: SearchableSelect.
+export { StringMultiSelect } from './StringMultiSelect';
+export type { StringMultiSelectProps } from './StringMultiSelect';
+export { default as SearchableSelect } from './SearchableSelect';
+export { default as ErrorBoundary } from './ErrorBoundary';
 
 // Section-level patterns (Design upgrade — DESIGN_SYSTEM_MODERN.md)
 export { SectionCard } from './SectionCard';

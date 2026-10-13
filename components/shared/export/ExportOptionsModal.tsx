@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { AppIcon } from '../shared/ui/icon/AppIcon';
-import { Modal } from '../shared/ui/Modal';
-import { Button } from '../shared/ui/Button';
+import { AppIcon } from '../ui/icon/AppIcon';
+import { Modal } from '../ui/Modal';
+import { Button } from '../ui/Button';
 
 interface ExportOptionsModalProps {
     isOpen: boolean;
@@ -42,7 +42,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-900/50 dark:to-sky-900/50 flex items-center justify-center mb-2 shadow-sm">
                         <AppIcon name="exportImage" size="lg" className="text-sky-700" />
                     </div>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white tracking-tight">Xuất Ảnh Báo Cáo</h3>
+                    <h3 className="type-headline font-bold text-slate-900 dark:text-white">Xuất ảnh báo cáo</h3>
                     <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 truncate w-full text-center sm:text-left">{filename}</p>
                 </div>
 

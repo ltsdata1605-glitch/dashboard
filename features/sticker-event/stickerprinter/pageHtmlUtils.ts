@@ -1,4 +1,4 @@
-import { generateBarcodeDataUrl } from '../../../components/views/BarcodeCanvas';
+import { generateBarcodeDataUrl } from './BarcodeCanvas';
 import { StickerPage, PrintHistoryEntry, TicketDrawData } from './types';
 import { formatPriceChangePercent, normalizeStickerPriceUnit } from '../utils/format';
 import { sanitizeTicketHtml, sanitizeTicketHtmlForDisplay, sanitizeTicketHtmlForPrint } from './ticketSanitize';

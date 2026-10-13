@@ -11,7 +11,7 @@ import { Tabs } from '../../../components/shared/ui/Tabs';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
 import { Button } from '../../../components/shared/ui/Button';
-import ErrorBoundary from '../../../components/common/ErrorBoundary';
+import ErrorBoundary from '../../../components/shared/ui/ErrorBoundary';
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';

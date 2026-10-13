@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 're
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import ReactDOM from 'react-dom';
 import { Button } from '../../shared/ui/Button';
+import { Switch } from '../../shared/ui/Switch';
 import { Overlay } from '../../shared/ui/Overlay';
 
 interface FilterPopoverProps {
@@ -145,15 +146,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                     {filteredOptions.slice(0, 200).map(option => (
                                         <label key={option} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
                                             <span className="text-xs text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
-                                            <div className="relative inline-flex items-center cursor-pointer shrink-0">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={selected.includes(option)} 
-                                                    onChange={() => toggleOption(option)} 
-                                                    className="sr-only peer" 
-                                                />
-                                                <div className="w-8 h-[18px] bg-slate-200 peer-focus:outline-none rounded-full dark:bg-slate-600 peer-checked:after:translate-x-[14px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
-                                            </div>
+                                            <Switch size="sm" checked={selected.includes(option)} onChange={() => toggleOption(option)} label={option} />
                                         </label>
                                     ))}
                                     {filteredOptions.length > 200 && (
@@ -195,15 +188,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                                     {filteredOptions.slice(0, 200).map(option => (
                                         <label key={option} className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer active:bg-slate-200 dark:active:bg-slate-600">
                                             <span className="text-xs text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
-                                            <div className="relative inline-flex items-center cursor-pointer shrink-0">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={selected.includes(option)} 
-                                                    onChange={() => toggleOption(option)} 
-                                                    className="sr-only peer" 
-                                                />
-                                                <div className="w-8 h-[18px] bg-slate-200 peer-focus:outline-none rounded-full dark:bg-slate-600 peer-checked:after:translate-x-[14px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
-                                            </div>
+                                            <Switch size="sm" checked={selected.includes(option)} onChange={() => toggleOption(option)} label={option} />
                                         </label>
                                     ))}
                                     {filteredOptions.length > 200 && (

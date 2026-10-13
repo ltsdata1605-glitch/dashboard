@@ -104,6 +104,10 @@ Dự án thực tế gồm 5 khu vực "mini-app" song song hoạt động độ
 **Quy tắc cách ly bắt buộc:**
 - ❌ Các thư mục `features/*` **không được import chéo lẫn nhau** và **không được import** `hooks/*` hoặc `services/*` ở thư mục gốc.
 - ✅ Cả 5 khu vực chỉ được dùng chung đúng 3 thứ: các UI component trong `components/shared/ui/*`, các hàm thuần tiện ích trong `utils/dataUtils.ts`, và `utils/localDbScope.ts` *(bổ sung 2026-09-23)*.
+- ✅ **Danh mục dùng chung: `components/shared/README.md`** *(GĐ8 2026-10-13)* — cần gì (nút, chọn nhiều, công tắc, menu ⋯, sheet,
+  banner, trống…) tra ở đó trước khi viết. Thiếu thì THÊM vào `components/shared` kèm test, cấm chép bản riêng trong khu vực (đó là
+  cách sinh ra 2 bản MultiSelect, 17 công tắc tự vẽ). ESLint chặn `features/*` import `components/common` (đồ riêng Phân tích),
+  `components/views`, `components/layout` — ngoại lệ duy nhất: Report BI dùng `components/layout/FontSelector` (lưu phông toàn app).
 - ✅ **Thứ dùng chung thứ 4 (bổ sung 2026-10-01): `components/shared/export/` — bộ xuất ảnh DUY NHẤT.** Mọi nơi xuất
   ảnh (1 ảnh hay hàng loạt) dùng `exportElementAsImage` / `startExportJob` từ đây. 3 bộ quy tắc trình bày: `standard`
   (Phân tích, Phân Ca, In Sticker, Thuế), `bi` (Report BI — `presetBi.ts`, thiết kế riêng có chủ đích), `raw` (giữ
@@ -222,6 +226,12 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Modal tràn sát mép (GĐ5 2026-10-13):** khối muốn chạm mép thân `<Modal>` dùng class `modal-bleed` / `modal-bleed-x|t|b` (lấy đúng
   đệm thân qua biến `--modal-pad`: 12px iPhone, 20px từ sm). CẤM tự viết `-m-5` / `-m-3 sm:-m-5` — lệch đệm là chữ bị cắt mép trên
   iPhone (lỗi #5/#6/#21). Test `components/shared/ui/modalBleed.test.ts`.
+- **Công tắc MỘT kiểu (GĐ8 2026-10-13):** mọi bật/tắt dùng `Switch` (`components/shared/ui/Switch.tsx`). CẤM ô tick ẩn
+  `sr-only peer` + `peer-checked:after:translate-x-*` hay nút tự gắn `role="switch"` — `components/shared/ui/khongCongTacTuVe.test.ts`
+  đỏ ngay. Nút của `Tabs`/`ListRow`/`Switch` là `type="button"` (trong `<form>` không thành nút gửi).
+- **Lớp CSS khung (GĐ7 2026-10-13, styles.css):** `ycx-tranh-dock` — trang TRÀN NGANG trên laptop tự chừa lề 2 dock nổi (khung đặt
+  `--dock-left/--dock-right`; trang có max-width đặt thêm `--trang-max`). `[data-thay-tieu-de]` trên gốc thanh công cụ đưa lên khe
+  `#mobile-topbar-actions` → dưới 540px chữ tiêu đề thanh trên nhường chỗ (Check thưởng — chủ dự án chốt "1 thanh bar duy nhất").
 - **Lớp Apple (2026-10-11, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ3 — `DESIGN_SYSTEM.md` mục 7):** chữ theo thang 9 bậc `type-*`
   (token `--type-*`, ratchet `offScaleText` chỉ được giảm), tiêu đề viết thường như câu (IN HOA chỉ nhãn cột). Dùng component
   dùng chung thay vì tự vẽ: `Switch` (công tắc), `Tabs variant="segment"` (segmented), `Banner` (thông báo tĩnh, cấm chữ chạy),

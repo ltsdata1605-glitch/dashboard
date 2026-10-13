@@ -1,6 +1,6 @@
 import React from 'react';
 import { AppIcon } from '../../../shared/ui/icon/AppIcon';
-import MultiSelectDropdown from '../../../common/MultiSelectDropdown';
+import StringMultiSelect from '../../../shared/ui/StringMultiSelect';
 import { Select } from '../../../shared/ui/Select';
 import { Input } from '../../../shared/ui/Input';
 import { Button } from '../../../shared/ui/Button';
@@ -59,15 +59,15 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                         <div>
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ngành hàng</label>
-                        <MultiSelectDropdown options={allIndustries} selected={selectedIndustries} onChange={setSelectedIndustries} label="Ngành hàng" variant="compact"/>
+                        <StringMultiSelect options={allIndustries} selected={selectedIndustries} onChange={setSelectedIndustries} label="Ngành hàng" variant="compact"/>
                     </div>
                     <div>
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nhóm hàng</label>
-                        <MultiSelectDropdown options={allSubgroups} selected={selectedSubgroups} onChange={setSelectedSubgroups} label="Nhóm hàng" variant="compact"/>
+                        <StringMultiSelect options={allSubgroups} selected={selectedSubgroups} onChange={setSelectedSubgroups} label="Nhóm hàng" variant="compact"/>
                     </div>
                     <div>
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Thương hiệu</label>
-                        <MultiSelectDropdown options={allManufacturers} selected={selectedManufacturers} onChange={setSelectedManufacturers} label="Thương hiệu" variant="compact" />
+                        <StringMultiSelect options={allManufacturers} selected={selectedManufacturers} onChange={setSelectedManufacturers} label="Thương hiệu" variant="compact" />
                     </div>
                 </div>
                 <div>

@@ -3,7 +3,7 @@ import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import type { KpiCardConfig, KpiMetricSource } from '../../../types';
 import { Modal, useIsSheetWidth } from '../../shared/ui/Modal';
-import MultiSelectDropdown from '../../common/MultiSelectDropdown';
+import StringMultiSelect from '../../shared/ui/StringMultiSelect';
 import { Button } from '../../shared/ui/Button';
 import { Input } from '../../shared/ui/Input';
 import { Select } from '../../shared/ui/Select';
@@ -323,7 +323,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Lọc theo ngành hàng"
                                 options={allIndustries}
                                 selected={editingCard.dataFilters?.selectedIndustries || []}
@@ -336,7 +336,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 })}
                                 variant="compact"
                             />
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Lọc theo nhóm hàng"
                                 options={allSubgroups}
                                 selected={editingCard.dataFilters?.selectedSubgroups || []}

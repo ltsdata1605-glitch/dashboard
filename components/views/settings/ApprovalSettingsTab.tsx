@@ -9,6 +9,7 @@ import {
     ApprovalSettingsData
 } from '../../../services/approvalSettingsService';
 import { parseKhoList } from '../../../utils/dataUtils';
+import { Switch } from '../../shared/ui/Switch';
 
 interface ApprovalSettingsTabProps {
     onConfigChange?: () => void;
@@ -261,22 +262,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                     {/* Toggle Switch */}
                     <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                         {isAdmin ? (
-                            <button
-                                type="button"
-                                onClick={handleToggleAutoApproveManagers}
-                                disabled={savingManager}
-                                className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 ${
-                                    settings.autoApproveManagers ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'
-                                } ${savingManager ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                role="switch"
-                                aria-checked={settings.autoApproveManagers}
-                            >
-                                <span
-                                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                        settings.autoApproveManagers ? 'translate-x-6' : 'translate-x-0'
-                                    }`}
-                                />
-                            </button>
+                            <Switch checked={settings.autoApproveManagers} onChange={() => handleToggleAutoApproveManagers()} disabled={savingManager} label="Tự động duyệt quản lý kho" />
                         ) : (
                             <span className="text-xs text-slate-400 italic">Chỉ Super Admin</span>
                         )}
@@ -348,22 +334,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                                             </div>
                                         </div>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => handleToggleAutoApproveEmployeesForDept(kho)}
-                                            disabled={isSavingThisKho}
-                                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                                isKhoEnabled ? 'bg-sky-600' : 'bg-slate-300 dark:bg-slate-600'
-                                            } ${isSavingThisKho ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                            role="switch"
-                                            aria-checked={isKhoEnabled}
-                                        >
-                                            <span
-                                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                                    isKhoEnabled ? 'translate-x-5' : 'translate-x-0'
-                                                }`}
-                                            />
-                                        </button>
+                                        <Switch size="sm" checked={isKhoEnabled} onChange={() => handleToggleAutoApproveEmployeesForDept(kho)} disabled={isSavingThisKho} label={`Tự động duyệt nhân viên Kho ${kho}`} />
                                     </div>
                                 );
                             })}
@@ -383,22 +354,7 @@ export const ApprovalSettingsTab: React.FC<ApprovalSettingsTabProps> = ({ onConf
                                     Áp dụng cho mọi siêu thị chưa có cấu hình riêng (Mặc định: BẬT).
                                 </div>
                             </div>
-                            <button
-                                type="button"
-                                onClick={handleToggleAutoApproveEmployeesGlobal}
-                                disabled={savingEmployee}
-                                className={`relative inline-flex h-7 w-13 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                    settings.autoApproveEmployees ? 'bg-sky-600' : 'bg-slate-300 dark:bg-slate-600'
-                                } ${savingEmployee ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                role="switch"
-                                aria-checked={settings.autoApproveEmployees}
-                            >
-                                <span
-                                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                                        settings.autoApproveEmployees ? 'translate-x-6' : 'translate-x-0'
-                                    }`}
-                                />
-                            </button>
+                            <Switch checked={settings.autoApproveEmployees} onChange={() => handleToggleAutoApproveEmployeesGlobal()} disabled={savingEmployee} label="Tự động duyệt nhân viên (toàn hệ thống)" />
                         </div>
                     </div>
                 )}

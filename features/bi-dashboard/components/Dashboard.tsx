@@ -10,7 +10,7 @@ import DashboardHeader from './dashboard/DashboardHeader';
 import KpiOverview from './dashboard/KpiOverview';
 import { shortenSupermarketName, type SubTab } from '../utils/dashboardHelpers';
 import { useExportOptions } from '../hooks/useExportOptions';
-import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
+import ExportOptionsModal from '../../../components/shared/export/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../services/uiService';
 import { Button } from '../../../components/shared/ui/Button';

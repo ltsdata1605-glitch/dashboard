@@ -4,7 +4,7 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { toast } from '../shared/ui/toast';
 import type { WarehouseColumnConfig, WarehouseCategoryType, WarehouseMetricType } from '../../types';
 import { Modal } from '../shared/ui/Modal';
-import SearchableSelect from '../common/SearchableSelect';
+import SearchableSelect from '../shared/ui/SearchableSelect';
 import { WAREHOUSE_METRIC_TYPE_MAP, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
 import ColumnConfigModal from '../employees/modals/ColumnConfigModal';
 import { Button } from '../shared/ui/Button';

@@ -15,7 +15,7 @@ import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSync } from '../../contexts/SyncContext';
-import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import StringMultiSelect from '../shared/ui/StringMultiSelect';
 import { FULLSCREEN_LAYER_CLASS } from '../shared/ui/Overlay';
 /** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
  *  phải mảng hoặc có phần tử rỗng → migrateColumns() ném lỗi và bảng treo mãi ở "Đang tải cấu hình
@@ -760,7 +760,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                         {/* Nút lọc Siêu thị & Tổng dạng Icon Phễu dành cho Chế độ xem Dọc (Lưu trạng thái vào Firebase) */}
                         {viewMode === 'vertical' && (
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 options={verticalOptions}
                                 selected={verticalKhoFilter.length === 0 ? verticalOptions : verticalKhoFilter}
                                 onChange={handleVerticalKhoFilterChange}

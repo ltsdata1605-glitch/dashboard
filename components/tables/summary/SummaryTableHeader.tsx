@@ -3,6 +3,7 @@ import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { Button } from '../../shared/ui/Button';
+import { Switch } from '../../shared/ui/Switch';
 import { onActivateKey } from '../../shared/ui';
 import type { FilterState } from '../../../types';
 
@@ -169,15 +170,10 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                                             </div>
                                                             {col.label}
                                                         </span>
-                                                        <div className="relative inline-flex items-center pointer-events-none">
-                                                            <input 
-                                                                type="checkbox" 
-                                                                className="sr-only peer" 
-                                                                checked={visibleColumns.includes(col.key)} 
-                                                                readOnly
-                                                            />
-                                                            <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-sky-500"></div>
-                                                        </div>
+                                                        {/* Chỉ để NHÌN (cả hàng mới là nút bấm) — công tắc dùng chung, bỏ khỏi cây trợ năng */}
+                                                        <span aria-hidden="true" className="pointer-events-none inline-flex">
+                                                            <Switch size="sm" checked={visibleColumns.includes(col.key)} onChange={() => {}} tabIndex={-1} />
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>

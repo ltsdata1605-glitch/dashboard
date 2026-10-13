@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { AppIcon } from '../shared/ui/icon/AppIcon';
-import { Button } from '../shared/ui/Button';
+import { AppIcon } from './icon/AppIcon';
+import { Button } from './Button';
 
 interface SearchableSelectProps {
     label: string;

@@ -5,7 +5,7 @@ import type { VisibilityState } from '../../types';
 import { toLocalISOString, getRowValue } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import StringMultiSelect from '../shared/ui/StringMultiSelect';
 import GtdhTargetModal from '../modals/GtdhTargetModal';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
 import { useAuth } from '../../contexts/AuthContext';
@@ -237,7 +237,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                     <NhomTuyChinh title="Bộ lọc" className="grid grid-cols-2 gap-3 [&>*]:min-w-0">
                         <div>
                             <NhanO>Kho tạo</NhanO>
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Kho Tạo"
                                 options={options.kho}
                                 selected={localFilters.kho}
@@ -247,7 +247,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </div>
                         <div>
                             <NhanO>Tháng</NhanO>
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Tháng"
                                 options={availableMonths}
                                 selected={localFilters.selectedMonths || []}
@@ -264,7 +264,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </div>
                         <div>
                             <NhanO>Người tạo</NhanO>
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Người Tạo"
                                 options={options.nguoiTao}
                                 selected={localFilters.nguoiTao}
@@ -274,7 +274,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </div>
                         <div>
                             <NhanO>Trạng thái hồ sơ</NhanO>
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Trạng thái hồ sơ"
                                 options={options.trangThai}
                                 selected={localFilters.trangThai}
@@ -284,7 +284,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         </div>
                         <div className="col-span-2">
                             <NhanO>Trạng thái xuất</NhanO>
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="T.Thái Xuất"
                                 options={['Đã', 'Chưa']}
                                 selected={localFilters.xuat === 'all' ? ['Đã', 'Chưa'] : [localFilters.xuat]}
@@ -301,7 +301,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         {options.department.length > 0 && (
                             <div className="col-span-2">
                                 <NhanO>Bộ phận</NhanO>
-                                <MultiSelectDropdown
+                                <StringMultiSelect
                                     label="Bộ phận"
                                     options={options.department}
                                     selected={localFilters.department}

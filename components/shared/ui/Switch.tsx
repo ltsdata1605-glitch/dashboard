@@ -25,6 +25,8 @@ export interface SwitchProps {
   'aria-labelledby'?: string;
   'aria-describedby'?: string;
   'data-testid'?: string;
+  /** -1 khi công tắc chỉ để NHÌN và cả hàng chứa nó mới là nút bấm (không để Tab dừng 2 lần trên cùng một việc). */
+  tabIndex?: number;
 }
 
 export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(function Switch(

@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useMemo } from 'react';
 import { SectionCard } from '../../../components/shared/ui/SectionCard';
 import { Button } from '../../../components/shared/ui/Button';
-import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
+import BarcodeCanvas from './BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
 import { DrawTicketBlock } from './DrawTicketBlock';
 import { useContentEditable } from './useContentEditable';

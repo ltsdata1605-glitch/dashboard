@@ -18,7 +18,7 @@ import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import RevenueCalendar, { choAmLichSanSang } from './RevenueCalendar';
 import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
-import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import StringMultiSelect from '../shared/ui/StringMultiSelect';
 import { Select } from '../shared/ui/Select';
 import { Button } from '../shared/ui/Button';
 import { Tabs } from '../shared/ui/Tabs';
@@ -540,7 +540,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                             <option value="traChamPercent">Trả chậm</option>
                         </Select>
                         <div className="sm:w-[140px]">
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Ngành"
                                 options={uniqueParentGroups}
                                 selected={calendarFilters.parentGroup}
@@ -549,7 +549,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                             />
                         </div>
                         <div className="sm:w-[140px]">
-                            <MultiSelectDropdown
+                            <StringMultiSelect
                                 label="Nhóm"
                                 options={uniqueChildGroups}
                                 selected={calendarFilters.childGroup}

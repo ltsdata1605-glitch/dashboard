@@ -1,12 +1,12 @@
 
 import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
-import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
-import { AppIcon } from '../shared/ui/icon/AppIcon';
-import type { IconSize } from '../shared/ui/icon/iconTokens';
+import { resolveIconName } from './icon/legacyIconNames';
+import { AppIcon } from './icon/AppIcon';
+import type { IconSize } from './icon/iconTokens';
 import { createPortal } from 'react-dom';
-import { Button } from '../shared/ui/Button';
+import { Button } from './Button';
 
-interface MultiSelectDropdownProps {
+export interface StringMultiSelectProps {
     options: string[];
     selected: string[];
     onChange: (selected: string[]) => void;
@@ -20,7 +20,7 @@ interface MultiSelectDropdownProps {
     mobileIconSize?: IconSize;
 }
 
-const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({ 
+const StringMultiSelect: React.FC<StringMultiSelectProps> = ({ 
     options, 
     selected, 
     onChange, 
@@ -279,4 +279,5 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     );
 };
 
-export default MultiSelectDropdown;
+export { StringMultiSelect };
+export default StringMultiSelect;

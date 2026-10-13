@@ -38,35 +38,7 @@
     "offScaleRadius": 0,
     "offScaleText": 1
   },
-  "components/common/ErrorBoundary.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
   "components/common/ExportLoader.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 1
-  },
-  "components/common/ExportOptionsModal.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
     "missingMobileToolbar": 0,

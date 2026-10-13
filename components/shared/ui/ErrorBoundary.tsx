@@ -1,7 +1,7 @@
 
 import React, { ErrorInfo, ReactNode } from 'react';
-import { AppIcon } from '../shared/ui/icon/AppIcon';
-import { Button } from '../shared/ui/Button';
+import { AppIcon } from './icon/AppIcon';
+import { Button } from './Button';
 
 interface Props {
   children: ReactNode;
@@ -71,7 +71,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 mb-4">
             <AppIcon name="warning" size="xl" />
           </div>
-          <h3 className="text-lg font-semibold text-rose-900 dark:text-rose-200 mb-2">
+          <h3 className="type-headline font-semibold text-rose-900 dark:text-rose-200 mb-2">
             Đã xảy ra lỗi tại {this.props.name || 'khu vực này'}
           </h3>
           <p className="text-sm text-rose-700 dark:text-rose-400 mb-4 max-w-md mx-auto">

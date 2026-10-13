@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
+import { Switch } from '../../../components/shared/ui/Switch';
 import { KeywordReply } from '../types/lineBot.types';
 import { KeywordEditModal } from './KeywordEditModal';
 
@@ -89,15 +90,7 @@ export const KeywordLibraryTab: React.FC<KeywordLibraryTabProps> = ({
                                     </div>
 
                                     {/* Toggle Active */}
-                                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            checked={kw.active}
-                                            onChange={() => onToggleActive(kw)}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                    </label>
+                                    <Switch size="sm" checked={kw.active} onChange={() => onToggleActive(kw)} label="Bật / tắt từ khoá" />
                                 </div>
 
                                 <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 whitespace-pre-wrap font-sans">

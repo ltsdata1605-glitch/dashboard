@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
+import { Switch } from '../../../components/shared/ui/Switch';
 import { BotSchedule, LineGroup } from '../types/lineBot.types';
 import { ScheduleEditModal } from './ScheduleEditModal';
 
@@ -134,15 +135,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                     </div>
 
                                     {/* Toggle Active */}
-                                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
-                                        <input
-                                            type="checkbox"
-                                            checked={sched.active}
-                                            onChange={() => onToggleActive(sched)}
-                                            className="sr-only peer"
-                                        />
-                                        <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-sky-600"></div>
-                                    </label>
+                                    <Switch size="sm" checked={sched.active} onChange={() => onToggleActive(sched)} label="Bật / tắt lịch gửi" />
                                 </div>
 
                                 <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-lg text-[11px] text-slate-700 dark:text-slate-300 font-mono whitespace-pre-wrap line-clamp-2">

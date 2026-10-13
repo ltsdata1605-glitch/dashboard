@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 
 import { toast } from '../../../components/shared/ui/toast';
 import { Button } from '../../../components/shared/ui/Button';
+import { Switch } from '../../../components/shared/ui/Switch';
 import { LineAdmin, AdminRole, InteractedUser } from '../types/lineBot.types';
 import { lineMessagingService } from '../services/lineMessagingService';
 import { SelectInteractedUserModal } from './SelectInteractedUserModal';
@@ -252,15 +253,7 @@ export const AdminDeclarationTab: React.FC<AdminDeclarationTabProps> = ({
                                             </span>
                                         </td>
                                         <td className="py-2 px-3 text-center border-r border-slate-100 dark:border-slate-800/60">
-                                            <label className="relative inline-flex items-center cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={a.active}
-                                                    onChange={() => onToggleActive(a)}
-                                                    className="sr-only peer"
-                                                />
-                                                <div className="w-8 h-4.5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                            </label>
+                                            <Switch size="sm" checked={a.active} onChange={() => onToggleActive(a)} label="Bật / tắt quyền Admin" />
                                         </td>
                                         <td className="p-3 pr-4 text-right">
                                             <div className="flex items-center justify-end gap-1">

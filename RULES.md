@@ -44,7 +44,7 @@ dashboardycx/
 │   ├── tables/              ← Bảng biểu dùng chung (Root)
 │   ├── filters/             ← Bộ lọc dùng chung (Root)
 │   ├── modals/              ← Modal/Dialog dùng chung kiểu cũ (Root) — song song với `shared/ui/Modal`, xem mục 2.5
-│   ├── common/              ← ErrorBoundary, Loading, ...
+│   ├── common/              ← Đồ RIÊNG của Phân tích (skeleton, loader, debug). Thứ dùng chung ở `shared/` (README ở đó) — GĐ8 2026-10-13
 │   └── upload/              ← Upload components
 ├── features/                ← ⭐ 3 KHU VỰC ĐỘC LẬP, mỗi thư mục là 1 "mini-app" riêng — xem mục 2.0
 │   ├── bi-dashboard/        ← Report BI (tab `employees`), mount qua BiWrapper

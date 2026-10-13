@@ -24,6 +24,26 @@ const featureBoundaryRules = FEATURES.map((feature) => {
             from: './hooks',
             message: 'features/* không được import hooks/ gốc — hooks gốc chỉ dành cho Dashboard/check-thuong (RULES.md §2.0).',
           },
+          // GĐ8 (2026-10-13): lỗ hổng cũ — features/* import thẳng components/common (ErrorBoundary, ExportOptionsModal) và
+          // components/views (BarcodeCanvas) của Phân tích. Thứ dùng chung nay ở components/shared/*; đồ của Phân tích cấm dùng.
+          {
+            target: `./features/${feature}`,
+            from: './components/common',
+            message: 'features/* không được import components/common (đồ riêng của Phân tích) — dùng components/shared/* (README ở đó).',
+          },
+          {
+            target: `./features/${feature}`,
+            from: './components/views',
+            message: 'features/* không được import components/views (màn của khu vực gốc) — dùng components/shared/*.',
+          },
+          {
+            target: `./features/${feature}`,
+            from: './components/layout',
+            // Ngoại lệ có chủ đích: Report BI dùng bộ chọn PHÔNG CHỮ TOÀN APP (lưu qua services/dbService gốc — là việc của khung
+            // app, không đưa vào shared/ui được nếu không tách phần lưu). Chỉ đúng file này.
+            ...(feature === 'bi-dashboard' ? { except: ['./FontSelector.tsx', './FontSelector'] } : {}),
+            message: 'features/* không được import components/layout (khung app) — khung tự vẽ thanh trên/thanh tab; màn khai báo bằng usePageActions.',
+          },
           {
             target: `./features/${feature}`,
             from: './services',

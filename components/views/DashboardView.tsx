@@ -43,7 +43,7 @@ const FileNamingModal = React.lazy(() => import('../modals/FileNamingModal'));
 const UploadConflictModal = React.lazy(() => import('../modals/UploadConflictModal'));
 const UploadTypeSelectionModal = React.lazy(() => import('../modals/UploadTypeSelectionModal'));
 const KpiCardConfigModal = React.lazy(() => import('../kpis/modals/KpiCardConfigModal'));
-const ExportOptionsModal = React.lazy(() => import('../common/ExportOptionsModal'));
+const ExportOptionsModal = React.lazy(() => import('../shared/export/ExportOptionsModal'));
 
 import ProcessingLoader from '../common/ProcessingLoader';
 import { BusyBar } from '../shared/ui/BusyBar';

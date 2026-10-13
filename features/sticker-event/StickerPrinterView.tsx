@@ -11,7 +11,7 @@ import { Button } from '../../components/shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { useStickerPrinterData } from './hooks/useStickerPrinterData';
 
-import ErrorBoundary from '../../components/common/ErrorBoundary';
+import ErrorBoundary from '../../components/shared/ui/ErrorBoundary';
 
 const StickerEventApp = lazy(() => import('./StickerEventApp'));
 import SaveListModal from './SaveListModal';

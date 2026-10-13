@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { Modal } from '../shared/ui/Modal';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import SearchableSelect from '../common/SearchableSelect';
+import SearchableSelect from '../shared/ui/SearchableSelect';
 import { formatCurrency } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
 import { Input } from '../shared/ui/Input';

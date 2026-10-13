@@ -15,6 +15,7 @@ import EmployeeAnalysisContent from './EmployeeAnalysisContent';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { getExportFilenamePrefix, sanitizeFilename } from '../../utils/dataUtils';
 import { Button } from '../shared/ui/Button';
+import { Switch } from '../shared/ui/Switch';
 import type { ContestTableConfig } from '../../types';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
@@ -218,16 +219,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                                                 </div>
                                                 {tab.label}
                                             </span>
-                                            <div className="relative inline-flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={visibleTabs.has(tab.id)}
-                                                    onChange={() => handleToggleTabVisibility(tab.id)}
-                                                    className="sr-only peer"
-                                                    id={`vis-toggle-${tab.id}`}
-                                                />
-                                                <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-sky-500"></div>
-                                            </div>
+                                            <Switch size="sm" id={`vis-toggle-${tab.id}`} checked={visibleTabs.has(tab.id)} onChange={() => handleToggleTabVisibility(tab.id)} label={tab.label} />
                                         </label>
                                     ))}
                                 </div>

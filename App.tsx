@@ -1,7 +1,7 @@
 import React, { Suspense } from 'react';
 import { TouchTitleHint } from './components/shared/ui/TouchTitleHint';
 import { LayoutProvider, useLayout, useActiveTab } from './contexts/LayoutContext';
-import ErrorBoundary from './components/common/ErrorBoundary';
+import ErrorBoundary from './components/shared/ui/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';

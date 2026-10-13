@@ -8111,3 +8111,29 @@ Test khoá: `tests/e2e/gd7-mini-app.spec.ts` thêm 4 ca (ca coupon đã thử: b
 - **GĐ7 tổng kết**: 10 khu vực (Phân quyền, In Sticker, Phân ca, Bot LINE, Giới thiệu, Đăng nhập, Tính thuế, Rút gọn coupon, So sánh
   giá, Check thưởng, Khai thác); `apple-tuong-thich` 0 vi phạm cả 6 khung, DA_BIET trống. Còn để chủ dự án quyết: danh sách mã
   coupon dạng thẻ trên iPhone (trái "Bảng luôn là bảng"); dock nổi laptop che cột đầu trang tràn ngang khác (đo ở GĐ9).
+
+## GĐ8 — Gom code dùng chung về `components/shared` (2026-10-13) — XONG
+
+Danh mục mới: **`components/shared/README.md`** (cần gì → dùng gì; luật; khung app). Chỉ DỜI CHỖ + thay bản tự vẽ bằng bản chung —
+không đổi nghiệp vụ.
+
+- **Dời về `components/shared`** (sửa mọi đường import; index `shared/ui` xuất thêm): `common/ErrorBoundary` → `shared/ui/ErrorBoundary`;
+  `common/ExportOptionsModal` → `shared/export/ExportOptionsModal`; `common/MultiSelectDropdown` (chọn nhiều trong danh sách chuỗi) →
+  `shared/ui/StringMultiSelect` (đổi tên — `MultiSelectDropdown` của shared là bản tuỳ chọn có key/nhóm của Report BI; 2 API khác hẳn
+  nên KHÔNG ép gộp — mỗi bản một việc, ghi ở README); `common/SearchableSelect` → `shared/ui/SearchableSelect`;
+  `views/BarcodeCanvas` → `features/sticker-event/stickerprinter/` (chỉ In Sticker dùng). Xoá 2 file chết: `FilterChip`,
+  `SingleSelectDropdown` (0 nơi dùng). `components/common/` nay chỉ còn đồ riêng Phân tích (DebugPanel, ExportLoader, LoadingOverlay,
+  ProcessingLoader, SkeletonLoader) — đúng tiêu chí "xong" của kế hoạch.
+- **Bịt lỗ cách ly** (`eslint.config.js`): `features/*` từng import thẳng `components/common` (ErrorBoundary ở In Sticker + Report BI,
+  ExportOptionsModal ở Report BI) và `components/views` (BarcodeCanvas) — ESLint không chặn. Nay chặn `components/common`,
+  `components/views`, `components/layout`; ngoại lệ DUY NHẤT có khai báo: Report BI dùng `layout/FontSelector` (bộ chọn phông TOÀN APP,
+  lưu qua `services/dbService` gốc — đưa vào shared/ui phải tách phần lưu, để sau). Đã thử bằng file dò: Phân ca import common/layout →
+  lỗi; Report BI import FontSelector → được.
+- **Công tắc một kiểu**: 10 công tắc tự vẽ còn lại → `Switch` (Phân tích: lọc tóm tắt ×2, cột hiển thị, màn thi đua; Bot LINE: Admin,
+  từ khoá, lịch gửi; Cài đặt duyệt: 3 nút `role="switch"` tự dựng). `Switch` nhận thêm `tabIndex` (công tắc chỉ để nhìn trong hàng bấm
+  được). Test chặn quay lui `components/shared/ui/khongCongTacTuVe.test.ts` (thử file dò → đỏ) + e2e `gd8-cong-tac-chung.spec.ts`
+  (công tắc trong `<label>` đổi đúng 1 lần khi bấm chữ / bấm công tắc; công tắc chỉ-để-nhìn phản ánh trạng thái hàng).
+- 2 tiêu đề ngoài thang chữ ở file vừa dời (`text-lg`) → `type-headline` (ratchet tính theo đường dẫn nên coi là "mới").
+- **Không làm, có lý do**: 3 file chuyển tiếp `services/uiService.ts`, `features/{phan-ca,sticker-event}/services/uiService.ts` (chỉ
+  re-export bộ xuất ảnh chung) GIỮ — xoá phải sửa ~20 file mà chủ dự án đang sửa song song (vừa có commit mới trên main), lợi ích
+  nhỏ; bản của Report BI gắn preset `bi` nên không phải chuyển tiếp thuần.
