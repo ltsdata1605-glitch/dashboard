@@ -165,15 +165,13 @@ export async function applyBiSyncResults(
     let successCount = 0;
     const errors: string[] = [];
 
-    // Helper lưu key vào configStore + db + dispatch event (đồng bộ RAM cache trước để UI cập nhật 0ms)
+    // Helper lưu key vào configStore + db (RAM cache cập nhật ngay, db.set tự bắn event sau khi commit transaction)
     const saveBiField = async (key: string, val: string, tsKey: string) => {
         try {
             configStore.setCache(key, val);
             configStore.setCache(tsKey, nowTs);
             configStore.setLoaded(key, true);
             configStore.setLoaded(tsKey, true);
-            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
-            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: tsKey } }));
             await db.set(key, val);
             await db.set(tsKey, nowTs);
             successCount++;

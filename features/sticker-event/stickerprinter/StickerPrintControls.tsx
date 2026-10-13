@@ -209,6 +209,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         onClick={() => {
                                             setLocalStartNumber(1);
                                             setLocalTotalTickets(4000);
+                                            setDrawAutoIncrement(true);
                                             restoreHistory(DEFAULT_DRAW_HISTORY_ENTRY);
                                         }}
                                         className="bg-white hover:bg-rose-100/70 text-rose-700"
@@ -247,7 +248,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
 
                                 <div className="flex items-center justify-between gap-3 min-h-11 sm:min-h-0 py-1">
                                     <span id="phieu-tu-nhay-so" className="text-[13px] font-medium text-slate-700">Tự động nhảy số liên tục</span>
-                                    <Switch checked={drawAutoIncrement} onChange={setDrawAutoIncrement} aria-labelledby="phieu-tu-nhay-so" />
+                                    <Switch checked={drawAutoIncrement ?? true} onChange={setDrawAutoIncrement} aria-labelledby="phieu-tu-nhay-so" />
                                 </div>
 
                                 {/* Chọn nền in */}
