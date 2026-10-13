@@ -174,7 +174,8 @@ const TabContent = React.memo(() => {
             )}
 
             {activeTab === 'tools-tax' && (
-                <div className="flex-1 relative w-full flex flex-col">
+                // Tính thuế tràn bề ngang khi mở cột Lịch sử (max-w 1560px) → laptop 1280–1440px bị 2 dock nổi đè cột trái/phải (đo GĐ9).
+                <div className="flex-1 relative w-full flex flex-col ycx-tranh-dock">
                     <TaxCalculatorView />
                 </div>
             )}

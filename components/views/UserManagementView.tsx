@@ -775,7 +775,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
 
                             <div className="flex items-center gap-2 w-full">
                                 <div className="flex items-center shrink-0 border border-slate-200 bg-slate-50 rounded-control overflow-hidden">
-                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} aria-label="Sắp xếp theo" className="h-8 text-xs rounded-none border-0 bg-transparent pr-6 shadow-none focus-visible:ring-0 py-0">
+                                    <Select fullWidth={false} value={sortBy} onChange={e => setSortBy(e.target.value as 'name' | 'role' | 'dept' | 'date' | 'logins')} aria-label="Sắp xếp theo" className="h-8 text-xs rounded-none border-0 bg-transparent shadow-none focus-visible:ring-0 py-0">
                                         <option value="date">Ngày ĐK</option>
                                         <option value="name">Tên</option>
                                         <option value="role">Vai trò</option>

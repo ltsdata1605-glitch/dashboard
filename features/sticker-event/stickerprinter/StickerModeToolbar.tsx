@@ -74,7 +74,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                         </span>
                         <div className="flex items-center shrink-0 rounded-control bg-white border border-slate-200">
                             <Button variant="unstyled" size="none" onMouseDown={e => e.preventDefault()} onClick={onDecreaseFontSize}
-                                className="h-9 w-11 flex items-center justify-center text-slate-700 active:bg-slate-100 rounded-l-control"
+                                className="ycx-hit h-9 w-11 flex items-center justify-center text-slate-700 active:bg-slate-100 rounded-l-control"
                                 title="Giảm size" aria-label="Giảm cỡ chữ">
                                 <AppIcon name="minus" size="md" />
                             </Button>
@@ -82,7 +82,7 @@ export const StickerModeToolbar: React.FC<StickerModeToolbarProps> = ({
                                 {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
                             </span>
                             <Button variant="unstyled" size="none" onMouseDown={e => e.preventDefault()} onClick={onIncreaseFontSize}
-                                className="h-9 w-11 flex items-center justify-center text-slate-700 active:bg-slate-100 rounded-r-control"
+                                className="ycx-hit h-9 w-11 flex items-center justify-center text-slate-700 active:bg-slate-100 rounded-r-control"
                                 title="Tăng size" aria-label="Tăng cỡ chữ">
                                 <AppIcon name="add" size="md" />
                             </Button>

@@ -19,7 +19,7 @@ test.skip(!process.env.ANH || !hasCustomToken(), 'Chụp ảnh thủ công — �
 
 const OUT = `.anh-apple/${process.env.ANH_NHAN || 'hien-tai'}`;
 const TAB_DT = ['analysis', 'employees', 'check-thuong', 'reports', 'tools-print-sticker', 'tools-phanca', 'tools-line-bot', 'tools-tax', 'tools-coupon', 'settings', 'help'];
-const TAB_LAPTOP = ['analysis', 'employees', 'check-thuong', 'reports', 'tools-print-sticker', 'tools-phanca', 'tools-line-bot', 'settings'];
+const TAB_LAPTOP = ['analysis', 'employees', 'check-thuong', 'reports', 'tools-print-sticker', 'tools-phanca', 'tools-line-bot', 'tools-tax', 'tools-coupon', 'tools-price-compare', 'settings', 'help'];
 
 /** Gom lỗi runtime theo tab đang mở (tab đổi bằng `datTab`). */
 const ghiLoi = (page: Page) => {

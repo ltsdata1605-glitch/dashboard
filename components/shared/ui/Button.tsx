@@ -90,8 +90,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       sm: 'h-8 max-sm:min-h-11 pointer-coarse:min-h-11 px-3 text-xs rounded-control',
       md: 'h-9 max-sm:min-h-11 pointer-coarse:min-h-11 px-4 text-sm rounded-control',
       lg: 'h-11 px-6 text-base rounded-control',
-      // Cỡ nút icon: h-8 w-8 gọn gàng, bo rounded-lg thanh lịch cả trên mobile và desktop
-      icon: 'h-8 w-8 rounded-lg p-0',
+      // Cỡ nút icon: h-8 w-8 gọn gàng, bo rounded-lg thanh lịch cả trên mobile và desktop (chủ dự án, f0a5558 — bỏ min-44 vì
+      // nút phình làm "mobile icon squishing"). GĐ9: giữ ĐÚNG cỡ nhìn thấy đó, chỉ nới vùng chạm vô hình 44×44 bằng `ycx-hit`
+      // (styles.css — màn hẹp hoặc cảm ứng), không đổi bố cục. Nút cạnh nhau sát hơn 12px thì vùng chạm chồng nhẹ ở khe.
+      icon: 'ycx-hit h-8 w-8 rounded-lg p-0',
       none: '',
     };
 

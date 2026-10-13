@@ -123,8 +123,11 @@
 
   /* ═══ LỚP APPLE (GĐ3 2026-10-11, KE_HOACH_GIAO_DIEN_APPLE.md mục 2–3) ═══ */
 
-  /* Công tắc (components/shared/ui/Switch.tsx): vùng chạm vô hình ≥ 44×44 trên màn cảm ứng — không đổi bố cục. */
-  @media (pointer: coarse) {
+  /* Ba khối vùng chạm vô hình dưới đây (công tắc, `ycx-hit`, nút thanh trên iPhone) bật khi "màn hẹp < 640px HOẶC thiết bị cảm
+     ứng" — đúng chuẩn vùng chạm 44 của dự án (c02fe16, 2026-10-07). GĐ3–GĐ5 lỡ chỉ dùng `pointer: coarse`: Chrome thu nhỏ hẹp như
+     điện thoại (và các bài đo 390/393px không giả lập cảm ứng) không có vùng chạm (GĐ9 2026-10-13 sửa).
+     Công tắc (components/shared/ui/Switch.tsx): vùng chạm vô hình ≥ 44×44 — không đổi bố cục. */
+  @media (pointer: coarse), (max-width: 639.98px) {
     .ycx-switch::after {
       content: '';
       position: absolute;
@@ -135,7 +138,7 @@
   /* VÙNG CHẠM 44 cho nút nhỏ (32px — chuẩn thanh công cụ gọn của chủ dự án) ở bất cứ đâu trên màn cảm ứng (GĐ5): ::after vô
      hình nới đều quanh tâm, cỡ nhìn thấy giữ nguyên. Dùng class `ycx-hit` trên nút; nút đã ≥ 44 thì không đổi (min(0px, …)).
      Đặt các nút `ycx-hit` cách nhau ≥ 12px (gap-3) nếu muốn vùng chạm không chồng nhau. */
-  @media (pointer: coarse) {
+  @media (pointer: coarse), (max-width: 639.98px) {
     .ycx-hit {
       position: relative;
     }
@@ -174,7 +177,7 @@
      - Khe nút: nới đều về 44×44 quanh tâm (nút ≥ 44 thì giữ nguyên — min(0px, …)); thanh cao 52px nên không lấn xuống nội dung.
      - Khe dòng phụ ("Cập nhật: <giờ>" — nút đồng bộ): nới LÊN phủ dòng tiêu đề (không bấm được gì khác) và xuống tới mép thanh,
        đủ 44 mà không lấn ra nội dung trang bên dưới. */
-  @media (pointer: coarse) {
+  @media (pointer: coarse), (max-width: 639.98px) {
     .ycx-navbar #mobile-topbar-actions :where(button, a[href], [role='button']) {
       position: relative;
     }
@@ -204,10 +207,12 @@
      dưới dock phải ở 1366px) gắn `ycx-tranh-dock` để chừa lề đúng bằng dock đang hiện. Khung app (App.tsx) đặt
      --dock-left (0 khi dock trái đóng) và --dock-right. Trang căn giữa có bề ngang giới hạn không cần lớp này. */
   @media (min-width: 1024px) {
-    /* Trang có max-width (đặt --trang-max, vd 1600px) mà màn rộng hơn: lề ngoài đã chừa phần nào → chỉ đệm phần còn thiếu. */
+    /* Trang có max-width (đặt --trang-max, vd 1600px) mà màn rộng hơn: lề ngoài đã chừa phần nào → chỉ đệm phần còn thiếu.
+       Màn HẸP hơn --trang-max thì lề ngoài = 0 → đệm đúng bằng dock. (GĐ9 sửa lỗi GĐ7: thiếu max(0px, …) nên lề ngoài ÂM bị cộng
+       thêm vào đệm — Phân ca ở 1280px đệm 256/244px, nội dung bị ép còn ~780px.) */
     .ycx-tranh-dock {
-      padding-left: max(1.5rem, calc(var(--dock-left, 0px) - (100vw - var(--trang-max, 100vw)) / 2));
-      padding-right: max(1.5rem, calc(var(--dock-right, 0px) - (100vw - var(--trang-max, 100vw)) / 2));
+      padding-left: max(1.5rem, calc(var(--dock-left, 0px) - max(0px, (100vw - var(--trang-max, 100vw)) / 2)));
+      padding-right: max(1.5rem, calc(var(--dock-right, 0px) - max(0px, (100vw - var(--trang-max, 100vw)) / 2)));
     }
   }
 

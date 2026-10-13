@@ -10,7 +10,25 @@ import type { Page } from '@playwright/test';
  */
 export type IconAuditResult = { legacy: string[]; lech: string[]; nutChuNhoHon: string[]; vungCham: string[] };
 
+/**
+ * Chủ dự án CHỦ ĐỘNG hạ icon md → sm ở các nút dưới đây (f0a5558, 2026-10-10 "resolve mobile icon squishing") — SAU khi luật
+ * `nutChuNhoHon` ra đời (2026-10-07). GĐ9 (2026-10-13) ghi nhận quyết định đó thay vì đổi ngược: khai HẸP theo [icon] + nhãn nên
+ * vi phạm MỚI ở chỗ khác vẫn đỏ. Vùng chạm các nút này vẫn đủ 44 (bộ lọc cao 44px trên điện thoại). Chủ dự án muốn theo luật cũ:
+ * đổi lại `size="md"` ở 3 file rồi xoá dòng tương ứng.
+ */
+const CHU_DU_AN_CHON_ICON_NHO: RegExp[] = [
+    // Report BI: bộ lọc Siêu thị / Bộ phận (features/bi-dashboard/components/NhanVien.tsx, dashboard/DashboardHeader.tsx)
+    / \[(store|restore)\] \d+px$/,
+    // In Sticker laptop: dải chế độ Giá sốc / Giờ vàng / Phiếu / Sticker (features/sticker-event/stickerprinter/StickerModeToolbar.tsx)
+    /^(Giá Sốc|Giờ Vàng|Phiếu|Sticker)+ \[(success|product)\] \d+px$/,
+];
+
 export async function auditIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<IconAuditResult> {
+    const r = await doIcons(page, mobile, rootSelector);
+    return { ...r, nutChuNhoHon: r.nutChuNhoHon.filter(x => !CHU_DU_AN_CHON_ICON_NHO.some(re => re.test(x))) };
+}
+
+function doIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<IconAuditResult> {
     return page.evaluate(({ mobile, rootSelector }) => {
         // `rootSelector`: chỉ đo bên trong vùng này (vd modal đang mở `[role="dialog"]`), mặc định cả trang.
         const roots: ParentNode[] = rootSelector ? Array.from(document.querySelectorAll(rootSelector)) : [document];
@@ -64,7 +82,11 @@ export async function auditIcons(page: Page, mobile: boolean, rootSelector?: str
                 const vaiTroPhu = /chevron|close|sort|check$/.test(ic.getAttribute('data-icon') || '');
                 // Liên kết NẰM TRONG CÂU (<a> trong <p>/<li>) đi theo cỡ chữ của câu — không phải nút thanh công cụ.
                 const lienKetTrongCau = btn.tagName === 'A' && !!btn.closest('p, li');
-                if (chu && !vaiTroPhu && !lienKetTrongCau && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
+                // Dòng phụ dưới tiêu đề thanh trên ("↻ Cập nhật: 15:13" — chạm để đồng bộ, chủ dự án thêm 2026-10-11 ở Report BI /
+                // Check thưởng) là dòng CHÚ THÍCH 12px: icon đi theo cỡ chữ của dòng như liên kết trong câu, không phải nút thanh công
+                // cụ. Vùng chạm của nó do styles.css (.ycx-navbar #mobile-topbar-subtitle) nới đủ 44 — mục `vungCham` vẫn đo.
+                const dongPhuThanhTren = !!btn.closest('#mobile-topbar-subtitle, #desktop-header-subtitle');
+                if (chu && !vaiTroPhu && !lienKetTrongCau && !dongPhuThanhTren && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
             }
             // Vùng chạm thật = hộp nút + vùng mở rộng vô hình `after:-inset-*` (mẫu dùng ở dòng dữ liệu dày)
             const af = getComputedStyle(btn, '::after');
