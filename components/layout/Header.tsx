@@ -28,6 +28,8 @@ interface HeaderProps {
     salesClearTitle?: string;
     isClearingSalesData?: boolean;
     isSyncingCloud?: boolean;
+    totalVisits?: number;
+    onlineUsers?: number;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -41,7 +43,9 @@ const Header: React.FC<HeaderProps> = ({
     hasSalesData,
     salesClearTitle,
     isClearingSalesData,
-    isSyncingCloud
+    isSyncingCloud,
+    totalVisits,
+    onlineUsers
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
@@ -74,39 +78,88 @@ const Header: React.FC<HeaderProps> = ({
                     {lastError || 'Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy.'}
                 </Banner>
             )}
-            {/* Portal timestamp into mobile top bar subtitle */}
-            {mounted && fileInfo && document.getElementById('mobile-topbar-subtitle') && createPortal(
-                <Button
-                    variant="unstyled" size="none"
-                    onClick={() => {
-                        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
-                    }}
-                    title="Chạm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
-                    className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
-                >
-                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                    <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                        {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
-                    </span>
-                </Button>,
+            {/* Portal timestamp & traffic stats into mobile top bar subtitle (Chuẩn Apple HIG) */}
+            {mounted && (fileInfo || totalVisits !== undefined) && document.getElementById('mobile-topbar-subtitle') && createPortal(
+                <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-full">
+                    {fileInfo && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => {
+                                window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+                            }}
+                            title="Chạm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
+                            className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left shrink-0 cursor-pointer"
+                        >
+                            <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                            <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                                {isSyncingCloud ? 'Đang đồng bộ...' : (fileInfo.savedAt.length > 8 ? fileInfo.savedAt.slice(0, 8) : fileInfo.savedAt)}
+                            </span>
+                        </Button>
+                    )}
+                    {onlineUsers !== undefined && (
+                        <>
+                            {fileInfo && <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>}
+                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
+                                <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                </span>
+                                <span>{onlineUsers} online</span>
+                            </span>
+                        </>
+                    )}
+                    {totalVisits !== undefined && totalVisits > 0 && (
+                        <>
+                            <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
+                            <span className="text-slate-400 dark:text-slate-500 shrink-0 font-medium">
+                                {totalVisits >= 1000 ? `${(totalVisits / 1000).toFixed(1)}k` : totalVisits} lượt
+                            </span>
+                        </>
+                    )}
+                </div>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
 
-            {/* Portal timestamp into desktop header subtitle */}
-            {mounted && fileInfo && document.getElementById('desktop-header-subtitle') && createPortal(
-                <Button
-                    variant="unstyled" size="none"
-                    onClick={() => {
-                        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
-                    }}
-                    title="Bấm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
-                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
-                >
-                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                    <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                        {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
-                    </span>
-                </Button>,
+            {/* Portal timestamp & traffic stats into desktop header subtitle (Chuẩn Apple HIG) */}
+            {mounted && (fileInfo || totalVisits !== undefined) && document.getElementById('desktop-header-subtitle') && createPortal(
+                <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    {fileInfo && (
+                        <Button
+                            variant="unstyled" size="none"
+                            onClick={() => {
+                                window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+                            }}
+                            title="Bấm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
+                            className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                        >
+                            <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
+                            <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
+                                {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
+                            </span>
+                        </Button>
+                    )}
+                    {totalVisits !== undefined && (
+                        <>
+                            {fileInfo && <span className="text-slate-300 dark:text-slate-700">•</span>}
+                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                <AppIcon name="users" size="xs" className="text-sky-500/80" />
+                                <span>Tổng: <strong className="font-semibold text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString()}</strong> lượt</span>
+                            </span>
+                        </>
+                    )}
+                    {onlineUsers !== undefined && (
+                        <>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-600 dark:text-emerald-400">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span>{onlineUsers} đang online</span>
+                            </span>
+                        </>
+                    )}
+                </div>,
                 document.getElementById('desktop-header-subtitle')!
             )}
             {/* Note: Mobile actions are now rendered directly via FilterBar portal, so we bypass mobile-topbar-actions here. */}

@@ -47,17 +47,18 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             const urlParams = new URLSearchParams(window.location.search);
             const urlTab = urlParams.get('tab');
             const initialTab = urlTab || savedTab || 'analysis';
+            const resolvedInitialTab = initialTab === 'tools' ? 'tools-print-sticker' : initialTab;
             
-            setActiveTabRaw(initialTab);
+            setActiveTabRaw(resolvedInitialTab);
             
             // Mở bằng link có ?tab=… → lưu luôn tab đó. Trước đây chỉ lưu khi BẤM đổi tab, nên mở
             // link rồi thoát → app cài trên iPhone mở lại (luôn vào "/") lại về tab cũ hơn.
-            if (urlTab && urlTab !== savedTab) saveSetting('active_tab', urlTab).catch(() => {});
+            if (urlTab && urlTab !== savedTab) saveSetting('active_tab', resolvedInitialTab).catch(() => {});
 
             // Sync URL with initial tab if not present
-            if (!urlTab) {
+            if (!urlTab || urlTab === 'tools') {
                 const newUrl = new URL(window.location.href);
-                newUrl.searchParams.set('tab', initialTab);
+                newUrl.searchParams.set('tab', resolvedInitialTab);
                 window.history.replaceState(null, '', newUrl.toString());
             }
 
@@ -70,10 +71,11 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     // Wrap tab switch in startTransition so the bottom nav stays responsive
     // while heavy views render in background
     const setActiveTab = useCallback((tab: string) => {
+        const finalTab = tab === 'tools' ? 'tools-print-sticker' : tab;
         startTransition(() => {
-            setActiveTabRaw(tab);
+            setActiveTabRaw(finalTab);
         });
-        saveSetting('active_tab', tab).catch(() => {});
+        saveSetting('active_tab', finalTab).catch(() => {});
         
         // Sync URL tab query parameter
         try {

@@ -14,6 +14,7 @@ import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSync } from '../../contexts/SyncContext';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { FULLSCREEN_LAYER_CLASS } from '../shared/ui/Overlay';
 /** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
@@ -90,6 +91,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     isLuyKe, handleLuyKeChange, kpiTargets
 }) => {
     const { user, userRole } = useAuth();
+    const { forceSync } = useSync();
 
     const rawData = processedData?.warehouseSummary ?? [];
     const data = rawData;
@@ -177,12 +179,21 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
         saveSetting('warehouseViewMode', next).catch(console.error);
     };
 
-    // Lắng nghe thay đổi cài đặt từ các sự kiện để đồng bộ tức thì
+    // Lắng nghe thay đổi cài đặt từ các sự kiện để đồng bộ tức thì (kể cả từ Cloud Sync hoặc tab khác)
     useEffect(() => {
         const handleSettingChanged = (e: Event) => {
             const detail = (e as CustomEvent).detail;
             if (!detail?.key) return;
-            if (detail.key === 'warehouseViewMode') {
+            if (detail.key === 'warehouseColumnConfig') {
+                if (detail.source === 'cloud-sync' || detail.source === 'external') {
+                    getWarehouseColumnConfig().then(saved => {
+                        const clean = sanitizeSavedColumns(saved);
+                        if (clean && clean.length > 0) {
+                            setColumns(clean);
+                        }
+                    }).catch(console.error);
+                }
+            } else if (detail.key === 'warehouseViewMode') {
                 getSetting<'horizontal' | 'vertical'>('warehouseViewMode').then(mode => {
                     if (mode) {
                         setViewMode(mode);
@@ -196,10 +207,44 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                         try { localStorage.setItem('warehouseVerticalKhoFilter', JSON.stringify(saved)); } catch { /* bỏ qua */ }
                     }
                 }).catch(console.error);
+            } else if (detail.key === 'warehouseColumnTargets') {
+                getSetting<Record<string, Record<string, number>>>('warehouseColumnTargets').then(saved => {
+                    if (saved) setWarehouseColumnTargets(saved);
+                }).catch(console.error);
+            } else if (detail.key === 'storeOpenCloseHours') {
+                getSetting<{ open: string; close: string }>('storeOpenCloseHours').then(saved => {
+                    if (saved) setStoreHours(saved);
+                }).catch(console.error);
             }
         };
+
+        const handleIdbChange = (e: Event) => {
+            const detail = (e as CustomEvent).detail;
+            if (!detail?.key) return;
+            if (detail.key === 'warehouseColumnConfig') {
+                getWarehouseColumnConfig().then(saved => {
+                    const clean = sanitizeSavedColumns(saved);
+                    if (clean && clean.length > 0) {
+                        setColumns(clean);
+                    }
+                }).catch(console.error);
+            } else if (detail.key === 'warehouseColumnTargets') {
+                getSetting<Record<string, Record<string, number>>>('warehouseColumnTargets').then(saved => {
+                    if (saved) setWarehouseColumnTargets(saved);
+                }).catch(console.error);
+            } else if (detail.key === 'storeOpenCloseHours') {
+                getSetting<{ open: string; close: string }>('storeOpenCloseHours').then(saved => {
+                    if (saved) setStoreHours(saved);
+                }).catch(console.error);
+            }
+        };
+
         window.addEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
-        return () => window.removeEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
+        window.addEventListener('indexeddb-change', handleIdbChange as EventListener);
+        return () => {
+            window.removeEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
+            window.removeEventListener('indexeddb-change', handleIdbChange as EventListener);
+        };
     }, []);
 
     // Target riêng cho từng chỉ số con (Mục 62) — columnId -> khoName -> target. Chỉ DTQĐ/DT Thực dùng
@@ -1420,7 +1465,10 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
              <WarehouseSettingsModal 
                 isOpen={isSettingsModalOpen} 
-                onClose={() => setIsSettingsModalOpen(false)}
+                onClose={() => {
+                    setIsSettingsModalOpen(false);
+                    forceSync().catch(console.error);
+                }}
                 onSave={handleSaveColumns}
                 columns={columns}
                 allIndustries={allIndustries}

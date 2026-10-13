@@ -32,7 +32,9 @@ describe('isHeavySyncKey — nhận diện đầy đủ khóa nặng thi đua v�
         'config-Tân Hiệp-thidua',
         'bi_config-Tân Hiệp-thidua',
         'analysis-employees-list',
-        'productConfig'
+        'productConfig',
+        'tile-custom-links',
+        'bi_tile-custom-links'
     ])('%s → là khoá nặng', async (k) => {
         const { isHeavySyncKey } = await import('../../utils/localDbScope');
         expect(isHeavySyncKey(k)).toBe(true);

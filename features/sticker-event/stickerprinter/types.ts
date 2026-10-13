@@ -49,6 +49,10 @@ export interface PrintHistoryEntry {
     showBarcode: boolean;
     manualPages: StickerPage[];
     discountDisplayMode?: 'percent' | 'amount';
+    drawTickets?: TicketDrawData[];
+    drawStartNumber?: number;
+    drawTotalTickets?: number;
+    drawAutoIncrement?: boolean;
     drawContentTopLeftSize?: number;
     drawContentTopRightSize?: number;
     drawContentBottomLeftSize?: number;

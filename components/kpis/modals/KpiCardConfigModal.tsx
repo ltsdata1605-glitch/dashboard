@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { resolveIconName } from '../../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../../shared/ui/icon/AppIcon';
 import type { KpiCardConfig, KpiMetricSource } from '../../../types';
@@ -50,7 +50,6 @@ const normColor = (c: string): string => COLOR_ALIAS[c] || c;
 
 const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave }) => {
     const { uniqueFilterOptions, productConfig, originalData } = useDashboardContext();
-    const [internalConfigs, setInternalConfigs] = useState<KpiCardConfig[]>([]);
     const [editingCard, setEditingCard] = useState<KpiCardConfig | null>(null);
     const [activeTab, setActiveTab] = useState<'metric' | 'data' | 'calculated'>('metric');
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -90,32 +89,50 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
         };
     }, [productConfig, originalData]);
 
+    const [internalConfigs, setInternalConfigs] = useState<KpiCardConfig[]>([]);
+    const internalConfigsRef = useRef<KpiCardConfig[]>(internalConfigs);
     useEffect(() => {
-        if (isOpen) {
-            setInternalConfigs(JSON.parse(JSON.stringify(configs)));
+        internalConfigsRef.current = internalConfigs;
+    }, [internalConfigs]);
+
+    const prevIsOpenRef = useRef(false);
+    useEffect(() => {
+        if (isOpen && !prevIsOpenRef.current) {
+            const initial = JSON.parse(JSON.stringify(configs));
+            setInternalConfigs(initial);
+            internalConfigsRef.current = initial;
             setEditingCard(null);
         }
+        prevIsOpenRef.current = isOpen;
     }, [isOpen, configs]);
 
+    const updateConfigsAndSave = (updater: (prev: KpiCardConfig[]) => KpiCardConfig[]) => {
+        const next = updater(internalConfigsRef.current);
+        internalConfigsRef.current = next;
+        setInternalConfigs(next);
+        onSave(next);
+    };
+
     const handleSave = () => {
-        onSave(internalConfigs);
+        onSave(internalConfigsRef.current);
         onClose();
     };
 
     const toggleVisibility = (id: string) => {
-        setInternalConfigs(prev => prev.map(c => c.id === id ? { ...c, isVisible: !c.isVisible } : c));
+        updateConfigsAndSave(prev => prev.map(c => c.id === id ? { ...c, isVisible: !c.isVisible } : c));
     };
 
     const moveCard = (index: number, direction: 'up' | 'down') => {
-        if ((direction === 'up' && index === 0) || (direction === 'down' && index === internalConfigs.length - 1)) return;
-        const newConfigs = [...internalConfigs];
-        const temp = newConfigs[index];
-        const swapIndex = direction === 'up' ? index - 1 : index + 1;
-        newConfigs[index] = newConfigs[swapIndex];
-        newConfigs[swapIndex] = temp;
-        // update order
-        newConfigs.forEach((c, i) => c.order = i + 1);
-        setInternalConfigs(newConfigs);
+        if ((direction === 'up' && index === 0) || (direction === 'down' && index === internalConfigsRef.current.length - 1)) return;
+        updateConfigsAndSave(prev => {
+            const newConfigs = [...prev];
+            const temp = newConfigs[index];
+            const swapIndex = direction === 'up' ? index - 1 : index + 1;
+            newConfigs[index] = newConfigs[swapIndex];
+            newConfigs[swapIndex] = temp;
+            newConfigs.forEach((c, i) => c.order = i + 1);
+            return newConfigs;
+        });
     };
 
     const handleDragStart = (e: React.DragEvent, index: number) => {
@@ -133,14 +150,14 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
         e.preventDefault();
         if (draggedIndex === null || draggedIndex === dropIndex) return;
 
-        const newConfigs = [...internalConfigs];
-        const draggedItem = newConfigs[draggedIndex];
-        
-        newConfigs.splice(draggedIndex, 1);
-        newConfigs.splice(dropIndex, 0, draggedItem);
-        
-        newConfigs.forEach((c, i) => c.order = i + 1);
-        setInternalConfigs(newConfigs);
+        updateConfigsAndSave(prev => {
+            const newConfigs = [...prev];
+            const draggedItem = newConfigs[draggedIndex];
+            newConfigs.splice(draggedIndex, 1);
+            newConfigs.splice(dropIndex, 0, draggedItem);
+            newConfigs.forEach((c, i) => c.order = i + 1);
+            return newConfigs;
+        });
         setDraggedIndex(null);
     };
 
@@ -151,7 +168,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
     const addNewCard = () => {
         const newCard: KpiCardConfig = {
             id: `kpi-custom-${Date.now()}`,
-            order: internalConfigs.length + 1,
+            order: internalConfigsRef.current.length + 1,
             isVisible: true,
             title: 'Thẻ Mới',
             icon: 'activity',
@@ -168,7 +185,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                 metricType: 'revenue'
             }
         };
-        setInternalConfigs([...internalConfigs, newCard]);
+        updateConfigsAndSave(prev => [...prev, newCard]);
         setEditingCard(newCard);
         setActiveTab('metric');
     };
@@ -185,7 +202,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
         const updated = { ...editingCard, ...newUpdates };
         setEditingCard(updated);
-        setInternalConfigs(prev => prev.map(c => c.id === updated.id ? updated : c));
+        updateConfigsAndSave(prev => prev.map(c => c.id === updated.id ? updated : c));
     };
 
     const toggleArrayFilter = (filterKey: 'selectedIndustries' | 'selectedSubgroups' | 'selectedManufacturers', value: string) => {
@@ -206,7 +223,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
     };
 
     const deleteCard = (id: string) => {
-        setInternalConfigs(prev => prev.filter(c => c.id !== id).map((c, i) => ({ ...c, order: i + 1 })));
+        updateConfigsAndSave(prev => prev.filter(c => c.id !== id).map((c, i) => ({ ...c, order: i + 1 })));
         if (editingCard?.id === id) setEditingCard(null);
     };
 
@@ -526,9 +543,9 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
             position="bottom"
             onClose={onClose}
             title="Dãy thẻ KPI"
-            subTitle="Chọn thẻ, thứ tự và cách tính"
+            subTitle="Chọn thẻ, thứ tự và cách tính • Tự động lưu Firebase"
             maxWidth="xl"
-            primaryAction={{ label: 'Lưu', onClick: handleSave }}
+            primaryAction={{ label: 'Hoàn tất', onClick: handleSave }}
         >
             {isSheet ? (
                 editingCard ? chiTietDienThoai : danhSachDienThoai

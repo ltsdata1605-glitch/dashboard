@@ -56,6 +56,25 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         };
     }, []);
 
+    useEffect(() => {
+        const handleExternalUpdate = (e: Event) => {
+            const detail = (e as CustomEvent)?.detail;
+            if (detail?.key === 'industryVisibleGroups') {
+                getIndustryVisibleGroups().then(saved => {
+                    if (saved && saved.length > 0) {
+                        setVisibleGroupsDetail(new Set(saved));
+                        setVisibleGroupsEfficiency(new Set(saved));
+                    }
+                }).catch(console.error);
+            }
+        };
+
+        window.addEventListener('indexeddb-change', handleExternalUpdate as EventListener);
+        return () => {
+            window.removeEventListener('indexeddb-change', handleExternalUpdate as EventListener);
+        };
+    }, []);
+
     const visibleGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
 
     useEffect(() => {

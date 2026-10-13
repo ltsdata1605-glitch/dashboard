@@ -9,6 +9,7 @@ import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import GtdhTargetModal from '../modals/GtdhTargetModal';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSync } from '../../contexts/SyncContext';
 import { Button } from '../shared/ui/Button';
 import { Switch } from '../shared/ui/Switch';
 import { Tabs } from '../shared/ui/Tabs';
@@ -53,6 +54,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
     isClearingDepartments
 }) => {
     const { userRole } = useAuth();
+    const { forceSync } = useSync();
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
 
@@ -382,12 +384,18 @@ const FilterSection: React.FC<FilterSectionProps> = ({
 
             <GtdhTargetModal
                 isOpen={isGtdhModalOpen}
-                onClose={() => setGtdhModalOpen(false)}
+                onClose={() => {
+                    setGtdhModalOpen(false);
+                    forceSync().catch(console.error);
+                }}
             />
 
             <EmployeeManagerModal
                 isOpen={showEmployeeModal}
-                onClose={() => setShowEmployeeModal(false)}
+                onClose={() => {
+                    setShowEmployeeModal(false);
+                    forceSync().catch(console.error);
+                }}
             />
         </div>
     );

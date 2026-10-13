@@ -181,6 +181,22 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             setIsInitialLoad(false);
         };
         loadTables();
+
+        const handleExternalUpdate = (e: Event) => {
+            const detail = (e as CustomEvent)?.detail;
+            if (detail?.key === 'headToHeadTables') {
+                getHeadToHeadCustomTables().then(saved => {
+                    if (saved && saved.length > 0) {
+                        setTables(saved);
+                    }
+                }).catch(console.error);
+            }
+        };
+
+        window.addEventListener('indexeddb-change', handleExternalUpdate as EventListener);
+        return () => {
+            window.removeEventListener('indexeddb-change', handleExternalUpdate as EventListener);
+        };
     }, []);
 
     useEffect(() => {
