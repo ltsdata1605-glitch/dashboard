@@ -178,8 +178,9 @@ export const Tabs = React.memo<TabsProps>(({
               className={cn(
                 'flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-9 sm:h-8.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 snap-center select-none active:scale-95',
                 fullWidth && 'flex-1',
+                // Viên đang chọn đen đậm — slate-900 (bảng màu semantic); neutral-* nằm ngoài bảng màu, lint-ratchet chặn.
                 isActive
-                  ? 'bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-xs'
+                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs'
                   : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 shadow-2xs',
                 item.disabled && 'opacity-40 cursor-not-allowed'
               )}
