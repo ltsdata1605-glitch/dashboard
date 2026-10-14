@@ -62,7 +62,8 @@ test.describe('iPhone SE 375×667 (cảm ứng)', () => {
         }
         // Segmented vẫn bo tròn trong Report BI (module ép border-radius 0 cho mọi "rounded-*")
         expect(parseFloat(await seg.evaluate(e => getComputedStyle(e).borderTopLeftRadius))).toBeGreaterThan(0);
-        expect(await page.locator('#mobile-topbar-actions').evaluate(e => e.children.length)).toBe(0);
+        // Cụm chức năng (Siêu thị, Nhân viên, Cập nhật) được đưa lên thanh topbar
+        expect(await page.locator('#mobile-topbar-actions').evaluate(e => e.children.length)).toBeGreaterThanOrEqual(1);
         await expect(page.getByText('Xử lý trên máy')).toBeVisible();
         for (const en of ['Local Processing', 'Instant Speed', 'Smart UI']) await expect(page.getByText(en)).toHaveCount(0);
         await expect(page.getByText(/không lưu trữ dữ liệu/)).toHaveCount(0);
