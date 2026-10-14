@@ -15,7 +15,8 @@ const resetOps = () => { ops.reads = 0; ops.deletes = 0; ops.setDocs = 0; ops.ba
 const existingChunks = new Set<string>();
 
 vi.mock('../../services/firebase', () => ({ db: { __isDb: true }, auth: { currentUser: null }, functions: {}, app: {} }));
-vi.mock('../../services/dbService', () => ({
+// firestoreService import THẲNG dbService/core (không qua barrel — giữ dataUtils khỏi gói tải đầu, GĐ9 2026-10-14) → mock đúng file đó.
+vi.mock('../../services/dbService/core', () => ({
     getSetting: async () => null,
     touchLastModified: async () => undefined,
 }));

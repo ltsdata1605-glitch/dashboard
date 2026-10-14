@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, useCallback, createElement } from 'react';
 import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQueued, isHeavyKeyInFlight, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
-import { getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService';
+import { getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService/core';
 import { rememberLightCloud, pullNewerLightKeys, pushNewerLightKeys } from '../services/lightSync';
 import { cloudKeyTime } from '../services/lightSyncPlan';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { toast } from '../components/shared/ui/toast';
-import { getErrorMessage, getErrorCode } from '../utils/dataUtils';
+import { getErrorMessage, getErrorCode } from '../utils/basicHelpers';
 // Các lớp chặn của đường "lấy khoá nặng từ Cloud về" đã tách ra module thuần để test được.
 // ĐỌC comment đầu services/heavySyncPolicy.ts trước khi sửa: đây là chỗ đã sinh 3 bug user báo.
 import { considerCloudDoc, isCloudNewer, LIGHT_CLOUD_PULLED_KEY } from '../services/heavySyncPolicy';

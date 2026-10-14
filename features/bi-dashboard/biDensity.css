@@ -63,3 +63,20 @@
     content-visibility: auto;
     contain-intrinsic-size: auto 1800px;
 }
+
+/* ── Chuyển từ thẻ <style> trong BiWrapper.tsx (GĐ9 2026-10-14): thẻ đó chèn vào trang MỖI lần gắn Report BI → trình duyệt
+   tính lại style cả tài liệu (kể cả cây Phân tích đang ẩn) ngay lúc chuyển tab. Ở đây nó nạp cùng chunk lúc tải trước. ── */
+/* KHÔNG BO GÓC cho tất cả bảng, viền trong toàn bộ phân hệ Report BI (ngoại trừ thẻ KPI .kpi-overview-card, avatar tròn & floating dock)
+   — và segmented control dùng chung ([data-segmented], GĐ6): vuông thì không còn là segmented kiểu iOS. */
+.bi-report-module table,
+.bi-report-module thead,
+.bi-report-module tbody,
+.bi-report-module tfoot,
+.bi-report-module tr,
+.bi-report-module th,
+.bi-report-module td,
+.bi-report-module .card:not(.kpi-overview-card),
+.bi-report-module .rounded:not(.kpi-overview-card),
+.bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.preserve-rounded):not(.preserve-rounded *):not([data-segmented]):not([data-segmented] *) {
+    border-radius: 0px !important;
+}

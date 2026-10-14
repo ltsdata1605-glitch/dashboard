@@ -10,7 +10,8 @@ let mayHienTai: Store = new Map();
 
 vi.mock('../../services/firebase', () => ({ db: {} }));
 vi.mock('../../utils/localDbScope', () => ({ isLightSyncKey: (k: string) => !k.startsWith('cached_') && !k.startsWith('lastModified_') }));
-vi.mock('../../services/dbService', () => ({
+// services/lightSync import thẳng dbService/core (giữ dataUtils khỏi gói tải đầu) → mock đúng file đó.
+vi.mock('../../services/dbService/core', () => ({
     getSettingsMatching: async (m: (k: string) => boolean) => Object.fromEntries([...mayHienTai].filter(([k]) => m(k))),
     saveSettingFromCloud: async (k: string, v: unknown, t: number) => { mayHienTai.set(k, v); mayHienTai.set(`lastModified_${k}`, t); },
 }));

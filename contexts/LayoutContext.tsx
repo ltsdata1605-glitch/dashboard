@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, startTransition, useMemo, useRef } from 'react';
-import { getSetting, saveSetting } from '../services/dbService';
+import { getSetting, saveSetting } from '../services/dbService/core';
 
 // --- Separate context for activeTab to avoid cascading re-renders ---
 interface TabContextType {

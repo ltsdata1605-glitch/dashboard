@@ -1,6 +1,9 @@
 
 import type { DataRow, SummaryTableNode, ProductConfig } from '../types';
 import { COL, VARIANT_TO_SHORT_KEY, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
+// 4 hàm nhỏ khung app cần lúc mở (thanh bên, thanh tab, đồng bộ cloud) nằm ở basicHelpers.ts — xem chú thích đầu file đó.
+// Vẫn xuất lại ở đây: features/* chỉ được import utils/dataUtils (CLAUDE.md mục 1), không phải sửa nơi nào đang dùng.
+export { parseKhoList, getErrorMessage, getErrorCode, formatCleanDisplayName } from './basicHelpers';
 
 // Tailwind safelist (implementation_plan.md mục 61) — viền dưới 3px đổi màu theo nhóm cột ở
 // nhiều bảng biểu khắp dự án được ghép ĐỘNG qua template literal (vd `border-b-${colorName}-400`)
@@ -716,19 +719,6 @@ export function unwrapProductConfigProxies(config: ProductConfig): ProductConfig
 
 export const EMPTY_UNIQUE_FILTER_OPTIONS = { kho: [] as string[], trangThai: [] as string[], nguoiTao: [] as string[], department: [] as string[], hangSX: [] as string[] };
 
-/**
- * Tách `departmentId` thành danh sách Mã Kho THẬT (bỏ khoảng trắng, rỗng, và nhãn "ALL" /
- * "ALL (Super Admin)"). Super Admin mang nhãn đó KÈM các Kho thật gắn thêm, vd
- * "ALL (Super Admin),910" (functions/src/superAdminDept.ts) — nhãn không phải Kho nên không được
- * lọt vào danh sách đọc/ghi khoData/biData (Rules sẽ từ chối, làm hỏng cả lượt tải).
- */
-export function parseKhoList(departmentId: string | null | undefined): string[] {
-    return (departmentId || '')
-        .split(',')
-        .map(k => k.trim())
-        .filter(k => k && k !== 'ALL' && k !== 'ALL (Super Admin)');
-}
-
 export interface RbacParams {
     isDemoMode: boolean;
     userRole: string | null | undefined;
@@ -996,30 +986,6 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     return { revenue, revenueQD, quantity, weightedQuantity, isTraCham };
 }
 
-/** Lấy message an toàn từ 1 giá trị catch (error: unknown), không giả định error là Error. */
-export function getErrorMessage(error: unknown): string {
-    if (error instanceof Error) return error.message;
-    if (typeof error === 'string') return error;
-    try {
-        return String(error);
-    } catch {
-        return 'Unknown error';
-    }
-}
-
-/**
- * Lấy field `code` an toàn từ 1 giá trị catch (error: unknown) — dùng cho lỗi kiểu
- * FirebaseError (`error.code`, VD 'auth/popup-blocked', 'permission-denied') mà không cần
- * `any`. Trả về undefined nếu error không có field `code` dạng string.
- */
-export function getErrorCode(error: unknown): string | undefined {
-    if (typeof error === 'object' && error !== null && 'code' in error) {
-        const code = (error as { code?: unknown }).code;
-        return typeof code === 'string' ? code : undefined;
-    }
-    return undefined;
-}
-
 /**
  * Kiểm tra 1 giá trị catch (error: unknown) có phải AbortError không (VD: user huỷ
  * navigator.share()). Không dùng `instanceof Error` vì DOMException (loại lỗi thật của
@@ -1057,41 +1023,6 @@ export function capPixelRatioForArea(width: number, height: number, ratio: numbe
     if (!(width > 0) || !(height > 0) || !(ratio > 0)) return ratio;
     const maxRatio = Math.sqrt(maxArea / (width * height));
     return Math.min(ratio, Math.floor(maxRatio * 1000) / 1000);
-}
-
-/**
- * Làm sạch tên hiển thị người dùng, loại bỏ phần trùng lặp (ví dụ: Google account có dạng "Tên (Tên mã_số)" hoặc "Tên (Tên)")
- * Ví dụ: "MT2 - AM - SƠN (MT2 - AM - SƠN 21707)" -> "MT2 - AM - SƠN"
- */
-export function formatCleanDisplayName(name?: string | null, fallback = 'Thành viên YCX'): string {
-    if (!name || typeof name !== 'string') return fallback;
-    let clean = name.replace(/\s+/g, ' ').trim();
-    if (!clean) return fallback;
-
-    // Trường hợp 1: "Outer Name (Inner Name)" trong đó Inner Name trùng hoặc lặp lại Outer Name
-    const parenMatch = clean.match(/^(.*?)\s*\((.*?)\)$/);
-    if (parenMatch) {
-        const outer = parenMatch[1].trim();
-        const inner = parenMatch[2].trim();
-        const outerLower = outer.toLowerCase();
-        const innerLower = inner.toLowerCase();
-
-        if (
-            innerLower === outerLower ||
-            innerLower.startsWith(outerLower) ||
-            outerLower.startsWith(innerLower)
-        ) {
-            clean = outer;
-        }
-    }
-
-    // Trường hợp 2: "Tên - Tên" trùng lặp
-    const dashParts = clean.split(/\s*[-–—]\s*/);
-    if (dashParts.length === 2 && dashParts[0].toLowerCase() === dashParts[1].toLowerCase()) {
-        clean = dashParts[0];
-    }
-
-    return clean || fallback;
 }
 
 

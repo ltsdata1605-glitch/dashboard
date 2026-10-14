@@ -4,7 +4,7 @@ import type { Functions } from 'firebase/functions';
 import type { Firestore } from 'firebase/firestore';
 import { clearAllLocalAppData, ensureLocalDataBelongsTo, setLocalDataOwner } from '../services/localDataOwner';
 import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider } from '../services/firebase';
-import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
+import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService/core';
 import { initSyncListeners, locCaiDatDongBoCu } from '../services/syncService';
 import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
 

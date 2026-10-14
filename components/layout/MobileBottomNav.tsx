@@ -7,7 +7,7 @@ import { Modal } from '../shared/ui/Modal';
 import { ListGroup, ListRow, type ListIconTone } from '../shared/ui/ListGroup';
 import { cn } from '../shared/ui/utils';
 import { NAV_TAB_ICONS } from './navIcons';
-import { formatCleanDisplayName } from '../../utils/dataUtils';
+import { formatCleanDisplayName } from '../../utils/basicHelpers';
 
 interface TabItem { id: string; label: string; icon: IconName; tone?: ListIconTone }
 

@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import React from 'react';
+import { renderToString } from 'react-dom/server';
 import { lazyWithRetry } from '../../utils/lazyWithRetry';
 
 describe('lazyWithRetry', () => {
@@ -31,7 +33,7 @@ describe('lazyWithRetry', () => {
 
         expect(LazyComp).toBeDefined();
         // Trigger lazy loader factory under the hood
-        const result = await (LazyComp as any)._payload._result();
+        const result = await (LazyComp as any)._lazy._payload._result();
         expect(result.default).toBe(MockComponent);
         expect(factory).toHaveBeenCalledTimes(1);
     });
@@ -41,7 +43,7 @@ describe('lazyWithRetry', () => {
         const LazyComp = lazyWithRetry(factory, 'FailedComponent');
 
         // Do not await the returned pending promise (it intentionally hangs until browser reloads)
-        (LazyComp as any)._payload._result();
+        (LazyComp as any)._lazy._payload._result();
         
         // Wait for microtasks
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -54,8 +56,35 @@ describe('lazyWithRetry', () => {
         const factory = vi.fn().mockResolvedValue(undefined);
         const LazyComp = lazyWithRetry(factory, 'FailedComponent');
 
-        await expect((LazyComp as any)._payload._result()).rejects.toThrow(
+        await expect((LazyComp as any)._lazy._payload._result()).rejects.toThrow(
             'Module "FailedComponent" failed to load or has no default export.'
         );
+    });
+
+    // GĐ9 2026-10-14: preload() xong thì lần gắn đầu vẽ component THẬT ngay — không treo Suspense (React.lazy luôn treo ở lần
+    // render đầu, kéo theo màn chờ + giữ tới 300 ms). renderToString ném lỗi nếu cây bị treo → dùng làm phép thử "vẽ đồng bộ".
+    it('preload() xong → render đồng bộ, không treo', async () => {
+        const That = ({ ten }: { ten: string }) => React.createElement('b', null, `xin chào ${ten}`);
+        const factory = vi.fn().mockResolvedValue({ default: That });
+        const LazyComp = lazyWithRetry(factory, 'PreloadComp');
+
+        await LazyComp.preload();
+        expect(renderToString(React.createElement(LazyComp, { ten: 'An' }))).toBe('<b>xin chào An</b>');
+        expect(factory).toHaveBeenCalledTimes(1);
+    });
+
+    it('chưa preload → vẫn đi đường React.lazy (treo chờ module)', () => {
+        const factory = vi.fn(() => new Promise<{ default: React.FC }>(() => {}));
+        const LazyComp = lazyWithRetry(factory, 'ChuaNap');
+        expect(() => renderToString(React.createElement(LazyComp))).toThrow();
+    });
+
+    it('preload() lỗi mạng → KHÔNG tự tải lại trang, không đặt cờ thử lại (chỉ báo lỗi cho nơi gọi)', async () => {
+        const factory = vi.fn().mockRejectedValue(new Error('mất mạng'));
+        const LazyComp = lazyWithRetry(factory, 'NapNgam');
+
+        await expect(LazyComp.preload()).rejects.toThrow('mất mạng');
+        expect((global as any).window.location.reload).not.toHaveBeenCalled();
+        expect(mockStorage['lazy_retry_NapNgam']).toBeUndefined();
     });
 });
