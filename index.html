@@ -50,6 +50,9 @@
     <!-- connect-src thêm https://www.google.com (2026-09-28): GA4 bật Google Signals gửi thêm lượt
       đo tới www.google.com/g/collect — thiếu host này Console báo "Refused to connect" ở MỌI lần mở
       app (đo trên dữ liệu thật). Chỉ cho gửi request (connect-src), không cho chạy script.
+      www.googletagmanager.com ở connect-src (2026-10-14, GĐ9): gtag.js gửi ping chẩn đoán /td bằng fetch — script-src đã
+      có host này nhưng connect-src thì chưa, nên bản build báo "Refused to connect …googletagmanager.com/td" ở mọi trang
+      (đo bằng tour tài khoản thật). Chỉ là gửi request đi, không thêm nguồn chạy script nào.
       blob: ở frame-src + connect-src (audit 2026-10-07, IOS-01): PDF in tem trên điện thoại là Blob URL do
       chính trang tạo — xem trước trong iframe và đọc lại để Chia sẻ. Trước đó là data: URI bị frame-src
       chặn → khung xem trước trắng. blob: chỉ trỏ tới dữ liệu trang tự sinh, không mở ra nguồn ngoài. -->
@@ -60,7 +63,7 @@
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https:;
-      connect-src 'self' blob: https://qr.sepay.vn https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://www.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
+      connect-src 'self' blob: https://qr.sepay.vn https://*.googleapis.com https://*.firebaseio.com https://firebase.googleapis.com https://*.cloudfunctions.net https://*.run.app https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.google.com https://docs.google.com https://*.googleusercontent.com http://localhost:3456;
       frame-src 'self' blob: https://*.run.app https://auth.dashboard.pro.vn https://dashboa-7e20b.firebaseapp.com https://accounts.google.com;
       object-src 'none';
       base-uri 'self';

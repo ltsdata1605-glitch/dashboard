@@ -33,6 +33,13 @@ describe('CSP frame-src trong index.html', () => {
     const cspMeta = /<meta\s+http-equiv="Content-Security-Policy"\s+content="([^"]*)"/i.exec(html)?.[1] ?? '';
     const frameSrc = /\bframe-src\b([^;]*)/.exec(cspMeta)?.[1] ?? '';
 
+    // gtag.js nạp từ www.googletagmanager.com (script-src) rồi tự fetch ping chẩn đoán /td về CHÍNH host đó. Thiếu ở connect-src
+    // thì bản build báo "Refused to connect" ở mọi trang (đo bằng tour tài khoản thật, GĐ9 2026-10-14).
+    it('connect-src cho phép www.googletagmanager.com — gtag gửi ping /td về đó', () => {
+        const connectSrc = /\bconnect-src\b([^;]*)/.exec(cspMeta)?.[1] ?? '';
+        expect(connectSrc.split(/\s+/)).toContain('https://www.googletagmanager.com');
+    });
+
     it('tìm được thẻ meta CSP', () => {
         expect(cspMeta.trim(), 'không tìm thấy thẻ meta Content-Security-Policy').not.toBe('');
     });
