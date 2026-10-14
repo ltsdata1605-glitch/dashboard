@@ -1,6 +1,6 @@
 import { db, auth } from './firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { getSettingsMatching } from './dbService';
+import { getSettingsMatching } from './dbService/core';
 import { isHeavySyncKey } from './firestoreService';
 
 // Đọc thẳng sessionStorage (không qua React Context) — module thuần, không phải hook. Đây là

@@ -1,9 +1,9 @@
 import { doc, getDoc, setDoc, serverTimestamp, Timestamp, type DocumentReference } from 'firebase/firestore';
 import { db, auth } from './firebase';
-import { getSetting, touchLastModified } from './dbService';
+import { getSetting, touchLastModified } from './dbService/core';
 import type { User } from 'firebase/auth';
 import type { ProductConfig, CrossSellingConfig } from '../types';
-import { parseKhoList } from '../utils/dataUtils';
+import { parseKhoList } from '../utils/basicHelpers';
 import { toCloudProductConfig, fromCloudProductConfig } from './productConfigSerialization';
 
 // Nhóm ngành hàng "groups" của productConfig có thể ở dạng Set (runtime) hoặc string[] (đã phục hồi từ JSON)

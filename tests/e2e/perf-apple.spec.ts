@@ -58,15 +58,27 @@ test('tốc độ tải + chuyển tab (bản build, iPhone, 4G, CPU x4)', async
         // thưởng thì màn là ô "Tải file thưởng thi đua"; có rồi là "Kết quả tra cứu".
         for (const [nhan, cho] of [['Report BI', 'Nhập dữ liệu Báo cáo BI|SIÊU THỊ'], ['Check thưởng', 'Tải file thưởng thi đua|Kết quả tra cứu'], ['Phân tích', 'Nhập dữ liệu Realtime|Tổng quan doanh thu']] as const) {
             await page.waitForTimeout(1500);
+            // ĐỒNG HỒ TRONG TRANG (GĐ9 2026-10-14): từ sự kiện click lên nút thanh tab tới KHUNG HÌNH đầu tiên có nội dung — đúng thứ
+            // người dùng cảm nhận. Đo bằng Date.now() quanh `locator.click()` (cách cũ, giữ dòng "gồm Playwright" để so mốc cũ) cộng
+            // thêm 150–350 ms của chính Playwright ở CPU x4: dò getByRole (tính tên truy cập cả cây DOM), chờ phần tử đứng yên
+            // (2 khung hình), thử trúng đích, rồi waitForFunction hỏi lại mỗi 50 ms.
+            // Chỉ tính khi nội dung nằm trong view ĐANG HIỆN (view ẩn có thuộc tính inert và bị đẩy ra ngoài màn).
+            await page.evaluate((re) => {
+                const w = window as unknown as { __xong: number | null };
+                w.__xong = null;
+                const r = new RegExp(re, 'i');
+                const thay = () => Array.from(document.querySelectorAll('main h1, main h2, main h3, main p, main span, main div'))
+                    .some(el => !el.closest('[inert]') && r.test(el.textContent || '') && el.children.length === 0 && el.getBoundingClientRect().left >= 0 && el.getBoundingClientRect().width > 0);
+                document.addEventListener('click', (ev) => {
+                    const vong = () => { if (thay()) requestAnimationFrame(() => { w.__xong = performance.now() - ev.timeStamp; }); else requestAnimationFrame(vong); };
+                    requestAnimationFrame(vong);
+                }, { capture: true, once: true });
+            }, cho);
             const t1 = Date.now();
             await page.locator('nav.mobile-chrome').getByRole('button', { name: nhan }).click();
-            // Chỉ tính khi nội dung nằm trong view ĐANG HIỆN (view ẩn có thuộc tính inert và bị đẩy ra ngoài màn).
-            await page.waitForFunction((re) => {
-                const r = new RegExp(re, 'i');
-                const els = Array.from(document.querySelectorAll('main h1, main h2, main h3, main p, main span, main div'));
-                return els.some(el => !el.closest('[inert]') && r.test(el.textContent || '') && el.children.length === 0 && el.getBoundingClientRect().left >= 0 && el.getBoundingClientRect().width > 0);
-            }, cho, { timeout: 120_000, polling: 50 });
-            ghi(`chuyển sang ${nhan} (ms)`, Date.now() - t1);
+            await page.waitForFunction(() => (window as unknown as { __xong: number | null }).__xong !== null, null, { timeout: 120_000, polling: 50 });
+            ghi(`chuyển sang ${nhan} (ms)`, await page.evaluate(() => (window as unknown as { __xong: number }).__xong));
+            ghi(`  ${nhan} gồm Playwright (ms, cách đo cũ)`, Date.now() - t1);
         }
     }
     const tb = (a: number[]) => Math.round(a.reduce((s, x) => s + x, 0) / a.length);

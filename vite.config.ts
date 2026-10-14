@@ -4,7 +4,46 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import fs from 'fs';
 import crypto from 'crypto';
+import postcss from 'postcss';
 
+
+/**
+ * BỎ CSS CHẾT của biến thể `dark:` khỏi bản build (2026-10-14, GĐ9 — gói tải đầu).
+ *
+ * Dark mode ĐÃ TẮT toàn dự án (CLAUDE.md mục 2): LayoutContext luôn gỡ class `dark` khỏi <html>, không phần tử nào mang
+ * class `dark`. Nhưng ~900 class `dark:` cũ còn trong code (giữ nguyên theo quy tắc) và Tailwind vẫn sinh luật
+ * `.dark\:x:where(.dark,.dark *){…}` cho từng cái — ~110 KB CSS (8 KB nén) trình duyệt phải tải + phân tích mà KHÔNG BAO
+ * GIỜ khớp. Tailwind v4 không có cách tắt hẳn một biến thể (bỏ dòng @custom-variant thì `dark:` quay về theo giao diện tối
+ * của HỆ ĐIỀU HÀNH — tệ hơn), nên lọc ở bước cuối: chỉ bỏ luật mà selector chứa `:where(.dark…` (đúng dạng biến thể ở
+ * styles.css sinh ra), rồi dọn @media/@supports rỗng. Dev server không đổi gì.
+ * ⚠️ Muốn BẬT LẠI dark mode: gỡ plugin này trước, nếu không mọi `dark:` im lặng không có tác dụng trên bản build.
+ */
+function boCssDarkChet() {
+  const laLuatDark = (sel: string) => /:where\(\s*\.dark\s*[,)]/.test(sel);
+  return {
+    name: 'ycx-bo-css-dark-chet',
+    apply: 'build' as const,
+    enforce: 'post' as const,
+    generateBundle(_options: unknown, bundle: Record<string, { type: string; fileName: string; source?: string | Uint8Array }>) {
+      for (const file of Object.values(bundle)) {
+        if (file.type !== 'asset' || !file.fileName.endsWith('.css') || file.source === undefined) continue;
+        const css = typeof file.source === 'string' ? file.source : new TextDecoder().decode(file.source);
+        const root = postcss.parse(css);
+        root.walkRules((rule) => {
+          const giu = rule.selectors.filter((s) => !laLuatDark(s));
+          if (giu.length === 0) rule.remove();
+          else if (giu.length < rule.selectors.length) rule.selectors = giu;
+        });
+        // @media/@supports chỉ chứa luật dark giờ rỗng — dọn lặp vì có thể lồng nhau.
+        for (let conRong = true; conRong;) {
+          conRong = false;
+          root.walkAtRules((at) => { if (at.nodes && at.nodes.length === 0) { at.remove(); conRong = true; } });
+        }
+        file.source = root.toString();
+      }
+    },
+  };
+}
 
 /**
  * Sinh dist/sw.js (service worker offline) từ scripts/sw-template.js: nhúng danh sách file cần tải sẵn
@@ -66,6 +105,7 @@ export default defineConfig(() => {
         react(),
         tailwindcss(),
         offlineServiceWorker(),
+        boCssDarkChet(),
       ],
       build: {
         chunkSizeWarningLimit: 700,

@@ -4,7 +4,9 @@ import { LayoutProvider, useLayout, useActiveTab } from './contexts/LayoutContex
 import ErrorBoundary from './components/shared/ui/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
-import { getGlobalFont } from './services/dbService';
+// Import thẳng file con, KHÔNG qua barrel services/dbService: barrel `export *` cả salesData → kéo dataUtils + constants (~33 KB)
+// vào gói tải đầu (GĐ9 2026-10-14). Code khung app (contexts/, hooks/useCloudSync, services/firestoreService|syncService) cũng vậy.
+import { getGlobalFont } from './services/dbService/settings';
 import { AppIcon } from './components/shared/ui/icon';
 import { Button } from './components/shared/ui/Button';
 import { navTabIcon } from './components/layout/navIcons';
@@ -69,11 +71,13 @@ function useSauLanRanhDau(timeout = 1500): boolean {
     return ready;
 }
 
-/** Chunk của 3 tab chính trên thanh dưới — tải trước khi máy rảnh (xem effect trong AppContent). */
+/** Chunk của 3 tab chính trên thanh dưới — tải trước khi máy rảnh (xem effect trong AppContent). Qua `.preload()` của
+ *  lazyWithRetry (không gọi import() trần): module tải xong thì lần mở tab đầu vẽ ngay, không treo Suspense + giữ màn chờ
+ *  300 ms của React (GĐ9 2026-10-14: Report BI 0,5–0,7 s → xem utils/lazyWithRetry.ts). */
 const TAI_TRUOC_TAB: Record<string, () => Promise<unknown>> = {
-    'analysis': () => import('./components/views/DashboardView'),
-    'employees': () => import('./features/bi-dashboard/components/BiWrapper'),
-    'check-thuong': () => import('./components/views/CheckThuongView'),
+    'analysis': () => DashboardView.preload(),
+    'employees': () => BiWrapper.preload(),
+    'check-thuong': () => CheckThuongView.preload(),
 };
 
 /** Bật "Tiết kiệm dữ liệu" hoặc mạng 2G → không tải trước gì (Safari không có navigator.connection → coi như được). */
@@ -255,22 +259,23 @@ function AppContent() {
         // từng bỏ prefetch cứng 3 tab nặng vì tốn băng thông cho người chỉ dùng Phân ca/In tem → nay chỉ tải 3 tab CHÍNH,
         // một lần mỗi phiên, sau khi tab hiện tại đã vẽ xong + rảnh, và bỏ hẳn khi bật Tiết kiệm dữ liệu / mạng 2G.
         let idleHandle: number | undefined;
-        let timer2: ReturnType<typeof setTimeout> | undefined;
         const khiRanh = (fn: () => void, timeout: number) => {
             if ('requestIdleCallback' in window) idleHandle = window.requestIdleCallback(fn, { timeout });
             else fn();
         };
+        // GĐ9 2026-10-14: tab chính còn lại tải NGAY ở lượt rảnh đầu (trước đây chờ thêm 2 s + một lượt rảnh nữa ≈ 3,5 s sau
+        // khi mở app — người dùng bấm sang Report BI sớm hơn thế thì vẫn gặp vòng quay + màn chờ 300 ms của React.lazy).
+        // requestIdleCallback vẫn đảm bảo không giành CPU với tab đang vẽ; vẫn một lần mỗi phiên, vẫn bỏ khi tiết kiệm dữ liệu.
         const timer = setTimeout(() => {
             khiRanh(() => {
                 void TAI_TRUOC_TAB[activeTab]?.().catch(() => { /* lỗi mạng: lúc mở tab sẽ tải lại */ });
-                timer2 = setTimeout(() => khiRanh(taiTruocTabChinh, 4000), 2000);
+                taiTruocTabChinh();
             }, 3000);
-        }, 1500);
+        }, 800);
         // Audit A28: trước đây chỉ huỷ setTimeout — lượt idle đã đặt vẫn chạy sau khi đổi tab và tải
         // trước chunk của tab vừa rời (tốn băng thông/CPU điện thoại vô ích).
         return () => {
             clearTimeout(timer);
-            if (timer2) clearTimeout(timer2);
             if (idleHandle !== undefined && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleHandle);
         };
     }, [activeTab]);

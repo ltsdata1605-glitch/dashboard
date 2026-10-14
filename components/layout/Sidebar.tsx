@@ -6,7 +6,7 @@ import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { AppIcon, type IconName } from '../shared/ui/icon';
 import { NAV_TAB_ICONS } from './navIcons';
-import { formatCleanDisplayName } from '../../utils/dataUtils';
+import { formatCleanDisplayName } from '../../utils/basicHelpers';
 
 interface NavSubItem {
     id: string;

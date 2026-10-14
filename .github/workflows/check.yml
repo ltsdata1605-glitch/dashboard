@@ -58,6 +58,11 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Gói tải đầu (JS + CSS index.html bắt tải trước khi vẽ khung app) ≤ 330 KB gzip — KE_HOACH_GIAO_DIEN_APPLE.md mục 7.
+      # Từng phình lên 345 KB không ai thấy (GĐ9 2026-10-14); cách tìm thủ phạm ở chú thích đầu scripts/kiem-goi-tai-dau.cjs.
+      - name: Ngân sách gói tải đầu
+        run: npm run check:budget
+
       # Ratchet chỉ cho phép vi phạm GIẢM so với `violations-baseline.json`, không cho tăng.
       # Bật 2026-09-19 sau khi dọn màu xong: `nonSemanticColor` (purple/teal…) = 0 toàn dự án;
       # baseline chỉ còn ghi 80 chỗ `indigo` ở 13 file — họ màu CLAUDE.md mục 2 cho phép trong
@@ -279,6 +284,10 @@ jobs:
       - name: 'E2E: click-plus-auto-toggle'
         if: ${{ !cancelled() }}
         run: npx playwright test tests/e2e/click-plus-auto-toggle.spec.ts --output=test-results/click-plus-auto-toggle
+      # lazyWithRetry.preload() (2026-10-14): tab đã tải trước phải vẽ ngay, không vòng quay Suspense + màn chờ 300 ms của React.
+      - name: 'E2E: lazy-tai-truoc'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/lazy-tai-truoc.spec.ts --output=test-results/lazy-tai-truoc
 
       # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
       # Kèm cả log dev server: nếu Vite chết giữa chừng thì mọi spec sau đó đỏ vì lý do CHUNG, và

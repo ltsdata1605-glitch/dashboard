@@ -246,26 +246,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
 
     return (
         <div data-density="compact" className="flex flex-col w-full min-h-dvh bi-report-module">
-            <style>{`
-                /* Chế độ mật độ gọn trên điện thoại: xem features/bi-dashboard/biDensity.css (A20).
-                   Lịch sử thang chữ: bản cũ ép chữ xuống 8–9px ("High-Density Typography"), phá quy tắc
-                   sàn 11px của CLAUDE.md đúng trên điện thoại (đo iPhone 15 2026-09-26: 71 chỗ < 11px). */
-
-                /* KHÔNG BO GÓC cho tất cả bảng, viền trong toàn bộ phân hệ Report BI (ngoại trừ thẻ KPI .kpi-overview-card, avatar tròn & floating dock)
-                   — và segmented control dùng chung ([data-segmented], GĐ6): vuông thì không còn là segmented kiểu iOS. */
-                .bi-report-module table,
-                .bi-report-module thead,
-                .bi-report-module tbody,
-                .bi-report-module tfoot,
-                .bi-report-module tr,
-                .bi-report-module th,
-                .bi-report-module td,
-                .bi-report-module .card:not(.kpi-overview-card),
-                .bi-report-module .rounded:not(.kpi-overview-card),
-                .bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.preserve-rounded):not(.preserve-rounded *):not([data-segmented]):not([data-segmented] *) {
-                    border-radius: 0px !important;
-                }
-            `}</style>
+            {/* Luật "không bo góc" của phân hệ: features/bi-dashboard/biDensity.css (trước là thẻ <style> chèn lúc gắn — GĐ9 2026-10-14). */}
             {mounted && isTabActive && !isMobile && document.getElementById('global-header-actions') && createPortal(
                 // Chuẩn pill bo tròn rounded-full thống nhất với Header.tsx (hình 2)
                 <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm animate-in fade-in zoom-in duration-300">

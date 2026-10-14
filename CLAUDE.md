@@ -64,7 +64,10 @@ là mọi thứ agent đẩy lên `main` sẽ tự về máy chủ dự án — 
    ```bash
    npm run check
    ```
-   (Lệnh này chạy gộp typecheck, eslint, build và lint-ratchet).
+   (Lệnh này chạy gộp typecheck, eslint, test đơn vị, build, **ngân sách gói tải đầu ≤ 330 KB gzip**
+   (`npm run check:budget`, 2026-10-14) và lint-ratchet). Ngân sách đỏ: chú thích đầu `scripts/kiem-goi-tai-dau.cjs` chỉ cách tìm
+   thủ phạm — hay gặp nhất là code khung app (App.tsx, contexts/, components/layout/, hooks/useCloudSync, services/firestoreService|
+   syncService) import barrel `services/dbService` hay `utils/dataUtils` (dùng `services/dbService/core` · `utils/basicHelpers`).
 8. **Luôn TỰ TEST rồi mới báo cáo**: `npm run check` chỉ chứng minh code biên dịch được, KHÔNG
    chứng minh tính năng chạy đúng. Sau mỗi lần sửa/nâng cấp, agent phải tự kiểm chứng thay đổi ở
    mức cao nhất có thể rồi **báo cáo kết quả thật** (đã chạy gì, thấy gì), không đẩy toàn bộ việc
@@ -261,7 +264,7 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   `Icons.tsx` ĐÃ XOÁ (2026-10-07); tên icon kiểu cũ trong DỮ LIỆU đã lưu đổi qua `resolveIconName()`.
   `lint-ratchet`: `iconDirectImport`/`iconNumericSize`/`iconLegacyCall` = 0, `iconRawSvg` = 1, `iconEmoji` = 113 (toàn là NỘI DUNG: tin nhắn LINE mẫu, bookmarklet, tên ngày lễ,
   văn bản copy ra ngoài) — chỉ được giảm. CẤM dùng emoji / ✓ ✕ ⚠ làm icon giao diện (nút, nhãn, tiêu đề, icon toast) — dùng AppIcon.
-- **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp).
+- **Dark mode**: **ĐÃ TẮT toàn dự án** (áp dụng từ 2026-07-10). Cấm viết class `dark:` mới cho các thay đổi giao diện. Các class `dark:` cũ trong code được giữ nguyên (vô hiệu, không cần dọn dẹp). *(2026-10-14)* Bản build tự BỎ luật CSS của `dark:` (plugin `ycx-bo-css-dark-chet` ở `vite.config.ts` — ~110 KB CSS chết, 8 KB nén). Muốn bật lại dark mode: gỡ plugin đó trước, nếu không `dark:` im lặng không tác dụng trên bản build.
 - **Bo góc — chuẩn (B), chủ dự án chốt 2026-10-07: GIỮ phong cách bo mềm đang chạy**, đặt thành MỘT thang
   dùng chung (giá trị ở `styles/tokens.css`, class sinh ở `styles.css` `@theme inline`):
   `rounded-control` 8px (nút, ô nhập, select) · `rounded-card` 16px (thẻ, thẻ KPI, khung `DataTable`) ·
