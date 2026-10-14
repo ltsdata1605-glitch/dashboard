@@ -117,14 +117,24 @@ test.describe('iPhone 16 Pro Max 440×956 (cảm ứng)', () => {
         await expect(sheet).toBeHidden();
     });
 
-    test('Report BI: thanh trên không còn icon không chữ; nút "Cập nhật…" ở dòng phụ có vùng chạm ≥ 44 (::after)', async ({ page }) => {
+    test('Report BI: 3 phân hệ ở cụm nút thanh trên, mỗi nút ≥ 44; nút "Cập nhật…" ở dòng phụ có vùng chạm ≥ 44 (::after)', async ({ page }) => {
         await vaoDungThu(page, 'employees');
         const bar = page.locator('[data-app-chrome="topbar"]');
-        // GĐ6: 3 phân hệ là segmented CÓ CHỮ trong nội dung, phông chữ vào "⋯" — khe nút cũ trên thanh trên trống.
-        await expect(page.locator('[data-segmented]').first().getByRole('button', { name: 'Cập nhật', exact: true })).toBeVisible({ timeout: 30_000 });
-        expect(await page.locator('#mobile-topbar-actions').evaluate(e => e.children.length)).toBe(0);
+        // Chủ dự án d7720ef (2026-10-14, "đưa 3 chức năng lên thanh trên như hình 2"): 3 phân hệ chuyển từ segmented trong nội dung
+        // (GĐ6) lên CapsuleBar ở khe #mobile-topbar-actions — mỗi nút icon 44×44 có aria-label. Khoá: đủ 3 nút, đủ vùng chạm, bấm đổi được.
+        const cum = bar.getByRole('group', { name: 'Phân hệ Report BI' });
+        await expect(cum).toBeVisible({ timeout: 30_000 });
+        for (const ten of ['Siêu thị', 'Nhân viên', 'Cập nhật']) {
+            const hop = await cum.getByRole('button', { name: ten, exact: true }).boundingBox();
+            expect(hop, `thiếu nút "${ten}" trên thanh trên`).not.toBeNull();
+            expect(Math.min(hop!.width, hop!.height), `nút "${ten}" vùng chạm < 44`).toBeGreaterThanOrEqual(43.5);
+        }
+        await cum.getByRole('button', { name: 'Nhân viên', exact: true }).click();
+        await expect(cum.getByRole('button', { name: 'Nhân viên', exact: true })).toHaveAttribute('aria-pressed', 'true');
+        await cum.getByRole('button', { name: 'Siêu thị', exact: true }).click();
         await expect(bar.getByRole('button', { name: 'Thêm thao tác' })).toBeVisible();
-        const capNhat = bar.getByRole('button', { name: /^Cập nhật/ });
+        // Dòng phụ "↻ Cập nhật dữ liệu" — chỉ tìm trong khe dòng phụ (cụm nút cũng có nút tên "Cập nhật").
+        const capNhat = page.locator('#mobile-topbar-subtitle').getByRole('button', { name: /^Cập nhật/ });
         await expect(capNhat).toBeVisible({ timeout: 30_000 });
         const vung = await capNhat.evaluate(el => {
             const r = el.getBoundingClientRect(); const a = getComputedStyle(el, '::after');
