@@ -140,13 +140,13 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
     const isLowStock = stockSummary.unused < 30 && stockSummary.total > 0;
 
     // ---- Mảnh hiển thị dùng CHUNG cho bảng (≥ md) và thẻ mobile — tránh 2 bản chép (mobile 2026-09-21) ----
-    const renderCopyButton = (c: Coupon, compact = false) => (
+    const renderCopyButton = (c: Coupon) => (
         <>
         <button
             type="button"
             onClick={() => handleCopyCode(c.id, c.code)}
             title={`Bấm để copy mã: ${c.code}`}
-            className={`inline-flex items-center justify-center gap-1.5 ${compact ? 'h-6 px-2 font-mono text-[11px]' : 'h-6.5 px-2.5 font-mono text-xs'} font-semibold rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
+            className={`inline-flex items-center justify-center gap-1.5 h-6.5 px-2.5 font-mono text-xs font-semibold rounded-md border transition-all cursor-pointer shadow-2xs active:scale-95 ${
                 copiedCode === c.code
                     ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700 ring-1 ring-emerald-500/30'
                     : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-sky-50 hover:text-sky-600 hover:border-sky-300 dark:hover:bg-slate-700'
@@ -299,7 +299,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
         )}
         </>
     );
-    const renderActions = (c: Coupon, compact = false) => (
+    const renderActions = (c: Coupon) => (
         <>
         <div className="flex items-center justify-end gap-0.5 sm:gap-1">
             {(c.status === 'SENT' || c.status === 'REVOKED') && (
@@ -307,7 +307,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                     variant="ghost"
                     size="none"
                     onClick={() => onRevokeCoupon(c.id, c.status === 'REVOKED' ? 'Khôi phục về Chưa dùng' : 'Quản lý thu hồi về kho')}
-                    className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
+                    className={`ycx-hit h-7 w-7 p-0 flex items-center justify-center text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
                     title={c.status === 'REVOKED' ? 'Khôi phục về Chưa dùng (Khả dụng)' : 'Thu hồi về kho'}
                 >
                     <AppIcon name={c.status === 'REVOKED' ? 'check' : 'reset'} size="sm" />
@@ -317,7 +317,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 variant="ghost"
                 size="none"
                 onClick={() => handleCopyCode(c.id, c.code)}
-                className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-700 rounded-md transition-all active:scale-95 cursor-pointer`}
+                className={`ycx-hit h-7 w-7 p-0 flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-slate-700 rounded-md transition-all active:scale-95 cursor-pointer`}
                 title={`Copy mã: ${c.code}`}
             >
                 {copiedCode === c.code ? <AppIcon name="check" size="sm" className="text-emerald-600" /> : <AppIcon name="copy" size="sm" />}
@@ -326,7 +326,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                 variant="ghost"
                 size="none"
                 onClick={() => onDeleteCoupon(c.id)}
-                className={`${compact ? 'h-7 w-7' : 'h-7 w-7 p-0'} flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
+                className={`ycx-hit h-7 w-7 p-0 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-md transition-all active:scale-95 cursor-pointer`}
                 title="Xoá mã này"
             >
                 <AppIcon name="delete" size="sm" />
@@ -568,64 +568,22 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
 
             {/* Unified Coupons Table - Bảng Quản Lý Mã & Lịch Sử Hợp Nhất (Chuẩn Report BI) */}
             <div className="bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs overflow-hidden">
-                {/* MOBILE (< md): High-Density Compact Cards — Siêu gọn, chứa được 6-8 mã trên iPhone */}
-                <div className="md:hidden">
-                    {filteredCoupons.length === 0 ? (
-                        <div className="py-8 px-4 text-center text-slate-400 text-xs">
-                            <p className="font-semibold text-slate-600 dark:text-slate-400">
-                                {isLoading ? 'Đang tải dữ liệu...' : 'Không tìm thấy mã coupon nào phù hợp với bộ lọc.'}
-                            </p>
-                            <p className="text-[11px] text-slate-400 mt-1">
-                                {searchQuery ? 'Hãy thử tìm kiếm bằng từ khoá khác hoặc đặt lại bộ lọc.' : 'Hãy nạp mã coupon mới để sử dụng.'}
-                            </p>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800/70" data-testid="coupon-cards">
-                            {displayedCoupons.map((c, idx) => (
-                                <div key={c.id} className={`px-2.5 py-2 space-y-1 transition-colors ${c.status === 'REVOKED' ? 'bg-amber-50/20 dark:bg-amber-950/10' : 'hover:bg-slate-50/60 dark:hover:bg-slate-800/50'}`}>
-                                    <div className="flex items-center justify-between gap-1.5">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            <span className="w-4.5 shrink-0 text-center text-[11px] font-mono text-slate-400 font-bold">{startIndex + idx + 1}</span>
-                                            {renderCopyButton(c, true)}
-                                            <div className="flex items-center gap-1 shrink-0">
-                                                {renderType(c)}
-                                                {renderStatus(c)}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-0.5 shrink-0">
-                                            {renderActions(c, true)}
-                                        </div>
-                                    </div>
-                                    <div className="pl-6">
-                                        {renderProduct(c)}
-                                    </div>
-                                    {(c.expiryDate || c.recipient || c.copiedAt) && (
-                                        <div className="pl-6 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-                                            {c.expiryDate && <span>{renderExpiry(c)}</span>}
-                                            {c.recipient && <span className="inline-flex items-center gap-1 min-w-0 max-w-[140px]"><AppIcon name="user" size="xs" className="shrink-0" /><b className="truncate text-slate-700 dark:text-slate-300">{c.recipient}</b></span>}
-                                            {c.copiedAt && <span>{renderCopiedAt(c)}</span>}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* DESKTOP TABLE (≥ md): Bảng chuẩn Report BI sắc nét cho Laptop */}
-                <div className="hidden md:block overflow-x-auto max-h-[calc(100vh-270px)] min-h-[300px] [scrollbar-width:thin]">
+                {/* BẢNG ở MỌI cỡ màn — "Bảng luôn là bảng" (CLAUDE.md mục 2, chủ dự án chốt 2026-10-02). Trước đây điện thoại là danh sách
+                    thẻ (2026-10-07) — trái quy tắc (GĐ9 2026-10-14 bỏ). Điện thoại: ẩn cột "#", GHIM cột Mã Coupon bên trái và cột Thao tác
+                    bên phải (copy / thu hồi không phải cuộn ngang), giữa cuộn ngang trong khung; trang 5 dòng nên không cần khung cuộn dọc. */}
+                <div data-testid="coupon-table" className="overflow-x-auto md:max-h-[calc(100vh-270px)] md:min-h-[300px] [scrollbar-width:thin]">
                     <table className="w-full text-left text-xs border-collapse">
                         <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xs border-b border-slate-200/90 dark:border-slate-700/90 shadow-2xs">
                             <tr className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[11px]">
-                                <th className="py-2 pl-3 pr-2 w-10 text-center border-r border-slate-200/70 dark:border-slate-700/70">#</th>
-                                <th className="py-2 px-2 text-center whitespace-nowrap w-32 border-r border-slate-200/70 dark:border-slate-700/70">Mã Coupon</th>
+                                <th className="max-md:hidden py-2 pl-3 pr-2 w-10 text-center border-r border-slate-200/70 dark:border-slate-700/70">#</th>
+                                <th className="max-md:sticky max-md:left-0 max-md:z-20 max-md:bg-slate-50 max-md:shadow-[inset_-2px_0_0_var(--color-slate-200)] py-2 px-2 text-center whitespace-nowrap w-32 border-r border-slate-200/70 dark:border-slate-700/70">Mã Coupon</th>
                                 <th className="py-2 px-2.5 min-w-[200px] border-r border-slate-200/70 dark:border-slate-700/70">Sản Phẩm</th>
                                 <th className="py-2 px-2 text-center whitespace-nowrap w-24 border-r border-slate-200/70 dark:border-slate-700/70">Loại PMH</th>
                                 <th className="py-2 px-2 text-center whitespace-nowrap w-28 border-r border-slate-200/70 dark:border-slate-700/70">Hạn Dùng</th>
                                 <th className="py-2 px-2 text-center whitespace-nowrap w-28 border-r border-slate-200/70 dark:border-slate-700/70">Trạng Thái</th>
                                 <th className="py-2 px-2 text-left whitespace-nowrap w-36 border-r border-slate-200/70 dark:border-slate-700/70">Người Nhận</th>
                                 <th className="py-2 px-2 text-center whitespace-nowrap w-36 border-r border-slate-200/70 dark:border-slate-700/70">Thời Gian Copy</th>
-                                <th className="py-2 pr-3 pl-2 text-right whitespace-nowrap w-24">Thao Tác</th>
+                                <th className="max-md:sticky max-md:right-0 max-md:z-20 max-md:bg-slate-50 max-md:shadow-[inset_2px_0_0_var(--color-slate-200)] py-2 pr-3 pl-2 text-right whitespace-nowrap w-24">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/70 font-medium">
@@ -650,10 +608,10 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                                 : 'odd:bg-white even:bg-slate-50/40 dark:odd:bg-slate-800/90 dark:even:bg-slate-800/50 hover:bg-sky-50/70 dark:hover:bg-sky-950/30'
                                         }`}
                                     >
-                                        <td className="py-1.5 pl-3 pr-2 text-center text-slate-400 font-mono text-[11px] w-10 font-bold bg-slate-50/30 dark:bg-slate-800/30 border-r border-slate-100 dark:border-slate-800/60">
+                                        <td className="max-md:hidden py-1.5 pl-3 pr-2 text-center text-slate-400 font-mono text-[11px] w-10 font-bold bg-slate-50/30 dark:bg-slate-800/30 border-r border-slate-100 dark:border-slate-800/60">
                                             {startIndex + idx + 1}
                                         </td>
-                                        <td className="py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
+                                        <td className="max-md:sticky max-md:left-0 max-md:z-[1] max-md:bg-white max-md:shadow-[inset_-2px_0_0_var(--color-slate-200)] py-1.5 px-2 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderCopyButton(c)}
                                         </td>
                                         <td className="py-1.5 px-2.5 border-r border-slate-100 dark:border-slate-800/60">
@@ -674,7 +632,7 @@ export const CouponManagerTab: React.FC<CouponManagerTabProps> = ({
                                         <td className="py-1.5 px-2 text-center text-[11px] font-mono whitespace-nowrap border-r border-slate-100 dark:border-slate-800/60">
                                             {renderCopiedAt(c)}
                                         </td>
-                                        <td className="py-1.5 pr-3 pl-2 text-right whitespace-nowrap">
+                                        <td className="max-md:sticky max-md:right-0 max-md:z-[1] max-md:bg-white max-md:shadow-[inset_2px_0_0_var(--color-slate-200)] py-1.5 pr-3 pl-2 text-right whitespace-nowrap">
                                             {renderActions(c)}
                                         </td>
                                     </tr>
