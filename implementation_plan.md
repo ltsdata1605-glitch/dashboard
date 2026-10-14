@@ -8225,3 +8225,54 @@ nhưng mất ~55 s, bấm 2 lần, chờ ~10 s ở "Đang đồng bộ phiên", 
 
 Test: `tests/e2e/dang-nhap-thiet-bi-moi.spec.ts` (mới), `tests/e2e/ios-pwa-dang-nhap.spec.ts` (cập nhật). Phần Google tự hỏi mã khoá/QR
 trên máy mới là của Google, app không điều khiển được.
+
+## GĐ9 — hoàn tất các bước còn lại (2026-10-14)
+
+| Việc | Kết quả |
+|---|---|
+| Số NV theo siêu thị (Report BI, chờ "2 NV" thấy "4 NV") | Test viết lại theo quy tắc chủ dự án chốt ở `f0a5558` (chỉ danh sách Phân tích, luỹ kế KHÔNG lọc; ẩn NV riêng từng siêu thị) — `f74acce`. |
+| Mã coupon trên iPhone là danh sách THẺ ("Bảng luôn là bảng") | `CouponManagerTab` dùng chung một bảng: iPhone ghim cột Mã trái + Thao tác phải, ẩn cột "#", nút 28px + `ycx-hit` — `36b51de`, test `coupon-bang-iphone`. |
+| **Click+ "⚡ Copy All" đứng im** (userscript 7.24–7.26) | Nguyên nhân THẬT (không phải test): `f0a5558` lỡ xoá `let acpRunning = false;` khi viết lại `acpIsVisible` → `'use strict'` ném "acpRunning is not defined" mỗi lần bấm + mỗi nhịp 1 giây của bộ đếm dấu [+]. Khôi phục, **userscript 7.27**. `click-plus-auto-toggle` 9/9 xanh, nay chạy trong CI (trước nằm ngoài CI nên 4 ngày không ai thấy). Thêm `tests/unit/userscript-khong-bien-chua-khai-bao.test.ts` (ESLint `no-undef` trên mọi `public/scripts/*.user.js` — thử trên bản lỗi: đỏ đúng 4 chỗ). |
+| CSP chặn ping `googletagmanager.com/td` | `connect-src` thêm host (script-src vốn có). Kiểm trên dashboard.pro.vn: fetch `/td` được phép, fetch example.org vẫn bị chặn (CSP còn hiệu lực). |
+| CI main đỏ từ `42bc375` | Viên chip Realtime/Luỹ kế dùng `neutral-900` (ngoài bảng màu) → ratchet đỏ; đổi `slate-900` (gần trùng, đã chụp kiểm). |
+| **Gói tải đầu ≤ 330 KB** | **345,6 → 325,7 KB** gzip (xem dưới). Thêm `npm run check:budget` (`scripts/kiem-goi-tai-dau.cjs`) vào `npm run check` + CI. |
+| **Chuyển sang Report BI ≤ 0,3 s** | **~0,6 → 0,26 s** (đo trong trang, xem dưới). |
+
+**Gói tải đầu** (JS + CSS `index.html` bắt tải trước khi vẽ khung app):
+1. CSS 47,7 → 39,8 KB: plugin `ycx-bo-css-dark-chet` (`vite.config.ts`) bỏ ~900 luật `dark:` (dark mode đã tắt, LayoutContext luôn gỡ
+   class `dark`) — không thay đổi hiển thị (các luật đó không thể khớp). `postcss` (đã có trong cây phụ thuộc) ghim thành devDependency.
+2. index 66,8 → 54,7 KB: `App.tsx` import `getGlobalFont` qua barrel `services/dbService` (`export *` cả `salesData`) → Rollup đặt CẢ
+   `utils/dataUtils` + `constants` (~33 KB thô) vào gói đầu. Code khung app (App, AuthContext, LayoutContext, useCloudSync,
+   firestoreService, syncService) nay import thẳng `dbService/core` / `dbService/settings`; 4 hàm nhỏ khung app cần
+   (`parseKhoList`, `formatCleanDisplayName`, `getErrorMessage`, `getErrorCode`) chuyển sang `utils/basicHelpers.ts` (dataUtils vẫn xuất
+   lại — features/* không phải sửa). Test `heavy-sync-chunk-cleanup` đổi mock sang `dbService/core`.
+3. *Đã thử, bỏ*: loại tài liệu/test khỏi nguồn quét Tailwind (`@source not`) chỉ bớt 1,1 KB **và làm mất màu thật**: modal "chưa xuất /
+   chưa thu" dựng class màu động `border-${color}-500` — `border-blue-500`/`text-blue-600` chỉ có nhờ TÀI LIỆU nhắc tới. Cũng phát hiện
+   lỗi có sẵn: 6 ngành (cyan/violet/orange/teal/lime/fuchsia) chưa từng có màu — đã đề xuất thành việc riêng.
+
+**Chuyển tab** — tìm ra 2 nguyên nhân bằng hồ sơ CPU + trace trên bản build có sourcemap:
+1. `lazyWithRetry` = `React.lazy` → lần gắn ĐẦU luôn treo kể cả khi chunk đã tải trước → `<Suspense>` bọc TOÀN BỘ vùng tab hiện vòng quay
+   "Đang tải biểu mẫu phân tích…" rồi React còn giữ màn chờ tới 300 ms (`FALLBACK_THROTTLE_MS`). Nay có `.preload()`: module tải xong thì
+   lần gắn đầu vẽ component thật ngay (chốt loại phần tử một lần lúc gắn — không gỡ-gắn-lại); preload lỗi KHÔNG tự tải lại trang. Tải
+   trước 3 tab chính ở lượt rảnh ĐẦU (trước: chờ thêm 2 s + một lượt rảnh nữa ≈ 3,5 s — người bấm sớm hơn vẫn gặp vòng quay). Test
+   `lazy-tai-truoc` (CI) + 3 unit test.
+2. Report BI chèn thẻ `<style>` (luật "không bo góc" với `[class*="rounded-"]:not(…)` ×7) MỖI lần gắn → tính lại style cả tài liệu
+   (gồm cây Phân tích đang ẩn) ngay lúc chuyển tab → chuyển vào `features/bi-dashboard/biDensity.css` (nạp cùng chunk lúc tải trước).
+
+**Đo lại** (`perf-apple`, bản build, 440×956, 4G 9 Mbps/60 ms, CPU ×4, TB 5 lượt). Đổi cách đo chuyển tab sang **đồng hồ trong trang**
+(sự kiện click → khung hình đầu có nội dung): cách cũ `Date.now()` quanh `locator.click()` cộng 150–350 ms của chính Playwright (dò
+`getByRole` tính tên truy cập cả cây DOM ở CPU ×4, chờ phần tử đứng yên, thử trúng đích, hỏi lại 50 ms) — vẫn in dòng "gồm Playwright".
+
+| Phép đo | Sau GĐ9 (13/10) | **Nay (14/10)** | Mục tiêu |
+|---|---:|---:|---:|
+| Gói tải đầu (gzip) | 344 KB | **325,7 KB** | ≤ 330 ✅ |
+| Khung app hiện | 1442 ms | **1396** | ≤ 1400 ✅ |
+| Nội dung Phân tích nóng / lạnh | 2,0–2,3 / 5,0 s | **1,9–2,1 / 4,2–4,9 s** | ≤ 2,2 (nóng) ✅ |
+| Chuyển Report BI (trong trang · gồm Playwright) | ~0,49–0,70 · 0,60 s | **0,26 · 0,50 s** | ≤ 0,3 ✅ |
+| Chuyển Check thưởng | ~0,43–0,52 · 0,50 s | **0,14 · 0,29 s** | ≤ 1,0 ✅ |
+| Về Phân tích | ~0,15–0,24 · 0,22 s | **0,16 · 0,36 s** | — |
+
+Vòng quay "Đang tải biểu mẫu phân tích…" khi chuyển tab: 4/9 lượt → **0/9**. *Còn lại*: lượt LẠNH nội dung Phân tích ~4,4 s — nằm ở
+`useDataManagement` (cấu hình sản phẩm từ mạng + khôi phục IndexedDB + khởi động worker phân tích) chứ không ở gói tải; đã thử hoãn 8
+modal đóng của DashboardView (đang tải nối đuôi 1,4–2,4 s) tới sau nội dung đầu — **không đổi** (4,42 → 4,53 s, trong nhiễu) nên bỏ.
+Muốn nhanh hơn phải sửa thứ tự khởi động của `useDataManagement` — việc riêng, cần chủ dự án duyệt.

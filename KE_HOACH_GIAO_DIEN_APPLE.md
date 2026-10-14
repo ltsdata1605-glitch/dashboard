@@ -282,6 +282,10 @@ Công cụ đo: `tests/e2e/perf-apple.spec.ts` (GĐ0) — chạy lại sau mỗi
 tích nóng ~2,2 s / lạnh 5,0 s · Report BI 0,60 s · Check thưởng 0,50 s (bản React) · về Phân tích 0,22 s. Bảng đủ: `implementation_plan.md`
 mục "GĐ9".
 
+**Hoàn tất GĐ9 (2026-10-14, TB 5 lượt — chuyển tab đo TRONG TRANG, xem `implementation_plan.md` mục "GĐ9 — hoàn tất các bước còn lại")**:
+gói lúc mở **325,7 KB** gzip ✅ · khung app 1,40 s ✅ · nội dung Phân tích nóng 1,9–2,1 s ✅ / lạnh 4,2–4,9 s · Report BI **0,26 s** ✅ ·
+Check thưởng 0,14 s ✅ · về Phân tích 0,16 s. Ngân sách gói tải đầu chạy trong `npm run check` + CI (`scripts/kiem-goi-tai-dau.cjs`).
+
 ### 4.3 Việc tăng tốc (GĐ2) và lợi ích ước tính
 
 | # | Việc | Lợi ích ước tính |
