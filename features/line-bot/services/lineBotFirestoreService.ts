@@ -54,7 +54,7 @@ export const lineBotFirestoreService = {
             //    cách cũ bên dưới (chỉ còn các query khớp đúng Kho mà rules mới vẫn cho phép).
             try {
                 const call = httpsCallable<{ departmentId: string }, { bot: WarehouseBotSummary | null }>(
-                    getFunctions(getApp()), 'lineBotFindWarehouseBot');
+                    getFunctions(getApp(), 'asia-southeast1'), 'lineBotFindWarehouseBot');
                 const res = await call({ departmentId: cleanDept });
                 return res.data.bot ?? null;
             } catch (fnErr) {

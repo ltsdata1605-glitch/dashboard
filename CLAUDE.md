@@ -137,6 +137,10 @@ Ngoài 4 khu vực frontend ở mục 1, dự án có 1 khu vực **backend th�
 | Firestore Rules — database `(default)` | `firestore.rules` (repo root) | Chặn client (kể cả admin) ghi trực tiếp field nhạy cảm vào `users/{uid}` |
 | ~~Firestore Rules — database In Sticker CŨ~~ | ~~`firestore.stickerevent.rules`~~ | **ĐÃ BỎ 2026-10-08** (chủ dự án chốt xoá database cũ `ai-studio-16672ec9-…`): file rules và ánh xạ trong `firebase.json` đã xoá. In Sticker dùng `(default)`, rules trong `firestore.rules`. |
 
+**Vùng chạy (2026-10-14):** Firestore `(default)` ở `asia-southeast1` (Singapore). Hàm app gọi trực tiếp khai `region: CLIENT_REGIONS`
+(`functions/src/region.ts`), client gọi `getFunctions(app, 'asia-southeast1')`. Hàm MỚI app gọi cũng phải vậy — để mặc định là chạy ở Mỹ
+(đi vòng VN → Mỹ → Singapore). `us-central1` trong mảng chỉ tạm cho app bản cũ, gỡ sau ~2026-10-21 (xem `implementation_plan.md`).
+
 **Bản đồ database → file rules** nằm ở mảng `firestore[]` trong `firebase.json` — nay chỉ còn `(default)` → `firestore.rules`.
 
 **Quy tắc bắt buộc:**

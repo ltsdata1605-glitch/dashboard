@@ -3,6 +3,7 @@ import { FieldValue, Timestamp, QueryDocumentSnapshot } from 'firebase-admin/fir
 import { db, auth } from './firebaseAdmin';
 import { notifyUser } from './notifications';
 import { effectiveRootClaims, mergeCustomClaims } from './claims';
+import { CLIENT_REGIONS } from './region';
 
 type Role = 'admin' | 'manager' | 'employee' | 'pending' | 'blocked';
 type Status = 'pending' | 'approved' | 'rejected' | 'new' | 'expired' | 'blocked';
@@ -28,7 +29,7 @@ interface AdminUpdateUserInput {
 // hồi (handleApproval) lẫn autosave từng ô (autoSave). firestore.rules chỉ
 // cho phép isSelf(uid) ghi users/{uid}, nên admin/manager sửa hồ sơ người
 // khác bắt buộc đi qua function này để được kiểm tra quyền ở server.
-export const adminUpdateUser = onCall(async (request) => {
+export const adminUpdateUser = onCall({ region: CLIENT_REGIONS }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
@@ -130,7 +131,7 @@ function serializeUserDoc(doc: QueryDocumentSnapshot): Record<string, unknown> {
 // cho manager — không thể bị bỏ qua như cách cũ. Giữ nguyên đúng 2 cặp query cũ (mode
 // pending/active x admin/manager, xem UserManagementView.tsx dòng ~164-174 bản cũ) để
 // không đổi hành vi hiển thị cho luồng hợp lệ.
-export const listManagedUsers = onCall(async (request) => {
+export const listManagedUsers = onCall({ region: CLIENT_REGIONS }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }

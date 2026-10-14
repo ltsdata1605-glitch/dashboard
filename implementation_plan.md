@@ -8246,3 +8246,22 @@ Mỹ, dev server); 2 máy cùng cấu hình. Máy MỚI mở app trước đây 
 bộ… lên Cloud (rồi máy khác chép đè xuống) — nay không ghi cấu hình nào. `chanGhiCloud()` chặn thêm `documents:commit` (transaction).
 Test thuần: `light-sync-plan`, `light-sync-hai-may` (2 máy, kể cả máy chưa nhận bản mới), `phan-ca-realtime`.
 Chưa xử lý (ngoài phạm vi): `bi-auto-sync-xong-dong-modal` "modal đóng ngay" đỏ sẵn trên main.
+
+## Chuyển Cloud Functions về Singapore (2026-10-14)
+
+Chủ dự án hỏi "đổi máy chủ sang Việt Nam được không". Google Cloud không có vùng ở Việt Nam; Firestore `(default)` vốn đã ở
+`asia-southeast1` (Singapore). Nhưng 14 hàm app gọi trực tiếp vẫn ở `us-central1` (Mỹ) → mỗi lần đăng nhập đi VN → Mỹ → Singapore
+(Firestore, `resolveSession` 2 lượt nối tiếp) → Mỹ → VN. Ước tính tiết kiệm ~0,5–1 s mỗi lần đăng nhập (chưa đo được từ VN).
+
+| File | Sửa |
+|---|---|
+| `functions/src/region.ts` (mới) | `CLIENT_REGIONS = ['asia-southeast1', 'us-central1']` — us-central1 TẠM giữ cho app bản cũ còn trong máy |
+| `functions/src/{session,admin,approvalSettings,stickerEvent,lineBotScope,gemini,pwaHandoff}.ts` | 14 hàm `onCall({ region: CLIENT_REGIONS, … })`. `demoteExpiredUsers` (chạy theo lịch) giữ nguyên — 2 vùng là chạy 2 lần |
+| `services/firebase.ts`, `features/sticker-event/firebase.ts`, `features/line-bot/services/lineBotFirestoreService.ts`, `auth-hosting/pwa-login.html` | `getFunctions(app, 'asia-southeast1')` |
+
+Đã deploy cả 2 vùng (`--force` vì `resolveSession` có `minInstances: 1` → tạm 2 bản luôn ấm, thêm vài USD/tháng tới khi gỡ bản Mỹ).
+Kiểm: gọi thử 6 hàm ở Singapore (401/400/200 đúng, CORS 204 cho dashboard.pro.vn); `tests/e2e/ham-may-chu-singapore.spec.ts` đăng nhập
+tài khoản thật → chỉ gọi `asia-southeast1/resolveSession`, vào app, 0 lỗi.
+
+**VIỆC CÒN LẠI (~2026-10-21):** bỏ `'us-central1'` khỏi `CLIENT_REGIONS`, `cd functions && npm run build`, deploy 14 hàm với `--force`
+(xoá bản ở Mỹ — báo chủ dự án 1 câu trước, theo CLAUDE.md 0.0). Trước khi xoá, xem log còn ai gọi us-central1 không.

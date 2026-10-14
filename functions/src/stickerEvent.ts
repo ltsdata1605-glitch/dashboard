@@ -2,6 +2,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue } from 'firebase-admin/firestore';
 import { auth, stickerDb } from './firebaseAdmin';
 import { mergeCustomClaims } from './claims';
+import { CLIENT_REGIONS } from './region';
 
 // Username dành riêng cho Super Admin — CHỈ còn là nhãn hiển thị/khoá tên, KHÔNG còn quyết định
 // quyền (audit 2026-10-07, S02: trước đây ai đăng ký username '21707'/'admin' là nhận ngay claim
@@ -49,7 +50,7 @@ async function setStickerClaims(uid: string, role: StickerClaimRole, storeId: st
 
 // Thay Login.tsx tự setDoc(role, storeId) do client chọn — server tự kiểm tra
 // điều kiện "kho đã có admin chưa" thay vì tin client đã kiểm tra đúng.
-export const stickerRegister = onCall(async (request) => withQuotaMessage(async () => {
+export const stickerRegister = onCall({ region: CLIENT_REGIONS }, async (request) => withQuotaMessage(async () => {
   const uid = request.auth?.uid;
   const email = request.auth?.token.email ?? null;
   if (!uid) {
@@ -208,7 +209,7 @@ const withQuotaMessage = async <T>(fn: () => Promise<T>): Promise<T> => {
   }
 };
 
-export const stickerResolveSession = onCall(async (request) => withQuotaMessage(async () => {
+export const stickerResolveSession = onCall({ region: CLIENT_REGIONS }, async (request) => withQuotaMessage(async () => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
@@ -256,7 +257,7 @@ interface StickerAdminUpdateInput {
 // trực tiếp từ client trước đây không hề kiểm tra target có cùng storeId với
 // admin gọi hay không (lỗ hổng cross-tenant). superadmin (claim, không phải
 // tự nhận ở client) mới được bỏ qua ràng buộc storeId.
-export const stickerAdminUpdateUser = onCall(async (request) => withQuotaMessage(async () => {
+export const stickerAdminUpdateUser = onCall({ region: CLIENT_REGIONS }, async (request) => withQuotaMessage(async () => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
@@ -361,7 +362,7 @@ export function assertStaffOnlyAccount(
   }
 }
 
-export const stickerStaffAuth = onCall(async (request) => withQuotaMessage(async () => {
+export const stickerStaffAuth = onCall({ region: CLIENT_REGIONS }, async (request) => withQuotaMessage(async () => {
   const { username, storeId, isLogin } = (request.data ?? {}) as StaffAuthInput;
 
   const cleanUsername = (username ?? '').trim();

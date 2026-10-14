@@ -1,5 +1,6 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import { CLIENT_REGIONS } from './region';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db, auth } from './firebaseAdmin';
 import { notifyAdminsAndManagers } from './notifications';
@@ -36,7 +37,7 @@ interface SessionProfile {
 // lúc chậm". Giữ 1 instance luôn chạy sẵn để loại bỏ hẳn cold-start cho hàm quan trọng nhất
 // trong đường găng khởi động (implementation_plan.md mục 40) — đánh đổi lấy chi phí Cloud
 // Run chạy liên tục, đã được người dùng đồng ý.
-export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
+export const resolveSession = onCall({ region: CLIENT_REGIONS, minInstances: 1 }, async (request) => {
   const uid = request.auth?.uid;
   const email = request.auth?.token.email ?? null;
   if (!uid) {
@@ -127,7 +128,7 @@ export const resolveSession = onCall({ minInstances: 1 }, async (request) => {
 import { getApprovalConfigFromDb } from './approvalSettings';
 
 // Thay thế contexts/AuthContext.tsx requestAccess() — hỗ trợ tự động duyệt theo cấu hình Super Admin / Quản lý
-export const requestAccess = onCall(async (request) => {
+export const requestAccess = onCall({ region: CLIENT_REGIONS }, async (request) => {
   const uid = request.auth?.uid;
   if (!uid) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập trước khi gửi yêu cầu truy cập.');

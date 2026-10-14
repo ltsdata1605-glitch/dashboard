@@ -96,7 +96,7 @@
   provider.setCustomParameters({ prompt: 'select_account' });
 
   // Đánh thức trước Cloud Function nhận phiên (khởi động nguội ~5 s) — chạy song song, lỗi thì kệ.
-  const warmUp = () => httpsCallable(getFunctions(app), 'pwaHandoffStore')({ warmup: true }).catch(() => {});
+  const warmUp = () => httpsCallable(getFunctions(app, 'asia-southeast1'), 'pwaHandoffStore')({ warmup: true }).catch(() => {});
 
   // Mở trang Google. Trước 2026-10-13 bước này BẮT người dùng bấm thêm 1 nút "Tiếp tục với Google" (bấm 2 lần mới tới
   // Google — chủ dự án quay video). signInWithRedirect là chuyển trang cấp cao nhất (không phải popup) nên Safari không
@@ -181,7 +181,7 @@
     $('lead').textContent = 'Đã nhận tài khoản ' + (result.user.email || '');
     say('Đang chuyển về ứng dụng…');
     try {
-      await httpsCallable(getFunctions(app), 'pwaHandoffStore')({
+      await httpsCallable(getFunctions(app, 'asia-southeast1'), 'pwaHandoffStore')({
         code,
         idToken: cred.idToken,
         accessToken: cred.accessToken || null

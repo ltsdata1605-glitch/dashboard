@@ -2,6 +2,7 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { createHash } from 'node:crypto';
 import { Timestamp } from 'firebase-admin/firestore';
 import { db, auth as adminAuth } from './firebaseAdmin';
+import { CLIENT_REGIONS } from './region';
 
 /**
  * Chuyển phiên đăng nhập Google vào app ở MÀN HÌNH CHÍNH iPhone (PWA standalone) — 2026-10-12.
@@ -28,7 +29,7 @@ const B64URL = /^[A-Za-z0-9_-]{43}$/; // 32 byte base64url, không padding
 const hashVerifier = (verifier: string): string =>
   createHash('sha256').update(verifier).digest('base64url');
 
-export const pwaHandoffStore = onCall(async (request) => {
+export const pwaHandoffStore = onCall({ region: CLIENT_REGIONS }, async (request) => {
   const { code, idToken, accessToken, warmup } = (request.data ?? {}) as {
     code?: string; idToken?: string; accessToken?: string; warmup?: boolean;
   };
@@ -75,7 +76,7 @@ export const pwaHandoffStore = onCall(async (request) => {
   return { ok: true };
 });
 
-export const pwaHandoffClaim = onCall(async (request) => {
+export const pwaHandoffClaim = onCall({ region: CLIENT_REGIONS }, async (request) => {
   const { verifier } = (request.data ?? {}) as { verifier?: string };
   if (typeof verifier !== 'string' || !B64URL.test(verifier)) {
     throw new HttpsError('invalid-argument', 'Mã chuyển phiên không hợp lệ.');

@@ -1,6 +1,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { db } from './firebaseAdmin';
+import { CLIENT_REGIONS } from './region';
 
 const SUPER_ADMIN_EMAIL = 'lts.truongson@gmail.com';
 
@@ -49,7 +50,7 @@ function isCallerSuperAdmin(request: Parameters<Parameters<typeof onCall>[0]>[0]
 /**
  * Lấy cấu hình phê duyệt tài khoản tự động
  */
-export const getApprovalSettings = onCall(async (request) => {
+export const getApprovalSettings = onCall({ region: CLIENT_REGIONS }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }
@@ -80,7 +81,7 @@ interface UpdateApprovalSettingsInput {
 /**
  * Cập nhật cấu hình phê duyệt tài khoản tự động
  */
-export const updateApprovalSettings = onCall(async (request) => {
+export const updateApprovalSettings = onCall({ region: CLIENT_REGIONS }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }

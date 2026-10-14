@@ -4,6 +4,7 @@ import { defineSecret } from 'firebase-functions/params';
 // container, request đầu tiên sau cold start không phải chờ nạp nữa (đo 2026-09-23: lượt gọi
 // đầu 24s, các lượt sau 5-7s).
 import { GoogleGenAI, Type } from '@google/genai';
+import { CLIENT_REGIONS } from './region';
 
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY');
 
@@ -52,7 +53,7 @@ function sanitizeForJson<T>(value: T): T {
   return value;
 }
 
-export const generateWithGemini = onCall({ secrets: [GEMINI_API_KEY], memory: '512MiB' }, async (request) => {
+export const generateWithGemini = onCall({ region: CLIENT_REGIONS, secrets: [GEMINI_API_KEY], memory: '512MiB' }, async (request) => {
   if (!request.auth) {
     throw new HttpsError('unauthenticated', 'Cần đăng nhập.');
   }

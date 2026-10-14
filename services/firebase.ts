@@ -21,7 +21,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app);
+// Singapore — cùng vùng Firestore, gần Việt Nam nhất (functions/src/region.ts). Trước 2026-10-14 mặc định us-central1 (Mỹ).
+const functions = getFunctions(app, 'asia-southeast1');
 
 // Google Analytics (lượt xem trang tự động): nạp SAU khi trang đã rảnh, gói riêng (GĐ2 tăng tốc 2026-10-11) — @firebase/analytics
 // + installations ~33 KB không cần cho lượt vẽ đầu. Trước đây import tĩnh ở đây nên luôn nằm trong gói firebase tải lúc mở app.

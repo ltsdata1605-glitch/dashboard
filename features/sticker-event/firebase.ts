@@ -81,5 +81,6 @@ export const db = initDb();
 // phan-ca) — Login.tsx đăng nhập/đăng ký NGAY TRÊN app riêng này (không mượn
 // session app khác), nên auth.currentUser của app này luôn đúng người dùng
 // thật, request gọi Cloud Function sẽ có Authorization header hợp lệ.
-export const functions = getFunctions(app);
+// Singapore — xem functions/src/region.ts.
+export const functions = getFunctions(app, 'asia-southeast1');
 
