@@ -31,6 +31,8 @@ export { ListGroup, ListRow } from './ListGroup';
 export type { ListGroupProps, ListRowProps, ListIconTone } from './ListGroup';
 export { ActionMenu } from './ActionMenu';
 export type { ActionMenuItem, ActionMenuProps } from './ActionMenu';
+export { CapsuleBar } from './CapsuleBar';
+export type { CapsuleBarProps, CapsuleItem } from './CapsuleBar';
 export { PageActionsProvider, usePageActions, useCurrentPageActions } from './PageActions';
 export type { PageActionsConfig, PagePrimaryAction } from './PageActions';
 export { usePresence } from './usePresence';

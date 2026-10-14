@@ -17,7 +17,7 @@ import {
 } from '../utils/dashboardHelpers';
 import { useWorker } from './useWorker';
 import { useReportBiAuth } from './useReportBiAuth';
-import { fetchAllowedSummaryLuyKeText, fetchAllowedCompetitionLuyKeData } from '../services/biDataService';
+import { subscribeAllowedBiLuyKe } from '../services/biDataService';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { parseBaseTargetQuyDoi } from '../services/employeeParser';
 import { getMonthProgress, extractDateFromData } from '../services/metricService';
@@ -48,28 +48,30 @@ export const useDashboardLogic = (isActive?: boolean) => {
     const [sharedCompetitionLuyKeBySupermarket, setSharedCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
     useEffect(() => {
         if (isActive === false || allowedKhos.length === 0) return;
+        // Realtime (2026-10-14): quản lý dán số mới ở máy khác → máy đang xem cập nhật ngay, không phải mở lại tab.
         let isMounted = true;
-        (async () => {
-            try {
-                const [text, competitionByKho, nameToKho] = await Promise.all([
-                    fetchAllowedSummaryLuyKeText(allowedKhos),
-                    fetchAllowedCompetitionLuyKeData(allowedKhos),
-                    fetchSupermarketMap(user?.uid),
-                ]);
-                if (!isMounted) return;
-                setSharedSummaryLuyKeText(text);
-                const khoToName: Record<string, string> = {};
-                Object.entries(nameToKho).forEach(([name, maKho]) => { khoToName[maKho] = name; });
-                const bySupermarketName: Record<string, SupermarketCompetitionData> = {};
-                Object.entries(competitionByKho).forEach(([maKho, data]) => {
-                    bySupermarketName[khoToName[maKho] || maKho] = data;
-                });
-                setSharedCompetitionLuyKeBySupermarket(bySupermarketName);
-            } catch (err) {
-                console.warn('[useDashboardLogic] Không thể tải dữ liệu BI dùng chung (chế độ offline/hạn chế quyền):', (err as any)?.message || err);
-            }
-        })();
-        return () => { isMounted = false; };
+        let khoToName: Record<string, string> = {};
+        let latest: { text: string; comp: Record<string, SupermarketCompetitionData> } | null = null;
+        const apDung = () => {
+            if (!isMounted || !latest) return;
+            setSharedSummaryLuyKeText(latest.text);
+            const bySupermarketName: Record<string, SupermarketCompetitionData> = {};
+            Object.entries(latest.comp).forEach(([maKho, data]) => {
+                bySupermarketName[khoToName[maKho] || maKho] = data;
+            });
+            setSharedCompetitionLuyKeBySupermarket(bySupermarketName);
+        };
+        fetchSupermarketMap(user?.uid).then(nameToKho => {
+            const m: Record<string, string> = {};
+            Object.entries(nameToKho).forEach(([name, maKho]) => { m[maKho] = name; });
+            khoToName = m;
+            apDung();
+        }).catch(() => { /* không có bảng map: hiện theo Mã Kho */ });
+        const unsub = subscribeAllowedBiLuyKe(allowedKhos, (text, comp) => {
+            latest = { text, comp };
+            apDung();
+        }, err => console.warn('[useDashboardLogic] Không thể nghe dữ liệu BI dùng chung (offline/hạn chế quyền):', (err as { message?: string })?.message || err));
+        return () => { isMounted = false; unsub(); };
     }, [allowedKhos.join(','), isActive, user?.uid]);
 
     const summaryLuyKe = localSummaryLuyKe || sharedSummaryLuyKeText;

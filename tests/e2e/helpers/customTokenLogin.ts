@@ -59,6 +59,12 @@ export const chanGhiCloud = async (page: Page) => {
         biChan.push(`Firestore/Write${docs.length ? ' ' + docs.join(',') : ''}${khoa.length && khoa[0] ? ' [' + khoa.join(';') + ']' : ''}`);
         return route.abort();
     });
+    // Transaction (vd đẩy cấu hình nhẹ theo từng khoá — services/lightSync.ts, 2026-10-14) KHÔNG đi kênh Write ở trên mà
+    // ghi qua REST `documents:commit` / `:batchWrite` → phải chặn riêng, kẻo ghi thật vào tài khoản test.
+    await page.context().route(/firestore\.googleapis\.com\/v1\/.*documents:(commit|batchWrite)/, route => {
+        biChan.push(`Firestore/${route.request().url().includes(':commit') ? 'commit' : 'batchWrite'}`);
+        return route.abort();
+    });
     await page.context().route(/cloudfunctions\.net\/|\.run\.app\//, route => {
         const ten = new URL(route.request().url()).pathname.split('/').filter(Boolean).pop() || '';
         // resolveSession: bắt buộc để vào app. listManagedUsers: chỉ đọc danh sách user cùng Kho.

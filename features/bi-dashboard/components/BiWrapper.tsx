@@ -11,6 +11,8 @@ import { Tabs } from '../../../components/shared/ui/Tabs';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 import { pruneOldBonusMonthlyKeys } from '../utils/bonusHistory';
 import { Button } from '../../../components/shared/ui/Button';
+import { CapsuleBar } from '../../../components/shared/ui/CapsuleBar';
+import { cn } from '../../../components/shared/ui/utils';
 import ErrorBoundary from '../../../components/shared/ui/ErrorBoundary';
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
@@ -319,18 +321,23 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 960px căn giữa, đệm ngang 32px ở desktop, KHÔNG đệm trên (bản cũ `lg:p-8` để 32px trống
                 giữa thanh tiêu đề app và tiêu đề "SIÊU THỊ" — chủ dự án yêu cầu bỏ 2026-09-21). Từng view
                 con đã có `pt-2` ở hàng tiêu đề riêng. Đổi khung này thì đổi cả 2 nơi kia cho khớp. */}
-            {isMobile && (
-                <div className="px-4 pt-3 pb-1 hide-on-export">
-                    <Tabs
-                        variant="segment"
-                        size="sm"
-                        fullWidth
-                        activeId={activeView}
-                        onChange={(id) => handleTabChange(id)}
-                        items={navigationLinks.map(t => ({ id: t.id, label: t.label }))}
-                    />
-                </div>
-            )}
+            {/* Mobile Topbar Capsule Navigation: đưa 3 chức năng lên thanh trên như hình 2 */}
+            <CapsuleBar
+                portalTargetId="mobile-topbar-actions"
+                enabled={mounted && isTabActive && isMobile}
+                ariaLabel="Phân hệ Report BI"
+                className="mr-1"
+                items={navigationLinks.map((tab) => ({
+                    id: tab.id,
+                    label: tab.label,
+                    icon: resolveIconName(tab.icon) ?? 'help',
+                    active: activeView === tab.id,
+                    onClick: () => handleTabChange(tab.id),
+                    iconClassName: activeView === tab.id
+                        ? (tab.id === 'employee' ? 'text-emerald-600 dark:text-emerald-400' : tab.id === 'updater' ? 'text-amber-600 dark:text-amber-400' : 'text-sky-600 dark:text-sky-400')
+                        : 'text-slate-500 dark:text-slate-400',
+                }))}
+            />
             <FontPickerSheet isOpen={moPhongChu} onClose={() => setMoPhongChu(false)} />
 
             <main data-bi-view={activeView} className="p-0 sm:px-4 sm:pb-4 lg:px-8 lg:pb-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">

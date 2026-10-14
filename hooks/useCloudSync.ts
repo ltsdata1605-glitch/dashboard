@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback, createElement } from 'react';
 import { AppIcon } from '../components/shared/ui/icon/AppIcon';
 import { useAuth } from '../contexts/AuthContext';
-import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQueued, isHeavyKeyInFlight, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
-import { getSettingsMatching, getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService/core';
+import { HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloudQueued, isHeavyKeyInFlight, restoreNestedArraysFromFirestore, assembleChunkedHeavyValue } from '../services/firestoreService';
+import { getSetting, saveSetting, saveSettingFromCloud } from '../services/dbService/core';
+import { rememberLightCloud, pullNewerLightKeys, pushNewerLightKeys } from '../services/lightSync';
+import { cloudKeyTime } from '../services/lightSyncPlan';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { toast } from '../components/shared/ui/toast';
@@ -70,14 +72,10 @@ export const useCloudSync = () => {
         clearSyncTimeout();
         
         try {
-            // Chỉ khoá thuộc bộ đồng bộ nhẹ (loại khoá lớn/tạm/riêng máy — giới hạn 1MB của Firestore).
-            // Đọc riêng đúng các khoá đó — không nạp giá trị khoá lớn (khoDataCache_*) rồi bỏ đi.
-            const settingsToSync = await getSettingsMatching(isLightSyncKey);
-
-            console.info(`[Cloud Sync] Đẩy cấu hình nhẹ lên Cloud (${Object.keys(settingsToSync).length} khoá).`);
-            await syncToCloud(user, {
-                settingsStoreBackup: settingsToSync
-            });
+            // CHỈ khoá máy này sửa mới hơn Cloud, mỗi khoá kèm mốc riêng (services/lightSyncPlan.ts) — trước 2026-10-14
+            // đẩy NGUYÊN bộ cấu hình, đè mất khoá máy khác vừa sửa.
+            const daDay = await pushNewerLightKeys(user);
+            if (daDay.length) console.info(`[Cloud Sync] Đẩy ${daDay.length} khoá cấu hình nhẹ lên Cloud: ${daDay.join(', ')}`);
             hasUnsavedChanges.current = false;
             setSyncState('synced');
             setLastSyncTime(new Date());
@@ -133,12 +131,12 @@ export const useCloudSync = () => {
                 // thuộc người dùng có mở tab Phân tích (nơi useDataManagement cũng làm việc này) hay không.
                 if (!(await getSetting<boolean>(LIGHT_CLOUD_PULLED_KEY))) {
                     const dauTien = snapshot.exists() ? snapshot.data() : undefined;
-                    const moc = dauTien?.updatedAt?.toMillis ? dauTien.updatedAt.toMillis() : 0;
+                    const dauTienState = rememberLightCloud(user.uid, dauTien);
                     const saoLuu = dauTien?.settingsStoreBackup as Record<string, unknown> | undefined;
                     if (saoLuu) {
                         console.warn('[Cloud Sync] Máy mới với tài khoản này — lấy cấu hình nhẹ từ Cloud về (listener).');
                         for (const [k, v] of Object.entries(saoLuu)) {
-                            if (isLightSyncKey(k)) await saveSettingFromCloud(k, v, moc);
+                            if (isLightSyncKey(k)) await saveSettingFromCloud(k, v, cloudKeyTime(dauTienState, k));
                         }
                     }
                     await saveSetting(LIGHT_CLOUD_PULLED_KEY, true);
@@ -150,32 +148,13 @@ export const useCloudSync = () => {
                     return;
                 }
                 if (!snapshot.exists()) return;
-                
-                // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
-                if (hasUnsavedChanges.current) {
-                    console.warn('[Cloud Sync] Real-time config: Skip syncing light settings because we have pending local changes.');
-                    return;
-                }
-                
-                const data = snapshot.data();
-                if (!data) return;
 
-                const cloudLastMod = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
-                if (!cloudLastMod) return;
-
-                const localLastMod = await getSetting<number>('localSettingsLastModified') || 0;
-
-                if (cloudLastMod > localLastMod) {
-                    console.warn(`[Cloud Sync] Real-time: Cloud has newer configuration document (${cloudLastMod} > ${localLastMod}). Updating light settings...`);
-                    const backup = data.settingsStoreBackup;
-                    if (backup) {
-                        for (const [k, v] of Object.entries(backup)) {
-                            if (isLightSyncKey(k)) { // bỏ khoá nặng, bộ đệm Kho, trạng thái riêng máy
-                                await saveSettingFromCloud(k, v, cloudLastMod);
-                            }
-                        }
-                    }
-                }
+                // So TỪNG khoá (services/lightSyncPlan.ts): lấy khoá Cloud mới hơn máy. Khoá máy đang sửa dở có mốc
+                // mới hơn nên tự được giữ — KHÔNG bỏ qua cả lượt như trước (bỏ qua là mất luôn thay đổi của máy khác,
+                // vì Firestore không bắn lại lượt đó).
+                const state = rememberLightCloud(user.uid, snapshot.data());
+                const daLay = await pullNewerLightKeys(state);
+                if (daLay.length) console.info(`[Cloud Sync] Real-time: lấy ${daLay.length} khoá cấu hình mới hơn từ máy khác: ${daLay.join(', ')}`);
             }, (err) => {
                 console.error('[Cloud Sync] Error in configuration listener:', err);
             });
@@ -345,6 +324,9 @@ export const useCloudSync = () => {
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('beforeunload', handleBeforeUnload);
+        // Có mạng lại: đẩy ngay thay đổi đang chờ (đẩy cấu hình nhẹ chạy trong transaction — mất mạng là lỗi chứ không
+        // tự xếp hàng như setDoc, nên phải tự thử lại).
+        window.addEventListener('online', syncIfChanged);
 
         // Periodic check every 15 minutes to save if there are unsaved changes
         const intervalId = window.setInterval(syncIfChanged, 15 * 60 * 1000);
@@ -356,6 +338,7 @@ export const useCloudSync = () => {
             window.removeEventListener('ycx-setting-changed', handleSettingChanged as EventListener);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('online', syncIfChanged);
             window.clearInterval(intervalId);
             clearSyncTimeout(); // Prevent memory leak when component unmounts
         };
