@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 describe('YCX Realtime & Luỹ kế Isolation Tests', () => {
-    it('Tampermonkey userscript @version matches SCRIPT_VERSION_FALLBACK (7.26)', () => {
+    it('Tampermonkey userscript @version matches SCRIPT_VERSION_FALLBACK (7.27)', () => {
         const scriptPath = path.resolve(__dirname, '../../public/scripts/mwg-auto-thu-thap-diem-thuong.user.js');
         const content = fs.readFileSync(scriptPath, 'utf8');
 
@@ -15,8 +15,8 @@ describe('YCX Realtime & Luỹ kế Isolation Tests', () => {
         expect(fallbackMatch).not.toBeNull();
         const fallbackVersion = fallbackMatch![1];
 
-        expect(headerVersion).toBe('7.26');
-        expect(fallbackVersion).toBe('7.26');
+        expect(headerVersion).toBe('7.27');
+        expect(fallbackVersion).toBe('7.27');
         expect(headerVersion).toBe(fallbackVersion);
     });
 

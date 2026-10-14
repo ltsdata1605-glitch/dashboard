@@ -274,6 +274,11 @@ jobs:
       - name: 'E2E: gd8-cong-tac-chung'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/gd8-cong-tac-chung.spec.ts --output=test-results/gd8-cong-tac-chung
+      # Userscript "⚡ Copy All" trên trang BI (2026-10-14): spec này KHÔNG nằm trong CI nên bản 7.24 lỡ xoá `let acpRunning`
+      # (nút nổi đứng im) mà 4 ngày không ai thấy. Nạp NGUYÊN userscript thật trên trang BI giả (page.route) — không cần dev server.
+      - name: 'E2E: click-plus-auto-toggle'
+        if: ${{ !cancelled() }}
+        run: npx playwright test tests/e2e/click-plus-auto-toggle.spec.ts --output=test-results/click-plus-auto-toggle
 
       # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
       # Kèm cả log dev server: nếu Vite chết giữa chừng thì mọi spec sau đó đỏ vì lý do CHUNG, và
