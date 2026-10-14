@@ -1,7 +1,9 @@
 import { doc, setDoc, runTransaction, FieldPath, serverTimestamp } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { db } from './firebase';
-import { getSettingsMatching, saveSettingFromCloud } from './dbService';
+// dbService/core, KHÔNG barrel ./dbService: file này nằm trong gói tải đầu (qua hooks/useCloudSync) — barrel kéo theo
+// dataUtils + constants (~33 KB), xem scripts/kiem-goi-tai-dau.cjs.
+import { getSettingsMatching, saveSettingFromCloud } from './dbService/core';
 import { isLightSyncKey } from '../utils/localDbScope';
 import { cloudKeyTime, docToLightState, planLightSync, type LightCloudState } from './lightSyncPlan';
 
