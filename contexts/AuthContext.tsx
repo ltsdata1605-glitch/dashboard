@@ -5,7 +5,7 @@ import type { Firestore } from 'firebase/firestore';
 import { clearAllLocalAppData, ensureLocalDataBelongsTo, setLocalDataOwner } from '../services/localDataOwner';
 import { auth, db, functions, loginWithGoogle as loginProvider, loginWithGoogleRedirect as loginRedirectProvider, checkRedirectLoginResult, hasPendingPwaHandoff, claimPwaHandoff, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
-import { initSyncListeners } from '../services/syncService';
+import { initSyncListeners, locCaiDatDongBoCu } from '../services/syncService';
 import { resolveSession, requestAccess as requestAccessApi } from '../services/sessionService';
 
 interface AuthContextType {
@@ -197,8 +197,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         try {
                             const settingsSnap = await getDoc(doc(db, 'users', currentUser.uid));
                             const settings = settingsSnap.exists() ? settingsSnap.data().settings : undefined;
-                            if (settings) {
-                                mergeSettings(settings).catch(e => console.warn('Sync merge failed:', e));
+                            // Chỉ các khoá đường cũ còn quản — cấu hình nhẹ/nặng đã có đường mới so mốc từng khoá;
+                            // ghi đè nguyên bộ ở đây từng làm bản cũ của máy khác đè bản mới (2026-10-14).
+                            const conLai = settings ? locCaiDatDongBoCu(settings) : {};
+                            if (Object.keys(conLai).length) {
+                                mergeSettings(conLai).catch(e => console.warn('Sync merge failed:', e));
                             }
                         } catch (e) {
                             console.warn('Đồng bộ cài đặt cá nhân thất bại (không ảnh hưởng app):', e);

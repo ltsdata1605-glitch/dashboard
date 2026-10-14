@@ -21,7 +21,7 @@
 
 import { db } from '../../../services/firebase';
 import {
-    doc, getDoc, writeBatch, serverTimestamp
+    doc, getDoc, writeBatch, serverTimestamp, onSnapshot
 } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { parseCompetitionDataBySupermarket, SupermarketCompetitionData, parseNumber, parseSummaryData, isEmployeeName, findMatchingSupermarketKey } from '../utils/dashboardHelpers';
@@ -231,4 +231,44 @@ export async function fetchAllowedCompetitionLuyKeData(allowedKhos: string[]): P
         result[maKho] = { headers: data.headers, programs: data.programs };
     }));
     return result;
+}
+
+/**
+ * Nghe REALTIME Luỹ kế dùng chung (Summary + Thi đua) của mọi Mã Kho được cấp quyền (2026-10-14).
+ * Trước đây chỉ đọc 1 lần lúc mở tab Report BI: quản lý dán số mới trên máy khác thì máy đang xem phải đóng/mở lại
+ * tab mới thấy. Gọi `onChange` lần đầu khi đã nhận đủ mọi doc, rồi mỗi khi có doc đổi. Cùng định dạng đầu ra với
+ * fetchAllowedSummaryLuyKeText / fetchAllowedCompetitionLuyKeData. Trả hàm huỷ.
+ */
+export function subscribeAllowedBiLuyKe(
+    allowedKhos: string[],
+    onChange: (summaryText: string, competitionByKho: Record<string, SupermarketCompetitionData>) => void,
+    onError?: (err: unknown) => void,
+): () => void {
+    if (allowedKhos.length === 0) { onChange('', {}); return () => {}; }
+    const summary: Record<string, SummaryLuyKeDoc | null | undefined> = {};
+    const competition: Record<string, CompetitionLuyKeDoc | null | undefined> = {};
+    const du = () => allowedKhos.every(k => summary[k] !== undefined && competition[k] !== undefined);
+    const phat = () => {
+        if (!du()) return;
+        let headerLine: string | null = null;
+        const dataLines: string[] = [];
+        for (const k of allowedKhos) {
+            const d = summary[k];
+            if (!d) continue;
+            if (!headerLine) headerLine = d.headerLine;
+            dataLines.push(d.dataLine);
+        }
+        const text = headerLine && dataLines.length ? [headerLine, ...dataLines, buildSyntheticTotalLine(headerLine, dataLines)].join('\n') : '';
+        const comp: Record<string, SupermarketCompetitionData> = {};
+        for (const k of allowedKhos) {
+            const d = competition[k];
+            if (d) comp[k] = { headers: d.headers, programs: d.programs };
+        }
+        onChange(text, comp);
+    };
+    const unsubs = allowedKhos.flatMap(maKho => [
+        onSnapshot(summaryDocRef(maKho), snap => { summary[maKho] = snap.exists() ? snap.data() as SummaryLuyKeDoc : null; phat(); }, err => onError?.(err)),
+        onSnapshot(competitionDocRef(maKho), snap => { competition[maKho] = snap.exists() ? snap.data() as CompetitionLuyKeDoc : null; phat(); }, err => onError?.(err)),
+    ]);
+    return () => unsubs.forEach(u => u());
 }

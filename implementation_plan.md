@@ -8225,3 +8225,24 @@ nhưng mất ~55 s, bấm 2 lần, chờ ~10 s ở "Đang đồng bộ phiên", 
 
 Test: `tests/e2e/dang-nhap-thiet-bi-moi.spec.ts` (mới), `tests/e2e/ios-pwa-dang-nhap.spec.ts` (cập nhật). Phần Google tự hỏi mã khoá/QR
 trên máy mới là của Google, app không điều khiển được.
+
+## Đồng bộ nhiều thiết bị — "mới nhất thắng" thật sự + realtime mọi khu vực (2026-10-14)
+
+Chủ dự án hỏi: đăng nhập ổn định chưa; đồng bộ giữa thiết bị đã tức thời, ưu tiên bản mới nhất chưa. Rà code + đo trên tài khoản
+thật (2 máy song song, chỉ đọc) tìm ra:
+
+| # | Lỗi | Sửa |
+|---|---|---|
+| 1 | Cấu hình nhẹ: mỗi máy đẩy NGUYÊN bộ `settingsStoreBackup`, so 1 mốc chung → A sửa X, B sửa Y thì B đè mất X của A. Listener bỏ qua CẢ lượt khi máy có thay đổi chờ (Firestore không bắn lại → mất luôn). | `services/lightSyncPlan.ts` (thuần) + `services/lightSync.ts`: mốc riêng `settingsMeta.<khoá>`; chỉ đẩy khoá máy mới hơn, trong **transaction** (máy chưa kịp nhận bản mới vẫn không đè được); ghi theo đường dẫn field (thay nguyên giá trị). Kéo theo từng khoá. Mất mạng → tự đẩy lại khi có mạng. |
+| 2 | Đường đồng bộ CŨ `services/syncService.ts` (users/{uid}.settings) chạy song song: mỗi lần ẩn app đẩy MỌI cài đặt, lúc đăng nhập chép đè NGUYÊN bộ xuống máy, không mốc → máy ẩn app sau cùng thắng dù cũ; còn chép cả trạng thái riêng từng máy (tab đang mở, chế độ xem). | Chỉ còn lo khoá đường mới không quản (`laKhoaDongBoCu`: salesFilesRegistry, sticker*, summary-/competition- gốc…), bỏ khoá riêng máy, không ghi khi không đổi. |
+| 3 | Dữ liệu bán hàng/Kho: listener realtime đến đúng lúc đang đồng bộ dở bị BỎ (chờ lượt poll 20 s). Poll 20 s đọc lại cả danh sách file Kho (~4.300 lượt đọc/máy/ngày). | `pendingResyncRef`: chạy lại ngay sau lượt đang chạy. Poll dự phòng 3 phút (listener lo tức thì). |
+| 4 | Phân Ca KHÔNG realtime: chỉ lấy Cloud lúc mở tab; 2 máy cùng mở thì lần sửa kế tiếp của máy kia đẩy bản cũ đè bản mới. | `subscribeScheduleDoc` cho 10 khoá đang xem; áp khi máy không có sửa chưa đẩy (`quyetDinhNhanTuCloud`). |
+| 5 | Report BI: Luỹ kế dùng chung (biData/{maKho}) chỉ đọc lúc mở tab. | `subscribeAllowedBiLuyKe` (onSnapshot) khi tab đang hiện. |
+| 6 | Màn Cài đặt gọi `getApprovalSettings` cả khi chưa đăng nhập/Dùng thử → log máy chủ đầy cảnh báo. | Bỏ gọi khi `!user || isDemoMode`. |
+| 7 | Trang auth tải 3 thư viện Firebase nối đuôi. | `modulepreload` song song. |
+
+Đo trên tài khoản thật (`tests/e2e/dong-bo-hai-may-du-lieu-that.spec.ts`, laptop + iPhone cùng lúc): vào app 8,2 s / 11 s (từ máy chủ
+Mỹ, dev server); 2 máy cùng cấu hình. Máy MỚI mở app trước đây định ghi `settings.active_tab`, `sidebar_collapsed`, bộ lọc, lịch tự đồng
+bộ… lên Cloud (rồi máy khác chép đè xuống) — nay không ghi cấu hình nào. `chanGhiCloud()` chặn thêm `documents:commit` (transaction).
+Test thuần: `light-sync-plan`, `light-sync-hai-may` (2 máy, kể cả máy chưa nhận bản mới), `phan-ca-realtime`.
+Chưa xử lý (ngoài phạm vi): `bi-auto-sync-xong-dong-modal` "modal đóng ngay" đỏ sẵn trên main.

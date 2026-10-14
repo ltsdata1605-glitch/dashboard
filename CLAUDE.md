@@ -200,6 +200,10 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
   người bấm. Kho dùng chung cũ `YCX_KHAI_THAC_DB` được chuyển về chủ máy trước khi bị dọn.
   Mọi kho riêng theo tài khoản phải được `isPerAccountDbName()` nhận ra — nếu không, bước liệt kê
   database của `clearAllLocalAppData` sẽ xoá chúng.
+- 🔴 **Đồng bộ giữa thiết bị = mới nhất thắng theo TỪNG khoá** (2026-10-14): cấu hình nhẹ đẩy/kéo qua `services/lightSync.ts`
+  (mốc `settingsMeta.<khoá>`, đẩy trong transaction, chỉ khoá máy mới hơn). CẤM đẩy nguyên bộ cài đặt hay chép đè nguyên bộ xuống máy
+  không so mốc. `services/syncService.ts` (users/{uid}.settings) chỉ còn lo vài khoá đường mới không quản (`laKhoaDongBoCu`). Dữ liệu
+  hiển thị trên nhiều máy phải có listener realtime (`onSnapshot`), không chỉ đọc lúc mở tab. Đo: `tests/e2e/dong-bo-hai-may-du-lieu-that.spec.ts`.
 - Các kho còn lại (`ScheduleAppDB`, `TaxCalculatorDB`, `ProductSearchDB`, `keyval-store`) VẪN dùng
   chung → vẫn bị **xoá sạch khi đổi tài khoản** (`clearAllLocalAppData`) — đều có bản trên cloud hoặc
   nhập lại được. Thêm kho mới mà quên khai vào `APP_DATABASES` là để lại dữ liệu người cũ ở khu đó;

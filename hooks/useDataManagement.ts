@@ -108,6 +108,18 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
     const latestActiveSalesMetaRef = useRef<{ savedAt: number; fileLastModified: number } | null>(null);
     const isCloudSyncingRef = useRef(false);
+    // Có cập nhật Cloud (listener realtime / thức dậy / poll) đến ĐÚNG LÚC đang đồng bộ dở: trước 2026-10-14 lượt đó bị
+    // bỏ luôn (Firestore không bắn lại) → máy chỉ thấy dữ liệu mới ở lượt kiểm tra kế tiếp. Nay ghi nhớ rồi chạy lại 1 lần
+    // ngay khi lượt đang chạy xong.
+    const pendingResyncRef = useRef(false);
+    const triggerCloudSyncRef = useRef<((notify?: boolean) => void) | null>(null);
+    const releaseCloudSyncLock = () => {
+        isCloudSyncingRef.current = false;
+        if (pendingResyncRef.current) {
+            pendingResyncRef.current = false;
+            setTimeout(() => triggerCloudSyncRef.current?.(false), 0);
+        }
+    };
 
     const applyCloudSalesData = useCallback(async (cloudData: DataRow[], cloudMeta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean }) => {
         try {
@@ -393,23 +405,35 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                 // (cần .toMillis()) — 2 lỗi cộng dồn khiến cloudLastMod LUÔN = 0, mọi thiết bị có
                                 // localLastMod > 0 (đã từng đổi setting) đều force-push đè cấu hình cloud mới hơn.
                                 const cloudLastMod = cloudData?.updatedAt?.toMillis ? cloudData.updatedAt.toMillis() : 0;
-                                const backup = cloudData?.settingsStoreBackup;
+                                const backup = cloudData?.settingsStoreBackup as Record<string, unknown> | undefined;
                                 const hanhDong = decideLightSync({ cloudReadFailed: loiTaiCauHinhNhe, hasCloudDoc: !!cloudData, hasBackup: !!backup, cloudLastMod, localLastMod, pulledBefore });
+                                const { rememberLightCloud, pullNewerLightKeys } = await import('../services/lightSync');
+                                const { cloudKeyTime } = await import('../services/lightSyncPlan');
+                                const cloudState = loiTaiCauHinhNhe ? null : rememberLightCloud(user.uid, cloudData);
 
-                                if (hanhDong === 'push') {
-                                    console.warn('[Cloud Sync] Cấu hình nhẹ local mới hơn Cloud. Đang chuẩn bị đồng bộ lên...');
-                                    forcePushLight = true;
-                                } else if (hanhDong === 'pull' && backup) {
-                                    if (!pulledBefore) console.warn('[Cloud Sync] Máy mới với tài khoản này — lấy cấu hình nhẹ từ Cloud về.');
-                                    await Promise.all(Object.entries(backup).map(([k, v]) =>
-                                        isLightSyncKey(k) /* bỏ khoá nặng, bộ đệm Kho, trạng thái riêng máy */
-                                            ? dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error)
-                                            : undefined));
-                                    if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
-                                    if (backup.warehouseDTThucTargets) setWarehouseDTThucTargets(backup.warehouseDTThucTargets as Record<string, number>);
-                                    if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
-                                    if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
-                                    if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
+                                let khoaDaLay: string[] = [];
+                                if (hanhDong === 'none' || !cloudState) {
+                                    // đọc lỗi / chưa kéo lần nào mà Cloud trống — không làm gì
+                                } else if (!pulledBefore && backup) {
+                                    // Máy mới với tài khoản này: Cloud thắng toàn bộ (giá trị trên máy chỉ là mặc định lúc khởi động).
+                                    console.warn('[Cloud Sync] Máy mới với tài khoản này — lấy cấu hình nhẹ từ Cloud về.');
+                                    khoaDaLay = Object.keys(backup).filter(k => isLightSyncKey(k));
+                                    await Promise.all(khoaDaLay.map(k =>
+                                        dbService.saveSettingFromCloud(k, backup[k], cloudKeyTime(cloudState, k)).catch(console.error)));
+                                } else {
+                                    // Đã từng đồng bộ: so TỪNG khoá (services/lightSyncPlan.ts). Trước 2026-10-14 so 1 mốc chung rồi
+                                    // lấy/đẩy NGUYÊN bộ — đẩy là đè mất khoá máy khác vừa sửa.
+                                    khoaDaLay = await pullNewerLightKeys(cloudState);
+                                    forcePushLight = true; // useCloudSync chỉ đẩy khoá máy này mới hơn (nếu có)
+                                }
+                                if (!cloudData && !loiTaiCauHinhNhe) forcePushLight = true; // tài khoản chưa có doc cấu hình
+                                if (khoaDaLay.length && backup) {
+                                    const lay = new Set(khoaDaLay);
+                                    if (lay.has('warehouseTargets') && backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets as typeof warehouseTargets);
+                                    if (lay.has('warehouseDTThucTargets') && backup.warehouseDTThucTargets) setWarehouseDTThucTargets(backup.warehouseDTThucTargets as Record<string, number>);
+                                    if (lay.has('gtdhTargets') && backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets as typeof gtdhTargets);
+                                    if (lay.has('kpiTargets') && backup.kpiTargets) setKpiTargets(backup.kpiTargets as typeof kpiTargets);
+                                    if (lay.has('kpiCardConfig') && backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig as typeof kpiCardsConfig);
                                 }
                                 // Đánh dấu khi ĐÃ đọc được Cloud (có doc hoặc chắc chắn chưa có); lỗi mạng → lần sau
                                 // thử lại. Khoá `cached_` nên không kích hoạt đồng bộ và không bị đẩy lên Cloud.
@@ -519,7 +543,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             // Tự động nạp dữ liệu đám mây mới hơn ngay lập tức (không cần bấm xác nhận)
                             if (cloudMeta.savedAt > localSavedAt + 5000) {
                                 console.warn(`[CloudData] Cloud data is newer (cloud: ${new Date(cloudMeta.savedAt).toLocaleString()}, local: ${new Date(localSavedAt).toLocaleString()})`);
-                                if (isCloudSyncingRef.current) return;
+                                if (isCloudSyncingRef.current) { pendingResyncRef.current = true; return; }
                                 isCloudSyncingRef.current = true;
                                 try {
                                     const cloudResult = await downloadProcessedData(user, cloudMeta);
@@ -527,7 +551,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                         await applyCloudSalesData(cloudResult.data, cloudResult.meta);
                                     }
                                 } finally {
-                                    isCloudSyncingRef.current = false;
+                                    releaseCloudSyncLock();
                                 }
                             }
                         } catch (e: unknown) {
@@ -716,7 +740,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 return;
             }
 
-            if (isCloudSyncingRef.current) return;
+            if (isCloudSyncingRef.current) { pendingResyncRef.current = true; return; }
             isCloudSyncingRef.current = true;
 
             try {
@@ -729,7 +753,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             } catch (err) {
                 console.warn('[CloudData] Tự động đồng bộ realtime thất bại:', err);
             } finally {
-                isCloudSyncingRef.current = false;
+                releaseCloudSyncLock();
             }
         }, (err) => {
             console.warn('[CloudData] Lỗi onSnapshot salesData/meta:', err);
@@ -750,7 +774,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             if (notifyIfUpToDate) toast.info('Vui lòng đăng nhập để đồng bộ dữ liệu.');
             return;
         }
-        if (isCloudSyncingRef.current) return;
+        if (isCloudSyncingRef.current) { pendingResyncRef.current = true; return; }
         isCloudSyncingRef.current = true;
         setIsSyncingCloud(true);
 
@@ -832,10 +856,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             console.error('[CloudSync] Lỗi đồng bộ đám mây:', err);
             if (notifyIfUpToDate) toast.error('Không thể kiểm tra dữ liệu đám mây: ' + getErrorMessage(err), { id: 'cloud-check-toast' });
         } finally {
-            isCloudSyncingRef.current = false;
+            releaseCloudSyncLock();
             setIsSyncingCloud(false);
         }
     }, [user, isDemoMode, departmentId, applyCloudSalesData, setOriginalData, setAppState]);
+    triggerCloudSyncRef.current = triggerCloudSync;
 
     // Realtime Kho Data Listener — Tự động nhận diện và kéo dữ liệu mới nhất tức thì khi Quản lý tải lên Kho
     useEffect(() => {
@@ -855,9 +880,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     if (snapshot.metadata.hasPendingWrites) return;
                     if (snapshot.empty) return;
 
-                    // Ngay khi có cập nhật trong Kho, đồng bộ xuống mobile tức thì
+                    // Ngay khi có cập nhật trong Kho, đồng bộ xuống mobile tức thì (đang đồng bộ dở → chạy lại ngay sau đó)
                     if (!isCloudSyncingRef.current) {
                         triggerCloudSync(false);
+                    } else {
+                        pendingResyncRef.current = true;
                     }
                 }, (err) => {
                     console.warn(`[Realtime Kho] Lỗi listener Kho ${maKho}:`, err);
@@ -885,12 +912,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             }
         }, 50);
 
-        // 2. Cờ chạy ngầm: Tự động kiểm tra Firebase mỗi 20 giây khi tab đang hoạt động
+        // 2. Lưới an toàn: cập nhật TỨC THÌ đã do listener realtime (salesData/meta, khoData/*/salesFiles) lo; lượt
+        // kiểm tra định kỳ chỉ để phòng listener rớt. Trước 2026-10-14 chạy mỗi 20 giây, mỗi lượt đọc lại cả danh sách file
+        // Kho (~4.300 lượt đọc/máy/ngày mở app) mà không nhanh hơn listener. Nay 3 phút.
         const backgroundInterval = setInterval(() => {
             if (document.visibilityState === 'visible' && user && !isDemoMode && !isCloudSyncingRef.current) {
                 triggerCloudSync(false);
             }
-        }, 20000);
+        }, 3 * 60 * 1000);
 
         const handleWakeAndSync = () => {
             if (document.visibilityState === 'visible') {

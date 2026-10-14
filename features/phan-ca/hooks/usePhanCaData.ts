@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { toast } from '../../../components/shared/ui/toast';
 import * as idb from '../db/idb';
 import { useAuth } from '../../../contexts/AuthContext';
-import { syncScheduleToCloud, fetchScheduleFromCloud } from '../services/firestoreSync';
+import { syncScheduleToCloud, fetchScheduleFromCloud, subscribeScheduleDoc, quyetDinhNhanTuCloud } from '../services/firestoreSync';
 import {
   StaffMember,
   SchedulingRules,
@@ -35,6 +35,8 @@ export function usePhanCaData() {
   // nhanh) bị bỏ.
   const hydratedScopeRef = useRef<string>('');
   const requestedScopeRef = useRef<string>('');
+  // Bản state của hydratedScopeRef — để listener realtime gắn lại khi nạp xong phạm vi mới (ref không kích hoạt effect).
+  const [hydratedScope, setHydratedScope] = useState('');
 
   const [monthYear, setMonthYear] = useState<string>(getDefaultMonthYear());
   const [startDay, setStartDay] = useState<number>(1);
@@ -208,6 +210,7 @@ export function usePhanCaData() {
       setStaffList(savedSchedule);
       setBusySchedule(savedBusySchedule);
       hydratedScopeRef.current = scope;
+      setHydratedScope(scope);
       setIsDataLoadedForSupermarket(true);
     };
     loadSupermarketData();
@@ -307,6 +310,51 @@ export function usePhanCaData() {
     }, 3000);
     return () => clearTimeout(timer);
   }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, sbhGenderBoost, currentSupermarket, getKey, unresolvedConflicts, user, db, supermarkets]);
+
+  // Realtime giữa các thiết bị (2026-10-14). Trước đây Phân Ca chỉ lấy Cloud lúc mở tab: 2 máy cùng mở thì máy kia
+  // không thấy thay đổi, và lần sửa kế tiếp của máy kia đẩy NGUYÊN khoá (bản cũ) đè mất bản mới. Nay mỗi khoá đang xem
+  // được nghe realtime; áp bản Cloud khi máy không có sửa chưa đẩy (quy tắc: services/firestoreSync.ts → quyetDinhNhanTuCloud).
+  // `uiState` (tháng/siêu thị đang xem) là trạng thái riêng từng máy — không nghe.
+  const realtimeRef = useRef<Record<string, { value: unknown; set: (v: never) => void }>>({});
+  useEffect(() => {
+    realtimeRef.current = {
+      meta_supermarkets: { value: supermarkets, set: setSupermarkets as (v: never) => void },
+      [getKey('nams')]: { value: nams, set: setNams as (v: never) => void },
+      [getKey('nus')]: { value: nus, set: setNus as (v: never) => void },
+      [getKey('rules')]: { value: rules, set: setRules as (v: never) => void },
+      [getKey('departmentPatterns')]: { value: departmentPatterns, set: setDepartmentPatterns as (v: never) => void },
+      [getKey('dailyRequirements')]: { value: dailyRequirements, set: setDailyRequirements as (v: never) => void },
+      [getKey('shiftDefinitions')]: { value: shiftDefinitions, set: setShiftDefinitions as (v: never) => void },
+      [getKey(`schedule-${monthYear}`)]: { value: staffList, set: setStaffList as (v: never) => void },
+      [getKey(`history-${monthYear}`)]: { value: scheduleHistory, set: setScheduleHistory as (v: never) => void },
+      [getKey(`busySchedule-${monthYear}`)]: { value: busySchedule, set: setBusySchedule as (v: never) => void },
+      [getKey(`unresolved-${monthYear}`)]: { value: unresolvedConflicts, set: setUnresolvedConflicts as (v: never) => void },
+    };
+  });
+  useEffect(() => {
+    if (!user || !db || !isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket) return;
+    const scope = `${currentSupermarket}|${monthYear}`;
+    if (hydratedScope !== scope) return;
+    const keys = [
+      'meta_supermarkets', getKey('nams'), getKey('nus'), getKey('rules'), getKey('departmentPatterns'),
+      getKey('dailyRequirements'), getKey('shiftDefinitions'), getKey(`schedule-${monthYear}`),
+      getKey(`history-${monthYear}`), getKey(`busySchedule-${monthYear}`), getKey(`unresolved-${monthYear}`),
+    ];
+    const unsubs = keys.map(key => subscribeScheduleDoc(db, user, key, (data, updatedAt) => {
+      if (hydratedScopeRef.current !== scope || isImportingRef.current) return;
+      const muc = realtimeRef.current[key];
+      if (!muc) return;
+      const cloud = JSON.stringify(data);
+      const trenMay = JSON.stringify(muc.value);
+      if (cloud === trenMay) { lastSyncedRef.current[key] = cloud; return; }
+      if (quyetDinhNhanTuCloud({ cloud, daDongBo: lastSyncedRef.current[key], trenMay }) !== 'ap') return;
+      lastSyncedRef.current[key] = cloud; // để lượt tự đẩy không đẩy ngược bản vừa nhận
+      muc.set(data as never);
+      idb.saveData(key, data, updatedAt || Date.now()).catch(console.error);
+      toast.info('Đã cập nhật Phân ca mới nhất từ thiết bị khác', { id: 'phanca-realtime', duration: 2500 });
+    }));
+    return () => unsubs.forEach(u => u());
+  }, [user, db, isDbLoaded, isDataLoadedForSupermarket, currentSupermarket, monthYear, getKey, hydratedScope]);
 
   useEffect(() => {
     if (monthYear) {

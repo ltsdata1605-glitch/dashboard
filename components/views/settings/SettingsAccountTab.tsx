@@ -49,11 +49,13 @@ export const SettingsAccountTab: React.FC = () => {
     const [autoApproveEmployeesEnabled, setAutoApproveEmployeesEnabled] = useState(true);
 
     useEffect(() => {
+        // Chưa đăng nhập / Dùng thử: hàm máy chủ chỉ trả lỗi "cần đăng nhập" (log đầy cảnh báo) — dùng mặc định.
+        if (!user || isDemoMode) return;
         getApprovalSettings(departmentId).then(cfg => {
             setAutoApproveManagersEnabled(Boolean(cfg.autoApproveManagers));
             setAutoApproveEmployeesEnabled(cfg.effectiveAutoApproveForDept !== false);
         }).catch(err => console.warn('Lỗi đọc cấu hình duyệt:', err));
-    }, [departmentId]);
+    }, [departmentId, user, isDemoMode]);
     // Hộp xác nhận "xoá toàn bộ dữ liệu" (tự dựng — audit A34): hành vi modal chuẩn; không đóng khi đang xoá.
 
     // "Xoá tất cả dữ liệu" xoá kèm báo cáo Luỹ kế & Thi đua DÙNG CHUNG của Kho — CHỈ khi là quản lý,
