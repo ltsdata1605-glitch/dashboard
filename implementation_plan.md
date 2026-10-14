@@ -8277,6 +8277,14 @@ Vòng quay "Đang tải biểu mẫu phân tích…" khi chuyển tab: 4/9 lư�
 modal đóng của DashboardView (đang tải nối đuôi 1,4–2,4 s) tới sau nội dung đầu — **không đổi** (4,42 → 4,53 s, trong nhiễu) nên bỏ.
 Muốn nhanh hơn phải sửa thứ tự khởi động của `useDataManagement` — việc riêng, cần chủ dự án duyệt.
 
+**Gộp main lần 2** (4 commit mới: đồng bộ "mới nhất thắng" + CapsuleBar): `services/lightSync.ts` (mới, nằm trong gói tải đầu qua
+`useCloudSync`) import barrel `services/dbService` → kéo lại dataUtils — đổi sang `dbService/core` (ngân sách bắt được ngay: 337 → 326,7 KB).
+CI main đỏ từ `d7720ef` (run 372) ở 2 chỗ: `CapsuleBar` huy hiệu `text-[10px]` (ratchet tinyText) → 11px (đã chụp kiểm); `khung-app-gd4`
+còn chờ khe `#mobile-topbar-actions` TRỐNG trong khi chủ dự án chủ động đưa 3 phân hệ Report BI lên CapsuleBar ở thanh trên → test
+khoá thiết kế mới (đủ 3 nút có tên, mỗi nút ≥ 44, bấm đổi được phân hệ). Deploy `index-CMdEjelV.js` · SW `e74f36a26421` · userscript
+7.27; kiểm trên dashboard.pro.vn: 0 vi phạm CSP, 0 vòng quay khi chuyển 3 tab. *Ghi nhận (có từ trước, chưa sửa)*: chế độ Dùng thử in
+"Load total visits error: permission-denied" (`hooks/useSystemTraffic.ts` đọc `_system/stats` khi chưa đăng nhập — rules chặn, đã bắt lỗi).
+
 ## Đồng bộ nhiều thiết bị — "mới nhất thắng" thật sự + realtime mọi khu vực (2026-10-14)
 
 Chủ dự án hỏi: đăng nhập ổn định chưa; đồng bộ giữa thiết bị đã tức thời, ưu tiên bản mới nhất chưa. Rà code + đo trên tài khoản
