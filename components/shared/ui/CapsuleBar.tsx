@@ -122,7 +122,7 @@ export const CapsuleBar: React.FC<CapsuleBarProps> = ({
                         )}
                         <span className="sr-only">{item.label}</span>
                         {item.badge !== undefined && item.badge !== null && (
-                            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center leading-none pointer-events-none shadow-xs">
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[11px] font-bold flex items-center justify-center leading-none pointer-events-none shadow-xs">
                                 {item.badge}
                             </span>
                         )}
