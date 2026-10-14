@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.26
+// @version      7.27
 // @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
@@ -32,6 +32,11 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.27 — NÚT ⚡ COPY ALL HOẠT ĐỘNG LẠI (2026-10-14):
+ * - Khôi phục khai báo `let acpRunning = false;` bị xoá nhầm ở bản 7.24. Thiếu nó, chế độ 'use strict' ném
+ *   "acpRunning is not defined" mỗi lần bấm nút nổi và mỗi giây (bộ đếm dấu [+]) → bấm ⚡ Copy All không có phản ứng gì,
+ *   không tự bật Trả góp / DT quy đổi, không mở dòng, không copy. Khoá bằng tests/e2e/click-plus-auto-toggle.spec.ts (nay chạy trong CI).
+ *
  * BẢN 7.26 — KHẮC PHỤC TRIỆT ĐỂ LỖI YCX REALTIME NHẬN NHẦM TỆP LUỸ KẾ VỪA XUẤT TRƯỚC ĐÓ (2026-10-12):
  * - Sửa lỗi ycxWaitFile nhận nhầm tệp vừa xuất trước đó trong Lịch sử xuất excel (do mốc cho phép 120s quá rộng):
  *   + Siết chặt điều kiện thời gian: chỉ chấp nhận dòng bắt đầu sau thời điểm bấm xuất (sai số tối đa 10s).
@@ -559,7 +564,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.26';
+  const SCRIPT_VERSION_FALLBACK = '7.27';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -1629,6 +1634,10 @@
     '[aria-busy="true"]:not([role="progressbar"])',
     '.el-loading-mask:not([style*="display: none"])',
   ].join(', ');
+
+  // Cờ chống bấm chồng của nút ⚡ Copy All. BẢN 7.27: khai báo này lỡ bị xoá ở bản 7.24 (khi viết lại acpIsVisible ngay dưới)
+  // → 'use strict' ném ReferenceError mỗi lần bấm và mỗi nhịp đếm 1 giây của initBiPage — nút nổi đứng im ở mọi trang BI.
+  let acpRunning = false;
 
   function acpIsVisible(el) {
     if (!el) return false;

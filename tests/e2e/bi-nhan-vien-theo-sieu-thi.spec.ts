@@ -1,9 +1,11 @@
 import { expect, test } from '@playwright/test';
 
 /**
- * MỖI SIÊU THỊ CÓ DANH SÁCH NHÂN VIÊN RIÊNG (chủ dự án chốt 2026-09-23).
- * Trước đây mọi tab siêu thị đều hiện cùng một số "19 NV" vì lấy trọn danh sách Phân Tích.
- * Nay: giao giữa báo cáo "Luỹ kế doanh thu nhân viên" của chính siêu thị đó và danh sách Phân Tích.
+ * DANH SÁCH NHÂN VIÊN CHỈ LẤY TỪ BÁO CÁO PHÂN TÍCH (file YCX) — chủ dự án chốt lại 2026-10-10 (f0a5558,
+ * features/bi-dashboard/services/employeeParser.ts: "🔴 KHÔNG lấy hoặc lọc theo Dữ liệu Luỹ Kế Doanh Thu").
+ * Quy tắc cũ 2026-09-23 (giao với báo cáo luỹ kế của từng siêu thị) ĐÃ BỎ — test cũ còn chờ "2 NV" nên đỏ từ đó (GĐ9 viết lại).
+ * Khoá hành vi hiện hành: báo cáo luỹ kế (có cả người siêu thị khác) KHÔNG lọc bớt ai; mỗi siêu thị khác nhau nhờ danh sách
+ * NHÂN VIÊN ẨN riêng của siêu thị đó (`hidden-employees-<tên>`).
  */
 const ANALYSIS = {
     updatedAt: Date.now(),
@@ -29,7 +31,7 @@ const LUYKE_B = [
     '901 - Người Siêu Thị Khác\t4,000,000\t40',
 ].join('\n');
 
-test('hai siêu thị có số nhân viên khác nhau theo đúng báo cáo luỹ kế của từng nơi', async ({ page }) => {
+test('số nhân viên theo danh sách Phân Tích, luỹ kế không lọc; nhân viên ẩn tính riêng từng siêu thị', async ({ page }) => {
     await page.goto('/?tab=employees');
     await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
     await page.waitForTimeout(2500);
@@ -49,6 +51,8 @@ test('hai siêu thị có số nhân viên khác nhau theo đúng báo cáo lu�
             store.put(analysis, 'bi_analysis-employees-list');
             store.put(luyKeA, 'bi_config-Tân Hiệp-danhsach');
             store.put(luyKeB, 'bi_config-Thạnh An-danhsach');
+            // Thạnh An ẩn 1 người (vd đã chuyển đi) — chỉ siêu thị này bớt, Tân Hiệp giữ nguyên.
+            store.put(['101 - Nguyễn Văn A'], 'bi_hidden-employees-Thạnh An');
             tx.oncomplete = () => res();
             tx.onerror = () => rej(tx.error);
         });
@@ -80,7 +84,9 @@ test('hai siêu thị có số nhân viên khác nhau theo đúng báo cáo lu�
     const thanhAn = await readCount('Thạnh An');
     console.log('SỐ NV — Tân Hiệp:', tanHiep, '| Thạnh An:', thanhAn);
 
-    expect(tanHiep).toBe('2 NV'); // 101 + 102 (bỏ người lạ 900)
-    expect(thanhAn).toBe('1 NV'); // chỉ 103 (bỏ người lạ 901)
+    // Tân Hiệp: đủ 4 người của danh sách Phân Tích — báo cáo luỹ kế chỉ có 101, 102 (+ người lạ 900) nhưng KHÔNG dùng để lọc.
+    expect(tanHiep).toBe('4 NV');
+    // Thạnh An: 4 − 1 người ẩn riêng của siêu thị này.
+    expect(thanhAn).toBe('3 NV');
     await page.screenshot({ path: 'test-results/bi-nv-theo-sieu-thi.png', fullPage: true });
 });
