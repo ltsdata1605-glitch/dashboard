@@ -47,6 +47,24 @@ export const lineMessagingService = {
         }
     },
 
+    /**
+     * Hạn mức tin nhắn LINE của bot trong tháng (2026-10-15): tin PUSH vào nhóm tính theo SỐ THÀNH VIÊN nhóm; hết hạn mức thì
+     * LINE từ chối mọi tin hẹn giờ/gửi ngay tới ngày 1 tháng sau. `limit` null = gói không giới hạn.
+     */
+    async getQuota(botId: string): Promise<{ success: boolean; limit?: number | null; used?: number | null; exhausted?: boolean; error?: string }> {
+        try {
+            const idToken = await currentIdToken();
+            const res = await fetch(`${CLOUD_PROXY_URL}?action=quota`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ botId })
+            });
+            return await res.json();
+        } catch {
+            return { success: false, error: 'Không đọc được hạn mức tin nhắn LINE.' };
+        }
+    },
+
     /** Lưu Token/Secret mới lên server (line_bot_secrets). Chỉ chủ bot hoặc Admin; field bỏ trống = giữ nguyên. */
     async saveBotSecrets(botId: string, secrets: { channelAccessToken?: string; channelSecret?: string }): Promise<{ success: boolean; hasToken?: boolean; hasSecret?: boolean; error?: string }> {
         try {

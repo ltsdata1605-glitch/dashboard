@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Button } from '../../../components/shared/ui/Button';
 import { Switch } from '../../../components/shared/ui/Switch';
+import { Banner } from '../../../components/shared/ui/Banner';
+import { lineMessagingService } from '../services/lineMessagingService';
 import { BotSchedule, LineGroup } from '../types/lineBot.types';
 import { ScheduleEditModal } from './ScheduleEditModal';
 
@@ -16,6 +18,8 @@ interface ScheduleManagerTabProps {
     onTriggerNow: (schedule: BotSchedule) => Promise<void>;
     onRefresh: () => void;
     onAddManualGroup?: (groupId: string, groupName?: string) => Promise<boolean>;
+    /** Bot đang xem — để đọc hạn mức tin nhắn LINE tháng này. */
+    botId?: string;
 }
 
 const DAYS_NAME = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
@@ -30,9 +34,18 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
     onToggleActive,
     onTriggerNow,
     onRefresh,
-    onAddManualGroup
+    onAddManualGroup,
+    botId
 }) => {
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
+    // Hạn mức tin LINE tháng này (2026-10-15): hết hạn mức thì lịch vẫn chạy đúng giờ nhưng LINE từ chối gửi.
+    const [quota, setQuota] = useState<{ limit?: number | null; used?: number | null; exhausted?: boolean } | null>(null);
+    useEffect(() => {
+        if (!botId) return;
+        let huy = false;
+        lineMessagingService.getQuota(botId).then(r => { if (!huy && r.success) setQuota(r); }).catch(() => {});
+        return () => { huy = true; };
+    }, [botId, isLoading]);
     const [selectedSchedule, setSelectedSchedule] = useState<Partial<BotSchedule> | null>(null);
 
     const handleCreateNew = () => {
@@ -47,6 +60,18 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
 
     return (
         <div className="space-y-2.5 sm:space-y-3.5">
+            {quota?.exhausted && (
+                <Banner tone="danger" title="Bot đã hết hạn mức tin nhắn LINE tháng này" maxLines={3}>
+                    Đã dùng {quota.used?.toLocaleString('vi-VN')}/{quota.limit?.toLocaleString('vi-VN')} tin. Lịch vẫn chạy đúng giờ nhưng LINE từ chối gửi
+                    cho tới ngày 1 tháng sau. Tin gửi vào nhóm tính theo số thành viên nhóm (nhóm 50 người = 50 tin mỗi lần). Muốn gửi tiếp
+                    ngay: nâng gói trong LINE Official Account Manager.
+                </Banner>
+            )}
+            {quota && !quota.exhausted && typeof quota.limit === 'number' && typeof quota.used === 'number' && quota.used >= quota.limit * 0.8 && (
+                <Banner tone="warning" title="Sắp hết hạn mức tin nhắn LINE tháng này">
+                    Đã dùng {quota.used.toLocaleString('vi-VN')}/{quota.limit.toLocaleString('vi-VN')} tin. Tin gửi vào nhóm tính theo số thành viên nhóm.
+                </Banner>
+            )}
             {/* Top Bar */}
             <div className="p-2.5 sm:p-3 bg-white dark:bg-slate-800/90 rounded-xl sm:rounded-2xl border border-slate-200/80 dark:border-slate-700/80 shadow-2xs flex flex-row items-center justify-between gap-2">
                 <div className="min-w-0">
@@ -143,7 +168,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                                 </div>
 
                                 <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 border-t border-slate-100 dark:border-slate-800">
-                                    <span className="truncate" title={sched.lastAutoRunResult || undefined}>Gần nhất: {sched.lastRunAt ? new Date(sched.lastRunAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Chưa chạy'}{sched.lastAutoRunResult ? ` · ${sched.lastAutoRunResult}` : ''}</span>
+                                    <span className={`truncate ${sched.lastAutoRunResult?.startsWith('Không gửi được') ? 'text-rose-600 font-semibold' : ''}`} title={sched.lastAutoRunResult || undefined}>Gần nhất: {sched.lastRunAt ? new Date(sched.lastRunAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Chưa chạy'}{sched.lastAutoRunResult ? ` · ${sched.lastAutoRunResult}` : ''}</span>
 
                                     <div className="flex items-center gap-0.5 shrink-0">
                                         <Button

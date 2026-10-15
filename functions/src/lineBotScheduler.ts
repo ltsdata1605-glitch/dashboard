@@ -14,6 +14,7 @@ import {
     getVietnamTodayString
 } from './lineBotWebhook';
 import { dueSlot, renderTemplate, vnNow, type ScheduleLike } from './lineBotScheduleDue';
+import { moTaLoiLine } from './lineErrors';
 
 /**
  * `usedAt` lưu dạng ISO UTC (new Date().toISOString()) — phải đổi sang NGÀY VIỆT NAM (UTC+7) rồi mới so
@@ -33,8 +34,8 @@ const SCHEDULER_REGION = 'asia-southeast1';
 /**
  * Gửi tin nhắn PUSH trực tiếp tới Nhóm LINE (chỉ gửi trong nhóm, không gửi riêng)
  */
-async function pushLineMessages(token: string, toGroupId: string, messages: any[]): Promise<boolean> {
-    if (!token || !toGroupId || !messages || messages.length === 0) return false;
+async function pushLineMessagesDetailed(token: string, toGroupId: string, messages: any[]): Promise<{ ok: boolean; status: number; error?: string }> {
+    if (!token || !toGroupId || !messages || messages.length === 0) return { ok: false, status: 0, error: 'Thiếu token hoặc nhóm nhận' };
     try {
         const sanitized = messages.slice(0, 5).map(m => {
             if (m.type === 'text') {
@@ -56,16 +57,21 @@ async function pushLineMessages(token: string, toGroupId: string, messages: any[
         });
 
         if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
+            const errData = await res.json().catch(() => ({})) as { message?: string };
             console.error('[Scheduler Push Error]', res.status, errData);
-            return false;
+            return { ok: false, status: res.status, error: moTaLoiLine(res.status, errData?.message) };
         }
         console.info(`[Scheduler Push Success] Đã gửi ${sanitized.length} tin nhắn đến nhóm ${toGroupId}`);
-        return true;
+        return { ok: true, status: res.status };
     } catch (err) {
         console.error('[Scheduler Push Exception]', err);
-        return false;
+        return { ok: false, status: 0, error: 'Không kết nối được máy chủ LINE.' };
     }
+}
+
+/** Gửi tin PUSH tới Nhóm LINE (chỉ gửi trong nhóm, không gửi riêng). */
+async function pushLineMessages(token: string, toGroupId: string, messages: any[]): Promise<boolean> {
+    return (await pushLineMessagesDetailed(token, toGroupId, messages)).ok;
 }
 
 /**
@@ -558,10 +564,18 @@ export const lineBotUserSchedules = onSchedule(
                     }
 
                     let ok = 0;
+                    let loiDau: string | undefined;
                     for (const groupId of targets) {
-                        if (await pushLineMessages(token, groupId, [{ type: 'text', text }])) ok++;
+                        const r = await pushLineMessagesDetailed(token, groupId, [{ type: 'text', text }]);
+                        if (r.ok) ok++; else loiDau = loiDau || r.error;
                     }
-                    await ref.update({ lastAutoRunResult: `Đã gửi ${ok}/${targets.length} nhóm lúc ${slot}` });
+                    // Ghi RÕ lý do khi không gửi được (vd hết hạn mức tin LINE) — trước đây chỉ "Đã gửi 0/1 nhóm".
+                    await ref.update({
+                        lastAutoRunResult: ok === targets.length
+                            ? `Đã gửi ${ok}/${targets.length} nhóm lúc ${slot}`
+                            : `Không gửi được ${targets.length - ok}/${targets.length} nhóm lúc ${slot}: ${loiDau || 'lỗi không rõ'}`,
+                        lastAutoRunOk: ok === targets.length,
+                    });
                     console.info(`[Scheduler Notify] Bot ${uid} lịch "${data.name || ref.id}" (${slot}): gửi ${ok}/${targets.length} nhóm.`);
                 }
             }

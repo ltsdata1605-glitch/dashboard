@@ -363,6 +363,7 @@ export default function LineBotView() {
                             scheduleHook.loadGroups();
                         }}
                         onAddManualGroup={scheduleHook.addManualGroup}
+                        botId={botConfigHook.config?.userId || undefined}
                     />
                 )}
 

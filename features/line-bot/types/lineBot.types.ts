@@ -89,6 +89,8 @@ export interface BotSchedule {
     lastAutoRunSlot?: string;
     /** Do máy chủ ghi: kết quả lần tự gửi gần nhất, vd "Đã gửi 3/3 nhóm lúc 2026-10-02 06:00". */
     lastAutoRunResult?: string;
+    /** Lượt tự gửi gần nhất gửi được TẤT CẢ nhóm (false = có nhóm lỗi — lý do trong lastAutoRunResult). */
+    lastAutoRunOk?: boolean;
     createdAt: string;
     updatedAt: string;
 }

@@ -146,11 +146,17 @@ export function useScheduleManager(hasBotToken?: boolean, overrideUserId?: strin
                 toast.error('Chưa có nhóm LINE nào để gửi — thêm nhóm hoặc mời bot vào nhóm trước.');
             } else {
                 let successCount = 0;
+                let loiDau: string | undefined;
                 for (const groupId of targets) {
                     const res = await lineMessagingService.sendTestPush({ botId: userId }, groupId, content);
-                    if (res.success) successCount++;
+                    if (res.success) successCount++; else loiDau = loiDau || res.error;
                 }
-                toast.success(`Đã gửi thông báo tới ${successCount}/${targets.length} nhóm!`);
+                // Trước 2026-10-15 luôn báo xanh "Đã gửi 0/1 nhóm!" kể cả khi LINE từ chối (vd hết hạn mức tin tháng).
+                if (successCount === targets.length) {
+                    toast.success(`Đã gửi thông báo tới ${successCount}/${targets.length} nhóm!`);
+                } else {
+                    toast.error(`Không gửi được ${targets.length - successCount}/${targets.length} nhóm`, { description: loiDau || 'LINE từ chối tin nhắn.', duration: 8000 });
+                }
             }
 
             await lineBotFirestoreService.saveSchedule(userId, {

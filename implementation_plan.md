@@ -8344,3 +8344,20 @@ là lệnh báo cáo và tra `report_commands/<tin>`; "/" làm `.doc()` ném l�
 Sửa: `functions/src/firestoreDocId.ts → laIdDocHopLe()` (luật ID Firestore) chặn trước tra lệnh và trước `.doc(botParam)` (tham số `b`
 trên URL thẻ LIFF). Tin có "/" không bao giờ là lệnh (Firestore cấm "/" trong ID) nên chỉ bỏ qua bước tra, các xử lý khác giữ nguyên.
 Test: `tests/unit/line-bot-tin-co-gach-cheo.test.ts` (dùng đúng tin nhắn trong log).
+
+## Bot LINE "Gửi Notify" hẹn giờ không gửi — hết hạn mức tin LINE (2026-10-15)
+
+Log `lineBotUserSchedules` 14–15/10: lịch chạy ĐÚNG giờ (08:00, 09:00, 15:00…) nhưng mọi lượt `429 You have reached your monthly limit.`
+(2 bot `54Js…`, `gZSU…`) → "gửi 0/1 nhóm". Đây là hạn mức tin của gói LINE Official Account (tin PUSH vào nhóm tính theo số thành viên;
+REPLY miễn phí) — code không gửi được thêm; chỉ chủ OA nâng gói hoặc chờ ngày 1. Giao diện trước đây không nói lý do ("Gửi ngay" còn báo
+XANH "Đã gửi 0/1 nhóm!").
+
+| File | Sửa |
+|---|---|
+| `functions/src/lineErrors.ts` (mới) | `moTaLoiLine()` đổi lỗi LINE → câu tiếng Việt (hết hạn mức / giới hạn tốc độ / token / không còn trong nhóm) |
+| `functions/src/lineBotScheduler.ts` | lịch ghi `lastAutoRunResult` "Không gửi được x/y nhóm …: <lý do>" + `lastAutoRunOk` |
+| `functions/src/lineBotWebhook.ts` | action `quota` (BẮT BUỘC botId, quyền như các action khác) → `{limit, used, exhausted}`; `sendTestPush` trả lỗi đã dịch; `.doc(botId)` qua `laIdDocHopLe` |
+| `features/line-bot/…` | màn Gửi Notify: Banner đỏ khi hết hạn mức, vàng khi ≥ 80%; dòng "Gần nhất" đỏ khi lỗi; "Gửi ngay" báo lỗi kèm lý do |
+
+Test: `tests/unit/line-bot-loi-han-muc.test.ts`, `tests/e2e/line-bot-han-muc.spec.ts`. Gợi ý giảm tiêu hao (chưa làm, chờ chủ dự án): tin
+xác nhận dùng coupon đang PUSH vào nhóm (mỗi lượt tốn = số thành viên) — có đường dự phòng LIFF gửi thay người dùng (miễn phí).

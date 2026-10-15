@@ -17,6 +17,7 @@ import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './gr
 import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText, couponKind } from './pmhSequence';
 import { enqueuePmhRelay } from './pmhRelay';
 import { laIdDocHopLe } from './firestoreDocId';
+import { moTaLoiLine, laHetHanMuc } from './lineErrors';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -1886,8 +1887,8 @@ async function resolveActionToken(req: any, res: any): Promise<string | null> {
         res.status(401).json({ success: false, error: 'Cần đăng nhập Dashboard để dùng Bot LINE.' });
         return null;
     }
-    const botSnap = await db.collection('line_bots').doc(botId).get();
-    if (!botSnap.exists || !canCallerUseBot({ uid: caller.uid, role: (caller as any).role, departmentId: (caller as any).departmentId }, botId, botSnap.data())) {
+    const botSnap = laIdDocHopLe(botId) ? await db.collection('line_bots').doc(botId).get() : null;
+    if (!botSnap?.exists || !canCallerUseBot({ uid: caller.uid, role: (caller as any).role, departmentId: (caller as any).departmentId }, botId, botSnap.data())) {
         res.status(403).json({ success: false, error: 'Bạn không có quyền dùng Bot LINE này.' });
         return null;
     }
@@ -2035,6 +2036,27 @@ export const lineBotWebhook = onRequest(
         }
 
         // 1. Action: Xác thực token & lấy thông tin Bot (Proxy cho Frontend tránh lỗi CORS từ api.line.me)
+        // Hạn mức tin nhắn LINE của bot trong tháng (2026-10-15) — giao diện "Gửi Notify" hiện đã dùng/còn lại để người
+        // dùng biết vì sao tin không đi. BẮT BUỘC botId (không nhận token thô) — chỉ chủ bot/admin/quản lý cùng Kho.
+        if (action === 'quota') {
+            if (!String(req.body?.botId || '').trim()) { res.status(400).json({ success: false, error: 'Thiếu botId' }); return; }
+            const token = await resolveActionToken(req, res);
+            if (token === null) return;
+            try {
+                const h = { Authorization: `Bearer ${token}` };
+                const [q, c] = await Promise.all([
+                    fetch('https://api.line.me/v2/bot/message/quota', { headers: h }).then(r => r.json()).catch(() => ({})),
+                    fetch('https://api.line.me/v2/bot/message/quota/consumption', { headers: h }).then(r => r.json()).catch(() => ({})),
+                ]) as [{ type?: string; value?: number }, { totalUsage?: number }];
+                const limit = q?.type === 'limited' && typeof q.value === 'number' ? q.value : null;
+                const used = typeof c?.totalUsage === 'number' ? c.totalUsage : null;
+                res.status(200).json({ success: true, type: q?.type || 'unknown', limit, used, exhausted: limit !== null && used !== null && used >= limit });
+            } catch (err: any) {
+                res.status(200).json({ success: false, error: err?.message || 'Không đọc được hạn mức từ LINE' });
+            }
+            return;
+        }
+
         if (action === 'verifyToken') {
             const token = await resolveActionToken(req, res);
             if (token === null) return;
@@ -2214,7 +2236,8 @@ export const lineBotWebhook = onRequest(
                 if (!lineRes.ok) {
                     res.status(200).json({
                         success: false,
-                        error: (data as any)?.message || `Gửi tin nhắn thất bại (mã lỗi HTTP ${lineRes.status})`
+                        error: moTaLoiLine(lineRes.status, (data as any)?.message),
+                        quotaExceeded: laHetHanMuc(lineRes.status, (data as any)?.message),
                     });
                     return;
                 }
