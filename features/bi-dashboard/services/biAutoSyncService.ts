@@ -4,7 +4,7 @@
  */
 import * as db from '../utils/db';
 import { configStore } from '../store/configStore';
-import { shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenSupermarketName, isSupermarketMatch } from '../utils/dashboardHelpers';
 import { detectUserscript } from '../utils/bonusBridge';
 
 export const getDetailedTimestamp = () => {
@@ -144,6 +144,19 @@ export function onBiError(cb: (payload: { jobId: string; message: string }) => v
     };
 }
 
+export function isBiIndustryContentValid(content: string | undefined | null): boolean {
+    if (!content || typeof content !== 'string') return false;
+    const trimmed = content.trim();
+    if (trimmed.length < 30) return false;
+    const lines = trimmed.split('\n').filter(l => l.trim().length > 0);
+    if (lines.length < 2) return false;
+    const dataRows = lines.filter(l => {
+        const firstCell = l.split('\t')[0].trim().toLowerCase();
+        return !firstCell.includes('ngành hàng') && firstCell !== 'tổng' && firstCell !== '—';
+    });
+    return dataRows.length > 0;
+}
+
 function isBiContentValid(content: string | undefined | null): boolean {
     if (!content || typeof content !== 'string') return false;
     const trimmed = content.trim();
@@ -186,42 +199,73 @@ export async function applyBiSyncResults(
             await saveBiField('summary-realtime', results.summary, 'summary-realtime-ts');
         }
         // 2. Siêu thị ngành hàng Realtime: Lưu lần lượt cho từng siêu thị nếu có dữ liệu theo siêu thị
+        const savedSafeNames = new Set<string>();
         if (results.industryByStore && Object.keys(results.industryByStore).length > 0) {
-            const savedSafeNames = new Set<string>();
             for (const [stKey, indText] of Object.entries(results.industryByStore)) {
                 const stSafeName = shortenSupermarketName(stKey);
-                if (stSafeName && !savedSafeNames.has(stSafeName)) {
-                    if (!isBiContentValid(indText)) {
+                if (stSafeName && !savedSafeNames.has(stSafeName.toLowerCase())) {
+                    if (!isBiIndustryContentValid(indText) && !isBiContentValid(indText)) {
                         console.warn(`[BI-Sync] Bỏ qua dữ liệu ngành hàng rỗng cho siêu thị ${stSafeName}`);
                         continue;
                     }
-                    savedSafeNames.add(stSafeName);
+                    savedSafeNames.add(stSafeName.toLowerCase());
                     const key = `config-${stSafeName}-industry-realtime`;
                     await saveBiField(key, indText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-industry-realtime`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, indText, `${keyUpper}-ts`);
+                    }
                 }
             }
-        } else if (results.industry && safeName && isBiContentValid(results.industry)) {
-            const key = `config-${safeName}-industry-realtime`;
-            await saveBiField(key, results.industry, `${key}-ts`);
+        }
+        // Đảm bảo siêu thị đang xem (safeName) luôn có dữ liệu: nếu chưa được lưu, tìm trong industryByStore hoặc fallback từ results.industry
+        if (safeName) {
+            const hasData = savedSafeNames.has(safeName.toLowerCase());
+            let indFallback: string | undefined;
+            if (!hasData && results.industryByStore) {
+                for (const [k, v] of Object.entries(results.industryByStore)) {
+                    if (isSupermarketMatch(k, safeName) || k.toLowerCase().includes(safeName.toLowerCase()) || safeName.toLowerCase().includes(k.toLowerCase())) {
+                        if (isBiIndustryContentValid(v) || isBiContentValid(v)) {
+                            indFallback = v;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!indFallback && results.industry && (isBiIndustryContentValid(results.industry) || isBiContentValid(results.industry))) {
+                indFallback = results.industry;
+            }
+            if (indFallback) {
+                const key = `config-${safeName}-industry-realtime`;
+                await saveBiField(key, indFallback, `${key}-ts`);
+                const keyUpper = `config-${safeName.toUpperCase()}-industry-realtime`;
+                if (keyUpper !== key) await saveBiField(keyUpper, indFallback, `${keyUpper}-ts`);
+            }
         }
         // 3. Doanh thu nhân viên Realtime: Lưu lần lượt cho từng siêu thị nếu có dữ liệu theo siêu thị
         if (results.employeeByStore && Object.keys(results.employeeByStore).length > 0) {
             const savedSafeNames = new Set<string>();
             for (const [stKey, empText] of Object.entries(results.employeeByStore)) {
                 const stSafeName = shortenSupermarketName(stKey);
-                if (stSafeName && !savedSafeNames.has(stSafeName)) {
+                if (stSafeName && !savedSafeNames.has(stSafeName.toLowerCase())) {
                     if (!isBiContentValid(empText)) {
                         console.warn(`[BI-Sync] Bỏ qua dữ liệu nhân viên rỗng cho siêu thị ${stSafeName}`);
                         continue;
                     }
-                    savedSafeNames.add(stSafeName);
+                    savedSafeNames.add(stSafeName.toLowerCase());
                     const key = `config-${stSafeName}-employee-realtime`;
                     await saveBiField(key, empText, `${key}-ts`);
+                    const keyUpper = `config-${stSafeName.toUpperCase()}-employee-realtime`;
+                    if (keyUpper !== key) {
+                        await saveBiField(keyUpper, empText, `${keyUpper}-ts`);
+                    }
                 }
             }
         } else if (results.employee && safeName && isBiContentValid(results.employee)) {
             const key = `config-${safeName}-employee-realtime`;
             await saveBiField(key, results.employee, `${key}-ts`);
+            const keyUpper = `config-${safeName.toUpperCase()}-employee-realtime`;
+            if (keyUpper !== key) await saveBiField(keyUpper, results.employee, `${keyUpper}-ts`);
         }
         // 4. Thi đua Realtime
         if (results.competition && isBiContentValid(results.competition)) {
@@ -237,16 +281,16 @@ export async function applyBiSyncResults(
             await saveBiField('summary-luy-ke', results.summary, 'summary-luy-ke-ts');
         }
         // 2. Siêu thị ngành hàng Luỹ kế
+        const daLuuIndLk = new Set<string>();
         if (results.industryByStore && Object.keys(results.industryByStore).length > 0) {
-            const daLuu = new Set<string>();
             for (const [stKey, indText] of Object.entries(results.industryByStore)) {
                 const stSafeName = shortenSupermarketName(stKey);
-                if (stSafeName && !daLuu.has(stSafeName)) {
-                    if (!isBiContentValid(indText)) {
+                if (stSafeName && !daLuuIndLk.has(stSafeName.toLowerCase())) {
+                    if (!isBiIndustryContentValid(indText) && !isBiContentValid(indText)) {
                         console.warn(`[BI-Sync] Bỏ qua dữ liệu ngành hàng luỹ kế rỗng cho siêu thị ${stSafeName}`);
                         continue;
                     }
-                    daLuu.add(stSafeName);
+                    daLuuIndLk.add(stSafeName.toLowerCase());
                     const key = `config-${stSafeName}-industry-luyke`;
                     await saveBiField(key, indText, `${key}-ts`);
                     const keyUpper = `config-${stSafeName.toUpperCase()}-industry-luyke`;
@@ -255,11 +299,30 @@ export async function applyBiSyncResults(
                     }
                 }
             }
-        } else if (results.industry && safeName && isBiContentValid(results.industry)) {
-            const key = `config-${safeName}-industry-luyke`;
-            await saveBiField(key, results.industry, `${key}-ts`);
-            const keyUpper = `config-${safeName.toUpperCase()}-industry-luyke`;
-            if (keyUpper !== key) await saveBiField(keyUpper, results.industry, `${keyUpper}-ts`);
+        }
+        // Đảm bảo siêu thị đang xem (safeName) luôn có dữ liệu ngành hàng luỹ kế
+        if (safeName) {
+            const hasDataLk = daLuuIndLk.has(safeName.toLowerCase());
+            let indFallbackLk: string | undefined;
+            if (!hasDataLk && results.industryByStore) {
+                for (const [k, v] of Object.entries(results.industryByStore)) {
+                    if (isSupermarketMatch(k, safeName) || k.toLowerCase().includes(safeName.toLowerCase()) || safeName.toLowerCase().includes(k.toLowerCase())) {
+                        if (isBiIndustryContentValid(v) || isBiContentValid(v)) {
+                            indFallbackLk = v;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!indFallbackLk && results.industry && (isBiIndustryContentValid(results.industry) || isBiContentValid(results.industry))) {
+                indFallbackLk = results.industry;
+            }
+            if (indFallbackLk) {
+                const key = `config-${safeName}-industry-luyke`;
+                await saveBiField(key, indFallbackLk, `${key}-ts`);
+                const keyUpper = `config-${safeName.toUpperCase()}-industry-luyke`;
+                if (keyUpper !== key) await saveBiField(keyUpper, indFallbackLk, `${keyUpper}-ts`);
+            }
         }
         // 3. Doanh thu nhân viên Luỹ kế (danhSach)
         if (results.employeeByStore && Object.keys(results.employeeByStore).length > 0) {

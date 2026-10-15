@@ -22,20 +22,29 @@ describe('CapsuleBar — Cụm công cụ / điều hướng dạng viên nhộn
         expect(html).toContain('aria-label="Phân hệ chính"');
     });
 
-    it('kích thước mặc định md đảm bảo vùng chạm chuẩn 44×44px', () => {
+    it('kích thước mặc định compact 32×32px nhỏ gọn chuẩn Zalo/iOS mẫu', () => {
         const html = renderToStaticMarkup(
-            h(CapsuleBar, { items: mockItems, size: 'md' })
+            h(CapsuleBar, { items: mockItems })
+        );
+        expect(html).toContain('min-w-[32px]');
+        expect(html).toContain('min-h-[32px]');
+        expect(html).toContain('ycx-hit');
+    });
+
+    it('kích thước lg tạo nút 44×44px', () => {
+        const html = renderToStaticMarkup(
+            h(CapsuleBar, { items: mockItems, size: 'lg' })
         );
         expect(html).toContain('min-w-[44px]');
         expect(html).toContain('min-h-[44px]');
     });
 
-    it('kích thước sm tạo nút 36×36px', () => {
+    it('kích thước sm tạo nút 28×28px', () => {
         const html = renderToStaticMarkup(
             h(CapsuleBar, { items: mockItems, size: 'sm' })
         );
-        expect(html).toContain('min-w-[36px]');
-        expect(html).toContain('min-h-[36px]');
+        expect(html).toContain('min-w-[28px]');
+        expect(html).toContain('min-h-[28px]');
     });
 
     it('nút active có aria-pressed=true, data-active=true và nhãn sr-only', () => {

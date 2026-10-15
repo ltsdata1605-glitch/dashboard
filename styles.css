@@ -984,3 +984,109 @@ summary,
     margin-left: auto;
   }
 }
+
+/* ==========================================================================
+   CỤM CON NHỘNG HỢP NHẤT THANH TRÊN (CAPSULE ACTION BAR)
+   Khi #mobile-topbar-actions chứa [data-capsule-bar] (Report BI hoặc phân hệ áp dụng con nhộng):
+   Gom toàn bộ cụm hành động (các tab phân hệ, nút ⋯ thêm thao tác, chuông thông báo)
+   thành MỘT THANH CON NHỘNG DUY NHẤT chuẩn Zalo/iOS Navigation Capsule.
+   ========================================================================== */
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] {
+  display: flex !important;
+  align-items: center !important;
+  border-radius: 9999px !important;
+  background-color: rgba(241, 245, 249, 0.9) !important;
+  border: 1px solid rgba(226, 232, 240, 0.7) !important;
+  padding: 2px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  user-select: none !important;
+}
+
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+}
+
+/* Gỡ viền & nền riêng của component con bên trong để hoà nhập vào capsule chung */
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) #mobile-topbar-actions [data-capsule-bar] {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+}
+
+/* Vạch ngăn cách hairline giữa các tab phân hệ và cụm thao tác/thông báo */
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) #mobile-topbar-actions::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 14px;
+  background-color: rgba(203, 213, 225, 0.8);
+  margin: 0 2px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) #mobile-topbar-actions::after {
+  background-color: rgba(71, 85, 105, 0.8);
+}
+
+/* Đồng bộ kích thước thị giác 32×32px cho nút PageActions và Chuông thông báo */
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  border-radius: 9999px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: rgb(100 116 139) !important;
+  background: transparent !important;
+  transition: all 0.2s !important;
+}
+
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) {
+  color: rgb(148 163 184) !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):hover {
+  background-color: rgba(226, 232, 240, 0.6) !important;
+}
+
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):hover {
+  background-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):active {
+  transform: scale(0.95) !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Chấm đỏ badge thông báo trên nút chuông nhỏ 32px */
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] button[title="Thông báo"] .absolute {
+  top: 1px !important;
+  right: 1px !important;
+}
+
+/* Vùng chạm cảm ứng vô hình 44×44px chuẩn Apple HIG qua ::after */
+@media (pointer: coarse), (max-width: 639.98px) {
+  .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where(button, a[href], [role='button']) {
+    position: relative;
+  }
+  .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where(button, a[href], [role='button'])::after {
+    content: '';
+    position: absolute;
+    top: min(0px, calc((100% - 44px) / 2));
+    bottom: min(0px, calc((100% - 44px) / 2));
+    left: min(0px, calc((100% - 44px) / 2));
+    right: min(0px, calc((100% - 44px) / 2));
+  }
+}
+

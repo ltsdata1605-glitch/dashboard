@@ -115,11 +115,20 @@ export function useIndexedDBState<T>(
                 if (writeVersionRef.current !== capturedVersion) return;
                 const defValue = defaultValueRef.current;
                 let finalValue = defValue;
-                if (storedValue !== undefined && storedValue !== null) {
+                if (storedValue !== undefined && storedValue !== null && storedValue !== '') {
                     if (Array.isArray(defValue) && !Array.isArray(storedValue)) {
                         finalValue = defValue;
                     } else {
                         finalValue = storedValue;
+                    }
+                } else if (typeof key === 'string' && key.startsWith('config-')) {
+                    // Fallback nếu key hiện tại chưa có giá trị, tìm trong cache xem có key cùng siêu thị (khác hoa/thường)
+                    const s = configStore.getState();
+                    for (const [ck, cv] of Object.entries(s.cache)) {
+                        if (isConfigKeyMatch(ck, key) && cv !== undefined && cv !== null && cv !== '') {
+                            finalValue = cv as T;
+                            break;
+                        }
                     }
                 }
                 configStore.setCache(key, finalValue);

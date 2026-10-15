@@ -68,6 +68,22 @@ Bất cứ khi nào có thay đổi, tối ưu hoặc sửa lỗi trong `public/
 - **Cơ chế mở rộng toàn diện**: Phải đảm bảo bộ máy xuất ảnh tự động mở rộng toàn bộ bảng (`fitTablesToContent` / `fitAllColumns` / `fitWidthToTable`), loại bỏ giới hạn chiều rộng/thanh cuộn, gỡ `sticky` về `static`, và đo đạc bề rộng thực tế của mọi cột để ảnh chụp xuất ra đầy đủ 100% tất cả các hàng và tất cả các cột, không bao giờ bị cắt xén hay mất phần cuộn ngang/dọc. Khung card ảnh ôm vừa vặn theo tổng độ rộng các cột của bảng.
 - **Chỉ dùng `captureAsDisplayed: true`** cho các thành phần cố định trên màn hình (như cụm thẻ KPI card đơn thuần, biểu đồ xu hướng không chứa bảng dữ liệu tràn viền).
 
+## Capsule Action Bar Standard (Quy Chuẩn Thiết Kế "Áp Dụng Con Nhộng")
+Mỗi khi người dùng yêu cầu **"Áp dụng con nhộng"** (hoặc chuyển đổi cụm nút/menu của bất kỳ phân hệ nào sang kiểu Capsule Toolbar chuẩn Zalo/iOS):
+- **Component dùng chung**: BẮT BUỘC sử dụng `<CapsuleBar />` tại `components/shared/ui/CapsuleBar.tsx` (hoặc import từ `@/components/shared/ui`), tự động đưa lên thanh trên bằng `portalTargetId="mobile-topbar-actions"`.
+- **Thông số kích thước thị giác (Visual Size)**:
+  - Nút con bên trong: Cố định kích thước **32×32px** (`w-8 h-8 min-w-[32px] min-h-[32px]`). **TUYỆT ĐỐI KHÔNG DÙNG 44px hay 48px** làm phình to, thô dày so với thanh Topbar.
+  - Kích thước icon: **16–18px** (`size="sm"` trong `AppIcon`).
+  - Khung capsule ngoài: `rounded-full bg-slate-100/90 dark:bg-slate-800/90 border border-slate-200/70 dark:border-slate-700/70 p-0.5 shadow-2xs`.
+  - Tổng chiều cao cụm: **34px** (nằm lọt thỏm cân đối giữa thanh Topbar 52px, để lại khoảng thở 9px trên và dưới).
+- **Quy chuẩn vùng chạm cảm ứng vô hình (Touch Target Accessibility)**:
+  - BẮT BUỘC gắn class `.ycx-hit` vào từng nút để kích hoạt lớp `::after` vô hình tự động nới rộng vùng chạm lên đủ chuẩn **44×44px** trên màn cảm ứng điện thoại (`@media (pointer: coarse)`).
+  - Đảm bảo: **Mắt nhìn thấy thanh mảnh, nhỏ gọn 32px như Zalo/iOS mẫu, nhưng ngón tay chạm luôn nhạy và đạt chuẩn Apple 44px 100%**.
+- **Hiệu ứng & Trợ năng**:
+  - Trạng thái Active: `bg-white dark:bg-slate-700 shadow-xs`, icon đổi màu nhận diện phân hệ.
+  - Hiệu ứng chạm: `active:scale-95 transition-all duration-200`.
+  - Trợ năng: Đầy đủ `aria-label`, `<span className="sr-only">`, `title`, và `data-segmented=""` / `data-capsule-bar=""`.
+
 ## Silent Real-User Verification Rule (Quy Tắc Tự Động Test Âm Thầm Trên Dữ Liệu Thật)
 - **Bắt buộc tự động test thực tế như người dùng thật**: Sau mỗi lần sửa đổi, tối ưu hoặc cập nhật tính năng (đặc biệt liên quan đến giao diện, thẻ KPI, bảng dữ liệu), Agent **BẮT BUỘC tự động chạy test xác thực thực tế** trên chính profile dữ liệu thật (`.e2e-chrome-profile`) hoặc kiểm tra DOM/computed style thực tế của trình duyệt.
 - **Thực hiện hoàn toàn âm thầm (Silent & Headless)**: Toàn bộ quá trình test phải chạy ngầm ở chế độ headless (chạy `npm run test:verify-silent` hoặc Playwright headless), không mở cửa sổ gây phiền toái, không làm gián đoạn màn hình làm việc của người dùng.

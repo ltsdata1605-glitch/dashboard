@@ -18,7 +18,8 @@ sinh ra 2 bản `MultiSelectDropdown`, 17 công tắc tự vẽ, 5 kiểu toast 
 | Bật/tắt | `Switch` (`size="sm"` trong bảng/menu) | CẤM tự vẽ (`khongCongTacTuVe.test.ts`). Công tắc chỉ để nhìn trong hàng bấm được: bọc `aria-hidden`, `tabIndex={-1}`. |
 | Chọn 1 trong 2–5 chế độ | `Tabs variant="segment"` | dải cuộn ngang tự đưa mục đang chọn vào giữa; `underline` cho tab trang |
 | Nút "⋯" nhiều lệnh | `ActionMenu` | iPhone là action sheet; mục `destructive` tự xuống nhóm cuối, chữ đỏ |
-| Nút trên thanh trên | `usePageActions({ scope, primary, quick, items })` | KHÔNG `createPortal` vào thanh trên. `scope: 'mobile'` khi laptop đã có thanh công cụ riêng |
+| Cụm con nhộng thanh trên | `CapsuleBar` | Kiểu viên nhộng Zalo/iOS mẫu: nhìn thấy 32×32px, `ycx-hit` chạm 44px, `portalTargetId="mobile-topbar-actions"` |
+| Nút trên thanh trên | `usePageActions({ scope, primary, quick, items })` | KHÔNG `createPortal` thủ công. `scope: 'mobile'` khi laptop đã có thanh công cụ riêng |
 | Hộp thoại / sheet | `Modal` (`position="bottom"`, `primaryAction`), `ConfirmDialog` | khối tràn sát mép thân modal: `modal-bleed*` (CẤM `-m-5`) |
 | Lớp phủ | `Overlay kind="busy"\|"scrim"\|"fullscreen"`, `BusyBar` (tính ngầm không chặn màn) | CẤM tự viết `fixed inset-0` (ratchet `rawOverlay`) |
 | Thông báo nhanh | `toast.*`, `toastViecDai()` (việc nhiều bước) | `toast/`. CẤM `react-hot-toast` ngoài module này, cấm dựng toast bằng DOM |

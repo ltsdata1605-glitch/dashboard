@@ -6,7 +6,8 @@ import {
     isSuperCompetitionActive,
     calculateGroupAchievementStats,
     calculateOverallCompetitionKpiStats,
-    sortProgramsList
+    sortProgramsList,
+    matchesCompetitionKpiFilter
 } from './competitionSortAndCalc';
 import type { ProcessedProgram } from './competitionViewCalc';
 
@@ -340,4 +341,62 @@ describe('sortProgramsList — hỗ trợ customOrder (thứ tự kéo thả tu�
         expect(sorted[0].name).toBe('CHƯƠNG TRÌNH B');
     });
 });
+
+describe('matchesCompetitionKpiFilter — lọc chương trình theo thẻ KPI', () => {
+    const mockHeaders = [
+        'L.Kế',
+        'Target',
+        '%HT',
+        '%DKHT',
+        'Target V.Trội',
+        '%HT V.Trội',
+        '%DKHT V.Trội',
+        'Còn Lại'
+    ];
+    const visibleCols = ['L.Kế', 'Target', '%HT', '%DKHT', 'Còn Lại'];
+
+    const testPrograms: ProcessedProgram[] = [
+        // Nhóm 1: %DKHT = 120% (>= 100%)
+        { metric: 'DTLK', name: 'Nhóm 1', data: ['120', '100', '120%', '120%', '150', '80%', '90%', '20'], conLai: 20 },
+        // Nhóm 2: %DKHT = 85%  (< 100%)
+        { metric: 'DTLK', name: 'Nhóm 2', data: ['85', '100', '85%', '85%', '150', '56%', '60%', '-15'], conLai: -15 },
+        // Nhóm 3: %DKHT = 60%  (< 100%)
+        { metric: 'DTLK', name: 'Nhóm 3', data: ['60', '100', '60%', '60%', '150', '40%', '40%', '-40'], conLai: -40 },
+        // Nhóm 4: %DKHT = 0%   (0%)
+        { metric: 'DTLK', name: 'Nhóm 4', data: ['0', '100', '0%', '0%', '150', '0%', '0%', '-100'], conLai: -100 }
+    ];
+
+    it('filter "all": luôn trả về true cho tất cả chương trình', () => {
+        const result = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'all', mockHeaders, false, false, visibleCols));
+        expect(result.length).toBe(4);
+    });
+
+    it('filter "over": chỉ trả về các nhóm có %HT >= 100%', () => {
+        const result = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'over', mockHeaders, false, false, visibleCols));
+        expect(result.map(p => p.name)).toEqual(['Nhóm 1']);
+    });
+
+    it('filter "under": chỉ trả về các nhóm có %HT < 100%', () => {
+        const result = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'under', mockHeaders, false, false, visibleCols));
+        expect(result.map(p => p.name)).toEqual(['Nhóm 2', 'Nhóm 3', 'Nhóm 4']);
+    });
+
+    it('filter "zero": chỉ trả về các nhóm có %HT <= 0', () => {
+        const result = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'zero', mockHeaders, false, false, visibleCols));
+        expect(result.map(p => p.name)).toEqual(['Nhóm 4']);
+    });
+
+    it('tổng số lượng lọc luôn khớp 100% với số liệu đếm trên thẻ KPI', () => {
+        const stats = calculateOverallCompetitionKpiStats(testPrograms, mockHeaders, visibleCols, false);
+        const overCount = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'over', mockHeaders, false, false, visibleCols)).length;
+        const underCount = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'under', mockHeaders, false, false, visibleCols)).length;
+        const zeroCount = testPrograms.filter(p => matchesCompetitionKpiFilter(p, 'zero', mockHeaders, false, false, visibleCols)).length;
+
+        expect(overCount).toBe(stats.countOver100);
+        expect(underCount).toBe(stats.countUnder100);
+        expect(zeroCount).toBe(stats.countZero);
+        expect(overCount + underCount).toBe(stats.total);
+    });
+});
+
 

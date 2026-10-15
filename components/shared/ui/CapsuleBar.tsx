@@ -30,8 +30,8 @@ export interface CapsuleBarProps {
     className?: string;
     /** Tuỳ biến lớp CSS cho từng nút bên trong */
     itemClassName?: string;
-    /** Kích thước: 'md' (44x44px chuẩn Apple Touch Target), 'sm' (36x36px cho giao diện thu nhỏ) */
-    size?: 'sm' | 'md';
+    /** Kích thước: 'compact' (32x32px nhỏ gọn chuẩn Zalo/iOS mẫu), 'sm' (28x28px), 'md' (36x36px), 'lg' (44x44px). Mặc định 'compact' */
+    size?: 'compact' | 'sm' | 'md' | 'lg';
     /** ID phần tử HTML đích để tự động portal (vd: 'mobile-topbar-actions') */
     portalTargetId?: string;
     /** Cờ bật/tắt hiển thị (mặc định true) */
@@ -46,7 +46,8 @@ export interface CapsuleBarProps {
  * Tiêu chuẩn thiết kế:
  *  - Bo góc viên nhộng `rounded-full`, nền mờ nhẹ translucent `bg-slate-100/90 dark:bg-slate-800/90`.
  *  - Viền mảnh mờ tinh tế `border border-slate-200/70 dark:border-slate-700/70`.
- *  - Vùng chạm tối thiểu 44×44px cho cỡ 'md' chuẩn Apple HIG Touch Target.
+ *  - Kích thước mặc định 'compact' (32×32px) cực kỳ nhỏ gọn thanh thoát như Zalo/iOS mẫu.
+ *  - Tích hợp lớp `ycx-hit` mở rộng vùng chạm vô hình đạt 44×44px trên màn cảm ứng chuẩn Apple HIG.
  *  - Hỗ trợ chuyển đổi tab/view active nổi bật hoặc cụm nút hành động độc lập.
  *  - Hỗ trợ `portalTargetId` tự động đưa lên thanh Topbar mobile mà không cần viết lặp `createPortal`.
  */
@@ -55,7 +56,7 @@ export const CapsuleBar: React.FC<CapsuleBarProps> = ({
     ariaLabel = 'Cụm chức năng',
     className,
     itemClassName,
-    size = 'md',
+    size = 'compact',
     portalTargetId,
     enabled = true,
     role = 'group',
@@ -72,10 +73,13 @@ export const CapsuleBar: React.FC<CapsuleBarProps> = ({
 
     if (!enabled || items.length === 0) return null;
 
-    const isSmall = size === 'sm';
-    const buttonSizeClasses = isSmall
-        ? 'w-9 h-9 min-w-[36px] min-h-[36px]'
-        : 'w-11 h-11 min-w-[44px] min-h-[44px]';
+    const sizeConfig = {
+        sm: { btn: 'w-7 h-7 min-w-[28px] min-h-[28px]', iconSize: 'xs' as const },
+        compact: { btn: 'w-8 h-8 min-w-[32px] min-h-[32px]', iconSize: 'sm' as const },
+        md: { btn: 'w-9 h-9 min-w-[36px] min-h-[36px]', iconSize: 'sm' as const },
+        lg: { btn: 'w-11 h-11 min-w-[44px] min-h-[44px]', iconSize: 'md' as const },
+    };
+    const currentSize = sizeConfig[size] || sizeConfig.compact;
 
     const barContent = (
         <div
@@ -103,8 +107,8 @@ export const CapsuleBar: React.FC<CapsuleBarProps> = ({
                         title={item.title || item.label}
                         aria-label={item.label}
                         className={cn(
-                            buttonSizeClasses,
-                            'relative rounded-full flex items-center justify-center transition-all duration-200 select-none active:scale-95 disabled:opacity-40 disabled:pointer-events-none',
+                            currentSize.btn,
+                            'ycx-hit relative rounded-full flex items-center justify-center transition-all duration-200 select-none active:scale-95 disabled:opacity-40 disabled:pointer-events-none',
                             isActive
                                 ? cn('bg-white dark:bg-slate-700 shadow-xs', item.activeClassName)
                                 : 'hover:bg-slate-200/60 dark:hover:bg-slate-700/60 text-slate-500 dark:text-slate-400',
@@ -114,7 +118,7 @@ export const CapsuleBar: React.FC<CapsuleBarProps> = ({
                         {typeof item.icon === 'string' ? (
                             <AppIcon
                                 name={item.icon as IconName}
-                                size={isSmall ? 'sm' : 'md'}
+                                size={currentSize.iconSize}
                                 className={cn('transition-colors', item.iconClassName)}
                             />
                         ) : (

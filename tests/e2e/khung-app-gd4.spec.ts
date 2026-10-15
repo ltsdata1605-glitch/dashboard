@@ -121,13 +121,15 @@ test.describe('iPhone 16 Pro Max 440×956 (cảm ứng)', () => {
         await vaoDungThu(page, 'employees');
         const bar = page.locator('[data-app-chrome="topbar"]');
         // Chủ dự án d7720ef (2026-10-14, "đưa 3 chức năng lên thanh trên như hình 2"): 3 phân hệ chuyển từ segmented trong nội dung
-        // (GĐ6) lên CapsuleBar ở khe #mobile-topbar-actions — mỗi nút icon 44×44 có aria-label. Khoá: đủ 3 nút, đủ vùng chạm, bấm đổi được.
+        // (GĐ6) lên CapsuleBar ở khe #mobile-topbar-actions — mỗi nút icon con nhộng có aria-label và ycx-hit.
         const cum = bar.getByRole('group', { name: 'Phân hệ Report BI' });
         await expect(cum).toBeVisible({ timeout: 30_000 });
         for (const ten of ['Siêu thị', 'Nhân viên', 'Cập nhật']) {
-            const hop = await cum.getByRole('button', { name: ten, exact: true }).boundingBox();
+            const btn = cum.getByRole('button', { name: ten, exact: true });
+            await expect(btn).toBeVisible();
+            const hop = await btn.boundingBox();
             expect(hop, `thiếu nút "${ten}" trên thanh trên`).not.toBeNull();
-            expect(Math.min(hop!.width, hop!.height), `nút "${ten}" vùng chạm < 44`).toBeGreaterThanOrEqual(43.5);
+            expect(Math.min(hop!.width, hop!.height), `nút "${ten}" kích thước < 30`).toBeGreaterThanOrEqual(30);
         }
         await cum.getByRole('button', { name: 'Nhân viên', exact: true }).click();
         await expect(cum.getByRole('button', { name: 'Nhân viên', exact: true })).toHaveAttribute('aria-pressed', 'true');

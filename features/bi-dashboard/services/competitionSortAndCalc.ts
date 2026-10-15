@@ -596,3 +596,37 @@ export function calculateOverallCompetitionKpiStats(
         isSuperMode
     };
 }
+
+export type CompetitionKpiFilter = 'all' | 'over' | 'under' | 'zero';
+
+/**
+ * Kiểm tra chương trình thi đua có khớp với bộ lọc thẻ KPI hay không:
+ * - 'all': hiển thị tất cả (khi bấm 'Tổng thưởng' hoặc bỏ lọc)
+ * - 'over': nhóm đạt >= 100%
+ * - 'under': nhóm chưa đạt < 100% (hoặc chưa có số liệu)
+ * - 'zero': nhóm đạt 0% (hoặc <= 0 / null / NaN)
+ */
+export function matchesCompetitionKpiFilter(
+    program: ProcessedProgram,
+    filter: CompetitionKpiFilter,
+    headers: string[],
+    isSuperMode: boolean,
+    isRealtime: boolean,
+    visibleColumns?: string[]
+): boolean {
+    if (filter === 'all') return true;
+    const { value } = getProgramEvaluatedCompletion(program, headers, isSuperMode, isRealtime, visibleColumns);
+    const isZero = value === null || isNaN(value) || value <= 0;
+    const isOver100 = value !== null && !isNaN(value) && value >= 100;
+
+    switch (filter) {
+        case 'over':
+            return isOver100;
+        case 'under':
+            return !isOver100;
+        case 'zero':
+            return isZero;
+        default:
+            return true;
+    }
+}

@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
+import { configStore } from '../store/configStore';
 import * as dbService from '../services/dbService';
 import {
     MainTab,
@@ -212,8 +213,32 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => { isMounted = false; };
     }, []);
 
-    const effectiveIndustryRealtimeData = industryRealtimeData || (summaryRealtime && (summaryRealtime.toUpperCase().includes('NGÀNH HÀNG') && summaryRealtime.toUpperCase().includes('NHÓM HÀNG')) ? summaryRealtime : '');
-    const effectiveIndustryLuyKeData = industryLuyKeData || (summaryLuyKe && (summaryLuyKe.toUpperCase().includes('NGÀNH HÀNG') && summaryLuyKe.toUpperCase().includes('NHÓM HÀNG')) ? summaryLuyKe : '');
+    const getCachedIndustryFallback = (type: 'realtime' | 'luyke') => {
+        if (!activeSupermarket || activeSupermarket === 'Tổng') return '';
+        const safe = shortenSupermarketName(activeSupermarket);
+        const suffix = type === 'realtime' ? '-industry-realtime' : '-industry-luyke';
+        const cache = configStore.getState().cache;
+
+        // 1. Thử trực tiếp chữ hoa
+        const upperVal = cache[`config-${safe.toUpperCase()}${suffix}`];
+        if (typeof upperVal === 'string' && upperVal.trim().length > 30) return upperVal;
+
+        // 2. Thử chữ thường
+        const lowerVal = cache[`config-${safe.toLowerCase()}${suffix}`];
+        if (typeof lowerVal === 'string' && lowerVal.trim().length > 30) return lowerVal;
+
+        // 3. Quét toàn bộ cache tìm siêu thị trùng khớp (isSupermarketMatch)
+        for (const [k, v] of Object.entries(cache)) {
+            if (k.endsWith(suffix) && typeof v === 'string' && v.trim().length > 30) {
+                const sm = k.slice('config-'.length, k.length - suffix.length);
+                if (isSupermarketMatch(sm, safe)) return v;
+            }
+        }
+        return '';
+    };
+
+    const effectiveIndustryRealtimeData = industryRealtimeData || getCachedIndustryFallback('realtime') || (summaryRealtime && (summaryRealtime.toUpperCase().includes('NGÀNH HÀNG') && summaryRealtime.toUpperCase().includes('NHÓM HÀNG')) ? summaryRealtime : '');
+    const effectiveIndustryLuyKeData = industryLuyKeData || getCachedIndustryFallback('luyke') || (summaryLuyKe && (summaryLuyKe.toUpperCase().includes('NGÀNH HÀNG') && summaryLuyKe.toUpperCase().includes('NHÓM HÀNG')) ? summaryLuyKe : '');
 
     useEffect(() => {
         if (isActive === false || !effectiveIndustryRealtimeData) {

@@ -20,6 +20,8 @@ import {
     calculateProgramRemaining, 
     sortProgramsList, 
     toggleCompetitionColumn,
+    matchesCompetitionKpiFilter,
+    type CompetitionKpiFilter,
     ALLOWED_REALTIME_COLUMNS,
     ALLOWED_LUYKE_COLUMNS
 } from '../../services/competitionSortAndCalc';
@@ -76,7 +78,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [copiedCommentary, setCopiedCommentary] = useState(false);
     const [programFilterSearch, setProgramFilterSearch] = useState('');
+    const [kpiFilter, setKpiFilter] = useState<CompetitionKpiFilter>('all');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
+
+    // Tự động reset bộ lọc thẻ KPI về 'all' khi đổi siêu thị hoặc đổi chế độ realtime/luỹ kế
+    useEffect(() => {
+        setKpiFilter('all');
+    }, [activeSupermarket, isRealtime]);
 
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(() => {
         return typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
@@ -164,6 +172,16 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         return sortProgramsList(programsWithDynamicRemaining, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime);
     }, [processedSupermarketData, selectedPrograms, sortConfig, nameOverrides, visibleColumns, allColumns, isRealtime]);
 
+    // Lọc danh sách chương trình hiển thị trong bảng theo thẻ KPI được chọn:
+    // 'all': toàn bộ, 'over': >=100%, 'under': <100%, 'zero': 0%
+    const filteredPrograms = useMemo(() => {
+        if (kpiFilter === 'all') return sortedPrograms;
+        const isSuperMode = visibleColumns.some(col => col.includes('V.Trội'));
+        return sortedPrograms.filter(program =>
+            matchesCompetitionKpiFilter(program, kpiFilter, allColumns, isSuperMode, isRealtime, visibleColumns)
+        );
+    }, [sortedPrograms, kpiFilter, allColumns, visibleColumns, isRealtime]);
+
     // BẢNG LUÔN ĐƯỢC SẮP XẾP GIẢM DẦN THEO CỘT ĐANG HIỂN THỊ TRONG TỪNG TIÊU CHÍ:
     // - Mặc định: Phân nhóm theo tiêu chí gốc khi dán dữ liệu (SLLK, DTLK, DTQĐ)
     // - Tuỳ chỉnh: Phân nhóm dựa theo nhóm tiêu chí người dùng đã cấu hình trong 'Cấu hình Target Thi đua'
@@ -171,7 +189,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         if (groupingMode === 'default') {
             const groups: Record<string, ProcessedProgram[]> = {};
             (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
-                const criterionPrograms = sortedPrograms.filter(p => p.metric === criterion);
+                const criterionPrograms = filteredPrograms.filter(p => p.metric === criterion);
                 if (criterionPrograms.length > 0) {
                     groups[criterion] = sortProgramsList(criterionPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime, customOrder[criterion]);
                 }
@@ -180,7 +198,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         } else {
             // Chế độ Tuỳ chỉnh: Gom nhóm theo cấu hình trong 'Cấu hình Target Thi đua'
             const rawGroups: Record<string, ProcessedProgram[]> = {};
-            sortedPrograms.forEach(program => {
+            filteredPrograms.forEach(program => {
                 const defaultGroup = getDefaultGroupLabel(program.metric) || program.metric;
                 const customGroup = (groupOverrides[program.name] && groupOverrides[program.name].trim())
                     ? groupOverrides[program.name].trim()
@@ -197,7 +215,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             });
             return sortedGroups;
         }
-    }, [groupingMode, sortedPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime, groupOverrides, customOrder]);
+    }, [groupingMode, filteredPrograms, sortConfig, allColumns, nameOverrides, visibleColumns, isRealtime, groupOverrides, customOrder]);
 
     const commentaryData = useMemo(() => {
         if (!processedSupermarketData?.programs || sortedPrograms.length === 0) return null;
@@ -461,7 +479,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             {/* Portal controls into DashboardHeader action bar */}
             {portalTarget && ReactDOM.createPortal(toolbarControls, portalTarget)}
 
-            {/* Thẻ KPI tổng hợp dưới Quỹ thời gian */}
+            {/* Thẻ KPI tổng hợp dưới Quỹ thời gian — số liệu luôn giữ toàn bộ (sortedPrograms) */}
             {processedSupermarketData && sortedPrograms.length > 0 && (
                 <div className="pt-1.5 sm:pt-2 px-1 sm:px-4">
                     <CompetitionKpiCards
@@ -470,25 +488,69 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         visibleColumns={visibleColumns}
                         isRealtime={isRealtime}
                         bonusByGroup={isRealtime ? null : checkThuongBonus}
+                        activeFilter={kpiFilter}
+                        onSelectFilter={setKpiFilter}
                     />
                 </div>
             )}
 
             {/* Scrollable table content — hiển thị trọn vẹn trên mobile không cần cuộn ngang */}
             <div className="overflow-x-auto scrollbar-hide w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
-                <div className="px-1 sm:px-4 pb-4 pt-2 w-full">
+                <div className="px-1 sm:px-4 pb-4 pt-1 w-full">
+                    {/* Thanh trạng thái bộ lọc thẻ KPI khi đang lọc */}
+                    {kpiFilter !== 'all' && (
+                        <div className="flex items-center justify-between px-3 py-1.5 mb-2 bg-sky-50/80 dark:bg-sky-950/40 border border-sky-200/70 dark:border-sky-800/70 rounded-xl text-xs transition-all animate-in fade-in-50 duration-150">
+                            <div className="flex items-center gap-1.5 text-sky-900 dark:text-sky-200 font-medium">
+                                <AppIcon name="filter" size="sm" className="text-sky-600 dark:text-sky-400" />
+                                <span>
+                                    Đang lọc:&nbsp;
+                                    <strong className="font-bold text-sky-950 dark:text-white">
+                                        {kpiFilter === 'over' ? 'NHÓM >100%' : kpiFilter === 'under' ? 'NHÓM <100%' : 'NHÓM 0%'}
+                                    </strong>
+                                    &nbsp;({filteredPrograms.length}/{sortedPrograms.length} nhóm)
+                                </span>
+                            </div>
+                            <Button
+                                variant="unstyled"
+                                size="none"
+                                type="button"
+                                onClick={() => setKpiFilter('all')}
+                                className="text-[11px] font-bold text-sky-600 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-200 hover:underline cursor-pointer flex items-center gap-1"
+                            >
+                                <span>Xem tất cả ({sortedPrograms.length})</span>
+                                <AppIcon name="close" px={12} />
+                            </Button>
+                        </div>
+                    )}
+
                     <div className="p-0 w-full">
                         {processedSupermarketData && sortedPrograms.length > 0 ? (
-                            <CompetitionListView
-                                groupedAndSortedPrograms={groupedAndSortedPrograms}
-                                groupingMode={groupingMode}
-                                headers={processedSupermarketData.headers}
-                                visibleColumns={visibleColumns}
-                                isRealtime={isRealtime}
-                                handleSort={handleSort}
-                                bonusByGroup={isRealtime ? null : checkThuongBonus}
-                                bonusSource={isRealtime ? null : checkThuongSource}
-                            />
+                            filteredPrograms.length > 0 ? (
+                                <CompetitionListView
+                                    groupedAndSortedPrograms={groupedAndSortedPrograms}
+                                    groupingMode={groupingMode}
+                                    headers={processedSupermarketData.headers}
+                                    visibleColumns={visibleColumns}
+                                    isRealtime={isRealtime}
+                                    handleSort={handleSort}
+                                    bonusByGroup={isRealtime ? null : checkThuongBonus}
+                                    bonusSource={isRealtime ? null : checkThuongSource}
+                                />
+                            ) : (
+                                <EmptyState
+                                    title={`Không có nhóm nào trong mục ${kpiFilter === 'over' ? 'NHÓM >100%' : kpiFilter === 'under' ? 'NHÓM <100%' : 'NHÓM 0%'}`}
+                                    description="Bấm 'Xem tất cả' để hiển thị lại toàn bộ danh sách nhóm thi đua."
+                                    action={
+                                        <Button
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => setKpiFilter('all')}
+                                        >
+                                            Xem tất cả ({sortedPrograms.length} nhóm)
+                                        </Button>
+                                    }
+                                />
+                            )
                         ) : (
                             <EmptyState
                                 title={!supermarketData ? `Chưa có dữ liệu thi đua cho "${activeSupermarket}"` : 'Không có chương trình thi đua nào được chọn'}

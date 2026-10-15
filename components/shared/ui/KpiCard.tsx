@@ -107,7 +107,25 @@ export interface KpiCardProps {
     progressPercent?: number;
     isGood?: boolean;
     badge?: React.ReactNode;
+    isActive?: boolean;
+    cardTitle?: string;
 }
+
+const ACTIVE_RING_STYLES: Record<string, string> = {
+    sky: 'ring-2 ring-sky-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 border-sky-400 dark:border-sky-500 shadow-md shadow-sky-500/10',
+    emerald: 'ring-2 ring-emerald-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 border-emerald-400 dark:border-emerald-500 shadow-md shadow-emerald-500/10',
+    amber: 'ring-2 ring-amber-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 border-amber-400 dark:border-amber-500 shadow-md shadow-amber-500/10',
+    rose: 'ring-2 ring-rose-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 border-rose-400 dark:border-rose-500 shadow-md shadow-rose-500/10',
+    slate: 'ring-2 ring-slate-500 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 border-slate-400 dark:border-slate-500 shadow-md shadow-slate-500/10',
+};
+ACTIVE_RING_STYLES.indigo = ACTIVE_RING_STYLES.sky;
+ACTIVE_RING_STYLES.blue = ACTIVE_RING_STYLES.sky;
+ACTIVE_RING_STYLES.teal = ACTIVE_RING_STYLES.emerald;
+ACTIVE_RING_STYLES.pink = ACTIVE_RING_STYLES.rose;
+ACTIVE_RING_STYLES.red = ACTIVE_RING_STYLES.rose;
+ACTIVE_RING_STYLES.purple = ACTIVE_RING_STYLES.sky;
+ACTIVE_RING_STYLES.orange = ACTIVE_RING_STYLES.amber;
+ACTIVE_RING_STYLES.cyan = ACTIVE_RING_STYLES.sky;
 
 /**
  * KPI Card chuẩn "Executive Modern" — squircle icon, gradient top accent,
@@ -125,21 +143,26 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     progressPercent,
     isGood = true,
     badge,
+    isActive = false,
+    cardTitle,
 }) => {
     const isClickable = !!onClick;
     const style = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
+    const activeStyle = isActive ? (ACTIVE_RING_STYLES[iconColor] || ACTIVE_RING_STYLES['sky']) : '';
     const clampedProgress = progressPercent !== undefined ? Math.min(Math.max(progressPercent, 0), 100) : undefined;
+    const tooltipTitle = cardTitle ?? (isClickable ? 'Bấm để lọc hoặc chuyển tab' : undefined);
 
     return (
         <div
             onClick={onClick}
-            title={isClickable ? 'Bấm để chuyển tới Cập nhật > Target Doanh thu' : undefined}
+            title={tooltipTitle}
             data-kpi-border={style.borderHex}
             data-kpi-top-border={style.topHex}
             data-kpi-top-color={iconColor}
-            className={`kpi-overview-card preserve-rounded relative flex flex-col justify-between h-full rounded-card border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs transition-all duration-300 group overflow-hidden shadow-xs hover:shadow-lg ${style.borderHover} ${
-                isClickable ? 'cursor-pointer hover:-translate-y-1 active:scale-[0.98]' : 'hover:-translate-y-0.5'
-            } premium-card-shadow`}
+            data-kpi-active={isActive ? 'true' : undefined}
+            className={`kpi-overview-card preserve-rounded relative flex flex-col justify-between h-full rounded-card border border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xs transition-all duration-200 group overflow-hidden shadow-xs hover:shadow-lg ${style.borderHover} ${
+                isClickable ? 'cursor-pointer select-none hover:-translate-y-0.5 active:scale-[0.98]' : 'hover:-translate-y-0.5'
+            } ${isActive ? `${activeStyle} scale-[1.01]` : ''} premium-card-shadow`}
         >
             {/* Vạch nhận diện đỉnh thẻ — dải gradient mềm mại bo theo góc bo thẻ */}
             <div className={`kpi-top-accent h-[3.5px] w-full shrink-0 ${style.topAccent}`} />

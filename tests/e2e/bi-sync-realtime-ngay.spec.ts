@@ -36,6 +36,8 @@ test('Tự động Realtime: mọi lượt gọi API chỉ lấy HÔM NAY, Thi �
             calls.push({ endpoint, body: JSON.parse(req.postData() || '{}') });
             const data = endpoint.endsWith('filter-store-getbyasmlist')
                 ? [{ id: 1678, Value: '1678 - ĐMM_AGI_TTO - Tri Tôn' }]
+                : (endpoint.includes('revenue-consolidated-get') && JSON.parse(req.postData() || '{}').GROUPBY === 'BICAT')
+                ? [{ rowlevel: 'BICAT', rowcode: '11', rowname: 'Điện thoại', quantity: 3, revenue: 20, revenue_kfactor: 30, avg3month_kfactor: 25, revenue_tragop: 5 }]
                 : [];
             return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data }) });
         }
@@ -134,4 +136,56 @@ test('bảng tiến trình trên trang MWG: cùng giao diện modal Dashboard, s
     await page.screenshot({ path: test.info().outputPath('mwg-xong.png') });
     // Lớp phủ không chặn chuột trang phía sau (đường UI Fallback cần bấm nút trên trang)
     expect(await bang.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+});
+
+test('Tự động Realtime: khi ngành hàng lần 1 rỗng, tự động chạy lần 2 và thu thập thành công', async ({ page }) => {
+    let bicatCalls = 0;
+    await page.route('https://baocao.dienmayxanh.com/**', async (route) => {
+        const req = route.request();
+        const url = req.url();
+        if (url.includes('/kb-api/')) {
+            const endpoint = url.split('/kb-api/')[1];
+            const body = JSON.parse(req.postData() || '{}');
+            let data: unknown[] = [];
+            if (endpoint.endsWith('filter-store-getbyasmlist')) {
+                data = [{ id: 1678, Value: '1678 - ĐMM_AGI_TTO - Tri Tôn' }];
+            } else if (endpoint.includes('revenue-consolidated-get') && body.GROUPBY === 'BICAT') {
+                bicatCalls++;
+                // Lần 1: API trả về rỗng (server nghẽn / timeout)
+                // Lần 2 (Retry): API trả về dữ liệu ngành hàng đầy đủ
+                if (bicatCalls > 1) {
+                    data = [{ rowlevel: 'BICAT', rowcode: '11', rowname: 'Điện thoại', quantity: 3, revenue: 20, revenue_kfactor: 30, avg3month_kfactor: 25, revenue_tragop: 5 }];
+                }
+            } else if (endpoint.endsWith('revenue-consolidated-staff-get')) {
+                data = [{ rowcode: '276650', rowname: 'Quách Trần Phương Thảo', quantity: 5, revenue: 40, revenue_kfactor: 50, revenue_tragop: 10 }];
+            }
+            return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, data }) });
+        }
+        return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: FIXTURE });
+    });
+    await page.addInitScript(() => {
+        const w = window as unknown as Record<string, unknown>;
+        const store = new Map<string, unknown>();
+        w.__gm = store;
+        w.GM_setClipboard = () => {};
+        w.GM_getValue = (k: string, d: unknown) => (store.has(k) ? store.get(k) : d);
+        w.GM_setValue = (k: string, v: unknown) => { store.set(k, v); };
+        w.GM_addValueChangeListener = () => 0;
+        localStorage.setItem('oidc.user:test', JSON.stringify({ access_token: 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl' }));
+    });
+    await page.goto(BI_URL);
+    await page.addScriptTag({ content: readFileSync(USERSCRIPT_PATH, 'utf-8') });
+
+    await page.waitForFunction(
+        () => Boolean((window as unknown as { __gm: Map<string, unknown> }).__gm.get('ycx_bi_automation_done')),
+        undefined,
+        { timeout: 60_000 },
+    );
+
+    // Xác nhận API BICAT được gọi đúng 2 lần (lần 1 rỗng -> lần 2 retry)
+    expect(bicatCalls, 'Phải tự động gọi lần 2 khi lần 1 rỗng').toBe(2);
+
+    const doneRaw = await page.evaluate(() => (window as unknown as { __gm: Map<string, unknown> }).__gm.get('ycx_bi_automation_done'));
+    const doneObj = typeof doneRaw === 'string' ? JSON.parse(doneRaw) : doneRaw;
+    expect(doneObj.results.industry).toContain('Điện thoại');
 });

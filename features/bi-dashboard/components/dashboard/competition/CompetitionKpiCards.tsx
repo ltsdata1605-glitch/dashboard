@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import type { ProcessedProgram } from '../CompetitionView';
-import { calculateOverallCompetitionKpiStats } from '../../../services/competitionSortAndCalc';
+import { calculateOverallCompetitionKpiStats, type CompetitionKpiFilter } from '../../../services/competitionSortAndCalc';
 import { getBonusForProgram, formatBonusShort, type BonusCell } from '../../../services/checkThuongBonus';
 import { KpiCard } from '../../../../../components/shared/ui/KpiCard';
 
@@ -11,6 +11,8 @@ interface CompetitionKpiCardsProps {
     isRealtime: boolean;
     /** Có dữ liệu Check Thưởng -> thêm thẻ thứ 5 "Tổng thưởng" (5 thẻ cùng 1 hàng). */
     bonusByGroup?: Map<string, BonusCell> | null;
+    activeFilter?: CompetitionKpiFilter;
+    onSelectFilter?: (filter: CompetitionKpiFilter) => void;
 }
 
 const UNITS = [
@@ -54,6 +56,8 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
     visibleColumns,
     isRealtime,
     bonusByGroup = null,
+    activeFilter = 'all',
+    onSelectFilter,
 }) => {
     const stats = useMemo(
         () => calculateOverallCompetitionKpiStats(programs, headers, visibleColumns, isRealtime),
@@ -78,6 +82,7 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
     if (stats.total === 0) return null;
 
     const units = bonusStats ? UNITS : UNITS.filter(u => u.key !== 'bonus');
+    const hasBonusCard = !!bonusStats;
     const modeLabel = stats.isSuperMode ? 'Target Vượt trội' : 'Target Cơ bản';
 
     /** Số lớn, dòng phụ, và % dùng để vẽ vạch tiến độ của từng ô. */
@@ -110,6 +115,41 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
         >
             {units.map((u) => {
                 const v = valueOf(u.key);
+                let isActive = false;
+                let onClickHandler: (() => void) | undefined;
+                let cardTooltip: string | undefined;
+
+                if (onSelectFilter) {
+                    if (u.key === 'bonus') {
+                        isActive = activeFilter === 'all';
+                        onClickHandler = () => onSelectFilter('all');
+                        cardTooltip = 'Bấm để hiển thị tất cả nhóm thi đua (không lọc)';
+                    } else if (u.key === 'over') {
+                        isActive = activeFilter === 'over';
+                        onClickHandler = () => onSelectFilter(activeFilter === 'over' ? 'all' : 'over');
+                        cardTooltip = activeFilter === 'over'
+                            ? 'Bấm để bỏ lọc (hiện tất cả nhóm)'
+                            : `Bấm để lọc ${stats.countOver100} nhóm đạt >= 100%`;
+                    } else if (u.key === 'under') {
+                        isActive = activeFilter === 'under';
+                        onClickHandler = () => onSelectFilter(activeFilter === 'under' ? 'all' : 'under');
+                        cardTooltip = activeFilter === 'under'
+                            ? 'Bấm để bỏ lọc (hiện tất cả nhóm)'
+                            : `Bấm để lọc ${stats.countUnder100} nhóm chưa đạt < 100%`;
+                    } else if (u.key === 'zero') {
+                        isActive = activeFilter === 'zero';
+                        onClickHandler = () => onSelectFilter(activeFilter === 'zero' ? 'all' : 'zero');
+                        cardTooltip = activeFilter === 'zero'
+                            ? 'Bấm để bỏ lọc (hiện tất cả nhóm)'
+                            : `Bấm để lọc ${stats.countZero} nhóm đạt 0%`;
+                    }
+                }
+
+                // Nếu không có thẻ Tổng thưởng (chỉ có 3 thẻ), thì khi activeFilter === 'all' không highlight thẻ nào
+                if (!hasBonusCard && u.key !== 'bonus' && activeFilter === 'all') {
+                    isActive = false;
+                }
+
                 return (
                     <KpiCard
                         key={u.key}
@@ -117,6 +157,9 @@ export const CompetitionKpiCards: React.FC<CompetitionKpiCardsProps> = ({
                         iconColor={u.iconColor}
                         title={u.label}
                         isGood={v.isGood}
+                        isActive={isActive}
+                        onClick={onClickHandler}
+                        cardTitle={cardTooltip}
                         trendLabel="Tiến độ"
                         trendValue={
                             <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate" title={v.sub}>

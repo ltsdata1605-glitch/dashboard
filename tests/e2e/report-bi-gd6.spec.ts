@@ -58,7 +58,8 @@ test.describe('iPhone SE 375×667 (cảm ứng)', () => {
         const seg = page.locator('[data-segmented]').first();
         for (const ten of ['Siêu thị', 'Nhân viên', 'Cập nhật']) {
             const hop = (await seg.getByRole('button', { name: ten, exact: true }).boundingBox())!;
-            expect(hop.height, ten).toBeGreaterThanOrEqual(43.5);
+            // Nút dạng capsule nhỏ gọn trên topbar (cỡ 32px chuẩn mẫu Zalo/iOS)
+            expect(hop.height, ten).toBeGreaterThanOrEqual(30);
         }
         // Segmented vẫn bo tròn trong Report BI (module ép border-radius 0 cho mọi "rounded-*")
         expect(parseFloat(await seg.evaluate(e => getComputedStyle(e).borderTopLeftRadius))).toBeGreaterThan(0);

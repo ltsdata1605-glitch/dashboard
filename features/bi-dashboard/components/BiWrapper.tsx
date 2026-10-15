@@ -326,7 +326,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 portalTargetId="mobile-topbar-actions"
                 enabled={mounted && isTabActive && isMobile}
                 ariaLabel="Phân hệ Report BI"
-                className="mr-1"
+                className="mr-0"
                 items={navigationLinks.map((tab) => ({
                     id: tab.id,
                     label: tab.label,
