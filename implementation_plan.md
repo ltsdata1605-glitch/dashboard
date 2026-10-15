@@ -8336,3 +8336,11 @@ Test: `tests/unit/industry-colors.test.ts` (class tường minh trong bảng mà
 `tests/e2e/mau-nganh-modal.spec.ts` (harness dựng 2 modal thật với 12 ngành; đo kiểu tính thật: vạch ≠ currentColor, ô icon có nền, icon
 và số khác màu thừa hưởng — đã chạy trên bản CŨ: đỏ ngay ở Smartphone), `tests/e2e/dem-luot-truy-cap.spec.ts` (Dùng thử không lỗi —
 bản cũ đỏ đúng 2 lỗi "Load total visits"; tài khoản thật chỉ đọc vẫn hiện "… lượt"). Cả 2 spec chạy trong CI.
+
+## Bot LINE: tin nhắn có "/" làm webhook văng lỗi (2026-10-15)
+
+Log 12–14/10: `Unhandled error … documentPath must point to a document, but was "em1bộkmss9/10"` (6 lần). Webhook coi mọi tin 2–30 ký tự
+là lệnh báo cáo và tra `report_commands/<tin>`; "/" làm `.doc()` ném lỗi → cả lượt webhook 500, sự kiện khác cùng lượt bị bỏ.
+Sửa: `functions/src/firestoreDocId.ts → laIdDocHopLe()` (luật ID Firestore) chặn trước tra lệnh và trước `.doc(botParam)` (tham số `b`
+trên URL thẻ LIFF). Tin có "/" không bao giờ là lệnh (Firestore cấm "/" trong ID) nên chỉ bỏ qua bước tra, các xử lý khác giữ nguyên.
+Test: `tests/unit/line-bot-tin-co-gach-cheo.test.ts` (dùng đúng tin nhắn trong log).

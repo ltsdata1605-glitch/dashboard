@@ -16,6 +16,7 @@ import { extractBareCouponCode, buildCouponStatusReply } from './couponLookup';
 import { getGroupFeatures, type GroupFeatures, type GroupFeatureKey } from './groupFeatureHelper';
 import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText, couponKind } from './pmhSequence';
 import { enqueuePmhRelay } from './pmhRelay';
+import { laIdDocHopLe } from './firestoreDocId';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -2087,7 +2088,7 @@ export const lineBotWebhook = onRequest(
                 let uids: string[];
                 const tokenByUid = new Map<string, string>();
                 if (botParam || ticket) {
-                    const botSnap = botParam ? await db.collection('line_bots').doc(botParam).get() : null;
+                    const botSnap = botParam && laIdDocHopLe(botParam) ? await db.collection('line_bots').doc(botParam).get() : null;
                     const botCfg = botSnap?.exists ? await withSecrets(botParam, botSnap.data()) : null;
                     if (!botCfg || !verifyLiffTicket(String(botCfg.channelSecret || ''), code, ticket)) {
                         res.status(403).json({ success: false, error: 'Thẻ coupon không hợp lệ.' });
@@ -2531,7 +2532,7 @@ export const lineBotWebhook = onRequest(
 
                 // 1.3. Xử lý gõ lệnh nhận ảnh báo cáo (ví dụ "bc", "cttk", "dt", "thidua"...)
                 // Cơ chế Reply qua LINE Messaging API: Hoàn toàn MIỄN PHÍ & KHÔNG GIỚI HẠN
-                if (cleanCmd && cleanCmd.length >= 2 && cleanCmd.length <= 30 && !['id', 'admin', 'lineid', 'groupid', 'hd', 'help', 'huongdan', 'cp', 'tk', 'csd', 'huy', 'tra'].includes(cleanCmd)) {
+                if (cleanCmd && cleanCmd.length >= 2 && cleanCmd.length <= 30 && laIdDocHopLe(cleanCmd) && !['id', 'admin', 'lineid', 'groupid', 'hd', 'help', 'huongdan', 'cp', 'tk', 'csd', 'huy', 'tra'].includes(cleanCmd)) {
                     let cmdDoc = await db.collection('line_bots').doc(uid).collection('report_commands').doc(cleanCmd).get();
                     let cmdData = cmdDoc.exists ? cmdDoc.data() : null;
 
