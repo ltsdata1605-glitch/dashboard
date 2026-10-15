@@ -8369,3 +8369,22 @@ là nguồn tốn chính làm 2 bot hết hạn mức tháng 10). Nay: `function
 `public/liff-copy.html` luôn gửi tin xác nhận dưới tên người dùng (`liff.sendMessages`, miễn phí) — kể cả khi máy chủ chậm > 4 s
 (trước đây nhánh này chờ bot đăng → nay bot không đăng thì nhóm không thấy gì). Mã đã có người dùng thì vẫn KHÔNG gửi. Đổi lại: tin
 không trích dẫn thẻ. Test: `tests/e2e/liff-xac-nhan-coupon-mien-phi.spec.ts` (bản cũ đỏ ở tình huống máy chủ chậm).
+
+## Bot LINE: rà mọi tính năng tốn tin, ưu tiên hạn mức cho Gửi Notify (2026-10-15)
+
+Đo log 01→15/10: 2 bot hết hạn mức tháng ngay **02/10 12:22**; sau đó 119 lượt push xác nhận coupon, 29 lượt Notify, 8 lượt báo cáo 06:00
+bị 429. Báo cáo 22:00 hỏng MỖI TỐI (400 `margin: 'xxs'` — LINE không nhận).
+
+| Nơi gửi PUSH (tốn = số thành viên nhóm) | Hiện trạng |
+|---|---|
+| Xác nhận dùng coupon (webhook) | ĐÃ TẮT (gửi dưới tên người dùng qua LIFF — miễn phí) |
+| Báo cáo tồn kho 06:00 | Mặc định TẮT (`morningReport !== true`); bật thì chỉ gửi khi còn đủ cho Notify |
+| Tổng kết 22:00 | Mặc định TẮT; sửa thẻ Flex hỏng; bật thì chỉ gửi khi còn đủ cho Notify |
+| Gửi Notify (lịch + "Gửi ngay") | ƯU TIÊN — không bị chặn |
+| pmhRelay | REPLY (miễn phí) trước, push chỉ khi trả lời chậm — 0 lượt trong tháng 10 |
+| sendTestPush (Admin, thủ công) / sendBroadcast / pushImage | thủ công; sendBroadcast + `services/lineReportDelivery.ts` không còn nơi nào gọi |
+
+`functions/src/lineQuota.ts`: `soLuotConLai`, `uocTinhNotifyConLai` (lượt × thành viên), `choPhepGuiTuDong` (gửi xong vẫn còn đủ cho Notify),
+`uocTinhNotifyCuaBot` (Firestore + LINE members/count, miễn phí). Action `quota` trả thêm `notifyCaThang`/`notifyConLai`; màn Gửi Notify cảnh
+báo khi lịch vượt hạn mức gói. Sửa `margin: 'xxs'` ở 3 nơi (22:00, thẻ coupon, couponParser). Test: `line-bot-uu-tien-notify`,
+`line-flex-gia-tri-hop-le`, `line-bot-han-muc` (3 tình huống).

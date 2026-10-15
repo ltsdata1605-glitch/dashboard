@@ -51,7 +51,7 @@ export const lineMessagingService = {
      * Hạn mức tin nhắn LINE của bot trong tháng (2026-10-15): tin PUSH vào nhóm tính theo SỐ THÀNH VIÊN nhóm; hết hạn mức thì
      * LINE từ chối mọi tin hẹn giờ/gửi ngay tới ngày 1 tháng sau. `limit` null = gói không giới hạn.
      */
-    async getQuota(botId: string): Promise<{ success: boolean; limit?: number | null; used?: number | null; exhausted?: boolean; error?: string }> {
+    async getQuota(botId: string): Promise<{ success: boolean; limit?: number | null; used?: number | null; exhausted?: boolean; notifyCaThang?: number; notifyConLai?: number; error?: string }> {
         try {
             const idToken = await currentIdToken();
             const res = await fetch(`${CLOUD_PROXY_URL}?action=quota`, {

@@ -18,6 +18,8 @@ import { allocatePmhSequence, formatPmhLabel, buildCouponUsedText, couponKind } 
 import { enqueuePmhRelay } from './pmhRelay';
 import { laIdDocHopLe } from './firestoreDocId';
 import { moTaLoiLine, laHetHanMuc } from './lineErrors';
+import { layHanMuc, uocTinhNotifyCuaBot } from './lineQuota';
+import { vnNow } from './lineBotScheduleDue';
 
 const DEFAULT_REGION = 'asia-southeast1';
 
@@ -2043,14 +2045,17 @@ export const lineBotWebhook = onRequest(
             const token = await resolveActionToken(req, res);
             if (token === null) return;
             try {
-                const h = { Authorization: `Bearer ${token}` };
-                const [q, c] = await Promise.all([
-                    fetch('https://api.line.me/v2/bot/message/quota', { headers: h }).then(r => r.json()).catch(() => ({})),
-                    fetch('https://api.line.me/v2/bot/message/quota/consumption', { headers: h }).then(r => r.json()).catch(() => ({})),
-                ]) as [{ type?: string; value?: number }, { totalUsage?: number }];
-                const limit = q?.type === 'limited' && typeof q.value === 'number' ? q.value : null;
-                const used = typeof c?.totalUsage === 'number' ? c.totalUsage : null;
-                res.status(200).json({ success: true, type: q?.type || 'unknown', limit, used, exhausted: limit !== null && used !== null && used >= limit });
+                const botId = String(req.body.botId).trim();
+                const [{ limit, used }, ut] = await Promise.all([
+                    layHanMuc(token),
+                    uocTinhNotifyCuaBot(db.collection('line_bots').doc(botId), token, vnNow()),
+                ]);
+                res.status(200).json({
+                    success: true, limit, used,
+                    exhausted: limit !== null && used !== null && used >= limit,
+                    // Ước tính tin các lịch Gửi Notify đang bật (lượt × số thành viên nhóm) — để biết trước có vượt hạn mức không.
+                    notifyCaThang: ut.caThang, notifyConLai: ut.conLai,
+                });
             } catch (err: any) {
                 res.status(200).json({ success: false, error: err?.message || 'Không đọc được hạn mức từ LINE' });
             }
