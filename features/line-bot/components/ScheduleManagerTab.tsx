@@ -39,7 +39,7 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
 }) => {
     const [editModalOpen, setEditModalOpen] = useState<boolean>(false);
     // Hạn mức tin LINE tháng này (2026-10-15): hết hạn mức thì lịch vẫn chạy đúng giờ nhưng LINE từ chối gửi.
-    const [quota, setQuota] = useState<{ limit?: number | null; used?: number | null; exhausted?: boolean } | null>(null);
+    const [quota, setQuota] = useState<{ limit?: number | null; used?: number | null; exhausted?: boolean; notifyCaThang?: number; notifyConLai?: number } | null>(null);
     useEffect(() => {
         if (!botId) return;
         let huy = false;
@@ -66,6 +66,21 @@ export const ScheduleManagerTab: React.FC<ScheduleManagerTabProps> = ({
                     cho tới ngày 1 tháng sau. Tin gửi vào nhóm tính theo số thành viên nhóm (nhóm 50 người = 50 tin mỗi lần). Muốn gửi tiếp
                     ngay: nâng gói trong LINE Official Account Manager.
                 </Banner>
+            )}
+            {/* Ước tính (2026-10-15): lịch đang bật × số thành viên nhóm nhận — biết TRƯỚC lịch có vượt hạn mức gói không. */}
+            {quota && typeof quota.limit === 'number' && typeof quota.notifyCaThang === 'number' && quota.notifyCaThang > 0 && (
+                quota.notifyCaThang > quota.limit ? (
+                    <Banner tone="warning" title="Lịch Gửi Notify vượt hạn mức gói LINE" maxLines={3}>
+                        Các lịch đang bật cần khoảng {quota.notifyCaThang.toLocaleString('vi-VN')} tin/tháng (số lượt × số thành viên nhóm), gói hiện
+                        tại chỉ có {quota.limit.toLocaleString('vi-VN')} tin. Gộp bớt lịch, giảm nhóm nhận, hoặc nâng gói Official Account.
+                    </Banner>
+                ) : (
+                    <p className="flex items-center gap-1.5 px-1 text-[11px] text-slate-500">
+                        <AppIcon name="info" size="xs" className="text-sky-600 shrink-0" />
+                        Lịch đang bật cần khoảng {quota.notifyCaThang.toLocaleString('vi-VN')}/{quota.limit.toLocaleString('vi-VN')} tin của gói tháng này
+                        {typeof quota.used === 'number' ? ` · đã dùng ${quota.used.toLocaleString('vi-VN')}` : ''}.
+                    </p>
+                )
             )}
             {quota && !quota.exhausted && typeof quota.limit === 'number' && typeof quota.used === 'number' && quota.used >= quota.limit * 0.8 && (
                 <Banner tone="warning" title="Sắp hết hạn mức tin nhắn LINE tháng này">

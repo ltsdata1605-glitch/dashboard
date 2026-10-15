@@ -628,7 +628,7 @@ export function createCouponCardBubble(params: {
                 ...(params.warehouse ? [{
                     type: 'box',
                     layout: 'baseline',
-                    margin: 'xxs',
+                    margin: 'xs',
                     spacing: 'sm',
                     contents: [
                         { type: 'text', text: 'Kho hàng:', color: '#64748B', size: 'xxs', flex: 4 },

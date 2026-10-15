@@ -15,6 +15,20 @@ import {
 } from './lineBotWebhook';
 import { dueSlot, renderTemplate, vnNow, type ScheduleLike } from './lineBotScheduleDue';
 import { moTaLoiLine } from './lineErrors';
+import { layHanMuc, uocTinhNotifyCuaBot, choPhepGuiTuDong } from './lineQuota';
+
+/**
+ * Hạn mức tin còn đủ cho các lượt Notify còn lại của tháng không — dùng TRƯỚC mọi tin tự động không phải Notify (06:00,
+ * 22:00). Đọc: lịch đang bật + nhóm của bot (Firestore) và số thành viên nhóm (LINE, miễn phí). Xem functions/src/lineQuota.ts.
+ */
+async function conDuChoNotify(botRef: FirebaseFirestore.DocumentReference, token: string, groupIdGui: string): Promise<{ ok: boolean; lyDo: string }> {
+    const hm = await layHanMuc(token);
+    if (hm.limit === null && hm.used !== null) return { ok: true, lyDo: 'gói không giới hạn' };
+    const ut = await uocTinhNotifyCuaBot(botRef, token, vnNow(), [groupIdGui]);
+    const chiPhi = ut.thanhVien[groupIdGui] ?? 1;
+    const ok = choPhepGuiTuDong({ limit: hm.limit, used: hm.used, chiPhi, duTruNotify: ut.conLai });
+    return { ok, lyDo: `hạn mức ${hm.limit ?? '∞'}, đã dùng ${hm.used ?? '?'}, tin này ${chiPhi}, dành cho Notify ${ut.conLai}` };
+}
 
 /**
  * `usedAt` lưu dạng ISO UTC (new Date().toISOString()) — phải đổi sang NGÀY VIỆT NAM (UTC+7) rồi mới so
@@ -144,7 +158,7 @@ function createDailyUsageSummaryFlexCard(params: {
                 {
                     type: 'box',
                     layout: 'horizontal',
-                    margin: 'xxs',
+                    margin: 'xs',
                     contents: [
                         {
                             type: 'text',
@@ -310,9 +324,10 @@ export const dailyMorningInventoryReport = onSchedule(
                 const uid = botDoc.id;
                 const token = config.channelAccessToken;
 
-                // Kiểm tra xem admin có bật thông báo sáng không (mặc định bật)
-                if (config.scheduledNotifications?.morningReport === false) {
-                    console.log(`[Scheduler 06:00] Bot ${uid}: Admin tắt tính năng báo cáo sáng.`);
+                // TỰ BẬT mới gửi (2026-10-15 — trước đây mặc định BẬT: tự đẩy mỗi sáng, tốn hạn mức tin LINE = số thành viên
+                // nhóm/ngày, góp phần làm bot hết hạn mức từ 02/10). Xem tồn kho miễn phí: gõ "tk" trong nhóm (bot TRẢ LỜI).
+                if (config.scheduledNotifications?.morningReport !== true) {
+                    console.log(`[Scheduler 06:00] Bot ${uid}: chưa bật báo cáo sáng.`);
                     continue;
                 }
 
@@ -360,6 +375,8 @@ export const dailyMorningInventoryReport = onSchedule(
                 }
 
                 if (flexMsgs.length > 0) {
+                    const kt = await conDuChoNotify(botDoc.ref, token, targetGroupId);
+                    if (!kt.ok) { console.warn(`[Scheduler 06:00] Bot ${uid}: NHƯỜNG hạn mức cho Gửi Notify, không gửi (${kt.lyDo}).`); continue; }
                     await pushLineMessages(token, targetGroupId, flexMsgs);
                 }
             }
@@ -398,9 +415,9 @@ export const dailyEveningUsageSummary = onSchedule(
                 const uid = botDoc.id;
                 const token = config.channelAccessToken;
 
-                // Kiểm tra xem admin có bật thông báo tối không (mặc định bật)
-                if (config.scheduledNotifications?.eveningReport === false) {
-                    console.log(`[Scheduler 22:00] Bot ${uid}: Admin tắt tính năng tổng kết tối.`);
+                // TỰ BẬT mới gửi (2026-10-15, cùng lý do báo cáo 06:00).
+                if (config.scheduledNotifications?.eveningReport !== true) {
+                    console.log(`[Scheduler 22:00] Bot ${uid}: chưa bật tổng kết tối.`);
                     continue;
                 }
 
@@ -479,6 +496,8 @@ export const dailyEveningUsageSummary = onSchedule(
                     usedItems: usedItemsList
                 });
 
+                const kt = await conDuChoNotify(botDoc.ref, token, targetGroupId);
+                if (!kt.ok) { console.warn(`[Scheduler 22:00] Bot ${uid}: NHƯỜNG hạn mức cho Gửi Notify, không gửi (${kt.lyDo}).`); continue; }
                 await pushLineMessages(token, targetGroupId, [summaryFlexMessage]);
             }
         } catch (error) {

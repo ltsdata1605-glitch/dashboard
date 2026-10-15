@@ -42,8 +42,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
     const [autoApprove, setAutoApprove] = useState<boolean>(config?.autoApprove ?? true);
     const [approvalCmd, setApprovalCmd] = useState<string>(config?.approvalCommand || 'DUYỆT');
     const [scheduledGroupId, setScheduledGroupId] = useState<string>(config?.scheduledGroupId || '');
-    const [morningReport, setMorningReport] = useState<boolean>(config?.scheduledNotifications?.morningReport ?? true);
-    const [eveningReport, setEveningReport] = useState<boolean>(config?.scheduledNotifications?.eveningReport ?? true);
+    const [morningReport, setMorningReport] = useState<boolean>(config?.scheduledNotifications?.morningReport === true);
+    const [eveningReport, setEveningReport] = useState<boolean>(config?.scheduledNotifications?.eveningReport === true);
     const [copiedUrl, setCopiedUrl] = useState<boolean>(false);
     const [tokenFocused, setTokenFocused] = useState<boolean>(false);
     const [secretFocused, setSecretFocused] = useState<boolean>(false);
@@ -60,8 +60,8 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
             setAutoApprove(config.autoApprove ?? true);
             setApprovalCmd(config.approvalCommand || 'DUYỆT');
             setScheduledGroupId(config.scheduledGroupId || '');
-            setMorningReport(config.scheduledNotifications?.morningReport ?? true);
-            setEveningReport(config.scheduledNotifications?.eveningReport ?? true);
+            setMorningReport(config.scheduledNotifications?.morningReport === true);
+            setEveningReport(config.scheduledNotifications?.eveningReport === true);
         }
     }, [config, departmentId]);
 
@@ -474,6 +474,13 @@ export const LineBotSettingsTab: React.FC<LineBotSettingsTabProps> = ({
                     </span>
                 </div>
 
+                {/* 2026-10-15: 2 báo cáo tự động mặc định TẮT — tin bot TỰ GỬI vào nhóm tốn hạn mức LINE theo số thành viên nhóm.
+                    Bật lên thì máy chủ vẫn chỉ gửi khi hạn mức còn đủ cho các lịch Gửi Notify (functions/src/lineQuota.ts). */}
+                <span className="flex items-start gap-1.5 text-[11px] text-slate-500">
+                    <AppIcon name="info" size="xs" className="mt-0.5 shrink-0 text-sky-600" />
+                    Mỗi tin bot tự gửi vào nhóm tốn hạn mức tin LINE bằng số thành viên nhóm. Hai báo cáo dưới đây mặc định tắt và luôn
+                    nhường hạn mức cho Gửi Notify. Xem tồn kho miễn phí: gõ "tk" trong nhóm, bot trả lời.
+                </span>
                 {/* Tùy chọn 6h00 sáng */}
                 <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
                     <div>
