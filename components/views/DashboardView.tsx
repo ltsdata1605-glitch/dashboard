@@ -52,6 +52,7 @@ import { SectionHeader } from '../shared/ui/SectionHeader';
 import { SectionCard } from '../shared/ui/SectionCard';
 import { Button } from '../shared/ui/Button';
 import { Banner } from '../shared/ui/Banner';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { getExportFilenamePrefix, formatCurrency, getRowValue } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
@@ -207,19 +208,18 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     const hasSalesData = !!(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)));
 
-    const handleSalesDataClear = () => {
-        if (logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)) {
-            if (window.confirm("Bạn có muốn xóa dữ liệu YCX Realtime hiện tại không?\n(Bấm OK để xóa Realtime, hoặc Cancel để chọn xóa toàn bộ tệp lưu trữ)")) {
-                handleClearRealtimeData();
-            } else if (window.confirm("Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu báo cáo tích lũy không?")) {
-                handleClearAllData();
-            }
-        } else if (logic.hasRealtimeData) {
-            handleClearRealtimeData();
-        } else {
-            handleClearAllData();
-        }
-    };
+    // Xoá dữ liệu YCX — GĐ10 (2026-10-15): trước đây 2 hộp `window.confirm` NỐI NHAU ("Huỷ" ở hộp 1 lại dẫn sang câu hỏi xoá TOÀN BỘ —
+    // dễ bấm nhầm), còn 2 nhánh kia xoá NGAY không hỏi: chỉ có tệp lũy kế → một chạm là xoá mọi tệp trên máy, bản trên cloud và (quản
+    // lý) tệp dùng chung của Kho. Nay mọi nhánh qua MỘT ConfirmDialog; có cả hai loại dữ liệu thì một hộp 3 lựa chọn.
+    // `mo` tách khỏi `loai`: đóng hộp chỉ tắt `mo`, nội dung giữ nguyên trong ~200 ms modal mờ dần (không nháy sang câu hỏi khác).
+    const [hoiXoaYcx, setHoiXoaYcx] = useState<{ mo: boolean; loai: 'chon' | 'realtime' | 'tat-ca' }>({ mo: false, loai: 'tat-ca' });
+    const dongHoiXoaYcx = () => setHoiXoaYcx(h => ({ ...h, mo: false }));
+    const handleSalesDataClear = () => setHoiXoaYcx({
+        mo: true,
+        loai: logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive) ? 'chon'
+            : logic.hasRealtimeData ? 'realtime' : 'tat-ca',
+    });
+    const phamViXoaTatCa = `mọi tệp báo cáo tích lũy trên máy này và bản trên cloud${userRole === 'manager' ? ', kể cả tệp dùng chung của Kho' : ''}`;
 
     const salesClearTitle = logic.hasRealtimeData && logic.fileRegistry && logic.fileRegistry.some(f => f.isActive)
         ? "Xóa dữ liệu YCX (Realtime hoặc Lũy kế)"
@@ -685,6 +685,28 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                 handleFileProcessing(files, isCloudSync, isHistorical);
                             }}
                             onViewReport={logic.handleViewReport}
+                        />
+                        <ConfirmDialog
+                            isOpen={hoiXoaYcx.mo}
+                            onClose={dongHoiXoaYcx}
+                            variant="danger"
+                            title={hoiXoaYcx.loai === 'chon' ? 'Xoá dữ liệu YCX' : hoiXoaYcx.loai === 'realtime' ? 'Xoá dữ liệu YCX Realtime?' : 'Xoá toàn bộ dữ liệu tích lũy?'}
+                            message={hoiXoaYcx.loai === 'chon'
+                                ? `• Chỉ Realtime: xoá dữ liệu đang xem, các tệp lũy kế giữ nguyên.\n• Toàn bộ: xoá ${phamViXoaTatCa} — không hoàn tác được.`
+                                : hoiXoaYcx.loai === 'realtime'
+                                    ? 'Dữ liệu YCX Realtime đang xem sẽ bị xoá khỏi máy này.'
+                                    : `Sẽ xoá ${phamViXoaTatCa}. Không hoàn tác được.`}
+                            extraAction={hoiXoaYcx.loai === 'chon' ? {
+                                text: 'Chỉ xoá dữ liệu Realtime',
+                                variant: 'destructive',
+                                onClick: () => { dongHoiXoaYcx(); handleClearRealtimeData(); },
+                            } : undefined}
+                            confirmText={hoiXoaYcx.loai === 'realtime' ? 'Xoá' : 'Xoá toàn bộ dữ liệu tích lũy'}
+                            onConfirm={() => {
+                                dongHoiXoaYcx();
+                                if (hoiXoaYcx.loai === 'realtime') handleClearRealtimeData();
+                                else handleClearAllData();
+                            }}
                         />
                         <FileNamingModal
                             isOpen={!!pendingNaming}

@@ -1,9 +1,17 @@
 import React from 'react';
 import { Modal } from './Modal';
-import { Button } from './Button';
+import { Button, type ButtonVariant } from './Button';
 import { AppIcon } from './icon/AppIcon';
 
 export type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
+
+/** Lựa chọn thứ ba của hộp xác nhận — xem `ConfirmDialogProps.extraAction`. */
+export interface ConfirmExtraAction {
+  text: string;
+  onClick: () => void;
+  /** Mặc định `secondary`. Việc xoá nhẹ hơn nút chính: `destructive` (đỏ nhạt) — nút đỏ ĐẶC chỉ dành cho nút chính. */
+  variant?: Extract<ButtonVariant, 'secondary' | 'tinted' | 'destructive'>;
+}
 
 export interface ConfirmDialogProps {
   isOpen: boolean;
@@ -17,6 +25,13 @@ export interface ConfirmDialogProps {
   isLoading?: boolean;
   singleButton?: boolean;
   zIndex?: string;
+  /**
+   * Lựa chọn THỨ BA (GĐ10 2026-10-15) — khi người dùng phải chọn giữa 2 việc, vd "Chỉ xoá Realtime" / "Xoá toàn bộ" (thay cho 2 hộp
+   * `window.confirm` nối nhau mà "Huỷ" ở hộp đầu lại dẫn sang câu hỏi xoá nhiều hơn). Có `extraAction` thì các nút XẾP DỌC kiểu hộp
+   * thoại iOS nhiều lựa chọn: lựa chọn phụ (nhẹ hơn) ở trên, nút chính (`confirmText`, màu theo `variant`) ở giữa, Huỷ dưới cùng —
+   * nút phá huỷ mạnh nhất không nằm ở chỗ bấm theo thói quen đầu tiên.
+   */
+  extraAction?: ConfirmExtraAction;
 }
 
 export function ConfirmDialog({
@@ -30,7 +45,8 @@ export function ConfirmDialog({
   variant = 'danger',
   isLoading = false,
   singleButton = false,
-  zIndex
+  zIndex,
+  extraAction
 }: ConfirmDialogProps) {
 
   const variants = {
@@ -77,6 +93,36 @@ export function ConfirmDialog({
           {message}
         </div>
         
+        {extraAction ? (
+          <div className="flex flex-col gap-2 w-full mt-2">
+            <Button
+              variant={extraAction.variant ?? 'secondary'}
+              className="w-full"
+              onClick={extraAction.onClick}
+              disabled={isLoading}
+            >
+              {extraAction.text}
+            </Button>
+            <Button
+              variant={selected.button}
+              className="w-full"
+              onClick={onConfirm}
+              isLoading={isLoading}
+            >
+              {confirmText}
+            </Button>
+            {!singleButton && (
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={onClose}
+                disabled={isLoading}
+              >
+                {cancelText}
+              </Button>
+            )}
+          </div>
+        ) : (
         <div className="flex gap-3 w-full mt-2">
           {!singleButton && (
             <Button 
@@ -97,6 +143,7 @@ export function ConfirmDialog({
             {confirmText}
           </Button>
         </div>
+        )}
       </div>
     </Modal>
   );

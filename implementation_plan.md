@@ -8369,3 +8369,32 @@ là nguồn tốn chính làm 2 bot hết hạn mức tháng 10). Nay: `function
 `public/liff-copy.html` luôn gửi tin xác nhận dưới tên người dùng (`liff.sendMessages`, miễn phí) — kể cả khi máy chủ chậm > 4 s
 (trước đây nhánh này chờ bot đăng → nay bot không đăng thì nhóm không thấy gì). Mã đã có người dùng thì vẫn KHÔNG gửi. Đổi lại: tin
 không trích dẫn thẻ. Test: `tests/e2e/liff-xac-nhan-coupon-mien-phi.spec.ts` (bản cũ đỏ ở tình huống máy chủ chậm).
+
+## GĐ10 — Đồng nhất trong từng phân hệ. BƯỚC 1: luật cứng + hàng rào (2026-10-15, chủ dự án duyệt "đồng ý bắt đầu từ bước 1")
+
+Bối cảnh: kiểm toàn dự án 15/10 — khung app + thành phần dùng chung đã đồng nhất (CI khoá), bên trong từng phân hệ còn nợ đo được
+(194 `<button>` thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng màu, 6 `window.confirm`, 1 danh sách thẻ). Lộ trình
+4 bước: (1) luật cứng + hàng rào → (2) nút/ô nhập từng phân hệ → (3) cỡ chữ + màu → (4) tuỳ chọn: đổi tên class bo góc sang token.
+
+Bước 1 — thiết kế:
+
+| Việc | File | Cách làm |
+|---|---|---|
+| Bịt lỗ ESLint | `eslint.config.js` | `no-restricted-globals` chỉ bắt `confirm()` trần; `window.confirm()` lọt (6 chỗ). Thêm `no-restricted-properties` cho `window`/`globalThis`/`self` × `alert`/`confirm`/`prompt`. Test đơn vị lint thử đoạn mã. |
+| 2 hộp `confirm` nối nhau ở Phân tích | `components/views/DashboardView.tsx`, `components/shared/ui/ConfirmDialog.tsx`, `components/layout/Header.tsx` | 1 `ConfirmDialog` 3 lựa chọn (thêm prop `extraAction` — nút xếp dọc). Thêm hộp xác nhận cho 2 nhánh trước đây XOÁ NGAY không hỏi (chỉ Realtime / chỉ tệp lũy kế — nhánh sau xoá cả cloud + tệp dùng chung của Kho). Header bỏ dấu ✓ "đã xoá" hiện NGAY lúc bấm (kể cả khi huỷ). |
+| `window.confirm` còn lại | `features/tax-calculator/TaxCalculatorView.tsx` (2), `features/line-bot/components/FilteredCouponsTab.tsx`, `features/product-config/components/ProductCodeConfigTable.tsx` | `ConfirmDialog` dùng chung. |
+| "Bảng luôn là bảng" | `features/line-bot/components/FilteredCouponsTab.tsx` | Bỏ danh sách thẻ `md:hidden`; bảng ở mọi cỡ màn, điện thoại ghim cột Mã Coupon (như `CouponManagerTab`, 36b51de). |
+| Capsule giữ icon 16px | `tests/e2e/helpers/iconAudit.ts`, `DESIGN_SYSTEM.md` | Chủ dự án chốt "giữ": nút trong `[data-capsule-bar]` miễn luật icon md (nhãn chỉ cho trình đọc màn hình) nhưng VẪN đo vùng chạm 44. |
+| Hàng rào CI | `.github/workflows/check.yml`, `.github/workflows/design-audit.yml` (mới) | Thêm `chuan-thiet-ke-b`, `icon-audit-man-goc`, `icon-audit-bi` vào job e2e (~1 phút/bài). `icon-audit-modal` (~12 phút/bài) chạy hằng đêm + chạy tay. |
+
+**Kết quả bước 1 (2026-10-15):**
+- 0 `window.confirm/alert/prompt` (ESLint đỏ nếu thêm lại; test `eslint-cam-hop-thoai-trinh-duyet` — đã thử gỡ luật: 5/9 đỏ đúng chỗ).
+- Phân tích: cả 3 nhánh xoá dữ liệu YCX đều hỏi trước (trước: 2 nhánh xoá ngay). Lưu ý cách app chạy — nạp TỆP NÀO cũng dọn Realtime
+  tạm cũ, nạp Realtime thì tắt tệp lũy kế đang bật; "có cả hai" chỉ khi người dùng bật lại tệp trong "Quản lý tệp đã lưu".
+- Hộp xác nhận đóng chỉ tắt `mo`, nội dung giữ nguyên lúc modal mờ dần ~200 ms (bản đầu nháy sang câu hỏi khác / "Mã SP  sẽ bị xoá"
+  trống — test bắt, đã thử cài lại lỗi: đỏ đúng chỗ).
+- Đo: `gd10-xac-nhan-va-bang` 7/7 (iPhone 390 + laptop 1366); `chuan-thiet-ke-b` + `icon-audit-man-goc` + `icon-audit-bi` 5/5 (icon-audit-bi
+  điện thoại đỏ từ 14/10 nay xanh, và các màn sau màn đầu — trước bị chặn — cũng đạt); `apple-tuong-thich`, `khung-app-gd4`,
+  `coupon-bang-iphone`, `tax-qr-and-export`, `smoke` xanh; `npm run check` xanh (ESLint 0 lỗi, cảnh báo `<button>` thô 194 → 193;
+  gói tải đầu 327,2 KB / 330).
+- Chưa làm (bước 2–4): 193 `<button>` thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng màu.

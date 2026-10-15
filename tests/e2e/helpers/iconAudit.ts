@@ -5,8 +5,9 @@ import type { Page } from '@playwright/test';
  * Đo trên trình duyệt thật màn đang hiển thị:
  *   - `legacy`: svg icon KHÔNG đi qua AppIcon (không có lớp .ycx-icon) — phải về 0;
  *   - `lech`: icon trong nút lệch tâm dọc > 1px so với nút (bỏ qua nút xếp dọc icon-trên-chữ);
- *   - `nutChuNhoHon`: icon nằm trong nút CÓ CHỮ nhưng nhỏ hơn token md (trừ vai trò phụ: mũi tên, đóng, sắp xếp, tích);
- *   - `vungCham`: nút chỉ có icon, vùng chạm (kể cả `after:-inset-*`) dưới 44px trên điện thoại.
+ *   - `nutChuNhoHon`: icon nằm trong nút CÓ CHỮ nhưng nhỏ hơn token md (trừ vai trò phụ: mũi tên, đóng, sắp xếp, tích; trừ thanh
+ *     capsule — chủ dự án chốt giữ 16px, 2026-10-15);
+ *   - `vungCham`: nút chỉ có icon (kể cả nút thanh capsule), vùng chạm (kể cả `after:-inset-*`) dưới 44px trên điện thoại.
  */
 export type IconAuditResult = { legacy: string[]; lech: string[]; nutChuNhoHon: string[]; vungCham: string[] };
 
@@ -58,6 +59,10 @@ function doIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<Ic
             const b = btn.getBoundingClientRect();
             const chu = (btn.textContent || '').replace(/\s+/g, ' ').trim();
             const nhan = (chu || btn.getAttribute('aria-label') || btn.getAttribute('title') || '?').slice(0, 30);
+            // Thanh capsule (components/shared/ui/CapsuleBar.tsx, `[data-capsule-bar]`): chủ dự án CHỐT giữ icon 16px (2026-10-15, "Icon
+            // thanh capsule: giữ"). Nút trông như nút ICON (nhãn chỉ để trình đọc màn hình đọc) → miễn luật icon md của nút có chữ, nhưng
+            // VẪN đo vùng chạm 44 như nút icon (cuối vòng lặp).
+            const thanhCapsule = !!btn.closest('[data-capsule-bar]');
             for (const ic of icons) {
                 const r = ic.getBoundingClientRect();
                 // chỉ xét icon là "con trực tiếp về bố cục" của nút: cùng hàng với nút (nút 1 hàng, cao < 60px)
@@ -86,14 +91,14 @@ function doIcons(page: Page, mobile: boolean, rootSelector?: string): Promise<Ic
                 // Check thưởng) là dòng CHÚ THÍCH 12px: icon đi theo cỡ chữ của dòng như liên kết trong câu, không phải nút thanh công
                 // cụ. Vùng chạm của nó do styles.css (.ycx-navbar #mobile-topbar-subtitle) nới đủ 44 — mục `vungCham` vẫn đo.
                 const dongPhuThanhTren = !!btn.closest('#mobile-topbar-subtitle, #desktop-header-subtitle');
-                if (chu && !vaiTroPhu && !lienKetTrongCau && !dongPhuThanhTren && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
+                if (chu && !vaiTroPhu && !lienKetTrongCau && !dongPhuThanhTren && !thanhCapsule && b.height < 60 && r.width < md) nutChuNhoHon.push(`${nhan} [${ten(ic)}] ${r.width}px`);
             }
             // Vùng chạm thật = hộp nút + vùng mở rộng vô hình `after:-inset-*` (mẫu dùng ở dòng dữ liệu dày)
             const af = getComputedStyle(btn, '::after');
             const mo = af.content !== 'none' && af.position === 'absolute';
             const vw = mo ? b.width - (parseFloat(af.left) || 0) - (parseFloat(af.right) || 0) : b.width;
             const vh = mo ? b.height - (parseFloat(af.top) || 0) - (parseFloat(af.bottom) || 0) : b.height;
-            if (mobile && !chu && Math.min(vw, vh) < 43.5) vungCham.push(`${nhan} ${Math.round(vw)}x${Math.round(vh)} ${btn.outerHTML.slice(0, 160)}`);
+            if (mobile && (!chu || thanhCapsule) && Math.min(vw, vh) < 43.5) vungCham.push(`${nhan} ${Math.round(vw)}x${Math.round(vh)} ${btn.outerHTML.slice(0, 160)}`);
         }
         return { legacy, lech, nutChuNhoHon, vungCham };
     }, { mobile, rootSelector });

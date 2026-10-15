@@ -48,7 +48,7 @@ export type { InputProps } from './Input';
 export { Button } from './Button';
 export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export { ConfirmDialog } from './ConfirmDialog';
-export type { ConfirmDialogProps, ConfirmVariant } from './ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmVariant, ConfirmExtraAction } from './ConfirmDialog';
 
 // New Design System components
 export { Badge } from './Badge';

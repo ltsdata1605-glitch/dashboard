@@ -49,7 +49,6 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
-    const [salesClearSuccess, setSalesClearSuccess] = useState(false);
     const { syncState, lastError } = useSync();
     const { activeTab } = useActiveTab();
 
@@ -60,13 +59,9 @@ const Header: React.FC<HeaderProps> = ({
         setMounted(true);
     }, []);
 
-    const handleSalesClear = () => {
-        if (onClearSalesData) {
-            onClearSalesData();
-            setSalesClearSuccess(true);
-            setTimeout(() => setSalesClearSuccess(false), 3000);
-        }
-    };
+    // GĐ10 (2026-10-15): nút chỉ MỞ hộp xác nhận (DashboardView) — bỏ dấu ✓ "đã xoá" từng hiện NGAY lúc bấm, kể cả khi người dùng
+    // huỷ. Xoá xong thì toast "Đã xoá…" báo.
+    const handleSalesClear = () => onClearSalesData?.();
 
     if (activeTab !== 'analysis') return null;
     
@@ -208,10 +203,10 @@ const Header: React.FC<HeaderProps> = ({
                             variant="unstyled" size="none"
                             onClick={handleSalesClear}
                             disabled={isClearingSalesData}
-                            className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 animate-in fade-in duration-200 ${salesClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer'}`}
+                            className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 animate-in fade-in duration-200 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 cursor-pointer`}
                             title={salesClearTitle || "Xóa dữ liệu YCX"}
                         >
-                            <AppIcon name={salesClearSuccess ? 'check' : (isClearingSalesData ? 'loading' : 'delete')} size="md" spin={isClearingSalesData} />
+                            <AppIcon name={isClearingSalesData ? 'loading' : 'delete'} size="md" spin={isClearingSalesData} />
                         </Button>
                     )}
 

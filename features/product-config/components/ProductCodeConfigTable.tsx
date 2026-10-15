@@ -3,6 +3,7 @@ import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { Input } from '../../../components/shared/ui/Input';
 import { Select } from '../../../components/shared/ui/Select';
 import { Button } from '../../../components/shared/ui/Button';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import type { ProductCodeTableItem } from '../types';
 
 interface ProductCodeConfigTableProps {
@@ -67,6 +68,9 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
     const [pageSize, setPageSize] = useState(50);
     const [isAdding, setIsAdding] = useState(false);
     const [editing, setEditing] = useState<EditingState | null>(null);
+    // Mã SP đang chờ xác nhận xoá — GĐ10 (2026-10-15): ConfirmDialog dùng chung thay `window.confirm` (CLAUDE.md mục 2). Đóng hộp
+    // chỉ tắt `mo` — mã giữ nguyên trong lúc modal mờ dần (không nháy "Mã SP  sẽ bị xoá" trống).
+    const [hoiXoaMa, setHoiXoaMa] = useState<{ mo: boolean; ma: string }>({ mo: false, ma: '' });
 
     // Form thêm mới
     const [newMaSP, setNewMaSP] = useState('');
@@ -474,15 +478,7 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                                         {isEditable && (
                                             <td className="px-3 py-2 text-center">
                                                 <button
-                                                    onClick={() => {
-                                                        if (
-                                                            window.confirm(
-                                                                `Bạn có chắc chắn muốn xoá mã SP ${item.maSanPham}?`
-                                                            )
-                                                        ) {
-                                                            onDeleteItem?.(item.maSanPham);
-                                                        }
-                                                    }}
+                                                    onClick={() => setHoiXoaMa({ mo: true, ma: item.maSanPham })}
                                                     className="p-1 text-slate-400 hover:text-rose-500 rounded hover:bg-rose-50 transition-colors"
                                                     title="Xoá mã sản phẩm"
                                                 >
@@ -546,6 +542,18 @@ export const ProductCodeConfigTable: React.FC<ProductCodeConfigTableProps> = ({
                     </div>
                 </div>
             )}
+            <ConfirmDialog
+                isOpen={hoiXoaMa.mo}
+                onClose={() => setHoiXoaMa((h) => ({ ...h, mo: false }))}
+                variant="danger"
+                title="Xoá mã sản phẩm?"
+                message={`Mã SP ${hoiXoaMa.ma} sẽ bị xoá khỏi bảng cấu hình.`}
+                confirmText="Xoá"
+                onConfirm={() => {
+                    onDeleteItem?.(hoiXoaMa.ma);
+                    setHoiXoaMa((h) => ({ ...h, mo: false }));
+                }}
+            />
         </div>
     );
 };

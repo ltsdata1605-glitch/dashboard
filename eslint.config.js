@@ -113,6 +113,16 @@ export default tseslint.config(
         { name: 'confirm', message: 'Dùng <ConfirmDialog> từ components/shared/ui thay vì window.confirm (RULES.md §2.5).' },
         { name: 'prompt', message: 'Dùng <Modal>/<Input> từ components/shared/ui thay vì window.prompt (RULES.md §2.5).' },
       ],
+      // GĐ10 (2026-10-15): luật trên chỉ bắt `confirm()` VIẾT TRẦN — `window.confirm()` là truy cập THUỘC TÍNH nên lọt: 6 chỗ dùng hộp
+      // thoại của trình duyệt (Phân tích, Tính thuế, Bot LINE, Cấu hình SP) trong khi `npm run check` vẫn xanh. Chặn cả `window.` /
+      // `globalThis.` / `self.` (tests/unit/eslint-cam-hop-thoai-trinh-duyet.test.ts lint thử từng dạng).
+      'no-restricted-properties': ['error',
+        ...['window', 'globalThis', 'self'].flatMap((object) => [
+          { object, property: 'alert', message: 'Dùng toast hoặc <ConfirmDialog singleButton> từ components/shared/ui thay vì alert của trình duyệt (CLAUDE.md mục 2).' },
+          { object, property: 'confirm', message: 'Dùng <ConfirmDialog> từ components/shared/ui thay vì confirm của trình duyệt (CLAUDE.md mục 2).' },
+          { object, property: 'prompt', message: 'Dùng <Modal>/<Input> từ components/shared/ui thay vì prompt của trình duyệt (CLAUDE.md mục 2).' },
+        ]),
+      ],
     },
   },
   ...featureBoundaryRules,

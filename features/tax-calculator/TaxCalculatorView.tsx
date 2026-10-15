@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { AppIcon } from '../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../components/shared/ui/toast';
 import { usePageActions } from '../../components/shared/ui/PageActions';
+import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { auth } from '../../services/firebase';
 import { TaxCalculationInput, SavedTaxRecord } from './types/tax.types';
@@ -183,11 +184,16 @@ export const TaxCalculatorView: React.FC = () => {
     setInput((prev) => ({ ...prev, ...updates }));
   };
 
-  const handleReset = () => {
-    if (window.confirm('Bạn có chắc chắn muốn xoá dữ liệu nhập để tính lại từ đầu?')) {
-      setInput(DEFAULT_INPUTS);
-      toast.success('Đã đặt lại biểu mẫu');
-    }
+  // GĐ10 (2026-10-15): 2 câu hỏi xác nhận dùng ConfirmDialog dùng chung thay `window.confirm` của trình duyệt (CLAUDE.md mục 2).
+  // `mo` tách khỏi `loai`: đóng hộp chỉ tắt `mo`, nội dung giữ nguyên trong lúc modal mờ dần (không nháy sang câu hỏi kia).
+  const [hoiXacNhan, setHoiXacNhan] = useState<{ mo: boolean; loai: 'dat-lai' | 'xoa-lich-su' }>({ mo: false, loai: 'dat-lai' });
+  const dongHoiXacNhan = () => setHoiXacNhan((h) => ({ ...h, mo: false }));
+  const [dangXoaLichSu, setDangXoaLichSu] = useState(false);
+
+  const handleReset = () => setHoiXacNhan({ mo: true, loai: 'dat-lai' });
+  const datLaiBieuMau = () => {
+    setInput(DEFAULT_INPUTS);
+    toast.success('Đã đặt lại biểu mẫu');
   };
 
   const handleSaveHistory = async (opts?: { silent?: boolean }) => {
@@ -271,11 +277,19 @@ export const TaxCalculatorView: React.FC = () => {
     }
   };
 
-  const handleClearAllHistory = async () => {
-    if (window.confirm('Bạn có chắc muốn xoá toàn bộ lịch sử tính thuế đã lưu (cả trên máy và Cloud)?')) {
+  const handleClearAllHistory = () => setHoiXacNhan({ mo: true, loai: 'xoa-lich-su' });
+  const xoaToanBoLichSu = async () => {
+    setDangXoaLichSu(true);
+    try {
       await taxSyncService.clearAll();
       toast.success('Đã xoá sạch lịch sử');
       await refreshHistory();
+      dongHoiXacNhan();
+    } catch (e) {
+      console.error('[Tax] Lỗi xoá toàn bộ lịch sử:', e);
+      toast.error('Không thể xoá lịch sử, vui lòng thử lại');
+    } finally {
+      setDangXoaLichSu(false);
     }
   };
 
@@ -533,6 +547,24 @@ export const TaxCalculatorView: React.FC = () => {
         isOpen={showApiKeyModal}
         onClose={() => setShowApiKeyModal(false)}
         onSaveKey={() => {}}
+      />
+
+      {/* Mở được từ trong modal Lịch sử (z-50) → đặt cao hơn để hộp hỏi nằm TRÊN modal đó. */}
+      <ConfirmDialog
+        isOpen={hoiXacNhan.mo}
+        onClose={() => { if (!dangXoaLichSu) dongHoiXacNhan(); }}
+        zIndex="z-[60]"
+        variant={hoiXacNhan.loai === 'dat-lai' ? 'warning' : 'danger'}
+        title={hoiXacNhan.loai === 'dat-lai' ? 'Đặt lại biểu mẫu?' : 'Xoá toàn bộ lịch sử tính thuế?'}
+        message={hoiXacNhan.loai === 'dat-lai'
+          ? 'Dữ liệu đang nhập sẽ bị xoá để tính lại từ đầu. Các bản đã lưu trong lịch sử không bị ảnh hưởng.'
+          : 'Mọi bản tính thuế đã lưu — trên máy này và trên cloud — sẽ bị xoá. Không hoàn tác được.'}
+        confirmText={hoiXacNhan.loai === 'dat-lai' ? 'Đặt lại' : 'Xoá toàn bộ'}
+        isLoading={dangXoaLichSu}
+        onConfirm={() => {
+          if (hoiXacNhan.loai === 'dat-lai') { dongHoiXacNhan(); datLaiBieuMau(); }
+          else void xoaToanBoLichSu();
+        }}
       />
     </div>
   );

@@ -223,7 +223,12 @@ thấy dữ liệu của người trước (chủ dự án gặp thật 2026-09-
 - **Màu sắc**: Chỉ dùng bảng màu semantic đã duyệt: `sky` (primary), `slate` (secondary), `emerald` (success), `amber` (warning), `rose` (danger). Cấm khai báo custom property màu sắc mới trong `features/*`.
 - **Màu ramp (Xoay vòng)**: Khi phân biệt trên 5 hạng mục dữ liệu, dùng pattern "6 họ semantic x 2 tầng sắc độ" (5 màu chuẩn + `indigo`, mỗi họ 2 sắc độ đậm/nhạt), không tự chế màu ngoài palette.
 - **UI Components**: Mọi phần tử tương tác (button, input, modal, confirm dialog, badge, select, dropdown) **bắt buộc** dùng components ở `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự dựng modal `fixed inset-0` mới.
-- **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`.
+- **Cấm tuyệt đối `window.alert/confirm/prompt`**: Bắt buộc dùng component `<ConfirmDialog />`. *(GĐ10 2026-10-15: ESLint trước chỉ bắt
+  `confirm()` viết trần nên 6 chỗ `window.confirm()` lọt — nay chặn cả `window.`/`globalThis.`/`self.`, test
+  `tests/unit/eslint-cam-hop-thoai-trinh-duyet.test.ts`. Phải chọn giữa 2 việc → `ConfirmDialog extraAction` (hộp 3 lựa chọn), KHÔNG nối 2 hộp.
+  Việc xoá dữ liệu nào cũng phải hỏi trước — kể cả khi chỉ còn một loại dữ liệu.)*
+- **Bài đo chuẩn thiết kế trên CI (GĐ10 2026-10-15):** `chuan-thiet-ke-b`, `icon-audit-man-goc`, `icon-audit-bi` chạy mỗi lần push (job e2e);
+  `icon-audit-modal` (~12 phút/bài) chạy hằng đêm + chạy tay ở `.github/workflows/design-audit.yml`. Trước đây cả 4 không chạy tự động.
 - **Toast — MỘT hệ duy nhất (2026-10-10, `KE_HOACH_GIAO_DIEN_APPLE.md` GĐ1):** mọi thông báo nhanh gọi
   `import { toast } from '…/components/shared/ui/toast'` — `toast.success/error/info/warning/loading/promise`, toast có nút
   `toast.action({ title, description, actions })`, tuỳ chọn `description`, `icon: '<tên AppIcon>'`, `onDismiss`, `id`. ESLint CHẶN

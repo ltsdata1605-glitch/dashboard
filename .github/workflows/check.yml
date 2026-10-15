@@ -292,6 +292,22 @@ jobs:
       - name: 'E2E: mau-nganh-modal + dem-luot-truy-cap'
         if: ${{ !cancelled() && steps.server.outcome == 'success' }}
         run: npx playwright test tests/e2e/mau-nganh-modal.spec.ts tests/e2e/dem-luot-truy-cap.spec.ts --output=test-results/mau-nganh-dem-luot
+      # GĐ10 bước 1 (2026-10-15): 3 bài đo chuẩn thiết kế (~1 phút/bài) trước đây KHÔNG nằm trong CI — kiểm toàn dự án 15/10 chạy tay
+      # thì icon-audit-bi đã đỏ từ 14/10 (thanh capsule mới) mà không ai biết. Bài icon trong modal (~12 phút/bài) chạy hằng đêm ở
+      # .github/workflows/design-audit.yml.
+      - name: 'E2E: chuan-thiet-ke-b'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/chuan-thiet-ke-b.spec.ts --output=test-results/chuan-thiet-ke-b
+      - name: 'E2E: icon-audit-man-goc'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/icon-audit-man-goc.spec.ts --output=test-results/icon-audit-man-goc
+      - name: 'E2E: icon-audit-bi'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/icon-audit-bi.spec.ts --output=test-results/icon-audit-bi
+      # Không hộp thoại của trình duyệt (6 window.confirm → ConfirmDialog) + Bot LINE "Coupon đã lọc" là bảng trên điện thoại.
+      - name: 'E2E: gd10-xac-nhan-va-bang'
+        if: ${{ !cancelled() && steps.server.outcome == 'success' }}
+        run: npx playwright test tests/e2e/gd10-xac-nhan-va-bang.spec.ts --output=test-results/gd10-xac-nhan-va-bang
 
       # Đỏ thì phải xem được ảnh chụp + trace, nếu không thì chỉ có dòng lỗi trần, rất khó lần.
       # Kèm cả log dev server: nếu Vite chết giữa chừng thì mọi spec sau đó đỏ vì lý do CHUNG, và

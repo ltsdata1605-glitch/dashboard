@@ -39,8 +39,9 @@ const ROWS: Row[] = [
 ];
 
 /** Tạo file Excel dữ liệu bán hàng tối thiểu cho module Phân Tích, trả về đường dẫn file tạm.
- *  `chuaXuat`: mã đơn để "Chưa xuất" (đơn chờ xuất — mở được hộp Chi tiết đơn hàng); mặc định mọi đơn "Đã xuất". */
-export function createSalesXlsx(opts: { chuaXuat?: string[] } = {}): string {
+ *  `chuaXuat`: mã đơn để "Chưa xuất" (đơn chờ xuất — mở được hộp Chi tiết đơn hàng); mặc định mọi đơn "Đã xuất".
+ *  `ngay`: ngày tạo đơn (mặc định hôm nay) — 2 tệp KHÁC ngày nạp liên tiếp không bật hộp "trùng khoảng ngày" (UploadConflictModal). */
+export function createSalesXlsx(opts: { chuaXuat?: string[]; ngay?: Date } = {}): string {
     const rows = ROWS.map(r => ({
         'Mã Đơn Hàng': r.order,
         'Tên Sản Phẩm': r.product,
@@ -52,8 +53,8 @@ export function createSalesXlsx(opts: { chuaXuat?: string[] } = {}): string {
         'Kho tạo': `Kho ${TEST_KHO}`,
         'Người tạo': TEST_EMPLOYEE,
         'Trạng thái xuất': opts.chuaXuat?.includes(r.order) ? 'Chưa xuất' : 'Đã xuất',
-        'Ngày tạo': d(today),
-        'Thời gian hẹn giao': d(today),
+        'Ngày tạo': d(opts.ngay ?? today),
+        'Thời gian hẹn giao': d(opts.ngay ?? today),
         'Hình thức xuất': 'Xuất bán hàng tại siêu thị',
         'Tình trạng nhập trả của sản phẩm đổi với sản phẩm chính': 'Chưa trả',
         'Trạng thái thu tiền': 'Đã thu',

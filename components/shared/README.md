@@ -20,7 +20,7 @@ sinh ra 2 bản `MultiSelectDropdown`, 17 công tắc tự vẽ, 5 kiểu toast 
 | Nút "⋯" nhiều lệnh | `ActionMenu` | iPhone là action sheet; mục `destructive` tự xuống nhóm cuối, chữ đỏ |
 | Cụm con nhộng thanh trên | `CapsuleBar` | Kiểu viên nhộng Zalo/iOS mẫu: nhìn thấy 32×32px, `ycx-hit` chạm 44px, `portalTargetId="mobile-topbar-actions"` |
 | Nút trên thanh trên | `usePageActions({ scope, primary, quick, items })` | KHÔNG `createPortal` thủ công. `scope: 'mobile'` khi laptop đã có thanh công cụ riêng |
-| Hộp thoại / sheet | `Modal` (`position="bottom"`, `primaryAction`), `ConfirmDialog` | khối tràn sát mép thân modal: `modal-bleed*` (CẤM `-m-5`) |
+| Hộp thoại / sheet | `Modal` (`position="bottom"`, `primaryAction`), `ConfirmDialog` (`extraAction` = hộp 3 lựa chọn, nút xếp dọc) | khối tràn sát mép thân modal: `modal-bleed*` (CẤM `-m-5`). CẤM `window.confirm/alert/prompt` — ESLint chặn cả dạng `window.` |
 | Lớp phủ | `Overlay kind="busy"\|"scrim"\|"fullscreen"`, `BusyBar` (tính ngầm không chặn màn) | CẤM tự viết `fixed inset-0` (ratchet `rawOverlay`) |
 | Thông báo nhanh | `toast.*`, `toastViecDai()` (việc nhiều bước) | `toast/`. CẤM `react-hot-toast` ngoài module này, cấm dựng toast bằng DOM |
 | Thông báo tĩnh trong trang | `Banner tone="info\|success\|warning\|danger"` | có `action`, `onDismiss`; cấm chữ chạy |

@@ -451,6 +451,17 @@ cập nhật `CLAUDE.md` / `RULES.md` / `DESIGN_SYSTEM.md`.
 - **Checklist cho chủ dự án trên iPhone thật** (những gì máy ảo không kiểm được): bàn phím ảo trong sheet, vuốt tắt toast/sheet,
   Dynamic Island không che toast, cài lên Màn hình chính và mở lại, xoay ngang bảng nhiều cột.
 
+### GĐ10 — Đồng nhất BÊN TRONG từng phân hệ (2026-10-15, chủ dự án duyệt) · *lớn, chia 4 bước*
+Kiểm toàn dự án 15/10: khung app + thành phần dùng chung đã đồng nhất (CI khoá); bên trong từng phân hệ còn nợ đo được — 194 `<button>`
+thô, 161 ô nhập thô, 212 cỡ chữ ngoài thang, 26 màu ngoài bảng màu, 6 `window.confirm`, 1 danh sách thẻ (chi tiết `implementation_plan.md`).
+1. **Luật cứng + hàng rào — XONG 15/10:** 6 `window.confirm` → `ConfirmDialog` (Phân tích: 1 hộp 3 lựa chọn thay 2 hộp nối nhau, và hỏi
+   cả 2 nhánh trước đây xoá ngay); ESLint chặn `window.`/`globalThis.`/`self.` alert/confirm/prompt; Bot LINE "Coupon đã lọc" là bảng
+   trên điện thoại; capsule giữ icon 16px (chủ dự án chốt); 3 bài đo chuẩn thiết kế vào job e2e + bài icon trong modal chạy hằng đêm.
+2. Nút và ô nhập tự vẽ → `Button`/`Input`/`Select`, từng phân hệ một (nặng nhất trước: Bot LINE → Tính thuế → Report BI → Check thưởng →
+   Cấu hình SP → khung app), mỗi phân hệ 1 commit + ảnh trước/sau; xong thì `<button>` thô từ cảnh báo thành chặn.
+3. Cỡ chữ (212) và màu (26 ngoài bảng màu + mã hex) về thang/bảng chuẩn — thẻ KPI ảnh hưởng toàn app nên gửi ảnh trước/sau để duyệt.
+4. *(Tuỳ chọn)* đổi tên ~1.000 class bo góc kiểu cũ sang token — giao diện không đổi.
+
 ---
 
 ## 6. Quy trình bắt buộc ở MỖI giai đoạn
