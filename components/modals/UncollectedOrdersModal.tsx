@@ -6,6 +6,8 @@ import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename } from '../../utils/dataUtils';
 import { COL } from '../../constants';
+// Màu ô ngành: bảng dùng chung, class viết tường minh (trước đây ghép chuỗi "border-<màu>-500" → 6 ngành mất màu).
+import { industryToneByName } from '../../utils/industryColors';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { startExportJob } from '../shared/export';
 import { Button } from '../shared/ui/Button';
@@ -30,27 +32,6 @@ const industryIcons: { [key: string]: string } = {
     'Khác': 'package'
 };
 
-// Color palette for different industries
-const industryColors: { [key: string]: string } = {
-    'Smartphone': 'blue', 'Laptop': 'sky', 'Tablet': 'cyan',
-    'Phụ kiện': 'violet', 'Gia dụng': 'orange', 'Wearable': 'rose',
-    'CE': 'teal', 'Bảo hiểm': 'emerald', 'Sim': 'lime',
-    'Máy lọc nước': 'indigo', 'Vieon': 'fuchsia', 'Khác': 'slate'
-};
-
-// Tailwind JIT compiler hints
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
-// border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-400 bg-amber-500
-// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 bg-rose-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 bg-emerald-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 bg-emerald-500
-// border-emerald-500 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 bg-emerald-500
-// border-sky-500 bg-sky-100 dark:bg-sky-900/50 text-sky-700 dark:text-sky-400 bg-sky-500
-// border-rose-500 bg-rose-100 dark:bg-rose-900/50 text-rose-700 dark:text-rose-400 bg-rose-500
-// border-slate-500 bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 bg-slate-500
 
 
 const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen, onClose, onExport, onExportSheet, onlyOverdue }) => {
@@ -539,21 +520,21 @@ Link: ${url}`;
                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">{/* tối đa 4 cột — xem UnshippedOrdersModal (2026-09-28) */}
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUncollectedRevenue > 0 ? (item.revenue / totalUncollectedRevenue * 100) : 0;
-                                    const color = industryColors[item.name] || 'slate';
+                                    const tone = industryToneByName(item.name);
                                     const icon = industryIcons[item.name] || 'package';
 
                                     return (
                                         <div
                                             key={item.name}
-                                            className={`bg-slate-50 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-lg border-l-4 border-${color}-500 flex items-center gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5`}
+                                            className={`bg-slate-50 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-lg border-l-4 ${tone.border} flex items-center gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5`}
                                         >
-                                           <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-${color}-100 dark:bg-${color}-900/50 flex flex-shrink-0 items-center justify-center text-${color}-600 dark:text-${color}-400`}>
+                                           <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full ${tone.bg} flex flex-shrink-0 items-center justify-center ${tone.text}`}>
                                                 <AppIcon name={resolveIconName(icon) ?? 'help'} size="md" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 truncate leading-tight mb-0.5" title={item.name}>{item.name}</p>
                                                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                    <p className={`font-black text-sm sm:text-base text-${color}-600 dark:text-${color}-400 leading-none`}>{formatCurrency(item.revenue)}</p>
+                                                    <p className={`font-black text-sm sm:text-base ${tone.value} leading-none`}>{formatCurrency(item.revenue)}</p>
                                                     <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 leading-none">({percentage.toFixed(1)}%)</p>
                                                 </div>
                                             </div>

@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import type { DataRow, ProductConfig, IndustryData } from '../types';
 import { getRowValue, getParentGroup, getSubgroup, calculateRowMetrics } from '../utils/dataUtils';
 import { COL } from '../constants';
+import { INDUSTRY_COLOR_KEY } from '../utils/industryColors';
 
 export interface GridItem {
     name: string;
@@ -60,13 +61,8 @@ const subgroupIcons: { [key: string]: string } = {
     'Balo': 'backpack'
 };
 
-// Color palette for different industries
-const industryColors: { [key: string]: string } = {
-    'Smartphone': 'blue', 'Laptop': 'sky', 'Tablet': 'cyan',
-    'Phụ kiện': 'violet', 'Gia dụng': 'orange', 'Wearable': 'rose',
-    'CE': 'teal', 'Bảo hiểm': 'emerald', 'Sim': 'lime',
-    'Máy lọc nước': 'indigo', 'Vieon': 'fuchsia', 'Khác': 'slate'
-};
+// Màu ngành: utils/industryColors.ts (một bảng cho thẻ ngành Phân tích + 2 modal chưa xuất/chưa thu).
+const industryColors = INDUSTRY_COLOR_KEY;
 
 // List of unimportant groups to hide from the main view
 const hiddenGroups = new Set(['IT', 'DCNB', 'Software', 'Thẻ cào', 'Phụ kiện lắp đặt', 'Office & Virus', 'Khác', 'ICT', 'Vieon']);

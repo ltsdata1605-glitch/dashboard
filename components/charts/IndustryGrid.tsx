@@ -14,29 +14,13 @@ import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
 import { Button } from '../shared/ui/Button';
+import { industryToneByKey } from '../../utils/industryColors';
 
 // Ramp phân loại nhóm — chỉ dùng sắc độ của 5 màu semantic (sky/emerald/amber/rose/slate)
 // + indigo (alias primary hợp lệ), đủ tương phản để phân biệt tới 12 nhóm mà vẫn trong palette.
 const CHART_COLORS = ['#0284c7', '#059669', '#f59e0b', '#f43f5e', '#6366f1', '#0ea5e9', '#d97706', '#fb7185', '#10b981', '#7dd3fc', '#94a3b8', '#a5b4fc'];
 
-// Giữ nguyên các key (blue/cyan/orange/pink/teal/violet/lime/fuchsia) để tra cứu cũ vẫn chạy,
-// nhưng ánh xạ về sắc độ semantic + indigo. Dùng sắc độ khác nhau để vẫn phân biệt được nhóm.
-const colorClasses: Record<string, { bg: string, text: string }> = {
-    blue:   { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
-    emerald:{ bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
-    amber:  { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
-    rose:   { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
-    indigo: { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
-    cyan:   { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
-    orange: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-amber-700 dark:text-amber-300' },
-    pink:   { bg: 'bg-rose-100 dark:bg-rose-500/20', text: 'text-rose-700 dark:text-rose-300' },
-    teal:   { bg: 'bg-emerald-100 dark:bg-emerald-500/20', text: 'text-emerald-700 dark:text-emerald-300' },
-    sky:    { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
-    violet: { bg: 'bg-sky-100 dark:bg-sky-500/20', text: 'text-sky-700 dark:text-sky-300' },
-    slate:  { bg: 'bg-slate-100 dark:bg-slate-700/60', text: 'text-slate-500 dark:text-slate-400' },
-    lime:   { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-500 dark:text-emerald-300' },
-    fuchsia:{ bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-500 dark:text-rose-300' },
-};
+// Màu thẻ ngành: utils/industryColors.ts — bảng DÙNG CHUNG với ô ngành của 2 modal chưa xuất/chưa thu (cùng ngành, cùng màu).
 
 // Level badge labels
 const levelLabels: Record<number, string> = {
@@ -331,7 +315,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                     const val = metricToDisplay === 'revenue' ? revenue : quantity;
                                     const pct = totalVal > 0 ? (val / totalVal * 100) : 0;
-                                    const iClass = colorClasses[color] ?? colorClasses['slate'];
+                                    const iClass = industryToneByKey(color);
 
                                     return (
                                         <div
