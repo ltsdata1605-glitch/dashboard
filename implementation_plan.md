@@ -8361,3 +8361,11 @@ XANH "Đã gửi 0/1 nhóm!").
 
 Test: `tests/unit/line-bot-loi-han-muc.test.ts`, `tests/e2e/line-bot-han-muc.spec.ts`. Gợi ý giảm tiêu hao (chưa làm, chờ chủ dự án): tin
 xác nhận dùng coupon đang PUSH vào nhóm (mỗi lượt tốn = số thành viên) — có đường dự phòng LIFF gửi thay người dùng (miễn phí).
+
+## Bot LINE: tin xác nhận dùng coupon gửi dưới tên người dùng — miễn phí (2026-10-15, chủ dự án chốt "muốn")
+
+Mỗi lượt bấm dùng coupon, bot PUSH 1 tin xác nhận trích dẫn thẻ vào nhóm → tốn hạn mức tin LINE = SỐ THÀNH VIÊN nhóm mỗi lượt (nghi
+là nguồn tốn chính làm 2 bot hết hạn mức tháng 10). Nay: `functions/src/lineBotWebhook.ts` `BOT_TRICH_DAN_COUPON = false` (không push);
+`public/liff-copy.html` luôn gửi tin xác nhận dưới tên người dùng (`liff.sendMessages`, miễn phí) — kể cả khi máy chủ chậm > 4 s
+(trước đây nhánh này chờ bot đăng → nay bot không đăng thì nhóm không thấy gì). Mã đã có người dùng thì vẫn KHÔNG gửi. Đổi lại: tin
+không trích dẫn thẻ. Test: `tests/e2e/liff-xac-nhan-coupon-mien-phi.spec.ts` (bản cũ đỏ ở tình huống máy chủ chậm).

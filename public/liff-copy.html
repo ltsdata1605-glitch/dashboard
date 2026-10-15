@@ -270,7 +270,9 @@
             }
         }
 
-        // XÁC NHẬN SỬ DỤNG. Server để BOT gửi tin xác nhận TRÍCH DẪN đúng thẻ (LIFF sendMessages không có quoteToken).
+        // XÁC NHẬN SỬ DỤNG. Từ 2026-10-15 tin xác nhận gửi DƯỚI TÊN người dùng (liff.sendMessages — miễn phí). Bot không tự
+        // PUSH tin trích dẫn nữa vì tốn hạn mức tin LINE theo số thành viên nhóm (server trả quotedSent=false; vẫn giữ nhánh
+        // quotedSent=true phòng khi bật lại BOT_TRICH_DAN_COUPON ở functions/src/lineBotWebhook.ts).
         async function confirmUsage(displayName, existingPromise) {
             if (alreadySentLocally) {
                 spinner.style.display = 'none';
@@ -281,7 +283,7 @@
                 return;
             }
             statusTitle.textContent = '⚡ Đang gửi xác nhận...';
-            statusDesc.textContent = 'Bot sẽ trả lời trích dẫn đúng thẻ coupon.';
+            statusDesc.textContent = 'Đang ghi nhận và gửi tin xác nhận vào nhóm.';
             statusDetail.textContent = '';
             if (localSentKey) { try { localStorage.setItem(localSentKey, 'true'); } catch (_) {} }
 
@@ -289,11 +291,11 @@
             const outcome = await Promise.race([request, timeout(4000, { timedOut: true })]);
 
             if (outcome.timedOut) {
-                // Server chậm (cold start): request keepalive vẫn tới nơi, bot sẽ tự đăng xác nhận → đóng luôn,
-                // KHÔNG gửi dự phòng để không bị 2 tin.
+                // Server chậm (cold start): request keepalive vẫn tới nơi và ghi nhận "đã dùng". Bot không còn tự đăng xác nhận
+                // (2026-10-15) → người dùng gửi tin xác nhận luôn, kẻo nhóm không thấy gì.
+                await sendFallbackMessage(displayName);
                 spinner.style.display = 'none';
-                statusTitle.textContent = '✅ Đã copy mã!';
-                statusDesc.textContent = 'Xác nhận sẽ được bot đăng trong giây lát.';
+                statusTitle.textContent = '✅ Đã copy & xác nhận!';
                 closeNow(0);
                 return;
             }
