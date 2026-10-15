@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize, normalizedThuHoSet, parseNumber } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext, DashboardContextType } from '../../contexts/DashboardContext';
 import { saveKpiTargets, getKpiTargets } from '../../services/dbService';
@@ -258,7 +258,7 @@ const KpiCardsInner: React.FC<KpiCardsInnerProps> = React.memo(({
                     if (filterNhom.length > 0 && !filterNhom.includes(nhomMapValue)) continue;
 
                     if (filters.metricType === 'quantity') {
-                        val += Number(getRowValue(row, COL.QUANTITY) || 0);
+                        val += parseNumber(getRowValue(row, COL.QUANTITY));
                     } else if (filters.metricType === 'revenueQD') {
                         val += calculateRowMetrics(row, productConfig).revenueQD;
                     } else { // revenue

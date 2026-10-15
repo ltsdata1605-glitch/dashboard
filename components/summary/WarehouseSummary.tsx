@@ -732,7 +732,8 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
                 {/* BEGIN: Header Section */}
                 <SectionHeader 
-                    title="Chi tiết theo kho" 
+                    title="CHI TIẾT THEO KHO" 
+                    titleClassName="type-headline font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight"
                     subtitle="Hiệu suất từng siêu thị"
                 >
                     <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export">

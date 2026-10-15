@@ -16,6 +16,7 @@ import {
     computeUniqueFilterOptions,
     formatCleanDisplayName,
     parseExcelDate,
+    getRowPrice,
 } from './dataUtils';
 
 /**
@@ -488,3 +489,62 @@ describe('Audit D15 — đọc số/ngày kiểu Việt Nam', () => {
         expect(parseExcelDate('28/02/2026 10:30')?.getMonth()).toBe(1);
     });
 });
+
+describe('getRowPrice & Fallback giá bán — Khắc phục file import chỉ có 1 cột giá', () => {
+    it('đọc giá từ khoá ngắn gia khi có sẵn', () => {
+        const row = { gia: 15000000 };
+        expect(getRowPrice(row)).toBe(15000000);
+    });
+
+    it('fallback tự động sang giaGoc khi row chỉ có giaGoc (file Excel chỉ có cột Giá bán)', () => {
+        const row = { giaGoc: 12500000 };
+        expect(getRowPrice(row)).toBe(12500000);
+        // getRowValue(row, COL.PRICE) cũng phải fallback sang giaGoc
+        expect(getRowValue(row, COL.PRICE)).toBe(12500000);
+    });
+
+    it('fallback tự động sang gia khi hỏi original price mà row chỉ có gia', () => {
+        const row = { gia: 8000000 };
+        expect(getRowPrice(row, 'original')).toBe(8000000);
+        expect(getRowValue(row, COL.ORIGINAL_PRICE)).toBe(8000000);
+    });
+
+    it('ưu tiên đúng gia và giaGoc khi row có cả 2', () => {
+        const row = { gia: 9000000, giaGoc: 10000000 };
+        expect(getRowPrice(row, 'discounted')).toBe(9000000);
+        expect(getRowPrice(row, 'original')).toBe(10000000);
+        expect(getRowValue(row, COL.PRICE)).toBe(9000000);
+        expect(getRowValue(row, COL.ORIGINAL_PRICE)).toBe(10000000);
+    });
+
+    it('hỗ trợ row tiếng Việt cũ chỉ có "Giá bán" (không có "Giá bán_1")', () => {
+        const row = { 'Giá bán': 5500000 };
+        expect(getRowPrice(row)).toBe(5500000);
+        expect(getRowValue(row, COL.PRICE)).toBe(5500000);
+    });
+
+    it('hỗ trợ biến thể "Thành tiền", "Doanh thu", "Giá bán 1" cho COL.PRICE', () => {
+        expect(getRowValue({ 'Thành tiền': 3000000 }, COL.PRICE)).toBe(3000000);
+        expect(getRowValue({ 'Doanh thu': 4000000 }, COL.PRICE)).toBe(4000000);
+        expect(getRowValue({ 'Giá bán 1': 5000000 }, COL.PRICE)).toBe(5000000);
+    });
+
+    it('parse chuỗi số định dạng tiền tệ Việt Nam thành number hợp lệ', () => {
+        expect(getRowPrice({ gia: '1.250.000' })).toBe(1250000);
+        expect(getRowPrice({ 'Giá bán': ' 15.000.000 ₫ ' })).toBe(15000000);
+    });
+
+    it('calculateRowMetrics tính đúng doanh thu và DTQĐ khi row chỉ có giaGoc (fix lỗi DTQĐ hiển thị "-")', () => {
+        const row = {
+            giaGoc: 10000000,
+            sl: 1,
+            nhomHang: 'pk1',
+        };
+        const config = emptyConfig();
+        config.childToParentMap = { pk1: 'Phụ kiện' };
+        const metrics = calculateRowMetrics(row, config);
+        expect(metrics.revenue).toBe(10000000);
+        expect(metrics.revenueQD).toBeCloseTo(33700000, 2);
+    });
+});
+

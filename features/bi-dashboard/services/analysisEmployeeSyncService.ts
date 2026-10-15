@@ -16,6 +16,7 @@ export interface AnalysisEmployeeItem {
     originalName: string;    // Tên gốc (để so khớp với các báo cáo)
     department: string;      // Phòng ban (ví dụ: 'Kho Siêu Thị', 'Tư Vấn', 'Thu Ngân')
     supermarket?: string;    // Tên hoặc mã siêu thị nếu có
+    maKho?: string;          // Mã kho (chuỗi số, ví dụ: '910', '1024')
 }
 
 /**
@@ -110,12 +111,14 @@ export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayl
         // Chỉ lấy nhân viên được khai báo bộ phận, nếu bộ phận chưa xác định sẽ không được tính
         if (!dept || isSystemOrIgnoredEmployee(origName, dept)) continue;
 
+        const maKho = typeof x.maKho === 'string' ? x.maKho.trim().replace(/\D/g, '') : undefined;
         employees.push({
             id: typeof x.id === 'string' ? x.id : String(x.id ?? ''),
             name: x.name,
             originalName: origName,
             department: dept,
             supermarket: typeof x.supermarket === 'string' ? x.supermarket : undefined,
+            maKho: maKho || undefined,
         });
     }
     return {
@@ -132,7 +135,7 @@ export function docAnalysisEmployeesPayload(raw: unknown): AnalysisEmployeesPayl
  * Chuẩn hoá danh sách nhân viên từ Phân Tích thành mảng sạch không trùng lặp
  */
 export function normalizeAnalysisEmployees(
-    rawEmployees: Array<{ name: string; department?: string }>,
+    rawEmployees: Array<{ name: string; department?: string; maKho?: string }>,
     supermarket?: string
 ): AnalysisEmployeeItem[] {
     const seen = new Set<string>();
@@ -160,6 +163,7 @@ export function normalizeAnalysisEmployees(
         }
 
         const dedupKey = empId || canonical;
+        const cleanMaKho = emp.maKho ? String(emp.maKho).trim().replace(/\D/g, '') : undefined;
         if (!seen.has(dedupKey)) {
             seen.add(dedupKey);
             result.push({
@@ -167,7 +171,8 @@ export function normalizeAnalysisEmployees(
                 name: formatEmployeeName(originalName),
                 originalName,
                 department: dept,
-                supermarket: supermarket || undefined
+                supermarket: supermarket || undefined,
+                maKho: cleanMaKho || undefined,
             });
         }
     }
@@ -179,7 +184,7 @@ export function normalizeAnalysisEmployees(
  * Lưu danh sách nhân viên chuẩn vào IndexedDB và tự động trigger Firebase Cloud Sync
  */
 export async function saveAnalysisEmployees(
-    rawEmployees: Array<{ name: string; department?: string }>,
+    rawEmployees: Array<{ name: string; department?: string; maKho?: string }>,
     supermarket?: string,
     /** Nút "Đồng bộ Report BI" bấm tay: luôn ghi + đẩy lên, kể cả khi danh sách không đổi. */
     batBuoc = false
@@ -233,17 +238,23 @@ export async function saveAnalysisEmployees(
 }
 
 /**
- * Chuyển đổi DepartmentMap ("mã NV" -> "Bộ phận;;Tên") từ chức năng Phân Tích
+ * Chuyển đổi DepartmentMap ("mã NV" -> "Bộ phận;;Tên;;Mã kho") từ chức năng Phân Tích
  * sang mảng danh sách nhân viên chuẩn để chuẩn hóa cho Report BI
  */
-export function convertDepartmentMapToEmployees(map: Record<string, string>): Array<{ name: string; department: string }> {
+export function convertDepartmentMapToEmployees(map: Record<string, string>): Array<{ id?: string; name: string; department: string; maKho?: string }> {
     return Object.entries(map || {}).map(([id, raw]) => {
-        const [dept, name] = String(raw || '').split(';;');
+        const [dept, name, rawMaKho] = String(raw || '').split(';;');
         const cleanName = (name || '').trim();
         const cleanId = id.trim();
+        const cleanMaKho = (rawMaKho || '').trim().replace(/\D/g, '');
         const alreadyHasId = cleanName.startsWith(`${cleanId} -`) || cleanName.startsWith(`${cleanId}-`);
         const fullName = !cleanName ? cleanId : alreadyHasId ? cleanName : `${cleanId} - ${cleanName}`;
-        return { name: fullName, department: (dept || '').trim() };
+        return {
+            id: cleanId,
+            name: fullName,
+            department: (dept || '').trim(),
+            maKho: cleanMaKho || undefined
+        };
     });
 }
 

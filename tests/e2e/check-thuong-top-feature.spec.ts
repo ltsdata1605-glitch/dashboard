@@ -109,4 +109,48 @@ test.describe('Check Thưởng — Top thưởng (component React)', () => {
         await expect(page.getByRole('button', { name: /Top thưởng/i })).toHaveCount(0);
         await expect(page.getByText(/Siêu Thị B/)).toHaveCount(0);
     });
+
+    test('4 thẻ KPI hiển thị theo grid 4 cột nhỏ gọn và đổi đơn vị tỷ khi >= 1 tỷ (1.66 tỷ)', async ({ page }) => {
+        // Nạp dữ liệu với tổng thưởng trên 1 tỷ (1.657.000.000 đ)
+        const DATA_TY = [
+            row('DML', '910 - Siêu Thị A', 'Ngành 1', 1.2, 1_000_000_000),
+            row('DMM', '920 - Siêu Thị B', 'Ngành 1', 1.5, 657_000_000),
+        ];
+        function tepDuLieuTy() {
+            const tieuDe: string[] = new Array(14).fill('');
+            tieuDe[CHECK_THUONG_COLS.KENH] = 'Kênh';
+            tieuDe[CHECK_THUONG_COLS.SIEU_THI] = 'Siêu thị';
+            tieuDe[CHECK_THUONG_COLS.NGANH_HANG] = 'Ngành hàng';
+            tieuDe[CHECK_THUONG_COLS.PERCENT_DU_KIEN] = '% Dự kiến';
+            tieuDe[CHECK_THUONG_COLS.TONG_THUONG] = 'Tổng thưởng';
+            const dong = [tieuDe, ...DATA_TY].map(r => r.join('\t')).join('\n');
+            return { name: 'du-lieu-ty.csv', mimeType: 'text/csv', buffer: Buffer.from(dong, 'utf-8') };
+        }
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page.goto('/?tab=check-thuong');
+        await page.getByRole('button', { name: /Kích hoạt Chế độ Dùng Thử/i }).click();
+        const oNapFile = page.locator('input[type="file"][accept*=".xlsx"]').first();
+        await oNapFile.waitFor({ state: 'attached', timeout: 30_000 });
+        await oNapFile.setInputFiles(tepDuLieuTy());
+        await page.getByRole('button', { name: /Top thưởng/i }).first().click({ timeout: 20_000 });
+
+        // 1. Grid 4 cột: 4 thẻ KPI nằm cùng một hàng ngang (cùng Y)
+        const cards = page.locator('.kpi-overview-card');
+        await expect(cards).toHaveCount(4);
+        const box0 = (await cards.nth(0).boundingBox())!;
+        const box1 = (await cards.nth(1).boundingBox())!;
+        const box2 = (await cards.nth(2).boundingBox())!;
+        const box3 = (await cards.nth(3).boundingBox())!;
+        expect(Math.abs(box0.y - box1.y)).toBeLessThanOrEqual(2);
+        expect(Math.abs(box1.y - box2.y)).toBeLessThanOrEqual(2);
+        expect(Math.abs(box2.y - box3.y)).toBeLessThanOrEqual(2);
+
+        // 2. Thẻ 2 hiển thị 1.66 tỷ thay vì 1.657 Tr
+        await expect(cards.nth(1).getByText('1.66', { exact: true }).filter({ visible: true })).toBeVisible();
+        await expect(cards.nth(1).getByText('tỷ', { exact: true }).filter({ visible: true })).toBeVisible();
+
+        // 3. Ảnh chụp xác thực
+        await page.locator('.grid.grid-cols-4').first().screenshot({ path: test.info().outputPath('check-thuong-kpi-grid-4.png') });
+    });
 });

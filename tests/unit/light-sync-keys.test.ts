@@ -34,7 +34,21 @@ describe('isHeavySyncKey — nhận diện đầy đủ khóa nặng thi đua v�
         'analysis-employees-list',
         'productConfig',
         'tile-custom-links',
-        'bi_tile-custom-links'
+        'bi_tile-custom-links',
+        'hidden-cols-summary-realtime',
+        'bi_hidden-cols-summary-realtime',
+        'hidden-cols-summary-luyke',
+        'bi_hidden-cols-summary-luyke',
+        'hidden-supermarkets-summary-realtime',
+        'bi_hidden-supermarkets-summary-realtime',
+        'global-hidden-cols-industry-v2',
+        'bi_global-hidden-cols-industry-v2',
+        'global-hidden-industries',
+        'global-hidden-sub-industries',
+        'global-industry-kpi-cards-v1',
+        'global-industry-kpi-focus-metric-v1',
+        'competition-visible-cols-realtime-v6',
+        'competition-visible-cols-luyke-v6'
     ])('%s → là khoá nặng', async (k) => {
         const { isHeavySyncKey } = await import('../../utils/localDbScope');
         expect(isHeavySyncKey(k)).toBe(true);

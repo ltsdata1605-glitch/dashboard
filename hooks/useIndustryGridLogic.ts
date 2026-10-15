@@ -217,7 +217,7 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
     const getTitle = (activeTab: 'card' | 'chart') => {
         if (activeTab === 'chart') return "Biểu đồ tỷ trọng";
         const level = drilldownPath.length;
-        if (level === 0) return "Tỷ trọng ngành hàng";
+        if (level === 0) return "TỶ TRỌNG NGÀNH HÀNG";
         
         const [parent, child] = drilldownPath;
         if (level === 1) return `Chi tiết: ${parent}`;

@@ -213,11 +213,12 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         >
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
+                titleClassName="type-headline font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight"
                 title={(
                     <div className="flex min-w-0 items-center gap-2">
                             <span className="truncate">{getTitle('card')}</span>
                             {drilldownPath.length > 0 && <div className="h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-700"></div>}
-                            <nav className="flex min-w-0 items-center text-[12px] font-medium text-slate-400 dark:text-slate-500 gap-0.5">
+                            <nav className="flex min-w-0 items-center text-[12px] font-medium text-slate-400 dark:text-slate-500 gap-0.5 normal-case tracking-normal">
                                 {drilldownPath.length > 0 && (
                                     <Button
                                         variant="unstyled" size="none"

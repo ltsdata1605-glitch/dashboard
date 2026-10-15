@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 import type { DataRow, Status } from '../types';
-import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize, parseNumber } from '../utils/dataUtils';
 import { COL, VARIANT_TO_SHORT_KEY } from '../constants';
 import { rowsToJsonBuffers, type JsonBufferResult } from './salesJsonChunks';
 
@@ -111,6 +111,12 @@ async function processSingleFileInWorker(file: File) {
                 }
 
                 if (hasData) {
+                    // Tự động đồng bộ nếu file chỉ có 1 cột giá (ví dụ chỉ có 'Giá bán' hoặc chỉ có 'Giá bán_1')
+                    if (rowObj.gia === undefined && rowObj.giaGoc !== undefined) {
+                        rowObj.gia = rowObj.giaGoc;
+                    } else if (rowObj.giaGoc === undefined && rowObj.gia !== undefined) {
+                        rowObj.giaGoc = rowObj.gia;
+                    }
                     combinedJson.push(rowObj as DataRow);
                 }
 
@@ -152,6 +158,18 @@ async function processSingleFileInWorker(file: File) {
                     delete row[key];
                 }
             }
+
+            // Đảm bảo đồng bộ gia và giaGoc nếu 1 trong 2 thiếu
+            if (row.gia === undefined && row.giaGoc !== undefined) {
+                row.gia = row.giaGoc;
+            } else if (row.giaGoc === undefined && row.gia !== undefined) {
+                row.giaGoc = row.gia;
+            }
+
+            // Chuẩn hóa số cho gia, giaGoc, sl nếu là dạng chuỗi hoặc có định dạng tiền tệ VN
+            if (row.gia !== undefined) row.gia = parseNumber(row.gia);
+            if (row.giaGoc !== undefined) row.giaGoc = parseNumber(row.giaGoc);
+            if (row.sl !== undefined) row.sl = parseNumber(row.sl);
 
             // Inline validation for speed
             const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));

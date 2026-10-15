@@ -190,7 +190,8 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         <SectionCard className="mb-8 flex flex-col flex-grow lg:rounded-none">
             {/* BEGIN: Header Section */}
             <SectionHeader
-                title="Phân tích nhân viên"
+                title="PHÂN TÍCH NHÂN VIÊN"
+                titleClassName="type-headline font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight"
                 subtitle={moTaBoLoc(filterState, { boPhan: true })}
             >
                 <div className="flex items-center gap-2 lg:gap-1.5 hide-on-export">

@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import RevenueCalendar, { choAmLichSanSang } from './RevenueCalendar';
 import { isKhoMatch } from '../../services/filterService';
-import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, normalizedThuHoSet } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, normalizedThuHoSet, getRowPrice } from '../../utils/dataUtils';
 import type { DataRow, ProductConfig } from '../../types';
 import { COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
@@ -76,7 +76,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                 : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
             if (!isRevenue) return;
 
-            const price = Number(getRowValue(row, COL.PRICE)) || 0;
+            const price = getRowPrice(row);
 
             let valueToAdd = 0;
             let totalRevenue = 0;

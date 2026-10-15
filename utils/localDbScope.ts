@@ -343,6 +343,11 @@ export const isHeavySyncKey = (key: string): boolean => {
         unprefixed.startsWith('targethero-') ||
         unprefixed.startsWith('manual-dept-mapping-') ||
         unprefixed.startsWith('hidden-employees-') ||
+        unprefixed.startsWith('hidden-cols-') ||
+        unprefixed.startsWith('hidden-supermarkets-') ||
+        unprefixed.startsWith('global-hidden-') ||
+        unprefixed.startsWith('global-industry-kpi-') ||
+        unprefixed.startsWith('global-compare-') ||
         unprefixed.startsWith('custom-') ||
         unprefixed.startsWith('bonus-') ||
         unprefixed.startsWith('snapshot-') ||

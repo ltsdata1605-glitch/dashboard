@@ -2,7 +2,7 @@ import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 // Employee ở types/nhanVienTypes.ts có thêm department (nhân viên đã gắn phòng ban) — khác với
 // Employee cục bộ bên dưới (chỉ có tên, dùng khi phòng ban chưa xác định, vd. màn hình gán phòng ban)
 import type { Employee as NhanVienEmployee } from '../types/nhanVienTypes';
-import { parseRevenueData, standardizeEmployeeName, formatEmployeeName, extractEmployeeId } from '../utils/nhanVienHelpers';
+import { parseRevenueData, standardizeEmployeeName, formatEmployeeName, extractEmployeeId, isSameEmployee } from '../utils/nhanVienHelpers';
 import { parseCompetitionDataBySupermarket, parseSummaryData, findMatchingSupermarketKey } from '../utils/dashboardHelpers';
 import { isSystemOrIgnoredEmployee, type AnalysisEmployeeItem } from './analysisEmployeeSyncService';
 import { isIgnoredDept } from '../utils/nhanVienHelpers';
@@ -220,23 +220,124 @@ export const parseSimpleDepartments = (danhSachData: string): DepartmentInfo[] =
 };
 
 /**
- * Lấy danh sách nhân viên Employee[] chuẩn hoá từ danh sách Phân Tích (ưu tiên cao nhất).
- * 🔴 KHÔNG lấy hoặc lọc theo "Dữ liệu Luỹ Kế Doanh Thu" (báo cáo thô).
- * Danh sách nhân viên chỉ lấy duy nhất từ Báo cáo Phân Tích (file YCX).
+ * Lọc danh sách nhân viên từ Phân Tích (AnalysisEmployeesPayload) cho một siêu thị cụ thể.
+ * Quy tắc nhận diện theo yêu cầu:
+ * 1. Nhận diện theo danh sách "Nhân viên Luỹ kế" / "Nhân viên Realtime" của siêu thị (storeEmployeesRaw / danhSachData):
+ *    - Lấy danh sách nhân viên của siêu thị đó (ví dụ 5 người).
+ *    - So khớp với danh sách nhân viên Phân tích (ví dụ 30 người).
+ *    - Nhân viên nào thuộc danh sách của siêu thị thì GIỮ LẠI, nhân viên thuộc siêu thị khác LOẠI BỎ.
+ * 2. Nhận diện theo Mã Kho (maKho):
+ *    - Nếu nhân viên có maKho khớp với mã kho của siêu thị (qua bảng map biSupermarketMap hoặc tên siêu thị),
+ *      nhân viên đó được giữ lại cho siêu thị đó.
+ * 3. Nếu không truyền siêu thị hoặc xem "Tổng", giữ lại tất cả nhân viên hợp lệ.
  */
-export const getEmployeesFromAnalysis = (
+export function filterAnalysisEmployeesForSupermarket(
     analysisEmployees: AnalysisEmployeeItem[],
+    storeEmployeesRaw: string = '',
     hiddenEmployees: string[] = [],
-    _storeEmployeesRaw: string = ''
-): Employee[] => {
+    supermarketName?: string | null,
+    supermarketKhoMap?: Record<string, string>
+): AnalysisEmployeeItem[] {
     if (!analysisEmployees || analysisEmployees.length === 0) return [];
+
     const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
-    const active = analysisEmployees.filter(e => {
+    const valid = analysisEmployees.filter(e => {
         if (hiddenSet.has(e.originalName) || hiddenSet.has(standardizeEmployeeName(e.originalName))) return false;
         const dept = (e.department || '').trim();
         if (!dept || isSystemOrIgnoredEmployee(e.originalName, dept)) return false;
         return true;
     });
+
+    if (valid.length === 0) return [];
+    if (!supermarketName || supermarketName === 'Tổng' || supermarketName === 'Tổng hợp') {
+        return valid;
+    }
+
+    const cleanSm = supermarketName.trim();
+    const safeSm = shortenSupermarketName(cleanSm);
+
+    // Xác định Mã kho mục tiêu của siêu thị này (nếu có)
+    let targetKho = (supermarketKhoMap ? (supermarketKhoMap[cleanSm] || supermarketKhoMap[safeSm]) : '') || '';
+    if (!targetKho && supermarketKhoMap) {
+        for (const [k, v] of Object.entries(supermarketKhoMap)) {
+            if (v === cleanSm || shortenSupermarketName(v) === safeSm || k === cleanSm || shortenSupermarketName(k) === safeSm) {
+                const kDigits = (k.match(/\d+/) || [])[0];
+                const vDigits = (typeof v === 'string' ? (v.match(/\d+/) || [])[0] : '');
+                targetKho = kDigits || vDigits || '';
+                if (targetKho) break;
+            }
+        }
+    }
+    if (!targetKho) {
+        targetKho = extractEmployeeId(cleanSm) || (cleanSm.match(/\d+/) || [])[0] || (safeSm.match(/\d+/) || [])[0] || '';
+    }
+    targetKho = targetKho.replace(/\D/g, '');
+
+    // 1. Phân tích danh sách nhân viên của chính siêu thị này từ dữ liệu "Nhân viên Luỹ kế"
+    const storeEmployees = parseAllEmployees(storeEmployeesRaw, hiddenEmployees);
+
+    if (storeEmployees.length > 0) {
+        const storeEmpIds = new Set<string>();
+        const storeEmpNames = new Set<string>();
+        for (const se of storeEmployees) {
+            const id = extractEmployeeId(se.originalName);
+            if (id) storeEmpIds.add(id);
+            const canon = standardizeEmployeeName(se.originalName);
+            if (canon) storeEmpNames.add(canon.toLowerCase());
+            storeEmpNames.add(se.originalName.trim().toLowerCase());
+        }
+
+        const isMatchStore = (e: AnalysisEmployeeItem) => {
+            if (e.id && storeEmpIds.has(e.id)) return true;
+            const eid = extractEmployeeId(e.originalName);
+            if (eid && storeEmpIds.has(eid)) return true;
+            const can = standardizeEmployeeName(e.originalName).toLowerCase();
+            if (storeEmpNames.has(can)) return true;
+            if (storeEmpNames.has(e.originalName.trim().toLowerCase())) return true;
+            return storeEmployees.some(se => isSameEmployee(se.originalName, e.originalName));
+        };
+
+        const matchesKho = (e: AnalysisEmployeeItem) => {
+            if (targetKho && e.maKho && e.maKho === targetKho) return true;
+            if (e.supermarket && (e.supermarket === cleanSm || shortenSupermarketName(e.supermarket) === safeSm)) return true;
+            return false;
+        };
+
+        return valid.filter(e => isMatchStore(e) || matchesKho(e));
+    }
+
+    // 2. Nếu siêu thị chưa có dữ liệu "Nhân viên Luỹ kế": kiểm tra theo Mã Kho hoặc Tên Siêu Thị
+    if (targetKho) {
+        const matchedKho = valid.filter(e => e.maKho && e.maKho === targetKho);
+        if (matchedKho.length > 0) return matchedKho;
+    }
+
+    const matchedSm = valid.filter(e => e.supermarket && (e.supermarket === cleanSm || shortenSupermarketName(e.supermarket) === safeSm));
+    if (matchedSm.length > 0) return matchedSm;
+
+    // Siêu thị không có nhân viên nào khớp trong danh sách luỹ kế và không khớp mã kho -> trả về rỗng
+    return [];
+}
+
+/**
+ * Lấy danh sách nhân viên Employee[] chuẩn hoá từ danh sách Phân Tích (ưu tiên cao nhất).
+ * Kết hợp với dữ liệu "Nhân viên Luỹ kế" / "Mã kho" của siêu thị để chỉ lấy đúng nhân viên của siêu thị đó.
+ */
+export const getEmployeesFromAnalysis = (
+    analysisEmployees: AnalysisEmployeeItem[],
+    hiddenEmployees: string[] = [],
+    storeEmployeesRaw: string = '',
+    supermarketName?: string | null,
+    supermarketKhoMap?: Record<string, string>
+): Employee[] => {
+    if (!analysisEmployees || analysisEmployees.length === 0) return [];
+    const active = filterAnalysisEmployeesForSupermarket(
+        analysisEmployees,
+        storeEmployeesRaw,
+        hiddenEmployees,
+        supermarketName,
+        supermarketKhoMap
+    );
 
     return active.map(e => ({
         originalName: e.originalName,
@@ -246,19 +347,22 @@ export const getEmployeesFromAnalysis = (
 
 /**
  * Trích xuất danh sách phòng ban dựa trên danh sách nhân viên Phân Tích (ưu tiên cao nhất).
- * 🔴 KHÔNG phụ thuộc vào dữ liệu Luỹ Kế Doanh Thu. Đếm trực tiếp theo các phòng ban
- * được khai báo từ Báo cáo Phân Tích (file YCX).
+ * Chỉ đếm trên các nhân viên thuộc chính siêu thị được cấu hình (qua Nhân viên Luỹ kế hoặc Mã kho).
  */
 export const getDepartmentsFromAnalysis = (
     analysisEmployees: AnalysisEmployeeItem[],
-    _rawEmployeesText: string = '',
-    hiddenEmployees: string[] = []
+    rawEmployeesText: string = '',
+    hiddenEmployees: string[] = [],
+    supermarketName?: string | null,
+    supermarketKhoMap?: Record<string, string>
 ): DepartmentInfo[] => {
     if (!analysisEmployees || analysisEmployees.length === 0) return [];
-    const hiddenSet = new Set(hiddenEmployees.flatMap(h => [h, standardizeEmployeeName(h)]));
-    const activeAnalysisEmployees = analysisEmployees.filter(
-        e => !hiddenSet.has(e.originalName) && !hiddenSet.has(standardizeEmployeeName(e.originalName)) &&
-             Boolean(e.department && !isSystemOrIgnoredEmployee(e.originalName, e.department))
+    const activeAnalysisEmployees = filterAnalysisEmployeesForSupermarket(
+        analysisEmployees,
+        rawEmployeesText,
+        hiddenEmployees,
+        supermarketName,
+        supermarketKhoMap
     );
     if (activeAnalysisEmployees.length === 0) return [];
 

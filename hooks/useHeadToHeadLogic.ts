@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../types';
-import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet } from '../utils/dataUtils';
+import { getRowValue, toLocalISOString, calculateRowMetrics, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getRowPrice } from '../utils/dataUtils';
 import { COL } from '../constants';
 
 interface UseHeadToHeadLogicProps {
@@ -207,7 +207,7 @@ export const useHeadToHeadLogic = ({
                     // nhầm gần hết dữ liệu với điều kiện "nhỏ hơn"/"bằng"/"giữa".
                     let mPrice = true;
                     if (cfg.filters.priceCondition && typeof cfg.filters.priceValue1 === 'number') {
-                        const priceToUse = Number(getRowValue(row, cfg.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
+                        const priceToUse = getRowPrice(row, cfg.filters.priceType === 'original' ? 'original' : 'discounted');
                         const v1 = cfg.filters.priceValue1;
                         const v2 = cfg.filters.priceValue2;
                         if (cfg.filters.priceCondition === 'greater') mPrice = priceToUse > v1;

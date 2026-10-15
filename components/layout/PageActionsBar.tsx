@@ -26,7 +26,7 @@ export const PageActionsBar: React.FC<{ variant: 'mobile' | 'desktop'; className
     if (!p && hienNhanh.length === 0 && vaoMenu.length === 0) return null;
 
     if (variant === 'mobile') {
-        const lopNut = 'min-h-11 min-w-11 rounded-full text-sky-600 active:bg-slate-200/70 disabled:text-slate-300';
+        const lopNut = 'ycx-hit min-h-11 min-w-11 rounded-full text-sky-600 active:bg-slate-200/70 disabled:text-slate-300';
         return (
             <div data-page-actions="mobile" className={cn('flex items-center shrink-0', className)}>
                 {p && (
@@ -44,7 +44,7 @@ export const PageActionsBar: React.FC<{ variant: 'mobile' | 'desktop'; className
                     </Button>
                 ))}
                 {vaoMenu.length > 0 && (
-                    <ActionMenu items={vaoMenu} title={c.title} triggerClassName="text-sky-600 active:bg-slate-200/70" data-testid="page-actions-more" />
+                    <ActionMenu items={vaoMenu} title={c.title} triggerClassName="ycx-hit text-sky-600 active:bg-slate-200/70" data-testid="page-actions-more" />
                 )}
             </div>
         );

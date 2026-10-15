@@ -86,6 +86,38 @@ export const formatCurrency = (val: unknown): string => {
     return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(rounded);
 };
 
+/**
+ * Định dạng tiền thưởng theo đơn vị Tỷ / Triệu:
+ * - Nếu >= 1 tỷ (1.000.000.000 đ) hoặc <= -1 tỷ: hiển thị đơn vị "tỷ", làm tròn tối đa 2 chữ số thập phân (vd: 1.657.000.000 -> 1.66 tỷ).
+ * - Dưới 1 tỷ: hiển thị đơn vị "Tr" (vd: 20.000.000 -> 20 Tr).
+ */
+export const formatBonusMoney = (val: unknown): { value: string; unit: string; full: string } => {
+    const num = parseNumber(val);
+    if (!num) return { value: '0', unit: 'Tr', full: '0 Tr' };
+    const abs = Math.abs(num);
+    if (abs >= 1_000_000_000) {
+        const inTy = num / 1_000_000_000;
+        const rounded = Math.round(inTy * 100) / 100;
+        const valStr = rounded % 1 === 0
+            ? rounded.toFixed(0)
+            : (rounded * 10) % 1 === 0
+                ? rounded.toFixed(1)
+                : rounded.toFixed(2);
+        return {
+            value: valStr,
+            unit: 'tỷ',
+            full: `${valStr} tỷ`
+        };
+    }
+    const inMillion = Math.round(num / 1_000_000);
+    const valStr = inMillion.toLocaleString('vi-VN');
+    return {
+        value: valStr,
+        unit: 'Tr',
+        full: `${valStr} Tr`
+    };
+};
+
 export const formatPercent = (val: unknown): string => {
     if (val === undefined || val === null || val === '') return '0%';
     const num = parseNumber(val);

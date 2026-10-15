@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AppIcon } from '../shared/ui/icon';
 import { Button } from '../shared/ui/Button';
@@ -49,6 +49,12 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
+    const [syncFeedback, setSyncFeedback] = useState<{
+        message: string;
+        mobileMessage: string;
+        status: 'success' | 'updated' | 'error';
+    } | null>(null);
+    const feedbackTimerRef = useRef<NodeJS.Timeout | null>(null);
     const { syncState, lastError } = useSync();
     const { activeTab } = useActiveTab();
 
@@ -62,6 +68,40 @@ const Header: React.FC<HeaderProps> = ({
     // GĐ10 (2026-10-15): nút chỉ MỞ hộp xác nhận (DashboardView) — bỏ dấu ✓ "đã xoá" từng hiện NGAY lúc bấm, kể cả khi người dùng
     // huỷ. Xoá xong thì toast "Đã xoá…" báo.
     const handleSalesClear = () => onClearSalesData?.();
+
+    useEffect(() => {
+        const handleSyncResult = (e: Event) => {
+            const detail = (e as CustomEvent<{ status: 'up-to-date' | 'updated' | 'error'; message: string; mobileMessage?: string }>).detail;
+            if (!detail) return;
+            if (feedbackTimerRef.current) {
+                clearTimeout(feedbackTimerRef.current);
+            }
+            setSyncFeedback({
+                message: detail.message,
+                mobileMessage: detail.mobileMessage || detail.message,
+                status: detail.status === 'error' ? 'error' : detail.status === 'updated' ? 'updated' : 'success'
+            });
+            feedbackTimerRef.current = setTimeout(() => {
+                setSyncFeedback(null);
+                feedbackTimerRef.current = null;
+            }, 3500);
+        };
+
+        window.addEventListener('ycx-cloud-sync-result', handleSyncResult);
+        return () => {
+            window.removeEventListener('ycx-cloud-sync-result', handleSyncResult);
+            if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+        };
+    }, []);
+
+    const handleTriggerSync = () => {
+        if (feedbackTimerRef.current) {
+            clearTimeout(feedbackTimerRef.current);
+            feedbackTimerRef.current = null;
+        }
+        setSyncFeedback(null);
+        window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
+    };
 
     if (activeTab !== 'analysis') return null;
     
@@ -79,15 +119,38 @@ const Header: React.FC<HeaderProps> = ({
                     {fileInfo && (
                         <Button
                             variant="unstyled" size="none"
-                            onClick={() => {
-                                window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
-                            }}
+                            onClick={handleTriggerSync}
                             title="Chạm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
-                            className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left shrink-0 cursor-pointer"
+                            className={`inline-flex items-center gap-1 text-left shrink-0 cursor-pointer transition-all duration-200 active:scale-95 ${
+                                syncFeedback
+                                    ? (syncFeedback.status === 'error'
+                                        ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                        : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                                    : isSyncingCloud
+                                        ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                        : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                            }`}
                         >
-                            <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                            <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                                {isSyncingCloud ? 'Đang đồng bộ...' : (fileInfo.savedAt.length > 8 ? fileInfo.savedAt.slice(0, 8) : fileInfo.savedAt)}
+                            {syncFeedback ? (
+                                <AppIcon
+                                    name={syncFeedback.status === 'error' ? 'error' : 'success'}
+                                    size="xs"
+                                    className={syncFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                                />
+                            ) : (
+                                <AppIcon
+                                    name="refresh"
+                                    size="xs"
+                                    spin={isSyncingCloud}
+                                    className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                                />
+                            )}
+                            <span className={isSyncingCloud ? 'animate-pulse' : ''}>
+                                {syncFeedback
+                                    ? syncFeedback.mobileMessage
+                                    : isSyncingCloud
+                                        ? 'Đang kiểm tra...'
+                                        : (fileInfo.savedAt.length > 8 ? fileInfo.savedAt.slice(0, 8) : fileInfo.savedAt)}
                             </span>
                         </Button>
                     )}
@@ -121,15 +184,38 @@ const Header: React.FC<HeaderProps> = ({
                     {fileInfo && (
                         <Button
                             variant="unstyled" size="none"
-                            onClick={() => {
-                                window.dispatchEvent(new CustomEvent('ycx-trigger-cloud-sync', { detail: { interactive: true } }));
-                            }}
+                            onClick={handleTriggerSync}
                             title="Bấm để kiểm tra & đồng bộ dữ liệu mới nhất từ đám mây"
-                            className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                            className={`inline-flex items-center gap-1.5 text-left group cursor-pointer transition-all duration-200 active:scale-95 ${
+                                syncFeedback
+                                    ? (syncFeedback.status === 'error'
+                                        ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                        : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                                    : isSyncingCloud
+                                        ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                        : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                            }`}
                         >
-                            <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                            <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                                {isSyncingCloud ? 'Đang đồng bộ...' : `Cập nhật: ${fileInfo.savedAt}`}
+                            {syncFeedback ? (
+                                <AppIcon
+                                    name={syncFeedback.status === 'error' ? 'error' : 'success'}
+                                    size="xs"
+                                    className={syncFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                                />
+                            ) : (
+                                <AppIcon
+                                    name="refresh"
+                                    size="xs"
+                                    spin={isSyncingCloud}
+                                    className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                                />
+                            )}
+                            <span className={isSyncingCloud ? 'animate-pulse' : ''}>
+                                {syncFeedback
+                                    ? syncFeedback.message
+                                    : isSyncingCloud
+                                        ? 'Đang kiểm tra...'
+                                        : `Cập nhật: ${fileInfo.savedAt}`}
                             </span>
                         </Button>
                     )}

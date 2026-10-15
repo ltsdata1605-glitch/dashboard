@@ -1149,13 +1149,14 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     const departments = useMemo(() => {
         // Ưu tiên đếm theo danh sách nhân viên từ Phân tích nếu có
+        const storeEmployeesRaw = danhSachData || employeeRealtimeData || '';
         if (analysisEmployees && analysisEmployees.employees.length > 0) {
-            const depts = getDepartmentsFromAnalysis(analysisEmployees.employees, danhSachData, hiddenEmployees);
+            const depts = getDepartmentsFromAnalysis(analysisEmployees.employees, storeEmployeesRaw, hiddenEmployees, supermarketName);
             if (depts.length > 0) return depts;
         }
         // Fallback dùng parseDepartments từ dữ liệu dán
-        return parseDepartments(danhSachData, hiddenEmployees);
-    }, [analysisEmployees, danhSachData, hiddenEmployees]);
+        return parseDepartments(storeEmployeesRaw, hiddenEmployees);
+    }, [analysisEmployees, danhSachData, employeeRealtimeData, hiddenEmployees, supermarketName]);
 
     const competitions = useMemo(() => {
         return parseCompetitions(competitionLuyKeData);

@@ -3,7 +3,7 @@ import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { Employee, DataRow, ProductConfig } from '../../types';
 import { Modal } from '../shared/ui/Modal';
-import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getHinhThucThanhToan, cleanAndNormalize, getRowPrice } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO, getCategoryExportWidth } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { Button } from '../shared/ui/Button';
@@ -151,7 +151,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
             return getRowValue(row, COL.NGUOI_TAO) === employeeName 
                 && isRevenueEligible 
-                && (Number(getRowValue(row, COL.PRICE)) || 0) > 0;
+                && getRowPrice(row) > 0;
         });
     }, [validSalesData, employeeName, productConfig]);
 
@@ -164,7 +164,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     const categoryColumns = useCategoryColumns();
 
     const attachOrdersMetrics = useMemo(() => {
-        const revenueEligibleRows = employeeSalesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
+        const revenueEligibleRows = employeeSalesData.filter(row => getRowPrice(row) > 0);
         const orderCounts: { [id: string]: number } = {};
         
         revenueEligibleRows.forEach(row => {
@@ -191,7 +191,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
         const productSummary = employeeSalesData.reduce((acc, row) => {
             const productName = getRowValue(row, COL.PRODUCT) || 'N/A';
-            const price = Number(getRowValue(row, COL.PRICE)) || 0;
+            const price = getRowPrice(row);
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
             if (!acc[productName]) acc[productName] = { revenue: 0, quantity: 0 };
             acc[productName].revenue += price;
@@ -253,7 +253,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             }
 
             const orderGroups: { [id: string]: DataRow[] } = {};
-            orders.filter(o => (Number(getRowValue(o, COL.PRICE)) || 0) > 0).forEach(o => {
+            orders.filter(o => getRowPrice(o) > 0).forEach(o => {
                 const id = getRowValue(o, COL.ID) || 'no-id';
                 if (!orderGroups[id]) orderGroups[id] = [];
                 orderGroups[id].push(o);
@@ -264,7 +264,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 lines: groupLines,
                 isAttached: id !== 'no-id' && groupLines.length >= 2,
                 status: getRowValue(groupLines[0], COL.XUAT)
-            })).sort((a, b) => b.lines.reduce((s, l) => s + (Number(getRowValue(l, COL.PRICE)) || 0), 0) - a.lines.reduce((s, l) => s + (Number(getRowValue(l, COL.PRICE)) || 0), 0));
+            })).sort((a, b) => b.lines.reduce((s, l) => s + getRowPrice(l), 0) - a.lines.reduce((s, l) => s + getRowPrice(l), 0));
 
             // Get the created date from the first order
             let createdDateKey = '';
@@ -452,7 +452,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                  return group.lines.map((order, lineIndex) => {
                                                      const orderId = group.id === 'no-id' ? '-' : group.id;
                                                      const isUnshipped = group.status === 'Chưa xuất';
-                                                     const price = Number(getRowValue(order, COL.PRICE)) || 0;
+                                                     const price = getRowPrice(order);
                                                      const isInstallment = getHinhThucThanhToan(order, productConfig) === 'tra_gop';
                                                      
                                                      return (

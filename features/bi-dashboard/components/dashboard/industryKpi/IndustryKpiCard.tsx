@@ -190,23 +190,23 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     )}
                 </div>
 
-                {/* Hero Primary Metric - Canh giữa hoàn hảo, SỐ LỚN RÕ RÀNG */}
+                {/* Hero Primary Metric - Canh giữa hoàn hảo, SỐ LỚN RÕ RÀNG (25px-28px Apple KPI Scale) */}
                 <div className="w-full flex items-baseline justify-center py-0.5 sm:py-1 my-auto">
                     {isRevenueFocus ? (
                         <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 min-w-0">
-                            <span className="industry-kpi-num text-[17px] sm:text-[21px] font-black tracking-tight tabular-nums text-slate-800 dark:text-slate-100 leading-none">
+                            <span className="industry-kpi-num text-[20px] sm:text-[25px] font-black tracking-tight tabular-nums text-slate-900 dark:text-white leading-none">
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[11px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-none">
+                            <span className="industry-kpi-label text-[11px] font-extrabold uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-none">
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
                     ) : (
                         <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 min-w-0">
-                            <span className="industry-kpi-num text-[18px] sm:text-[23px] font-black tracking-tight tabular-nums text-slate-800 dark:text-slate-100 leading-none">
+                            <span className="industry-kpi-num text-[25px] sm:text-[28px] font-black tracking-tight tabular-nums text-slate-900 dark:text-white leading-none">
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[11px] font-black uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-none">
+                            <span className="industry-kpi-label text-[11px] font-black uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-none">
                                 SL
                             </span>
                         </div>

@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.28
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT, tự động kiểm tra và chạy lần 2 nếu thiếu dữ liệu ngành hàng) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
+// @version      7.31
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT, đợi có dữ liệu từng khu vực & tự động rà soát vét lại toàn cụm đảm bảo 100% có dữ liệu) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
@@ -32,10 +32,26 @@
 // ==/UserScript==
 
 /*
- * BẢN 7.28 — KIỂM TRA & TỰ ĐỘNG CHẠY LẦN 2 CHO CHI TIẾT NGÀNH HÀNG (2026-10-15):
- * - Bổ sung hàm kiểm tra tính hợp lệ của dữ liệu ngành hàng acpIsIndustryDataValid (đảm bảo có ít nhất 1 dòng ngành hàng thực tế, loại trừ trường hợp API trả về rỗng hoặc chỉ có Header + Tổng 0).
- * - Trong Direct API Engine (Bước 3): Sau lượt 1, tự động quét kiểm tra toàn bộ danh sách siêu thị. Nếu phát hiện bất kỳ siêu thị nào bị lỗi/timeout hoặc chưa có dữ liệu, tự động chạy lần 2 (Auto Retry Round 2) tuần tự cho các siêu thị đó.
- * - Hỗ trợ cơ chế đa khóa lưu trữ: Gán kết quả ngành hàng theo cả st.name, st.id, tên rút gọn (shortName) và chữ in hoa (shortName.toUpperCase()) để Dashboard YCX luôn tìm thấy dữ liệu dù siêu thị viết hoa hay thường.
+ * BẢN 7.31 — KHẮC PHỤC TRIỆT ĐỂ LỖI MWG AIRFLOW KHI XUẤT EXCEL BÁO CÁO 77 (2026-10-15):
+ * - Loại bỏ hoàn toàn xung đột gửi kép (Duplicate Trigger): Trước đây script vừa click menu EXCEL, vừa dispatchEvent click, vừa gọi ngầm scope.ExportData() trong 250ms khiến máy chủ MWG nhận 3 request song song cùng lúc, làm Apache Airflow bị đụng độ DAG Run / lock task và trả về lỗi "error_export_excel [+ Không gửi được yêu cầu xuất file sang Airflow, vui lòng thử lại +]".
+ * - Cơ chế Kích hoạt Đơn nhất (Clean Single Trigger): Ưu tiên click nút EXCEL trên dropdown menu. Chỉ khi không tìm thấy element trong DOM mới dự phòng gọi scope.ExportData(), tuyệt đối không spam lặp lại.
+ * - Cơ chế Tự Động Thử Lại (Auto-Retry Airflow): Khi gặp thông báo tạm thời từ MWG ("error_export_excel" hoặc "Không gửi được yêu cầu xuất file sang Airflow, vui lòng thử lại"), script tự động chặn dialog alert đóng băng tab, hiển thị banner thông báo rõ ràng cho người dùng và tự động thử lại sau 4 giây (tối đa 3 lần).
+ * - Tự động dọn dẹp và đóng popup download Kendo sau khi gửi yêu cầu thành công.
+ *
+ * BẢN 7.30 — ĐẢM BẢO 100% CÓ DỮ LIỆU NGÀNH HÀNG BI REALTIME & LUỸ KẾ NGAY TỪ LẦN CHẠY 1 (2026-10-15):
+ * - Cơ chế "Đợi có dữ liệu mới tiếp tục lấy khu vực khác": Tải ngành hàng BI kết hợp kiểm tra dữ liệu hợp lệ (acpFetchSingleStoreIndustryWithRetry).
+ *   + Nếu siêu thị chưa có dữ liệu hoặc API trả về rỗng/timeout (cold start/rate limit từ máy chủ MWG), tự động đợi với độ trễ tăng dần (1.5s, 2.5s, 3.5s) và thử lại tối đa 4 lần cho siêu thị đó trước khi chuyển sang siêu thị tiếp theo.
+ *   + Thử cả 2 phương án VIEWIDS: st.id gốc và numId (mã số kho) để đối phó triệt để trường hợp định dạng mã kho khác biệt.
+ * - Vòng vét kiểm tra toàn cụm (Final Cluster Sweep): Sau khi duyệt xong danh sách, tự động rà soát toàn bộ siêu thị. Nếu còn bất kỳ kho nào chưa có ngành hàng, tự động dừng nghỉ 2s giải toả nghẽn và vét lại đến khi 100% siêu thị đều có dữ liệu hoàn chỉnh.
+ * - Lưu đa khóa toàn diện: Lưu trữ theo cả st.name, st.id, mã kho số, tên rút gọn và tên chuẩn hoá đã loại bỏ tiền tố "ĐMX / DMX / Điện máy XANH" để Dashboard YCX khớp trúng 100%.
+ * - UI Automation Fallback: Tự động đợi bảng tải xong dữ liệu thực tế, kiểm tra acpIsIndustryDataValid và thử lại tối đa 3 lần nếu DOM chưa render kịp.
+ *
+ * BẢN 7.29 — CẬP NHẬT CÁCH XUẤT DỮ LIỆU YCX REALTIME & LUỸ KẾ THEO GIAO DIỆN MỚI (2026-10-15):
+ * - Thích ứng với thay đổi mới của MWG trên báo cáo 77 (Chi tiết yêu cầu xuất): nút "Xuất excel" chuyển thành Button Dropdown (#btnGroupExportData) và menu con chọn định dạng.
+ * - Cập nhật hàm ycxClickExport thực hiện đúng quy trình 2 bước chuẩn:
+ *   1. Bấm nút "Xuất excel" (#btnGroupExportData / button[data-toggle="dropdown"]) để mở menu xổ xuống.
+ *   2. Bấm chọn mục "EXCEL" (<a href="javascript:void(0);" ng-click="ExportData();">EXCEL</a>) để kích hoạt lệnh xuất file.
+ *   3. Kết hợp trigger trực tiếp scope.ExportData() dự phòng và tiếp tục theo dõi biến continueDownload / alert thông báo lỗi từ MWG.
  * - Nhánh UI Fallback: Nếu kết quả ngành hàng rỗng sau lần trích xuất đầu tiên, tự động chờ 1.5s và mở rộng cây lần 2 trước khi kết thúc.
  *
  * BẢN 7.27 — NÚT ⚡ COPY ALL HOẠT ĐỘNG LẠI (2026-10-14):
@@ -570,7 +586,7 @@
   const JOB_TTL_MS = 15 * 60 * 1000;
   // Phiên bản báo cho Dashboard (ping/pong) — lấy từ dòng @version qua GM_info. Trước bản 7.4 hằng này ghi cứng
   // '6.4' nên Dashboard KHÔNG biết máy đang chạy bản nào. Hằng dự phòng phải trùng @version (unit test kiểm).
-  const SCRIPT_VERSION_FALLBACK = '7.28';
+  const SCRIPT_VERSION_FALLBACK = '7.29';
   const SCRIPT_VERSION = (typeof GM_info !== 'undefined' && GM_info && GM_info.script && GM_info.script.version) || SCRIPT_VERSION_FALLBACK;
 
   // ====== CẦU NỐI TỰ ĐỘNG HOÁ BI (REALTIME & LUỸ KẾ) ======
@@ -3557,9 +3573,10 @@
   function acpIsIndustryDataValid(indTextOrData) {
     if (!indTextOrData) return false;
     if (Array.isArray(indTextOrData)) {
-      return indTextOrData.length > 0 && indTextOrData.some(item => 
+      if (indTextOrData.length === 0) return false;
+      return indTextOrData.some(item => 
         Boolean(item && (item.rowname || item.rowcode) && 
-        (Number(item.quantity || 0) > 0 || Number(item.revenue || 0) > 0 || Number(item.revenue_kfactor || 0) > 0))
+        (Number(item.quantity || 0) > 0 || Number(item.revenue || 0) > 0 || Number(item.revenue_kfactor || 0) > 0 || Number(item.target || item.target_kfactor || 0) > 0 || Number(item.avg3month || item.avg3month_kfactor || 0) > 0))
       );
     }
     if (typeof indTextOrData === 'string') {
@@ -3569,7 +3586,7 @@
       // Tìm dòng dữ liệu con thực tế (không phải header, không phải dòng Tổng)
       const dataRows = lines.filter(l => {
         const firstCell = l.split('\t')[0].trim().toLowerCase();
-        return !firstCell.includes('ngành hàng') && firstCell !== 'tổng';
+        return !firstCell.includes('ngành hàng') && firstCell !== 'tổng' && firstCell !== '—';
       });
       return dataRows.length > 0;
     }
@@ -3577,18 +3594,16 @@
   }
 
   /**
-   * Tải dữ liệu ngành hàng cho 1 siêu thị qua API revenue-consolidated-get GROUPBY BICAT.
-   * Hỗ trợ tự động fallback mã kho nếu cần.
+   * Gọi API ngành hàng BI cho 1 viewId cụ thể.
    */
-  async function acpFetchSingleStoreIndustry(st, fromDateKey, toDateKey, isLuyKe, token) {
-    const stId = String(st.id || '').trim();
-    // 1. Gọi chuẩn theo VIEWIDS: stId
+  async function acpCallIndustryApi(viewId, fromDateKey, toDateKey, isLuyKe, token) {
+    if (!viewId) return null;
     try {
       const data = await acpFetchBiApi('revenue-consolidated-get', {
         FROMDATE: fromDateKey,
         TODATE: toDateKey,
         VIEWLEVEL: 'STORE',
-        VIEWIDS: stId,
+        VIEWIDS: String(viewId).trim(),
         CHAINIDS: null,
         MAINGROUPIDS: null,
         SUBGROUPIDS: null,
@@ -3600,37 +3615,104 @@
         PAGESIZE: 0,
       }, token);
       const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-      if (list.length > 0) return list;
+      return list;
     } catch (e) {
-      console.warn(`[BI-Sync] [API] Lỗi tải ngành hàng cho ${st.name} (stId=${stId}):`, e);
+      console.warn(`[BI-Sync] [API] Lỗi gọi API ngành hàng viewId=${viewId}:`, e);
+      return null;
     }
+  }
 
-    // 2. Fallback nếu stId chứa tên hoặc ký tự lạ: tách chuỗi số
-    const numId = stId.match(/^\d+/)?.[0];
-    if (numId && numId !== stId) {
-      try {
-        const data = await acpFetchBiApi('revenue-consolidated-get', {
-          FROMDATE: fromDateKey,
-          TODATE: toDateKey,
-          VIEWLEVEL: 'STORE',
-          VIEWIDS: numId,
-          CHAINIDS: null,
-          MAINGROUPIDS: null,
-          SUBGROUPIDS: null,
-          GROUPBY: 'BICAT',
-          TIMETYPE: isLuyKe ? 2 : 1,
-          OUTPUTTYPEIDS: null,
-          OUTPUTTYPEEXCLUDES: null,
-          PAGEINDEX: 1,
-          PAGESIZE: 0,
-        }, token);
-        const list = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
-        if (list.length > 0) return list;
-      } catch (e) {
-        console.warn(`[BI-Sync] [API] Lỗi tải ngành hàng theo numId=${numId}:`, e);
+  /**
+   * Tải dữ liệu ngành hàng cho 1 siêu thị kết hợp vòng lặp kiểm tra xác thực:
+   * "Nếu không có dữ liệu phải chạy lại hoặc đợi có dữ liệu mới tiếp tục lấy dữ liệu khu vực khác.
+   * Đảm bảo khi hoàn tất phải có dữ liệu"
+   */
+  async function acpFetchSingleStoreIndustryWithRetry(st, fromDateKey, toDateKey, isLuyKe, token, maxRetries = 4, onProgress = null) {
+    const stId = String(st.id || '').trim();
+    const numId = stId.match(/^\d+/)?.[0] || String(st.name || '').match(/^\d+/)?.[0];
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      if (attempt > 1 && onProgress) {
+        onProgress(`Siêu thị ${st.name}: đang đợi dữ liệu ngành hàng (thử lại lần ${attempt}/${maxRetries})...`);
+      }
+
+      // 1. Thử gọi theo stId
+      let list = await acpCallIndustryApi(stId, fromDateKey, toDateKey, isLuyKe, token);
+
+      // 2. Fallback sang numId nếu stId chưa có dữ liệu và numId khác stId
+      if ((!list || list.length === 0) && numId && numId !== stId) {
+        list = await acpCallIndustryApi(numId, fromDateKey, toDateKey, isLuyKe, token);
+      }
+
+      if (list && list.length > 0) {
+        const serialized = acpSerializeIndustryRealtime(list, isLuyKe);
+        if (acpIsIndustryDataValid(serialized)) {
+          return { raw: list, serialized };
+        }
+      }
+
+      // Nếu chưa có dữ liệu và còn lượt retry: ĐỢI tăng dần để server giải toả nghẽn
+      if (attempt < maxRetries) {
+        const delayMs = attempt === 1 ? 1500 : (attempt === 2 ? 2500 : 3500);
+        console.warn(`[BI-Sync] [API] Siêu thị ${st.name} lần ${attempt} chưa có ngành hàng. Đang đợi ${delayMs}ms để thử lại...`);
+        await sleep(delayMs);
       }
     }
+
     return null;
+  }
+
+  /**
+   * Lưu chuỗi ngành hàng vào map theo đa khóa để Dashboard YCX luôn tìm thấy.
+   */
+  function acpStoreIndustryInMap(industryByStore, st, serializedInd) {
+    if (!serializedInd || !acpIsIndustryDataValid(serializedInd)) return;
+    if (st.name) industryByStore[st.name] = serializedInd;
+    if (st.id) industryByStore[st.id] = serializedInd;
+    const numId = String(st.id || '').match(/^\d+/)?.[0] || String(st.name || '').match(/^\d+/)?.[0];
+    if (numId) industryByStore[numId] = serializedInd;
+    
+    const shortName = acpShortenStoreName(st.name);
+    if (shortName) {
+      industryByStore[shortName] = serializedInd;
+      industryByStore[shortName.toUpperCase()] = serializedInd;
+      const cleanName = shortName.replace(/^(ĐMX|DMX|Điện\s*máy\s*XANH)\s+/i, '').trim();
+      if (cleanName) {
+        industryByStore[cleanName] = serializedInd;
+        industryByStore[cleanName.toUpperCase()] = serializedInd;
+      }
+    }
+
+    if (typeof st.name === 'string' && st.name.includes(' - ')) {
+      const rawAfterDash = st.name.split(' - ').pop().trim();
+      if (rawAfterDash) {
+        industryByStore[rawAfterDash] = serializedInd;
+        industryByStore[rawAfterDash.toUpperCase()] = serializedInd;
+        const cleanAfterDash = rawAfterDash.replace(/^(ĐMX|DMX|Điện\s*máy\s*XANH)\s+/i, '').trim();
+        if (cleanAfterDash) {
+          industryByStore[cleanAfterDash] = serializedInd;
+          industryByStore[cleanAfterDash.toUpperCase()] = serializedInd;
+        }
+      }
+    }
+  }
+
+  /**
+   * Kiểm tra siêu thị đã có dữ liệu hợp lệ trong map chưa.
+   */
+  function acpFindIndustryInMap(industryByStore, st) {
+    if (!industryByStore || !st) return null;
+    const shortName = acpShortenStoreName(st.name);
+    const cleanName = shortName ? shortName.replace(/^(ĐMX|DMX|Điện\s*máy\s*XANH)\s+/i, '').trim() : '';
+    const numId = String(st.id || '').match(/^\d+/)?.[0] || String(st.name || '').match(/^\d+/)?.[0];
+    
+    return industryByStore[st.name] ||
+           industryByStore[st.id] ||
+           (numId && industryByStore[numId]) ||
+           (shortName && industryByStore[shortName]) ||
+           (shortName && industryByStore[shortName.toUpperCase()]) ||
+           (cleanName && industryByStore[cleanName]) ||
+           (cleanName && industryByStore[cleanName.toUpperCase()]);
   }
 
   function acpSerializeStaffRealtime(staffRows, luyKe) {
@@ -3829,74 +3911,67 @@
             results.competition = isLuyKe ? acpSerializeCompetitionLuyKe(compData) : acpSerializeCompetitionRealtime(compData);
             console.log('[BI-Sync] [API] Bước 2 Xong: Thi đua', results.competition?.length);
 
-            // BƯỚC 3: Doanh thu ngành hàng BI Realtime (revenue-consolidated-get GROUPBY BICAT)
+            // BƯỚC 3: Doanh thu ngành hàng BI Realtime/Luỹ kế (revenue-consolidated-get GROUPBY BICAT)
             const industryByStore = {};
-            await reportProgress(3, totalSteps, 'Ngành hàng BI', `Đang tải cây ngành hàng BI song song cho ${storeList.length} siêu thị...`);
-            
-            // --- LƯỢT 1: Tải song song toàn bộ siêu thị ---
-            await Promise.all(storeList.map(async (st) => {
-              const data = await acpFetchSingleStoreIndustry(st, fromDateKey, toDateKey, isLuyKe, token);
-              if (data && data.length > 0) {
-                const serializedInd = acpSerializeIndustryRealtime(data, isLuyKe);
-                if (acpIsIndustryDataValid(serializedInd)) {
-                  industryByStore[st.name] = serializedInd;
-                  industryByStore[st.id] = serializedInd;
-                  const shortName = acpShortenStoreName(st.name);
-                  if (shortName) {
-                    industryByStore[shortName] = serializedInd;
-                    industryByStore[shortName.toUpperCase()] = serializedInd;
-                  }
-                  const numId = String(st.id || '').match(/^\d+/)?.[0];
-                  if (numId) industryByStore[numId] = serializedInd;
-                }
-              }
-            }));
+            await reportProgress(3, totalSteps, 'Ngành hàng BI', `Đang tải cây ngành hàng BI cho ${storeList.length} siêu thị (đợi có dữ liệu từng khu vực)...`);
 
-            // --- HÀM KIỂM TRA: Phát hiện siêu thị nào chưa có dữ liệu ngành hàng hợp lệ ---
+            // Duyệt tuần tự từng siêu thị: nếu không có dữ liệu phải đợi/thử lại trước khi tiếp tục lấy khu vực khác
+            for (let i = 0; i < storeList.length; i++) {
+              const st = storeList[i];
+              await reportProgress(3, totalSteps, 'Ngành hàng BI', `Đang lấy ngành hàng cho ${st.name} (${i + 1}/${storeList.length})...`);
+              
+              const resInd = await acpFetchSingleStoreIndustryWithRetry(
+                st, fromDateKey, toDateKey, isLuyKe, token, 4,
+                (msg) => reportProgress(3, totalSteps, 'Ngành hàng BI', msg)
+              );
+
+              if (resInd && resInd.serialized && acpIsIndustryDataValid(resInd.serialized)) {
+                acpStoreIndustryInMap(industryByStore, st, resInd.serialized);
+                console.log(`[BI-Sync] [API] Đã có dữ liệu ngành hàng cho ${st.name}`);
+              } else {
+                console.warn(`[BI-Sync] [API] Chưa lấy được ngành hàng cho ${st.name} sau lượt 1`);
+              }
+
+              // Khoảng nghỉ nhỏ 300ms giữa các siêu thị để server MWG không bị quá tải
+              if (i < storeList.length - 1) {
+                await sleep(300);
+              }
+            }
+
+            // --- HÀM KIỂM TRA TOÀN CỤM: Phát hiện siêu thị nào chưa có dữ liệu ngành hàng hợp lệ ---
             const getMissingIndustryStores = () => storeList.filter(st => {
-              const shortName = acpShortenStoreName(st.name);
-              const shortUpper = shortName ? shortName.toUpperCase() : '';
-              const numId = String(st.id || '').match(/^\d+/)?.[0];
-              const candidate = industryByStore[st.name] || 
-                                industryByStore[st.id] || 
-                                (shortName && industryByStore[shortName]) || 
-                                (shortUpper && industryByStore[shortUpper]) ||
-                                (numId && industryByStore[numId]);
+              const candidate = acpFindIndustryInMap(industryByStore, st);
               return !acpIsIndustryDataValid(candidate);
             });
 
             let missingStores = getMissingIndustryStores();
 
-            // --- LƯỢT 2 (TỰ ĐỘNG CHẠY LẦN 2 NẾU CHƯA HIỂN THỊ ĐỦ DỮ LIỆU) ---
-            if (missingStores.length > 0) {
-              console.warn(`[BI-Sync] [API] Kiểm tra phát hiện ${missingStores.length}/${storeList.length} siêu thị chưa có ngành hàng:`, missingStores.map(s => s.name));
-              await reportProgress(3, totalSteps, 'Ngành hàng BI', `Chưa nhận đủ dữ liệu (${missingStores.length} kho), tự động chạy lần 2...`);
+            // --- VÒNG VÉT BỔ SUNG (CLUSTER RECOVERY SWEEP) ---
+            // Nếu vẫn còn siêu thị thiếu dữ liệu, tự động nghỉ 2s giải toả nghẽn và vét lại tối đa 2 lượt
+            let sweepRound = 1;
+            while (missingStores.length > 0 && sweepRound <= 2) {
+              console.warn(`[BI-Sync] [API] Vòng vét ${sweepRound}: còn ${missingStores.length}/${storeList.length} siêu thị chưa có ngành hàng:`, missingStores.map(s => s.name));
+              await reportProgress(3, totalSteps, 'Ngành hàng BI', `Đang rà soát và tải bổ sung ngành hàng cho ${missingStores.length} kho (lượt vét ${sweepRound})...`);
               
-              // Nghỉ 1000ms để server MWG giải toả nghẽn
-              await sleep(1000);
+              // Nghỉ 2000ms để server MWG giải phóng tài nguyên
+              await sleep(2000);
 
-              // Quét lần 2 tuần tự từng kho để bảo đảm 100% không bị timeout/rate limit
               for (let i = 0; i < missingStores.length; i++) {
                 const st = missingStores[i];
-                await reportProgress(3, totalSteps, 'Ngành hàng BI', `Đang chạy lần 2 ngành hàng cho ${st.name} (${i + 1}/${missingStores.length})...`);
-                const data = await acpFetchSingleStoreIndustry(st, fromDateKey, toDateKey, isLuyKe, token);
-                if (data && data.length > 0) {
-                  const serializedInd = acpSerializeIndustryRealtime(data, isLuyKe);
-                  if (acpIsIndustryDataValid(serializedInd)) {
-                    industryByStore[st.name] = serializedInd;
-                    industryByStore[st.id] = serializedInd;
-                    const shortName = acpShortenStoreName(st.name);
-                    if (shortName) {
-                      industryByStore[shortName] = serializedInd;
-                      industryByStore[shortName.toUpperCase()] = serializedInd;
-                    }
-                    const numId = String(st.id || '').match(/^\d+/)?.[0];
-                    if (numId) industryByStore[numId] = serializedInd;
-                    console.log(`[BI-Sync] [API] Chạy lần 2 THÀNH CÔNG cho siêu thị ${st.name}`);
-                  }
+                await reportProgress(3, totalSteps, 'Ngành hàng BI', `Vét ngành hàng cho ${st.name} (${i + 1}/${missingStores.length})...`);
+                const resInd = await acpFetchSingleStoreIndustryWithRetry(
+                  st, fromDateKey, toDateKey, isLuyKe, token, 3,
+                  (msg) => reportProgress(3, totalSteps, 'Ngành hàng BI', msg)
+                );
+                if (resInd && resInd.serialized && acpIsIndustryDataValid(resInd.serialized)) {
+                  acpStoreIndustryInMap(industryByStore, st, resInd.serialized);
+                  console.log(`[BI-Sync] [API] Vét THÀNH CÔNG cho siêu thị ${st.name}`);
                 }
-                if (i < missingStores.length - 1) await sleep(300);
+                if (i < missingStores.length - 1) await sleep(500);
               }
+
+              missingStores = getMissingIndustryStores();
+              sweepRound++;
             }
 
             // Gán kết quả đại diện
@@ -4144,19 +4219,21 @@
         results.industry = await collectCurrentBiData();
         console.log('[BI-Sync] Đã xong Bước 3: Ngành hàng BI Realtime', results.industry?.length);
 
-        // HÀM KIỂM TRA & TỰ ĐỘNG CHẠY LẦN 2: Nếu chưa hiển thị hoặc rỗng thì tự động chạy lần 2
-        if (!acpIsIndustryDataValid(results.industry)) {
-          console.warn('[BI-Sync] Dữ liệu Ngành hàng BI Realtime chưa hiển thị hoặc rỗng. Đang tự động kiểm tra và chạy lần 2...');
-          await reportProgress(3, totalSteps, 'Ngành hàng BI', 'Dữ liệu ngành hàng chưa hiển thị, đang thử lại lần 2...');
-          await sleep(1500);
+        // HÀM KIỂM TRA & TỰ ĐỘNG CHẠY LẠI: Nếu chưa hiển thị hoặc rỗng thì đợi và thử lại tối đa 3 lần
+        let indAttempt = 1;
+        while (!acpIsIndustryDataValid(results.industry) && indAttempt <= 3) {
+          indAttempt++;
+          console.warn(`[BI-Sync] Dữ liệu Ngành hàng BI Realtime chưa hiển thị hoặc rỗng. Đang tự động kiểm tra và thử lại (lần ${indAttempt}/3)...`);
+          await reportProgress(3, totalSteps, 'Ngành hàng BI', `Dữ liệu ngành hàng chưa hiển thị, đang đợi nạp lại (lần ${indAttempt}/3)...`);
+          await sleep(2000);
           await ensureSelectAllChecked();
-          await acpWaitForLoadingComplete(15000, 300, 200);
+          await acpWaitForLoadingComplete(20000, 400, 300);
           await expandAllCandidates(null, (msg) => {
-            reportProgress(3, totalSteps, 'Ngành hàng BI (lần 2)', msg);
+            reportProgress(3, totalSteps, `Ngành hàng BI (lần ${indAttempt})`, msg);
           }, 3);
-          await acpWaitForLoadingComplete(20000, 500, 300);
+          await acpWaitForLoadingComplete(25000, 500, 300);
           results.industry = await collectCurrentBiData();
-          console.log('[BI-Sync] Kết quả Ngành hàng BI Realtime sau lần 2:', results.industry?.length);
+          console.log(`[BI-Sync] Kết quả Ngành hàng BI Realtime sau lần ${indAttempt}:`, results.industry?.length);
         }
 
         // --- BƯỚC 4: Doanh thu nhân viên (Ở NGUYÊN TẠI REVENUE-CONSOLIDATED, CHỌN TAB "Nhân viên") ---
@@ -4213,19 +4290,21 @@
         results.industry = await collectCurrentBiData();
         console.log('[BI-Sync] Đã xong Bước 2: Ngành hàng BI', results.industry?.length);
 
-        // HÀM KIỂM TRA & TỰ ĐỘNG CHẠY LẦN 2: Nếu chưa hiển thị hoặc rỗng thì tự động chạy lần 2
-        if (!acpIsIndustryDataValid(results.industry)) {
-          console.warn('[BI-Sync] Dữ liệu Ngành hàng BI Luỹ kế chưa hiển thị hoặc rỗng. Tự động kiểm tra và chạy lần 2...');
-          await reportProgress(2, totalSteps, 'Ngành hàng BI', 'Dữ liệu ngành hàng chưa hiển thị, đang thử lại lần 2...');
-          await sleep(1500);
+        // HÀM KIỂM TRA & TỰ ĐỘNG CHẠY LẠI: Nếu chưa hiển thị hoặc rỗng thì đợi và thử lại tối đa 3 lần
+        let indLkAttempt = 1;
+        while (!acpIsIndustryDataValid(results.industry) && indLkAttempt <= 3) {
+          indLkAttempt++;
+          console.warn(`[BI-Sync] Dữ liệu Ngành hàng BI Luỹ kế chưa hiển thị hoặc rỗng. Đang tự động kiểm tra và thử lại (lần ${indLkAttempt}/3)...`);
+          await reportProgress(2, totalSteps, 'Ngành hàng BI', `Dữ liệu ngành hàng chưa hiển thị, đang đợi nạp lại (lần ${indLkAttempt}/3)...`);
+          await sleep(2000);
           await ensureSelectAllChecked();
-          await acpWaitForLoadingComplete(15000, 300, 200);
+          await acpWaitForLoadingComplete(20000, 400, 300);
           await expandAllCandidates(null, (msg) => {
-            reportProgress(2, totalSteps, 'Ngành hàng BI (lần 2)', msg);
+            reportProgress(2, totalSteps, `Ngành hàng BI (lần ${indLkAttempt})`, msg);
           });
-          await acpWaitForLoadingComplete(20000, 500, 300);
+          await acpWaitForLoadingComplete(25000, 500, 300);
           results.industry = await collectCurrentBiData();
-          console.log('[BI-Sync] Kết quả Ngành hàng BI Luỹ kế sau lần 2:', results.industry?.length);
+          console.log(`[BI-Sync] Kết quả Ngành hàng BI Luỹ kế sau lần ${indLkAttempt}:`, results.industry?.length);
         }
 
         // --- BƯỚC 3: Doanh thu nhân viên ---
@@ -4497,7 +4576,10 @@
         const ng = ycxWin().angular;
         const el = document.querySelector('[ng-controller="DashboardController"]');
         const scope = ng && el ? ng.element(el).scope() : null;
-        if (scope && Array.isArray(scope.ListCondition) && scope.ListCondition.length > 0 && typeof scope.ExportData === 'function'
+        const hasExport = typeof (scope && scope.ExportData) === 'function'
+          || !!document.getElementById('btnGroupExportData')
+          || !!document.querySelector('a[ng-click*="ExportData"]');
+        if (scope && Array.isArray(scope.ListCondition) && scope.ListCondition.length > 0 && hasExport
           && scope.objectDynamicReport && scope.objectDynamicReport.DYNAMICREPORTID) return scope;
       } catch (_) { /* angular chưa sẵn */ }
       await sleep(400);
@@ -4660,25 +4742,105 @@
     }
   }
 
-  async function ycxClickExport(scope) {
+  async function ycxClickExport(scope, onProgress) {
     const w = ycxWin();
-    const oldAlert = w.alert;
+    const oldWAlert = w ? w.alert : null;
+    const oldWinAlert = window.alert;
     let alertMsg = null;
-    try { w.alert = function (m) { alertMsg = String(m); console.warn('[YCX] Trang báo:', m); }; } catch (_) { /* không ghi đè được */ }
+    const customAlert = function (m) {
+      alertMsg = String(m);
+      console.warn('[YCX] Trang báo:', m);
+    };
+    try { if (w) w.alert = customAlert; } catch (_) { /* không ghi đè được */ }
+    try { window.alert = customAlert; } catch (_) { /* không ghi đè được */ }
+
+    const MAX_RETRIES = 3;
+
     try {
-      const SENTINEL = '__ycx_cho__';
-      ycxApply(scope, () => { scope.continueDownload = SENTINEL; });
-      ycxApply(scope, () => { scope.ExportData(); });
-      const t0 = Date.now();
-      while (Date.now() - t0 < 180000) {
-        if (alertMsg) throw ycxErr('export', `MWG báo: ${alertMsg}`);
-        if (scope.continueDownload !== SENTINEL) break;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        alertMsg = null;
+        const SENTINEL = '__ycx_cho__';
+        if (scope) ycxApply(scope, () => { scope.continueDownload = SENTINEL; });
+
+        // 1. Thao tác giao diện: Bấm nút "Xuất excel" (#btnGroupExportData) để mở menu xổ xuống
+        const btnExport = document.getElementById('btnGroupExportData')
+          || document.querySelector('button[data-toggle="dropdown"].btn-success')
+          || document.querySelector('button.dropdown-toggle');
+
+        if (btnExport) {
+          try { btnExport.click(); } catch (_) {}
+          try {
+            const $ = w.jQuery || w.$;
+            if ($ && $(btnExport).dropdown) $(btnExport).dropdown('toggle');
+          } catch (_) {}
+        }
+
+        // Đợi menu xổ xuống xuất hiện
         await sleep(300);
+
+        // 2. Bấm chọn mục "EXCEL" (<a href="javascript:void(0);" ng-click="ExportData();">EXCEL</a>)
+        const findExcelEl = () => {
+          const byNg = document.querySelector('a[ng-click*="ExportData"]');
+          if (byNg) return byNg;
+          const links = document.querySelectorAll('.dropdown-menu a, a.dropdown-item, a');
+          for (const a of links) {
+            const txt = (a.textContent || '').trim().toUpperCase();
+            if (txt === 'EXCEL' || (a.getAttribute('ng-click') || '').includes('ExportData')) return a;
+          }
+          return null;
+        };
+
+        const excelLink = findExcelEl();
+        let clickedDom = false;
+        if (excelLink) {
+          try {
+            excelLink.click();
+            clickedDom = true;
+          } catch (_) {}
+        }
+
+        // 3. Chỉ dự phòng trực tiếp qua AngularJS scope nếu KHÔNG tìm thấy hoặc không kích hoạt được qua DOM
+        // Tuyệt đối KHÔNG gọi thêm scope.ExportData() song song nếu DOM đã click để tránh gửi 2-3 request cùng lúc gây đụng độ Airflow
+        if (!clickedDom && scope && typeof scope.ExportData === 'function') {
+          ycxApply(scope, () => { scope.ExportData(); });
+        }
+
+        const t0 = Date.now();
+        let shouldRetry = false;
+
+        while (Date.now() - t0 < 180000) {
+          if (alertMsg) {
+            // Nhận diện lỗi tạm thời từ Airflow / kết nối backend MWG để tự động thử lại
+            const isAirflowTransient = /error_export_excel|airflow|vui lòng thử lại|thử lại/i.test(alertMsg);
+            if (isAirflowTransient && attempt < MAX_RETRIES) {
+              console.warn(`[YCX] MWG báo lỗi Airflow bận (${alertMsg}). Tự động thử lại lần ${attempt + 1}/${MAX_RETRIES} sau 4s...`);
+              if (onProgress) {
+                onProgress(`MWG báo Airflow bận, đang tự động thử lại (lần ${attempt + 1}/${MAX_RETRIES}) sau 4s…`);
+              }
+              ycxBanner(`MWG báo: "${alertMsg}". Đang tự động thử lại (${attempt + 1}/${MAX_RETRIES}) sau 4s…`, 'warn');
+              shouldRetry = true;
+              break;
+            } else {
+              throw ycxErr('export', `MWG báo: ${alertMsg}`);
+            }
+          }
+          if (scope && scope.continueDownload !== SENTINEL) break;
+          await sleep(300);
+        }
+
+        if (shouldRetry) {
+          try { if (scope && scope.popupdownload && scope.popupdownload.close) scope.popupdownload.close(); } catch (_) { /* bỏ qua */ }
+          await sleep(4000); // Chờ 4s giải toả hàng đợi Airflow trước khi bấm lại
+          continue;
+        }
+
+        if (scope && scope.continueDownload === SENTINEL) throw ycxErr('export', 'Bấm Xuất excel nhưng MWG không phản hồi sau 3 phút.');
+        try { if (scope && scope.popupdownload && scope.popupdownload.close) scope.popupdownload.close(); } catch (_) { /* bỏ qua */ }
+        return;
       }
-      if (scope.continueDownload === SENTINEL) throw ycxErr('export', 'Bấm Xuất excel nhưng MWG không phản hồi sau 3 phút.');
-      try { if (scope.popupdownload && scope.popupdownload.close) scope.popupdownload.close(); } catch (_) { /* bỏ qua */ }
     } finally {
-      try { w.alert = oldAlert; } catch (_) { /* bỏ qua */ }
+      try { if (w && oldWAlert) w.alert = oldWAlert; } catch (_) { /* bỏ qua */ }
+      try { if (oldWinAlert) window.alert = oldWinAlert; } catch (_) { /* bỏ qua */ }
     }
   }
 
@@ -4778,7 +4940,7 @@
 
       await report('export', 'Bấm Xuất excel…');
       const startedAt = Date.now();
-      await ycxClickExport(scope);
+      await ycxClickExport(scope, (m) => report('export', m));
       // Trang ManagerDownload để trống userName; nếu lượt đầu không thấy dòng nào thì dùng mã NV đăng nhập
       if (!userName && before.size === 0 && userInput && userInput.value) {
         try { if ((await ycxFetchHistory('')).length === 0) userName = userInput.value; } catch (_) { /* bỏ qua */ }

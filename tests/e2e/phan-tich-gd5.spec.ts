@@ -63,7 +63,7 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
 
     test('#16 "Hiển thị các khu vực": 4 công tắc dùng chung (một kiểu), tắt Xu hướng thì khối biến mất', async ({ page }) => {
         await napDuLieuMau(page);
-        await expect(page.getByRole('heading', { name: 'Xu hướng doanh thu' })).toBeVisible();
+        await expect(page.getByRole('heading', { name: /Xu hướng doanh thu/i })).toBeVisible();
         await page.locator('[data-app-chrome="topbar"]').getByRole('button', { name: 'Bộ lọc nâng cao' }).click();
         const congTac = page.getByRole('switch');
         await expect(congTac).toHaveCount(4);
@@ -74,13 +74,13 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
         await xuHuong.click();
         await expect(xuHuong).toHaveAttribute('aria-checked', 'false');
         await page.getByRole('button', { name: 'Đóng' }).first().click();
-        await expect(page.getByRole('heading', { name: 'Xu hướng doanh thu' })).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: /Xu hướng doanh thu/i })).toHaveCount(0);
     });
 
-    test('#13 + #7 + #28 Xu hướng & Lịch: tiêu đề viết như câu một hàng nút; bộ lọc Lịch 2 cột ô 44px; "+" không đè nút ảnh', async ({ page }) => {
+    test('#13 + #7 + #28 Xu hướng & Lịch: tiêu đề in hoa theo nhóm; bộ lọc Lịch 2 cột ô 44px; "+" không đè nút ảnh', async ({ page }) => {
         await napDuLieuMau(page);
-        const tieuDe = page.getByRole('heading', { name: 'Xu hướng doanh thu' });
-        await expect(tieuDe).toHaveCSS('text-transform', 'none');
+        const tieuDe = page.getByRole('heading', { name: /Xu hướng doanh thu/i });
+        await expect(tieuDe).toHaveCSS('text-transform', 'uppercase');
         await expect(tieuDe).toHaveCSS('font-size', '17px');
         await page.getByTitle('Chuyển sang dạng Bảng Lịch').first().click();
         const lich = page.locator('.calendar-export-target').first();

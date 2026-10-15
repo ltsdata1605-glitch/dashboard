@@ -3,7 +3,7 @@ import type { ExploitationData, CustomExploitationTabConfig, DataRow, ProductCon
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL } from '../../../constants';
-import { getRowValue, calculateRowMetrics, cleanAndNormalize, normalizedThuHoSet, getParentGroup, getSubgroup } from '../../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, cleanAndNormalize, normalizedThuHoSet, getParentGroup, getSubgroup, getRowPrice } from '../../../utils/dataUtils';
 
 interface DynamicSubHeader {
     label: string;
@@ -310,7 +310,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 if (!rawCreator) return;
 
                 const employeeId = rawCreator.split(' - ')[0].trim();
-                const price = Number(getRowValue(row, COL.PRICE)) || 0;
+                const price = getRowPrice(row);
 
                 const rawGroup = getRowValue(row, COL.MA_NHOM_HANG);
                 const industry = getParentGroup(rawGroup, productConfig) || productConfig?.childToParentMap?.[rawGroup] || '';

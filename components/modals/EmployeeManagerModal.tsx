@@ -9,6 +9,8 @@ import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { Button } from '../shared/ui/Button';
 import { Input } from '../shared/ui/Input';
 import { onActivateKey } from '../shared/ui';
+import { COL } from '../../constants';
+import { getRowValue } from '../../utils/dataUtils';
 
 interface EmployeeManagerModalProps {
     isOpen: boolean;
@@ -16,15 +18,17 @@ interface EmployeeManagerModalProps {
 }
 
 export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOpen, onClose }) => {
-    const { departmentMap, updateDepartmentMap, uniqueFilterOptions } = useDashboardContext();
+    const { departmentMap, updateDepartmentMap, uniqueFilterOptions, originalData } = useDashboardContext();
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearchTerm = React.useDeferredValue(searchTerm);
     const [localMap, setLocalMap] = useState<Record<string, string>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editDept, setEditDept] = useState('');
     const [editName, setEditName] = useState('');
-    const [sortConfig, setSortConfig] = useState<{ key: 'id' | 'name' | 'dept', direction: 'asc' | 'desc' } | null>(null);
+    const [editMaKho, setEditMaKho] = useState('');
+    const [sortConfig, setSortConfig] = useState<{ key: 'id' | 'name' | 'dept' | 'maKho', direction: 'asc' | 'desc' } | null>(null);
     const [filterDept, setFilterDept] = useState<string>('');
+    const [filterKho, setFilterKho] = useState<string>('');
 
     // Cờ báo hiệu có thay đổi để cập nhật lúc đóng
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -33,12 +37,30 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     // Khởi tạo Modal
     useEffect(() => {
         if (isOpen) {
+            // Tự động nhận diện Mã kho từ file dữ liệu gốc nếu có
+            const idToKhoMap: Record<string, string> = {};
+            if (originalData && Array.isArray(originalData)) {
+                for (const row of originalData) {
+                    const empStr = getRowValue(row, COL.NGUOI_TAO);
+                    const khoVal = getRowValue(row, COL.KHO);
+                    if (empStr && khoVal !== undefined && khoVal !== null) {
+                        const cleanId = String(empStr).trim().split(' - ')[0].trim();
+                        const cleanKho = String(khoVal).replace(/\D/g, '');
+                        if (cleanId && cleanKho && !idToKhoMap[cleanId]) {
+                            idToKhoMap[cleanId] = cleanKho;
+                        }
+                    }
+                }
+            }
+
             const combinedMap: Record<string, string> = {};
             if (departmentMap) {
                 for (const [id, val] of Object.entries(departmentMap)) {
                     const cleanId = id.trim();
                     const parts = val.split(';;');
+                    const dept = parts[0] || '';
                     const fullName = parts.length > 1 ? parts[1] : cleanId;
+                    const existingKho = parts.length > 2 ? parts[2].replace(/\D/g, '') : '';
                     
                     const lowerId = cleanId.toLowerCase();
                     const lowerName = fullName.toLowerCase();
@@ -60,7 +82,8 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                     );
                     
                     if (!isSystem) {
-                        combinedMap[cleanId] = val;
+                        const finalKho = existingKho || idToKhoMap[cleanId] || '';
+                        combinedMap[cleanId] = finalKho ? `${dept};;${fullName};;${finalKho}` : `${dept};;${fullName}`;
                     }
                 }
             }
@@ -83,35 +106,43 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                     const name = parts.slice(1).join(' - ').trim() || id;
                     if (!combinedMap[id]) {
                         // Những nhân viên có trong data nhưng chưa có trong map
-                        combinedMap[id] = `Chưa xác định;;${name}`;
+                        const detectedKho = idToKhoMap[id] || '';
+                        combinedMap[id] = detectedKho ? `Chưa xác định;;${name};;${detectedKho}` : `Chưa xác định;;${name}`;
                     }
                 });
             }
             setLocalMap(combinedMap);
             setSearchTerm('');
             setEditingId(null);
+            setEditDept('');
+            setEditName('');
+            setEditMaKho('');
+            setFilterDept('');
+            setFilterKho('');
             setHasUnsavedChanges(false);
         }
-    }, [isOpen]); // Chỉ reset và load dữ liệu gốc khi MỞ Modal (tránh mất search text lúc đang edit ngầm)
+    }, [isOpen, originalData]); // Chỉ reset và load dữ liệu gốc khi MỞ Modal (tránh mất search text lúc đang edit ngầm)
 
     const employees = useMemo(() => {
         if (!localMap) return [];
         return Object.entries(localMap).map(([id, val]) => {
-            if (typeof val !== 'string') return { id, dept: '', name: '' };
-            const [dept, name] = val.split(';;');
-            return { id, dept: dept || '', name: name || '' };
+            if (typeof val !== 'string') return { id, dept: '', name: '', maKho: '' };
+            const [dept, name, maKho] = val.split(';;');
+            return { id, dept: dept || '', name: name || '', maKho: (maKho || '').replace(/\D/g, '') };
         }).filter(emp => 
             (!filterDept || emp.dept === filterDept) &&
+            (!filterKho || emp.maKho === filterKho) &&
             (emp.id.toLowerCase().includes(deferredSearchTerm.toLowerCase()) || 
             emp.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
-            emp.dept.toLowerCase().includes(deferredSearchTerm.toLowerCase()))
+            emp.dept.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+            emp.maKho.includes(deferredSearchTerm))
         ).sort((a, b) => {
             if (!sortConfig) return a.dept.localeCompare(b.dept);
             const { key, direction } = sortConfig;
             const diff = a[key].localeCompare(b[key], undefined, { numeric: true });
             return direction === 'asc' ? diff : -diff;
         });
-    }, [localMap, deferredSearchTerm, sortConfig, filterDept]);
+    }, [localMap, deferredSearchTerm, sortConfig, filterDept, filterKho]);
 
     const departments = useMemo(() => {
         return Array.from(new Set(Object.values(localMap).map(v => {
@@ -120,7 +151,15 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         }).filter(Boolean))).sort();
     }, [localMap]);
 
-    const handleSort = (key: 'id' | 'name' | 'dept') => {
+    const khoList = useMemo(() => {
+        return Array.from(new Set(Object.values(localMap).map(v => {
+            if (typeof v !== 'string') return '';
+            const parts = v.split(';;');
+            return parts.length > 2 ? parts[2].replace(/\D/g, '').trim() : '';
+        }).filter(Boolean))).sort((a, b) => Number(a) - Number(b));
+    }, [localMap]);
+
+    const handleSort = (key: 'id' | 'name' | 'dept' | 'maKho') => {
         setSortConfig(prev => {
             if (prev?.key === key) {
                 return prev.direction === 'asc' ? { key, direction: 'desc' } : null;
@@ -129,21 +168,23 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         });
     };
 
-    const renderSortIcon = (key: 'id' | 'name' | 'dept') => {
+    const renderSortIcon = (key: 'id' | 'name' | 'dept' | 'maKho') => {
         if (sortConfig?.key !== key) return <AppIcon name="expandAll" size="sm" className="opacity-30" />;
         return <AppIcon name={resolveIconName(sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down') ?? 'help'} size="sm" className="text-sky-700" />;
     };
 
-    const handleEdit = (emp: { id: string, dept: string, name: string }) => {
+    const handleEdit = (emp: { id: string, dept: string, name: string, maKho: string }) => {
         setEditingId(emp.id);
         setEditDept(emp.dept);
         setEditName(emp.name);
+        setEditMaKho(emp.maKho);
     };
 
     const handleSave = () => {
         if (editingId) {
             const newMap = { ...localMap };
-            newMap[editingId] = `${editDept};;${editName}`;
+            const cleanKho = editMaKho.replace(/\D/g, '');
+            newMap[editingId] = cleanKho ? `${editDept};;${editName};;${cleanKho}` : `${editDept};;${editName}`;
             setLocalMap(newMap);
             setEditingId(null);
             setHasUnsavedChanges(true); // Đánh dấu đã thay đổi
@@ -238,16 +279,35 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
                 {/* Table */}
                 <div className="flex-grow overflow-auto custom-scrollbar">
-                    <table className="w-full min-w-[480px] text-[12px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
+                    <table className="w-full min-w-[540px] text-[12px] sm:text-xs text-left border-collapse border-b border-slate-200 dark:border-slate-800 table-fixed">
                         <thead className="bg-sky-50 dark:bg-sky-900/20 sticky top-0 z-10 border-b border-slate-200 dark:border-slate-700/80">
                             <tr className="text-[11px] sm:text-xs font-bold text-sky-950 dark:text-sky-200 uppercase tracking-wider whitespace-nowrap">
-                                <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[13%] sm:w-20">
+                                <th onClick={() => handleSort('id')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[12%] sm:w-20">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
-                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[47%] sm:w-56">
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[34%] sm:w-48">
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
-                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[27%] sm:w-64">
+                                <th className="px-1 sm:px-3 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[16%] sm:w-24">
+                                    <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('maKho')} onKeyDown={onActivateKey(() => handleSort('maKho'))}>
+                                        <div className="flex items-center gap-1">Mã kho {renderSortIcon('maKho')}</div>
+                                        <div className="relative" onClick={e => e.stopPropagation()}>
+                                            <select 
+                                                value={filterKho} 
+                                                onChange={e => setFilterKho(e.target.value)}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                                title="Lọc Mã kho"
+                                            >
+                                                <option value="">Tất cả</option>
+                                                {khoList.map(k => <option key={k} value={k}>Kho {k}</option>)}
+                                            </select>
+                                            <Button variant="unstyled" size="none" className={`p-0.5 sm:p-1 rounded transition-colors ${filterKho ? 'text-indigo-650 bg-sky-50' : 'text-slate-400 hover:bg-slate-200'}`}>
+                                                <AppIcon name="filter" size="xs" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 hover:bg-sky-100/50 dark:hover:bg-sky-900/40 transition-colors w-[26%] sm:w-56">
                                     <div role="button" tabIndex={0} className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')} onKeyDown={onActivateKey(() => handleSort('dept'))}>
                                         <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
                                         <div className="relative" onClick={e => e.stopPropagation()}>
@@ -266,7 +326,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                         </div>
                                     </div>
                                 </th>
-                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 w-[13%] sm:w-24 text-center">Thao tác</th>
+                                <th className="px-1 sm:px-4 py-1.5 sm:py-2 w-[12%] sm:w-20 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -284,6 +344,24 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
                                                     className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-sky-300 dark:border-sky-500"
                                                     autoFocus
+                                                />
+                                            </td>
+                                            <td className="px-1 sm:px-3 py-1 sm:py-1.5">
+                                                <Input 
+                                                    type="text" 
+                                                    inputMode="numeric"
+                                                    pattern="[0-9]*"
+                                                    value={editMaKho} 
+                                                    onChange={e => setEditMaKho(e.target.value.replace(/\D/g, ''))} 
+                                                    onKeyDown={e => { 
+                                                        if (e.key === 'Enter') handleSave();
+                                                        if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) {
+                                                            e.preventDefault();
+                                                        }
+                                                    }}
+                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-sky-300 dark:border-sky-500 font-mono text-center"
+                                                    placeholder="Mã kho"
+                                                    title="Chỉ cho phép nhập số"
                                                 />
                                             </td>
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5">
@@ -311,6 +389,15 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                     ) : (
                                         <>
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-slate-700 dark:text-slate-300 font-medium truncate" title={emp.name}>{emp.name}</td>
+                                            <td className="px-1 sm:px-3 py-1 sm:py-1.5 text-center">
+                                                {emp.maKho ? (
+                                                    <span className="inline-block px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900/40">
+                                                        {emp.maKho}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[11px] text-slate-300 dark:text-slate-600 italic">--</span>
+                                                )}
+                                            </td>
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5 truncate">
                                                 <span 
                                                     title={emp.dept}
@@ -319,7 +406,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     {emp.dept}
                                                 </span>
                                             </td>
-                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center w-[13%] sm:w-24">
+                                            <td className="px-1 sm:px-4 py-1 sm:py-1.5 text-center w-[12%] sm:w-20">
                                                 <div className="flex justify-center gap-0.5 sm:gap-1">
                                                     <Button variant="unstyled" size="none" onClick={() => handleEdit(emp)} className="p-0.5 sm:p-1 text-sky-700 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded transition-colors" title="Sửa">
                                                         <AppIcon name="edit" size="sm" />
@@ -335,7 +422,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                             ))}
                             {employees.length === 0 && (
                                 <tr>
-                                    <td colSpan={4} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
+                                    <td colSpan={5} className="px-4 py-12 text-center text-slate-500 dark:text-slate-400">
                                         Không tìm thấy nhân viên nào phù hợp.
                                     </td>
                                 </tr>

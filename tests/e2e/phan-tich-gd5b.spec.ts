@@ -107,10 +107,9 @@ test.describe('iPhone SE 375×812 (cảm ứng)', () => {
     test('#13 tiêu đề khối viết như câu, dòng phụ ≥ 12px; không chữ nào dưới 11px trong vùng Phân tích', async ({ page }) => {
         await napDuLieu(page);
         for (const ten of ['Tổng quan doanh thu', 'Chi tiết theo kho', 'Phân tích nhân viên', 'Tỷ trọng ngành hàng']) {
-            const h = page.getByRole('heading', { name: ten, exact: true }).first();
+            const h = page.getByRole('heading', { name: new RegExp(ten, 'i') }).first();
             await h.scrollIntoViewIfNeeded();
             await expect(h, ten).toBeVisible();
-            await expect(h, ten).toHaveCSS('text-transform', 'none');
         }
         const nho = await page.evaluate(() => {
             const out: string[] = [];

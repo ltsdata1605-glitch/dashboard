@@ -972,28 +972,73 @@ summary,
 @utility type-kpi { font-size: var(--type-kpi); line-height: var(--type-kpi-lh); font-variant-numeric: tabular-nums; }
 @utility type-kpi-lg { font-size: var(--type-kpi-lg); line-height: var(--type-kpi-lg-lh); font-variant-numeric: tabular-nums; }
 
-/* Màn đưa CẢ thanh công cụ lên khe nút cũ (Check thưởng có dữ liệu — chủ dự án chốt "1 thanh bar duy nhất", a4168bd) đánh dấu
-   gốc thanh bằng [data-thay-tieu-de]: dưới 540px chữ tiêu đề nhường chỗ, cụm nút dạt phải (trước: tiêu đề bị cắt còn "C" và
-   dòng phụ còn vài chữ). Ô icon nhận diện bên trái vẫn còn. (GĐ7)
-   NGOÀI @layer có chủ đích: lớp tiện ích `flex` của khối tiêu đề (layer utilities) thắng mọi quy tắc trong @layer components. */
-@media (max-width: 539px) {
+/* Check thưởng: tiêu đề và thời gian cập nhật hiển thị như tab Phân tích.
+   Thanh công cụ tìm kiếm và cụm con nhộng hành động nằm gọn gàng bên phải. */
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 60px !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  overflow: hidden !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] #mobile-topbar-subtitle {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] #mobile-topbar-subtitle button {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] #mobile-topbar-subtitle button span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+@media (min-width: 420px) {
   .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
-    display: none;
+    max-width: 90px !important;
   }
-  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-actions] {
-    margin-left: auto;
+}
+
+@media (min-width: 540px) {
+  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
+    max-width: none !important;
+  }
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] h1 {
+  font-size: 13px;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 540px) {
+  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] h1 {
+    font-size: 14px;
   }
 }
 
 /* ==========================================================================
    CỤM CON NHỘNG HỢP NHẤT THANH TRÊN (CAPSULE ACTION BAR)
-   Khi #mobile-topbar-actions chứa [data-capsule-bar] (Report BI hoặc phân hệ áp dụng con nhộng):
-   Gom toàn bộ cụm hành động (các tab phân hệ, nút ⋯ thêm thao tác, chuông thông báo)
-   thành MỘT THANH CON NHỘNG DUY NHẤT chuẩn Zalo/iOS Navigation Capsule.
+/* ==========================================================================
+   CON NHỘNG TOÀN DIỆN CHO KHUNG TOPBAR (Zalo / iOS Action Capsule Bar)
+   Khi topbar có hành động (Report BI hoặc Phân tích hoặc Check thưởng):
+   Gom các nút chức năng thành THANH CON NHỘNG chuẩn Zalo/iOS Navigation Capsule.
    ========================================================================== */
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] {
+
+/* Trường hợp 1: Phân tích & Report BI (không có data-thay-tieu-de) -> [data-navbar-actions] là capsule ngoài dồn sát phải */
+.ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
   display: flex !important;
   align-items: center !important;
+  margin-left: auto !important;
+  justify-content: flex-end !important;
   border-radius: 9999px !important;
   background-color: rgba(241, 245, 249, 0.9) !important;
   border: 1px solid rgba(226, 232, 240, 0.7) !important;
@@ -1002,13 +1047,48 @@ summary,
   user-select: none !important;
 }
 
-.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] {
+.dark .ycx-navbar:not(:has(#mobile-topbar-actions [data-thay-tieu-de])):has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] {
+  background-color: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+}
+
+/* Trường hợp 2: Check thưởng (có data-thay-tieu-de) -> dồn sát bên phải như Report BI, [data-action-capsule] chuẩn 34px */
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-actions] {
+  margin-left: auto !important;
+  justify-content: flex-end !important;
+  flex-shrink: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  gap: 3px !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) #mobile-topbar-actions {
+  flex-shrink: 0 !important;
+}
+
+.ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-action-capsule] {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  border-radius: 9999px !important;
+  background-color: rgba(241, 245, 249, 0.9) !important;
+  border: 1px solid rgba(226, 232, 240, 0.7) !important;
+  padding: 1px !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  user-select: none !important;
+}
+
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-action-capsule] {
   background-color: rgba(30, 41, 59, 0.9) !important;
   border-color: rgba(51, 65, 85, 0.7) !important;
 }
 
 /* Gỡ viền & nền riêng của component con bên trong để hoà nhập vào capsule chung */
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) #mobile-topbar-actions [data-capsule-bar] {
+.ycx-navbar #mobile-topbar-actions [data-capsule-bar] {
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
@@ -1016,7 +1096,7 @@ summary,
   margin: 0 !important;
 }
 
-/* Vạch ngăn cách hairline giữa các tab phân hệ và cụm thao tác/thông báo */
+/* Vạch ngăn cách hairline giữa các tab phân hệ và cụm thao tác/thông báo (Report BI) */
 .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) #mobile-topbar-actions::after {
   content: '';
   display: block;
@@ -1032,8 +1112,24 @@ summary,
   background-color: rgba(71, 85, 105, 0.8);
 }
 
+/* Vạch ngăn cách hairline giữa PageActions và Chuông thông báo khi #mobile-topbar-actions không có capsule bar (Phân tích, Check thưởng, v.v.) */
+.ycx-navbar:not(:has(#mobile-topbar-actions [data-capsule-bar])):has([data-page-actions="mobile"]) [data-page-actions="mobile"]::after {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 14px;
+  background-color: rgba(203, 213, 225, 0.8);
+  margin: 0 2px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.dark .ycx-navbar:not(:has(#mobile-topbar-actions [data-capsule-bar])):has([data-page-actions="mobile"]) [data-page-actions="mobile"]::after {
+  background-color: rgba(71, 85, 105, 0.8);
+}
+
 /* Đồng bộ kích thước thị giác 32×32px cho nút PageActions và Chuông thông báo */
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) {
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) {
   width: 32px !important;
   height: 32px !important;
   min-width: 32px !important;
@@ -1048,39 +1144,41 @@ summary,
   transition: all 0.2s !important;
 }
 
-.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) {
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) {
   color: rgb(148 163 184) !important;
 }
 
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):hover {
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):hover {
   background-color: rgba(226, 232, 240, 0.6) !important;
 }
 
-.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):hover {
+.dark .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):hover {
   background-color: rgba(51, 65, 85, 0.6) !important;
 }
 
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):active {
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]):active {
   transform: scale(0.95) !important;
 }
 
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) svg {
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) :where([data-page-actions="mobile"] button, [data-page-actions="mobile"] [role="button"], [data-testid="page-actions-more"], button[title="Thông báo"]) svg {
   width: 18px !important;
   height: 18px !important;
+  --ycx-icon-m: 18px !important;
+  --ycx-icon-d: 18px !important;
 }
 
 /* Chấm đỏ badge thông báo trên nút chuông nhỏ 32px */
-.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] button[title="Thông báo"] .absolute {
+.ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) button[title="Thông báo"] .absolute {
   top: 1px !important;
   right: 1px !important;
 }
 
 /* Vùng chạm cảm ứng vô hình 44×44px chuẩn Apple HIG qua ::after */
 @media (pointer: coarse), (max-width: 639.98px) {
-  .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where(button, a[href], [role='button']) {
+  .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] :where(button, a[href], [role='button']) {
     position: relative;
   }
-  .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar]) [data-navbar-actions] :where(button, a[href], [role='button'])::after {
+  .ycx-navbar:has(#mobile-topbar-actions [data-capsule-bar], [data-page-actions="mobile"]) [data-navbar-actions] :where(button, a[href], [role='button'])::after {
     content: '';
     position: absolute;
     top: min(0px, calc((100% - 44px) / 2));

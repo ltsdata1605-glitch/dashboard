@@ -513,20 +513,6 @@
     "offScaleRadius": 0,
     "offScaleText": 3
   },
-  "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiCard.tsx": {
-    "nonSemanticColor": 0,
-    "indigoAlias": 0,
-    "missingMobileToolbar": 0,
-    "iconDirectImport": 0,
-    "iconNumericSize": 0,
-    "iconLegacyCall": 0,
-    "iconRawSvg": 0,
-    "iconEmoji": 0,
-    "rawOverlay": 0,
-    "tinyText": 0,
-    "offScaleRadius": 0,
-    "offScaleText": 3
-  },
   "features/bi-dashboard/components/dashboard/industryKpi/IndustryKpiGrid.tsx": {
     "nonSemanticColor": 0,
     "indigoAlias": 0,
@@ -820,7 +806,7 @@
     "tinyText": 0,
     "offScaleRadius": 0,
     "iconRawSvg": 0,
-    "offScaleText": 9
+    "offScaleText": 0
   },
   "features/check-thuong/components/CheckThuongTopTable.tsx": {
     "nonSemanticColor": 0,

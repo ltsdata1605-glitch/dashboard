@@ -18,8 +18,25 @@ const TRANG_77 = `<!doctype html><html><head><meta charset="utf-8"></head><body>
 <div ng-app="DynamicReportApp" ng-controller="DashboardController" id="ctrl">
   <input type="hidden" id="reportId" value="77">
   <div id="conds"></div>
+  <div class="btn-group">
+    <button id="btnGroupExportData" type="button" class="btn btn-success dropdown-toggle ng-binding" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      Xuất excel <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu">
+      <li><a href="javascript:void(0);" ng-click="ExportData();">EXCEL</a></li>
+      <li><a href="javascript:void(0);">CSV</a></li>
+    </ul>
+  </div>
 </div>
 <script>
+  window.__btnGroupExportClicked = false;
+  window.__excelLinkClicked = false;
+  setTimeout(() => {
+    const btn = document.getElementById('btnGroupExportData');
+    if (btn) btn.addEventListener('click', () => { window.__btnGroupExportClicked = true; });
+    const a = document.querySelector('a[ng-click*="ExportData"]');
+    if (a) a.addEventListener('click', () => { window.__excelLinkClicked = true; scope.ExportData(); });
+  }, 100);
   // ---- AngularJS giả: đủ cho angular.element(el).scope() / isolateScope() và $apply ----
   const conds = [
     { PARAMNAME: 'V_FROMDATE', CONTROLTYPE: 'DATE', OBJECTVALUE: '1/10/2026 00:00', ISREQUIRE: false },
@@ -86,8 +103,9 @@ const TRANG_77 = `<!doctype html><html><head><meta charset="utf-8"></head><body>
   }, 300);
 </script></body></html>`;
 
-async function dungTrangGia(page: Page, opts: { exportFail?: string; khoCay?: boolean; apiLichSu?: boolean } = {}) {
+async function dungTrangGia(page: Page, opts: { exportFail?: string; exportAirflowFailTimes?: number; khoCay?: boolean; apiLichSu?: boolean } = {}) {
     const state = { exportBody: null as null | { listParam: { PARAMNAME: string; OBJECTVALUE: unknown }[] }, getDataCalls: 0, storeCalls: 0, xongSauLan: 3 };
+    let airflowFails = opts.exportAirflowFailTimes || 0;
     await page.route('https://report.mwgroup.vn/**', async (route) => {
         const req = route.request();
         const url = new URL(req.url());
@@ -100,6 +118,10 @@ async function dungTrangGia(page: Page, opts: { exportFail?: string; khoCay?: bo
         if (p === '/Home/SearchMainGroup') return route.fulfill({ json: [{ MAINGROUPID: 1775 }, { MAINGROUPID: 13 }] });
         if (p === '/Home/ExportExcelDynamicReport') {
             state.exportBody = req.postDataJSON();
+            if (airflowFails > 0) {
+                airflowFails--;
+                return route.fulfill({ json: { Success: false, Message: 'error_export_excel [+ Không gửi được yêu cầu xuất file sang Airflow, vui lòng thử lại +]' } });
+            }
             return route.fulfill({ json: opts.exportFail ? { Success: false, Message: opts.exportFail } : { Success: true, Data: { continueDownload: true } } });
         }
         if (p === '/ManagerDownload') return route.fulfill({ status: 200, contentType: 'text/html; charset=utf-8', body: TRANG_LICH_SU });
@@ -168,6 +190,8 @@ test('report.mwgroup.vn: đặt Kho tạo + Tất cả ngành hàng + Tất cả
     expect(await page.evaluate(() => (window as unknown as { __jstreeAll: boolean }).__jstreeAll)).toBe(true);
     // Ô Kho: bấm "Tất cả" trên cây nằm NGOÀI khối điều kiện (cửa sổ Kendo) — không phải chờ rồi gọi API
     expect(await page.evaluate(() => (window as unknown as { __khoAll: boolean }).__khoAll)).toBe(true);
+    expect(await page.evaluate(() => (window as unknown as { __btnGroupExportClicked: boolean }).__btnGroupExportClicked)).toBe(true);
+    expect(await page.evaluate(() => (window as unknown as { __excelLinkClicked: boolean }).__excelLinkClicked)).toBe(true);
     expect(state.storeCalls).toBe(0);
     console.log('Thời gian cả lượt (giả lập):', Date.now() - t0, 'ms');
     // Chờ qua lượt "đang xuất" chứ không lấy file cũ
@@ -188,6 +212,19 @@ test('report.mwgroup.vn: MWG báo lỗi khi xuất → ghi lỗi cho Dashboard, 
     expect(err).toMatchObject({ jobId: 'job-2', step: 'export' });
     expect(err.message).toContain('Hết thời gian chờ');
     expect(await gm(page, 'ycx_ycx_done')).toBeUndefined();
+});
+
+test('report.mwgroup.vn: MWG báo lỗi Airflow lần 1 → tự động thử lại lần 2 và hoàn tất xuất file', async ({ page }) => {
+    test.setTimeout(45_000);
+    await dungTrangGia(page, { exportAirflowFailTimes: 1 });
+    await page.goto('https://report.mwgroup.vn/home/dashboard/77?ycx_ycx=realtime&ycx_job=job-airflow-retry');
+    await page.addScriptTag({ content: USERSCRIPT });
+
+    await expect.poll(() => gm(page, 'ycx_ycx_done'), { timeout: 35_000 }).toBeTruthy();
+    const done = await gm(page, 'ycx_ycx_done') as { jobId: string };
+    expect(done.jobId).toBe('job-airflow-retry');
+    expect(await gm(page, 'ycx_ycx_error')).toBeUndefined();
+    await expect(page.locator('#ycx-ycx-banner')).toContainText('Xong');
 });
 
 test('report.mwgroup.vn: mở trang KHÔNG có lượt nào → userscript không làm gì', async ({ page }) => {

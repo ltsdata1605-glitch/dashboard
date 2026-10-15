@@ -1,4 +1,5 @@
 import { CheckThuongStoreSummary } from '../types';
+import { formatBonusMoney } from './checkThuongCalc';
 import { deliverImage, type DeliveryResult } from '../../../components/shared/ui/imageDelivery';
 import { exportElementAsImage, startExportJob, exportFooterText } from '../../../components/shared/export';
 
@@ -114,7 +115,7 @@ export async function exportLeaderboardToImage({
                 </div>
                 <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 2.5px 7px; white-space: nowrap;">
                     <span style="font-size: 9px; font-weight: 700; color: #059669; text-transform: uppercase;">Tổng: </span>
-                    <span style="font-size: 11.5px; font-weight: 900; color: #047857; font-family: inherit;">${totalBonusMil.toLocaleString('vi-VN')} Tr</span>
+                    <span style="font-size: 11.5px; font-weight: 900; color: #047857; font-family: inherit;">${formatBonusMoney(totalBonusAll).full}</span>
                 </div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3px; font-size: 9px; color: #64748b; font-family: inherit;">

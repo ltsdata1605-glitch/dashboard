@@ -16,7 +16,7 @@ test('công tắc dùng chung trong 2 popover Phân tích', async ({ page }) => 
   await expect(page.getByText(/chi tiết theo kho/i).first()).toBeVisible({ timeout: 90_000 });
 
   // 1) Phân tích nhân viên › bánh răng → "Hiển thị màn hình thi đua": công tắc nằm trong <label>
-  const tieuDeNV = page.getByText('Phân tích nhân viên', { exact: true }).first();
+  const tieuDeNV = page.getByRole('heading', { name: /Phân tích nhân viên/i }).first();
   await tieuDeNV.scrollIntoViewIfNeeded();
   await tieuDeNV.locator('xpath=ancestor::*[.//button[@title="Tùy chọn hiển thị"]][1]').getByTitle('Tùy chọn hiển thị').first().click();
   const pop = page.getByText('Hiển thị màn hình thi đua').locator('..');

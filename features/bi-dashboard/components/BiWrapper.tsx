@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useCallback, useEffect, useRef, Suspense, lazy } from 'react';
 import { resolveIconName } from '../../../components/shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { readPendingAutoSync } from '../services/biAutoSyncService';
@@ -19,6 +19,9 @@ import { configStore } from '../store/configStore';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import type { ConfigTab } from './SupermarketConfig';
 import { lazyWithRetry } from '../../../utils/lazyWithRetry';
+import { toast } from '../../../components/shared/ui/toast';
+import { useReportBiAuth } from '../hooks/useReportBiAuth';
+import { pullBiDataFromCloud } from '../services/biCloudSyncService';
 
 // Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
 import Dashboard from './Dashboard';
@@ -96,6 +99,8 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const [hasSummaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
     const [hasCompetitionRealtime] = useIndexedDBState<string>('competition-realtime', '');
     const [isBiSyncing, setIsBiSyncing] = useState(false);
+    const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+    const { user, allowedKhos } = useReportBiAuth();
 
     useEffect(() => {
         const onStart = () => setIsBiSyncing(true);
@@ -126,10 +131,72 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
         return ts;
     }, [dashboardMainTab, summaryRealtimeTs, competitionRealtimeTs, summaryLuyKeTs, competitionLuyKeTs, hasSummaryRealtime, hasSummaryLuyKe, hasCompetitionRealtime]);
 
+    const [cloudFeedback, setCloudFeedback] = useState<{
+        message: string;
+        mobileMessage: string;
+        status: 'success' | 'error';
+    } | null>(null);
+    const feedbackTimerRef = useRef<NodeJS.Timeout | null>(null);
+
     // Kích hoạt tự động đồng bộ qua GlobalAutoSyncDock toàn cục
     const handleStartAutoSync = useCallback((mode: 'realtime' | 'luyke') => {
         window.dispatchEvent(new CustomEvent('ycx-trigger-bi-auto-sync', { detail: { mode } }));
     }, []);
+
+    // Nạp chủ động dữ liệu từ Firebase Cloud khi bấm vào dòng thời gian cập nhật
+    const handleManualCloudSync = useCallback(async () => {
+        if (isSyncingCloud) return;
+        if (feedbackTimerRef.current) {
+            clearTimeout(feedbackTimerRef.current);
+            feedbackTimerRef.current = null;
+        }
+        setCloudFeedback(null);
+
+        if (!user || user.isAnonymous) {
+            setCloudFeedback({
+                message: 'Vui lòng đăng nhập Google!',
+                mobileMessage: 'Cần đăng nhập Google',
+                status: 'error'
+            });
+            feedbackTimerRef.current = setTimeout(() => {
+                setCloudFeedback(null);
+                feedbackTimerRef.current = null;
+            }, 3500);
+            return;
+        }
+
+        setIsSyncingCloud(true);
+
+        try {
+            const result = await pullBiDataFromCloud(user, allowedKhos);
+            if (result.count > 0) {
+                setCloudFeedback({
+                    message: 'Đã nạp thành công dữ liệu Report BI!',
+                    mobileMessage: 'Đã nạp dữ liệu BI!',
+                    status: 'success'
+                });
+            } else {
+                setCloudFeedback({
+                    message: 'Dữ liệu trên máy bạn đã là mới nhất!',
+                    mobileMessage: 'Đã là mới nhất!',
+                    status: 'success'
+                });
+            }
+        } catch (err: unknown) {
+            console.error('[BiWrapper] Lỗi nạp dữ liệu từ Cloud:', err);
+            setCloudFeedback({
+                message: 'Không thể tải dữ liệu từ Cloud',
+                mobileMessage: 'Lỗi tải Cloud',
+                status: 'error'
+            });
+        } finally {
+            setIsSyncingCloud(false);
+            feedbackTimerRef.current = setTimeout(() => {
+                setCloudFeedback(null);
+                feedbackTimerRef.current = null;
+            }, 3500);
+        }
+    }, [isSyncingCloud, user, allowedKhos]);
 
     useEffect(() => {
         setMounted(true);
@@ -279,15 +346,40 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
             {mounted && isTabActive && document.getElementById('mobile-topbar-subtitle') && createPortal(
                 <button
                     type="button"
-                    onClick={() => {
-                        handleStartAutoSync(dashboardMainTab === 'luyke' ? 'luyke' : 'realtime');
-                    }}
-                    title="Chạm để kiểm tra & đồng bộ dữ liệu BI mới nhất"
-                    className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                    onClick={handleManualCloudSync}
+                    title="Chạm để nạp dữ liệu Report BI mới nhất từ Firebase Cloud"
+                    className={`inline-flex items-center gap-1 text-left shrink-0 cursor-pointer transition-all duration-200 active:scale-95 ${
+                        cloudFeedback
+                            ? (cloudFeedback.status === 'error'
+                                ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                            : (isBiSyncing || isSyncingCloud)
+                                ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                    }`}
                 >
-                    <AppIcon name="refresh" size="xs" spin={isBiSyncing} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                    <span className={isBiSyncing ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                        {isBiSyncing ? 'Đang đồng bộ...' : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
+                    {cloudFeedback ? (
+                        <AppIcon
+                            name={cloudFeedback.status === 'error' ? 'error' : 'success'}
+                            size="xs"
+                            className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                        />
+                    ) : (
+                        <AppIcon
+                            name="refresh"
+                            size="xs"
+                            spin={isBiSyncing || isSyncingCloud}
+                            className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                        />
+                    )}
+                    <span className={(isBiSyncing || isSyncingCloud) ? 'animate-pulse' : ''}>
+                        {cloudFeedback
+                            ? cloudFeedback.mobileMessage
+                            : isSyncingCloud
+                                ? 'Đang tải từ Cloud...'
+                                : isBiSyncing
+                                    ? 'Đang đồng bộ...'
+                                    : (currentTimestamp ? (currentTimestamp.length > 8 ? currentTimestamp.slice(0, 8) : currentTimestamp) : 'Tải dữ liệu Cloud')}
                     </span>
                 </button>,
                 document.getElementById('mobile-topbar-subtitle')!
@@ -297,15 +389,40 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
             {mounted && isTabActive && document.getElementById('desktop-header-subtitle') && createPortal(
                 <button
                     type="button"
-                    onClick={() => {
-                        handleStartAutoSync(dashboardMainTab === 'luyke' ? 'luyke' : 'realtime');
-                    }}
-                    title="Bấm để kiểm tra & đồng bộ dữ liệu BI mới nhất"
-                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
+                    onClick={handleManualCloudSync}
+                    title="Bấm để nạp dữ liệu Report BI mới nhất từ Firebase Cloud"
+                    className={`inline-flex items-center gap-1.5 text-left group cursor-pointer transition-all duration-200 active:scale-95 ${
+                        cloudFeedback
+                            ? (cloudFeedback.status === 'error'
+                                ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                            : (isBiSyncing || isSyncingCloud)
+                                ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                    }`}
                 >
-                    <AppIcon name="refresh" size="xs" spin={isBiSyncing} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300" />
-                    <span className={isBiSyncing ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                        {isBiSyncing ? 'Đang đồng bộ từ Cloud...' : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
+                    {cloudFeedback ? (
+                        <AppIcon
+                            name={cloudFeedback.status === 'error' ? 'error' : 'success'}
+                            size="xs"
+                            className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                        />
+                    ) : (
+                        <AppIcon
+                            name="refresh"
+                            size="xs"
+                            spin={isBiSyncing || isSyncingCloud}
+                            className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                        />
+                    )}
+                    <span className={(isBiSyncing || isSyncingCloud) ? 'animate-pulse' : ''}>
+                        {cloudFeedback
+                            ? cloudFeedback.message
+                            : isSyncingCloud
+                                ? 'Đang tải từ Cloud...'
+                                : isBiSyncing
+                                    ? 'Đang đồng bộ...'
+                                    : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Tải dữ liệu Cloud')}
                     </span>
                 </button>,
                 document.getElementById('desktop-header-subtitle')!

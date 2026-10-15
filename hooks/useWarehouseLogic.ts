@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect, useRef, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, calculateRowMetrics, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet } from '../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet, getRowPrice } from '../utils/dataUtils';
 
 interface UseWarehouseLogicProps {
     data: WarehouseSummaryRow[];
@@ -114,7 +114,7 @@ export const useWarehouseLogic = ({
                         // bỏ qua bộ lọc (khớp hành vi ContestTable.tsx), tránh mặc định về 0 gây loại
                         // nhầm gần hết dữ liệu với điều kiện "nhỏ hơn"/"bằng"/"giữa".
                         if (col.filters?.priceCondition && typeof col.filters.priceValue1 === 'number') {
-                            const priceVal = Number(getRowValue(row, col.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
+                            const priceVal = getRowPrice(row, col.filters.priceType === 'original' ? 'original' : 'discounted');
                             const v1 = col.filters.priceValue1;
                             switch (col.filters.priceCondition) {
                                 case 'greater': if (priceVal <= v1) isMatch = false; break;

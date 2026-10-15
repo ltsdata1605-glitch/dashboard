@@ -3,7 +3,7 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { toast } from '../shared/ui/toast';
 import { startExportJob } from '../shared/export';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, calculateRowMetrics, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize, getSubgroup, normalizedThuHoSet, getRowPrice } from '../../utils/dataUtils';
 import type { DataRow, TrendData, FilterState, ProductConfig, SavedCalendar } from '../../types';
 import type { ExportImageOptions } from '../../hooks/useExportLogic';
 import { COL } from '../../constants';
@@ -222,7 +222,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               : !normalizedThuHoSet.has(cleanAndNormalize(hinhThucXuat));
           if (!isRevenue) return;
 
-          const price = Number(getRowValue(row, COL.PRICE)) || 0;
+          const price = getRowPrice(row);
 
           let valueToAdd = 0;
           let totalRevenue = 0;
@@ -409,7 +409,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       {/* GĐ5 (lỗi #13, #28): tiêu đề viết như câu (bỏ IN HOA ép), dòng phụ 12px (trước 8px — dưới sàn 11px); bộ lọc của chế độ Lịch
           xuống hàng riêng trong thân thẻ (4 ô 70px chen trên tiêu đề từng đẩy nút xuất ảnh rớt dòng ở iPhone). */}
       <SectionHeader
-        title="Xu hướng doanh thu"
+        title="XU HƯỚNG DOANH THU"
+        titleClassName="type-headline font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight"
         subtitle={(
             <span className="flex items-center gap-x-1.5 gap-y-1 flex-wrap">
                 {displayMode !== 'calendar' && (

@@ -98,7 +98,7 @@ export interface KpiCardProps {
     /** Tên chức năng (iconRegistry); tên kiểu cũ (vd constants.ts) vẫn nhận qua lớp chuyển tiếp. */
     icon: IconName | string;
     iconColor: string;
-    title: string;
+    title: React.ReactNode;
     onClick?: (e: React.MouseEvent) => void;
     children: React.ReactNode;
     trendLabel?: string;
@@ -150,7 +150,8 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     const style = COLOR_STYLES[iconColor] || COLOR_STYLES['sky'];
     const activeStyle = isActive ? (ACTIVE_RING_STYLES[iconColor] || ACTIVE_RING_STYLES['sky']) : '';
     const clampedProgress = progressPercent !== undefined ? Math.min(Math.max(progressPercent, 0), 100) : undefined;
-    const tooltipTitle = cardTitle ?? (isClickable ? 'Bấm để lọc hoặc chuyển tab' : undefined);
+    const titleText = typeof title === 'string' ? title : undefined;
+    const tooltipTitle = cardTitle ?? titleText ?? (isClickable ? 'Bấm để lọc hoặc chuyển tab' : undefined);
 
     return (
         <div
@@ -175,7 +176,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                         <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-105 shadow-2xs ${style.iconBg} ${style.iconText}`}>
                             <AppIcon name={resolveIconName(icon) ?? 'help'} size="sm" />
                         </div>
-                        <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={title}>
+                        <h3 className="kpi-overview-title text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate min-w-0" title={titleText}>
                             {title}
                         </h3>
                     </div>
@@ -215,7 +216,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
                     </div>
                     {/* 11px là sàn chữ (trước 9.5px trên iPhone). Thẻ hẹp (4 thẻ/hàng ở iPhone SE) thì IN HOA 11px bị cắt "TRẢ CH…" →
                         điện thoại giữ chữ như cấu hình ("Trả Chậm"), từ sm trở lên IN HOA như cũ. */}
-                    <h3 className="kpi-overview-title text-[11px] font-bold sm:uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-tight truncate min-w-0" title={title}>
+                    <h3 className="kpi-overview-title text-[11px] font-bold sm:uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-tight truncate min-w-0" title={titleText}>
                         {title}
                     </h3>
                 </div>

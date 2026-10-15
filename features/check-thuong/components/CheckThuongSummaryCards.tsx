@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckThuongSystemStats } from '../types';
 import { KpiCard } from '../../../components/shared/ui/KpiCard';
+import { formatBonusMoney } from '../services/checkThuongCalc';
 
 interface CheckThuongSummaryCardsProps {
     stats: CheckThuongSystemStats;
@@ -11,27 +12,30 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
     stats,
     onSelectTopStore
 }) => {
-    const formatMillion = (val: number): string => {
-        if (!val || isNaN(val)) return '0 Tr';
-        const inMillion = Math.round(val / 1000000);
-        return `${inMillion.toLocaleString('vi-VN')} Tr`;
-    };
+    const totalBonus = formatBonusMoney(stats.totalBonus);
+    const topStoreBonus = formatBonusMoney(stats.topStore?.totalBonus ?? 0);
 
     return (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 lg:gap-4 mb-3">
+        <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 lg:gap-4 mb-3">
             {/* THẺ 1: TỔNG SIÊU THỊ */}
             <KpiCard
                 icon="store"
                 iconColor="sky"
-                title="Tổng Siêu Thị"
+                title={
+                    <>
+                        <span className="hidden sm:inline">Tổng Siêu Thị</span>
+                        <span className="sm:hidden">Tổng kho</span>
+                    </>
+                }
+                cardTitle="Tổng Siêu Thị"
                 trendLabel="Toàn hệ thống"
                 trendValue={<span className="text-[11px] font-bold text-slate-500">Hoạt động</span>}
             >
-                <div className="flex items-baseline justify-center gap-1 w-full">
-                    <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums text-slate-800 dark:text-slate-100">
+                <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 flex-nowrap overflow-hidden w-full">
+                    <span className="text-[16px] sm:text-[20px] lg:text-[25px] xl:text-[28px] font-black leading-none tracking-tight tabular-nums text-slate-800 dark:text-slate-100 shrink-0">
                         {stats.totalStores.toLocaleString('vi-VN')}
                     </span>
-                    <span className="text-[12px] sm:text-[14px] lg:text-[16px] font-extrabold text-slate-400 dark:text-slate-500">kho</span>
+                    <span className="text-[11px] sm:text-[13px] lg:text-[14px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">kho</span>
                 </div>
             </KpiCard>
 
@@ -39,13 +43,22 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
             <KpiCard
                 icon="wallet"
                 iconColor="indigo"
-                title="Tổng Tiền Thưởng"
+                title={
+                    <>
+                        <span className="hidden sm:inline">Tổng Tiền Thưởng</span>
+                        <span className="sm:hidden">Tổng tiền</span>
+                    </>
+                }
+                cardTitle="Tổng Tiền Thưởng"
                 trendLabel="Quỹ thưởng"
                 trendValue={<span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">Đã chốt</span>}
             >
-                <div className="flex items-baseline justify-center gap-1 w-full">
-                    <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums text-indigo-600 dark:text-indigo-400">
-                        {formatMillion(stats.totalBonus)}
+                <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 flex-nowrap overflow-hidden w-full">
+                    <span className="text-[16px] sm:text-[20px] lg:text-[25px] xl:text-[28px] font-black leading-none tracking-tight tabular-nums text-indigo-600 dark:text-indigo-400 shrink-0">
+                        {totalBonus.value}
+                    </span>
+                    <span className="text-[11px] sm:text-[13px] lg:text-[14px] font-extrabold text-slate-400 dark:text-slate-500 shrink-0">
+                        {totalBonus.unit}
                     </span>
                 </div>
             </KpiCard>
@@ -54,7 +67,13 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
             <KpiCard
                 icon="award"
                 iconColor="amber"
-                title="Quán Quân #1"
+                title={
+                    <>
+                        <span className="hidden sm:inline">Quán Quân #1</span>
+                        <span className="sm:hidden">Top 1</span>
+                    </>
+                }
+                cardTitle="Quán Quân #1"
                 badge={
                     <span className="px-1.5 py-0.5 text-[11px] font-black uppercase rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/50">
                         TOP 1
@@ -62,14 +81,19 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
                 }
                 onClick={stats.topStore ? () => onSelectTopStore?.(stats.topStore!.storeCode) : undefined}
                 trendLabel="Kênh bán"
-                trendValue={<span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{stats.topStore?.channel || '---'}</span>}
+                trendValue={<span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-full block">{stats.topStore?.channel || '---'}</span>}
             >
                 <div className="flex flex-col items-center justify-center w-full min-w-0">
-                    <span className="text-xs sm:text-sm lg:text-base font-bold text-slate-800 dark:text-slate-100 truncate w-full text-center">
-                        {stats.topStore ? stats.topStore.storeName : '---'}
-                    </span>
-                    <span className="text-[12px] sm:text-[14px] font-black text-amber-600 dark:text-amber-400 tabular-nums">
-                        {stats.topStore ? formatMillion(stats.topStore.totalBonus) : '---'}
+                    <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 flex-nowrap overflow-hidden w-full">
+                        <span className="text-[16px] sm:text-[20px] lg:text-[25px] xl:text-[28px] font-black leading-none tracking-tight tabular-nums text-amber-600 dark:text-amber-400 shrink-0">
+                            {topStoreBonus.value}
+                        </span>
+                        <span className="text-[11px] sm:text-[13px] lg:text-[14px] font-extrabold text-amber-500 dark:text-amber-400 shrink-0">
+                            {topStoreBonus.unit}
+                        </span>
+                    </div>
+                    <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 truncate w-full text-center mt-0.5 leading-tight" title={stats.topStore?.storeName}>
+                        {stats.topStore ? stats.topStore.storeName.replace(/^ĐML_|^TGD_|^DMX_|^TGDD_/, '') : '---'}
                     </span>
                 </div>
             </KpiCard>
@@ -78,11 +102,17 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
             <KpiCard
                 icon="trending-up"
                 iconColor="emerald"
-                title="Đạt 100% Bình Quân"
+                title={
+                    <>
+                        <span className="hidden sm:inline">Đạt 100% Bình Quân</span>
+                        <span className="sm:hidden">Đạt 100%</span>
+                    </>
+                }
+                cardTitle="Đạt 100% Bình Quân"
                 isGood={stats.avgAchievedPercent >= 80}
                 trendLabel="Tỉ lệ đạt"
                 trendValue={
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[11px] font-bold tabular-nums shrink-0 ${
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold tabular-nums shrink-0 ${
                         stats.avgAchievedPercent >= 80
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/50'
                             : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200/50'
@@ -91,9 +121,12 @@ export const CheckThuongSummaryCards: React.FC<CheckThuongSummaryCardsProps> = (
                     </span>
                 }
             >
-                <div className="flex items-baseline justify-center gap-1 w-full">
-                    <span className="text-[20px] xs:text-[22px] sm:text-[28px] md:text-[32px] lg:text-[36px] font-black leading-tight tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400">
-                        {stats.avgAchievedPercent}%
+                <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 flex-nowrap overflow-hidden w-full">
+                    <span className="text-[16px] sm:text-[20px] lg:text-[25px] xl:text-[28px] font-black leading-none tracking-tight tabular-nums text-emerald-600 dark:text-emerald-400 shrink-0">
+                        {stats.avgAchievedPercent}
+                    </span>
+                    <span className="text-[11px] sm:text-[13px] lg:text-[14px] font-extrabold text-emerald-400 dark:text-emerald-500 shrink-0">
+                        %
                     </span>
                 </div>
             </KpiCard>

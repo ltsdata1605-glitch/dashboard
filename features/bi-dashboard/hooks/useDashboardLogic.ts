@@ -216,6 +216,7 @@ export const useDashboardLogic = (isActive?: boolean) => {
     const getCachedIndustryFallback = (type: 'realtime' | 'luyke') => {
         if (!activeSupermarket || activeSupermarket === 'Tổng') return '';
         const safe = shortenSupermarketName(activeSupermarket);
+        const cleanSafe = safe.replace(/^(ĐMX|DMX|Điện\s*máy\s*XANH)\s+/i, '').trim();
         const suffix = type === 'realtime' ? '-industry-realtime' : '-industry-luyke';
         const cache = configStore.getState().cache;
 
@@ -227,11 +228,21 @@ export const useDashboardLogic = (isActive?: boolean) => {
         const lowerVal = cache[`config-${safe.toLowerCase()}${suffix}`];
         if (typeof lowerVal === 'string' && lowerVal.trim().length > 30) return lowerVal;
 
-        // 3. Quét toàn bộ cache tìm siêu thị trùng khớp (isSupermarketMatch)
+        // 3. Thử tên đã loại bỏ tiền tố ĐMX / DMX / Điện máy XANH
+        if (cleanSafe && cleanSafe.toLowerCase() !== safe.toLowerCase()) {
+            const cleanUpperVal = cache[`config-${cleanSafe.toUpperCase()}${suffix}`];
+            if (typeof cleanUpperVal === 'string' && cleanUpperVal.trim().length > 30) return cleanUpperVal;
+            const cleanVal = cache[`config-${cleanSafe}${suffix}`];
+            if (typeof cleanVal === 'string' && cleanVal.trim().length > 30) return cleanVal;
+            const cleanLowerVal = cache[`config-${cleanSafe.toLowerCase()}${suffix}`];
+            if (typeof cleanLowerVal === 'string' && cleanLowerVal.trim().length > 30) return cleanLowerVal;
+        }
+
+        // 4. Quét toàn bộ cache tìm siêu thị trùng khớp (isSupermarketMatch)
         for (const [k, v] of Object.entries(cache)) {
             if (k.endsWith(suffix) && typeof v === 'string' && v.trim().length > 30) {
                 const sm = k.slice('config-'.length, k.length - suffix.length);
-                if (isSupermarketMatch(sm, safe)) return v;
+                if (isSupermarketMatch(sm, safe) || (cleanSafe && isSupermarketMatch(sm, cleanSafe))) return v;
             }
         }
         return '';

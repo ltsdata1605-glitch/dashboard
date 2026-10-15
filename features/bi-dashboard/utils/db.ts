@@ -92,6 +92,10 @@ export type BIKey =
   | `hidden-cols-industry-${string}`
   | `hidden-industries-${string}`
   | `hidden-cols-summary-${string}`
+  | `hidden-supermarkets-${string}`
+  | `global-hidden-${string}`
+  | `global-industry-kpi-${string}`
+  | `global-compare-${string}`
   | `previous-${string}`
   | `snapshot-metadata-${string}`
   | `snapshot-data-${string}`

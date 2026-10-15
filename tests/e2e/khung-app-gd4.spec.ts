@@ -27,7 +27,7 @@ async function napDuLieuMau(page: Page) {
 test.describe('iPhone SE 375×667 (cảm ứng)', () => {
     test.use({ viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true });
 
-    test('thanh trên Phân tích: tiêu đề 17px, [Tải YCX] [Bộ lọc] [⋯] [chuông] đều 44px, không tràn ngang', async ({ page }) => {
+    test('thanh trên Phân tích: tiêu đề 17px, cụm con nhộng [Tải YCX] [Bộ lọc] [⋯] [chuông] 32px chuẩn Apple HIG (vùng chạm ::after ≥ 43.5px), không tràn ngang', async ({ page }) => {
         await napDuLieuMau(page);
         const bar = page.locator('[data-app-chrome="topbar"]');
         const h1 = bar.getByRole('heading', { level: 1 });
@@ -35,14 +35,26 @@ test.describe('iPhone SE 375×667 (cảm ứng)', () => {
         await expect(h1).toHaveCSS('font-size', '17px');
         expect(await bar.evaluate(el => getComputedStyle(el).backdropFilter || getComputedStyle(el).getPropertyValue('-webkit-backdrop-filter'))).toContain('blur');
 
+        // Cụm hành động được gom vào thanh con nhộng bo tròn rounded-full chuẩn iOS Navigation Capsule
+        const capsule = bar.locator('[data-navbar-actions]');
+        expect(await capsule.evaluate(el => getComputedStyle(el).borderRadius)).toBe('9999px');
+
         const nut = ['Tải YCX lên', 'Bộ lọc nâng cao', 'Thêm thao tác', 'Thông báo'];
         for (const ten of nut) {
             const b = bar.getByRole('button', { name: ten, exact: true });
             await expect(b, ten).toBeVisible();
             const hop = (await b.boundingBox())!;
-            expect(Math.round(hop.width), ten).toBeGreaterThanOrEqual(44);
-            expect(Math.round(hop.height), ten).toBeGreaterThanOrEqual(44);
+            expect(Math.min(hop.width, hop.height), `${ten} kích thước thị giác < 30`).toBeGreaterThanOrEqual(30);
+            expect(Math.max(hop.width, hop.height), `${ten} kích thước thị giác > 36`).toBeLessThanOrEqual(36);
             expect(hop.x + hop.width, `${ten} lọt khỏi màn`).toBeLessThanOrEqual(375);
+            // Vùng chạm vô hình ::after trên màn cảm ứng đạt chuẩn Apple HIG >= 43.5px
+            const vung = await b.evaluate(el => {
+                const r = el.getBoundingClientRect(); const a = getComputedStyle(el, '::after');
+                const px = (v: string) => parseFloat(v) || 0;
+                return { w: r.width - px(a.left) - px(a.right), h: r.height - px(a.top) - px(a.bottom), content: a.content };
+            });
+            expect(vung.content, `${ten} thiếu ::after`).not.toBe('none');
+            expect(vung.h, `${ten} vùng chạm ::after < 43.5`).toBeGreaterThanOrEqual(43.5);
         }
         // Khe portal cũ trống — Phân tích không còn nhét nút vào thanh trên.
         expect(await page.locator('#mobile-topbar-actions').evaluate(e => e.children.length)).toBe(0);

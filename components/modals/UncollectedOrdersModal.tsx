@@ -4,7 +4,7 @@ import { AppIcon } from '../shared/ui/icon/AppIcon';
 import { flushSync } from 'react-dom';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
-import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, calculateRowMetrics, formatQuantity, getErrorMessage, sanitizeFilename, getRowPrice } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 // Màu ô ngành: bảng dùng chung, class viết tường minh (trước đây ghép chuỗi "border-<màu>-500" → 6 ngành mất màu).
 import { industryToneByName } from '../../utils/industryColors';
@@ -38,7 +38,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
     const { processedData, productConfig } = useDashboardContext();
     
     const salesData = useMemo(() => {
-        let data = (processedData?.uncollectedOrders ?? []).filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
+        let data = (processedData?.uncollectedOrders ?? []).filter(row => getRowPrice(row) > 0);
         if (onlyOverdue) {
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -163,7 +163,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
         if (!productConfig) return { industryDataForDisplay: [], totalUncollectedRevenue: 0, totalUncollectedRevenueQD: 0, creatorData: [] };
 
         const finalUncollectedOrders = salesData.filter(row =>
-            (Number(getRowValue(row, COL.PRICE)) || 0) > 0
+            getRowPrice(row) > 0
         );
         
         let totalUncollectedRevenue = 0;
@@ -175,7 +175,7 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
         });
 
         const industrySummary = finalUncollectedOrders.reduce((acc, order) => {
-            const price = Number(getRowValue(order, COL.PRICE)) || 0;
+            const price = getRowPrice(order);
             const quantity = Number(getRowValue(order, COL.QUANTITY)) || 0;
             const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
             const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
@@ -320,11 +320,11 @@ const UncollectedOrdersModal: React.FC<UncollectedOrdersModalProps> = ({ isOpen,
             viec.buoc('Đang tạo Google Sheet…');
             const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
 
-            const finalOrders = salesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
+            const finalOrders = salesData.filter(row => getRowPrice(row) > 0);
 
             const headers = ['Kho Xuất', 'Người Tạo', 'Tên Khách Hàng', 'Mã Đơn Hàng', 'Tên Sản Phẩm', 'Số Lượng', 'Doanh Thu Thực', 'Thời Gian Hẹn', 'Trạng Thái Xuất', 'Giải Trình'];
             const rows = finalOrders.map(order => {
-                const price = Number(getRowValue(order, COL.PRICE)) || 0;
+                const price = getRowPrice(order);
 
                 let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
                 let formattedDate = 'N/A';
@@ -604,7 +604,7 @@ Link: ${url}`;
                                                     </thead>
                                                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                                         {customer.orders.map((order, index) => {
-                                                            const price = Number(getRowValue(order, COL.PRICE)) || 0;
+                                                            const price = getRowPrice(order);
                                                             const priceQD = calculateRowMetrics(order, productConfig).revenueQD;
                                                             const orderId = getRowValue(order, COL.ID) as string;
 

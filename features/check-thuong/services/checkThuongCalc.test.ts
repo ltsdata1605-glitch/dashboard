@@ -9,7 +9,8 @@ import {
     calculateSystemStats,
     formatCurrencyFull,
     formatCurrency,
-    formatNumber
+    formatNumber,
+    formatBonusMoney
 } from './checkThuongCalc';
 
 describe('checkThuongCalc', () => {
@@ -217,6 +218,44 @@ describe('checkThuongCalc', () => {
             expect(formatNumber(11888468.073)).toBe('11.888.468');
             expect(formatCurrency(11888468.073)).toBe('11.9 tr');
             expect(formatCurrency(54000.89)).toBe('54 k');
+        });
+    });
+
+    describe('formatBonusMoney', () => {
+        it('định dạng tiền thưởng >= 1 tỷ thành đơn vị tỷ (vd: 1.657 Tr -> 1.66 tỷ)', () => {
+            expect(formatBonusMoney(1_657_000_000)).toEqual({
+                value: '1.66',
+                unit: 'tỷ',
+                full: '1.66 tỷ'
+            });
+            expect(formatBonusMoney(2_000_000_000)).toEqual({
+                value: '2',
+                unit: 'tỷ',
+                full: '2 tỷ'
+            });
+            expect(formatBonusMoney(1_500_000_000)).toEqual({
+                value: '1.5',
+                unit: 'tỷ',
+                full: '1.5 tỷ'
+            });
+        });
+
+        it('định dạng tiền thưởng < 1 tỷ thành đơn vị Tr', () => {
+            expect(formatBonusMoney(20_000_000)).toEqual({
+                value: '20',
+                unit: 'Tr',
+                full: '20 Tr'
+            });
+            expect(formatBonusMoney(500_000_000)).toEqual({
+                value: '500',
+                unit: 'Tr',
+                full: '500 Tr'
+            });
+            expect(formatBonusMoney(0)).toEqual({
+                value: '0',
+                unit: 'Tr',
+                full: '0 Tr'
+            });
         });
     });
 });

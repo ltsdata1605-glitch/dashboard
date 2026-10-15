@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { resolveIconName } from '../shared/ui/icon/legacyIconNames';
 import { AppIcon } from '../shared/ui/icon/AppIcon';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getBorderAccentFromColorClass, sanitizeFilename } from '../../utils/dataUtils';
+import { getRowValue, calculateRowMetrics, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize, getParentGroup, getSubgroup, normalizedThuHoSet, getBorderAccentFromColorClass, sanitizeFilename, getRowPrice } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { Button } from '../shared/ui/Button';
 import { exportElementAsImage } from '../../services/uiService';
@@ -143,8 +143,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
 
                 // New Price Filter Logic
                 if (filters.priceCondition && typeof filters.priceValue1 === 'number') {
-                    const priceColumnKey = filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE;
-                    const price = Number(getRowValue(row, priceColumnKey)) || 0;
+                    const price = getRowPrice(row, filters.priceType === 'original' ? 'original' : 'discounted');
                     const val1 = filters.priceValue1;
 
                     switch (filters.priceCondition) {

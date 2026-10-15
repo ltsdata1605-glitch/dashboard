@@ -13,7 +13,6 @@ import { getSetting, saveSetting } from '../../services/dbService';
 import { listenSystemAnnouncement, isAnnouncementExpired } from '../../services/systemAnnouncementService';
 
 import Header from '../layout/Header';
-import Footer from '../layout/Footer';
 import LandingPageView from './LandingPageView';
 import StatusDisplay from '../upload/StatusDisplay';
 import FilterSection from '../filters/FilterSection';
@@ -632,7 +631,6 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     )}
                                 </div>
                             </main>
-                            <Footer lastUpdated={processedData.lastUpdated} onToggleDebug={() => setIsDebugPanelVisible(p => !p)} onOpenChangelog={() => setActiveModal('changelog')} />
 
                             {/* Right Slide Menu Filters */}
                             <Overlay kind="fullscreen" data-modal-overlay={isFilterSidebarOpen ? '' : undefined} className={`z-[150] transition-opacity duration-300 ${isFilterSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>

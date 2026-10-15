@@ -54,11 +54,13 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ title, tabIcon, onBa
                 <div id="mobile-topbar-subtitle" className="type-footnote text-slate-500 truncate max-w-full empty:hidden" />
             </div>
             {/* min-w-0 + shrink (không shrink-0): khe portal rộng phải co lại và tự cuộn ngang bên trong, không đẩy trang tràn
-                ngang; nút khung app + chuông thì giữ nguyên cỡ. */}
-            <div data-navbar-actions="" className="flex items-center min-w-0 shrink">
-                <div id="mobile-topbar-actions" className="flex items-center min-w-0" />
-                <PageActionsBar variant="mobile" />
-                <NotificationDropdown buttonClassName="relative flex items-center justify-center w-11 h-11 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0" />
+                ngang; nút khung app + chuông thì giữ nguyên cỡ. ml-auto: dồn sát mép phải như Report BI. */}
+            <div data-navbar-actions="" className="flex items-center min-w-0 shrink ml-auto">
+                <div id="mobile-topbar-actions" className="flex items-center justify-end min-w-0" />
+                <div data-action-capsule="" className="flex items-center min-w-0">
+                    <PageActionsBar variant="mobile" />
+                    <NotificationDropdown buttonClassName="relative flex items-center justify-center w-11 h-11 rounded-full text-slate-600 hover:bg-slate-100 active:bg-slate-200/70 transition-colors shrink-0 ycx-hit" />
+                </div>
             </div>
         </div>
     </div>

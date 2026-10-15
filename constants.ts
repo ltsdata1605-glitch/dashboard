@@ -5,10 +5,21 @@ export const COL = {
     ID: ['Mã Đơn Hàng', 'Mã đơn hàng'],
     PRODUCT: ['Tên Sản Phẩm', 'Tên sản phẩm'],
     CUSTOMER_NAME: ['Tên Khách Hàng', 'Tên khách hàng', 'TenKhachHang', 'Khách hàng'],
-    QUANTITY: ['Số Lượng', 'Số lượng'],
-    PRICE: ['Giá bán_1'],
-    ORIGINAL_PRICE: ['Giá bán'],
-    KHO: ['Mã kho tạo'],
+    QUANTITY: ['Số Lượng', 'Số lượng', 'Số Lượng Bán', 'Số lượng bán', 'SL', 'Sl'],
+    PRICE: [
+        'Giá bán_1', 'Giá bán 1', 'Giá bán_ 1', 'Giá Bán_1', 'Giá Bán 1', 'Gia ban_1', 'Gia ban 1',
+        'Giá bán (KM)', 'Giá bán KM', 'Giá KM', 'Giá sau giảm', 'Giá sau KM', 'Giá sau khuyến mãi',
+        'Thành tiền', 'Thành Tiền', 'ThanhTien', 'Thanh Tien', 'Thanh toán', 'Thanh Toán',
+        'Doanh thu', 'Doanh Thu', 'Doanh số', 'Doanh Số',
+        'Tiền bán', 'Tiền Bán', 'Thực thu', 'Thực Thu', 'Tổng tiền', 'Tổng Tiền'
+    ],
+    ORIGINAL_PRICE: [
+        'Giá bán', 'Giá Bán', 'Gia ban', 'Gia Ban',
+        'Giá gốc', 'Giá Gốc', 'Gia goc',
+        'Giá niêm yết', 'Giá Niêm Yết', 'Gia niem yet',
+        'Giá trước giảm', 'Giá trước KM'
+    ],
+    KHO: ['Mã kho tạo', 'Mã Kho Tạo', 'Mã kho', 'Mã Kho', 'Kho bán', 'Mã kho bán'],
     // 'Trạng thái' (trần, không "hồ sơ") — biến thể fallback trước đây rải rác ở
     // hooks/useDashboardLogic.ts + hooks/useFileUploadLogic.ts, gộp về đây (Đợt 4).
     TRANG_THAI: ['Trạng thái hồ sơ', 'Trạng thái'],

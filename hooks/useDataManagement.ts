@@ -771,7 +771,19 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     // Kích hoạt đồng bộ đám mây (dùng chung cho cả visibilitychange khi người dùng mở lại điện thoại lẫn nút bấm thủ công)
     const triggerCloudSync = useCallback(async (notifyIfUpToDate = false) => {
         if (!user || isDemoMode) {
-            if (notifyIfUpToDate) toast.info('Vui lòng đăng nhập để đồng bộ dữ liệu.');
+            if (notifyIfUpToDate) {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('ycx-cloud-sync-result', {
+                        detail: {
+                            status: 'error',
+                            message: 'Vui lòng đăng nhập để đồng bộ!',
+                            mobileMessage: 'Cần đăng nhập'
+                        }
+                    }));
+                } else {
+                    toast.info('Vui lòng đăng nhập để đồng bộ dữ liệu.');
+                }
+            }
             return;
         }
         if (isCloudSyncingRef.current) { pendingResyncRef.current = true; return; }
@@ -779,9 +791,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         setIsSyncingCloud(true);
 
         try {
-            if (notifyIfUpToDate) {
-                toast.info('Đang kiểm tra dữ liệu đám mây...', { id: 'cloud-check-toast', icon: 'cloud', duration: 2000 });
-            }
+            // Khi người dùng tương tác bấm kiểm tra, Header đã hiển thị inline "Đang kiểm tra...", không dùng toast nổi che màn hình
 
             // Chạy song song kiểm tra dữ liệu cá nhân (salesData) và dữ liệu Kho dùng chung (khoData)
             const syncPersonalPromise = (async () => {
@@ -799,7 +809,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             const cloudResult = await downloadProcessedData(user, cloudMeta);
                             if (cloudResult && cloudResult.data.length > 0) {
                                 await applyCloudSalesData(cloudResult.data, cloudResult.meta);
-                                toast.success(`Đã tự động cập nhật dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                                if (!notifyIfUpToDate) {
+                                    toast.success(`Đã tự động cập nhật dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                                }
                                 return true;
                             }
                         }
@@ -834,10 +846,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                 savedAt: new Date(latestUploadedAt).toLocaleString('vi-VN')
                             });
                         }
-                        await dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
-                        toast.success(`Đã cập nhật dữ liệu Kho mới nhất (${khoRows.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                        if (!notifyIfUpToDate) {
+                            toast.success(`Đã cập nhật dữ liệu Kho mới nhất (${khoRows.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                        }
                         return true;
-                    } else if (khoRows.length > 0 && lastApplied !== snapshot && isLocalNewerOrSame) {
+                    } else if (khoRows.length > 0 && lastApplied !== snapshot && !isLocalNewerOrSame) {
                         await dbService.saveSetting(appliedSnapshotKey, snapshot).catch(console.error);
                     }
                 } catch (e) {
@@ -849,12 +862,36 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             const [personalUpdated, khoUpdated] = await Promise.all([syncPersonalPromise, syncKhoPromise]);
             const updated = personalUpdated || khoUpdated;
 
-            if (!updated && notifyIfUpToDate) {
-                toast.success('Dữ liệu trên máy bạn đã là mới nhất!', { id: 'cloud-check-toast' });
+            if (notifyIfUpToDate && typeof window !== 'undefined') {
+                if (!updated) {
+                    window.dispatchEvent(new CustomEvent('ycx-cloud-sync-result', {
+                        detail: {
+                            status: 'up-to-date',
+                            message: 'Dữ liệu trên máy bạn đã là mới nhất!',
+                            mobileMessage: 'Đã là mới nhất!'
+                        }
+                    }));
+                } else {
+                    window.dispatchEvent(new CustomEvent('ycx-cloud-sync-result', {
+                        detail: {
+                            status: 'updated',
+                            message: 'Đã cập nhật dữ liệu mới nhất!',
+                            mobileMessage: 'Đã cập nhật!'
+                        }
+                    }));
+                }
             }
         } catch (err) {
             console.error('[CloudSync] Lỗi đồng bộ đám mây:', err);
-            if (notifyIfUpToDate) toast.error('Không thể kiểm tra dữ liệu đám mây: ' + getErrorMessage(err), { id: 'cloud-check-toast' });
+            if (notifyIfUpToDate && typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('ycx-cloud-sync-result', {
+                    detail: {
+                        status: 'error',
+                        message: 'Không thể kiểm tra đám mây',
+                        mobileMessage: 'Lỗi kết nối'
+                    }
+                }));
+            }
         } finally {
             releaseCloudSyncLock();
             setIsSyncingCloud(false);

@@ -320,15 +320,17 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
 
     const [allEmployeesRaw] = useIndexedDBState<string>(`config-${safeName}-danhsach`, '');
+    const [employeeRealtimeRaw] = useIndexedDBState<string>(`config-${safeName}-employee-realtime`, '');
     const allEmployees = useMemo(() => {
+        const storeRaw = allEmployeesRaw || employeeRealtimeRaw || '';
         if (analysisEmployees && analysisEmployees.employees.length > 0) {
             // Truyền báo cáo luỹ kế của CHÍNH siêu thị này để lấy đúng nhân viên của nó
             // (danh sách Phân Tích là chung cho cả cụm).
-            const list = getEmployeesFromAnalysis(analysisEmployees.employees, hiddenEmployees, allEmployeesRaw);
+            const list = getEmployeesFromAnalysis(analysisEmployees.employees, hiddenEmployees, storeRaw, supermarketName);
             if (list.length > 0) return list;
         }
-        return parseAllEmployees(allEmployeesRaw, hiddenEmployees);
-    }, [analysisEmployees, allEmployeesRaw, hiddenEmployees]);
+        return parseAllEmployees(storeRaw, hiddenEmployees);
+    }, [analysisEmployees, allEmployeesRaw, employeeRealtimeRaw, hiddenEmployees, supermarketName]);
 
     const baseTargetQuyDoi = useMemo(() => {
         return parseBaseTargetQuyDoi(summaryLuyKeData, supermarketName);

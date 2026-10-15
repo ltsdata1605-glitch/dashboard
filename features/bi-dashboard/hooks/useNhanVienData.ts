@@ -8,6 +8,7 @@ import { formatEmployeeName, standardizeEmployeeName, extractEmployeeId, isSameE
 import { parseBonusUpdatedAt } from '../utils/bonusParser';
 import { useWorker } from './useWorker';
 import { getAnalysisEmployees, AnalysisEmployeesPayload, ANALYSIS_EMPLOYEES_KEY, AnalysisEmployeeItem, isSystemOrIgnoredEmployee } from '../services/analysisEmployeeSyncService';
+import { parseAllEmployees } from '../services/employeeParser';
 import { fetchSupermarketMap } from '../services/biSupermarketMapService';
 import { fetchAllowedSummaryLuyKeText } from '../services/biDataService';
 import { useReportBiAuth } from './useReportBiAuth';
@@ -304,24 +305,36 @@ export function useNhanVienData(isActive?: boolean) {
                 bonusPeriodLabel: combinedPeriodLabel
             });
 
-            // Chỉ cần xác định nhân viên -> siêu thị khi có ≥2 siêu thị active cùng lúc — 1
-            // siêu thị thì mọi nhân viên chắc chắn thuộc siêu thị đó, resolveEmployeeSupermarket
-            // tự fallback đúng mà không cần parse lại. Dò theo activeSupermarkets (tên gốc,
-            // chưa rút gọn) thay vì uniqueSafeNames để giữ đúng tên gốc dùng trong key
-            // bonus-history-* (xem BonusDataModal.tsx).
-            if (uniqueSafeNames.length > 1) {
+            // Xác định nhân viên -> siêu thị cho tất cả siêu thị active (kể cả khi chỉ có 1 siêu thị)
+            // để nhận diện chính xác nhân viên nào thuộc siêu thị nào, lọc đúng danh sách và chia Target chuẩn xác.
+            if (uniqueSafeNames.length >= 1) {
                 const newEmployeeSupermarketMap: Record<string, string> = {};
                 await Promise.all(activeSupermarkets.map(async (rawName) => {
                     const safeName = shortenSupermarketName(rawName);
                     const idx = uniqueSafeNames.indexOf(safeName);
                     if (idx === -1) return;
-                    const [ds, , , , mm] = results[idx];
-                    if (ds) {
+                    const [ds, , , mm, , , , , empRt] = results[idx];
+                    const rawStoreEmployees = (ds as string) || (empRt as string) || '';
+                    if (rawStoreEmployees) {
                         try {
-                            const rows = await runWorkerTask('PARSE_REVENUE', ds) as RevenueRow[];
+                            const parsedList = parseAllEmployees(rawStoreEmployees);
+                            parsedList.forEach(pe => {
+                                if (pe.originalName) {
+                                    newEmployeeSupermarketMap[pe.originalName] = rawName;
+                                    const canonical = standardizeEmployeeName(pe.originalName);
+                                    if (canonical) newEmployeeSupermarketMap[canonical] = rawName;
+                                    const id = extractEmployeeId(pe.originalName);
+                                    if (id) newEmployeeSupermarketMap[id] = rawName;
+                                }
+                            });
+                            const rows = await runWorkerTask('PARSE_REVENUE', rawStoreEmployees) as RevenueRow[];
                             rows.forEach(row => {
-                                if (row.type === 'employee' && row.originalName && !(row.originalName in newEmployeeSupermarketMap)) {
+                                if (row.type === 'employee' && row.originalName) {
                                     newEmployeeSupermarketMap[row.originalName] = rawName;
+                                    const canonical = standardizeEmployeeName(row.originalName);
+                                    if (canonical) newEmployeeSupermarketMap[canonical] = rawName;
+                                    const id = extractEmployeeId(row.originalName);
+                                    if (id) newEmployeeSupermarketMap[id] = rawName;
                                 }
                             });
                         } catch (err) {
@@ -332,8 +345,25 @@ export function useNhanVienData(isActive?: boolean) {
                         Object.values(mm as ManualDeptMapping).forEach(employees => {
                             if (Array.isArray(employees)) {
                                 employees.forEach(empName => {
-                                    if (!(empName in newEmployeeSupermarketMap)) newEmployeeSupermarketMap[empName] = rawName;
+                                    newEmployeeSupermarketMap[empName] = rawName;
+                                    const canonical = standardizeEmployeeName(empName);
+                                    if (canonical) newEmployeeSupermarketMap[canonical] = rawName;
+                                    const id = extractEmployeeId(empName);
+                                    if (id) newEmployeeSupermarketMap[id] = rawName;
                                 });
+                            }
+                        });
+                    }
+
+                    // Gắn theo mã kho (maKho) nếu nhân viên có nhập mã kho trùng với mã kho của siêu thị
+                    const smKho = extractEmployeeId(rawName) || (rawName.match(/\d+/) || [])[0] || (safeName.match(/\d+/) || [])[0] || '';
+                    if (smKho && analysisEmployeesList.length > 0) {
+                        analysisEmployeesList.forEach(emp => {
+                            if (emp.maKho && emp.maKho === smKho) {
+                                newEmployeeSupermarketMap[emp.originalName] = rawName;
+                                const canonical = standardizeEmployeeName(emp.originalName);
+                                if (canonical) newEmployeeSupermarketMap[canonical] = rawName;
+                                if (emp.id) newEmployeeSupermarketMap[emp.id] = rawName;
                             }
                         });
                     }
@@ -436,6 +466,37 @@ export function useNhanVienData(isActive?: boolean) {
         return false;
     }, [hasAnalysisEmployees, analysisEmployeeLookup]);
 
+    // Siêu thị GỐC (chưa rút gọn) của 1 nhân viên — kết hợp employeeSupermarketMap, maKho, và supermarket
+    const resolveEmployeeSupermarket = useCallback((originalName: string): string => {
+        if (employeeSupermarketMap[originalName]) return employeeSupermarketMap[originalName];
+        const canonical = standardizeEmployeeName(originalName);
+        if (employeeSupermarketMap[canonical]) return employeeSupermarketMap[canonical];
+        const empId = extractEmployeeId(originalName);
+        if (empId && employeeSupermarketMap[empId]) return employeeSupermarketMap[empId];
+
+        const empFromAnalysis = analysisEmployeesPayload?.employees?.find(e =>
+            e.originalName === originalName ||
+            standardizeEmployeeName(e.originalName) === canonical ||
+            (e.id && empId && e.id === empId)
+        );
+        if (empFromAnalysis?.supermarket) return empFromAnalysis.supermarket;
+        if (empFromAnalysis?.maKho) {
+            const matchedSm = supermarkets.find(sm => {
+                const smKho = extractEmployeeId(sm) || (sm.match(/\d+/) || [])[0] || '';
+                return smKho && smKho === empFromAnalysis.maKho;
+            });
+            if (matchedSm) return matchedSm;
+        }
+
+        if (activeSupermarkets.length === 1 && activeSupermarkets[0] && Object.keys(employeeSupermarketMap).length === 0) {
+            return activeSupermarkets[0];
+        }
+        if (activeSupermarkets.length > 0 && activeSupermarkets[0]) return activeSupermarkets[0];
+        if (analysisEmployeesPayload?.supermarket) return analysisEmployeesPayload.supermarket;
+        if (supermarkets.length > 0) return supermarkets[0];
+        return 'Tổng';
+    }, [employeeSupermarketMap, activeSupermarkets, analysisEmployeesPayload, supermarkets]);
+
     const hiddenEmployeesSet = useMemo(() => new Set(hiddenEmployees), [hiddenEmployees]);
 
     const [parsedRevenueBase, setParsedRevenueBase] = useState<RevenueRow[]>([]);
@@ -531,11 +592,32 @@ export function useNhanVienData(isActive?: boolean) {
         const seen = new Set<string>();
         const list: { name: string; originalName: string; department: string }[] = [];
 
+        // Lọc theo siêu thị đang active nếu người dùng chọn xem siêu thị cụ thể
+        const isFilteringSpecificSupermarkets = (
+            activeSupermarkets.length > 0 &&
+            !activeSupermarkets.includes('Tổng') &&
+            !activeSupermarkets.includes('Tổng hợp') &&
+            (supermarkets.length > 0 ? activeSupermarkets.length < supermarkets.length : true)
+        );
+        const hasAnyMapping = Object.keys(employeeSupermarketMap).length > 0;
+
         for (const emp of analysisEmployeesList) {
             if (hiddenEmployeesSet.has(emp.originalName)) continue;
             const canonical = standardizeEmployeeName(emp.originalName);
             const dedupKey = emp.id || canonical;
             if (!seen.has(dedupKey)) {
+                if (isFilteringSpecificSupermarkets && (hasAnyMapping || emp.maKho || emp.supermarket)) {
+                    const assignedSm = resolveEmployeeSupermarket(emp.originalName);
+                    const isBelong = activeSupermarkets.some(activeSm => {
+                        if (assignedSm === activeSm) return true;
+                        if (shortenSupermarketName(assignedSm) === shortenSupermarketName(activeSm)) return true;
+                        const smKho = extractEmployeeId(activeSm) || (activeSm.match(/\d+/) || [])[0] || '';
+                        if (emp.maKho && smKho && emp.maKho === smKho) return true;
+                        return false;
+                    });
+                    if (!isBelong) continue;
+                }
+
                 seen.add(dedupKey);
                 const dept = employeeDepartmentMap[emp.originalName] || employeeDepartmentMap[canonical] || emp.department;
                 if (!dept || isSystemOrIgnoredEmployee(emp.originalName, dept) || isIgnoredDept(dept)) continue;
@@ -547,7 +629,7 @@ export function useNhanVienData(isActive?: boolean) {
             }
         }
         return list.sort((a, b) => a.name.localeCompare(b.name));
-    }, [employeeDepartmentMap, hasAnalysisEmployees, analysisEmployeesList, hiddenEmployeesSet, isActive]);
+    }, [employeeDepartmentMap, hasAnalysisEmployees, analysisEmployeesList, hiddenEmployeesSet, isActive, activeSupermarkets, supermarkets.length, employeeSupermarketMap, resolveEmployeeSupermarket]);
 
     const deptEmployeeCounts = useMemo(() => {
         if (isActive === false) return {};
@@ -829,23 +911,6 @@ export function useNhanVienData(isActive?: boolean) {
     }, [installmentRows, isActive]);
 
 
-
-    // Siêu thị GỐC (chưa rút gọn) của 1 nhân viên — dùng employeeSupermarketMap khi có (chỉ
-    // xây dựng lúc ≥2 siêu thị active); fallback về activeSupermarkets[0] khi chỉ 1 siêu thị
-    // active hoặc nhân viên chưa xác định được; fallback tiếp về analysisEmployeesPayload nếu máy mới chưa có siêu thị active.
-    const resolveEmployeeSupermarket = useCallback((originalName: string): string => {
-        if (employeeSupermarketMap[originalName]) return employeeSupermarketMap[originalName];
-        if (activeSupermarkets.length > 0 && activeSupermarkets[0]) return activeSupermarkets[0];
-        const empFromAnalysis = analysisEmployeesPayload?.employees?.find(e =>
-            e.originalName === originalName ||
-            standardizeEmployeeName(e.originalName) === standardizeEmployeeName(originalName) ||
-            (e.id && extractEmployeeId(originalName) === e.id)
-        );
-        if (empFromAnalysis?.supermarket) return empFromAnalysis.supermarket;
-        if (analysisEmployeesPayload?.supermarket) return analysisEmployeesPayload.supermarket;
-        if (supermarkets.length > 0) return supermarkets[0];
-        return 'Tổng';
-    }, [employeeSupermarketMap, activeSupermarkets, analysisEmployeesPayload, supermarkets]);
 
     const handleSaveBonus = useCallback(async (originalName: string, metrics: BonusMetrics) => {
         const resolvedSm = resolveEmployeeSupermarket(originalName);

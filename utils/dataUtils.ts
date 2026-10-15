@@ -65,8 +65,17 @@ export function getRowValue(row: DataRow, keys: string[]): any {
     // (test, mock...), vẫn còn khoá tiếng Việt gốc → shortKey không khớp `row`, rơi xuống nguyên
     // vẹn nhánh cache/dò biến thể bên dưới như trước đây — không mất dữ liệu cũ.
     const shortKey = VARIANT_TO_SHORT_KEY[keys[0]];
-    if (shortKey !== undefined && row[shortKey] !== undefined && row[shortKey] !== null) {
-        return row[shortKey];
+    if (shortKey !== undefined) {
+        if (row[shortKey] !== undefined && row[shortKey] !== null) {
+            return row[shortKey];
+        }
+        // Fallback giữa gia và giaGoc nếu 1 trong 2 không tồn tại trên row chuẩn hoá
+        if (shortKey === 'gia' && row.giaGoc !== undefined && row.giaGoc !== null) {
+            return row.giaGoc;
+        }
+        if (shortKey === 'giaGoc' && row.gia !== undefined && row.gia !== null) {
+            return row.gia;
+        }
     }
 
     // Check cache
@@ -83,6 +92,22 @@ export function getRowValue(row: DataRow, keys: string[]): any {
             return row[key];
         }
     }
+
+    // Fallback cho raw row: nếu tìm COL.PRICE mà không có, thử tìm COL.ORIGINAL_PRICE (hoặc ngược lại)
+    if (shortKey === 'gia') {
+        for (const origKey of COL.ORIGINAL_PRICE) {
+            if (row[origKey] !== undefined && row[origKey] !== null) {
+                return row[origKey];
+            }
+        }
+    } else if (shortKey === 'giaGoc') {
+        for (const priceKey of COL.PRICE) {
+            if (row[priceKey] !== undefined && row[priceKey] !== null) {
+                return row[priceKey];
+            }
+        }
+    }
+
     // 2. NFC/NFD normalized case-insensitive match
     const normalizedKeys = keys.map(k => k.toLowerCase().normalize('NFC'));
     for (const rowKey of Object.keys(row)) {
@@ -858,7 +883,7 @@ export function computeUnconfiguredGroups(originalData: DataRow[], productConfig
         if (!isRevenue) continue;
 
         // Bỏ qua các dòng không tính doanh thu (giá bán <= 0)
-        const price = Number(getRowValue(row, COL.PRICE)) || 0;
+        const price = getRowPrice(row, 'discounted');
         if (price <= 0) continue;
 
         // Bỏ qua các ngành hàng/nhóm hàng khuyến mãi hoặc thu hộ (không tính doanh thu)
@@ -937,9 +962,23 @@ export function isUncollectedOrder(row: DataRow, productConfig: ProductConfig | 
         : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
 }
 
+/**
+ * Đọc giá bán an toàn từ DataRow (hỗ trợ cả row chuẩn hoá khoá ngắn lẫn tiếng Việt cũ).
+ * Tự động fallback giữa Giá bán_1 (gia) và Giá bán gốc (giaGoc) nếu file chỉ có 1 cột giá.
+ * Hỗ trợ chuyển đổi string số định dạng VN (chấm ngàn, phẩy thập phân) qua parseNumber.
+ */
+export function getRowPrice(row: DataRow, priceType: 'discounted' | 'original' = 'discounted'): number {
+    if (!row) return 0;
+    const primaryCol = priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE;
+    const fallbackCol = priceType === 'original' ? COL.PRICE : COL.ORIGINAL_PRICE;
+    const primaryVal = parseNumber(getRowValue(row, primaryCol));
+    if (primaryVal > 0) return primaryVal;
+    return parseNumber(getRowValue(row, fallbackCol)) || 0;
+}
+
 export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, weightedQuantity: number, isTraCham: boolean } {
-    const price = Number(getRowValue(row, COL.PRICE)) || 0;
-    const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
+    const price = getRowPrice(row, 'discounted');
+    const quantity = parseNumber(getRowValue(row, COL.QUANTITY)) || 0;
     const revenue = price;
     
     const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);

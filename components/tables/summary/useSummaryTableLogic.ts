@@ -64,7 +64,7 @@ export const useSummaryTableLogic = () => {
         activeDrilldownOrder, localKhoFilters
     );
 
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
+    const [visibleColumns, _setVisibleColumns] = useState<string[]>(() => {
         if (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0) {
             return summaryTableFilters.visibleColumns;
         }
@@ -72,6 +72,25 @@ export const useSummaryTableLogic = () => {
         // Hide TrB SL and TrB DT by default as requested
         return allCols.filter(k => k !== 'avgQuantity' && k !== 'avgRevenue');
     });
+
+    useEffect(() => {
+        if (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0) {
+            _setVisibleColumns(summaryTableFilters.visibleColumns);
+        }
+    }, [summaryTableFilters.visibleColumns]);
+
+    const setVisibleColumns = useCallback((action: React.SetStateAction<string[]>) => {
+        _setVisibleColumns(prev => {
+            const next = typeof action === 'function' ? action(prev) : action;
+            onFilterChange({
+                summaryTable: {
+                    ...summaryTableFilters,
+                    visibleColumns: next
+                }
+            });
+            return next;
+        });
+    }, [onFilterChange, summaryTableFilters]);
     const [isExporting, setIsExporting] = useState(false);
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const sortableListRef = useRef<HTMLDivElement>(null);
