@@ -8324,3 +8324,15 @@ tài khoản thật → chỉ gọi `asia-southeast1/resolveSession`, vào app, 
 
 **VIỆC CÒN LẠI (~2026-10-21):** bỏ `'us-central1'` khỏi `CLIENT_REGIONS`, `cd functions && npm run build`, deploy 14 hàm với `--force`
 (xoá bản ở Mỹ — báo chủ dự án 1 câu trước, theo CLAUDE.md 0.0). Trước khi xoá, xem log còn ai gọi us-central1 không.
+
+## Màu ô ngành ở modal chưa xuất / chưa thu + lỗi "Load total visits" ở Dùng thử (2026-10-15)
+
+| Việc | Tệp | Sửa |
+|---|---|---|
+| 7 ngành không có màu trong 2 modal (đo trên trình duyệt: Smartphone mất ô icon; Tablet, Phụ kiện, Gia dụng, CE, Sim, Vieon mất cả vạch trái, ô icon, màu số) | `utils/industryColors.ts` (mới), `components/modals/UnshippedOrdersModal.tsx`, `UncollectedOrdersModal.tsx`, `components/charts/IndustryGrid.tsx`, `hooks/useIndustryGridLogic.ts` | Modal dựng class ĐỘNG (`border-${color}-500`…) → Tailwind không sinh được; "JIT hints" trong chú thích chỉ liệt kê sky/amber/rose/emerald/slate nên không cứu được khoá cyan/violet/orange/teal/lime/fuchsia/blue. Nay MỘT bảng màu dùng chung, class viết tường minh, đúng bảng IndustryGrid đã dùng (so tự động 14 khoá: trùng 100% ở chế độ sáng → thẻ ngành Phân tích không đổi), nên một ngành cùng màu ở mọi nơi. Bỏ 3 bản chép bảng tên ngành → khoá màu. |
+| Dùng thử in "Load total visits error: permission-denied" mỗi lần mở app | `hooks/useSystemTraffic.ts` | Bộ đếm chạy lúc gắn bất kể đăng nhập; rules `_system/{doc}` chỉ cho người đăng nhập. Nay chạy theo `uid` (không có người dùng → không gọi), đổi tài khoản thì đọc lại, lượt +1 vẫn 1 lần/phiên. Thêm lợi: ai mở Dùng thử rồi mới đăng nhập nay được đếm. |
+
+Test: `tests/unit/industry-colors.test.ts` (class tường minh trong bảng màu; 12 ngành đủ tông; cấm ghép chuỗi class màu ở 3 tệp),
+`tests/e2e/mau-nganh-modal.spec.ts` (harness dựng 2 modal thật với 12 ngành; đo kiểu tính thật: vạch ≠ currentColor, ô icon có nền, icon
+và số khác màu thừa hưởng — đã chạy trên bản CŨ: đỏ ngay ở Smartphone), `tests/e2e/dem-luot-truy-cap.spec.ts` (Dùng thử không lỗi —
+bản cũ đỏ đúng 2 lỗi "Load total visits"; tài khoản thật chỉ đọc vẫn hiện "… lượt"). Cả 2 spec chạy trong CI.

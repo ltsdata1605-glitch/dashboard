@@ -33,8 +33,15 @@ export const useSystemTraffic = () => {
     const lastPingAtRef = useRef(0);
     const lastOnlineFetchAtRef = useRef(0);
 
-    // 1. COUNT TOTAL VISITS (chỉ 1 lần mỗi session)
+    // 1. COUNT TOTAL VISITS (chỉ 1 lần mỗi session) — CHỈ KHI ĐÃ ĐĂNG NHẬP (2026-10-15): rules `_system/{doc}` chỉ cho người
+    // đăng nhập đọc/ghi. Trước đây effect chạy 1 lần lúc gắn bất kể trạng thái → Chế độ Dùng thử (chưa đăng nhập) gọi getDoc,
+    // bị từ chối, in "Load total visits error: permission-denied" ra console MỖI lần mở app; và ai mở Dùng thử rồi mới đăng
+    // nhập thì phiên đó không được đếm. Nay chạy theo `uid`: có người dùng mới đọc/+1, đổi tài khoản thì đọc lại (lượt +1 vẫn
+    // chỉ 1 lần mỗi phiên nhờ sessionStorage 'hasCountedVisit'). Header ẩn con số khi bằng 0 nên Dùng thử không hiện gì.
+    const uid = user?.uid;
     useEffect(() => {
+        if (!uid) return;
+        let boQua = false; // effect đã dọn (đổi tài khoản / gỡ màn) → kết quả lượt đọc cũ không được ghi đè lượt mới
         // FIX cũ (giữ nguyên): dùng getDoc 1 lần thay vì onSnapshot listener vĩnh viễn — hiển thị
         // tổng lượt truy cập không cần realtime.
         //
@@ -52,6 +59,7 @@ export const useSystemTraffic = () => {
                 return;
             }
 
+            if (boQua) return;
             const current = snap.exists() ? (snap.data()?.totalVisits || 0) : 0;
             const shouldCount = !sessionStorage.getItem('hasCountedVisit');
             // Hiển thị TRƯỚC khi ghi: lượt ghi có thất bại (vd permission) thì vẫn còn con số để
@@ -72,8 +80,9 @@ export const useSystemTraffic = () => {
         };
         initTrafficStats();
 
-        // Không cần cleanup vì không còn onSnapshot listener
-    }, []);
+        // Không còn onSnapshot listener — dọn chỉ để bỏ kết quả của lượt đọc đã cũ.
+        return () => { boQua = true; };
+    }, [uid]);
 
     // 2. PRESENCE PING + ONLINE COUNT — chỉ chạy khi tab visible
     useEffect(() => {
