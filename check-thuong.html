@@ -2481,13 +2481,21 @@
             // --- Trần diện tích canvas iOS (audit A10, 2026-09-30) ---
             // Safari iOS giới hạn canvas ~16,7 triệu px; vượt là ảnh TRẮNG, không báo lỗi. Bản JS thuần
             // của utils/dataUtils.ts capPixelRatioForArea() — chỉ áp trên thiết bị di động như app chính.
-            function exportPixelRatio(width, height, ratio) {
+            function getExportScale() {
                 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
                     || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
                     || window.innerWidth < 768;
-                if (!isMobile || !(width > 0) || !(height > 0)) return ratio;
+                return isMobile ? 3 : 3.5;
+            }
+
+            function exportPixelRatio(width, height, ratio) {
+                const targetRatio = ratio || getExportScale();
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                    || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1)
+                    || window.innerWidth < 768;
+                if (!isMobile || !(width > 0) || !(height > 0)) return targetRatio;
                 const maxRatio = Math.sqrt(16000000 / (width * height));
-                return Math.min(ratio, Math.floor(maxRatio * 1000) / 1000);
+                return Math.min(targetRatio, Math.floor(maxRatio * 1000) / 1000);
             }
 
             async function shareOrDownloadDataUrl(dataUrl, filename) {
@@ -2501,8 +2509,8 @@
                         const res = await fetch(dataUrl);
                         blob = await res.blob();
                         const file = new File([blob], filename, { type: 'image/png' });
-                        const displayName = filename.replace(/\.png$/i, '').replace(/_/g, ' ');
-                        const shareData = { files: [file], title: displayName, text: displayName };
+                        // Chỉ chia sẻ tệp ảnh thuần túy (không đính kèm text/title tên ảnh)
+                        const shareData = { files: [file] };
                         if (navigator.canShare(shareData)) {
                             await navigator.share(shareData);
                             return;
@@ -2572,7 +2580,7 @@
                     const fullHeight = Math.max(element.scrollHeight, element.offsetHeight, element.clientHeight);
 
                     const dataUrl = await anhTuHtml.toPng(element, {
-                        pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
+                        pixelRatio: exportPixelRatio(fullWidth, fullHeight, getExportScale()),
                         width: fullWidth,
                         height: fullHeight,
                         backgroundColor: options.backgroundColor || '#ffffff',
@@ -2759,7 +2767,7 @@
                     const fullHeight = Math.max(exportContainer.scrollHeight, exportContainer.offsetHeight, exportContainer.clientHeight);
 
                     const dataUrl = await anhTuHtml.toPng(exportContainer, {
-                        pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
+                        pixelRatio: exportPixelRatio(fullWidth, fullHeight, getExportScale()),
                         width: fullWidth,
                         height: fullHeight,
                         backgroundColor: '#ffffff',
@@ -3057,7 +3065,7 @@
                                 const fullWidth = Math.max(tempContainer.firstChild.scrollWidth, tempContainer.firstChild.offsetWidth, tempContainer.firstChild.clientWidth);
                                 const fullHeight = Math.max(tempContainer.firstChild.scrollHeight, tempContainer.firstChild.offsetHeight, tempContainer.firstChild.clientHeight);
                                 const dataUrl = await anhTuHtml.toPng(tempContainer.firstChild, { 
-                                    pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2), 
+                                    pixelRatio: exportPixelRatio(fullWidth, fullHeight, getExportScale()), 
                                     backgroundColor: '#ffffff',
                                     width: fullWidth,
                                     height: fullHeight
@@ -3231,7 +3239,7 @@
                         // Audit A10: trước đây luôn tải file (iPhone không mở được Lưu ảnh/LINE/Zalo) và lỗi
                         // chụp bị bỏ qua lặng lẽ. Nay đi đường chia sẻ chung + báo lỗi.
                         const dataUrl = await anhTuHtml.toPng(tempContainer.firstChild, { 
-                             pixelRatio: exportPixelRatio(fullWidth, fullHeight, 2),
+                             pixelRatio: exportPixelRatio(fullWidth, fullHeight, getExportScale()),
                              backgroundColor: '#ffffff',
                              width: fullWidth,
                              height: fullHeight

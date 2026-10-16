@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         MWG - Tự động lấy điểm thưởng nhân viên
 // @namespace    dashboard-ycx
-// @version      7.31
-// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT, đợi có dữ liệu từng khu vực & tự động rà soát vét lại toàn cụm đảm bảo 100% có dữ liệu) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy
+// @version      7.32
+// @description  Gọi thẳng API GetReward (mỗi mã NV), parse HTML <table> trả về thành TSV giống hệt copy tay; nối cầu với Dashboard YCX để chạy chế độ Tự động; Direct Internal API Engine siêu tốc 1-2s cho Realtime (ƯU TIÊN ĐẦU TIÊN chọn tab Realtime bg-blue-600 text-white, tự chọn DT quy đổi & Trả góp, tự động lấy danh sách siêu thị qua API filter-store-getbyasmlist, Bước 3 lấy trọn vẹn cây ngành hàng BI trong 1 lần gọi GROUPBY BICAT, đợi có dữ liệu từng khu vực & tự động rà soát vét lại toàn cụm đảm bảo 100% có dữ liệu) & thu thập Luỹ kế trên baocao.dienmayxanh.com; nút Copy All mở rộng cây dữ liệu theo cấp + tự copy; tự động điền mã bảo mật & tra cứu TNB Data trên admintnb.com/data
 // @match        https://newinsite.thegioididong.com/office/thuong-nhan-vien*
 // @match        https://baocao.dienmayxanh.com/*
 // @match        https://bi.thegioididong.com/*
 // @match        https://report.mwgroup.vn/*
+// @match        https://admintnb.com/data*
+// @match        https://admintnb.com/data/*
 // @match        https://dashboard.pro.vn/*
 // @match        http://127.0.0.1:5173/*
 // @match        http://127.0.0.1:5174/*
@@ -32,6 +34,11 @@
 // ==/UserScript==
 
 /*
+ * BẢN 7.32 — TỰ ĐỘNG ĐIỀN MÃ BẢO MẬT & TRA CỨU TNB DATA (2026-10-16):
+ * - Hỗ trợ trang https://admintnb.com/data/: Tự động nhận diện mã bảo mật từ Dashboard YCX (qua URL hash/param) hoặc bộ nhớ Tampermonkey.
+ * - Tự động điền mã bảo mật vào ô <input id="mbm-code"> và tự động click <button id="mbm-btn">XÁC NHẬN</button>.
+ * - Lưu nhớ mã bảo mật trên trình duyệt (GM_setValue & localStorage) để các lần truy cập tiếp theo (kể cả vào trực tiếp) đều tự động tra cứu.
+ *
  * BẢN 7.31 — KHẮC PHỤC TRIỆT ĐỂ LỖI MWG AIRFLOW KHI XUẤT EXCEL BÁO CÁO 77 (2026-10-15):
  * - Loại bỏ hoàn toàn xung đột gửi kép (Duplicate Trigger): Trước đây script vừa click menu EXCEL, vừa dispatchEvent click, vừa gọi ngầm scope.ExportData() trong 250ms khiến máy chủ MWG nhận 3 request song song cùng lúc, làm Apache Airflow bị đụng độ DAG Run / lock task và trả về lỗi "error_export_excel [+ Không gửi được yêu cầu xuất file sang Airflow, vui lòng thử lại +]".
  * - Cơ chế Kích hoạt Đơn nhất (Clean Single Trigger): Ưu tiên click nút EXCEL trên dropdown menu. Chỉ khi không tìm thấy element trong DOM mới dự phòng gọi scope.ExportData(), tuyệt đối không spam lặp lại.
@@ -5063,6 +5070,96 @@
     }, 700);
   }
 
+  // ====== TRANG ADMINTNB.COM/DATA ======
+  function initTnbDataPage() {
+    if (!location.pathname.startsWith('/data')) return;
+    if (window.__tnbDataAutoFillReady) return;
+    window.__tnbDataAutoFillReady = true;
+
+    console.log('[TNB Data Auto] Khởi chạy tự động điền mã bảo mật...');
+
+    function getCodeFromUrl() {
+      try {
+        const hash = (window.location.hash || '').replace(/^#/, '');
+        const hashParams = new URLSearchParams(hash);
+        if (hashParams.get('code')) return hashParams.get('code');
+        const queryParams = new URLSearchParams(window.location.search || '');
+        if (queryParams.get('code')) return queryParams.get('code');
+      } catch (e) {
+        console.warn('[TNB Data] Lỗi đọc mã từ URL:', e);
+      }
+      return null;
+    }
+
+    function setInputValue(input, val) {
+      try {
+        const proto = window.HTMLInputElement.prototype;
+        const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+        if (descriptor && descriptor.set) {
+          descriptor.set.call(input, val);
+        } else {
+          input.value = val;
+        }
+      } catch (e) {
+        input.value = val;
+      }
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    let code = getCodeFromUrl();
+    if (code) {
+      try { GM_setValue('tnb_mbm_code', code); } catch (e) {}
+      try { localStorage.setItem('tnb_mbm_code', code); } catch (e) {}
+    } else {
+      try { code = GM_getValue('tnb_mbm_code', ''); } catch (e) {}
+      if (!code) {
+        try { code = localStorage.getItem('tnb_mbm_code') || ''; } catch (e) {}
+      }
+    }
+
+    if (!code) {
+      console.log('[TNB Data] Chưa có mã bảo mật được lưu.');
+      return;
+    }
+
+    let tries = 0;
+    const maxTries = 60; // 60 x 200ms = 12s
+    const timer = setInterval(() => {
+      tries++;
+      const input = document.getElementById('mbm-code') || document.querySelector('input#mbm-code');
+      const btn = document.getElementById('mbm-btn') || document.querySelector('button#mbm-btn');
+
+      if (input && btn) {
+        clearInterval(timer);
+        if (!input.value || input.value !== code) {
+          setInputValue(input, code);
+          console.log('[TNB Data] Đã tự điền mã bảo mật:', code);
+        }
+        setTimeout(() => {
+          btn.click();
+          console.log('[TNB Data] Đã bấm XÁC NHẬN!');
+        }, 300);
+      } else if (tries >= maxTries) {
+        clearInterval(timer);
+        console.warn('[TNB Data] Hết thời gian chờ ô nhập #mbm-code');
+      }
+    }, 200);
+
+    // Lắng nghe nếu người dùng tự nhập mã mới rồi bấm nút để cập nhật mã đã lưu
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target && (target.id === 'mbm-btn' || target.closest('#mbm-btn'))) {
+        const curInput = document.getElementById('mbm-code') || document.querySelector('input#mbm-code');
+        if (curInput && curInput.value && curInput.value.trim() !== '') {
+          const newCode = curInput.value.trim();
+          try { GM_setValue('tnb_mbm_code', newCode); } catch (err) {}
+          try { localStorage.setItem('tnb_mbm_code', newCode); } catch (err) {}
+        }
+      }
+    }, true);
+  }
+
   // ====== RẼ NHÁNH THEO DOMAIN ======
   if (location.hostname === MWG_HOSTNAME) {
     initMwgPage();
@@ -5070,6 +5167,8 @@
     initYcxReportPage();
   } else if (BI_HOSTNAMES.includes(location.hostname)) {
     initBiPage();
+  } else if (location.hostname === 'admintnb.com') {
+    initTnbDataPage();
   } else {
     initDashboardPage();
   }
