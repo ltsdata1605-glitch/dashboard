@@ -25,7 +25,7 @@ export function canShareBatch(files: BatchShareFile[]): boolean {
 
 export function offerBatchShare(files: BatchShareFile[], onFallback: () => void): void {
     if (!canShareBatch(files)) { onFallback(); return; }
-    const shareData: ShareData = { files: files.map(toFile), title: `${files.length} ảnh` };
+    const shareData: ShareData = { files: files.map(toFile) };
     toast.action({
         id: 'batch-share',
         testId: 'batch-share-toast',

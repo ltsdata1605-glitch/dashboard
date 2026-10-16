@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         TNB PMH - Tự động lấy mã hàng loạt
 // @namespace    dashboard-ycx
-// @version      1.6
-// @description  Dán danh sách form PMH → tự gộp theo giới hạn 3000 ký tự của ô chat và gửi lần lượt vào phòng admintnb, tự gom mã trả về thành bảng copy nhanh. Chạy trong phiên đăng nhập của CHÍNH BẠN, không gửi dữ liệu ra máy chủ nào khác.
+// @version      1.7
+// @description  Dán danh sách form PMH → tự gộp theo giới hạn 3000 ký tự của ô chat và gửi lần lượt vào phòng admintnb, tự gom mã trả về thành bảng copy nhanh; hỗ trợ tự động điền mã bảo mật & tra cứu TNB Data trên admintnb.com/data. Chạy trong phiên đăng nhập của CHÍNH BẠN, không gửi dữ liệu ra máy chủ nào khác.
 // @author       Dashboard YCX
 // @match        https://admintnb.com/room-pmh*
 // @match        https://admintnb.com/room-pmh/*
+// @match        https://admintnb.com/data*
+// @match        https://admintnb.com/data/*
 // @grant        GM_setClipboard
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -17,6 +19,8 @@
 
 /*
  * CHANGELOG:
+ * - v1.7 (2026-10-16):
+ *   + Hỗ trợ tự động tra cứu TNB Data tại https://admintnb.com/data/: Tự động điền mã bảo mật vào ô #mbm-code và click #mbm-btn (XÁC NHẬN).
  * - v1.6 (2026-09-29):
  *   + Thêm bộ lọc "Hôm nay / Tất cả" — mặc định chỉ hiển thị mã nhận trong ngày hôm nay, bấm toggle để xem toàn bộ lịch sử phiên.
  * - v1.5 (2026-09-27):
@@ -738,7 +742,96 @@
     if (!$('#' + PANEL_ID)) buildPanel();
   }
 
+  function initTnbDataAutoFill() {
+    if (window.__tnbDataAutoFillReady) return;
+    window.__tnbDataAutoFillReady = true;
+
+    function getCodeFromUrl() {
+      try {
+        const hash = (window.location.hash || '').replace(/^#/, '');
+        const hashParams = new URLSearchParams(hash);
+        if (hashParams.get('code')) return hashParams.get('code');
+        const queryParams = new URLSearchParams(window.location.search || '');
+        if (queryParams.get('code')) return queryParams.get('code');
+      } catch (e) {
+        console.warn('[TNB Data] Lỗi đọc mã từ URL:', e);
+      }
+      return null;
+    }
+
+    function setInputValue(input, val) {
+      try {
+        const proto = window.HTMLInputElement.prototype;
+        const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
+        if (descriptor && descriptor.set) {
+          descriptor.set.call(input, val);
+        } else {
+          input.value = val;
+        }
+      } catch (e) {
+        input.value = val;
+      }
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    let code = getCodeFromUrl();
+    if (code) {
+      try { GM_setValue('tnb_mbm_code', code); } catch (e) {}
+      try { localStorage.setItem('tnb_mbm_code', code); } catch (e) {}
+    } else {
+      try { code = GM_getValue('tnb_mbm_code', ''); } catch (e) {}
+      if (!code) {
+        try { code = localStorage.getItem('tnb_mbm_code') || ''; } catch (e) {}
+      }
+    }
+
+    if (!code) {
+      console.log('[TNB Data] Chưa có mã bảo mật được lưu.');
+      return;
+    }
+
+    let tries = 0;
+    const maxTries = 60; // 60 x 200ms = 12s
+    const timer = setInterval(() => {
+      tries++;
+      const input = document.getElementById('mbm-code') || document.querySelector('input#mbm-code');
+      const btn = document.getElementById('mbm-btn') || document.querySelector('button#mbm-btn');
+
+      if (input && btn) {
+        clearInterval(timer);
+        if (!input.value || input.value !== code) {
+          setInputValue(input, code);
+          console.log('[TNB Data] Đã tự điền mã bảo mật:', code);
+        }
+        setTimeout(() => {
+          btn.click();
+          console.log('[TNB Data] Đã bấm XÁC NHẬN!');
+        }, 300);
+      } else if (tries >= maxTries) {
+        clearInterval(timer);
+        console.warn('[TNB Data] Hết thời gian chờ ô nhập #mbm-code');
+      }
+    }, 200);
+
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target && (target.id === 'mbm-btn' || target.closest('#mbm-btn'))) {
+        const curInput = document.getElementById('mbm-code') || document.querySelector('input#mbm-code');
+        if (curInput && curInput.value && curInput.value.trim() !== '') {
+          const newCode = curInput.value.trim();
+          try { GM_setValue('tnb_mbm_code', newCode); } catch (err) {}
+          try { localStorage.setItem('tnb_mbm_code', newCode); } catch (err) {}
+        }
+      }
+    }, true);
+  }
+
   function boot() {
+    if (location.pathname.startsWith('/data')) {
+      initTnbDataAutoFill();
+      return;
+    }
     ensurePanel();
     scanExisting();
     renderResults();

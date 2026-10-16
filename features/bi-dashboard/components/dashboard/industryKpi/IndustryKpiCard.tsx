@@ -12,6 +12,9 @@ export interface PastelTheme {
     valueColor: string;
     subBadgeBg: string;
     subBadgeText: string;
+    borderHex: string;
+    topHex: string;
+    colorKey: string;
 }
 
 // Bảng 12 theme xoay vòng tinh tế tuân thủ nghiêm ngặt 5 họ semantic (sky, amber, emerald, rose, slate)
@@ -20,86 +23,122 @@ export const PASTEL_THEMES: PastelTheme[] = [
     {
         topAccent: 'bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600',
         dotColor: 'bg-sky-500',
-        valueColor: 'text-sky-700',
-        subBadgeBg: 'bg-sky-50',
-        subBadgeText: 'text-sky-700',
+        valueColor: 'text-sky-600 dark:text-sky-400',
+        subBadgeBg: 'bg-sky-50 dark:bg-sky-950/50',
+        subBadgeText: 'text-sky-700 dark:text-sky-300',
+        borderHex: '#7dd3fc',
+        topHex: '#0284c7',
+        colorKey: 'sky',
     },
     {
         topAccent: 'bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600',
         dotColor: 'bg-amber-500',
-        valueColor: 'text-amber-700',
-        subBadgeBg: 'bg-amber-50',
-        subBadgeText: 'text-amber-700',
+        valueColor: 'text-amber-600 dark:text-amber-400',
+        subBadgeBg: 'bg-amber-50 dark:bg-amber-950/50',
+        subBadgeText: 'text-amber-700 dark:text-amber-300',
+        borderHex: '#fcd34d',
+        topHex: '#d97706',
+        colorKey: 'amber',
     },
     {
         topAccent: 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600',
         dotColor: 'bg-emerald-500',
-        valueColor: 'text-emerald-700',
-        subBadgeBg: 'bg-emerald-50',
-        subBadgeText: 'text-emerald-700',
+        valueColor: 'text-emerald-600 dark:text-emerald-400',
+        subBadgeBg: 'bg-emerald-50 dark:bg-emerald-950/50',
+        subBadgeText: 'text-emerald-700 dark:text-emerald-300',
+        borderHex: '#86efac',
+        topHex: '#059669',
+        colorKey: 'emerald',
     },
     {
         topAccent: 'bg-gradient-to-r from-rose-400 via-rose-500 to-rose-600',
         dotColor: 'bg-rose-500',
-        valueColor: 'text-rose-700',
-        subBadgeBg: 'bg-rose-50',
-        subBadgeText: 'text-rose-700',
+        valueColor: 'text-rose-600 dark:text-rose-400',
+        subBadgeBg: 'bg-rose-50 dark:bg-rose-950/50',
+        subBadgeText: 'text-rose-700 dark:text-rose-300',
+        borderHex: '#fda4af',
+        topHex: '#e11d48',
+        colorKey: 'rose',
     },
     {
         topAccent: 'bg-gradient-to-r from-slate-400 via-slate-500 to-slate-600',
         dotColor: 'bg-slate-500',
-        valueColor: 'text-slate-700',
-        subBadgeBg: 'bg-slate-100',
-        subBadgeText: 'text-slate-700',
+        valueColor: 'text-slate-600 dark:text-slate-400',
+        subBadgeBg: 'bg-slate-100 dark:bg-slate-800',
+        subBadgeText: 'text-slate-700 dark:text-slate-300',
+        borderHex: '#cbd5e1',
+        topHex: '#475569',
+        colorKey: 'slate',
     },
     {
         topAccent: 'bg-gradient-to-r from-sky-500 via-sky-600 to-sky-700',
         dotColor: 'bg-sky-600',
-        valueColor: 'text-sky-800',
-        subBadgeBg: 'bg-sky-50',
-        subBadgeText: 'text-sky-800',
+        valueColor: 'text-sky-700 dark:text-sky-300',
+        subBadgeBg: 'bg-sky-50 dark:bg-sky-950/50',
+        subBadgeText: 'text-sky-800 dark:text-sky-200',
+        borderHex: '#7dd3fc',
+        topHex: '#0284c7',
+        colorKey: 'sky',
     },
     {
         topAccent: 'bg-gradient-to-r from-amber-500 via-amber-600 to-amber-700',
         dotColor: 'bg-amber-600',
-        valueColor: 'text-amber-800',
-        subBadgeBg: 'bg-amber-50',
-        subBadgeText: 'text-amber-800',
+        valueColor: 'text-amber-700 dark:text-amber-300',
+        subBadgeBg: 'bg-amber-50 dark:bg-amber-950/50',
+        subBadgeText: 'text-amber-800 dark:text-amber-200',
+        borderHex: '#fcd34d',
+        topHex: '#d97706',
+        colorKey: 'amber',
     },
     {
         topAccent: 'bg-gradient-to-r from-emerald-500 via-emerald-600 to-emerald-700',
         dotColor: 'bg-emerald-600',
-        valueColor: 'text-emerald-800',
-        subBadgeBg: 'bg-emerald-50',
-        subBadgeText: 'text-emerald-800',
+        valueColor: 'text-emerald-700 dark:text-emerald-300',
+        subBadgeBg: 'bg-emerald-50 dark:bg-emerald-950/50',
+        subBadgeText: 'text-emerald-800 dark:text-emerald-200',
+        borderHex: '#86efac',
+        topHex: '#059669',
+        colorKey: 'emerald',
     },
     {
         topAccent: 'bg-gradient-to-r from-rose-500 via-rose-600 to-rose-700',
         dotColor: 'bg-rose-600',
-        valueColor: 'text-rose-800',
-        subBadgeBg: 'bg-rose-50',
-        subBadgeText: 'text-rose-800',
+        valueColor: 'text-rose-700 dark:text-rose-300',
+        subBadgeBg: 'bg-rose-50 dark:bg-rose-950/50',
+        subBadgeText: 'text-rose-800 dark:text-rose-200',
+        borderHex: '#fda4af',
+        topHex: '#e11d48',
+        colorKey: 'rose',
     },
     {
         topAccent: 'bg-gradient-to-r from-slate-500 via-slate-600 to-slate-700',
         dotColor: 'bg-slate-600',
-        valueColor: 'text-slate-800',
-        subBadgeBg: 'bg-slate-100',
-        subBadgeText: 'text-slate-800',
+        valueColor: 'text-slate-700 dark:text-slate-300',
+        subBadgeBg: 'bg-slate-100 dark:bg-slate-800',
+        subBadgeText: 'text-slate-800 dark:text-slate-200',
+        borderHex: '#cbd5e1',
+        topHex: '#475569',
+        colorKey: 'slate',
     },
     {
         topAccent: 'bg-gradient-to-r from-sky-400 via-sky-500 to-sky-600',
         dotColor: 'bg-sky-500',
-        valueColor: 'text-sky-700',
-        subBadgeBg: 'bg-sky-50',
-        subBadgeText: 'text-sky-700',
+        valueColor: 'text-sky-600 dark:text-sky-400',
+        subBadgeBg: 'bg-sky-50 dark:bg-sky-950/50',
+        subBadgeText: 'text-sky-700 dark:text-sky-300',
+        borderHex: '#7dd3fc',
+        topHex: '#0284c7',
+        colorKey: 'sky',
     },
     {
         topAccent: 'bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-600',
         dotColor: 'bg-emerald-500',
-        valueColor: 'text-emerald-700',
-        subBadgeBg: 'bg-emerald-50',
-        subBadgeText: 'text-emerald-700',
+        valueColor: 'text-emerald-600 dark:text-emerald-400',
+        subBadgeBg: 'bg-emerald-50 dark:bg-emerald-950/50',
+        subBadgeText: 'text-emerald-700 dark:text-emerald-300',
+        borderHex: '#86efac',
+        topHex: '#059669',
+        colorKey: 'emerald',
     },
 ];
 
@@ -146,21 +185,24 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
             onDragLeave={onDragLeave}
             onDrop={onDrop}
             onDragEnd={onDragEnd}
-            className={`industry-kpi-card min-w-0 group relative bg-white dark:bg-slate-800/90 border ${
+            data-kpi-border={theme.borderHex}
+            data-kpi-top-border={theme.topHex}
+            data-kpi-top-color={theme.colorKey}
+            className={`industry-kpi-card preserve-rounded min-w-0 group relative bg-white dark:bg-slate-800/95 border ${
                 isDragOver
                     ? 'ring-2 ring-sky-500 border-sky-400 scale-[1.02] shadow-md z-10'
                     : 'border-slate-200/90 dark:border-slate-700/80 hover:border-slate-300 dark:hover:border-slate-600'
             } ${
-                isDragging ? 'opacity-40 scale-95 shadow-none' : 'shadow-2xs hover:shadow-md'
-            } rounded-xl sm:rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing select-none hover:-translate-y-0.5`}
+                isDragging ? 'opacity-40 scale-95 shadow-none' : 'shadow-2xs hover:shadow-xs'
+            } rounded-2xl transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing select-none hover:-translate-y-0.5`}
             title={metric.parentName ? `${metric.displayTitle} (${metric.parentName}) — Kéo thả để sắp xếp` : `${metric.displayTitle} — Kéo thả để sắp xếp`}
         >
-            {/* Top accent gradient bar */}
-            <div className={`h-[2.5px] sm:h-[3.5px] w-full shrink-0 ${theme.topAccent}`} />
+            {/* Vạch nhận diện đỉnh thẻ — dải gradient bo tròn ôm khít theo góc bo 16px của thẻ */}
+            <div className={`kpi-top-accent h-[2.5px] sm:h-[3px] w-full shrink-0 rounded-t-2xl ${theme.topAccent}`} />
 
-            <div className="p-1 sm:p-2.5 flex flex-col justify-between flex-1 min-h-[58px] sm:min-h-[76px]">
-                {/* Header: Micro indicator dot + Tên ngành hàng + Nút X */}
-                <div className="flex items-center justify-between gap-0.5 sm:gap-1 mb-0.5 sm:mb-1">
+            <div className="p-1 sm:p-2 flex flex-col justify-between flex-1 min-h-[58px] sm:min-h-[70px]">
+                {/* Header: Dot màu + Tên ngành hàng (in hoa rõ ràng) + Nút X */}
+                <div className="flex items-center justify-between gap-0.5 sm:gap-1 mb-0.5">
                     <div className="flex items-center gap-1 min-w-0 flex-1">
                         <span className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full shrink-0 ${theme.dotColor} shadow-2xs`} />
                         <span
@@ -190,14 +232,14 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                     )}
                 </div>
 
-                {/* Hero Primary Metric - Canh giữa hoàn hảo, SỐ LỚN RÕ RÀNG (25px-28px Apple KPI Scale) */}
-                <div className="w-full flex items-baseline justify-center py-0.5 sm:py-1 my-auto">
+                {/* Hero Primary Metric - Số chính to rõ, cân đối, canh giữa không bị rối */}
+                <div className="w-full flex items-baseline justify-center py-0.5 my-auto">
                     {isRevenueFocus ? (
                         <div className="flex items-baseline justify-center gap-0.5 sm:gap-1 min-w-0">
                             <span className="industry-kpi-num text-[20px] sm:text-[25px] font-black tracking-tight tabular-nums text-slate-900 dark:text-white leading-none">
                                 {roundUp(metric.dtQd).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[11px] font-extrabold uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[11px] font-bold uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-none">
                                 {isRealtime ? 'DTQĐ' : 'QĐ'}
                             </span>
                         </div>
@@ -206,19 +248,19 @@ export const IndustryKpiCard: React.FC<IndustryKpiCardProps> = ({
                             <span className="industry-kpi-num text-[25px] sm:text-[28px] font-black tracking-tight tabular-nums text-slate-900 dark:text-white leading-none">
                                 {roundUp(metric.sl).toLocaleString('vi-VN')}
                             </span>
-                            <span className="industry-kpi-label text-[11px] font-black uppercase tracking-tight text-slate-500 dark:text-slate-400 leading-none">
+                            <span className="industry-kpi-label text-[11px] font-black uppercase tracking-tight text-slate-400 dark:text-slate-500 leading-none">
                                 SL
                             </span>
                         </div>
                     )}
                 </div>
 
-                {/* Footer Sub-Metric - 1 dòng ngang thu nhỏ gọn gàng */}
-                <div className="flex items-center justify-between gap-0.5 pt-0.5 sm:pt-1 mt-auto border-t border-slate-100 dark:border-slate-800 leading-none">
-                    <span className="industry-kpi-sublabel text-slate-400 dark:text-slate-500 font-medium truncate text-[11px]">
-                        {isRevenueFocus ? 'Số lượng' : (isRealtime ? 'DTQĐ' : 'QĐ')}
+                {/* Footer Sub-Metric - 1 dòng ngang tinh gọn: bên trái nhãn, bên phải số theo tông màu */}
+                <div className="flex items-center justify-between gap-1 pt-0.5 sm:pt-1 mt-auto border-t border-slate-100 dark:border-slate-800 leading-none text-[11px]">
+                    <span className="industry-kpi-sublabel text-slate-400 dark:text-slate-500 font-medium truncate">
+                        {isRevenueFocus ? 'SL' : (isRealtime ? 'DTQĐ' : 'QĐ')}
                     </span>
-                    <span className={`industry-kpi-subnum inline-flex items-center px-1 py-0.5 rounded font-bold tabular-nums shrink-0 text-[11px] ${theme.subBadgeBg} ${theme.subBadgeText}`}>
+                    <span className={`industry-kpi-subnum inline-flex items-center font-bold tabular-nums shrink-0 ${theme.valueColor}`}>
                         {isRevenueFocus
                             ? `${roundUp(metric.sl).toLocaleString('vi-VN')} SL`
                             : `${roundUp(metric.dtQd).toLocaleString('vi-VN')} Tr`}

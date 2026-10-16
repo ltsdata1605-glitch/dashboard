@@ -23,6 +23,8 @@ import {
 } from '../../services/ycxAutoSyncService';
 import YcxLuyKePickerModal from '../modals/YcxLuyKePickerModal';
 import { navigateToYcxAnalysis } from '../../features/bi-dashboard/services/autoNavigationService';
+import { getTnbMbmCode, openTnbData } from '../../services/tnbDataService';
+import TnbDataConfigModal from '../modals/TnbDataConfigModal';
 
 type YcxPhase = 'idle' | 'running' | 'error' | 'done';
 type ScriptState = { checked: boolean; installed: boolean; version?: string };
@@ -82,6 +84,21 @@ export default function GlobalAutoSyncDock() {
     const nhanHen = (k: ScheduleKey) => { const t = nextScheduleLabel(lich[k]); return t ? `⏰ Hẹn ${t}` : null; };
     const ycxStopRef = useRef<(() => void) | null>(null);
     const ycxAutoSendRef = useRef<AutoSendItem[]>([]);
+
+    // ─── TNB Data Setup (Sức Khỏe Siêu Thị) ───
+    const [tnbCode, setTnbCode] = useState<string>('');
+    const [isTnbModalOpen, setIsTnbModalOpen] = useState(false);
+    useEffect(() => {
+        void getTnbMbmCode(user, departmentId).then((c) => setTnbCode(c));
+    }, [user, departmentId]);
+    const handleOpenTnbData = useCallback(() => {
+        if (tnbCode && tnbCode.trim()) {
+            openTnbData(tnbCode);
+            toast.success(`Đang mở TNB Data với mã ${tnbCode}...`, { id: 'tnb-data-launch', duration: 3000 });
+        } else {
+            setIsTnbModalOpen(true);
+        }
+    }, [tnbCode]);
 
     useEffect(() => {
         const handleResize = () => setManHep(window.innerWidth < 1536);
@@ -420,6 +437,15 @@ export default function GlobalAutoSyncDock() {
                         >
                             <AppIcon name="dateRange" size="md" className="text-emerald-100" />{lich['ycx-luyke']?.enabled && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-400 ring-2 ring-white" aria-label="Có hẹn giờ" />}
                         </button>
+                        <button
+                            type="button"
+                            onClick={handleOpenTnbData}
+                            title={tnbCode ? `Tự động TNB Data (Mã: ${tnbCode})` : 'Tự động TNB Data (Sức Khỏe Siêu Thị)'}
+                            aria-label="Tự động TNB Data"
+                            className="preserve-rounded relative p-2.5 rounded-xl bg-gradient-to-br from-sky-700 via-sky-800 to-slate-900 text-white shadow-md hover:scale-110 active:scale-95 transition-all cursor-pointer"
+                        >
+                            <AppIcon name="database" size="md" className="text-sky-100" />
+                        </button>
                     </div>
                 ) : (
                     <>
@@ -587,6 +613,44 @@ export default function GlobalAutoSyncDock() {
                             </div>
                         </div>
 
+                        <div className="relative">
+                        {/* Nút 6: TNB Data (Sức Khỏe Siêu Thị) — Tự động nhập mã & bấm XÁC NHẬN trên admintnb.com/data */}
+                        <button
+                            type="button"
+                            onClick={handleOpenTnbData}
+                            title="Tự động tra cứu dữ liệu Sức Khỏe Siêu Thị trên admintnb.com/data bằng mã bảo mật"
+                            aria-label="Tự động TNB Data"
+                            className="preserve-rounded group relative overflow-hidden flex items-center gap-2 pl-2.5 pr-8 py-1.5 w-full rounded-xl font-bold text-white bg-gradient-to-r from-sky-700 via-sky-800 to-slate-900 hover:from-sky-600 hover:to-slate-800 active:from-sky-800 active:to-slate-900 border border-sky-400/40 shadow-[0_4px_14px_rgba(3,105,161,0.28),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:shadow-[0_6px_18px_rgba(3,105,161,0.4),inset_0_1px_1px_rgba(255,255,255,0.6)] hover:-translate-y-0.5 active:translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer whitespace-nowrap text-left"
+                        >
+                            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 pointer-events-none" />
+                            <div className="preserve-rounded relative w-7 h-7 rounded-md bg-black/15 flex items-center justify-center shrink-0 border border-white/25 shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] group-hover:scale-105 transition-transform duration-200">
+                                <AppIcon name="database" size="sm" className="text-sky-100 drop-shadow-[0_0_6px_rgba(186,230,253,0.9)]" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[12px] font-bold text-white tracking-tight leading-tight drop-shadow-sm truncate">
+                                    TNB Data
+                                </span>
+                                <span className="text-[11px] font-semibold text-sky-100/90 leading-none mt-0.5 truncate">
+                                    {tnbCode ? `Mã: ${tnbCode}` : 'Sức khỏe ST'}
+                                </span>
+                            </div>
+                        </button>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                                <button
+                                    type="button"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setIsTnbModalOpen(true);
+                                    }}
+                                    title="Cài đặt / Đổi mã bảo mật TNB"
+                                    aria-label="Cài đặt mã bảo mật TNB"
+                                    className="p-1 rounded-md text-sky-200 hover:text-white hover:bg-white/15 active:scale-95 transition-all cursor-pointer"
+                                >
+                                    <AppIcon name="settings" size="xs" />
+                                </button>
+                            </div>
+                        </div>
+
                         {/* Footer micro-tag: bấm để xem hướng dẫn cài đặt & kiểm tra kết nối */}
                         <button
                             type="button"
@@ -698,6 +762,12 @@ export default function GlobalAutoSyncDock() {
                 onStart={(month) => {
                     handleTriggerYcxSync('luyke', { month });
                 }}
+            />
+            <TnbDataConfigModal
+                isOpen={isTnbModalOpen}
+                onClose={() => setIsTnbModalOpen(false)}
+                onSaved={(newCode) => setTnbCode(newCode)}
+                initialCode={tnbCode}
             />
         </>
     );

@@ -273,7 +273,15 @@ export function filterAnalysisEmployeesForSupermarket(
     }
     targetKho = targetKho.replace(/\D/g, '');
 
-    // 1. Phân tích danh sách nhân viên của chính siêu thị này từ dữ liệu "Nhân viên Luỹ kế"
+    // 1. ƯU TIÊN CAO NHẤT: Lấy danh sách nhân viên từ chức năng Phân tích theo Mã kho để cấu hình target
+    if (targetKho) {
+        const matchedKho = valid.filter(e => e.maKho && e.maKho === targetKho);
+        if (matchedKho.length > 0) {
+            return matchedKho;
+        }
+    }
+
+    // 2. Phân tích danh sách nhân viên của chính siêu thị này từ dữ liệu "Nhân viên Luỹ kế"
     const storeEmployees = parseAllEmployees(storeEmployeesRaw, hiddenEmployees);
 
     if (storeEmployees.length > 0) {
@@ -303,15 +311,14 @@ export function filterAnalysisEmployeesForSupermarket(
             return false;
         };
 
-        return valid.filter(e => isMatchStore(e) || matchesKho(e));
+        return valid.filter(e => {
+            // Tuyệt đối không nhận nhân viên đã được định danh thuộc mã kho khác
+            if (targetKho && e.maKho && e.maKho !== targetKho) return false;
+            return isMatchStore(e) || matchesKho(e);
+        });
     }
 
-    // 2. Nếu siêu thị chưa có dữ liệu "Nhân viên Luỹ kế": kiểm tra theo Mã Kho hoặc Tên Siêu Thị
-    if (targetKho) {
-        const matchedKho = valid.filter(e => e.maKho && e.maKho === targetKho);
-        if (matchedKho.length > 0) return matchedKho;
-    }
-
+    // 3. Nếu siêu thị chưa có dữ liệu "Nhân viên Luỹ kế": kiểm tra theo Tên Siêu Thị
     const matchedSm = valid.filter(e => e.supermarket && (e.supermarket === cleanSm || shortenSupermarketName(e.supermarket) === safeSm));
     if (matchedSm.length > 0) return matchedSm;
 

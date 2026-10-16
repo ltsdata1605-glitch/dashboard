@@ -166,7 +166,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
             } ${isActive ? `${activeStyle} scale-[1.01]` : ''} premium-card-shadow`}
         >
             {/* Vạch nhận diện đỉnh thẻ — dải gradient mềm mại bo theo góc bo thẻ */}
-            <div className={`kpi-top-accent h-[3.5px] w-full shrink-0 ${style.topAccent}`} />
+            <div className={`kpi-top-accent h-[3.5px] w-full shrink-0 rounded-t-card ${style.topAccent}`} />
 
             {/* Layout cho desktop (lg trở lên) — Thiết kế gọn gàng, tinh tế, số to rõ */}
             <div className="hidden lg:flex flex-col justify-between flex-1 px-3.5 py-2.5">

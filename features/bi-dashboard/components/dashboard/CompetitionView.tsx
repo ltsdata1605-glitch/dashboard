@@ -284,13 +284,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         <div id="competition-view-controls" className="flex items-center gap-0.5 sm:gap-1">
             {/* Nút Sao chép Nhận xét thi đua (icon-only, sao chép trực tiếp không hiện modal) */}
             <Button
-                variant="ghost"
-                size="icon"
+                variant="unstyled"
+                size="none"
                 onClick={handleCopyCommentary}
-                className={`w-8 h-8 transition-all rounded-lg flex items-center justify-center shrink-0 ${
+                className={`w-8 h-8 transition-all rounded-lg flex items-center justify-center shrink-0 border shadow-2xs ${
                     copiedCommentary
-                        ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40'
-                        : 'text-sky-600 hover:bg-sky-50 dark:text-sky-300 dark:hover:bg-slate-800'
+                        ? 'text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700'
+                        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                 }`}
                 title={copiedCommentary ? "Đã sao chép nhận xét!" : "Sao chép nhận xét thi đua (LINE/Zalo)"}
                 aria-label="Sao chép nhận xét thi đua"
@@ -298,19 +298,19 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 {copiedCommentary ? (
                     <AppIcon name="check" size="md" className="text-emerald-600" />
                 ) : (
-                    <AppIcon name="message" size="md" className="text-sky-600" />
+                    <AppIcon name="message" size="md" />
                 )}
             </Button>
 
             {/* Chuyển đổi chế độ gom nhóm: Mặc định (gốc) vs Tuỳ chỉnh (theo cấu hình Target) */}
             <Button
-                variant="ghost"
-                size="icon"
+                variant="unstyled"
+                size="none"
                 onClick={() => setGroupingMode(prev => prev === 'default' ? 'configured' : 'default')}
-                className={`w-8 h-8 transition-colors rounded-lg shrink-0 ${
+                className={`w-8 h-8 transition-all rounded-lg shrink-0 flex items-center justify-center border shadow-2xs ${
                     groupingMode === 'configured'
-                        ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                        ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
+                        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                 }`}
                 title={
                     groupingMode === 'configured'
@@ -325,13 +325,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             {/* Bộ lọc tích hợp 2 cột: Lọc chương trình & Cột hiển thị */}
             <div className="relative" ref={columnSelectorRef}>
                 <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="unstyled"
+                    size="none"
                     onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className={`relative w-8 h-8 transition-colors rounded-lg shrink-0 ${
+                    className={`relative w-8 h-8 transition-all rounded-lg shrink-0 flex items-center justify-center border shadow-2xs ${
                         isColumnSelectorOpen || isProgramFiltered || hasHiddenColumn
-                            ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30'
-                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                            ? 'text-sky-600 bg-sky-50 dark:text-sky-400 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
+                            : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                     }`}
                     title="Bộ lọc thi đua (Chương trình & Cột hiển thị)"
                 >
@@ -463,10 +463,10 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
             {/* Nút cấu hình Target Thi đua (Lucide Settings) */}
             <Button
-                variant="ghost"
-                size="icon"
+                variant="unstyled"
+                size="none"
                 onClick={handleOpenTargetThiDua}
-                className="w-8 h-8 text-slate-400 hover:text-sky-600 dark:hover:text-slate-300 transition-colors rounded-lg shrink-0"
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shadow-2xs transition-all hover:scale-105 active:scale-95"
                 title="Cấu hình Thi đua"
             >
                 <AppIcon name="settings" size="md" />

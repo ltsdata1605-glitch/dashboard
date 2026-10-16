@@ -127,12 +127,13 @@ export const useFileUploadLogic = ({
         }
     };
 
-    const handleShiftFileProcessing = async (files: File[]) => {
+    const handleShiftFileProcessing = async (files: File[], maKho?: string) => {
         if (files.length === 0) return;
         setAppState('loading');
         setIsProcessing(true);
         setStatus({ message: `Đang xử lý ${files.length} file phân ca...`, type: 'info', progress: 20 });
         try {
+            const cleanMaKho = maKho ? String(maKho).trim().replace(/\D/g, '') : '';
             let mergedMap: DepartmentMap = {}; 
             let skippedTotal = 0;
             const skippedDepts = new Set<string>();
@@ -141,17 +142,22 @@ export const useFileUploadLogic = ({
                 const file = files[i];
                 const shiftMsg = files.length > 1 ? `Đang xử lý tệp ${i + 1}/${files.length}...` : 'Đang xử lý tệp phân ca...';
                 setStatus({ message: shiftMsg, type: 'info', progress: 20 + (60 * (i + 1) / files.length) });
-                const { map, skippedCount, skippedDepartments } = await processShiftFile(file); 
+                const { map, skippedCount, skippedDepartments } = await processShiftFile(file, cleanMaKho); 
                 mergedMap = { ...mergedMap, ...map }; 
                 skippedTotal += skippedCount;
                 skippedDepartments.forEach(d => skippedDepts.add(d));
             }
             
-            await dbService.saveDepartmentMap(mergedMap);
-            await dbService.saveSetting('originalDepartmentMap', mergedMap);
-            setDepartmentMap(mergedMap);
-            // Nói rõ đã bỏ qua bao nhiêu người ngoài BP All In One, tránh người dùng tưởng mất dữ liệu
-            const keptMsg = `Đã nạp ${Object.keys(mergedMap).length} nhân viên BP All In One`;
+            // Giữ lại nhân viên của các kho khác nếu đã nạp trước đó, gộp thêm nhân viên mới
+            const existingMap = await dbService.getDepartmentMap() || {};
+            const combinedMap: DepartmentMap = { ...existingMap, ...mergedMap };
+
+            await dbService.saveDepartmentMap(combinedMap);
+            await dbService.saveSetting('originalDepartmentMap', combinedMap);
+            setDepartmentMap(combinedMap);
+            // Nói rõ đã bỏ qua bao nhiêu người ngoài BP All In One và thông báo mã kho
+            const khoBadge = cleanMaKho ? ` (Kho ${cleanMaKho})` : '';
+            const keptMsg = `Đã nạp ${Object.keys(mergedMap).length} nhân viên BP All In One${khoBadge}`;
             const skipMsg = skippedTotal > 0
                 ? ` • bỏ qua ${skippedTotal} người thuộc ${Array.from(skippedDepts).join(', ')}`
                 : '';

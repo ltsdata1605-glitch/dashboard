@@ -152,7 +152,7 @@ export async function exportLeaderboardToImage({
     let ok = false;
     try {
         const blob = await exportElementAsImage(captureTarget, 'check-thuong.png', {
-            preset: 'raw', mode: 'blob-only', scale: 2.5,
+            preset: 'raw', mode: 'blob-only',
             footer: `Top ${listToExport.length} dẫn đầu · ${exportFooterText()}`,
         });
         if (!blob || blob.size < 500) {

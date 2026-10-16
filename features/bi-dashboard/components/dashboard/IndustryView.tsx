@@ -253,7 +253,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={expandAll}
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750 transition-all hover:scale-105 active:scale-95"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 shadow-2xs transition-all hover:scale-105 active:scale-95 shrink-0"
                         title="Mở rộng tất cả"
                     >
                         <AppIcon name="expandAll" size="md" />
@@ -261,7 +261,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <Button
                         variant="unstyled" size="none"
                         onClick={collapseAll}
-                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${hasAnyExpanded ? 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750' : 'text-slate-300 dark:text-slate-600 cursor-not-allowed opacity-40'}`}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 border shadow-2xs shrink-0 ${hasAnyExpanded ? 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80' : 'text-slate-300 dark:text-slate-600 bg-slate-50 dark:bg-slate-800/50 border-slate-200/60 dark:border-slate-700/40 cursor-not-allowed opacity-50'}`}
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
@@ -278,10 +278,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsFilterOpen(prev => !prev)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative ${
-                        (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0)
-                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
-                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 relative border shadow-2xs shrink-0 ${
+                        (hiddenIndustries.length > 0 || hiddenSubIndustries.length > 0 || isFilterOpen)
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
+                            : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                     }`}
                     title="Bộ lọc ngành hàng & nhóm hàng"
                 >
@@ -419,10 +419,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 <Button
                     variant="unstyled" size="none"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 border shadow-2xs shrink-0 ${
                         isColumnSelectorOpen
-                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
-                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
+                            ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
+                            : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
                 >

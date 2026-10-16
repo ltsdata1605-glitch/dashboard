@@ -304,14 +304,14 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         <div ref={ref} className="overflow-hidden flex flex-col h-full bg-transparent">
             {/* Header */}
             <div className="flex justify-between items-center mb-3 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 mr-2">
                     <div className="min-w-0">
                         <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">Phân Tích Khai Thác</h3>
                         <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
-                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
-                    <div className="flex items-center gap-1 sm:gap-1.5">
+                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
                         <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
                             <Button variant="unstyled" size="none" onClick={() => setViewMode('detail')} className={`h-8 px-2 lg:h-9 lg:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg transition-colors whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 font-bold' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`} title="Chi tiết">
                                 <AppIcon name="viewList" size="md" />

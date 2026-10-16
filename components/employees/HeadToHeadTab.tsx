@@ -281,7 +281,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             {/* Merged Header */}
             <div className="mb-3 sm:mb-4">
                 <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 mr-2">
                         <div className="min-w-0">
                             <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">
                                 {activeTable ? activeTable.tableName : '7 Ngày'}

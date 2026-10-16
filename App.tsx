@@ -44,6 +44,7 @@ import PageActionsBar from './components/layout/PageActionsBar';
 import { PageActionsProvider } from './components/shared/ui/PageActions';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 import InstallAppHint from './components/layout/InstallAppHint';
+import AppFooter from './components/layout/AppFooter';
 import { installTableScrollCue } from './components/shared/ui/tableScrollCue';
 import { napPhongGoogle } from './components/shared/ui/googleFonts';
 
@@ -407,6 +408,7 @@ function AppContent() {
                                 <TabContent />
                             </Suspense>
                         </ErrorBoundary>
+                        {!isFullscreenMobileTool && <AppFooter />}
                     </div>
                 </main>
             </div>

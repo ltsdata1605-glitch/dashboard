@@ -106,4 +106,24 @@ describe('Target chia theo nhân viên từng siêu thị (không chia gộp c�
         );
         expect(all.length).toBe(30);
     });
+
+    it('6. Lấy danh sách nhân viên từ Phân tích theo Mã kho để cấu hình target', () => {
+        // Kho 8831 có 10 nhân viên (id 1000..1009)
+        // Kể cả khi có danh sách luỹ kế lẫn lộn, hệ thống lấy đúng 10 nhân viên thuộc mã kho 8831
+        const mixedLuyKe = `
+1000 - Nhân viên 1000	150.0	BP ALL IN ONE - ĐMX
+1015 - Nhân viên 1015	180.0	BP ALL IN ONE - ĐMX
+`;
+        const filtered = filterAnalysisEmployeesForSupermarket(
+            analysis30Employees,
+            mixedLuyKe,
+            [],
+            'Siêu thị 8831',
+            { 'Siêu thị 8831': '8831' }
+        );
+        expect(filtered.length).toBe(10);
+        expect(filtered.every(e => e.maKho === '8831')).toBe(true);
+        expect(filtered.some(e => e.id === '1015')).toBe(false); // 1015 thuộc kho 8832 nên không lọt vào
+    });
 });
+

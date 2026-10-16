@@ -21,7 +21,6 @@ export const exportToImage = async (exportRef: RefObject<HTMLElement | null>, fi
     try {
         const blob = await exportElementAsImage(exportRef.current, filename, {
             mode: 'download',
-            scale: 2,
             elementsToHide: ['.export-hidden']
         });
         

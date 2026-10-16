@@ -43,6 +43,7 @@ const UploadConflictModal = React.lazy(() => import('../modals/UploadConflictMod
 const UploadTypeSelectionModal = React.lazy(() => import('../modals/UploadTypeSelectionModal'));
 const KpiCardConfigModal = React.lazy(() => import('../kpis/modals/KpiCardConfigModal'));
 const ExportOptionsModal = React.lazy(() => import('../shared/export/ExportOptionsModal'));
+const ShiftWarehouseInputModal = React.lazy(() => import('../modals/ShiftWarehouseInputModal'));
 
 import ProcessingLoader from '../common/ProcessingLoader';
 import { BusyBar } from '../shared/ui/BusyBar';
@@ -110,8 +111,17 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [isVisibleComponentsLoaded, setIsVisibleComponentsLoaded] = useState(false);
     const [isFileHistoryModalOpen, setIsFileHistoryModalOpen] = useState(false);
     const [pendingUploadFiles, setPendingUploadFiles] = useState<File[] | null>(null);
+    const [pendingShiftFiles, setPendingShiftFiles] = useState<File[] | null>(null);
     const [isUnconfiguredModalOpen, setIsUnconfiguredModalOpen] = useState(false);
     const [announcement, setAnnouncement] = useState<{ content: string; active: boolean } | null>(null);
+
+    const defaultWarehouseCode = useMemo(() => {
+        if (logic.filterState.kho && logic.filterState.kho.length > 0) {
+            const match = logic.filterState.kho[0].match(/\d+/);
+            if (match) return match[0];
+        }
+        return '';
+    }, [logic.filterState.kho]);
 
     useEffect(() => {
         // 1 lượt đọc thay vì 100 (services/systemAnnouncementService.ts — tự quay về cách cũ nếu thiếu chỉ mục)
@@ -389,7 +399,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             <div className="w-full mx-auto p-0 sm:p-2 lg:p-3 xl:px-8 xl:py-1">
                 <DashboardContext.Provider value={logic}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingUploadFiles(Array.from(e.target.files))} />
-                    <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
+                    <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingShiftFiles(Array.from(e.target.files))} />
 
                     <Header
                         onNewFile={handleNewFileClick}
@@ -560,7 +570,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                                             <div className="relative z-10 pt-1 lg:pt-2">
                                                 <SectionHeader
-                                                    title="Tổng quan doanh thu"
+                                                    title="TỔNG QUAN DOANH THU"
+                                                    titleClassName="type-headline font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wide truncate leading-tight"
                                                     subtitle={<>
                                                         <span className="hidden md:inline">{processedData.reportSubTitle}</span>
                                                         {/* Mobile: truncated subtitle + inline Chờ Xuất */}
@@ -739,6 +750,18 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             }}
                             fileCount={pendingUploadFiles?.length || 0}
                         />
+                        {pendingShiftFiles && pendingShiftFiles.length > 0 && (
+                            <ShiftWarehouseInputModal
+                                isOpen={!!pendingShiftFiles}
+                                files={pendingShiftFiles}
+                                defaultWarehouseCode={defaultWarehouseCode}
+                                onClose={() => setPendingShiftFiles(null)}
+                                onConfirm={(maKho) => {
+                                    handleShiftFileProcessing(pendingShiftFiles, maKho);
+                                    setPendingShiftFiles(null);
+                                }}
+                            />
+                        )}
                         {/* Export Options Modal - Download or Share */}
                         <ExportOptionsModal
                             isOpen={!!logic.pendingExport}

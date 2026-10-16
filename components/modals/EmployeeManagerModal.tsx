@@ -33,6 +33,8 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     // Cờ báo hiệu có thay đổi để cập nhật lúc đóng
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
+    const [showBatchKhoModal, setShowBatchKhoModal] = useState(false);
+    const [batchMaKho, setBatchMaKho] = useState('');
 
     // Khởi tạo Modal
     useEffect(() => {
@@ -200,6 +202,20 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         if (updateDepartmentMap) updateDepartmentMap(newMap);
     };
 
+    const handleBatchAssignKho = () => {
+        const cleanKho = batchMaKho.replace(/\D/g, '');
+        if (!cleanKho) return;
+        const newMap = { ...localMap };
+        employees.forEach(emp => {
+            newMap[emp.id] = `${emp.dept};;${emp.name};;${cleanKho}`;
+        });
+        setLocalMap(newMap);
+        setHasUnsavedChanges(true);
+        if (updateDepartmentMap) updateDepartmentMap(newMap);
+        toast.success(`Đã gán Mã kho ${cleanKho} cho ${employees.length} nhân viên`);
+        setShowBatchKhoModal(false);
+    };
+
     const confirmRestore = async () => {
         const originalMap = await getSetting<Record<string, string>>('originalDepartmentMap');
         if (originalMap) {
@@ -272,8 +288,20 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="hidden sm:flex gap-2 text-xs text-slate-400 dark:text-slate-500">
-                        <span>Lưu ý: Dữ liệu được lưu tự động và an toàn (IndexedDB).</span>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => { setBatchMaKho(filterKho || ''); setShowBatchKhoModal(true); }}
+                            leftIcon={<AppIcon name="settings" size="xs" />}
+                            className="text-[11px] sm:text-xs py-1 px-2.5 whitespace-nowrap"
+                            title="Gán mã kho cho nhân viên"
+                        >
+                            Gán mã kho
+                        </Button>
+                        <div className="hidden sm:flex text-xs text-slate-400 dark:text-slate-500">
+                            <span>Lưu tự động (IndexedDB).</span>
+                        </div>
                     </div>
                 </div>
 
@@ -355,13 +383,19 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     onChange={e => setEditMaKho(e.target.value.replace(/\D/g, ''))} 
                                                     onKeyDown={e => { 
                                                         if (e.key === 'Enter') handleSave();
-                                                        if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) {
+                                                        if (e.key === ' ' || e.code === 'Space') e.preventDefault();
+                                                        if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) && !e.ctrlKey && !e.metaKey) {
                                                             e.preventDefault();
                                                         }
                                                     }}
-                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-sky-300 dark:border-sky-500 font-mono text-center"
+                                                    onPaste={e => {
+                                                        e.preventDefault();
+                                                        const clean = e.clipboardData.getData('text').replace(/\D/g, '');
+                                                        setEditMaKho(clean);
+                                                    }}
+                                                    className="w-full px-1 sm:px-2 py-0.5 sm:py-0.5 text-xs sm:text-sm border-sky-300 dark:border-sky-500 font-mono text-center font-bold text-sky-700 dark:text-sky-400"
                                                     placeholder="Mã kho"
-                                                    title="Chỉ cho phép nhập số"
+                                                    title="Chỉ cho phép nhập số (không nhập chữ và khoảng trắng)"
                                                 />
                                             </td>
                                             <td className="px-1 sm:px-4 py-1 sm:py-1.5">
@@ -448,6 +482,59 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 confirmText="Khôi phục"
                 variant="warning"
             />
+
+            {showBatchKhoModal && (
+                <Modal
+                    isOpen={showBatchKhoModal}
+                    onClose={() => setShowBatchKhoModal(false)}
+                    title="Gán Mã Kho Hàng Loạt"
+                    subTitle={`Áp dụng cho ${employees.length} nhân viên`}
+                    maxWidth="sm"
+                    footer={
+                        <div className="flex justify-end gap-2">
+                            <Button variant="secondary" size="sm" onClick={() => setShowBatchKhoModal(false)}>Hủy</Button>
+                            <Button
+                                variant="primary"
+                                size="sm"
+                                disabled={!batchMaKho.replace(/\D/g, '')}
+                                onClick={handleBatchAssignKho}
+                            >
+                                Áp dụng
+                            </Button>
+                        </div>
+                    }
+                >
+                    <div className="space-y-3 p-1">
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                            Mã kho siêu thị (chỉ nhập số) <span className="text-rose-500">*</span>
+                        </label>
+                        <Input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            autoFocus
+                            placeholder="VD: 1024"
+                            value={batchMaKho}
+                            onChange={e => setBatchMaKho(e.target.value.replace(/\D/g, ''))}
+                            onKeyDown={e => {
+                                if (e.key === ' ' || e.code === 'Space') e.preventDefault();
+                                if (e.key === 'Enter' && batchMaKho.replace(/\D/g, '')) handleBatchAssignKho();
+                                if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) && !e.ctrlKey && !e.metaKey) {
+                                    e.preventDefault();
+                                }
+                            }}
+                            onPaste={e => {
+                                e.preventDefault();
+                                setBatchMaKho(e.clipboardData.getData('text').replace(/\D/g, ''));
+                            }}
+                            className="font-mono text-base font-bold text-center text-sky-700 dark:text-sky-400"
+                        />
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                            Chỉ được phép nhập số, không được nhập chữ và khoảng trắng. Mã kho này sẽ được gán cho {employees.length} nhân viên và đồng bộ sang Report BI.
+                        </p>
+                    </div>
+                </Modal>
+            )}
         </Modal>
     );
 };

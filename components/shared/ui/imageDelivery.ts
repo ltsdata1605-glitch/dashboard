@@ -69,11 +69,9 @@ export async function deliverImage(
 
     // 1. TRÊN ĐIỆN THOẠI / IPAD: ƯU TIÊN 100% MỞ BẢNG CHIA SẺ HỆ THỐNG (LINE, Zalo, Lưu ảnh...)
     if (wantShare) {
-        const displayName = opts.title || displayNameOf(filename);
+        // Chỉ chia sẻ tệp ảnh thuần túy (không đính kèm text/title tên ảnh để tránh làm rối nhóm chat)
         const shareData: ShareData = {
             files: [new File([blob], `${displayNameOf(filename)}.png`, { type: blob.type || 'image/png' })],
-            title: displayName,
-            text: displayName,
         };
 
         try {

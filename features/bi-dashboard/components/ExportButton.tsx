@@ -121,9 +121,9 @@ const ExportButton: React.FC<ExportButtonProps> = ({
         onClick={hasOptions ? () => setIsOpen(p => !p) : handleSingleExport}
         disabled={disabled || isLoading}
         className={cn(
-          "export-button-component ycx-hit w-8 h-8 rounded-lg text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
+          "export-button-component ycx-hit w-8 h-8 rounded-lg text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 shadow-2xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center shrink-0",
           hasOptions ? "px-2 gap-1.5 w-auto" : "",
-          isOpen && "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200",
+          isOpen && "bg-sky-50 border-sky-300 text-sky-700 dark:bg-sky-950/60 dark:border-sky-700 dark:text-sky-300",
           className
         )}
         aria-label={ariaLabel}

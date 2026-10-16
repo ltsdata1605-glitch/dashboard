@@ -94,7 +94,7 @@ test('Check thưởng màn hình Pro Max 430px: hiện trọn vẹn tiêu đề 
 
     const subtitleBtn = navTitle.locator('#mobile-topbar-subtitle button');
     await expect(subtitleBtn).toBeVisible();
-    await expect(subtitleBtn).toHaveText(/Cập nhật:\s*\d{2}:\d{2}:\d{2}/);
+    await expect(subtitleBtn).toHaveText(/(?:Cập nhật:\s*)?\d{2}:\d{2}:\d{2}/);
 
     const kho1Input = topbar.locator('input[placeholder="Kho 1"]');
     const kho2Input = topbar.locator('input[placeholder="Kho 2"]');
@@ -122,7 +122,7 @@ test('Check thưởng màn hình 600px (tablet/máy gập): hiện đầy đủ 
 
     const subtitleBtn = navTitle.locator('#mobile-topbar-subtitle button');
     await expect(subtitleBtn).toBeVisible();
-    await expect(subtitleBtn).toHaveText(/Cập nhật:\s*\d{2}:\d{2}:\d{2}/);
+    await expect(subtitleBtn).toHaveText(/(?:Cập nhật:\s*)?\d{2}:\d{2}:\d{2}/);
 
     await page.evaluate(() => document.querySelectorAll('[data-toast], [data-sonner-toast], [role="status"], [class*="toast"]').forEach(e => e.remove()));
     await topbar.screenshot({ path: test.info().outputPath('check-thuong-600px.png') });

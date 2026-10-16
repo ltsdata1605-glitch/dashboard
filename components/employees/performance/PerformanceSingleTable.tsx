@@ -10,6 +10,7 @@ import {
 } from './PerformanceTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { Button } from '../../shared/ui/Button';
+import { ActionMenu, type ActionMenuItem } from '../../shared/ui/ActionMenu';
 
 // Khớp object trả về bởi trueGrandTotal (useMemo) trong PerformanceTable.tsx
 interface GrandTotalData {
@@ -180,12 +181,36 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
 
     const canCopyKeys = new Set(['doanhThuThuc', 'doanhThuQD', 'percentHT', 'dtVuot', 'hieuQuaValue', 'dtTraChamPercent_CE_ICT']);
 
+    const tabMenuItems: ActionMenuItem[] = useMemo(() => [
+        {
+            id: 'doanhThu',
+            label: 'Hiệu quả doanh thu',
+            icon: 'wallet',
+            onSelect: () => handleTabChange('doanhThu'),
+            description: groupType === 'doanhThu' ? 'Đang xem' : undefined,
+        },
+        {
+            id: 'khaiThac',
+            label: 'Hiệu quả trả chậm',
+            icon: 'layers',
+            onSelect: () => handleTabChange('khaiThac'),
+            description: groupType === 'khaiThac' ? 'Đang xem' : undefined,
+        },
+        {
+            id: 'vuotTroi',
+            label: 'Mục tiêu vượt trội',
+            icon: 'trophy',
+            onSelect: () => handleTabChange('vuotTroi'),
+            description: groupType === 'vuotTroi' ? 'Đang xem' : undefined,
+        },
+    ], [handleTabChange, groupType]);
+
     return (
         <div ref={tableRef} className="flex flex-col overflow-hidden">
 
             {/* Header */}
             <div className="flex justify-between items-center mb-3 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 mr-2">
                     <div className="min-w-0">
                         <h3 className="text-sm lg:text-lg font-medium text-slate-700 dark:text-slate-200 uppercase tracking-wide truncate leading-tight">{theme.title}</h3>
                         <p className="text-[11px] lg:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
@@ -193,9 +218,32 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                 </div>
 
                 {/* Tab switcher + export */}
-                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
-                    <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-                        <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
+                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export shrink-0">
+                    <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap">
+                        {/* Mobile: Gôm 3 chức năng thành 1 icon 3 chấm giống thêm thao tác */}
+                        <div className="sm:hidden shrink-0">
+                            <ActionMenu
+                                items={tabMenuItems}
+                                title="Chức năng phân tích"
+                                label="Thêm thao tác"
+                                align="end"
+                                renderTrigger={(triggerProps) => (
+                                    <Button
+                                        {...triggerProps}
+                                        variant="unstyled"
+                                        size="none"
+                                        className="ycx-hit flex items-center justify-center w-8 h-8 rounded-lg text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 active:scale-95 transition-all"
+                                        title="Thêm thao tác"
+                                        aria-label="Thêm thao tác"
+                                    >
+                                        <AppIcon name="more" size="md" />
+                                    </Button>
+                                )}
+                            />
+                        </div>
+
+                        {/* Desktop: Giữ nguyên 3 tab đầy đủ */}
+                        <div className="hidden sm:inline-flex gap-0.5 sm:gap-1 shrink-0">
                             {(['doanhThu', 'khaiThac', 'vuotTroi'] as GroupType[]).map(tab => {
                                 const tabIcon = TAB_THEMES[tab].icon;
                                 const tabLabel = tab === 'doanhThu' ? 'D.Thu' : tab === 'khaiThac' ? 'T.Chậm' : 'V.Trội';

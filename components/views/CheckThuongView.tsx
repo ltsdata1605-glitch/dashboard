@@ -13,6 +13,7 @@ import { db } from '../../services/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { assembleChunkedHeavyValue, restoreNestedArraysFromFirestore } from '../../services/firestoreService';
 import { extractCloudTimeMs } from '../../services/heavySyncPolicy';
+import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 
 export const CheckThuongView: React.FC = () => {
     const { activeTab } = useActiveTab();
@@ -25,6 +26,13 @@ export const CheckThuongView: React.FC = () => {
     const [uploadTime, setUploadTime] = useState<string>('');
     const { user, isDemoMode } = useAuth();
     const [isSyncingCloud, setIsSyncingCloud] = useState(false);
+    const { totalVisits, onlineUsers } = useSystemTraffic();
+    const [cloudFeedback, setCloudFeedback] = useState<{
+        message: string;
+        mobileMessage: string;
+        status: 'success' | 'updated' | 'error';
+    } | null>(null);
+    const feedbackTimerRef = useRef<NodeJS.Timeout | null>(null);
     const fileInputHiddenRef = useRef<HTMLInputElement>(null);
 
     // Định dạng ngày giờ cập nhật chuẩn hh:mm:ss dd/MM/yyyy
@@ -57,8 +65,10 @@ export const CheckThuongView: React.FC = () => {
                 return `${hours}:${minutes}:${seconds}`;
             }
         } catch {}
-        if (typeof uploadTime === 'string' && uploadTime.length >= 8) {
-            return uploadTime.slice(0, 8);
+        if (typeof uploadTime === 'string') {
+            const match = uploadTime.match(/\b\d{2}:\d{2}:\d{2}\b/);
+            if (match) return match[0];
+            if (uploadTime.length >= 8) return uploadTime.slice(0, 8);
         }
         return '';
     }, [uploadTime]);
@@ -75,6 +85,11 @@ export const CheckThuongView: React.FC = () => {
             return;
         }
 
+        if (feedbackTimerRef.current) {
+            clearTimeout(feedbackTimerRef.current);
+            feedbackTimerRef.current = null;
+        }
+        setCloudFeedback(null);
         setIsSyncingCloud(true);
         const toastId = toast.loading('Đang kiểm tra và đồng bộ dữ liệu Check Thưởng từ Đám Mây...', { id: 'checkthuong-cloud-syncing' });
 
@@ -120,13 +135,37 @@ export const CheckThuongView: React.FC = () => {
 
             const timeStr = val.uploadTime ? new Date(val.uploadTime).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(val.uploadTime).toLocaleDateString('vi-VN') : '';
             toast.success(`Đã đồng bộ thành công dữ liệu Check Thưởng từ Đám Mây${timeStr ? ` (${timeStr})` : ''}!`, { id: toastId, duration: 4000 });
+            setCloudFeedback({
+                message: 'Đã đồng bộ mới nhất!',
+                mobileMessage: 'Đã đồng bộ',
+                status: 'success'
+            });
+            feedbackTimerRef.current = setTimeout(() => {
+                setCloudFeedback(null);
+                feedbackTimerRef.current = null;
+            }, 3500);
         } catch (err: any) {
             console.error('[CheckThuong] Lỗi đồng bộ thủ công:', err);
             toast.error(`Đồng bộ thất bại: ${err?.message || 'Lỗi mạng hoặc kết nối'}`, { id: toastId, duration: 5000 });
+            setCloudFeedback({
+                message: 'Lỗi đồng bộ!',
+                mobileMessage: 'Lỗi mạng',
+                status: 'error'
+            });
+            feedbackTimerRef.current = setTimeout(() => {
+                setCloudFeedback(null);
+                feedbackTimerRef.current = null;
+            }, 3500);
         } finally {
             setIsSyncingCloud(false);
         }
     }, [user, isDemoMode]);
+
+    useEffect(() => {
+        return () => {
+            if (feedbackTimerRef.current) clearTimeout(feedbackTimerRef.current);
+        };
+    }, []);
 
     useEffect(() => {
         setMounted(true);
@@ -421,42 +460,110 @@ export const CheckThuongView: React.FC = () => {
                 }}
             />
 
-            {/* Portal timestamp into mobile top bar subtitle */}
+            {/* Portal timestamp & traffic stats into mobile top bar subtitle (Chuẩn như tab Phân tích) */}
             {mounted && activeTab === 'check-thuong' && document.getElementById('mobile-topbar-subtitle') && createPortal(
-                <button
-                    type="button"
-                    onClick={handleManualCloudSync}
-                    title="Chạm để kiểm tra & đồng bộ dữ liệu Check Thưởng mới nhất từ Đám Mây"
-                    className="inline-flex items-center gap-1 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer max-w-full truncate"
-                >
-                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                    <span className={`truncate ${isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}`}>
-                        {isSyncingCloud ? (
-                            'Đang đồng bộ...'
+                <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-full">
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleManualCloudSync}
+                        title="Chạm để kiểm tra & đồng bộ dữ liệu Check Thưởng mới nhất từ Đám Mây"
+                        className={`inline-flex items-center gap-1 text-left shrink-0 cursor-pointer transition-all duration-200 active:scale-95 ${
+                            cloudFeedback
+                                ? (cloudFeedback.status === 'error'
+                                    ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                    : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                                : isSyncingCloud
+                                    ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                    : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                        }`}
+                    >
+                        {cloudFeedback ? (
+                            <AppIcon
+                                name={cloudFeedback.status === 'error' ? 'error' : 'success'}
+                                size="xs"
+                                className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                            />
                         ) : (
-                            <>
-                                <span className="hidden min-[440px]:inline">Cập nhật: </span>
-                                <span>{shortUploadTime || (formattedUploadTime ? formattedUploadTime.slice(0, 8) : 'Cập nhật')}</span>
-                            </>
+                            <AppIcon
+                                name="refresh"
+                                size="xs"
+                                spin={isSyncingCloud}
+                                className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                            />
                         )}
-                    </span>
-                </button>,
+                        <span className={isSyncingCloud ? 'animate-pulse' : ''}>
+                            {cloudFeedback
+                                ? cloudFeedback.mobileMessage
+                                : isSyncingCloud
+                                    ? 'Đang kiểm tra...'
+                                    : (shortUploadTime || (formattedUploadTime ? formattedUploadTime.slice(0, 8) : 'Chưa có'))}
+                        </span>
+                    </Button>
+                </div>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
 
-            {/* Portal timestamp into desktop header subtitle */}
+            {/* Portal timestamp & traffic stats into desktop header subtitle (Chuẩn như tab Phân tích) */}
             {mounted && activeTab === 'check-thuong' && document.getElementById('desktop-header-subtitle') && createPortal(
-                <button
-                    type="button"
-                    onClick={handleManualCloudSync}
-                    title="Bấm để kiểm tra & đồng bộ dữ liệu Check Thưởng mới nhất từ Đám Mây"
-                    className="inline-flex items-center gap-1.5 hover:text-sky-600 dark:hover:text-sky-400 active:scale-95 transition-all text-left group cursor-pointer"
-                >
-                    <AppIcon name="refresh" size="xs" spin={isSyncingCloud} className="text-sky-500 group-hover:rotate-180 transition-transform duration-300 shrink-0" />
-                    <span className={isSyncingCloud ? 'text-sky-600 dark:text-sky-400 font-semibold animate-pulse' : ''}>
-                        {isSyncingCloud ? 'Đang đồng bộ từ Cloud...' : (formattedUploadTime ? `Cập nhật: ${formattedUploadTime}` : 'Đồng bộ đám mây')}
-                    </span>
-                </button>,
+                <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleManualCloudSync}
+                        title="Bấm để kiểm tra & đồng bộ dữ liệu Check Thưởng mới nhất từ Đám Mây"
+                        className={`inline-flex items-center gap-1.5 text-left group cursor-pointer transition-all duration-200 active:scale-95 ${
+                            cloudFeedback
+                                ? (cloudFeedback.status === 'error'
+                                    ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                    : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                                : isSyncingCloud
+                                    ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                    : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                        }`}
+                    >
+                        {cloudFeedback ? (
+                            <AppIcon
+                                name={cloudFeedback.status === 'error' ? 'error' : 'success'}
+                                size="xs"
+                                className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                            />
+                        ) : (
+                            <AppIcon
+                                name="refresh"
+                                size="xs"
+                                spin={isSyncingCloud}
+                                className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                            />
+                        )}
+                        <span className={isSyncingCloud ? 'animate-pulse' : ''}>
+                            {cloudFeedback
+                                ? cloudFeedback.message
+                                : isSyncingCloud
+                                    ? 'Đang kiểm tra...'
+                                    : (formattedUploadTime ? `Cập nhật: ${formattedUploadTime}` : 'Đồng bộ đám mây')}
+                        </span>
+                    </Button>
+                    {totalVisits !== undefined && (
+                        <>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                <AppIcon name="users" size="xs" className="text-sky-500/80" />
+                                <span>{totalVisits >= 1000 ? `${(totalVisits / 1000).toFixed(1)}k` : totalVisits} lượt truy cập</span>
+                            </span>
+                        </>
+                    )}
+                    {onlineUsers !== undefined && (
+                        <>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span>{onlineUsers} đang online</span>
+                            </span>
+                        </>
+                    )}
+                </div>,
                 document.getElementById('desktop-header-subtitle')!
             )}
 

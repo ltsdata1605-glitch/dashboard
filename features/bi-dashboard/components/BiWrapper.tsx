@@ -22,6 +22,7 @@ import { lazyWithRetry } from '../../../utils/lazyWithRetry';
 import { toast } from '../../../components/shared/ui/toast';
 import { useReportBiAuth } from '../hooks/useReportBiAuth';
 import { pullBiDataFromCloud } from '../services/biCloudSyncService';
+import { useSystemTraffic } from '../../../hooks/useSystemTraffic';
 
 // Dashboard là view mặc định của BiWrapper, import trực tiếp để tránh double-lazy loading waterfall
 import Dashboard from './Dashboard';
@@ -101,6 +102,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
     const [isBiSyncing, setIsBiSyncing] = useState(false);
     const [isSyncingCloud, setIsSyncingCloud] = useState(false);
     const { user, allowedKhos } = useReportBiAuth();
+    const { totalVisits, onlineUsers } = useSystemTraffic();
 
     useEffect(() => {
         const onStart = () => setIsBiSyncing(true);
@@ -342,89 +344,116 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                 document.getElementById('global-header-actions')!
             )}
 
-            {/* Portal timestamp into mobile top bar subtitle */}
+            {/* Portal timestamp into mobile top bar subtitle (Đồng bộ chuẩn như Phân tích & Check Thưởng) */}
             {mounted && isTabActive && document.getElementById('mobile-topbar-subtitle') && createPortal(
-                <button
-                    type="button"
-                    onClick={handleManualCloudSync}
-                    title="Chạm để nạp dữ liệu Report BI mới nhất từ Firebase Cloud"
-                    className={`inline-flex items-center gap-1 text-left shrink-0 cursor-pointer transition-all duration-200 active:scale-95 ${
-                        cloudFeedback
-                            ? (cloudFeedback.status === 'error'
-                                ? 'text-rose-600 dark:text-rose-400 font-semibold'
-                                : 'text-emerald-600 dark:text-emerald-400 font-semibold')
-                            : (isBiSyncing || isSyncingCloud)
-                                ? 'text-sky-600 dark:text-sky-400 font-semibold'
-                                : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
-                    }`}
-                >
-                    {cloudFeedback ? (
-                        <AppIcon
-                            name={cloudFeedback.status === 'error' ? 'error' : 'success'}
-                            size="xs"
-                            className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
-                        />
-                    ) : (
-                        <AppIcon
-                            name="refresh"
-                            size="xs"
-                            spin={isBiSyncing || isSyncingCloud}
-                            className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
-                        />
-                    )}
-                    <span className={(isBiSyncing || isSyncingCloud) ? 'animate-pulse' : ''}>
-                        {cloudFeedback
-                            ? cloudFeedback.mobileMessage
-                            : isSyncingCloud
-                                ? 'Đang tải từ Cloud...'
-                                : isBiSyncing
-                                    ? 'Đang đồng bộ...'
-                                    : (currentTimestamp ? (currentTimestamp.length > 8 ? currentTimestamp.slice(0, 8) : currentTimestamp) : 'Tải dữ liệu Cloud')}
-                    </span>
-                </button>,
+                <div className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-full">
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleManualCloudSync}
+                        title="Chạm để nạp dữ liệu Report BI mới nhất từ Firebase Cloud"
+                        aria-label="Cập nhật dữ liệu"
+                        className={`inline-flex items-center gap-1 text-left shrink-0 cursor-pointer transition-all duration-200 active:scale-95 ${
+                            cloudFeedback
+                                ? (cloudFeedback.status === 'error'
+                                    ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                    : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                                : (isBiSyncing || isSyncingCloud)
+                                    ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                    : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                        }`}
+                    >
+                        {cloudFeedback ? (
+                            <AppIcon
+                                name={cloudFeedback.status === 'error' ? 'error' : 'success'}
+                                size="xs"
+                                className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                            />
+                        ) : (
+                            <AppIcon
+                                name="refresh"
+                                size="xs"
+                                spin={isBiSyncing || isSyncingCloud}
+                                className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                            />
+                        )}
+                        <span className={(isBiSyncing || isSyncingCloud) ? 'animate-pulse' : ''}>
+                            {cloudFeedback
+                                ? cloudFeedback.mobileMessage
+                                : isSyncingCloud
+                                    ? 'Đang tải từ Cloud...'
+                                    : isBiSyncing
+                                        ? 'Đang đồng bộ...'
+                                        : (currentTimestamp ? (currentTimestamp.length > 8 ? currentTimestamp.slice(0, 8) : currentTimestamp) : 'Cập nhật dữ liệu')}
+                        </span>
+                    </Button>
+                </div>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}
 
-            {/* Portal timestamp into desktop header subtitle */}
+            {/* Portal timestamp into desktop header subtitle (Đồng bộ chuẩn như Phân tích & Check Thưởng) */}
             {mounted && isTabActive && document.getElementById('desktop-header-subtitle') && createPortal(
-                <button
-                    type="button"
-                    onClick={handleManualCloudSync}
-                    title="Bấm để nạp dữ liệu Report BI mới nhất từ Firebase Cloud"
-                    className={`inline-flex items-center gap-1.5 text-left group cursor-pointer transition-all duration-200 active:scale-95 ${
-                        cloudFeedback
-                            ? (cloudFeedback.status === 'error'
-                                ? 'text-rose-600 dark:text-rose-400 font-semibold'
-                                : 'text-emerald-600 dark:text-emerald-400 font-semibold')
-                            : (isBiSyncing || isSyncingCloud)
-                                ? 'text-sky-600 dark:text-sky-400 font-semibold'
-                                : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
-                    }`}
-                >
-                    {cloudFeedback ? (
-                        <AppIcon
-                            name={cloudFeedback.status === 'error' ? 'error' : 'success'}
-                            size="xs"
-                            className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
-                        />
-                    ) : (
-                        <AppIcon
-                            name="refresh"
-                            size="xs"
-                            spin={isBiSyncing || isSyncingCloud}
-                            className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
-                        />
+                <div className="inline-flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400">
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={handleManualCloudSync}
+                        title="Bấm để nạp dữ liệu Report BI mới nhất từ Firebase Cloud"
+                        aria-label="Cập nhật dữ liệu"
+                        className={`inline-flex items-center gap-1.5 text-left group cursor-pointer transition-all duration-200 active:scale-95 ${
+                            cloudFeedback
+                                ? (cloudFeedback.status === 'error'
+                                    ? 'text-rose-600 dark:text-rose-400 font-semibold'
+                                    : 'text-emerald-600 dark:text-emerald-400 font-semibold')
+                                : (isBiSyncing || isSyncingCloud)
+                                    ? 'text-sky-600 dark:text-sky-400 font-semibold'
+                                    : 'hover:text-sky-600 dark:hover:text-sky-400 text-slate-500 dark:text-slate-400'
+                        }`}
+                    >
+                        {cloudFeedback ? (
+                            <AppIcon
+                                name={cloudFeedback.status === 'error' ? 'error' : 'success'}
+                                size="xs"
+                                className={cloudFeedback.status === 'error' ? 'text-rose-500' : 'text-emerald-500'}
+                            />
+                        ) : (
+                            <AppIcon
+                                name="refresh"
+                                size="xs"
+                                spin={isBiSyncing || isSyncingCloud}
+                                className="text-sky-500 group-hover:rotate-180 transition-transform duration-300"
+                            />
+                        )}
+                        <span className={(isBiSyncing || isSyncingCloud) ? 'animate-pulse' : ''}>
+                            {cloudFeedback
+                                ? cloudFeedback.message
+                                : isSyncingCloud
+                                    ? 'Đang tải từ Cloud...'
+                                    : isBiSyncing
+                                        ? 'Đang đồng bộ...'
+                                        : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Cập nhật dữ liệu')}
+                        </span>
+                    </Button>
+                    {totalVisits !== undefined && (
+                        <>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="inline-flex items-center gap-1 text-slate-500 dark:text-slate-400">
+                                <AppIcon name="users" size="xs" className="text-sky-500/80" />
+                                <span>{totalVisits >= 1000 ? `${(totalVisits / 1000).toFixed(1)}k` : totalVisits} lượt truy cập</span>
+                            </span>
+                        </>
                     )}
-                    <span className={(isBiSyncing || isSyncingCloud) ? 'animate-pulse' : ''}>
-                        {cloudFeedback
-                            ? cloudFeedback.message
-                            : isSyncingCloud
-                                ? 'Đang tải từ Cloud...'
-                                : isBiSyncing
-                                    ? 'Đang đồng bộ...'
-                                    : (currentTimestamp ? `Cập nhật: ${currentTimestamp}` : 'Tải dữ liệu Cloud')}
-                    </span>
-                </button>,
+                    {onlineUsers !== undefined && (
+                        <>
+                            <span className="text-slate-300 dark:text-slate-700">•</span>
+                            <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span>{onlineUsers} đang online</span>
+                            </span>
+                        </>
+                    )}
+                </div>,
                 document.getElementById('desktop-header-subtitle')!
             )}
 

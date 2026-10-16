@@ -106,15 +106,21 @@
   }
 
   /* VẬT LIỆU MỜ XUYÊN THẤU CHO FLOATING DOCK (Chuẩn Apple iOS Floating Capsule)
-     Độ mờ xuyên thấu cao (25% trắng, 75% trong suốt) cho phép nhìn rõ mờ mờ nội dung cuộn bên dưới */
+     Mờ cao cấp 90% chống lem màu biểu đồ bên dưới, hiệu ứng kính mờ chiều sâu 20px blur */
   .ycx-floating-dock {
-    background-color: rgb(255 255 255 / 0.25);
-    -webkit-backdrop-filter: saturate(190%) blur(10px);
-    backdrop-filter: saturate(190%) blur(10px);
+    background-color: rgba(248, 250, 252, 0.90);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    backdrop-filter: blur(20px) saturate(150%);
+  }
+  .dark .ycx-floating-dock {
+    background-color: rgba(15, 23, 42, 0.90);
   }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .ycx-floating-dock {
-      background-color: rgb(255 255 255 / 0.88);
+      background-color: rgb(255 255 255 / 0.96);
+    }
+    .dark .ycx-floating-dock {
+      background-color: rgb(15 23 42 / 0.96);
     }
   }
 
@@ -975,9 +981,8 @@ summary,
 /* Check thưởng: tiêu đề và thời gian cập nhật hiển thị như tab Phân tích.
    Thanh công cụ tìm kiếm và cụm con nhộng hành động nằm gọn gàng bên phải. */
 .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
-  flex: 0 1 auto !important;
+  flex: 1 1 0% !important;
   min-width: 0 !important;
-  max-width: 60px !important;
   padding-left: 2px !important;
   padding-right: 2px !important;
   overflow: hidden !important;
@@ -1000,18 +1005,6 @@ summary,
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
-}
-
-@media (min-width: 420px) {
-  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
-    max-width: 90px !important;
-  }
-}
-
-@media (min-width: 540px) {
-  .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] {
-    max-width: none !important;
-  }
 }
 
 .ycx-navbar:has(#mobile-topbar-actions [data-thay-tieu-de]) [data-navbar-title] h1 {

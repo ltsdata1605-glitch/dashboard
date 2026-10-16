@@ -466,7 +466,8 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
 }
 
 export async function processShiftFile(
-    file: File
+    file: File,
+    maKho?: string
 ): Promise<{ map: DepartmentMap; uniqueDepartments: string[]; skippedCount: number; skippedDepartments: string[] }> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -482,6 +483,7 @@ export async function processShiftFile(
                 // any: dữ liệu Excel thô, mỗi ô có thể là string/number/Date/null tùy nội dung file
                 const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
 
+                const cleanMaKho = maKho ? String(maKho).trim().replace(/\D/g, '') : '';
                 const map: DepartmentMap = {};
                 let currentDepartment: string | null = null;
                 const departments = new Set<string>();
@@ -532,8 +534,10 @@ export async function processShiftFile(
                                  storedName = `${cleanId} - ${userName.trim()}`;
                              }
 
-                             // Always store the full string to preserve name information
-                             const storedValue = `${currentDepartment};;${storedName}`;
+                             // Always store the full string to preserve name and warehouse code information
+                             const storedValue = cleanMaKho
+                                 ? `${currentDepartment};;${storedName};;${cleanMaKho}`
+                                 : `${currentDepartment};;${storedName}`;
                              map[cleanId] = storedValue;
                              departments.add(currentDepartment);
                         }

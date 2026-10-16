@@ -156,6 +156,10 @@ export const Tabs = React.memo<TabsProps>(({
   }
 
   if (variant === 'chips') {
+    const chipSizeClasses = {
+      sm: 'h-7 sm:h-7.5 px-2.5 sm:px-3 text-xs',
+      md: 'h-8 sm:h-8.5 px-3.5 sm:px-4 text-xs sm:text-sm',
+    };
     return (
       <div
         ref={containerRef}
@@ -176,7 +180,8 @@ export const Tabs = React.memo<TabsProps>(({
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'flex items-center justify-center gap-1.5 px-3.5 sm:px-4 h-9 sm:h-8.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all shrink-0 snap-center select-none active:scale-95',
+                'ycx-hit flex items-center justify-center gap-1 rounded-full font-semibold whitespace-nowrap transition-all shrink-0 snap-center select-none active:scale-95',
+                chipSizeClasses[size] || chipSizeClasses.sm,
                 fullWidth && 'flex-1',
                 // Viên đang chọn đen đậm — slate-900 (bảng màu semantic); neutral-* nằm ngoài bảng màu, lint-ratchet chặn.
                 isActive

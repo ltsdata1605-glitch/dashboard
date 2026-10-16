@@ -278,10 +278,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
-                    hiddenSupermarkets.length > 0
-                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 border shadow-2xs ${
+                    hiddenSupermarkets.length > 0 || isSupermarketFilterOpen
+                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
+                        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                 }`}
                 title="Lọc danh sách siêu thị"
             >
@@ -326,10 +326,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 ${
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 border shadow-2xs ${
                     isColumnSelectorOpen
-                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30'
-                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-750'
+                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
+                        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
             >
@@ -387,10 +387,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             {/* Tuỳ chọn: Sử dụng Target DTQĐ sau chỉnh làm target cho các thẻ KPI & bảng bên dưới */}
             {setUseAdjustedTarget && (
                 <label
-                    className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 h-8 w-8 sm:w-auto px-0 sm:px-3 rounded-lg text-xs transition-all cursor-pointer select-none border shrink-0 ${
+                    className={`inline-flex items-center justify-center gap-1.5 sm:gap-2 h-8 w-8 sm:w-auto px-0 sm:px-3 rounded-lg text-xs transition-all cursor-pointer select-none border shrink-0 shadow-2xs ${
                         useAdjustedTarget
                             ? 'bg-sky-50 border-sky-300 text-sky-700 dark:bg-sky-950/60 dark:border-sky-700 dark:text-sky-300 font-semibold'
-                            : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-750 font-medium'
+                            : 'bg-slate-100/90 border-slate-200 dark:border-slate-700/80 text-slate-600 hover:bg-slate-200/90 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 font-medium'
                     }`}
                     title="Target sau chỉnh: Sử dụng Target DTQĐ sau chỉnh (từ Cấu hình siêu thị > Target Doanh thu) làm Target cho các thẻ KPI và bảng Doanh thu bên dưới"
                 >

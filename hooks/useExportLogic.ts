@@ -172,7 +172,7 @@ export const useExportLogic = ({
                         // nếu bảng Phụ kiện/ĐGD đang bật nhiều cột. Đếm cột ngay trên DOM vừa render vì
                         // luồng này chụp thẳng .modal-content, không đi qua handleExport của modal.
                         const categoryHeaderCells = modalContent.querySelectorAll(`.${CATEGORY_TABLE_CLASS} thead tr:last-child th`);
-                        const blob = await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length), mode: gomAnh.mode });
+                        const blob = await exportElementAsImage(modalContent as HTMLElement, filename, { forceOpenDetails: true, forcedWidth: getCategoryExportWidth(categoryHeaderCells.length), mode: gomAnh.mode });
                         gomAnh.them(blob, filename);
                         ghiKetQua(job, outcomes, blob
                             ? { label: employee.name, ok: true }

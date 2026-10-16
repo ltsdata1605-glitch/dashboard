@@ -138,11 +138,11 @@ export const BonusView: React.FC<{
                 </div>
                 <div className="flex gap-1.5 items-center ml-auto">
                     <Button
-                        variant="ghost"
-                        size="icon"
+                        variant="unstyled"
+                        size="none"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="w-8 h-8 text-sky-700 dark:text-sky-400 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+                        className="w-8 h-8 text-sky-700 dark:text-sky-300 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
                     >
                         {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                     </Button>
@@ -159,7 +159,7 @@ export const BonusView: React.FC<{
                                 title={`Chế độ xem: ${activePeriodMode.label} (bấm để chọn chế độ khác)`}
                                 aria-label="Chọn chế độ xem"
                                 data-testid="bonus-period-mode-trigger"
-                                className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:scale-105 active:scale-95 hover:bg-slate-100 dark:hover:bg-slate-800 ${periodMode === 'summary' ? 'text-slate-400' : 'text-sky-700'}`}
+                                className={`inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all hover:scale-105 active:scale-95 border shadow-2xs shrink-0 cursor-pointer ${periodMode === 'summary' ? 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80' : 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'}`}
                             >
                                 <AppIcon name={activePeriodMode.icon} size="md" />
                             </span>

@@ -84,14 +84,14 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     return (
         <div className="space-y-0">
             {/* Row 1: Title + Segment Tabs (Realtime / Luỹ kế / Báo cáo) + Supermarket Selector */}
-            <div className={`relative z-50 mb-4 flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2 pt-2 pb-2 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export ${MOBILE_GUTTER}`}>
+            <div className={`relative z-50 mb-3 flex flex-row flex-wrap items-center justify-between gap-x-2.5 gap-y-1.5 pt-1 pb-1.5 border-b border-slate-200 dark:border-slate-800 w-full hide-on-export ${MOBILE_GUTTER}`}>
                 {/* iPhone: tên phân hệ đã nằm trên segmented "Siêu thị | Nhân viên | Cập nhật" (BiWrapper) → không lặp lại tiêu đề IN HOA. */}
                 <div className="hidden lg:flex items-center gap-2 sm:gap-3 min-w-0">
                     <h2 className="text-lg lg:text-2xl font-normal text-slate-700 dark:text-slate-200 uppercase tracking-wide leading-normal py-0.5">
                         {title}
                     </h2>
                 </div>
-                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-2 hide-on-export min-w-0 w-full lg:w-auto lg:ml-auto">
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-1.5 sm:gap-2 hide-on-export min-w-0 w-full lg:w-auto lg:ml-auto">
                     {/* Realtime / Luỹ kế: thiết kế dạng Chip Pills độc lập chuẩn iOS / Zalo (Hình 1 & 2) */}
                     <Tabs
                         variant="chips"
@@ -102,10 +102,10 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         className="shrink-0"
                     />
                     {/* Pill chọn siêu thị: con nhộng bo tròn đồng bộ với các chip tabs */}
-                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-9 sm:h-8.5">
+                    <div className="flex flex-row items-center w-auto rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs shrink-0 h-7 sm:h-7.5">
                         <MultiSelectDropdown
-                            triggerClassName="rounded-full whitespace-nowrap min-h-0 h-9 sm:h-8.5 px-3.5 py-1 text-xs sm:text-xs font-semibold text-slate-700 dark:text-slate-300"
-                            icon={<AppIcon name="store" size="sm" className="text-sky-500" />}
+                            triggerClassName="ycx-hit rounded-full whitespace-nowrap min-h-0 h-7 sm:h-7.5 px-2.5 sm:px-3 py-0 text-xs font-semibold text-slate-700 dark:text-slate-300"
+                            icon={<AppIcon name="store" size="sm" className="text-sky-500 scale-90" />}
                             triggerLabel={activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
                             count={activeSupermarket === 'Tổng' ? supermarkets.length : 1}
                             allLabel="Chọn tất cả"
@@ -166,7 +166,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="ghost" size="icon" className="ycx-hit w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
+                                variant="unstyled" size="none" className="ycx-hit w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shrink-0 transition-all hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center disabled:opacity-40"
                                 title="Xuất tất cả ảnh"
                             >
                                 {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
@@ -177,7 +177,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="ghost" size="icon" className="ycx-hit w-8 h-8 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg shrink-0 transition-all hover:scale-105 active:scale-95"
+                                    variant="unstyled" size="none" className="ycx-hit w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shrink-0 transition-all hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center disabled:opacity-40"
                                     title="Xuất ảnh"
                                 >
                                     {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}

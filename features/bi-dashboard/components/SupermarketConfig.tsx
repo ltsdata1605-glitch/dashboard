@@ -1148,15 +1148,15 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     const departments = useMemo(() => {
-        // Ưu tiên đếm theo danh sách nhân viên từ Phân tích nếu có
+        // Ưu tiên đếm theo danh sách nhân viên từ Phân tích nếu có theo Mã kho
         const storeEmployeesRaw = danhSachData || employeeRealtimeData || '';
         if (analysisEmployees && analysisEmployees.employees.length > 0) {
-            const depts = getDepartmentsFromAnalysis(analysisEmployees.employees, storeEmployeesRaw, hiddenEmployees, supermarketName);
+            const depts = getDepartmentsFromAnalysis(analysisEmployees.employees, storeEmployeesRaw, hiddenEmployees, supermarketName, supermarketMap);
             if (depts.length > 0) return depts;
         }
         // Fallback dùng parseDepartments từ dữ liệu dán
         return parseDepartments(storeEmployeesRaw, hiddenEmployees);
-    }, [analysisEmployees, danhSachData, employeeRealtimeData, hiddenEmployees, supermarketName]);
+    }, [analysisEmployees, danhSachData, employeeRealtimeData, hiddenEmployees, supermarketName, supermarketMap]);
 
     const competitions = useMemo(() => {
         return parseCompetitions(competitionLuyKeData);
@@ -1427,7 +1427,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         </div>
                     </div>
                 )}
-                {activeTab === 'revenueTarget' && <TargetHero supermarketName={supermarketName!} addUpdate={addUpdate} departments={departments} summaryLuyKeData={summaryLuyKeData} analysisEmployees={analysisEmployees} />}
+                {activeTab === 'revenueTarget' && <TargetHero supermarketName={supermarketName!} addUpdate={addUpdate} departments={departments} summaryLuyKeData={summaryLuyKeData} analysisEmployees={analysisEmployees} supermarketMap={supermarketMap} />}
                 {activeTab === 'competitionTarget' && <CompetitionTarget supermarketName={supermarketName!} addUpdate={addUpdate} competitions={competitions} competitionLuyKeData={competitionLuyKeData} totalEmployees={departments.reduce((s, d) => s + d.employeeCount, 0)} />}
             </div>
 

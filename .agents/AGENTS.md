@@ -26,6 +26,11 @@ Mỗi khi người dùng yêu cầu push (ví dụ: "push", "hãy push", "push c
 - The Agent MUST ensure that robust error handling (try/catch, Error Boundaries, null-checks) is integrated into new or modified modules.
 - For error tracking and monitoring, the Agent should utilize global logging mechanisms or suggest integration with tracking services (like Sentry/Firebase Crashlytics) if critical errors occur.
 
+## Holistic Consistency & Cross-Project Synchronization Rule (Quy Tắc Nhất Quán & Đồng Bộ Toàn Dự Án)
+- **Tư duy toàn diện, không làm cục bộ**: Khi tạo, sửa đổi hoặc tối ưu bất kỳ một chi tiết, tính năng, giao diện hay logic xử lý nào (ví dụ: cách hiển thị thời gian cập nhật, thanh capsule bar, nút bấm, bảng số liệu, modal, header/subtitle, traffic stats...), **Agent TUYỆT ĐỐI KHÔNG giới hạn ở một chỗ vừa được yêu cầu**.
+- **Chủ động rà soát toàn bộ dự án**: BẮT BUỘC tự động kiểm tra tất cả các phân hệ, màn hình và component liên quan trong toàn bộ codebase (như Phân tích, Report BI, Check Thưởng, Cài đặt, v.v.) để phát hiện những nơi có tính chất tương tự và áp dụng đồng bộ ngay lập tức.
+- **Tiêu chuẩn nhất quán trải nghiệm (UX Consistency)**: Đảm bảo toàn hệ thống nói cùng một ngôn ngữ thiết kế, cùng cấu trúc hiển thị, cùng logic tương tác và phản hồi (feedback), mang lại trải nghiệm mượt mà, chuyên nghiệp và liền mạch 100% cho người dùng trên cả Mobile và Desktop.
+
 ## Targeted Testing & Fast Execution Rule
 - **Nguyên tắc Targeted Testing**: Khi người dùng yêu cầu sửa đổi, tối ưu hoặc thêm tính năng, Agent **BẮT BUỘC chỉ chạy test liên quan trực tiếp đến tính năng/file đó** (dùng `npx vitest related <file> --run` hoặc `npx vitest run <path/to/test.ts>`).
 - **Tối ưu tốc độ (Fast Execution)**: Tuyệt đối KHÔNG tự động chạy full test suite (toàn bộ 30+ test suites) hay full build sau mỗi lần sửa nhỏ, trừ khi:

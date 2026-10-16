@@ -154,26 +154,6 @@ const Header: React.FC<HeaderProps> = ({
                             </span>
                         </Button>
                     )}
-                    {onlineUsers !== undefined && (
-                        <>
-                            {fileInfo && <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>}
-                            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
-                                <span className="relative flex h-1.5 w-1.5 shrink-0">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                                </span>
-                                <span>{onlineUsers} online</span>
-                            </span>
-                        </>
-                    )}
-                    {totalVisits !== undefined && totalVisits > 0 && (
-                        <>
-                            <span className="text-slate-300 dark:text-slate-600 shrink-0">•</span>
-                            <span className="text-slate-400 dark:text-slate-500 shrink-0 font-medium">
-                                {totalVisits >= 1000 ? `${(totalVisits / 1000).toFixed(1)}k` : totalVisits} lượt
-                            </span>
-                        </>
-                    )}
                 </div>,
                 document.getElementById('mobile-topbar-subtitle')!
             )}

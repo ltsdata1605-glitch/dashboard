@@ -37,7 +37,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 
 export async function exportBiCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
     const isMobileDevice = isMobileLikeDevice();
-    const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
+    const defaultScale = isMobileDevice ? 3 : 3.5; // Tăng độ nét xuất ảnh x2~3 (mobile: 3, laptop: 3.5) kèm trần canvas iOS
     const { elementsToHide = ['.hide-on-export', '.no-print'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode, onCloneReady = null } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
@@ -1325,10 +1325,28 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
         card.style.setProperty('max-width', '100%', 'important');
         card.style.setProperty('min-width', '0px', 'important');
         card.style.setProperty('box-sizing', 'border-box', 'important');
-        card.style.setProperty('padding', '6px 8px', 'important');
+        card.style.setProperty('padding', '0px', 'important');
         card.style.setProperty('min-height', 'auto', 'important');
         card.style.setProperty('overflow', 'hidden', 'important');
-        card.style.setProperty('border-radius', '6px', 'important');
+        card.style.setProperty('border-radius', '16px', 'important');
+
+        // Bo góc vạch màu đỉnh thẻ theo góc bo 16px
+        const topBar = card.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[2px\\], .h-\\[2\\.5px\\], .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+            (card.firstElementChild instanceof HTMLElement ? card.firstElementChild : null);
+        if (topBar) {
+            topBar.style.setProperty('border-top-left-radius', '14.5px', 'important');
+            topBar.style.setProperty('border-top-right-radius', '14.5px', 'important');
+            topBar.style.setProperty('border-bottom-left-radius', '0px', 'important');
+            topBar.style.setProperty('border-bottom-right-radius', '0px', 'important');
+            topBar.style.setProperty('margin-left', '0px', 'important');
+            topBar.style.setProperty('margin-right', '0px', 'important');
+            topBar.style.setProperty('width', '100%', 'important');
+        }
+
+        const contentInner = card.querySelector<HTMLElement>(':scope > div:last-child');
+        if (contentInner) {
+            contentInner.style.setProperty('padding', '4px 6px', 'important');
+        }
 
         // Tiêu đề thẻ (tên ngành/nhóm hàng)
         card.querySelectorAll<HTMLElement>('.industry-kpi-title').forEach((el) => {
@@ -1500,26 +1518,30 @@ export async function exportBiCore(element: HTMLElement, filename: string, optio
                 : (el.dataset.kpiTopBorder || topColorMap[topColorKey] || targetBorder);
 
             el.style.setProperty('position', 'relative', 'important');
-            if (!captureAsDisplayed && options.squareBorders) {
-                el.style.setProperty('border-radius', '0px', 'important');
-            }
+            const cardRadius = (!captureAsDisplayed && options.squareBorders) ? '0px' : '16px';
+            el.style.setProperty('border-radius', cardRadius, 'important');
             el.style.setProperty('box-sizing', 'border-box', 'important');
             el.style.setProperty('border', `1.5px solid ${targetBorder}`, 'important');
-            el.style.setProperty('border-top', 'none', 'important');
-            el.style.setProperty('overflow', 'visible', 'important');
+            // Bảo toàn overflow: hidden để vạch màu đỉnh bo cong mềm mại theo góc thẻ
+            el.style.setProperty('overflow', 'hidden', 'important');
 
-            const topBar = el.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
-                (el.firstElementChild instanceof HTMLElement && (String(el.firstElementChild.className || '').includes('h-[3') || String(el.firstElementChild.className || '').includes('progressFill') || String(el.firstElementChild.className || '').includes('kpi-top-accent')) ? el.firstElementChild : null);
+            const topBar = el.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[2px\\], .h-\\[2\\.5px\\], .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+                (el.firstElementChild instanceof HTMLElement && (String(el.firstElementChild.className || '').includes('h-[') || String(el.firstElementChild.className || '').includes('progressFill') || String(el.firstElementChild.className || '').includes('kpi-top-accent')) ? el.firstElementChild : null);
             if (topBar) {
                 topBar.style.setProperty('display', 'block', 'important');
                 topBar.style.setProperty('height', '3.5px', 'important');
                 topBar.style.setProperty('margin-top', '0px', 'important');
-                topBar.style.setProperty('margin-left', '-1.5px', 'important');
-                topBar.style.setProperty('margin-right', '-1.5px', 'important');
-                topBar.style.setProperty('width', 'calc(100% + 3px)', 'important');
-                topBar.style.setProperty('background-color', topBorderColor, 'important');
+                topBar.style.setProperty('margin-left', '0px', 'important');
+                topBar.style.setProperty('margin-right', '0px', 'important');
+                topBar.style.setProperty('width', '100%', 'important');
+                topBar.style.setProperty('background', topBorderColor, 'important');
                 if (!captureAsDisplayed && options.squareBorders) {
                     topBar.style.setProperty('border-radius', '0px', 'important');
+                } else {
+                    topBar.style.setProperty('border-top-left-radius', '14.5px', 'important');
+                    topBar.style.setProperty('border-top-right-radius', '14.5px', 'important');
+                    topBar.style.setProperty('border-bottom-left-radius', '0px', 'important');
+                    topBar.style.setProperty('border-bottom-right-radius', '0px', 'important');
                 }
             }
 

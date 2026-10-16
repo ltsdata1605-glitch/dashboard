@@ -416,7 +416,6 @@ export async function exportProductsInBatches(
 
                     // Chụp xuất ảnh (lỗi → null, được ghi nhận là ảnh lỗi ở runBatchExportLoop)
                     return await exportElementAsImage(container, batch.filename, {
-                        scale: 2,
                         captureAsDisplayed: true,
                         mode: 'blob-only',
                         forcedWidth: 960,

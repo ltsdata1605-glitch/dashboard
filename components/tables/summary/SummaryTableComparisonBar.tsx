@@ -42,50 +42,54 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
     compareUpToCurrentDay, setCompareUpToCurrentDay
 }) => {
     return (
-        <div className="animate-fade-in-down px-3 sm:px-5 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-4">
+        <div className="animate-fade-in-down px-3 sm:px-5 py-2 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2.5 sm:gap-4">
             <div className="flex flex-col w-full lg:w-auto">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 hide-on-export">
-                    <Select 
-                        value={compMode} 
-                        onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
-                        className="text-[11px] sm:text-xs font-bold text-sky-700 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 py-1 sm:py-1.5 pl-2 sm:pl-3 pr-6 sm:pr-8 cursor-pointer hover:bg-white transition-colors h-auto w-auto min-h-0"
-                    >
-                        <option value="day_adjacent">Ngày (Liền kề)</option>
-                        <option value="day_same_period">Ngày (CK tháng trước)</option>
-                        <option value="week_adjacent">Tuần (Liền kề trong tháng)</option>
-                        <option value="week_same_period">Tuần (CK tháng trước)</option>
-                        <option value="month_adjacent">Tháng (Liền kề)</option>
-                        <option value="month_same_period_year">Tháng (Cùng kỳ năm trước)</option>
-                        <option value="monthly_trend">Tháng (Nhiều tháng Pivot)</option>
-                        <option value="quarter_adjacent">Quý (Liền kề)</option>
-                        <option value="quarter_same_period_year">Quý (Cùng kỳ năm trước)</option>
-                        <option value="ytd_same_period_year">Lũy kế (YTD) - Cùng kỳ</option>
-                        <option value="custom_range">Khoảng thời gian (Tùy chỉnh)</option>
-                    </Select>
+                <div className="grid grid-cols-2 gap-2 w-full lg:flex lg:flex-wrap lg:items-center lg:gap-2.5 hide-on-export">
+                    <div className="w-full lg:w-auto">
+                        <Select 
+                            value={compMode} 
+                            onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
+                            className="text-xs font-semibold text-sky-700 bg-white border border-slate-200 rounded-lg shadow-2xs focus:ring-sky-500 focus:border-sky-500 dark:bg-slate-800 dark:text-sky-400 dark:border-slate-700 py-1 pl-2.5 pr-7 cursor-pointer hover:bg-slate-50 transition-colors !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full lg:w-auto"
+                        >
+                            <option value="day_adjacent">Ngày (Liền kề)</option>
+                            <option value="day_same_period">Ngày (CK tháng trước)</option>
+                            <option value="week_adjacent">Tuần (Liền kề trong tháng)</option>
+                            <option value="week_same_period">Tuần (CK tháng trước)</option>
+                            <option value="month_adjacent">Tháng (Liền kề)</option>
+                            <option value="month_same_period_year">Tháng (Cùng kỳ năm trước)</option>
+                            <option value="monthly_trend">Tháng (Nhiều tháng Pivot)</option>
+                            <option value="quarter_adjacent">Quý (Liền kề)</option>
+                            <option value="quarter_same_period_year">Quý (Cùng kỳ năm trước)</option>
+                            <option value="ytd_same_period_year">Lũy kế (YTD) - Cùng kỳ</option>
+                            <option value="custom_range">Khoảng thời gian (Tùy chỉnh)</option>
+                        </Select>
+                    </div>
                     
                     {(compMode.startsWith('day') || compMode === 'ytd_same_period_year') && (
-                        <div className="flex items-center gap-1">
-                            {compMode === 'ytd_same_period_year' && <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400">Đến ngày:</span>}
+                        <div className="w-full lg:w-auto flex items-center gap-1">
+                            {compMode === 'ytd_same_period_year' && <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 shrink-0">Đến:</span>}
                             <Input 
                                 type="date" 
                                 value={selectedDate} 
                                 onChange={e => setSelectedDate(e.target.value)} 
-                                className="text-[11px] sm:text-xs py-1 px-1.5 sm:px-2 h-auto w-auto" 
+                                className="text-xs py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
                             />
                         </div>
                     )}
 
                     {(compMode.startsWith('week') || compMode.startsWith('month')) && (
-                        <Input 
-                            type="month" 
-                            value={selectedMonth} 
-                            onChange={e => setSelectedMonth(e.target.value)} 
-                            className="text-[11px] sm:text-xs py-1 px-1.5 sm:px-2 h-auto w-auto" 
-                        />
+                        <div className="w-full lg:w-auto">
+                            <Input 
+                                type="month" 
+                                value={selectedMonth} 
+                                onChange={e => setSelectedMonth(e.target.value)} 
+                                className="text-xs py-1 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
+                            />
+                        </div>
                     )}
 
                     {compMode.startsWith('quarter') && (
-                        <div className="flex items-center gap-1.5">
+                        <div className="grid grid-cols-2 gap-1.5 w-full lg:flex lg:w-auto lg:items-center">
                             <Select 
                                 value={Math.floor((Number(selectedMonth.split('-')[1]) - 1) / 3) + 1}
                                 onChange={e => {
@@ -94,7 +98,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                     const y = selectedMonth.split('-')[0];
                                     setSelectedMonth(`${y}-${String(m).padStart(2, '0')}`);
                                 }}
-                                className="text-[11px] sm:text-xs font-semibold py-1 px-1 sm:px-1.5 h-auto w-auto min-h-0"
+                                className="text-xs font-semibold py-1 px-2 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full"
                             >
                                 <option value={1}>Quý 1</option>
                                 <option value={2}>Quý 2</option>
@@ -108,13 +112,13 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                     const m = selectedMonth.split('-')[1] || '01';
                                     setSelectedMonth(`${e.target.value}-${m}`);
                                 }} 
-                                className="text-[11px] sm:text-xs font-semibold w-14 sm:w-16 py-1 px-1 sm:px-1.5 h-auto" 
+                                className="text-xs font-semibold py-1 px-2 !h-8.5 !min-h-0 pointer-coarse:min-h-0 w-full" 
                             />
                         </div>
                     )}
 
                     {compMode.startsWith('week') && weeksInSelectedMonth.length > 0 && (
-                        <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full">
+                        <div className="col-span-2 flex items-center gap-1 overflow-x-auto pb-0.5 max-w-full">
                             {weeksInSelectedMonth.map(w => {
                                 const isSelected = selectedWeeks.includes(w.id);
                                 return (
@@ -122,10 +126,10 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                         variant="unstyled" size="none"
                                         key={w.id}
                                         onClick={() => handleWeekPillClick(w.id)}
-                                        className={`whitespace-nowrap px-3 py-1 text-[11px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                        className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-colors ${
                                             isSelected
-                                            ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                                            : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+                                            ? 'bg-sky-600 text-white border-sky-600 shadow-2xs'
+                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
                                         }`}
                                         title={w.label}
                                     >
@@ -137,7 +141,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     )}
                     
                     {['week_same_period', 'month_adjacent', 'month_same_period_year', 'quarter_same_period_year', 'ytd_same_period_year'].includes(compMode) && (
-                        <div className="flex items-center gap-2 px-2 ml-2 border-l border-slate-300 dark:border-slate-600">
+                        <div className="col-span-2 flex items-center gap-1.5 px-1 lg:px-2 lg:ml-2 lg:border-l border-slate-200 dark:border-slate-700">
                             <input 
                                 type="checkbox" 
                                 id="compareUpToCurrentDay" 
@@ -152,7 +156,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     )}
 
                     {compMode === 'monthly_trend' && trendData && (
-                        <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full">
+                        <div className="col-span-2 flex items-center gap-1 overflow-x-auto pb-0.5 max-w-full">
                             {trendData.months.map((m) => {
                                 const isSelected = trendSelectedMonths.includes(m.id);
                                 return (
@@ -160,10 +164,10 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                         variant="unstyled" size="none"
                                         key={m.id}
                                         onClick={() => setTrendSelectedMonths(prev => prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id])}
-                                        className={`whitespace-nowrap px-3 py-1 text-[11px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                        className={`whitespace-nowrap px-2.5 py-1 text-[11px] font-semibold rounded-full border transition-colors ${
                                             isSelected
-                                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
-                                            : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+                                            ? 'bg-rose-600 text-white border-rose-600 shadow-2xs'
+                                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
                                         }`}
                                         title={m.label}
                                     >
@@ -175,24 +179,24 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     )}
 
                     {compMode === 'custom_range' && (
-                        <div className="flex flex-col sm:flex-row gap-2">
-                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400">Kỳ A:</span>
-                                <Input type="date" value={customRangeA.start} onChange={e => setCustomRangeA(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus-visible:ring-0 shadow-none h-auto" />
-                                <span className="text-slate-400 text-xs">-</span>
-                                <Input type="date" value={customRangeA.end} onChange={e => setCustomRangeA(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus-visible:ring-0 shadow-none h-auto" />
+                        <div className="col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full lg:flex lg:w-auto">
+                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 h-8.5 sm:h-9">
+                                <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 shrink-0">Kỳ A:</span>
+                                <Input type="date" value={customRangeA.start} onChange={e => setCustomRangeA(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
+                                <span className="text-slate-400 text-xs shrink-0">-</span>
+                                <Input type="date" value={customRangeA.end} onChange={e => setCustomRangeA(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
                             </div>
-                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
-                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Kỳ B:</span>
-                                <Input type="date" value={customRangeB.start} onChange={e => setCustomRangeB(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus-visible:ring-0 shadow-none h-auto" />
-                                <span className="text-slate-400 text-xs">-</span>
-                                <Input type="date" value={customRangeB.end} onChange={e => setCustomRangeB(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus-visible:ring-0 shadow-none h-auto" />
+                            <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 h-8.5 sm:h-9">
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 shrink-0">Kỳ B:</span>
+                                <Input type="date" value={customRangeB.start} onChange={e => setCustomRangeB(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
+                                <span className="text-slate-400 text-xs shrink-0">-</span>
+                                <Input type="date" value={customRangeB.end} onChange={e => setCustomRangeB(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-full shadow-none h-auto max-sm:min-h-0" />
                             </div>
                         </div>
                     )}
                 </div>
-                <div className="flex text-[11px] sm:text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1 sm:gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                    <AppIcon name="info" size="sm" className="mt-0.5 text-sky-400" />
+                <div className="flex text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                    <AppIcon name="info" size="xs" className="mt-0.5 text-sky-400 shrink-0" />
                     <span>
                         {compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :
                         compMode === 'day_same_period' ? "So sánh ngày được chọn với ngày cùng số của tháng trước (VD: 15/03 vs 15/02). Dùng để loại bỏ biến động nhất thời khi đầu/cuối tháng." :

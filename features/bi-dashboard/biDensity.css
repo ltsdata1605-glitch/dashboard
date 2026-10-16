@@ -77,6 +77,6 @@
 .bi-report-module td,
 .bi-report-module .card:not(.kpi-overview-card),
 .bi-report-module .rounded:not(.kpi-overview-card),
-.bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.preserve-rounded):not(.preserve-rounded *):not([data-segmented]):not([data-segmented] *) {
+.bi-report-module [class*="rounded-"]:not([class*="rounded-full"]):not([class*="rounded-pill"]):not([class*="avatar"]):not(.kpi-overview-card):not(.kpi-overview-card *):not(.industry-kpi-card):not(.industry-kpi-card *):not(.preserve-rounded):not(.preserve-rounded *):not([data-segmented]):not([data-segmented] *) {
     border-radius: 0px !important;
 }

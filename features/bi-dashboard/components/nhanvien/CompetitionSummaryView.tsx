@@ -634,12 +634,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             {/* Xuất ảnh theo từng nhóm tiêu chí */}
             {allAvailableGroups.length > 1 && (
                 <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="unstyled"
+                    size="none"
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="h-7 w-7 sm:h-8 sm:w-8 p-1 text-slate-400 hover:text-sky-700 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all hover:scale-105 active:scale-95 no-print shrink-0"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-1 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shadow-2xs transition-all hover:scale-105 active:scale-95 no-print shrink-0 flex items-center justify-center disabled:opacity-40"
                 >
                     {isExportingByGroup ? (
                         <AppIcon name="loading" size="sm" spin className="text-sky-700" />
@@ -654,7 +654,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`h-7 w-7 sm:h-8 sm:w-8 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0 ${showPercent ? 'text-sky-700 dark:text-sky-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`h-7 w-7 sm:h-8 sm:w-8 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer border shadow-2xs shrink-0 ${showPercent ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold' : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <AppIcon name="hash" size="sm" /> : <AppIcon name="percent" size="sm" />}

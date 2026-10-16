@@ -210,8 +210,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({
                         <ListGroup title="Nhân viên & phân ca">
                             <ListRow
                                 icon="settings" iconTone="emerald"
-                                label="Quản lý ca kíp"
-                                description={hasDepartmentData ? 'Xem chi tiết ca kíp' : 'Chưa có dữ liệu ca'}
+                                label="Quản lý danh sách"
+                                description={hasDepartmentData ? 'Xem chi tiết danh sách' : 'Chưa có dữ liệu'}
                                 disabled={!hasDepartmentData}
                                 onClick={() => hasDepartmentData && setShowEmployeeModal(true)}
                             />

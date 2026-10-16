@@ -432,7 +432,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
             const fileName = prefix ? `${prefix} - Chi Tiết Theo Kho.png` : 'Chi Tiết Theo Kho.png';
             await handleExport(summaryRef.current, fileName, {
                 elementsToHide: ['.hide-on-export'],
-                scale: 2,
                 fitAllColumns: true,
                 fitWidthToTable: true,
                 throwOnLineError: tuDong,

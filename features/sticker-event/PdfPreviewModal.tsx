@@ -42,7 +42,7 @@ const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileNam
                 handleDownload();
                 return;
             }
-            await navigator.share({ files: [file], title: fileName });
+            await navigator.share({ files: [file] });
         } catch (e) {
             // Người dùng đóng bảng chia sẻ → AbortError, không phải lỗi.
             if ((e as Error)?.name !== 'AbortError') toast.error('Không chia sẻ được. Hãy dùng nút Tải xuống.');

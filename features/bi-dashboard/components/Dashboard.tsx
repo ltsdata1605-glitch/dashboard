@@ -266,8 +266,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                                 mode: 'blob-only',
                                 elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar', '.hide-on-export'],
                                 ...(kv.kind === 'competition' ? { fitAllColumns: true, fitWidthToTable: true } : { captureAsDisplayed: true }),
-                                // Gửi LINE: chụp nét hơn (bộ xuất ảnh tự hạ khi vượt trần canvas)
-                                ...(laDienThoai ? {} : { scale: 3 }),
                             });
                             if (blob) images.push({ area, label, blob }); else errors.push({ area, error: `${sm}: không dựng được ảnh` });
                         } catch (err) {

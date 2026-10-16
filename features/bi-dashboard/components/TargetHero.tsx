@@ -21,6 +21,7 @@ interface TargetHeroProps {
     departments: { name: string; employeeCount: number }[];
     summaryLuyKeData: string;
     analysisEmployees?: AnalysisEmployeesPayload | null;
+    supermarketMap?: Record<string, string>;
 }
 
 interface ManualDeptModalProps {
@@ -291,7 +292,7 @@ const CompactTargetItem: React.FC<{
     );
 };
 
-const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, departments, summaryLuyKeData, analysisEmployees }) => {
+const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, departments, summaryLuyKeData, analysisEmployees, supermarketMap }) => {
     const f = TARGET_HERO_DECIMAL_FORMATTER;
     const safeName = shortenSupermarketName(supermarketName);
     const [traGop, setTraGop] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 60, 300);
@@ -324,13 +325,12 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     const allEmployees = useMemo(() => {
         const storeRaw = allEmployeesRaw || employeeRealtimeRaw || '';
         if (analysisEmployees && analysisEmployees.employees.length > 0) {
-            // Truyền báo cáo luỹ kế của CHÍNH siêu thị này để lấy đúng nhân viên của nó
-            // (danh sách Phân Tích là chung cho cả cụm).
-            const list = getEmployeesFromAnalysis(analysisEmployees.employees, hiddenEmployees, storeRaw, supermarketName);
+            // Truyền báo cáo luỹ kế và mã kho của CHÍNH siêu thị này để lấy đúng nhân viên của nó
+            const list = getEmployeesFromAnalysis(analysisEmployees.employees, hiddenEmployees, storeRaw, supermarketName, supermarketMap);
             if (list.length > 0) return list;
         }
         return parseAllEmployees(storeRaw, hiddenEmployees);
-    }, [analysisEmployees, allEmployeesRaw, employeeRealtimeRaw, hiddenEmployees, supermarketName]);
+    }, [analysisEmployees, allEmployeesRaw, employeeRealtimeRaw, hiddenEmployees, supermarketName, supermarketMap]);
 
     const baseTargetQuyDoi = useMemo(() => {
         return parseBaseTargetQuyDoi(summaryLuyKeData, supermarketName);

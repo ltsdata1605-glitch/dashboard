@@ -22,7 +22,7 @@ export interface ExportImageOptions {
     /** Bộ chọn phần tử bỏ khỏi ảnh. Mặc định ['.hide-on-export'] */
     elementsToHide?: string[];
     forceOpenDetails?: boolean;
-    /** Độ nét (pixelRatio). Mặc định 2 (điện thoại 1.5, tự hạ theo trần canvas iOS) */
+    /** Độ nét (pixelRatio). Mặc định 3.5 trên máy tính, 3 trên điện thoại (tự hạ theo trần canvas iOS) */
     scale?: number;
     isCompactTable?: boolean;
     /** Chụp đúng như đang hiển thị (khoá bề rộng theo khối gốc) — tắt co cột */
@@ -170,7 +170,7 @@ async function exportRawCore(element: HTMLElement, filename: string, options: Ex
         fixOklchColors(clone);
         await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
         const height = Math.ceil(clone.offsetHeight || clone.getBoundingClientRect().height);
-        let scale = options.scale ?? (isMobileDevice ? 1.5 : 2);
+        let scale = options.scale ?? (isMobileDevice ? 3 : 3.5);
         if (height * scale > 32000) scale = Math.max(1, 32000 / height);
         if (isMobileDevice) scale = Math.min(scale, capPixelRatioForArea(width, height, scale));
         fixCircularAvatars(clone);
@@ -194,7 +194,7 @@ async function exportRawCore(element: HTMLElement, filename: string, options: Ex
 
 async function exportElementAsImageCore(element: HTMLElement, filename: string, options: ExportImageOptions, stage: (t: string) => void): Promise<Blob | null> {
     const isMobileDevice = isMobileLikeDevice();
-    const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
+    const defaultScale = isMobileDevice ? 3 : 3.5; // Tăng độ nét xuất ảnh x2~3 (mobile: 3, laptop: 3.5) kèm trần canvas iOS
     const { elementsToHide = ['.hide-on-export', '.no-print'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, fitWidthToTable = false, mode = 'download' as ExportMode, onCloneReady = null, footer = true } = options;
     // Co cột vừa nội dung: mặc định BẬT, trừ khi nơi gọi khoá bề rộng (chụp như đang hiển thị / ép bề rộng)
     const doFit = options.fitColumns ?? (!captureAsDisplayed && !forcedWidth);
@@ -1165,9 +1165,28 @@ async function exportElementAsImageCore(element: HTMLElement, filename: string, 
     });
 
     clone.querySelectorAll<HTMLElement>('.industry-kpi-card').forEach((card) => {
-        card.style.setProperty('padding', '6px 8px', 'important');
-        card.style.setProperty('border-radius', '6px', 'important');
+        card.style.setProperty('padding', '0px', 'important');
+        card.style.setProperty('border-radius', '16px', 'important');
+        card.style.setProperty('overflow', 'hidden', 'important');
         card.style.setProperty('min-height', 'auto', 'important');
+
+        // Bo góc vạch màu đỉnh thẻ theo góc bo 16px
+        const topBar = card.querySelector<HTMLElement>('.kpi-top-accent, .h-\\[2px\\], .h-\\[2\\.5px\\], .h-\\[3px\\], .h-\\[3\\.5px\\]') || 
+            (card.firstElementChild instanceof HTMLElement ? card.firstElementChild : null);
+        if (topBar) {
+            topBar.style.setProperty('border-top-left-radius', '14.5px', 'important');
+            topBar.style.setProperty('border-top-right-radius', '14.5px', 'important');
+            topBar.style.setProperty('border-bottom-left-radius', '0px', 'important');
+            topBar.style.setProperty('border-bottom-right-radius', '0px', 'important');
+            topBar.style.setProperty('margin-left', '0px', 'important');
+            topBar.style.setProperty('margin-right', '0px', 'important');
+            topBar.style.setProperty('width', '100%', 'important');
+        }
+
+        const contentInner = card.querySelector<HTMLElement>(':scope > div:last-child');
+        if (contentInner) {
+            contentInner.style.setProperty('padding', '4px 6px', 'important');
+        }
 
         // Tiêu đề thẻ (tên ngành/nhóm hàng)
         card.querySelectorAll<HTMLElement>('.industry-kpi-title').forEach((el) => {

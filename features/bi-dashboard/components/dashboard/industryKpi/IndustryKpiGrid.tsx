@@ -140,41 +140,32 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export no-print">
-                    {/* Nút chuyển đổi Số lượng / Doanh thu => Chọn tiêu chí nào thì số đó sẽ lớn hơn */}
-                    <div className="inline-flex items-center h-6.5 sm:h-7 p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 shadow-2xs">
-                        <button
-                            type="button"
-                            onClick={() => setFocusMetric('revenue')}
-                            className={`h-full px-2 sm:px-2.5 text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
-                                focusMetric === 'revenue'
-                                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                            }`}
-                            title="Ưu tiên hiển thị Doanh thu QĐ số lớn hơn"
-                        >
-                            Doanh thu
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setFocusMetric('quantity')}
-                            className={`h-full px-2 sm:px-2.5 text-[11px] font-bold rounded-md flex items-center transition-all cursor-pointer ${
-                                focusMetric === 'quantity'
-                                    ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                            }`}
-                            title="Ưu tiên hiển thị Số lượng số lớn hơn"
-                        >
-                            Số lượng
-                        </button>
-                    </div>
+                    {/* Nút chuyển đổi dạng viên thuốc (1 nút toggle) Số lượng / Doanh thu */}
+                    <Button
+                        type="button"
+                        variant="unstyled"
+                        size="none"
+                        onClick={() => setFocusMetric(prev => prev === 'revenue' ? 'quantity' : 'revenue')}
+                        className={`ycx-hit h-6.5 sm:h-7 px-2.5 sm:px-3 rounded-full inline-flex items-center gap-1 sm:gap-1.5 text-xs font-bold transition-all cursor-pointer select-none active:scale-95 shadow-2xs border ${
+                            focusMetric === 'revenue'
+                                ? 'bg-sky-50 dark:bg-sky-950/60 border-sky-200 dark:border-sky-800/80 text-sky-700 dark:text-sky-300 hover:bg-sky-100/80 dark:hover:bg-sky-900/60'
+                                : 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60'
+                        }`}
+                        title={focusMetric === 'revenue' ? 'Đang ưu tiên Doanh thu QĐ (Bấm để đổi sang Số lượng)' : 'Đang ưu tiên Số lượng (Bấm để đổi sang Doanh thu QĐ)'}
+                        aria-label={focusMetric === 'revenue' ? 'Đang ưu tiên Doanh thu QĐ. Bấm để đổi sang Số lượng.' : 'Đang ưu tiên Số lượng. Bấm để đổi sang Doanh thu QĐ.'}
+                    >
+                        <AppIcon name={focusMetric === 'revenue' ? 'money' : 'product'} size="sm" className="scale-90" />
+                        <span>{focusMetric === 'revenue' ? 'Doanh thu' : 'Số lượng'}</span>
+                    </Button>
 
                     <Button
                         type="button"
                         variant="unstyled"
                         size="none"
                         onClick={handleResetDefault}
-                        className="h-6.5 w-6.5 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95"
+                        className="ycx-hit h-6.5 w-6.5 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 shadow-2xs transition-all active:scale-95"
                         title="Khôi phục 12 thẻ mặc định"
+                        aria-label="Khôi phục 12 thẻ mặc định"
                     >
                         <AppIcon name="reset" size="sm" />
                     </Button>
@@ -183,12 +174,11 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsAddModalOpen(true)}
-                        className="h-6.5 sm:h-7 inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 rounded-lg text-[11px] font-bold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-700 hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-all cursor-pointer shadow-2xs active:scale-95"
+                        className="ycx-hit h-6.5 w-6.5 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 shadow-2xs transition-all cursor-pointer active:scale-95"
                         title="Tạo / Thêm thẻ KPI"
+                        aria-label="Tạo / Thêm thẻ KPI"
                     >
                         <AppIcon name="add" size="sm" />
-                        <span className="hidden xs:inline sm:inline">Thêm thẻ KPI</span>
-                        <span className="inline xs:hidden sm:hidden">Thêm</span>
                     </Button>
                 </div>
             </div>
