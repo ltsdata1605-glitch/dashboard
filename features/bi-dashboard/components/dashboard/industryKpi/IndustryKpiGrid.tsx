@@ -163,7 +163,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={handleResetDefault}
-                        className="ycx-hit h-6.5 w-6.5 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 shadow-2xs transition-all active:scale-95"
+                        className="ycx-hit h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
                         title="Khôi phục 12 thẻ mặc định"
                         aria-label="Khôi phục 12 thẻ mặc định"
                     >
@@ -174,7 +174,7 @@ export const IndustryKpiGrid: React.FC<IndustryKpiGridProps> = ({
                         variant="unstyled"
                         size="none"
                         onClick={() => setIsAddModalOpen(true)}
-                        className="ycx-hit h-6.5 w-6.5 sm:h-7 sm:w-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/80 shadow-2xs transition-all cursor-pointer active:scale-95"
+                        className="ycx-hit h-7 w-7 sm:h-8 sm:w-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer active:scale-95"
                         title="Tạo / Thêm thẻ KPI"
                         aria-label="Tạo / Thêm thẻ KPI"
                     >

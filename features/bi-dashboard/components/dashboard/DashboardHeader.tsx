@@ -173,7 +173,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                             <Button
                                 onClick={onBatchExport}
                                 disabled={isBatchExporting}
-                                variant="unstyled" size="none" className="ycx-hit w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shrink-0 transition-all hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center disabled:opacity-40"
+                                variant="unstyled" size="none"
+                                className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors disabled:opacity-40 shrink-0 ${
+                                    isBatchExporting
+                                        ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
+                                        : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
                                 title="Xuất tất cả ảnh"
                             >
                                 {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
@@ -184,7 +189,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 <Button
                                     onClick={onExport}
                                     disabled={isExporting}
-                                    variant="unstyled" size="none" className="ycx-hit w-8 h-8 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shrink-0 transition-all hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center disabled:opacity-40"
+                                    variant="unstyled" size="none"
+                                    className={`ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors disabled:opacity-40 shrink-0 ${
+                                        isExporting
+                                            ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
+                                            : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    }`}
                                     title="Xuất ảnh"
                                 >
                                     {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}

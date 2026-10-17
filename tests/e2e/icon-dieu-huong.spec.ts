@@ -29,11 +29,11 @@ for (const width of [360, 390, 430]) {
         await page.setViewportSize({ width, height: 800 });
         await vaoDungThu(page);
 
-        // Thanh tab dưới compact: icon cỡ `md` 18px (nhỏ gọn theo chuẩn người dùng chốt).
+        // Thanh tab dưới: icon cỡ `lg` 22px (to rõ nét, thanh thoát theo yêu cầu tăng kích thước).
         const nav = await doIcon(page, 'nav.mobile-chrome svg.ycx-icon');
         expect(nav.map((i) => i.name)).toEqual(['navAnalysis', 'navReportBi', 'navRewardCheck', 'navTools']);
         for (const i of nav) {
-            expect([i.w, i.h], i.name!).toEqual([18, 18]);
+            expect([i.w, i.h], i.name!).toEqual([22, 22]);
             expect(i.stroke, i.name!).toBe('2');
         }
 

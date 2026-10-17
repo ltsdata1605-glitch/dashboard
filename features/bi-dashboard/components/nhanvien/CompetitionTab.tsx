@@ -838,14 +838,32 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         size="none"
                                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                                        className="w-8 h-8 text-sky-700 dark:text-sky-300 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0"
+                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                     >
                                         {viewMode === 'group' ? <AppIcon name="viewGrid" size="md" /> : <AppIcon name="viewList" size="md" />}
                                     </Button>
                                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                                    <Button variant="unstyled" size="none" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'} className="w-8 h-8 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0 disabled:opacity-40">{isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}</Button>
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
+                                        onClick={handleGroupBatchExport}
+                                        disabled={isBatchExporting || selectedHeadersForNhom.length === 0}
+                                        title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả nhóm'}
+                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    >
+                                        {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
+                                    </Button>
                                     {highlightedEmployees.size > 0 && (
-                                        <Button variant="unstyled" size="none" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="w-8 h-8 text-amber-600 dark:text-amber-400 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0 disabled:opacity-40">{isExportingHighlights ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="users" size="md" />}</Button>
+                                        <Button
+                                            variant="unstyled"
+                                            size="none"
+                                            onClick={handleSmartBatchExport}
+                                            disabled={isExportingHighlights}
+                                            title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`}
+                                            className="ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-700 shadow-2xs font-semibold disabled:opacity-40"
+                                        >
+                                            {isExportingHighlights ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="users" size="md" />}
+                                        </Button>
                                     )}
                                     <ExportButton
                                         onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }}
@@ -857,7 +875,14 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                                 <>
                                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                                    <Button variant="unstyled" size="none" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="w-8 h-8 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0 disabled:opacity-40">
+                                    <Button
+                                        variant="unstyled"
+                                        size="none"
+                                        onClick={() => individualViewRef.current?.performBatchExport()}
+                                        disabled={individualViewRef.current?.isBatchExporting}
+                                        title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'}
+                                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${individualViewRef.current?.isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                    >
                                         {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                     </Button>
                                     <ExportButton
@@ -875,7 +900,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     onClick={handleSummaryBatchExport}
                                     disabled={isBatchExporting || summaryTables.length === 0}
                                     title={isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : 'Xuất tất cả bảng tổng hợp'}
-                                    className="w-8 h-8 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0 disabled:opacity-40"
+                                    className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${isBatchExporting ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                                 >
                                     {isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                 </Button>

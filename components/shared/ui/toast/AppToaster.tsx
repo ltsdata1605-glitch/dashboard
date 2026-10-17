@@ -177,9 +177,11 @@ const ToastItem: React.FC<ToastItemProps> = React.memo(({ t, offset, isDesktop, 
             data-testid={meta.testId ?? 'app-toast'}
             data-toast-kind={kind}
             className={cn(
-                'group pointer-events-auto absolute inset-x-3 top-0 select-none touch-none',
-                'ycx-material shadow-xl ring-1 ring-slate-900/[0.06] text-left',
-                compact ? 'rounded-full pl-3.5 pr-4 py-2.5' : 'rounded-overlay px-4 py-3',
+                'group pointer-events-auto absolute top-0 select-none touch-none',
+                'ycx-material shadow-lg ring-1 ring-slate-900/[0.08] text-left transition-all',
+                compact
+                    ? 'left-0 right-0 mx-auto w-fit max-w-[calc(100vw-32px)] rounded-full px-3.5 py-1.5'
+                    : 'inset-x-3 rounded-overlay px-4 py-3',
             )}
             style={{
                 transform: `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`,
@@ -193,12 +195,15 @@ const ToastItem: React.FC<ToastItemProps> = React.memo(({ t, offset, isDesktop, 
             onKeyDown={(e) => { if (e.key === 'Escape') dismiss(); }}
             {...t.ariaProps}
         >
-            <div className={cn('flex gap-3', compact ? 'items-center' : 'items-start')}>
+            <div className={cn('flex', compact ? 'gap-2 items-center' : 'gap-3 items-start')}>
                 <span className={cn('shrink-0 flex', KIND_COLOR[kind], !compact && 'mt-px')}>
-                    {t.icon ?? <AppIcon name={meta.iconName ?? KIND_ICON[kind]} size="lg" spin={kind === 'loading'} />}
+                    {t.icon ?? <AppIcon name={meta.iconName ?? KIND_ICON[kind]} size={compact ? 'sm' : 'lg'} spin={kind === 'loading'} />}
                 </span>
                 <div className="min-w-0 flex-1">
-                    <div className="text-[15px] lg:text-sm font-semibold leading-5 text-slate-900 break-words whitespace-pre-line">
+                    <div className={cn(
+                        'text-slate-900 break-words whitespace-pre-line',
+                        compact ? 'text-xs sm:text-[13px] font-medium leading-tight' : 'text-[15px] lg:text-sm font-semibold leading-5'
+                    )}>
                         {resolveValue(t.message, t)}
                     </div>
                     {meta.description != null && meta.description !== '' && (
@@ -226,13 +231,13 @@ const ToastItem: React.FC<ToastItemProps> = React.memo(({ t, offset, isDesktop, 
                         aria-label="Đóng thông báo"
                         onClick={() => dismiss()}
                         className={cn(
-                            '-mr-1.5 shrink-0 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-900/5 transition-colors',
-                            'h-7 w-7 max-lg:min-h-11 max-lg:min-w-11 max-lg:-my-2',
+                            '-mr-1 shrink-0 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-900/5 transition-colors',
+                            compact ? 'h-5 w-5 text-slate-400' : 'h-7 w-7 max-lg:min-h-11 max-lg:min-w-11 max-lg:-my-2',
                             compact ? '' : '-mt-1',
                             isDesktop && !longLived && kind !== 'error' && !actions && 'opacity-0 group-hover:opacity-100 focus-visible:opacity-100',
                         )}
                     >
-                        <AppIcon name="close" size="sm" />
+                        <AppIcon name="close" size={compact ? 'xs' : 'sm'} />
                     </Button>
                 )}
             </div>

@@ -748,7 +748,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 const cloudResult = await downloadProcessedData(user, cloudMeta);
                 if (isMounted && cloudResult && cloudResult.data.length > 0) {
                     await applyCloudSalesData(cloudResult.data, cloudResult.meta);
-                    toast.success(`Đã tự động cập nhật dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'auto-cloud-sync' });
+                    toast.success(`Đã đồng bộ ${cloudResult.data.length.toLocaleString('vi-VN')} dòng mới`, { id: 'auto-cloud-sync', duration: 2500 });
                 }
             } catch (err) {
                 console.warn('[CloudData] Tự động đồng bộ realtime thất bại:', err);
@@ -810,7 +810,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                             if (cloudResult && cloudResult.data.length > 0) {
                                 await applyCloudSalesData(cloudResult.data, cloudResult.meta);
                                 if (!notifyIfUpToDate) {
-                                    toast.success(`Đã tự động cập nhật dữ liệu mới nhất (${cloudResult.data.length.toLocaleString('vi-VN')} dòng)!`, { id: 'cloud-check-toast' });
+                                    toast.success(`Đã đồng bộ ${cloudResult.data.length.toLocaleString('vi-VN')} dòng mới`, { id: 'cloud-check-toast', duration: 2500 });
                                 }
                                 return true;
                             }

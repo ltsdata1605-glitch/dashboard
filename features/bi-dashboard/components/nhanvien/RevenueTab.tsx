@@ -502,7 +502,7 @@ const RevenueView: React.FC<{
                         size="none"
                         onClick={() => setViewMode(viewMode === 'group' ? 'list' : 'group')}
                         title={viewMode === 'group' ? 'Đang xem theo Bộ phận (Bấm để xem Danh sách)' : 'Đang xem Danh sách (Bấm để xem theo Bộ phận)'}
-                        className="ycx-hit w-8 h-8 text-sky-700 dark:text-sky-300 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 flex items-center justify-center shrink-0"
+                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors flex items-center justify-center shrink-0 ${viewMode === 'group' ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                         <AppIcon name={viewMode === 'group' ? 'viewGrid' : 'viewList'} size="md" />
                     </Button>
@@ -513,7 +513,7 @@ const RevenueView: React.FC<{
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="ycx-hit w-8 h-8 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 flex items-center justify-center shrink-0 disabled:opacity-40"
+                        className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors flex items-center justify-center shrink-0 disabled:opacity-40 ${isExportingByDept ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                     >
                         {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>

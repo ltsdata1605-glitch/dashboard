@@ -278,10 +278,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 border shadow-2xs ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
                     hiddenSupermarkets.length > 0 || isSupermarketFilterOpen
-                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
-                        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
+                        ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
+                        : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title="Lọc danh sách siêu thị"
             >
@@ -326,10 +326,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 border shadow-2xs ${
+                className={`ycx-hit w-8 h-8 lg:w-9 lg:h-9 rounded-lg flex items-center justify-center transition-colors shrink-0 ${
                     isColumnSelectorOpen
-                        ? 'text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold'
-                        : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'
+                        ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
+                        : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
                 title="Tuỳ chỉnh hiển thị cột"
             >

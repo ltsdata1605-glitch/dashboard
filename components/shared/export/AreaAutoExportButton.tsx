@@ -95,8 +95,8 @@ export const AreaAutoExportButton: React.FC<AreaAutoExportButtonProps> = ({
                 aria-label={titleTooltip}
                 className={`ycx-hit relative flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg transition-colors ${
                     isAnyActive
-                        ? 'text-sky-600 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800'
-                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold'
+                        : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                 } ${className}`}
             >
                 <AppIcon name="bot" size="md" />

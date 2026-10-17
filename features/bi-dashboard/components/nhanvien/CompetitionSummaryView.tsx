@@ -639,7 +639,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     onClick={handleBatchExportByGroup}
                     disabled={isExportingByGroup}
                     title={isExportingByGroup ? `Đang xuất ${exportGroupProgress.current}/${exportGroupProgress.total}` : 'Xuất ảnh theo tiêu chí (tự động xuất từng nhóm)'}
-                    className="h-7 w-7 sm:h-8 sm:w-8 p-1 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white shadow-2xs transition-all hover:scale-105 active:scale-95 no-print shrink-0 flex items-center justify-center disabled:opacity-40"
+                    className={`ycx-hit w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 ${isExportingByGroup ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 >
                     {isExportingByGroup ? (
                         <AppIcon name="loading" size="sm" spin className="text-sky-700" />
@@ -649,12 +649,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 </Button>
             )}
 
-            <div className="h-4 sm:h-5 w-px bg-slate-200 dark:border-slate-700 mx-0.5 sm:mx-1 shrink-0" />
+            <div className="h-4 sm:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1 shrink-0" />
 
             <Button
                 variant="unstyled" size="none"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`h-7 w-7 sm:h-8 sm:w-8 p-1 rounded-lg flex items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer border shadow-2xs shrink-0 ${showPercent ? 'text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 font-semibold' : 'text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80'}`}
+                className={`ycx-hit w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors cursor-pointer ${showPercent ? 'text-sky-700 bg-sky-50 dark:text-sky-300 dark:bg-sky-950/60 border border-sky-300 dark:border-sky-700 shadow-2xs font-semibold' : 'border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <AppIcon name="hash" size="sm" /> : <AppIcon name="percent" size="sm" />}
@@ -665,12 +665,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 icon={<AppIcon name="columns" size="md" />}
                 title="Xuất ảnh rút gọn (chỉ Nhân viên, %HT 100%, Hiệu quả)"
                 ariaLabel="Xuất ảnh rút gọn"
-                className="h-7 w-7 sm:h-8 sm:w-8 p-1"
+                className="w-7 h-7 sm:w-8 sm:h-8"
             />
 
             <ExportButton 
                 onExportPNG={async () => { await handleExportPNG(); }} 
-                className="h-7 w-7 sm:h-8 sm:w-8 p-1"
+                className="w-7 h-7 sm:w-8 sm:h-8"
                 autoExportAreaId="bi-nhan-vien-thi-dua"
                 autoExportAreaName="BI: Nhân Viên — Thi Đua Tổng Hợp"
             />
