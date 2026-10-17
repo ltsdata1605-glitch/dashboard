@@ -126,11 +126,11 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         {/* 2. Nút BỘ LỌC toggle button */}
         {inventory.length > 0 && (
           <Button
-            variant="ghost"
+            variant={showFilters || activeFilterCount > 0 ? 'tinted' : 'secondary'}
+            size="sm"
             onClick={() => setShowFilters(!showFilters)}
-            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 border-sky-300 dark:border-sky-700' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700'} border`}
+            icon="filter"
           >
-            <AppIcon name="filter" size="sm" />
             <span className="uppercase tracking-wider text-[11px]">Bộ lọc</span>
             {activeFilterCount > 0 && (
               <span className="bg-sky-600 text-white text-[11px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
@@ -172,10 +172,12 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
           </select>
           {sortField !== 'none' && (
             <Button
-              variant="ghost"
+              variant="secondary"
+              size="icon"
               onClick={() => onSortChange?.(sortField, sortDirection === 'asc' ? 'desc' : 'asc')}
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-8 p-0 text-inherit flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-sky-100 text-slate-600 hover:text-sky-700 transition-colors text-xs font-bold border border-slate-200 dark:border-slate-700"
               title={sortDirection === 'asc' ? 'Tăng dần' : 'Giảm dần'}
+              aria-label={sortDirection === 'asc' ? 'Tăng dần' : 'Giảm dần'}
+              className="text-xs font-bold"
             >
               {sortDirection === 'asc' ? '↑' : '↓'}
             </Button>
@@ -188,9 +190,10 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         {/* 5. Nút Clear bộ lọc */}
         {(activeFilterCount > 0 || sortField !== 'none') && (
           <Button
-            variant="ghost"
+            variant="inline-link"
+            size="sm"
             onClick={() => { onClearFilters(); onSortChange?.('none', 'desc'); setShowFilters(false); }}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs text-rose-500 hover:text-rose-700 font-medium shrink-0 px-1 py-1"
+            className="text-xs text-rose-500 hover:text-rose-700 shrink-0 px-1 py-1"
           >
             Xóa lọc
           </Button>
@@ -199,12 +202,13 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
         {/* 6. Export image button */}
         {onExportImage && (
           <Button
-            variant="ghost"
+            variant="secondary"
+            size="sm"
             onClick={onExportImage}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-8 w-auto p-0 text-inherit flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 transition-colors"
+            icon="exportImage"
             title="Xuất danh sách thành ảnh PNG"
+            className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200"
           >
-            <AppIcon name="exportImage" size="md" />
             <span>Xuất ảnh</span>
           </Button>
         )}

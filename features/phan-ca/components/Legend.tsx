@@ -52,9 +52,10 @@ const Legend: React.FC<LegendProps> = ({
 
                         {/* KHO button */}
                         <Button
-                            variant="ghost"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => onEditRule('kho')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-emerald-200 bg-emerald-50 hover:border-emerald-400 hover:bg-emerald-100 transition-colors cursor-pointer"
+                            className="group flex items-center gap-1.5 h-9 px-4 rounded-control border border-emerald-200 bg-emerald-50 hover:border-emerald-400 hover:bg-emerald-100 transition-colors cursor-pointer"
                         >
                             <span className="text-emerald-700 font-bold text-xs">KHO</span>
                             <span className="font-extrabold text-emerald-900 text-base">~{targets.kho}</span>
@@ -64,9 +65,10 @@ const Legend: React.FC<LegendProps> = ({
 
                         {/* TN button */}
                         <Button
-                            variant="ghost"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => onEditRule('tn')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-sky-200 bg-sky-50 hover:border-sky-400 hover:bg-sky-100 transition-colors cursor-pointer"
+                            className="group flex items-center gap-1.5 h-9 px-4 rounded-control border border-sky-200 bg-sky-50 hover:border-sky-400 hover:bg-sky-100 transition-colors cursor-pointer"
                         >
                             <span className="text-sky-700 font-bold text-xs">TN</span>
                             <span className="font-extrabold text-sky-900 text-base">~{targets.tn}</span>
@@ -76,9 +78,10 @@ const Legend: React.FC<LegendProps> = ({
 
                         {/* GH button */}
                         <Button
-                            variant="ghost"
+                            variant="unstyled"
+                            size="none"
                             onClick={() => onEditRule('gh')}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-amber-200 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition-colors cursor-pointer"
+                            className="group flex items-center gap-1.5 h-9 px-4 rounded-control border border-amber-200 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition-colors cursor-pointer"
                         >
                             <span className="text-amber-700 font-bold text-xs">GH</span>
                             <span className="font-extrabold text-amber-900 text-base">~{targets.gh}</span>

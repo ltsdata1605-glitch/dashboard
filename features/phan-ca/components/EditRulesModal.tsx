@@ -65,15 +65,13 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
 
   const GenderPill: React.FC<{ value: 'Nam' | 'Nu' | 'All', text: string }> = ({ value, text }) => {
     const isActive = rules[genderKey] === value;
-    const baseClasses = "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 cursor-pointer shadow-sm";
-    const activeClasses = "bg-sky-500 text-white ring-2 ring-sky-300 dark:ring-sky-700 ring-offset-1 dark:ring-offset-slate-800";
-    const inactiveClasses = "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600";
     return (
         <Button
             type="button"
-            variant="ghost"
+            variant={isActive ? 'primary' : 'secondary'}
+            size="sm"
             onClick={() => setRules(prev => ({ ...prev, [genderKey]: value }))}
-            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 ${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+            className={`rounded-full ${isActive ? 'ring-2 ring-sky-300 dark:ring-sky-700 ring-offset-1' : ''}`}
         >
             {text}
         </Button>
@@ -113,12 +111,12 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
               />
               <Button
                 variant="ghost"
+                size="icon"
                 onClick={() => handleRemoveShiftRule(shift)}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 rounded-full text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 transition"
+                icon="delete"
                 title={`Xóa cấu hình cho ca ${shift}`}
-              >
-                <AppIcon name="delete" size="md" />
-              </Button>
+                className="text-slate-400 hover:bg-rose-50 hover:text-rose-600 rounded-full"
+              />
             </div>
           )) : (
             <EmptyState title="Chưa có cấu hình ca nào. Hãy thêm ở bên dưới." compact />

@@ -526,28 +526,28 @@ export default function App(): React.JSX.Element {
               {isMobile && (
                 <Button
                   variant="ghost"
+                  size="icon"
+                  icon="folder"
                   onClick={handleViewSavedLists}
-                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
                   title="Danh sách đã lưu"
-                >
-                  <AppIcon name="folder" size="md" />
-                </Button>
+                  aria-label="Danh sách đã lưu"
+                />
               )}
               {isMobile && (
                 <Button
                   variant="ghost"
+                  size="icon"
+                  icon="info"
                   onClick={() => setIsUserGuideOpen(true)}
-                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-sky-600 rounded-lg transition-colors"
                   title="Hướng dẫn sử dụng"
-                >
-                  <AppIcon name="info" size="md" />
-                </Button>
+                  aria-label="Hướng dẫn sử dụng"
+                />
               )}
               {!isMobile && userData?.role !== 'staff' && (
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => setIsChangePasswordOpen(true)}
-                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors"
                 >
                   Đổi mật khẩu
                 </Button>
@@ -555,15 +555,16 @@ export default function App(): React.JSX.Element {
               {!isMobile && (
                 <Button
                   variant="ghost"
+                  size="icon"
+                  icon="info"
                   onClick={() => setIsUserGuideOpen(true)}
-                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-md transition-colors"
                   title="Hướng dẫn sử dụng"
-                >
-                  <AppIcon name="info" size="md" />
-                </Button>
+                  aria-label="Hướng dẫn sử dụng"
+                />
               )}
               <Button
-                variant="ghost"
+                variant="destructive"
+                size="sm"
                 onClick={async () => {
                   await auth.signOut();
                   setUser(null);
@@ -579,7 +580,6 @@ export default function App(): React.JSX.Element {
                   setSuggestions([]);
                   await clearData();
                 }}
-                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'px-2 py-1 text-[11px]' : 'px-2 py-1 text-[11px]'} font-bold text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors uppercase`}
               >
                 Đăng xuất
               </Button>
@@ -651,9 +651,9 @@ export default function App(): React.JSX.Element {
                         </div>
                         {!isQuota && (
                           <Button
-                              variant="ghost"
+                              variant="danger"
+                              size="sm"
                               onClick={() => userData?.storeId && loadFirestoreData(userData.storeId, allProducts, inventory, uploadTimestamp, inventoryUploadTimestamp)}
-                              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-4 py-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition-colors text-sm font-bold"
                           >
                               Thử lại
                           </Button>

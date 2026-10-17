@@ -52,38 +52,85 @@ export const PhanCaToolbar: React.FC<PhanCaToolbarProps> = ({
                 <div className="hidden lg:flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
                     {/* Data management group */}
                     <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <Button variant="ghost" onClick={onImportClick} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 bg-sky-50/50 hover:bg-sky-100 dark:bg-sky-900/20 dark:hover:bg-sky-900/40 text-sky-600 dark:text-sky-400 font-semibold text-sm transition-colors">
-                        <AppIcon name="add" size="md" />
-                        <span>Nhập NV</span>
-                    </Button>
-                    <a href={LINK_DS_NV} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
-                        <AppIcon name="externalLink" size="md" />
-                    </a>
-                    <Button variant="ghost" onClick={onDeleteStaffList} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 border-l border-slate-100 dark:border-slate-700 transition-colors" title="Xóa danh sách">
-                        <AppIcon name="delete" size="md" />
-                    </Button>
-                    <Button variant="ghost" onClick={onOpenEditPattern} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-sky-50 hover:text-sky-700 dark:hover:bg-sky-900/30 dark:hover:text-sky-400 font-semibold text-sm border-l border-slate-100 dark:border-slate-700 transition-colors">
-                        <AppIcon name="repeat" size="md" />
-                        <span>Ca Xoay</span>
-                    </Button>
+                        <Button
+                            variant="tinted"
+                            size="sm"
+                            onClick={onImportClick}
+                            icon="add"
+                            className="rounded-none border-0 font-semibold"
+                        >
+                            Nhập NV
+                        </Button>
+                        <a href={LINK_DS_NV} target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
+                            <AppIcon name="externalLink" size="md" />
+                        </a>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onDeleteStaffList}
+                            icon="delete"
+                            title="Xóa danh sách"
+                            aria-label="Xóa danh sách"
+                            className="rounded-none border-l border-slate-100 dark:border-slate-700 text-slate-500 hover:text-rose-500 hover:bg-rose-50"
+                        />
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onOpenEditPattern}
+                            icon="repeat"
+                            className="rounded-none border-l border-slate-100 dark:border-slate-700 font-semibold hover:bg-sky-50 hover:text-sky-700"
+                        >
+                            Ca Xoay
+                        </Button>
                     </div>
                     {/* Export group */}
                     <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <Button variant="ghost" onClick={onExportAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" disabled={!hasStaff}>
-                        Tất cả
-                    </Button>
-                    <Button variant="ghost" onClick={onExportWeekly} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 border-l border-slate-100 dark:border-slate-700 transition-colors" disabled={!hasStaff}>
-                        Tuần
-                    </Button>
-                    <Button variant="ghost" onClick={onExportIndividual} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 border-l border-slate-700 transition-colors" disabled={!hasStaff}>
-                        Từng NV
-                    </Button>
-                    <Button variant="ghost" onClick={onExportExcel} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border-l border-emerald-700 transition-colors" disabled={!hasStaff}>
-                        Excel
-                    </Button>
-                    <Button variant="ghost" onClick={onExportGoogleSheet} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border-l border-sky-200 transition-colors" disabled={!hasStaff} title="Xuất ra Google Sheet">
-                        Sheet
-                    </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onExportAll}
+                            disabled={!hasStaff}
+                            className="rounded-none font-semibold"
+                        >
+                            Tất cả
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onExportWeekly}
+                            disabled={!hasStaff}
+                            className="rounded-none border-l border-slate-100 dark:border-slate-700 font-semibold"
+                        >
+                            Tuần
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={onExportIndividual}
+                            disabled={!hasStaff}
+                            className="rounded-none border-l border-slate-700 bg-slate-800 hover:bg-slate-900 text-white font-bold"
+                        >
+                            Từng NV
+                        </Button>
+                        <Button
+                            variant="success"
+                            size="sm"
+                            onClick={onExportExcel}
+                            disabled={!hasStaff}
+                            className="rounded-none border-l border-emerald-700 font-bold"
+                        >
+                            Excel
+                        </Button>
+                        <Button
+                            variant="tinted"
+                            size="sm"
+                            onClick={onExportGoogleSheet}
+                            disabled={!hasStaff}
+                            title="Xuất ra Google Sheet"
+                            className="rounded-none border-l border-sky-200 font-bold"
+                        >
+                            Sheet
+                        </Button>
                     </div>
                 </div>,
                 document.getElementById('global-header-actions')!

@@ -143,17 +143,17 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
             footer={
                 <div className="flex justify-between items-center">
                     <Button
-                        variant="ghost"
+                        variant="destructive"
+                        size="sm"
+                        icon="delete"
                         onClick={handleResetAllUsers}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors font-medium text-sm"
                     >
-                        <AppIcon name="delete" size="md" />
                         Xóa tất cả người dùng
                     </Button>
                     <Button
-                        variant="ghost"
+                        variant="secondary"
                         onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg transition-colors font-medium"
+                        className="px-6"
                     >
                         Đóng
                     </Button>
@@ -196,13 +196,14 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                         </select>
                                         <Button
                                             variant="ghost"
+                                            size="icon"
+                                            icon="delete"
                                             onClick={() => handleDeleteUser(user.uid, user.username)}
                                             disabled={user.uid === currentUserId || user.username === 'admin'}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+                                            className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
                                             title={user.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
-                                        >
-                                            <AppIcon name="delete" size="lg" />
-                                        </Button>
+                                            aria-label={user.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
+                                        />
                                     </div>
                                 </div>
                             ))}
@@ -234,15 +235,14 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                         <div className="flex justify-end gap-3">
                             {(confirmAction.type === 'delete_user' || confirmAction.type === 'reset_all') && (
                                 <Button
-                                    variant="ghost"
+                                    variant="secondary"
                                     onClick={() => setConfirmAction(null)}
-                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-medium"
                                 >
                                     Hủy
                                 </Button>
                             )}
                             <Button
-                                variant="ghost"
+                                variant={confirmAction.type === 'error' || confirmAction.type === 'info' ? 'primary' : 'danger'}
                                 onClick={() => {
                                     if (confirmAction.type === 'delete_user' && confirmAction.userId) {
                                         executeDeleteUser(confirmAction.userId);
@@ -252,11 +252,6 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                                         setConfirmAction(null);
                                     }
                                 }}
-                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-4 py-2 text-white rounded-lg transition-colors font-medium ${
-                                    confirmAction.type === 'error' || confirmAction.type === 'info'
-                                        ? 'bg-sky-600 hover:bg-sky-700'
-                                        : 'bg-rose-600 hover:bg-rose-700'
-                                }`}
                             >
                                 {confirmAction.type === 'error' || confirmAction.type === 'info' ? 'Đóng' : 'Xác nhận'}
                             </Button>

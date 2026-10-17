@@ -421,10 +421,23 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <Button variant="unstyled" size="none" onClick={() => setDisplayMode('pct')} className={`px-2 py-0.5 sm:py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
                         <Button variant="unstyled" size="none" onClick={() => setDisplayMode('actual')} className={`px-2 py-0.5 sm:py-1 text-[11px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
-                    <Button variant="unstyled" size="none" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={performBatchExport}
+                        disabled={isBatchExporting || autoPairs.length === 0}
+                        title="Xuất tất cả cặp so sánh"
+                        aria-label="Xuất tất cả cặp so sánh"
+                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg disabled:opacity-40 transition-colors"
+                    >
                         <AppIcon name="exportBatch" size="md" className={isBatchExporting ? 'animate-pulse text-sky-500' : ''} />
                     </Button>
-                    <Button variant="unstyled" size="none" onClick={() => handleExportPNG()} title="Xuất ảnh" className="h-7 w-7 sm:h-8 sm:w-8 p-1 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
+                    <Button
+                        variant="unstyled" size="none"
+                        onClick={() => handleExportPNG()}
+                        title="Xuất ảnh"
+                        aria-label="Xuất ảnh"
+                        className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                    >
                         <AppIcon name="exportImage" size="md" />
                     </Button>
                 </div>

@@ -46,9 +46,8 @@ const FilterModal: React.FC<FilterModalProps> = ({
       footer={
         <div className="flex justify-end">
           <Button
-            variant="ghost"
+            variant="primary"
             onClick={onClose}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-sky-600 text-white rounded-xl font-bold hover:bg-sky-700 transition-colors shadow-md"
           >
             Xong
           </Button>

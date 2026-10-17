@@ -389,13 +389,14 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                         )})}
                         {onManageCustomTabs && (
                              <Button
-                                 variant="unstyled" size="none"
+                                 variant="ghost"
+                                 size="icon"
+                                 icon="add"
                                  onClick={() => onManageCustomTabs(viewMode)}
                                  title="Tạo thẻ mới"
-                                 className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-sky-700 flex items-center justify-center shrink-0"
-                             >
-                                 <AppIcon name="add" size="md" />
-                             </Button>
+                                 aria-label="Tạo thẻ mới"
+                                 className="text-slate-400 hover:text-sky-700 shrink-0"
+                             />
                         )}
                     </div>
                 </div>
@@ -420,8 +421,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                {onEditCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-sky-700 dark:hover:text-sky-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><AppIcon name="edit" size="md" /></Button>}
-                                                {f.isCustom && onDeleteCustomTab && <Button variant="unstyled" size="none" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400/70 hover:text-rose-700 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><AppIcon name="delete" size="md" /></Button>}
+                                                {onEditCustomTab && <Button variant="ghost" size="icon" icon="edit" onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="text-slate-400/70 hover:text-sky-700 dark:hover:text-sky-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa" aria-label="Chỉnh sửa" />}
+                                                {f.isCustom && onDeleteCustomTab && <Button variant="ghost" size="icon" icon="delete" onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="text-slate-400/70 hover:text-rose-700 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa" aria-label="Xóa" />}
                                             </div>
                                         </th>
                                     )})}

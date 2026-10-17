@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
+import { Button } from '../../../components/shared/ui/Button';
 
 import { toast } from '../../../components/shared/ui/toast';
 
@@ -156,16 +157,10 @@ export const IPhoneChatPreview: React.FC<IPhoneChatPreviewProps> = ({
                         </div>
 
                         {/* Header Actions */}
-                        <div className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
-                            <button type="button" className="p-1 hover:text-emerald-600">
-                                <AppIcon name="search" size="md" />
-                            </button>
-                            <button type="button" className="p-1 hover:text-emerald-600">
-                                <AppIcon name="call" size="md" />
-                            </button>
-                            <button type="button" className="p-1 hover:text-emerald-600">
-                                <AppIcon name="menu" size="md" />
-                            </button>
+                        <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300">
+                            <Button variant="ghost" size="icon" icon="search" type="button" className="hover:text-emerald-600" aria-label="Tìm kiếm" />
+                            <Button variant="ghost" size="icon" icon="call" type="button" className="hover:text-emerald-600" aria-label="Gọi điện" />
+                            <Button variant="ghost" size="icon" icon="menu" type="button" className="hover:text-emerald-600" aria-label="Menu" />
                         </div>
                     </div>
 

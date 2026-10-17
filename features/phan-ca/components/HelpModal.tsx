@@ -28,11 +28,12 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           </h2>
           <Button
               variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-white hover:text-sky-100 transition-colors shrink-0"
-          >
-              <AppIcon name="close" size="md" />
-          </Button>
+              icon="close"
+              aria-label="Đóng"
+              className="text-white hover:bg-sky-500/30 hover:text-white shrink-0"
+          />
       </div>
 
       <div className="text-slate-800 dark:text-slate-300 text-sm leading-relaxed">

@@ -105,11 +105,11 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                     </div>
                     <Button
                         type="submit"
-                        variant="ghost"
-                        disabled={isLoading}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium disabled:opacity-50"
+                        variant="primary"
+                        isLoading={isLoading}
+                        className="w-full"
                     >
-                        {isLoading ? 'Đang xử lý...' : 'Xác nhận đổi mật khẩu'}
+                        Xác nhận đổi mật khẩu
                     </Button>
                 </form>
             )}

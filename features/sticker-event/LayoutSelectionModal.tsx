@@ -21,9 +21,10 @@ const LayoutOptionButton: React.FC<{
     onSelect: (value: PrintSettings['tagsPerPage']) => void;
 }> = ({ value, label, description, onSelect }) => (
     <Button
-        variant="ghost"
+        variant="unstyled"
+        size="none"
         onClick={() => onSelect(value)}
-        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-4 rounded-lg bg-slate-50 hover:bg-sky-100 border border-slate-200 hover:border-sky-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+        className="justify-start w-full text-left p-4 rounded-card bg-slate-50 hover:bg-sky-50 border border-slate-200 hover:border-sky-300 transition-all duration-200"
     >
         <div>
             <p className="font-bold text-lg text-slate-800">{label}</p>

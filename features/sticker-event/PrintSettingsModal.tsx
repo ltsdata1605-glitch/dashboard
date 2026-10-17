@@ -49,12 +49,13 @@ const FontUploadSection: React.FC<{
                     </div>
                     <Button
                         variant="ghost"
+                        size="icon"
                         onClick={onRemove}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors"
+                        icon="delete"
                         title="Xóa font này"
-                    >
-                        <AppIcon name="delete" size="lg" />
-                    </Button>
+                        aria-label="Xóa font này"
+                        className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full"
+                    />
                 </div>
             ) : (
                 <div>
@@ -144,9 +145,8 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
             footer={
                 <div className="text-right">
                     <Button
-                        variant="ghost"
+                        variant="primary"
                         onClick={onClose}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-10 px-6 py-2"
                     >
                         Xong
                     </Button>

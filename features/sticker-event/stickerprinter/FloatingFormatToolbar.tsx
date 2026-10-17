@@ -492,9 +492,10 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             <div className="relative">
                 <Button
                     variant="ghost"
+                    size="sm"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
+                    className="text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
                 >
                     Font <span className="text-[11px] opacity-75">▼</span>
                 </Button>
@@ -524,13 +525,14 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                         ].map(font => (
                             <Button
                                 variant="ghost"
+                                size="sm"
                                 key={font.val}
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => {
                                     applyStyleToSelection('fontFamily', font.val);
                                     setActiveMenu(null);
                                 }}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto justify-start px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                className="justify-start px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 w-full whitespace-nowrap"
                                 style={{ fontFamily: font.val }}
                             >
                                 {font.name}
@@ -543,11 +545,13 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             {/* Size adjust controls: - [input] + */}
             <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
                 <Button
-                    variant="ghost"
+                    variant="secondary"
+                    size="none"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => adjustFontSize(-0.1)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                    className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black"
                     title="Giảm size chữ"
+                    aria-label="Giảm size chữ"
                 >
                     -
                 </Button>
@@ -568,11 +572,13 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                     title="Kích thước cqw (gõ số hoặc dùng +/-)"
                 />
                 <Button
-                    variant="ghost"
+                    variant="secondary"
+                    size="none"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => adjustFontSize(0.1)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                    className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black"
                     title="Tăng size chữ"
+                    aria-label="Tăng size chữ"
                 >
                     +
                 </Button>
@@ -582,11 +588,13 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
                 <span className="text-[11px] text-slate-400 font-bold select-none" title="Khoảng cách dòng">↕</span>
                 <Button
-                    variant="ghost"
+                    variant="secondary"
+                    size="none"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => adjustLineHeight(-0.05)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                    className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black"
                     title="Giảm khoảng cách dòng"
+                    aria-label="Giảm khoảng cách dòng"
                 >
                     -
                 </Button>
@@ -607,11 +615,13 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
                     title="Khoảng cách dòng (gõ số hoặc dùng +/-)"
                 />
                 <Button
-                    variant="ghost"
+                    variant="secondary"
+                    size="none"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => adjustLineHeight(0.05)}
-                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                    className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black"
                     title="Tăng khoảng cách dòng"
+                    aria-label="Tăng khoảng cách dòng"
                 >
                     +
                 </Button>
@@ -620,35 +630,38 @@ export const FloatingFormatToolbar: React.FC<FloatingFormatToolbarProps> = () =>
             {/* Bold button */}
             <Button
                 variant="ghost"
+                size="icon"
+                icon="textBold"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleFormat('bold')}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                className="p-1 text-slate-300 hover:text-white hover:bg-slate-800"
                 title="In đậm (Bold)"
-            >
-                <AppIcon name="textBold" size="sm" />
-            </Button>
+                aria-label="In đậm (Bold)"
+            />
 
             {/* Italic button */}
             <Button
                 variant="ghost"
+                size="icon"
+                icon="textItalic"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleFormat('italic')}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                className="p-1 text-slate-300 hover:text-white hover:bg-slate-800"
                 title="In nghiêng (Italic)"
-            >
-                <AppIcon name="textItalic" size="sm" />
-            </Button>
+                aria-label="In nghiêng (Italic)"
+            />
 
             {/* Underline button */}
             <Button
                 variant="ghost"
+                size="icon"
+                icon="textUnderline"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => handleFormat('underline')}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                className="p-1 text-slate-300 hover:text-white hover:bg-slate-800"
                 title="Gạch chân (Underline)"
-            >
-                <AppIcon name="textUnderline" size="sm" />
-            </Button>
+                aria-label="Gạch chân (Underline)"
+            />
 
             {/* Tooltip arrow */}
             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-slate-900/95" />

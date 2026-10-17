@@ -30,17 +30,15 @@ const SaveListModal: React.FC<SaveListModalProps> = ({ isOpen, onClose, onSave, 
         <div className="flex justify-end gap-3">
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
             onClick={onClose}
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
           >
             Hủy
           </Button>
           <Button
             type="submit"
             form="save-list-form"
-            variant="ghost"
-            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-md transition-colors"
+            variant="primary"
           >
             Lưu
           </Button>

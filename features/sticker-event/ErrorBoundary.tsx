@@ -45,9 +45,9 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             <h2 className="text-xl font-bold text-slate-900 text-center mb-2">Rất tiếc, đã có lỗi xảy ra</h2>
             <p className="text-slate-600 text-center mb-6">{displayMessage}</p>
             <Button
-              variant="ghost"
+              variant="primary"
               onClick={() => window.location.reload()}
-              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium"
+              className="w-full"
             >
               Tải lại trang
             </Button>

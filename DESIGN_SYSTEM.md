@@ -139,12 +139,25 @@ mới.)* Cấm tự đặt `rounded-xl`/`rounded-2xl`/`rounded-[…]` cho thẻ/
 Mọi phần tử tương tác **bắt buộc** dùng `components/shared/ui/*`. Cấm viết `<button>` thô hoặc tự
 dựng modal `fixed inset-0`.
 
-### 4.1 Button — 5 kiểu (lớp Apple, 2026-10-11)
+### 4.1 Button — Hệ thống kiểu nút (chuẩn hoá 2026-10-11, bổ sung 2026-10-17)
 `primary` sky-600 đặc — **mỗi màn chỉ một** · `secondary` "tinted" xám (nền `slate-100`, chữ đậm, không viền — vẫn rõ là
 nút vì có nền) · `tinted` nền `sky-50` chữ `sky-700` (hành động phụ quan trọng) · `destructive` nền `rose-50` chữ `rose-600`
-(việc nguy hiểm, đặt cuối nhóm) · `danger` đỏ **đặc** — CHỈ nút xác nhận cuối trong ConfirmDialog. `ghost`/`outline` giữ cho
-chỗ cũ (nút icon, thanh công cụ dày). Chữ nút nổi bật `font-semibold`. **Không có nút không nền giữa nội dung** — trên nền
-trắng dày đặc, nút không nền trông như chữ thường. *(Bản trước 2026-10-11: 4 kiểu, `secondary` viền xám nền trắng.)*
+(việc nguy hiểm, đặt cuối nhóm) · `danger` đỏ **đặc** — CHỈ nút xác nhận cuối trong ConfirmDialog · `success` emerald-600
+đặc (xác nhận tích cực, xuất file, đồng bộ thành công — bổ sung 2026-10-17) · `inline-link` nút dạng liên kết chữ sky-600
+gạch chân (bổ sung 2026-10-17 cho các action link gọn gàng). `ghost`/`outline` giữ cho chỗ cũ (nút icon, thanh công cụ dày).
+Chữ nút nổi bật `font-semibold`. **Không có nút không nền giữa nội dung** — trên nền trắng dày đặc, nút không nền trông như
+chữ thường. *(Bản trước 2026-10-11: 4 kiểu, `secondary` viền xám nền trắng.)*
+
+### 4.1b Card Header Toolbar Action Buttons (Nút công cụ trên Header thẻ/bảng — Chuẩn 2026-10-17)
+Các nút thao tác nhanh đặt ở mép phải tiêu đề các khối/thẻ (như *Chi Tiết Theo Kho*, *Tổng Quan Doanh Thu*, *Xu Hướng Doanh Thu*):
+- **Kích thước thị giác**: Mobile `w-8 h-8` (32×32px), Laptop/Desktop `lg:w-9 lg:h-9` (36×36px).
+- **Kích thước Icon**: `size="md"` (18px) chuẩn `AppIcon` (`exportImage`, `settings`, `bot`, `layers`, `viewList`, `calendar`...).
+- **Bo góc**: `rounded-lg` (`rounded-control` = 8px) — đồng nhất với toàn bộ hệ thống điều khiển.
+- **Trạng thái Mặc định (Idle)**: Màu xám thanh mảnh `text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200`, hover có nền `hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`.
+- **Trạng thái Đang bật / Active (vd nút Bot tự xuất)**: Nền `sky-50 dark:bg-sky-950/60`, chữ `sky-700 dark:text-sky-300`, viền `border border-sky-300 dark:border-sky-700`, đổ bóng `shadow-2xs font-semibold`, có badge dot nếu có trạng thái.
+- **Trạng thái Đang xử lý (Loading/Exporting)**: Thay icon bằng `<AppIcon name="loading" size="md" spin />`, disabled opacity 40%.
+- **Vùng chạm di động**: BẮT BUỘC gắn class `.ycx-hit` để kích hoạt vùng chạm vô hình 44×44px cho màn hình cảm ứng điện thoại mà không làm phình to kích thước thị giác.
+- **Khoảng cách nhóm**: `gap-1.5` đến `gap-2` giữa các nút.
 
 ### 4.2 Input
 Tích hợp sẵn ring focus. Không hardcode class ring cục bộ. Bo `8px` (`rounded-control`).

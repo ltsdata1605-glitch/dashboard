@@ -377,10 +377,12 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     </span>
                     <div className="flex items-center gap-1">
                         <Button
-                            variant="ghost"
+                            variant="secondary"
+                            size="none"
                             onClick={() => setActiveDrawPage(p => Math.max(0, p - 1))}
                             disabled={activeDrawPage === 0}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                            className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+                            aria-label="Trang trước"
                         >
                             &lt;
                         </Button>
@@ -398,24 +400,24 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             }
                             return (
                                 <Button
-                                    variant="ghost"
+                                    variant={activeDrawPage === idx ? 'danger' : 'secondary'}
+                                    size="none"
                                     key={idx}
                                     onClick={() => setActiveDrawPage(idx)}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-6 h-6 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
-                                        activeDrawPage === idx
-                                            ? 'bg-rose-600 text-white shadow-sm font-black'
-                                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
-                                    }`}
+                                    className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+                                    aria-label={`Trang ${idx + 1}`}
                                 >
                                     {idx + 1}
                                 </Button>
                             );
                         })}
                         <Button
-                            variant="ghost"
+                            variant="secondary"
+                            size="none"
                             onClick={() => setActiveDrawPage(p => Math.min(totalDrawPages - 1, p + 1))}
                             disabled={activeDrawPage === totalDrawPages - 1}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                            className="w-6 h-6 flex items-center justify-center text-xs font-bold"
+                            aria-label="Trang sau"
                         >
                             &gt;
                         </Button>

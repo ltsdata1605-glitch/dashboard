@@ -83,7 +83,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
       footer={
         <div className="flex justify-end gap-3">
           <Button variant="secondary" onClick={onClose}>Hủy bỏ</Button>
-          <Button onClick={handleConfirm} rightIcon={<AppIcon name="next" size="md" />}>Lưu & Tiếp Tục</Button>
+          <Button onClick={handleConfirm} iconRight="next">Lưu & Tiếp Tục</Button>
         </div>
       }
     >
@@ -133,16 +133,18 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
                 <td className="px-4 py-1.5">
                   <div className="flex justify-center items-center gap-1">
                     <Button
-                      variant="ghost"
+                      variant={genderAssignments[staff.id] === 'Nam' ? 'primary' : 'secondary'}
+                      size="sm"
                       onClick={() => handleGenderChange(staff.id, 'Nam')}
-                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[11px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nam' ? 'bg-sky-600 text-white border-sky-600' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                      className="flex-1 text-[11px] font-black"
                     >
                       NAM
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant={genderAssignments[staff.id] === 'Nu' ? 'danger' : 'secondary'}
+                      size="sm"
                       onClick={() => handleGenderChange(staff.id, 'Nu')}
-                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[11px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                      className="flex-1 text-[11px] font-black"
                     >
                       NỮ
                     </Button>

@@ -483,22 +483,22 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     </div>
                                     <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                         <Button
-                                            variant="ghost"
+                                            variant="tinted"
+                                            size="icon"
+                                            icon="reset"
                                             onClick={() => restoreHistory(entry)}
-                                            className="ycx-hit bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
                                             title="Khôi phục"
-                                        >
-                                            <AppIcon name="reset" size="md" />
-                                        </Button>
+                                            aria-label="Khôi phục"
+                                        />
                                         {!isDefault && (
                                             <Button
-                                                variant="ghost"
+                                                variant="destructive"
+                                                size="icon"
+                                                icon="delete"
                                                 onClick={() => deleteHistory(entry.id)}
-                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-500 dark:text-rose-400 rounded-lg hover:bg-rose-200 dark:hover:bg-rose-900/50 transition-colors"
                                                 title="Xóa"
-                                            >
-                                                <AppIcon name="delete" size="sm" />
-                                            </Button>
+                                                aria-label="Xóa"
+                                            />
                                         )}
                                     </div>
                                 </div>

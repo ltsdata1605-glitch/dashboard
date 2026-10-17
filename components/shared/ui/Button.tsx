@@ -9,7 +9,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type ButtonVariant = 'primary' | 'secondary' | 'tinted' | 'danger' | 'destructive' | 'ghost' | 'outline' | 'unstyled';
+export type ButtonVariant = 'primary' | 'secondary' | 'tinted' | 'danger' | 'destructive' | 'ghost' | 'outline' | 'success' | 'inline-link' | 'unstyled';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon' | 'none';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -71,8 +71,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       tinted: 'font-semibold bg-sky-50 hover:bg-sky-100 text-sky-700 border border-transparent',
       danger: 'font-semibold bg-rose-600 hover:bg-rose-700 text-white border border-transparent',
       destructive: 'font-semibold bg-rose-50 hover:bg-rose-100 text-rose-600 border border-transparent',
+      success: 'font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border border-transparent',
       ghost: 'font-medium bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent',
       outline: 'font-medium bg-transparent text-sky-700 dark:text-sky-400 border border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20',
+      'inline-link': 'font-medium bg-transparent text-sky-600 hover:text-sky-700 hover:underline border border-transparent p-0 h-auto min-h-0',
       unstyled: '',
     };
 
@@ -97,7 +99,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       none: '',
     };
 
-    const iconSize = size === 'lg' ? 'lg' : 'md';
+    const effectiveSize = variant === 'inline-link' && size === 'md' ? 'none' : size;
+    const iconSize = effectiveSize === 'lg' ? 'lg' : 'md';
     const hasNamedIcon = Boolean(icon || iconRight);
 
     return (
@@ -107,7 +110,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={cn(baseStyles, variants[variant], sizes[size], hasNamedIcon && 'gap-1.5', className)}
+        className={cn(baseStyles, variants[variant], sizes[effectiveSize], hasNamedIcon && 'gap-1.5', className)}
         // Đánh dấu nút CÓ KIỂU CHUẨN (không phải 'unstyled' tự tạo kiểu) — chế độ mật độ gọn của
         // Report BI (features/bi-dashboard/biDensity.css) không thu nhỏ các nút này (audit A20).
         data-ui={isUnstyled ? undefined : 'shared'}

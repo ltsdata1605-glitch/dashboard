@@ -66,12 +66,12 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                 </div>
                 {unresolvedConflicts.length > 0 && (
                     <Button
-                        variant="ghost"
+                        variant="destructive"
+                        size="sm"
                         onClick={onShowUnresolvedConflicts}
-                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex items-center gap-2 bg-rose-100 text-rose-700 font-bold py-1 px-3 rounded-none border border-rose-200 text-xs hover:bg-rose-200 transition-colors shadow-sm"
+                        icon="alert"
                         title="Hiển thị danh sách các ca cần tìm người thay thế"
                     >
-                        <AppIcon name="alert" size="sm" />
                         <span>{unresolvedConflicts.length} ca cần xử lý</span>
                     </Button>
                 )}

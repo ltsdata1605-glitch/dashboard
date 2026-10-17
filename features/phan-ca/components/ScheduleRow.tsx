@@ -74,9 +74,14 @@ export const ScheduleRow = memo<ScheduleRowProps>(({
                             <span className={staff.gender === 'Nu' ? 'text-rose-600 dark:text-rose-400' : 'text-sky-600 dark:text-sky-400'}>
                                 {formatDisplayName(staff.name)}
                             </span>
-                            <Button variant="ghost" onClick={() => onDeleteEmployee(staff.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-600 transition-all export-hidden">
-                                <AppIcon name="delete" size="sm" />
-                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onDeleteEmployee(staff.id)}
+                                icon="delete"
+                                aria-label="Xóa nhân viên"
+                                className="h-6 w-6 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-all export-hidden"
+                            />
                         </div>
                     </td>
                 </>

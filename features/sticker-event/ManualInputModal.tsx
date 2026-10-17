@@ -231,26 +231,24 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
             maxWidth="lg"
             footer={
                 <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 w-full">
-                    <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-100 h-10 px-4 py-2 order-2 sm:order-1">
+                    <Button type="button" variant="secondary" onClick={onClose} className="order-2 sm:order-1">
                         Đóng
                     </Button>
                     <div className="flex items-center gap-2 order-1 sm:order-2">
                         {selectedCount > 0 && (
                             <Button
                                 type="button"
-                                variant="ghost"
+                                variant="primary"
                                 onClick={handlePrintSelected}
-                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 sm:flex-initial p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-white hover:bg-sky-700 h-10 px-4 py-2"
                             >
                                 In đã chọn ({selectedCount})
                             </Button>
                         )}
                         <Button
                             type="button"
-                            variant="ghost"
+                            variant="success"
                             onClick={handlePrintAll}
                             disabled={manualProducts.length === 0}
-                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 sm:flex-initial p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             In tất cả ({manualProducts.length})
                         </Button>
@@ -265,7 +263,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                                 <AppIcon name="edit" size="sm" className="shrink-0 text-amber-600" />
                                 <span className="text-amber-700 font-medium">Đang chỉnh sửa sản phẩm — Thay đổi thông tin và bấm "Lưu thay đổi"</span>
-                                <Button type="button" variant="ghost" onClick={handleCancelEdit} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 ml-auto text-amber-600 hover:text-amber-800 font-medium text-xs underline">Hủy sửa</Button>
+                                <Button type="button" variant="inline-link" onClick={handleCancelEdit} className="ml-auto text-amber-600 hover:text-amber-800 text-xs">Hủy sửa</Button>
                             </div>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -291,15 +289,15 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             </div>
                             {editingId ? (
                                 <div className="flex gap-2">
-                                    <Button type="button" variant="ghost" onClick={handleCancelEdit} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-100 h-10 px-4 py-2">
+                                    <Button type="button" variant="secondary" onClick={handleCancelEdit}>
                                         Hủy sửa
                                     </Button>
-                                    <Button type="submit" variant="ghost" disabled={isSaving} icon={isSaving ? undefined : 'save'} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 h-10 px-6 py-2 disabled:opacity-50">
+                                    <Button type="submit" variant="primary" disabled={isSaving} isLoading={isSaving} icon={isSaving ? undefined : 'save'} className="bg-amber-500 hover:bg-amber-600 border-amber-600 text-white">
                                         {isSaving ? 'Đang lưu...' : 'Lưu thay đổi'}
                                     </Button>
                                 </div>
                             ) : (
-                                <Button type="submit" variant="ghost" disabled={isSaving} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-sky-600 text-sky-50 hover:bg-sky-700 h-10 px-6 py-2 disabled:opacity-50">
+                                <Button type="submit" variant="primary" disabled={isSaving} isLoading={isSaving}>
                                     {isSaving ? 'Đang lưu...' : 'Thêm sản phẩm'}
                                 </Button>
                             )}
@@ -385,12 +383,13 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                             {/* Delete */}
                                             <Button
                                                 variant="ghost"
+                                                size="icon"
+                                                icon="delete"
                                                 onClick={(e) => { e.stopPropagation(); p.firebaseId && onDeleteProduct(p.firebaseId); }}
-                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-rose-600 transition-colors flex-shrink-0"
+                                                className="text-slate-400 hover:text-rose-600 transition-colors shrink-0"
                                                 title="Xóa sản phẩm"
-                                            >
-                                                <AppIcon name="delete" size="md" />
-                                            </Button>
+                                                aria-label="Xóa sản phẩm"
+                                            />
                                         </div>
                                     );
                                 })}

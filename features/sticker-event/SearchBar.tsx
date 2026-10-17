@@ -71,29 +71,31 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
           {/* Nút Clear X (khi có text) */}
           {searchQuery && !disabled && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={handleClear}
-              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors mr-1 cursor-pointer"
+              icon="close"
               title="Xóa tìm kiếm"
-            >
-              <AppIcon name="close" size="sm" />
-            </button>
+              aria-label="Xóa tìm kiếm"
+              className="h-7 w-7 text-slate-400 hover:text-slate-600 rounded-full mr-1"
+            />
           )}
 
           {/* Nút Quét mã Scan / QR */}
           <div className="pr-1.5 flex items-center">
             <Button
               type="button"
-              variant="ghost"
+              variant="tinted"
+              size="sm"
               onClick={onIconClick}
               disabled={disabled}
+              icon="scan"
               title="Quét mã vạch / QR"
-              className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-sky-600 hover:text-sky-700 hover:bg-sky-50 rounded-lg transition-colors flex items-center gap-1 font-bold ${
-                isMobile ? 'bg-sky-50/80 text-sky-600 text-xs px-2' : ''
-              }`}
+              aria-label="Quét mã vạch / QR"
+              className={isMobile ? 'px-2' : ''}
             >
-              <AppIcon name="scan" size="md" />
               {isMobile && <span className="text-[11px] font-semibold hidden xs:inline">Quét</span>}
             </Button>
           </div>

@@ -149,21 +149,22 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                     </div>
                                     <div className="flex items-center gap-2 ml-4">
                                         <Button
-                                            variant="ghost"
-                                            disabled={loadingItemsId === list.id}
+                                            variant="tinted"
+                                            size="sm"
+                                            isLoading={loadingItemsId === list.id}
                                             onClick={() => { void handleOpenList(list); }}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-lg text-sm font-medium transition-colors"
                                         >
-                                            {loadingItemsId === list.id ? 'Đang tải...' : 'Mở'}
+                                            Mở
                                         </Button>
                                         <Button
                                             variant="ghost"
+                                            size="icon"
                                             onClick={() => handleDelete(list)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                                            icon="delete"
                                             title="Xóa danh sách"
-                                        >
-                                            <AppIcon name="delete" size="lg" />
-                                        </Button>
+                                            aria-label="Xóa danh sách"
+                                            className="text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                        />
                                     </div>
                                 </div>
                             ))}

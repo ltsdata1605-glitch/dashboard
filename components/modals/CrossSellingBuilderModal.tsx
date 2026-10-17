@@ -353,7 +353,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                             )}
                                         </div>
                                     </div>
-                                    <Button variant="unstyled" size="none" onClick={() => removeColumn(col.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors" title="Xóa cột"><AppIcon name="delete" size="md" /></Button>
+                                    <Button variant="ghost" size="icon" icon="delete" onClick={() => removeColumn(col.id)} className="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10" title="Xóa cột" aria-label="Xóa cột" />
                                 </div>
                             ))}
                             {config.columns.length === 0 && <div className="text-center p-6 text-sm text-slate-400">Chưa có cột nào được thiết lập. Hãy thêm cột Dữ liệu trước.</div>}
@@ -388,7 +388,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                 placeholder="Tên Nhóm Dòng (Header)..."
                                             />
                                         </div>
-                                        <Button variant="unstyled" size="none" onClick={() => removeSection(section.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"><AppIcon name="delete" size="md" /></Button>
+                                        <Button variant="ghost" size="icon" icon="delete" onClick={() => removeSection(section.id)} className="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10" title="Xóa nhóm" aria-label="Xóa nhóm" />
                                     </div>
 
                                     {/* Rows Wrapper */}
@@ -446,16 +446,17 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <Button variant="unstyled" size="none" onClick={() => removeRow(section.id, row.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors flex shrink-0 items-center justify-center"><AppIcon name="delete" size="md" /></Button>
+                                                <Button variant="ghost" size="icon" icon="delete" onClick={() => removeRow(section.id, row.id)} className="text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 shrink-0" title="Xóa dòng" aria-label="Xóa dòng" />
                                             </div>
                                         ))}
 
                                         <Button
-                                            variant="unstyled" size="none"
+                                            variant="outline"
                                             onClick={() => addRow(section.id)}
-                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-sky-700 dark:hover:text-sky-400 transition"
+                                            icon="add"
+                                            className="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-sky-700 dark:hover:text-sky-400"
                                         >
-                                            <AppIcon name="add" size="sm" /> Thêm dòng
+                                            Thêm dòng
                                         </Button>
                                     </div>
                                 </div>

@@ -122,9 +122,8 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
               </div>
               <Button
                 type="submit"
-                variant="ghost"
-                disabled={loading}
-                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 transition-colors disabled:opacity-50"
+                variant="primary"
+                isLoading={loading}
               >
                 Tìm kiếm
               </Button>
@@ -158,13 +157,14 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                     </div>
                     <Button
                       variant="ghost"
+                      size="icon"
                       onClick={() => handleDeleteUser(u.id)}
                       disabled={loading || u.username === 'admin'}
-                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-lg transition-colors ${u.username === 'admin' ? 'text-slate-300 cursor-not-allowed' : 'text-rose-500 hover:bg-rose-50'}`}
+                      icon="delete"
+                      className={u.username === 'admin' ? "text-slate-300" : "text-rose-500 hover:bg-rose-50"}
                       title={u.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
-                    >
-                      <AppIcon name="delete" size="lg" />
-                    </Button>
+                      aria-label="Xóa người dùng"
+                    />
                   </div>
                 ))}
               </div>

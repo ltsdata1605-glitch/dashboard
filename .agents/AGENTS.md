@@ -89,6 +89,16 @@ Mỗi khi người dùng yêu cầu **"Áp dụng con nhộng"** (hoặc chuyể
   - Hiệu ứng chạm: `active:scale-95 transition-all duration-200`.
   - Trợ năng: Đầy đủ `aria-label`, `<span className="sr-only">`, `title`, và `data-segmented=""` / `data-capsule-bar=""`.
 
+## Card Header Action Buttons Standard (Quy Chuẩn Nút Thao Tác Header Thẻ/Bảng)
+Mỗi khi hiển thị hoặc tạo mới cụm nút thao tác ở mép phải tiêu đề các khối thẻ/bảng (như Chi Tiết Theo Kho, Tổng Quan Doanh Thu, Xu Hướng Doanh Thu, Top Seller, v.v.):
+- **Kích thước thị giác (Visual Size)**: Mobile `32×32px` (`w-8 h-8`), Desktop `36×36px` (`lg:w-9 lg:h-9`).
+- **Kích thước icon**: Chuẩn **18px** (`size="md"` trong `AppIcon` như `exportImage`, `settings`, `bot`, `layers`, `viewList`, `calendar`).
+- **Bo góc**: Bắt buộc dùng `rounded-lg` (`rounded-control` = 8px).
+- **Màu sắc & Trạng thái Idle**: Màu xám thanh mảnh `text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200`, hiệu ứng rê chuột `hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors`.
+- **Trạng thái Active / Cấu hình bật (như Bot LINE Auto Export)**: Nền `sky-50 dark:bg-sky-950/60`, chữ `sky-700 dark:text-sky-300`, viền `border border-sky-300 dark:border-sky-700`, đổ bóng `shadow-2xs font-semibold`, có badge dot thông báo nếu có trạng thái.
+- **Trạng thái Loading / Đang xuất ảnh**: Đổi icon sang `<AppIcon name="loading" size="md" spin />`, disabled và `opacity-40`.
+- **Quy chuẩn vùng chạm cảm ứng vô hình (Touch Target)**: BẮT BUỘC gắn class `.ycx-hit` để đảm bảo mắt nhìn thấy nhỏ gọn 32px tinh tế, nhưng ngón tay chạm luôn đạt chuẩn 44×44px trên điện thoại.
+
 ## Silent Real-User Verification Rule (Quy Tắc Tự Động Test Âm Thầm Trên Dữ Liệu Thật)
 - **Bắt buộc tự động test thực tế như người dùng thật**: Sau mỗi lần sửa đổi, tối ưu hoặc cập nhật tính năng (đặc biệt liên quan đến giao diện, thẻ KPI, bảng dữ liệu), Agent **BẮT BUỘC tự động chạy test xác thực thực tế** trên chính profile dữ liệu thật (`.e2e-chrome-profile`) hoặc kiểm tra DOM/computed style thực tế của trình duyệt.
 - **Thực hiện hoàn toàn âm thầm (Silent & Headless)**: Toàn bộ quá trình test phải chạy ngầm ở chế độ headless (chạy `npm run test:verify-silent` hoặc Playwright headless), không mở cửa sổ gây phiền toái, không làm gián đoạn màn hình làm việc của người dùng.
