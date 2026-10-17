@@ -482,12 +482,27 @@ Link: ${url}`;
     // Lỗi #23 (video v1:095): thanh công cụ 6 nút, mỗi nút một kiểu (vàng / viền / xanh lá / xanh dương). Nay 2 nút icon trung
     // tính hay dùng nhất + "⋯" gom phần còn lại (sao chép DS nhân viên, xuất ảnh từng NV, Excel, Google Sheet).
     const controls = (
-        <div className="flex items-center gap-2 hide-on-export">
-            <Button onClick={toggleAllDetails} variant="ghost" size="icon" title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} aria-label={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} className="ycx-hit text-slate-600">
-                <AppIcon name="collapseAll" size="md" />
+        <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export">
+            <Button
+                variant="unstyled"
+                size="none"
+                onClick={toggleAllDetails}
+                title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}
+                aria-label={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+            >
+                <AppIcon name={isAllExpanded ? 'collapseAll' : 'expandAll'} size="md" />
             </Button>
-            <Button onClick={handleExportAll} disabled={isExporting} variant="ghost" size="icon" title="Xuất ảnh toàn bộ danh sách" aria-label="Xuất ảnh toàn bộ danh sách" className="ycx-hit text-slate-600">
-                <AppIcon name="exportImage" size="md" />
+            <Button
+                variant="unstyled"
+                size="none"
+                onClick={handleExportAll}
+                disabled={isExporting}
+                title="Xuất ảnh toàn bộ danh sách"
+                aria-label="Xuất ảnh toàn bộ danh sách"
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 shrink-0"
+            >
+                <AppIcon name={isExporting ? 'loading' : 'exportImage'} size="md" spin={isExporting} />
             </Button>
             <ActionMenu
                 label="Thêm thao tác"

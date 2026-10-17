@@ -323,12 +323,27 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     };
     
     const controls = (
-        <div className="flex items-center gap-1 sm:gap-2 hide-on-export">
-            <Button onClick={toggleAllCustomers} variant="secondary" size="icon" title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
-                <AppIcon name={isAllCustomersExpanded ? 'expandAll' : 'collapseAll'} size="md" />
+        <div className="flex items-center gap-1 sm:gap-1.5 hide-on-export">
+            <Button
+                variant="unstyled"
+                size="none"
+                onClick={toggleAllCustomers}
+                title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
+                aria-label={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'}
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+            >
+                <AppIcon name={isAllCustomersExpanded ? 'collapseAll' : 'expandAll'} size="md" />
             </Button>
-            <Button onClick={handleExport} disabled={isExporting} isLoading={isExporting} variant="secondary" size="icon" title="Xuất Ảnh Phân Tích" className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
-                 {!isExporting && <AppIcon name="exportImage" size="md" />}
+            <Button
+                variant="unstyled"
+                size="none"
+                onClick={handleExport}
+                disabled={isExporting}
+                title="Xuất Ảnh Phân Tích"
+                aria-label="Xuất Ảnh Phân Tích"
+                className="ycx-hit flex items-center justify-center w-8 h-8 lg:w-9 lg:h-9 rounded-lg border border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40 shrink-0"
+            >
+                <AppIcon name={isExporting ? 'loading' : 'exportImage'} size="md" spin={isExporting} />
             </Button>
         </div>
     );
@@ -438,13 +453,25 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                
                                <div className="pb-3 px-1 sm:px-2 overflow-x-hidden">
                                   <div className="ml-1 pl-1 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
-                                      <table className="w-full text-[11px] sm:text-sm table-fixed compact-export-table border-collapse">
+                                      {(() => {
+                                          const totals = customer.orderGroups.reduce((acc, group) => {
+                                              group.lines.forEach(line => {
+                                                  acc.quantity += Number(getRowValue(line, COL.QUANTITY)) || 0;
+                                                  acc.revenue += getRowPrice(line);
+                                                  acc.revenueQD += productConfig ? calculateRowMetrics(line, productConfig).revenueQD : 0;
+                                              });
+                                              return acc;
+                                          }, { quantity: 0, revenue: 0, revenueQD: 0 });
+
+                                          return (
+                                              <table className="w-full text-[11px] sm:text-sm table-fixed compact-export-table border-collapse">
                                           <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-[11px] border-b border-t border-slate-100 dark:border-slate-800">
                                               <tr>
-                                                  <th className="py-1 px-1 text-left font-semibold w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]">Mã ĐH</th>
+                                                  <th className="py-1 px-1 text-left font-semibold w-[95px] min-[360px]:w-[105px] min-[390px]:w-[115px] sm:w-[145px]">Mã ĐH</th>
                                                   <th className="py-1 px-1 text-left font-semibold">Sản phẩm</th>
-                                                  <th className="py-1 px-1 text-center font-semibold w-[22px] min-[360px]:w-[25px] sm:w-[30px]">SL</th>
-                                                  <th className="py-1 px-1 text-right font-semibold w-[65px] min-[360px]:w-[70px] sm:w-[90px] whitespace-nowrap">Doanh Thu</th>
+                                                  <th className="py-1 px-1 text-center font-semibold w-[22px] min-[360px]:w-[25px] sm:w-[28px]">SL</th>
+                                                  <th className="py-1 px-1 text-right font-semibold w-[58px] min-[360px]:w-[65px] sm:w-[85px] whitespace-nowrap">Doanh Thu</th>
+                                                  <th className="py-1 px-1 text-right font-semibold w-[58px] min-[360px]:w-[65px] sm:w-[85px] whitespace-nowrap">DTQĐ</th>
                                               </tr>
                                           </thead>
                                           <tbody>
@@ -453,12 +480,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                      const orderId = group.id === 'no-id' ? '-' : group.id;
                                                      const isUnshipped = group.status === 'Chưa xuất';
                                                      const price = getRowPrice(order);
+                                                     const priceQD = productConfig ? calculateRowMetrics(order, productConfig).revenueQD : 0;
                                                      const isInstallment = getHinhThucThanhToan(order, productConfig) === 'tra_gop';
                                                      
                                                      return (
                                                          <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                              {lineIndex === 0 && (
-                                                             <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors w-[100px] min-[360px]:w-[110px] min-[390px]:w-[125px] sm:w-[155px]"
+                                                             <td rowSpan={group.lines.length} className="py-1 px-1 text-left text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-sky-700 dark:hover:text-sky-400 transition-colors w-[95px] min-[360px]:w-[105px] min-[390px]:w-[115px] sm:w-[145px]"
                                                                  onClick={() => {
                                                                      if (orderId && orderId !== '-') {
                                                                          navigator.clipboard.writeText(orderId).then(() => {
@@ -496,14 +524,33 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                  </div>
                                                              </td>
                                                              <td className="py-1 px-1 text-center text-[11px] sm:text-xs text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                             <td className="py-1 px-1 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[11px] sm:text-xs w-[65px] min-[360px]:w-[70px] sm:w-[90px]">{formatCurrency(price)}</td>
+                                                             <td className="py-1 px-1 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[11px] sm:text-xs w-[58px] min-[360px]:w-[65px] sm:w-[85px]">{formatCurrency(price)}</td>
+                                                             <td className="py-1 px-1 text-right font-semibold text-amber-700 dark:text-amber-400 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700 text-[11px] sm:text-xs w-[58px] min-[360px]:w-[65px] sm:w-[85px]">{formatCurrency(priceQD)}</td>
 
                                                          </tr>
                                                      );
                                                  });
                                               })}
                                           </tbody>
+                                          <tfoot className="bg-slate-50/80 dark:bg-slate-800/60 font-bold border-t border-slate-200 dark:border-slate-700">
+                                              <tr>
+                                                  <td colSpan={2} className="py-1.5 px-1 text-left font-bold text-slate-700 dark:text-slate-300 text-[11px] sm:text-xs">
+                                                      Tổng
+                                                  </td>
+                                                  <td className="py-1.5 px-1 text-center font-bold text-slate-800 dark:text-slate-200 text-[11px] sm:text-xs">
+                                                      {formatQuantity(totals.quantity)}
+                                                  </td>
+                                                  <td className="py-1.5 px-1 text-right font-bold text-slate-800 dark:text-slate-100 whitespace-nowrap text-[11px] sm:text-xs w-[58px] min-[360px]:w-[65px] sm:w-[85px]">
+                                                      {formatCurrency(totals.revenue)}
+                                                  </td>
+                                                  <td className="py-1.5 px-1 text-right font-bold text-amber-700 dark:text-amber-400 whitespace-nowrap text-[11px] sm:text-xs w-[58px] min-[360px]:w-[65px] sm:w-[85px]">
+                                                      {formatCurrency(totals.revenueQD)}
+                                                  </td>
+                                              </tr>
+                                          </tfoot>
                                       </table>
+                                          );
+                                      })()}
                                   </div>
                                </div>
                         </details>
