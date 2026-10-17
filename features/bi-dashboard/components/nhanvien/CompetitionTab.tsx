@@ -847,7 +847,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {highlightedEmployees.size > 0 && (
                                         <Button variant="unstyled" size="none" onClick={handleSmartBatchExport} disabled={isExportingHighlights} title={isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}` : `Xuất Highlight (${highlightedEmployees.size} NV)`} className="w-8 h-8 text-amber-600 dark:text-amber-400 rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0 disabled:opacity-40">{isExportingHighlights ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="users" size="md" />}</Button>
                                     )}
-                                    <ExportButton onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }} />
+                                    <ExportButton
+                                        onExportPNG={async () => { await exportGroupViewToPNG(`Nhóm Thi Đua - ${supermarket || 'Siêu Thị'}.png`, groupViewRef); }}
+                                        autoExportAreaId="bi-nhan-vien-thi-dua"
+                                        autoExportAreaName="BI: Nhân Viên — Thi Đua Nhóm"
+                                    />
                                 </>
                             )}
                             {activeCompetitionTab === 'canhan' && activeVersionName === null && (
@@ -856,7 +860,12 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     <Button variant="unstyled" size="none" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title={individualViewRef.current?.isBatchExporting ? `Đang xuất ${individualViewRef.current?.exportProgress?.current ?? 0}/${individualViewRef.current?.exportProgress?.total ?? 0}` : 'Xuất tất cả nhân viên'} className="w-8 h-8 text-slate-600 hover:text-slate-800 dark:text-slate-300 dark:hover:text-white rounded-lg border border-slate-200 dark:border-slate-700/80 bg-slate-100/90 hover:bg-slate-200/90 dark:bg-slate-800 dark:hover:bg-slate-700 shadow-2xs transition-all hover:scale-105 active:scale-95 inline-flex items-center justify-center shrink-0 disabled:opacity-40">
                                         {individualViewRef.current?.isBatchExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                                     </Button>
-                                    <ExportButton onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }} className="w-8 h-8" />
+                                    <ExportButton
+                                        onExportPNG={async () => { await individualViewRef.current?.handleExportPNG(); }}
+                                        className="w-8 h-8"
+                                        autoExportAreaId="bi-nhan-vien-thi-dua"
+                                        autoExportAreaName="BI: Nhân Viên — Thi Đua Cá Nhân"
+                                    />
                                 </>
                             )}
                             {activeCompetitionTab === 'tong' && activeVersionName === null && (

@@ -63,31 +63,32 @@ const MobileBottomNav: React.FC = React.memo(() => {
             variant="unstyled" size="none"
             key={opts.key}
             onClick={opts.onClick}
+            title={opts.label}
+            aria-label={opts.label}
             aria-current={opts.active ? 'page' : undefined}
             className={cn(
-                'flex-1 min-w-0 flex flex-col items-center justify-center h-[44px] py-0.5 px-0.5 rounded-full transition-all duration-200 select-none active:scale-95',
-                opts.active
-                    ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-xs border border-slate-200/70 dark:border-slate-600/70'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100/40 dark:hover:bg-slate-800/40',
+                'flex-1 min-w-0 flex items-center justify-center h-[34px] rounded-full transition-all duration-200 select-none ycx-hit',
                 isPending && 'opacity-70'
             )}
         >
-            <span className="flex items-center justify-center">
+            <span
+                className={cn(
+                    'flex items-center justify-center w-[46px] h-[26px] rounded-full transition-all duration-200',
+                    opts.active
+                        ? 'bg-sky-100 dark:bg-sky-950/70 text-sky-600 dark:text-sky-400 shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40 active:scale-95'
+                )}
+            >
                 <AppIcon
                     name={opts.icon}
-                    size="sm"
+                    size="md"
                     className={cn(
-                        'transition-transform duration-200',
-                        opts.active ? 'text-sky-600 dark:text-sky-400 scale-105' : 'text-slate-500 dark:text-slate-400'
+                        'transition-colors duration-200',
+                        opts.active ? 'text-sky-600 dark:text-sky-400' : 'text-slate-600 dark:text-slate-400'
                     )}
                 />
             </span>
-            <span className={cn(
-                'max-w-full truncate px-0.5 text-[11px] leading-[13px] tracking-tight mt-0.5',
-                opts.active ? 'font-bold text-sky-600 dark:text-sky-400' : 'font-medium text-slate-500 dark:text-slate-400'
-            )}>
-                {opts.label}
-            </span>
+            <span className="sr-only">{opts.label}</span>
         </Button>
     );
 
@@ -171,7 +172,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
             <nav
                 data-app-chrome="tabbar"
                 aria-label="Điều hướng chính"
-                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.6rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[342px] z-[190] rounded-full p-1 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.08),0_4px_10px_-2px_rgba(0,0,0,0.03)]"
+                className="mobile-chrome ycx-floating-dock lg:hidden fixed bottom-[max(0.5rem,env(safe-area-inset-bottom,0px))] left-1/2 -translate-x-1/2 w-[calc(100%-32px)] max-w-[280px] z-[190] rounded-full p-0.5 border border-slate-200/80 dark:border-slate-700/80 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.08),0_2px_6px_-1px_rgba(0,0,0,0.04)]"
             >
                 <div className="flex items-center justify-between gap-0.5 w-full">
                     {mainTabs.map(tab => oTab({

@@ -9,6 +9,8 @@ import { MOBILE_GUTTER } from '../../utils/mobileUi';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { getMonthProgress, extractDateFromData } from '../../services/metricService';
 
+import { AreaAutoExportButton } from '../../../../components/shared/export/AreaAutoExportButton';
+
 interface DashboardHeaderProps {
     title: string;
     activeMainTab: MainTab;
@@ -23,6 +25,10 @@ interface DashboardHeaderProps {
     /** Single-table export callback */
     onExport?: () => void;
     isExporting?: boolean;
+    /** ID khu vực để cấu hình tự xuất Bot LINE (bcrt / bclk) */
+    autoExportAreaId?: string;
+    autoExportAreaName?: string;
+    onTestAutoExport?: () => Promise<Blob | null>;
     /** Slot for tab-specific controls (e.g. column settings dropdown) */
     toolbarSlot?: React.ReactNode;
     /** Callback kích hoạt tự động thu thập từ Tampermonkey */
@@ -55,6 +61,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     supermarkets: rawSupermarkets, activeSupermarket, setActiveSupermarket,
     onBatchExport, isBatchExporting,
     onExport, isExporting,
+    autoExportAreaId, autoExportAreaName, onTestAutoExport,
     toolbarSlot,
     onStartAutoSync,
     children
@@ -182,6 +189,15 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 >
                                     {isExporting ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportImage" size="md" />}
                                 </Button>
+                            )}
+
+                            {/* Cấu hình tự xuất ảnh cho Bot LINE (bcrt / bclk) */}
+                            {autoExportAreaId && (
+                                <AreaAutoExportButton
+                                    areaId={autoExportAreaId}
+                                    areaName={autoExportAreaName}
+                                    onTestExport={onTestAutoExport}
+                                />
                             )}
                         </div>
                     </div>

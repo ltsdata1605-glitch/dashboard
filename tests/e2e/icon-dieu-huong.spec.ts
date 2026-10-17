@@ -29,11 +29,11 @@ for (const width of [360, 390, 430]) {
         await page.setViewportSize({ width, height: 800 });
         await vaoDungThu(page);
 
-        // GĐ4 (2026-10-12): icon thanh tab cỡ `xl` 24px như thanh tab iOS (trước `lg` 22px).
+        // Thanh tab dưới compact: icon cỡ `md` 18px (nhỏ gọn theo chuẩn người dùng chốt).
         const nav = await doIcon(page, 'nav.mobile-chrome svg.ycx-icon');
         expect(nav.map((i) => i.name)).toEqual(['navAnalysis', 'navReportBi', 'navRewardCheck', 'navTools']);
         for (const i of nav) {
-            expect([i.w, i.h], i.name!).toEqual([24, 24]);
+            expect([i.w, i.h], i.name!).toEqual([18, 18]);
             expect(i.stroke, i.name!).toBe('2');
         }
 
@@ -41,9 +41,9 @@ for (const width of [360, 390, 430]) {
         const top = await doIcon(page, 'div.mobile-chrome.sticky svg.ycx-icon[data-icon^="nav"]');
         expect(top[0]).toMatchObject({ name: 'navAnalysis', w: 18, h: 18 });
 
-        // Nút bấm của thanh dưới đủ vùng chạm 44px.
+        // Nút bấm thanh dưới nhỏ gọn (h >= 32px), có .ycx-hit nới vùng chạm cảm ứng 44px
         const tapH = await page.$$eval('nav.mobile-chrome button', (b) => b.map((x) => x.getBoundingClientRect().height));
-        for (const h of tapH) expect(h).toBeGreaterThanOrEqual(44);
+        for (const h of tapH) expect(h).toBeGreaterThanOrEqual(32);
 
         // Bảng "Khác" (GĐ4: sheet danh sách nhóm kiểu Cài đặt iOS): mọi icon công cụ cùng hình với Sidebar, cùng cỡ `sm` (16px)
         // trong ô màu 28px của ListRow.

@@ -2593,45 +2593,60 @@ export const lineBotWebhook = onRequest(
                         }
                     }
 
-                    // 2. Fallback cho bcrt/bclk nếu chưa có: thử lấy doc "bc"
+                    // 2. Fallback cho bcrt/bclk nếu chưa có doc riêng: thử lấy doc "bc" nhưng CHỈ KHI doc "bc" mới (< 24h)
                     if (!cmdData && (cleanCmd === 'bcrt' || cleanCmd === 'bclk')) {
                         try {
                             const fallbackBc = await db.collection('line_bots').doc(uid).collection('report_commands').doc('bc').get();
                             if (fallbackBc.exists) {
-                                cmdData = fallbackBc.data();
+                                const bcVal = fallbackBc.data();
+                                const ageMs = Date.now() - new Date(bcVal?.updatedAt || 0).getTime();
+                                if (ageMs < 24 * 60 * 60 * 1000) {
+                                    cmdData = bcVal;
+                                } else {
+                                    console.info(`[lineBotWebhook] Doc "bc" đã cũ (${Math.round(ageMs / 3600000)}h trước), không dùng fallback cho ${cleanCmd}.`);
+                                }
                             }
                         } catch (e) {
                             console.warn('[lineBotWebhook] Fallback bc cho bcrt/bclk lỗi:', e);
                         }
                     }
 
-                    // 3. Fallback mặc định cho lệnh "bc": nếu vẫn chưa có, tìm ảnh Chi Tiết Theo Kho mới nhất trong bot_media
-                    if (!cmdData && cleanCmd === 'bc') {
+                    // 3. Fallback tìm ảnh mới nhất trong bot_media cho bc, bcrt, bclk
+                    if (!cmdData && ['bc', 'bcrt', 'bclk'].includes(cleanCmd)) {
                         try {
+                            const botDept = String(config?.departmentId || '').trim();
                             const mSnap = await db.collection('bot_media')
                                 .where('source', '==', 'analysis-export')
                                 .orderBy('createdAt', 'desc')
-                                .limit(30)
+                                .limit(40)
                                 .get();
                             const matchDoc = mSnap.docs.find(d => {
-                                if (d.data().ownerUid !== uid) return false;
-                                const n = (d.data().name || '').toLowerCase();
+                                const mData = d.data();
+                                const isOwner = mData.ownerUid === uid;
+                                const n = (mData.name || '').toLowerCase();
+                                const isDeptMatch = Boolean(botDept && (n.includes(botDept.toLowerCase()) || mData.departmentId === botDept));
+                                if (!isOwner && !isDeptMatch && !['ALL', ''].includes(botDept)) return false;
                                 return n.includes('chi tiết theo kho') || n.includes('chi tiet theo kho') || n.includes('kho tổng hợp');
                             });
                             if (matchDoc) {
                                 const mData = matchDoc.data();
-                                const mUrl = `https://${DEFAULT_REGION}-dashboa-7e20b.cloudfunctions.net/lineBotWebhook?mediaId=${matchDoc.id}`;
-                                cmdData = {
-                                    command: 'bc',
-                                    reportKey: 'Chi Tiết Theo Kho',
-                                    imageUrl: mUrl,
-                                    previewUrl: mUrl,
-                                    caption: `📊 Báo cáo Chi Tiết Theo Kho — cập nhật gần nhất`,
-                                    updatedAt: mData.createdAt
-                                };
+                                const ageMs = Date.now() - new Date(mData.createdAt || 0).getTime();
+                                if (ageMs < 48 * 60 * 60 * 1000) {
+                                    const mUrl = `https://${DEFAULT_REGION}-dashboa-7e20b.cloudfunctions.net/lineBotWebhook?mediaId=${matchDoc.id}`;
+                                    const dateObj = new Date(mData.createdAt || Date.now());
+                                    const timeStr = `${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')} ${String(dateObj.getDate()).padStart(2, '0')}/${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+                                    cmdData = {
+                                        command: cleanCmd,
+                                        reportKey: 'Chi Tiết Theo Kho',
+                                        imageUrl: mUrl,
+                                        previewUrl: mUrl,
+                                        caption: `📊 Chi Tiết Theo Kho — cập nhật ${timeStr}`,
+                                        updatedAt: mData.createdAt
+                                    };
+                                }
                             }
                         } catch (e) {
-                            console.warn('[lineBotWebhook] Fallback tìm ảnh cho bc lỗi:', e);
+                            console.warn('[lineBotWebhook] Fallback tìm ảnh bot_media lỗi:', e);
                         }
                     }
 

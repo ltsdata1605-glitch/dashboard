@@ -44,8 +44,9 @@ const UploadTypeSelectionModal = React.lazy(() => import('../modals/UploadTypeSe
 const KpiCardConfigModal = React.lazy(() => import('../kpis/modals/KpiCardConfigModal'));
 const ExportOptionsModal = React.lazy(() => import('../shared/export/ExportOptionsModal'));
 const ShiftWarehouseInputModal = React.lazy(() => import('../modals/ShiftWarehouseInputModal'));
+import { registerYcxAutoExportRunner, triggerYcxAutoReportExport } from '../../services/autoReportExportService';
 import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
-import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
+import { hasTempRealtimeData } from '../../services/dbService';
 
 import ProcessingLoader from '../common/ProcessingLoader';
 import { BusyBar } from '../shared/ui/BusyBar';
@@ -104,7 +105,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         handleIgnoreGroup,
         handleRestoreGroup
     } = logic;
-    const { userRole } = useAuth();
+    const { user, userRole, departmentId } = useAuth();
     const { forceSync } = useSync();
     const { totalVisits, onlineUsers } = useSystemTraffic();
     const pendingRequestsCount = usePendingApprovalCount();
@@ -327,6 +328,32 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
             unregister2();
         };
     }, [handleExport, filterState.kho]);
+
+    // Tự động xuất ảnh báo cáo cho Bot LINE khi nạp dữ liệu thành công (Realtime hoặc Luỹ kế)
+    useEffect(() => {
+        const handleDataUploaded = async () => {
+            try {
+                const hasRt = await hasTempRealtimeData();
+                const mode = hasRt ? 'realtime' : 'luyke';
+                const khoVal = filterState.kho;
+                const isKhoAll = !khoVal || (typeof khoVal === 'string' && khoVal === 'ALL') || (Array.isArray(khoVal) && (khoVal.length === 0 || khoVal.includes('ALL')));
+                const currentKho = !isKhoAll
+                    ? (Array.isArray(khoVal) ? khoVal[0] : khoVal)
+                    : (departmentId || undefined);
+                // Chờ 1500ms cho các bảng vẽ xong DOM hoàn chỉnh
+                setTimeout(() => {
+                    void triggerYcxAutoReportExport(mode, user, currentKho);
+                }, 1500);
+            } catch (err) {
+                console.warn('[DashboardView] Lỗi kích hoạt tự động xuất ảnh:', err);
+            }
+        };
+
+        window.addEventListener('ycx-sales-data-uploaded', handleDataUploaded);
+        return () => {
+            window.removeEventListener('ycx-sales-data-uploaded', handleDataUploaded);
+        };
+    }, [filterState.kho, user, departmentId]);
 
     useEffect(() => {
         document.body.classList.remove('is-capturing');

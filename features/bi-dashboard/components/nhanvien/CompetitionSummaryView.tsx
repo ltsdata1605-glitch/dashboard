@@ -671,6 +671,8 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
             <ExportButton 
                 onExportPNG={async () => { await handleExportPNG(); }} 
                 className="h-7 w-7 sm:h-8 sm:w-8 p-1"
+                autoExportAreaId="bi-nhan-vien-thi-dua"
+                autoExportAreaName="BI: Nhân Viên — Thi Đua Tổng Hợp"
             />
         </div>
     );

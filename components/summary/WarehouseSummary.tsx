@@ -18,7 +18,7 @@ import { useSync } from '../../contexts/SyncContext';
 import StringMultiSelect from '../shared/ui/StringMultiSelect';
 import { FULLSCREEN_LAYER_CLASS } from '../shared/ui/Overlay';
 import AreaAutoExportButton from '../shared/export/AreaAutoExportButton';
-import { registerYcxAutoExportRunner } from '../../services/autoReportExportService';
+import { registerYcxAutoExportRunner, saveAutoReportImagesToFirebase } from '../../services/autoReportExportService';
 /** Cấu hình cột đọc từ IndexedDB/đồng bộ cloud KHÔNG được tin là đúng dạng: từng gặp giá trị không
  *  phải mảng hoặc có phần tử rỗng → migrateColumns() ném lỗi và bảng treo mãi ở "Đang tải cấu hình
  *  cột…" (chủ dự án báo 2026-10-07). Chỉ giữ phần tử là object có `id` dạng chuỗi. */
@@ -92,7 +92,7 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
     updateWarehouseDTThucTarget, filterState, handleFilterChange,
     isLuyKe, handleLuyKeChange, kpiTargets
 }) => {
-    const { user, userRole } = useAuth();
+    const { user, userRole, departmentId } = useAuth();
     const { forceSync } = useSync();
 
     const rawData = processedData?.warehouseSummary ?? [];
@@ -432,12 +432,27 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
                 : filterState.kho;
             const prefix = getExportFilenamePrefix(currentKho);
             const fileName = prefix ? `${prefix} - Chi Tiết Theo Kho.png` : 'Chi Tiết Theo Kho.png';
-            await handleExport(summaryRef.current, fileName, {
+            const blob = await handleExport(summaryRef.current, fileName, {
                 elementsToHide: ['.hide-on-export'],
                 fitAllColumns: true,
                 fitWidthToTable: true,
                 throwOnLineError: tuDong,
             });
+            if (blob instanceof Blob) {
+                const khoVal = filterState.kho;
+                const isKhoAll = !khoVal || (typeof khoVal === 'string' && khoVal === 'ALL') || (Array.isArray(khoVal) && (khoVal.length === 0 || khoVal.includes('ALL')));
+                const targetKho = (viewMode === 'vertical' && verticalKhoFilter.length > 0)
+                    ? verticalKhoFilter[0]
+                    : (!isKhoAll
+                        ? (Array.isArray(khoVal) ? khoVal[0] : khoVal)
+                        : (rawData[0]?.khoName || departmentId));
+                void saveAutoReportImagesToFirebase({
+                    mode: isLuyKe ? 'luyke' : 'realtime',
+                    images: [{ reportKey: 'Chi Tiết Theo Kho', blob, fileName }],
+                    user,
+                    departmentId: targetKho || departmentId
+                });
+            }
         } else if (tuDong) throw new Error('Bảng "Chi tiết theo kho" chưa hiển thị');
     };
 

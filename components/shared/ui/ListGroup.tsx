@@ -63,7 +63,7 @@ export const ListRow: React.FC<ListRowProps> = ({
     <>
       {icon && (
         <span className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-control text-white', destructive ? 'bg-rose-500' : ICON_TONE[iconTone])}>
-          <AppIcon name={icon} size="md" />
+          <AppIcon name={icon} size="sm" />
         </span>
       )}
       <span className="min-w-0 flex-1 py-2">

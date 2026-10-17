@@ -44,7 +44,7 @@ export const AppFooter: React.FC<AppFooterProps> = React.memo(({ className }) =>
 
             {/* Subtle Brand Tagline */}
             <p className="text-[11px] text-slate-400 dark:text-slate-500 tracking-tight leading-none">
-                Dashboard YCX · Hệ thống thống kê &amp; báo cáo bán lẻ
+                Dashboard YCX - Được phát triển dựa trên nhu cầu công việc
             </p>
         </footer>
     );

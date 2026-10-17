@@ -20,6 +20,8 @@ import {
     uploadLineHdImage,
     lineHdSupported
 } from './lineReportDelivery';
+import { lineBotFirestoreService } from '../features/line-bot/services/lineBotFirestoreService';
+import { botHasToken } from '../features/line-bot/types/lineBot.types';
 import { toast } from '../components/shared/ui/toast';
 
 export type ReportExportMode = 'realtime' | 'luyke';
@@ -60,6 +62,11 @@ export const AVAILABLE_AUTO_EXPORT_AREAS: AutoExportAreaInfo[] = [
     { id: 'bi-nganh-hang-tung-st', name: 'BI: Ngành Hàng — Từng Siêu Thị', scope: 'bi', description: 'Bảng phân tích ngành hàng trên BI' },
     { id: 'bi-thi-dua-tong', name: 'BI: Thi Đua — Tổng', scope: 'bi', description: 'Bảng thi đua tổng các siêu thị' },
     { id: 'bi-thi-dua-tung-st', name: 'BI: Thi Đua — Từng Siêu Thị', scope: 'bi', description: 'Bảng thi đua chi tiết từng siêu thị' },
+    // Report BI (Nhân viên)
+    { id: 'bi-nhan-vien-doanh-thu', name: 'BI: Nhân Viên — Doanh Thu', scope: 'bi', description: 'Báo cáo doanh thu nhân viên trên BI' },
+    { id: 'bi-nhan-vien-thuong', name: 'BI: Nhân Viên — Điểm Thưởng', scope: 'bi', description: 'Báo cáo thưởng và điểm thưởng nhân viên trên BI' },
+    { id: 'bi-nhan-vien-tra-cham', name: 'BI: Nhân Viên — Trả Chậm', scope: 'bi', description: 'Báo cáo trả chậm nhân viên trên BI' },
+    { id: 'bi-nhan-vien-thi-dua', name: 'BI: Nhân Viên — Thi Đua', scope: 'bi', description: 'Báo cáo thi đua nhân viên trên BI' },
 ];
 
 const SETTING_KEY = 'auto_report_export_config';
@@ -175,8 +182,32 @@ export async function saveAutoReportImagesToFirebase(params: {
 
     const uid = params.user?.uid;
     const bot = await resolveLineBot(uid, params.departmentId);
-    if (!bot) {
-        console.warn('[AutoExport] Chưa kết nối Bot LINE cho tài khoản này.');
+
+    // Tập hợp tất cả các botId cần đồng bộ (cả bot của kho 910 và bot cá nhân của Quản lý nếu có)
+    const targetBotIds = new Set<string>();
+    if (bot?.botId) targetBotIds.add(bot.botId);
+
+    const dept = (params.departmentId || '').trim();
+    if (dept && dept !== 'ALL' && !dept.startsWith('ALL ')) {
+        try {
+            const wh = await lineBotFirestoreService.findWarehouseBot(dept);
+            if (wh?.id) targetBotIds.add(wh.id);
+        } catch (e) {
+            console.warn('[AutoExport] Lỗi tìm warehouse bot:', e);
+        }
+    }
+
+    if (uid && !targetBotIds.has(uid)) {
+        try {
+            const pConfig = await lineBotFirestoreService.getBotConfig(uid);
+            if (botHasToken(pConfig)) targetBotIds.add(uid);
+        } catch {
+            /* bỏ qua */
+        }
+    }
+
+    if (targetBotIds.size === 0) {
+        console.warn('[AutoExport] Chưa kết nối Bot LINE cho tài khoản hoặc mã kho này.');
         return { ok: false, count: 0, commands: [] };
     }
 
@@ -214,7 +245,9 @@ export async function saveAutoReportImagesToFirebase(params: {
         return { ok: false, count: 0, commands: [] };
     }
 
-    const nowIso = new Date().toISOString();
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const nowIso = now.toISOString();
     const modeLabel = params.mode === 'luyke' ? 'LŨY KẾ' : 'REALTIME';
     const targetCmd = params.mode === 'luyke' ? 'bclk' : 'bcrt';
     const summaryTitle = uploadedImages.map((u) => u.reportKey).join(', ');
@@ -225,7 +258,7 @@ export async function saveAutoReportImagesToFirebase(params: {
         imageUrl: uploadedImages[0].imageUrl,
         previewUrl: uploadedImages[0].previewUrl,
         images: uploadedImages,
-        caption: `📊 Báo cáo ${modeLabel} — ${summaryTitle}`,
+        caption: `📊 ${summaryTitle} — cập nhật ${timeStr}`,
         mode: params.mode,
         updatedAt: nowIso,
         ...(uid ? { updatedBy: uid } : {}),
@@ -234,16 +267,19 @@ export async function saveAutoReportImagesToFirebase(params: {
     const targetCommands = [targetCmd, 'bc'];
 
     try {
+        const botIdList = Array.from(targetBotIds);
         await Promise.all(
-            targetCommands.map((cmd) =>
-                setDoc(doc(db, 'line_bots', bot.botId, 'report_commands', cmd), {
-                    ...docPayload,
-                    command: cmd,
-                }, { merge: true })
+            botIdList.flatMap((bId) =>
+                targetCommands.map((cmd) =>
+                    setDoc(doc(db, 'line_bots', bId, 'report_commands', cmd), {
+                        ...docPayload,
+                        command: cmd,
+                    }, { merge: true })
+                )
             )
         );
 
-        console.info(`[AutoExport] Đã lưu ${uploadedImages.length} ảnh cho lệnh "${targetCmd}" và "bc" trên Bot ${bot.botId}`);
+        console.info(`[AutoExport] Đã lưu ${uploadedImages.length} ảnh cho lệnh "${targetCmd}" và "bc" trên các Bot [${botIdList.join(', ')}]`);
         return { ok: true, count: uploadedImages.length, commands: targetCommands };
     } catch (err) {
         console.error('[AutoExport] Lỗi lưu Firestore report_commands:', err);

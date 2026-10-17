@@ -456,7 +456,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />
 
             {/* Export */}
-            {onExport && <ExportButton onExportPNG={onExport} />}
+            {onExport && (
+                <ExportButton
+                    onExportPNG={onExport}
+                    autoExportAreaId="bi-nganh-hang-tung-st"
+                    autoExportAreaName={`BI: Ngành Hàng — ${shortenSupermarketName(activeSupermarket || '')}`}
+                />
+            )}
         </div>
     );
 

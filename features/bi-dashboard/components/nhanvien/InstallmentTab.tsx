@@ -460,7 +460,11 @@ const InstallmentTab: React.FC<InstallmentTabProps> = ({
                     >
                         {isExportingByDept ? <AppIcon name="loading" size="md" spin /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>
-                    <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
+                    <ExportButton
+                        onExportPNG={async () => { await handleExportPNG(); }}
+                        autoExportAreaId="bi-nhan-vien-tra-cham"
+                        autoExportAreaName="BI: Nhân Viên — Trả Chậm"
+                    />
                 </div>
             </div>
 

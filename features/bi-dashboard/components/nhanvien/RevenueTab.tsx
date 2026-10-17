@@ -517,7 +517,11 @@ const RevenueView: React.FC<{
                     >
                         {isExportingByDept ? <AppIcon name="loading" spin size="md" /> : <AppIcon name="exportBatch" size="md" />}
                     </Button>
-                    <ExportButton options={exportOptions} />
+                    <ExportButton
+                        options={exportOptions}
+                        autoExportAreaId="bi-nhan-vien-doanh-thu"
+                        autoExportAreaName="BI: Nhân Viên — Doanh Thu"
+                    />
                 </div>
             </div>
 

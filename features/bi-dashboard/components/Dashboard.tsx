@@ -1,5 +1,5 @@
 
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react';
 import { AppIcon } from '../../../components/shared/ui/icon/AppIcon';
 import { toast } from '../../../components/shared/ui/toast';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
@@ -16,6 +16,8 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../services/uiSer
 import { Button } from '../../../components/shared/ui/Button';
 import { FeatureLandingLayout } from '../../../components/shared/ui';
 import { useBiAutoSync } from '../hooks/useBiAutoSync';
+import { useAuth } from '../../../contexts/AuthContext';
+import { saveAutoReportImagesToFirebase } from '../../../services/autoReportExportService';
 
 interface DashboardProps {
     onNavigateToUpdater: (options?: { configTab?: 'data' | 'revenueTarget' | 'competitionTarget'; supermarketName?: string; scrollToConfig?: boolean }) => void;
@@ -89,6 +91,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         setUseAdjustedTarget
     } = useDashboardLogic(isActive);
 
+    const { user, departmentId } = useAuth();
+
     const printableRef = useRef<HTMLDivElement>(null);
     const summaryTableRef = useRef<HTMLDivElement>(null);
     const industryTableRef = useRef<HTMLDivElement>(null);
@@ -103,6 +107,54 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
         [exportOptions.showExportOptions]
     );
     const [isHeaderExporting, setIsHeaderExporting] = useState(false);
+
+    // Xác định ID và Tên khu vực đang xem cho tính năng Cấu hình tự xuất Bot LINE
+    const { autoExportAreaId, autoExportAreaName } = useMemo(() => {
+        const isTong = !activeSupermarket || activeSupermarket === 'Tổng';
+        const smLabel = isTong ? 'Tổng' : shortenSupermarketName(activeSupermarket);
+        if (activeSubTab === 'revenue') {
+            return {
+                autoExportAreaId: isTong ? 'bi-doanh-thu-tong' : 'bi-doanh-thu-tung-st',
+                autoExportAreaName: isTong ? 'BI: Doanh Thu — Tổng' : `BI: Doanh Thu — ${smLabel}`
+            };
+        }
+        if (activeSubTab === 'competition') {
+            return {
+                autoExportAreaId: isTong ? 'bi-thi-dua-tong' : 'bi-thi-dua-tung-st',
+                autoExportAreaName: isTong ? 'BI: Thi Đua — Tổng' : `BI: Thi Đua — ${smLabel}`
+            };
+        }
+        return {
+            autoExportAreaId: 'bi-doanh-thu-tong',
+            autoExportAreaName: 'BI: Doanh Thu — Tổng'
+        };
+    }, [activeSubTab, activeSupermarket]);
+
+    // Hàm chụp thử nghiệm phục vụ kiểm tra trên modal Cấu hình tự xuất Bot LINE
+    const handleTestAutoExport = useCallback(async (): Promise<Blob | null> => {
+        const isRealtime = activeMainTab === 'realtime';
+        if (activeSubTab === 'competition') {
+            const original = printableRef.current;
+            if (!original) return null;
+            const filename = `BI_PRO_Thi_Dua_${activeSupermarket}.png`;
+            return await exportElementAsImage(original, filename, {
+                mode: 'blob-only',
+                elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '#competition-view-controls', '.hide-on-export'],
+                fitAllColumns: true,
+                fitWidthToTable: true,
+            });
+        } else {
+            const hasIndustry = activeSupermarket !== 'Tổng' && !!(isRealtime ? industryRealtimeParsed : industryLuyKeParsed);
+            const original = (hasIndustry ? pageRef.current : printableRef.current);
+            if (!original) return null;
+            const filename = `BI_PRO_Doanh_Thu_${activeSupermarket}.png`;
+            return await exportElementAsImage(original, filename, {
+                mode: 'blob-only',
+                elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '.hide-on-export'],
+                captureAsDisplayed: true,
+            });
+        }
+    }, [activeSubTab, activeMainTab, activeSupermarket, industryRealtimeParsed, industryLuyKeParsed]);
 
     // --- Export Logic Tối Ưu Tuyệt Đối Cho Bảng Báo Cáo ---
     const handleExportPNG = async (
@@ -125,6 +177,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
             });
 
             if (blob) {
+                // Tự động lưu và cập nhật ảnh báo cáo lên Bot LINE (bcrt / bclk / bc)
+                const targetDept = (activeSupermarket && activeSupermarket !== 'Tổng' ? activeSupermarket : departmentId);
+                void saveAutoReportImagesToFirebase({
+                    mode: activeMainTab === 'realtime' ? 'realtime' : 'luyke',
+                    images: [{ reportKey: autoExportAreaName || 'Báo Cáo BI', blob, fileName: filename }],
+                    user,
+                    departmentId: targetDept
+                });
+
                 if (autoAction === 'download') {
                     downloadBlob(blob, filename);
                     return 'download';
@@ -387,6 +448,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                     supermarkets={supermarkets}
                     activeSupermarket={activeSupermarket}
                     setActiveSupermarket={setActiveSupermarket}
+                    autoExportAreaId={autoExportAreaId}
+                    autoExportAreaName={autoExportAreaName}
+                    onTestAutoExport={handleTestAutoExport}
                     onBatchExport={() => { }}
                     isBatchExporting={false}
                     onStartAutoSync={handleStartAutoSync}
@@ -460,6 +524,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive, on
                         supermarkets={supermarkets}
                         activeSupermarket={activeSupermarket}
                         setActiveSupermarket={setActiveSupermarket}
+                        autoExportAreaId={autoExportAreaId}
+                        autoExportAreaName={autoExportAreaName}
+                        onTestAutoExport={handleTestAutoExport}
                         onBatchExport={() => {
                             if (activeSubTab === 'competition') runBatchExport('competition');
                             else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');

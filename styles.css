@@ -108,12 +108,12 @@
   /* VẬT LIỆU MỜ XUYÊN THẤU CHO FLOATING DOCK (Chuẩn Apple iOS Floating Capsule)
      Mờ cao cấp 90% chống lem màu biểu đồ bên dưới, hiệu ứng kính mờ chiều sâu 20px blur */
   .ycx-floating-dock {
-    background-color: rgba(248, 250, 252, 0.90);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    backdrop-filter: blur(20px) saturate(150%);
+    background-color: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
   }
   .dark .ycx-floating-dock {
-    background-color: rgba(15, 23, 42, 0.90);
+    background-color: rgba(15, 23, 42, 0.92);
   }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .ycx-floating-dock {

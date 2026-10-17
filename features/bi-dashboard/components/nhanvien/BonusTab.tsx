@@ -165,8 +165,11 @@ export const BonusView: React.FC<{
                             </span>
                         }
                     />
-                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <ExportButton onExportPNG={handleExportPNG} />
+                    <ExportButton
+                        onExportPNG={handleExportPNG}
+                        autoExportAreaId="bi-nhan-vien-thuong"
+                        autoExportAreaName="BI: Nhân Viên — Điểm Thưởng"
+                    />
                 </div>
             </div>
 

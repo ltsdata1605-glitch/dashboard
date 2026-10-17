@@ -147,6 +147,16 @@ export function useBiAutoSync(activeSupermarket?: string | null) {
             } else {
                 void navigateToBiLuyKe();
             }
+
+            // Tự động chụp và lưu ảnh các khu vực BI đã cấu hình lên Bot LINE (bcrt / bclk / bc)
+            setTimeout(() => {
+                const targetDept = activeSupermarket && activeSupermarket !== 'Tổng' ? activeSupermarket : (allowedKhos[0] || undefined);
+                import('../../../services/autoReportExportService')
+                    .then(({ triggerBiAutoReportExport }) => {
+                        void triggerBiAutoReportExport(payload.mode, user, targetDept);
+                    })
+                    .catch(console.error);
+            }, 2000);
         });
 
         const unsubError = onBiError((err) => {
